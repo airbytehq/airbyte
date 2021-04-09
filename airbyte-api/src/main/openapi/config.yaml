@@ -1237,6 +1237,34 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+    Notification:
+      type: object
+      required:
+        - notificationType
+      properties:
+        # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
+        # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
+        notificationType:
+          $ref: "#/components/schemas/NotificationType"
+        slackConfiguration:
+          $ref: "#/components/schemas/SlackNotificationConfiguration"
+    SlackNotificationConfiguration:
+      type: object
+      required:
+        - webhook
+      properties:
+        webhook:
+          type: string
+    NotificationType:
+      type: string
+      enum:
+        - slack
+        # - email
+        # - webhook
     WorkspaceIdRequestBody:
       type: object
       required:
@@ -1274,6 +1302,10 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
     WorkspaceUpdate:
       type: object
       required:
@@ -1298,6 +1330,10 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
     # SLUG
     SlugRequestBody:
       type: object
@@ -1888,6 +1924,9 @@ components:
             type: array
             items:
               type: string
+        namespace:
+          type: string
+          description: Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to.
     StreamJsonSchema:
       type: object
     AirbyteStreamConfiguration:

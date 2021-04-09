@@ -60,7 +60,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   @Override
   public void start(StandardTargetConfig targetConfig, Path jobRoot) throws IOException, WorkerException {
     Preconditions.checkState(targetProcess == null);
-
     IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(targetConfig.getDestinationConnectionConfiguration()));
     IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(targetConfig.getCatalog()));
 

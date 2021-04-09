@@ -7,6 +7,7 @@
   "sidebar.help": "Help",
   "sidebar.docs": "Docs",
   "sidebar.slack": "Slack",
+  "sidebar.connections": "Connections",
   "sidebar.settings": "Settings",
 
   "form.continue": "Continue",
@@ -76,9 +77,9 @@
   "form.edit": "Edit",
   "form.done": "Done",
   "form.examples": "(e.g. {examples})",
-  "form.prefix": "Namespace Prefix",
-  "form.prefix.message": "Where to replicate your data to in your destination",
-  "form.prefix.placeholder": "/configured-setting",
+  "form.prefix": "Table Prefix",
+  "form.prefix.message": "Prefix to prefix all destination tables created as part of this connection. Useful for identifying tables on a per-connection basis and namespacing streams from different sources so they do not overwrite each other.",
+  "form.prefix.placeholder": "prefix-",
   "form.nameSearch": "Search name",
   "form.sourceConnector": "Source connector",
   "form.destinationConnector": "Destination connector",
@@ -170,7 +171,7 @@
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 
   "destinationSyncMode.append": "Append",
-  "destinationSyncMode.append_dedup": "Dedupted + story",
+  "destinationSyncMode.append_dedup": "Deduped + history",
   "destinationSyncMode.overwrite": "Overwrite",
 
   "syncMode.full_refresh": "Full refresh",
@@ -189,6 +190,8 @@
   "connection.resetData": "Reset your data",
   "connection.updateSchema": "Update latest source schema",
   "connection.updateSchemaText": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch. Are you sure you want to do this?",
+  "connection.newConnection": "+ new connection",
+  "connection.newConnectionTitle": "New connection",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",

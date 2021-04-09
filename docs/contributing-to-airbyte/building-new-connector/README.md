@@ -49,21 +49,17 @@ If you are developing a Python/Singer connector, you may find the [building a Py
 At a minimum, your connector must implement the standard tests described in [Testing Connectors](testing-connectors.md)
 
 ### 3. Document building & testing your connector
-To merge your connector, Airbyte needs to know how to build & test it. If you're writing in Python or Java, skip this section -- it is provided
-automatically. 
 
-If you're writing in another language, please document the commands needed to: 
-1. Build your connector docker image (usually this is just `docker build .` but let us know if there are necessary flags, gotchas, etc..)
-2. Run any unit or integration tests _in a Docker image_. 
+To merge your connector, Airbyte needs to know how to build & test it. If you're writing in Python or Java, skip this section -- it is provided automatically.
 
-Your integration and unit tests must be runnable entirely within a Docker image. This is important to guarantee consistent build environments. 
+If you're writing in another language, please document the commands needed to: 1. Build your connector docker image \(usually this is just `docker build .` but let us know if there are necessary flags, gotchas, etc..\) 2. Run any unit or integration tests _in a Docker image_.
 
-When you submit a PR to Airbyte with your connector, the reviewer will use the commands you provide to integrate your connector into Airbyte's build 
-system as follows: 
-1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image
-2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
+Your integration and unit tests must be runnable entirely within a Docker image. This is important to guarantee consistent build environments.
+
+When you submit a PR to Airbyte with your connector, the reviewer will use the commands you provide to integrate your connector into Airbyte's build system as follows: 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
 
 ### Best practices
+
 Make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is **not** a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
 
 ## Updating a connector
@@ -81,7 +77,7 @@ Once you've finished iterating on the changes to a connector as specified in its
    ```
 
 4. Submit a PR containing the changes you made.
-5. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format (the PR must be from the Airbyte repo, not a fork):  
+5. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
 
    ```text
    # to run integration tests for the connector
@@ -91,3 +87,4 @@ Once you've finished iterating on the changes to a connector as specified in its
    ```
 
 6. The new version of the connector is now available for everyone who uses it. Thank you!
+

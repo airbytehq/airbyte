@@ -31,6 +31,9 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -75,7 +78,11 @@ public class ConfigFileArchiverTest {
         .withName("test workspace")
         .withSlug("default")
         .withInitialSetupComplete(false)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withNotifications(List.of(new Notification()
+            .withNotificationType(NotificationType.SLACK)
+            .withSlackConfiguration(new SlackNotificationConfiguration()
+                .withWebhook("http://airbyte.notifications"))));
   }
 
   @Test

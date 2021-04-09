@@ -31,7 +31,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -53,7 +52,7 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
   private JsonNode config;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -77,8 +76,8 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
@@ -90,13 +89,13 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     if (!tableName.startsWith("\"")) {
       // Currently, Normalization always quote tables identifiers
       tableName = "\"" + tableName + "\"";
     }
-    return retrieveRecordsFromTable(tableName);
+    return retrieveRecordsFromTable(tableName, namespace);
   }
 
   @Override
@@ -112,8 +111,7 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException {
-    final String schemaName = config.get("schema").asText();
+  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     return getDatabase().query(
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))

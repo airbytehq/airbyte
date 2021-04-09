@@ -12,5 +12,5 @@ COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
 RUN pip install .
 
-LABEL io.airbyte.version=0.1.1
+LABEL io.airbyte.version=0.1.3
 LABEL io.airbyte.name=airbyte/source-google-workspace-admin-reports
