@@ -104,18 +104,13 @@ class BigQueryDestinationTest {
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
-  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
-          io.airbyte.protocol.models.Field
-              .of("id", JsonSchemaPrimitive.STRING)),
-      CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
-
   private static final NamingConventionTransformer NAMING_RESOLVER = new StandardNameTransformer();
 
   private JsonNode config;
 
   private BigQuery bigquery;
   private Dataset dataset;
+  private ConfiguredAirbyteCatalog catalog;
 
   private boolean tornDown = true;
 
@@ -140,15 +135,21 @@ class BigQueryDestinationTest {
         .build()
         .getService();
 
-    final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
+    String datesetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
+    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datesetId, io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
+            io.airbyte.protocol.models.Field
+                .of("id", JsonSchemaPrimitive.STRING)),
+        CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datesetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
+
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datesetId).build();
     dataset = bigquery.create(datasetInfo);
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
         .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
-        .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryDestination.CONFIG_DATASET_ID, datesetId)
         .build());
 
     tornDown = false;
@@ -216,7 +217,7 @@ class BigQueryDestinationTest {
   @Test
   void testWriteSuccess() throws Exception {
     final BigQueryDestination destination = new BigQueryDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -235,7 +236,7 @@ class BigQueryDestinationTest {
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
 
-    assertTmpTablesNotPresent(CATALOG.getStreams()
+    assertTmpTablesNotPresent(catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
@@ -248,18 +249,18 @@ class BigQueryDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, CATALOG));
+    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
 
-    final List<String> tableNames = CATALOG.getStreams()
+    final List<String> tableNames = catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
         .collect(toList());
-    assertTmpTablesNotPresent(CATALOG.getStreams()
+    assertTmpTablesNotPresent(catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
