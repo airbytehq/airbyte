@@ -142,6 +142,23 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
         }
 
       });
+
+      checkOperations.add(database -> {
+        List<JsonNode> matchingPublications = database.query(connection -> {
+          PreparedStatement ps = connection.prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
+          ps.setString(1, config.get("replication_method").get("publication").asText());
+
+          LOGGER.info("Attempting to find the publication using the query: " + ps.toString());
+
+          return ps;
+        }, JdbcUtils::rowToJson).collect(toList());
+
+        if (matchingPublications.size() != 1) {
+          throw new RuntimeException("Expected exactly one publication but found " + matchingPublications.size()
+              + ". Please read the docs and add a publication to your database.");
+        }
+
+      });
     }
 
     return checkOperations;
@@ -242,7 +259,9 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   @VisibleForTesting
   static boolean isCdc(JsonNode config) {
     LOGGER.info("isCdc config: " + config);
-    final boolean isCdc = config.get("replication_method") != null && config.get("replication_method").get("replication_slot") != null;
+    final boolean isCdc = config.hasNonNull("replication_method")
+        && config.get("replication_method").hasNonNull("replication_slot")
+        && config.get("replication_method").hasNonNull("publication");
     LOGGER.info("using CDC: {}", isCdc);
     return isCdc;
   }
