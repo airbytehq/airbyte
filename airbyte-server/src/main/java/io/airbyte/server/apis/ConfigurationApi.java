@@ -101,6 +101,7 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
@@ -125,13 +126,16 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final LogsHandler logsHandler;
   private final OpenApiConfigHandler openApiConfigHandler;
   private final Configs configs;
+  private final WorkflowServiceStubs temporalService;
 
   public ConfigurationApi(final ConfigRepository configRepository,
                           final JobPersistence jobPersistence,
                           final SchedulerJobClient schedulerJobClient,
                           final CachingSynchronousSchedulerClient synchronousSchedulerClient,
                           final Configs configs,
-                          final FileTtlManager archiveTtlManager) {
+                          final FileTtlManager archiveTtlManager,
+                          final WorkflowServiceStubs temporalService) {
+    this.temporalService = temporalService;
     final SpecFetcher specFetcher = new SpecFetcher(synchronousSchedulerClient);
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
@@ -141,7 +145,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         synchronousSchedulerClient,
         jobPersistence,
         configs.getWorkspaceRoot(),
-        jobNotifier);
+        jobNotifier,
+        temporalService);
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository);

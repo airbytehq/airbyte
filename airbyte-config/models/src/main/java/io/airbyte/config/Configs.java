@@ -60,6 +60,8 @@ public interface Configs {
 
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
+  String getTemporalHost();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
