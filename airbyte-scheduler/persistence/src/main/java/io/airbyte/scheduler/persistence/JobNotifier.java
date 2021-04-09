@@ -25,7 +25,6 @@
 package io.airbyte.scheduler.persistence;
 
 import io.airbyte.config.Notification;
-import io.airbyte.config.Notification.NotificationType;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
@@ -33,7 +32,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.notification.NotificationClient;
-import io.airbyte.notification.SlackNotificationClient;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -100,11 +98,7 @@ public class JobNotifier {
   }
 
   protected NotificationClient getNotificationClient(final Notification notification) {
-    if (notification.getNotificationType() == NotificationType.SLACK) {
-      return new SlackNotificationClient(notification.getSlackConfiguration());
-    } else {
-      throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
-    }
+    return NotificationClient.createNotificationClient(notification);
   }
 
   private static String formatDurationPart(long durationPart, String timeUnit) {

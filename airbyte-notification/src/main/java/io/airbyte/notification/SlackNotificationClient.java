@@ -95,7 +95,8 @@ public class SlackNotificationClient implements NotificationClient {
         LOGGER.info("Successful notification ({}): {}", response.statusCode(), response.body());
         return true;
       } else {
-        LOGGER.warn("Failed to deliver notification ({}): {}", response.statusCode(), response.body());
+        final String errorMessage = String.format("Failed to deliver notification (%s): %s", response.statusCode(), response.body());
+        throw new IOException(errorMessage);
       }
     }
     return false;

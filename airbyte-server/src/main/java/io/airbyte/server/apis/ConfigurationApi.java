@@ -50,6 +50,8 @@ import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.LogsRequestBody;
+import io.airbyte.api.model.Notification;
+import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
@@ -198,6 +200,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WorkspaceRead updateWorkspace(@Valid WorkspaceUpdate workspaceUpdate) {
     return execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
+  }
+
+  @Override
+  public NotificationRead tryNotificationConfig(@Valid Notification notification) {
+    return execute(() -> workspacesHandler.tryNotification(notification));
   }
 
   // SOURCE
