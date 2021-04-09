@@ -25,6 +25,7 @@ dependencies {
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-db')
     implementation project(":airbyte-json-validation")
+    implementation project(':airbyte-notification')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:client')
     implementation project(':airbyte-scheduler:models')

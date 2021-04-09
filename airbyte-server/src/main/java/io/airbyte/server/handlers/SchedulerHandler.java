@@ -59,6 +59,7 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.server.converters.ConfigurationUpdate;
@@ -86,6 +87,7 @@ public class SchedulerHandler {
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
   private final Path workspaceRoot;
+  private final JobNotifier jobNotifier;
   private final WorkflowServiceStubs temporalService;
 
   public SchedulerHandler(ConfigRepository configRepository,
@@ -93,6 +95,7 @@ public class SchedulerHandler {
                           SynchronousSchedulerClient synchronousSchedulerClient,
                           JobPersistence jobPersistence,
                           Path workspaceRoot,
+                          JobNotifier jobNotifier,
                           WorkflowServiceStubs temporalService) {
     this(
         configRepository,
@@ -103,6 +106,7 @@ public class SchedulerHandler {
         new SpecFetcher(synchronousSchedulerClient),
         jobPersistence,
         workspaceRoot,
+        jobNotifier,
         temporalService);
   }
 
@@ -115,6 +119,7 @@ public class SchedulerHandler {
                    SpecFetcher specFetcher,
                    JobPersistence jobPersistence,
                    Path workspaceRoot,
+                   JobNotifier jobNotifier,
                    WorkflowServiceStubs temporalService) {
     this.configRepository = configRepository;
     this.schedulerJobClient = schedulerJobClient;
@@ -124,6 +129,7 @@ public class SchedulerHandler {
     this.specFetcher = specFetcher;
     this.jobPersistence = jobPersistence;
     this.workspaceRoot = workspaceRoot;
+    this.jobNotifier = jobNotifier;
     this.temporalService = temporalService;
   }
 
@@ -323,8 +329,9 @@ public class SchedulerHandler {
         .build();
 
     temporalService.blockingStub().requestCancelWorkflowExecution(cancelRequest);
-
-    return JobConverter.getJobInfoRead(jobPersistence.getJob(jobId));
+    final Job job = jobPersistence.getJob(jobId);
+    jobNotifier.failJob("job was cancelled", job);
+    return JobConverter.getJobInfoRead(job);
   }
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {

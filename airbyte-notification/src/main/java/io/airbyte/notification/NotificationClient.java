@@ -22,54 +22,29 @@
  * SOFTWARE.
  */
 
-package io.airbyte.config;
+package io.airbyte.notification;
 
-import java.nio.file.Path;
+import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
+import java.io.IOException;
 
-public interface Configs {
+public interface NotificationClient {
 
-  String getAirbyteRole();
+  boolean notifyJobFailure(
+                           String sourceConnector,
+                           String destinationConnector,
+                           String jobDescription,
+                           String logUrl)
+      throws IOException, InterruptedException;
 
-  String getAirbyteVersion();
+  boolean notify(String message) throws IOException, InterruptedException;
 
-  String getAirbyteVersionOrWarning();
-
-  Path getConfigRoot();
-
-  Path getWorkspaceRoot();
-
-  Path getLocalRoot();
-
-  String getDatabaseUser();
-
-  String getDatabasePassword();
-
-  String getDatabaseUrl();
-
-  String getWebappUrl();
-
-  String getWorkspaceDockerMount();
-
-  String getLocalDockerMount();
-
-  String getDockerNetwork();
-
-  TrackingStrategy getTrackingStrategy();
-
-  WorkerEnvironment getWorkerEnvironment();
-
-  WorkspaceRetentionConfig getWorkspaceRetentionConfig();
-
-  String getTemporalHost();
-
-  enum TrackingStrategy {
-    SEGMENT,
-    LOGGING
-  }
-
-  enum WorkerEnvironment {
-    DOCKER,
-    KUBERNETES
+  static NotificationClient createNotificationClient(final Notification notification) {
+    if (notification.getNotificationType() == NotificationType.SLACK) {
+      return new SlackNotificationClient(notification.getSlackConfiguration());
+    } else {
+      throw new IllegalArgumentException("Unknown notification type:" + notification.getNotificationType());
+    }
   }
 
 }
