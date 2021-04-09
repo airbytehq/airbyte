@@ -73,6 +73,15 @@ public class AutoCloseableIterators {
   }
 
   /**
+   * Consumes entire iterator and collect it into a list. Then it closes the iterator.
+   */
+  public static <T> List<T> toListAndClose(AutoCloseableIterator<T> iterator) throws Exception {
+    try (iterator) {
+      return MoreIterators.toList(iterator);
+    }
+  }
+
+  /**
    * Returns a {@link AutoCloseableIterator} that will call the provided supplier ONE time when
    * {@link AutoCloseableIterator#hasNext()} is called the first time. The supplier returns a stream
    * that will be exposed as an iterator.
@@ -129,6 +138,11 @@ public class AutoCloseableIterators {
   public static <T> AutoCloseableIterator<T> transform(Function<AutoCloseableIterator<T>, Iterator<T>> iteratorCreator,
                                                        AutoCloseableIterator<T> autoCloseableIterator) {
     return new DefaultAutoCloseableIterator<>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close);
+  }
+
+  @SafeVarargs
+  public static <T> CompositeIterator<T> concatWithEagerClose(AutoCloseableIterator<T>... iterators) {
+    return concatWithEagerClose(List.of(iterators));
   }
 
   public static <T> CompositeIterator<T> concatWithEagerClose(List<AutoCloseableIterator<T>> iterators) {

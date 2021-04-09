@@ -24,12 +24,14 @@
 
 package io.airbyte.commons.util;
 
+import com.google.common.collect.AbstractIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class MoreIterators {
 
@@ -72,6 +74,24 @@ public class MoreIterators {
       set.add(iterator.next());
     }
     return set;
+  }
+
+  public static <T> Iterator<T> singletonIteratorFromSupplier(Supplier<T> supplier) {
+    return new AbstractIterator<T>() {
+
+      private boolean hasSupplied = false;
+
+      @Override
+      protected T computeNext() {
+        if (!hasSupplied) {
+          hasSupplied = true;
+          return supplier.get();
+        } else {
+          return endOfData();
+        }
+      }
+
+    };
   }
 
 }
