@@ -126,7 +126,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
         List<JsonNode> matchingSlots = database.query(connection -> {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
           PreparedStatement ps = connection.prepareStatement(sql);
-          ps.setString(1, config.get("replication_slot").asText());
+          ps.setString(1, config.get("replication_method").get("replication_slot").asText());
           ps.setString(2, "pgoutput");
           ps.setString(3, config.get("database").asText());
 
@@ -138,6 +138,23 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
         if (matchingSlots.size() != 1) {
           throw new RuntimeException("Expected exactly one replication slot but found " + matchingSlots.size()
               + ". Please read the docs and add a replication slot to your database.");
+        }
+
+      });
+
+      checkOperations.add(database -> {
+        List<JsonNode> matchingPublications = database.query(connection -> {
+          PreparedStatement ps = connection.prepareStatement("SELECT * FROM pg_publication WHERE pubname = ?");
+          ps.setString(1, config.get("replication_method").get("publication").asText());
+
+          LOGGER.info("Attempting to find the publication using the query: " + ps.toString());
+
+          return ps;
+        }, JdbcUtils::rowToJson).collect(toList());
+
+        if (matchingPublications.size() != 1) {
+          throw new RuntimeException("Expected exactly one publication but found " + matchingPublications.size()
+              + ". Please read the docs and add a publication to your database.");
         }
 
       });
@@ -241,8 +258,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   private static boolean isCdc(JsonNode config) {
-    LOGGER.info("isCdc config: " + config);
-    return !(config.get("replication_slot") == null);
+    return config.hasNonNull("replication_method") && config.get("replication_method").hasNonNull("replication_slot")
+        && config.get("replication_method").hasNonNull("publication");
   }
 
   /*

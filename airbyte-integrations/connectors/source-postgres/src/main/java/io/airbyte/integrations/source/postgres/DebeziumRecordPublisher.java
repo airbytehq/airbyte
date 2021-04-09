@@ -154,8 +154,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
       props.setProperty("database.password", config.get("password").asText());
     }
 
-    props.setProperty("slot.name", config.get("replication_slot").asText());
-    props.setProperty("publication.name", "airbyte_publication"); // todo: allow as configured input
+    props.setProperty("slot.name", config.get("replication_method").get("replication_slot").asText());
+    props.setProperty("publication.name", config.get("replication_method").get("publication").asText());
 
     // table selection
     final String tableWhitelist = getTableWhitelist(catalog);
