@@ -42,10 +42,30 @@
         "airbyte_secret": true,
         "order": 4
       },
-      "replication_slot": {
-        "type": "string",
-        "description": "How to replicate data from Postgres.",
-        "order": 5
+      "replication_method": {
+        "type": "object",
+        "description": "Replication method to use for extracting data from the database.",
+        "order": 5,
+        "oneOf": [
+          {
+            "title": "Standard",
+            "additionalProperties": false,
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": [],
+            "properties": {}
+          },
+          {
+            "title": "Logical Replication Slot",
+            "additionalProperties": false,
+            "required": ["replication_slot"],
+            "properties": {
+              "replication_slot": {
+                "type": "string",
+                "description": "A pgoutput logical replication slot. Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the Postgres Source docs for more information.  "
+              }
+            }
+          }
+        ]
       }
     }
   }
