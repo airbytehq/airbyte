@@ -56,6 +56,7 @@ import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
+import io.airbyte.api.client.model.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
 import io.airbyte.api.client.model.DestinationSyncMode;
@@ -154,13 +155,25 @@ public class AcceptanceTests {
   }
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws ApiException {
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
 
     // seed database.
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+
+    // TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version
+    // is released. The namespace change requires source, destination and normalization to all use the namespace field.
+    final var updateSrc = new SourceDefinitionUpdate()
+        .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")) // Postgres
+        .dockerImageTag("dev");
+    apiClient.getSourceDefinitionApi().updateSourceDefinition(updateSrc);
+
+    final var updateDst = new DestinationDefinitionUpdate()
+        .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")) // Postgres
+        .dockerImageTag("dev");
+    apiClient.getDestinationDefinitionApi().updateDestinationDefinition(updateDst);
   }
 
   @AfterEach
@@ -271,12 +284,6 @@ public class AcceptanceTests {
   @Test
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException {
-    // TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version
-    // is released.
-    var update = new SourceDefinitionUpdate()
-        .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750"))
-        .dockerImageTag("dev");
-    apiClient.getSourceDefinitionApi().updateSourceDefinition(update);
     final UUID sourceId = createPostgresSource().getSourceId();
 
     final AirbyteCatalog actual = discoverSourceSchema(sourceId);
@@ -503,7 +510,7 @@ public class AcceptanceTests {
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, boolean withScdTable) throws Exception {
     final Database source = getDatabase(sourceDb);
 
-    final Set<String> sourceStreams = listStreams(source);
+    final Set<String> sourceStreams = listStreamNames(source);
     final Set<String> sourceStreamsWithRawPrefix = sourceStreams.stream().flatMap(x -> {
       final String cleanedNameStream = x.replace(".", "_");
       if (withScdTable) {
@@ -531,18 +538,14 @@ public class AcceptanceTests {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
-  private Set<String> listStreams(Database database) throws SQLException {
+  private Set<String> listStreamNames(Database database) throws SQLException {
     return database.query(
         context -> {
           Result<Record> fetch =
               context.fetch(
                   "SELECT tablename, schemaname FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
           return fetch.stream()
-              .map(record -> {
-                final String schemaName = (String) record.get("schemaname");
-                final String tableName = (String) record.get("tablename");
-                return schemaName + "." + tableName;
-              })
+              .map(record -> (String) record.get("tablename"))
               .collect(Collectors.toSet());
         });
   }
@@ -745,7 +748,7 @@ public class AcceptanceTests {
 
   private void clearDbData(PostgreSQLContainer db) throws SQLException {
     final Database database = getDatabase(db);
-    final Set<String> tableNames = listStreams(database);
+    final Set<String> tableNames = listStreamNames(database);
     for (final String tableName : tableNames) {
       database.query(context -> context.execute(String.format("DELETE FROM %s", tableName)));
     }
