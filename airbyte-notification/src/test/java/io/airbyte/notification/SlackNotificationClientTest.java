@@ -25,6 +25,7 @@
 package io.airbyte.notification;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -70,18 +71,25 @@ public class SlackNotificationClientTest {
   }
 
   @Test
-  void testWrongNotificationMessage() throws IOException, InterruptedException {
+  void testBadResponseWrongNotificationMessage() throws IOException, InterruptedException {
     final String message = UUID.randomUUID().toString();
     server.createContext("/test", new ServerHandler("Message mismatched"));
     final SlackNotificationClient client =
         new SlackNotificationClient(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/test"));
-    assertFalse(client.notify(message));
+    assertThrows(IOException.class, () -> client.notify(message));
   }
 
   @Test
-  void testBadWebhookUrl() throws IOException, InterruptedException {
+  void testBadWebhookUrl() {
     final SlackNotificationClient client =
         new SlackNotificationClient(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/bad"));
+    assertThrows(IOException.class, () -> client.notifyJobFailure("source-test", "destination-test", "job description", "logUrl"));
+  }
+
+  @Test
+  void testEmptyWebhookUrl() throws IOException, InterruptedException {
+    final SlackNotificationClient client =
+        new SlackNotificationClient(new SlackNotificationConfiguration());
     assertFalse(client.notifyJobFailure("source-test", "destination-test", "job description", "logUrl"));
   }
 

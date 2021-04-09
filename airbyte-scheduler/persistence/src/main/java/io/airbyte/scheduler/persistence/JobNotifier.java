@@ -50,8 +50,6 @@ public class JobNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobNotifier.class);
 
-  public static final String NOTIFICATION_TEST_MESSAGE = "Hello World! This is a test trying to send a message from Airbyte...";
-
   private final String connectionPageUrl;
   private final ConfigRepository configRepository;
 
@@ -102,6 +100,10 @@ public class JobNotifier {
   }
 
   protected NotificationClient getNotificationClient(final Notification notification) {
+    return createNotificationClient(notification);
+  }
+
+  public static NotificationClient createNotificationClient(final Notification notification) {
     if (notification.getNotificationType() == NotificationType.SLACK) {
       return new SlackNotificationClient(notification.getSlackConfiguration());
     } else {

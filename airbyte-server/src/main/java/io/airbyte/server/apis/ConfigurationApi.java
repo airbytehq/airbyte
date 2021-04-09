@@ -50,6 +50,8 @@ import io.airbyte.api.model.JobInfoRead;
 import io.airbyte.api.model.JobListRequestBody;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.LogsRequestBody;
+import io.airbyte.api.model.Notification;
+import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
@@ -153,7 +155,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
-    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler, jobNotifier);
+    workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
@@ -201,8 +203,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public WorkspaceRead tryWorkspaceNotification(@Valid WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return execute(() -> workspacesHandler.tryWorkspaceNotification(workspaceIdRequestBody));
+  public NotificationRead tryNotificationConfig(@Valid Notification notification) {
+    return execute(() -> workspacesHandler.tryNotification(notification));
   }
 
   // SOURCE

@@ -165,17 +165,17 @@ paths:
           description: Workspace not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  /v1/workspaces/trynotification:
+  /v1/notifications/try:
     post:
       tags:
-        - workspace
-      summary: Try sending notifications of workspace by ID
-      operationId: tryWorkspaceNotification
+        - notifications
+      summary: Try sending a notifications
+      operationId: tryNotificationConfig
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+              $ref: "#/components/schemas/Notification"
         required: true
       responses:
         "200":
@@ -183,9 +183,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WorkspaceRead"
+                $ref: "#/components/schemas/NotificationRead"
         "404":
-          description: Workspace not found
+          description: Notification Client not found
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/source_definitions/create:
@@ -1288,6 +1288,18 @@ components:
         - slack
         # - email
         # - webhook
+    NotificationRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        message:
+          type: string
     WorkspaceIdRequestBody:
       type: object
       required:
