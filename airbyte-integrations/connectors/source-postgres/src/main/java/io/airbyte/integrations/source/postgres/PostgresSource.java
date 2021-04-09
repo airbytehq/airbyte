@@ -53,7 +53,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
         config.get("port").asText(),
         config.get("database").asText()));
 
-    if (config.get("ssl").asBoolean()) {
+    if (config.get("ssl").asText().equals("true")) {
       jdbcUrl.append("?ssl=true?sslmode=require");
     }
 
