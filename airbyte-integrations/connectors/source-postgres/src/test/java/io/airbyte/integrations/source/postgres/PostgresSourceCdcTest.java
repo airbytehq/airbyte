@@ -41,12 +41,10 @@ import com.google.common.collect.Streams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -72,14 +70,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Result;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -277,7 +272,6 @@ class PostgresSourceCdcTest {
     assertTrue(recordMessages2.get(0).getData().get(PostgresSource.CDC_DELETED_AT).isNull());
   }
 
-  @RepeatedTest(19)
   @SuppressWarnings({"BusyWait", "CodeBlock2Expr"})
   @Test
   @DisplayName("Verify that when data is inserted into the database while a sync is happening and after the first sync, it all gets replicated.")
@@ -314,8 +308,10 @@ class PostgresSourceCdcTest {
 
     assertExpectedStateMessages(extractStateMessages(actualRecords2));
 
-    final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
-    final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
+    // sometimes there can be more than one of these at the end of the snapshot and just before the
+    // first incremental.
+    final Set<AirbyteRecordMessage> recordMessages1 = removeDuplicates(extractRecordMessages(actualRecords1));
+    final Set<AirbyteRecordMessage> recordMessages2 = removeDuplicates(extractRecordMessages(actualRecords2));
 
     final int recordsCreatedBeforeTestCount = MAKE_RECORDS.size() + MODEL_RECORDS.size();
     assertTrue(recordsCreatedBeforeTestCount < recordMessages1.size(), "Expected first sync to include records created while the test was running.");
@@ -325,6 +321,25 @@ class PostgresSourceCdcTest {
     LOGGER.info("recordMessages1.size() = " + recordMessages1.size());
     LOGGER.info("recordMessages2.size() = " + recordMessages2.size());
     assertEquals(recordsToCreate + recordsCreatedBeforeTestCount, recordMessages1.size() + recordMessages2.size());
+  }
+
+  private static Set<AirbyteRecordMessage> removeDuplicates(Set<AirbyteRecordMessage> messages) {
+    final Set<JsonNode> existingDataRecordsWithoutUpdated = new HashSet<>();
+    final Set<AirbyteRecordMessage> output = new HashSet<>();
+
+    for (AirbyteRecordMessage message : messages) {
+      ObjectNode node = message.getData().deepCopy();
+      node.remove("_ab_cdc_updated_at");
+
+      if (existingDataRecordsWithoutUpdated.contains(node)) {
+        LOGGER.info("Removing duplicate node: " + node);
+      } else {
+        output.add(message);
+        existingDataRecordsWithoutUpdated.add(node);
+      }
+    }
+
+    return output;
   }
 
   @Test

@@ -26,7 +26,6 @@ package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -34,20 +33,15 @@ import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
-import io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-
-import io.debezium.util.VariableLatch;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +75,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   public void start(Queue<ChangeEvent<String, String>> queue) {
     engine = DebeziumEngine.create(Json.class)
         .using(getDebeziumProperties(config, catalog, offsetManager))
-        .using(new AlwaysCommitOffsetPolicy())
+        // .using(new AlwaysCommitOffsetPolicy())
         .notifying(e -> {
           // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
           // interacts with kafka. we want to ignore it.
