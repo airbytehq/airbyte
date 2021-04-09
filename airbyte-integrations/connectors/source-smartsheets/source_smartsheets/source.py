@@ -158,7 +158,6 @@ class SourceSmartsheets(Source):
         # happy to hear suggestions on this ugly zero-indexing
         stream = catalog.streams[0].stream
         columns = tuple(stream.json_schema["properties"].keys())
-        print(columns)
         stream_name = stream.name
 
         smartsheet_client = smartsheet.Smartsheet(access_token)
@@ -169,11 +168,11 @@ class SourceSmartsheets(Source):
             logger.info(f"Row count: {sheet['totalRowCount']}")
 
             for row in sheet["rows"]:
-                data = {{columns[i]: row["cells"][i]["value"]} for i in len(row["cells"])}
+                data = {columns[i]: row["cells"][i]["value"] for i in range(len(row["cells"]) - 1)}
 
                 yield AirbyteMessage(
                     type=Type.RECORD,
                     record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                 )
         except Exception:
-            pass
+            raise Exception("FAILED")
