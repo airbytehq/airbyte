@@ -26,7 +26,7 @@ import sys
 from abc import ABC, abstractmethod
 from functools import partial
 from http import HTTPStatus
-from typing import Any, Callable, Iterable, Iterator, List, MutableMapping, Union
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import backoff
 import pendulum as pendulum
@@ -148,6 +148,48 @@ class Stream(ABC):
         yield from self._paginator(getter)
 
 
+class IncrementalStream(Stream, ABC):
+    """Stream that supports state and incremental read"""
+
+    state_pk = "timestamp"
+
+    @property
+    @abstractmethod
+    def updated_at_field(self):
+        """Name of the field associated with the state"""
+
+    @property
+    def state(self) -> Optional[Mapping[str, Any]]:
+        """Current state, if wasn't set return None"""
+        if self._state:
+            return {self.state_pk: str(self._state)}
+        return None
+
+    @state.setter
+    def state(self, value):
+        self._state = pendulum.parse(value[self.state_pk])
+        self._start_date = max(self._state, self._start_date)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = None
+
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Apply state filter to set of records, update cursor(state) if necessary in the end"""
+        latest_cursor = None
+        for record in self._paginator(getter):
+            yield record
+            cursor = pendulum.parse(record[self.updated_at_field])
+            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+
+        if latest_cursor:
+            new_state = max(latest_cursor, self._state) if self._state else latest_cursor
+            if new_state != self._state:
+                logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+                self._state = new_state
+                self._start_date = self._state
+
+
 class PhoneNumbersStream(Stream):
     """Phone Numbers
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/phone_numbers#list-phone-numbers
@@ -262,26 +304,28 @@ class CurrentQueueActivityStream(Stream):
     stream_stats = True
 
 
-class CallsStream(Stream):
+class CallsStream(IncrementalStream):
     """Calls
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/incremental_exports#incremental-calls-export
     """
 
     url = "/stats/incremental/calls"
     data_field = "calls"
+    updated_at_field = "updated_at"
 
     def list(self, fields) -> Iterable:
         params = {"start_time": int(self._start_date.timestamp())}
         yield from self.read(partial(self._api.get, url=self.url, params=params))
 
 
-class CallLegsStream(Stream):
+class CallLegsStream(IncrementalStream):
     """Call Legs
     Docs: https://developer.zendesk.com/rest_api/docs/voice-api/incremental_exports#incremental-call-legs-export
     """
 
     url = "/stats/incremental/legs"
     data_field = "legs"
+    updated_at_field = "updated_at"
 
     def list(self, fields) -> Iterable:
         params = {"start_time": int(self._start_date.timestamp())}
