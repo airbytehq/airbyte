@@ -52,7 +52,7 @@ public class PostgresSpecTest {
       + "\"database\" : \"postgres_db\",  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
-      + "\"replication_method\" : {    \"replication_slot\" : \"ab_slot\"  }"
+      + "\"replication_method\" : {    \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\"  }"
       + "}";
   private static JsonNode schema;
   private static JsonSchemaValidator validator;
@@ -87,11 +87,23 @@ public class PostgresSpecTest {
   }
 
   @Test
-  void testWithReplicationMethodStandard() {
+  void testWithReplicationMethodMissingPublication() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
     ((ObjectNode) config.get("replication_method")).remove("replication_slot");
 
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testWithReplicationMethodStandard() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config.get("replication_method")).remove("replication_slot");
+    ((ObjectNode) config.get("replication_method")).remove("publication");
     assertTrue(validator.test(schema, config));
+
+    final JsonNode configReplicationMethodNotSet = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) configReplicationMethodNotSet).remove("replication_method");
+    assertTrue(validator.test(schema, configReplicationMethodNotSet));
   }
 
   @Test
