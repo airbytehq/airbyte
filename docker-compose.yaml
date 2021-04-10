@@ -18,7 +18,7 @@ services:
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
-      - POSTGRES_DB=db-${DATABASE_DB}
+      - POSTGRES_DB=${DATABASE_DB}
     volumes:
       - db:/var/lib/postgresql/data
   seed:
