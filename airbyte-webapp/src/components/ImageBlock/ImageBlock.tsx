@@ -39,7 +39,7 @@ const ImageBlock: React.FC<IProps> = ({ img, className, num, small }) => (
         small={small}
         src={img || "/default-logo-catalog.svg"}
         height={18}
-        alt={"logo"}
+        alt="logo"
       />
     )}
   </Content>

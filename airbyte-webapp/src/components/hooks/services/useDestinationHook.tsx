@@ -23,7 +23,7 @@ type ValuesProps = {
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
 export const useDestinationDefinitionSpecificationLoad = (
-  destinationDefinitionId: string
+  destinationDefinitionId: string | null
 ): {
   isLoading: boolean;
   destinationDefinitionSpecification: DestinationDefinitionSpecification;

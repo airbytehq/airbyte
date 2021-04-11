@@ -10,7 +10,7 @@ import useConnection, {
   useConnectionLoad,
 } from "components/hooks/services/useConnectionHook";
 import DeleteBlock from "components/DeleteBlock";
-import FrequencyForm from "views/Connector/FrequencyForm";
+import ConnectionForm from "views/Connection/ConnectionForm";
 import { SyncSchema } from "core/domain/catalog";
 import { equal } from "utils/objects";
 import ResetDataModal from "components/ResetDataModal";
@@ -18,6 +18,7 @@ import { ModalTypes } from "components/ResetDataModal/types";
 import Button from "components/Button";
 import LoadingSchema from "components/LoadingSchema";
 import EnabledControl from "./EnabledControl";
+import { useDestinationDefinitionSpecificationLoad } from "../../../../../components/hooks/services/useDestinationHook";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -95,6 +96,14 @@ const SettingsView: React.FC<IProps> = ({
   const { connection, isLoadingConnection } = useConnectionLoad(
     connectionId,
     activeUpdatingSchemaMode
+  );
+
+  // TODO: check if it makes more sense to move it to frequencyform
+  const {
+    destinationDefinitionSpecification,
+    isLoading: loadingDestination,
+  } = useDestinationDefinitionSpecificationLoad(
+    connection?.destination?.destinationDefinitionId ?? null
   );
 
   const onDelete = useCallback(
@@ -198,14 +207,17 @@ const SettingsView: React.FC<IProps> = ({
           </Title>
         }
       >
-        {!isLoadingConnection && connection ? (
-          <FrequencyForm
+        {!isLoadingConnection && !loadingDestination && connection ? (
+          <ConnectionForm
             isEditMode
             schema={connection.syncCatalog}
+            prefixValue={connection.prefix}
+            source={connection.source}
+            destination={connection.destination}
+            destinationDefinition={destinationDefinitionSpecification}
             onSubmit={onSubmitForm}
             onReset={onReset}
             frequencyValue={schedule?.value}
-            prefixValue={connection.prefix}
             errorMessage={errorMessage}
             successMessage={
               saved && <FormattedMessage id="form.changesSaved" />
@@ -214,8 +226,6 @@ const SettingsView: React.FC<IProps> = ({
             editSchemeMode={activeUpdatingSchemaMode}
             isLoading={isLoading}
             additionalSchemaControl={UpdateSchemaButton()}
-            source={connection.source}
-            destination={connection.destination}
           />
         ) : (
           <LoadingSchema />

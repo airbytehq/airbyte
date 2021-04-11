@@ -7,6 +7,7 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import { SyncSchema } from "core/domain/catalog";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
+import { DestinationDefinitionSpecification } from "core/resources/DestinationDefinitionSpecification";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import { equal } from "utils/objects";
@@ -18,30 +19,6 @@ import Connector from "./components/Connector";
 import SchemaView from "./components/SchemaView";
 import EditControls from "./components/EditControls";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
-
-type IProps = {
-  className?: string;
-  source?: Source;
-  destination?: Destination;
-  schema: SyncSchema;
-  errorMessage?: React.ReactNode;
-  additionBottomControls?: React.ReactNode;
-  successMessage?: React.ReactNode;
-  onSubmit: (values: {
-    frequency: string;
-    prefix: string;
-    schema: SyncSchema;
-  }) => void;
-  onReset?: (connectionId?: string) => void;
-  onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
-  onCancel?: () => void;
-  editSchemeMode?: boolean;
-  frequencyValue?: string;
-  prefixValue?: string;
-  isEditMode?: boolean;
-  isLoading?: boolean;
-  additionalSchemaControl?: React.ReactNode;
-};
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -66,7 +43,32 @@ const connectionValidationSchema = yup.object().shape({
   prefix: yup.string(),
 });
 
-const FrequencyForm: React.FC<IProps> = ({
+type ConnectionFormProps = {
+  schema: SyncSchema;
+  onSubmit: (values: {
+    frequency: string;
+    prefix: string;
+    schema: SyncSchema;
+  }) => void;
+  className?: string;
+  source: Source;
+  destination: Destination;
+  destinationDefinition: DestinationDefinitionSpecification;
+  errorMessage?: React.ReactNode;
+  additionBottomControls?: React.ReactNode;
+  successMessage?: React.ReactNode;
+  onReset?: (connectionId?: string) => void;
+  onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
+  onCancel?: () => void;
+  editSchemeMode?: boolean;
+  frequencyValue?: string;
+  prefixValue?: string;
+  isEditMode?: boolean;
+  isLoading?: boolean;
+  additionalSchemaControl?: React.ReactNode;
+};
+
+const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
   onReset,
   className,
@@ -84,6 +86,7 @@ const FrequencyForm: React.FC<IProps> = ({
   additionalSchemaControl,
   source,
   destination,
+  destinationDefinition,
 }) => {
   const initialSchema = useInitialSchema(schema);
   const dropdownData = useFrequencyDropdownData();
@@ -124,14 +127,14 @@ const FrequencyForm: React.FC<IProps> = ({
                 id: "form.sourceConnector",
               })}
             >
-              <Connector name={source?.name || ""} />
+              <Connector name={source.name} />
             </ConnectorLabel>
             <ConnectorLabel
               label={formatMessage({
                 id: "form.destinationConnector",
               })}
             >
-              <Connector name={destination?.name || ""} />
+              <Connector name={destination.name} />
             </ConnectorLabel>
             <Field name="frequency">
               {({ field }: FieldProps<string>) => (
@@ -177,6 +180,9 @@ const FrequencyForm: React.FC<IProps> = ({
           </Field>
           <SchemaView
             schema={newSchema}
+            destinationSupportedSyncModes={
+              destinationDefinition.supportedDestinationSyncModes
+            }
             onChangeSchema={setNewSchema}
             additionalControl={additionalSchemaControl}
           />
@@ -228,4 +234,4 @@ const FrequencyForm: React.FC<IProps> = ({
   );
 };
 
-export default FrequencyForm;
+export default ConnectionForm;
