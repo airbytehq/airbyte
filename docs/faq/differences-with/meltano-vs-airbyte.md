@@ -1,6 +1,7 @@
 # Meltano vs Airbyte
 
 We wrote an article, “[The State of Open-Source Data Integration and ETL](https://airbyte.io/articles/data-engineering-thoughts/the-state-of-open-source-data-integration-and-etl/),” in which we list and compare all ETL-related open-source projects, including Meltano and Airbyte. Don’t hesitate to check it out for more detailed arguments. As a summary, here are the differences: 
+
 ![](https://airbyte.io/wp-content/uploads/2020/10/Landscape-of-open-source-data-integration-platforms-4.png)
 
 ## **Meltano:**
