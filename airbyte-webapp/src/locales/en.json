@@ -193,6 +193,10 @@
   "connection.newConnection": "+ new connection",
   "connection.newConnectionTitle": "New connection",
   "connection.noConnections": "Connection list is empty",
+  "connection.disabledConnection": "Disabled connection",
+  "connection.failedSync": "Failed sync",
+  "connection.successSync": "Succeeded sync",
+  "connection.noSyncData": "Sync was not started",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",

@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useIntl } from "react-intl";
 
 import { Status } from "../types";
 import StatusIcon from "components/StatusIcon";
@@ -15,6 +16,8 @@ type AllConnectionsStatusCellProps = {
 const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
   connectEntities,
 }) => {
+  const formatMessage = useIntl().formatMessage;
+
   const active = useMemo(
     () =>
       connectEntities.filter(
@@ -47,18 +50,47 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({
     [connectEntities]
   );
 
-  // TODO: add error status
-
   if (!connectEntities.length) {
     return null;
   }
 
   return (
     <>
-      {active.length ? <StatusIcon success value={active.length} /> : null}
-      {inactive.length ? <StatusIcon inactive value={inactive.length} /> : null}
-      {failed.length ? <StatusIcon value={failed.length} /> : null}
-      {empty.length ? <StatusIcon empty value={empty.length} /> : null}
+      {active.length ? (
+        <StatusIcon
+          success
+          value={active.length}
+          title={formatMessage({
+            id: "connection.successSync",
+          })}
+        />
+      ) : null}
+      {inactive.length ? (
+        <StatusIcon
+          inactive
+          value={inactive.length}
+          title={formatMessage({
+            id: "connection.disabledConnection",
+          })}
+        />
+      ) : null}
+      {failed.length ? (
+        <StatusIcon
+          value={failed.length}
+          title={formatMessage({
+            id: "connection.failedSync",
+          })}
+        />
+      ) : null}
+      {empty.length ? (
+        <StatusIcon
+          empty
+          value={empty.length}
+          title={formatMessage({
+            id: "connection.noSyncData",
+          })}
+        />
+      ) : null}
     </>
   );
 };
