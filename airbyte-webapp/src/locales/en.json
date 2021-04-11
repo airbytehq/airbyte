@@ -192,6 +192,7 @@
   "connection.updateSchemaText": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch. Are you sure you want to do this?",
   "connection.newConnection": "+ new connection",
   "connection.newConnectionTitle": "New connection",
+  "connection.noConnections": "Connection list is empty",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",
