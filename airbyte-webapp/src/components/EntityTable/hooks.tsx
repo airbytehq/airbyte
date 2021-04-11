@@ -56,7 +56,7 @@ const useSyncActions = (): {
       frequency: "manual", // Only manual connections have this button
     });
 
-    SyncConnection({
+    await SyncConnection({
       connectionId: connection.connectionId,
     });
   };
