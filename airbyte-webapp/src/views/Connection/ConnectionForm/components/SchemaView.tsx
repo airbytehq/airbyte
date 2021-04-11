@@ -105,7 +105,7 @@ const SchemaView: React.FC<SchemaViewProps> = ({
         <LightCell>
           <FormattedMessage id="form.cursorField" />
         </LightCell>
-        <LightCell>
+        <LightCell flex={1.5}>
           <FormattedMessage id="form.syncSettings" />
         </LightCell>
       </SchemaHeader>

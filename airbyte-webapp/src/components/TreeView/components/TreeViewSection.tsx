@@ -225,7 +225,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
                     />
                   )}
               </Cell>
-              <Cell />
+              <Cell flex={1.5} />
             </TreeRowWrapper>
           )}
         </Rows>
