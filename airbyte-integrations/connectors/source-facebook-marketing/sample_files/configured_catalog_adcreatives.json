@@ -3,6 +3,7 @@
     {
       "stream": {
         "name": "adcreatives",
+        "destination_sync_mode": "append",
         "json_schema": {
           "properties": {
             "body": {
