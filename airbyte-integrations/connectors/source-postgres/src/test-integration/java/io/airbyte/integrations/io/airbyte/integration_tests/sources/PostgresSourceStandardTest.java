@@ -65,7 +65,6 @@ public class PostgresSourceStandardTest extends StandardSourceTest {
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        .put("ssl", false)
         .build());
 
     final Database database = Databases.createDatabase(

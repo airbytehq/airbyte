@@ -61,7 +61,6 @@ class PostgresJdbcStandardSourceTest extends JdbcSourceStandardTest {
         .put("database", dbName)
         .put("username", PSQL_DB.getUsername())
         .put("password", PSQL_DB.getPassword())
-        .put("ssl", "true")
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
