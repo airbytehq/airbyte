@@ -42,8 +42,7 @@
         "airbyte_secret": true,
         "order": 4
       },
-      {
-        "ssl": {
+      "ssl": {
           "title": "SSL Connection",
           "description": "Encrypt data using SSL.",
           "type": "boolean",
