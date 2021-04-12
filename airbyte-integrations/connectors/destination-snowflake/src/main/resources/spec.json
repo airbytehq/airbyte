@@ -21,37 +21,44 @@
       "host": {
         "description": "Host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",
         "examples": ["accountname.us-east-2.aws.snowflakecomputing.com"],
-        "type": "string"
+        "type": "string",
+        "title": "Host"
       },
       "role": {
         "description": "The role you created for Airbyte to access Snowflake.",
         "examples": ["AIRBYTE_ROLE"],
-        "type": "string"
+        "type": "string",
+        "title": "Role"
       },
       "warehouse": {
         "description": "The warehouse you created for Airbyte to sync data into.",
         "examples": ["AIRBYTE_WAREHOUSE"],
-        "type": "string"
+        "type": "string",
+        "title": "Warehouse"
       },
       "database": {
         "description": "The database you created for Airbyte to sync data into.",
         "examples": ["AIRBYTE_DATABASE"],
-        "type": "string"
+        "type": "string",
+        "title": "Database"
       },
       "schema": {
-        "description": "The Snowflake schema you created for Airbyte to sync data into.",
+        "description": "The default Snowflake schema tables are written to if the source does not specify a namespace.",
         "examples": ["AIRBYTE_SCHEMA"],
-        "type": "string"
+        "type": "string",
+        "title": "Default Schema"
       },
       "username": {
         "description": "The username you created to allow Airbyte to access the database.",
         "examples": ["AIRBYTE_USER"],
-        "type": "string"
+        "type": "string",
+        "title": "Username"
       },
       "password": {
         "description": "Password associated with the username.",
         "type": "string",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "title": "Password"
       },
       "basic_normalization": {
         "type": "boolean",

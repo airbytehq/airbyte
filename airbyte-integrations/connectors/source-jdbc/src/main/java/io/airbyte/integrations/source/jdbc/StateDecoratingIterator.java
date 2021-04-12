@@ -33,7 +33,7 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StateDecoratingIterator.class);
 
@@ -58,6 +58,7 @@ class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implement
     this.cursorField = cursorField;
     this.cursorType = cursorType;
     this.maxCursor = initialCursor;
+    stateManager.setIsCdc(false);
   }
 
   @Override

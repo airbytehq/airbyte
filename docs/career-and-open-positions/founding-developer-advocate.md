@@ -1,16 +1,16 @@
-# Founding Developer Advocate
+# Senior Developer Advocate
 
 ## **About Airbyte**
 
 [Airbyte](http://airbyte.io) is the upcoming open-source standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs.
 
-Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our [company handbook](../company-handbook/), [culture & values](../company-handbook/culture-and-values.md), [strategy](../company-handbook/strategy.md) and [roadmap](../roadmap.md) are open to all.
+Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our **[company handbook](https://handbook.airbyte.io)**, **[culture & values](https://handbook.airbyte.io/company/culture-and-values)**, **[strategy](https://handbook.airbyte.io/strategy/strategy)** and **[roadmap](../roadmap.md)** are open to all.
 
 We're backed by some of the world's [top investors](./#our-investors) and believe in product-led growth, where we build something awesome and let our product bring the users, rather than an outbound sales engine with cold calls.
 
 ## **Description**
 
-As our Founding Developer Advocate, you will own three priorities:
+As a Senior Developer Advocate, you will own three priorities:
 
 1. **Ensure Airbyte provides a world class contributor experience**. This can be anything from building tutorials and documentation or advocating for users to the product & engineering team to brainstorming and executing on new ideas. 
 2. **Foster & develop the Airbyte community of users and contributors**. We want our community to have such an amazing experience with Airbyte that they become our evangelists outside the company. 
@@ -33,7 +33,7 @@ This is a function-founding role: you'll have a large ownership over building ou
 * Meaningful social presence with engaged followers
 * Self-directed and work with minimal supervision.
 * Outstanding written and verbal communications skills with the ability to explain and translate complex technology concepts into simple and intuitive communications.
-* You share [our values](../company-handbook/culture-and-values.md)
+* You share [our values](https://handbook.airbyte.io/company/culture-and-values)
 
 ## **Location**
 
@@ -42,9 +42,9 @@ North America.
 ## **We provide**
 
 * **Flexible work environment as fully remote** - we don’t look at when you log in, log out or how much time you work. We trust you, it’s the only way remote can actually work. 
-* **Unlimited vacation policy** with mandatory minimum time off - so you can fit work around your life.
-* **Coworking space stipend** - we provide everyone with $200/month to use on a coworking space of their choice, if any.
-* **Very generous parental leave** (for both parents, after one year spent with the company) - so those raising families can do so while still working for us.
+* **[Unlimited vacation policy](https://handbook.airbyte.io/people/time-off)** with mandatory minimum time off - so you can fit work around your life.
+* **[Co-working space stipend](https://handbook.airbyte.io/people/expense-policy#work-space)** - we provide everyone with $200/month to use on a coworking space of their choice, if any.
+* **[Parental leave](https://handbook.airbyte.io/people/time-off#parental-leave)** \(for both parents, after one year spent with the company\) - so those raising families can do so while still working for us.
 * **Open book policy** - we reimburse books that employees want to purchase for their professional and career development. 
 * **Continuous learning / training policy** - we sponsor the conferences and training programs you feel would add to your development in the company. 
 * **Health insurance** for those from countries that do not provide this freely. Through Savvy in the US, which means you can choose the insurance you want and will receive a stipend from the company. 

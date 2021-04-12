@@ -35,7 +35,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -187,10 +186,11 @@ public class RedshiftCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
-  private void createTmpTableAndCopyS3FileInto() throws SQLException {
-    LOGGER.info("Preparing tmp table in destination for stream {}. tmp table name: {}.", streamName, tmpTableName);
+  private void createTmpTableAndCopyS3FileInto() throws Exception {
+    REDSHIFT_SQL_OPS.createSchemaIfNotExists(redshiftDb, schemaName);
+    LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
     REDSHIFT_SQL_OPS.createTableIfNotExists(redshiftDb, schemaName, tmpTableName);
-    LOGGER.info("Starting copy to tmp table {} in destination for stream {} .", tmpTableName, streamName);
+    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
     REDSHIFT_SQL_OPS.copyS3CsvFileIntoTable(redshiftDb, getFullS3Path(s3BucketName, stagingFolder, streamName), schemaName, tmpTableName, s3KeyId,
         s3Key,
         s3Region);
@@ -203,11 +203,11 @@ public class RedshiftCopier {
     REDSHIFT_SQL_OPS.createTableIfNotExists(redshiftDb, schemaName, destTableName);
     LOGGER.info("Tmp table {} in destination prepared.", tmpTableName);
 
-    LOGGER.info("Preparing to merge tmp table {} to dest table {} in destination.", tmpTableName, destTableName);
+    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
     var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(REDSHIFT_SQL_OPS.truncateTableQuery(schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table {} truncated.", destTableName);
+      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
     queries.append(REDSHIFT_SQL_OPS.copyTableQuery(schemaName, tmpTableName, destTableName));
     return queries.toString();

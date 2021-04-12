@@ -1,4 +1,4 @@
-# On Kubernetes
+# On Kubernetes \(Alpha\)
 
 > :warning: **Alpha Preview**: This is an early preview of Kubernetes that is pinned to Airbyte version 0.16.1. We do not recommend this preview for production use.
 

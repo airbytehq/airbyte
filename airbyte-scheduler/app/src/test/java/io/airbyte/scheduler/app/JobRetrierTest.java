@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.config.JobConfig;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.time.Duration;
@@ -44,6 +45,7 @@ class JobRetrierTest {
 
   private static final Instant NOW = Instant.now();
 
+  private JobNotifier jobNotifier;
   private JobPersistence persistence;
   private JobRetrier jobRetrier;
   private Job incompleteSyncJob;
@@ -51,8 +53,10 @@ class JobRetrierTest {
 
   @BeforeEach
   void setup() throws IOException {
+    jobNotifier = mock(JobNotifier.class);
     persistence = mock(JobPersistence.class);
-    jobRetrier = new JobRetrier(persistence, () -> NOW);
+
+    jobRetrier = new JobRetrier(persistence, () -> NOW, jobNotifier);
     incompleteSyncJob = mock(Job.class);
     when(incompleteSyncJob.getId()).thenReturn(12L);
     when(incompleteSyncJob.getStatus()).thenReturn(JobStatus.INCOMPLETE);

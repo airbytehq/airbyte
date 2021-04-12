@@ -25,14 +25,16 @@
 package io.airbyte.integrations.source.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -65,10 +67,12 @@ import org.testcontainers.utility.MountableFile;
 
 class PostgresSourceTest {
 
-  private static final String STREAM_NAME = "public.id_and_name";
+  private static final String SCHEMA_NAME = "public";
+  private static final String STREAM_NAME = SCHEMA_NAME + ".id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
+          SCHEMA_NAME,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))
@@ -76,12 +80,14 @@ class PostgresSourceTest {
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
+          SCHEMA_NAME,
           Field.of("id", JsonSchemaPrimitive.NUMBER),
           Field.of("name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
           "public.names",
+          SCHEMA_NAME,
           Field.of("first_name", JsonSchemaPrimitive.STRING),
           Field.of("last_name", JsonSchemaPrimitive.STRING),
           Field.of("power", JsonSchemaPrimitive.NUMBER))
@@ -112,8 +118,8 @@ class PostgresSourceTest {
     dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     final String initScriptName = "init_" + dbName.concat(".sql");
-    MoreResources.writeResource(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(initScriptName), PSQL_DB);
+    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
     final Database database = getDatabaseFromConfig(config);
@@ -215,6 +221,18 @@ class PostgresSourceTest {
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
+  }
+
+  @Test
+  void testIsCdc() {
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+
+    assertFalse(PostgresSource.isCdc(config));
+
+    ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
+        "replication_slot", "slot",
+        "publication", "ab_pub")));
+    assertTrue(PostgresSource.isCdc(config));
   }
 
   private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {

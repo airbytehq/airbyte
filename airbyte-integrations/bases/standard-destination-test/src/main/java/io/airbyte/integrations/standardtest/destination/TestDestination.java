@@ -33,7 +33,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -44,6 +43,7 @@ import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -64,21 +64,20 @@ import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,10 +126,62 @@ public abstract class TestDestination {
    *
    * @param testEnv - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
+   * @param namespace - the destination namespace records are located in. Null if not applicable.
+   *        Usually a JDBC schema.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName) throws Exception;
+  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception;
+
+  /**
+   * Returns a destination's default schema. The default implementation assumes this corresponds to
+   * the configuration's 'schema' field, as this is how most of our destinations implement this.
+   * Destinations are free to appropriately override this. The return value is used to assert
+   * correctness.
+   *
+   * If not applicable, Destinations are free to ignore this.
+   *
+   * @param config - integration-specific configuration returned by {@link #getConfig()}.
+   * @return the default schema, if applicatble.
+   */
+  protected String getDefaultSchema(JsonNode config) throws Exception {
+    if (config.get("schema") == null) {
+      return null;
+    }
+    return config.get("schema").asText();
+  }
+
+  /**
+   * Detects if a destination implements append mode from the spec.json that should include
+   * 'supportsIncremental' = true
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsAppend() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportsIncremental() != null) {
+      return spec.getSupportsIncremental();
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Detects if a destination implements append dedup mode from the spec.json that should include
+   * 'supportedDestinationSyncMode'
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsAppendDedup() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportedDestinationSyncModes() != null) {
+      return spec.getSupportedDestinationSyncModes().contains(DestinationSyncMode.APPEND_DEDUP);
+    } else {
+      return false;
+    }
+  }
 
   /**
    * Override to return true to if the destination implements basic normalization and it should be
@@ -143,33 +194,19 @@ public abstract class TestDestination {
   }
 
   /**
-   * Detects if a destination implements incremental mode from the spec.json that should include
-   * 'supportsIncremental' = true
-   *
-   * @return - a boolean.
-   */
-  protected boolean implementsIncremental() throws WorkerException {
-    final ConnectorSpecification spec = runSpec();
-    assertNotNull(spec);
-    if (spec.getSupportsIncremental() != null) {
-      return spec.getSupportsIncremental();
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * Same idea as {@link #retrieveRecords(TestDestinationEnv, String)}. Except this method should pull
-   * records from the table that contains the normalized records and convert them back into the data
-   * as it would appear in an {@link AirbyteRecordMessage}. Only need to override this method if
-   * {@link #implementsBasicNormalization} returns true.
+   * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String)}. Except this method
+   * should pull records from the table that contains the normalized records and convert them back
+   * into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override this
+   * method if {@link #implementsBasicNormalization} returns true.
    *
    * @param testEnv - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
+   * @param namespace - the destination namespace records are located in. Null if not applicable.
+   *        Usually a JDBC schema.
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName) throws Exception {
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
     throw new IllegalStateException("Not implemented");
   }
 
@@ -245,20 +282,6 @@ public abstract class TestDestination {
     assertEquals(Status.FAILED, runCheck(getFailCheckConfig()).getStatus());
   }
 
-  private static class DataArgumentsProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-      return Stream.of(
-          Arguments.of("exchange_rate_messages.txt", "exchange_rate_catalog.json"),
-          Arguments.of("edge_case_messages.txt", "edge_case_catalog.json")
-      // todo - need to use the new protocol to capture this.
-      // Arguments.of("stripe_messages.txt", "stripe_schema.json")
-      );
-    }
-
-  }
-
   /**
    * Verify that the integration successfully writes records. Tests a wide variety of messages and
    * schemas (aspirationally, anyway).
@@ -270,36 +293,25 @@ public abstract class TestDestination {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    runSync(getConfig(), messages, configuredCatalog);
 
-    assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSync(config, messages, configuredCatalog);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
   /**
-   * Verify that the integration successfully writes records incrementally. The second run should
-   * append records to the datastore instead of overwriting the previous run.
+   * Verify that the integration overwrites the first sync with the second sync.
    */
   @Test
-  public void testIncrementalSync() throws Exception {
-    if (!implementsIncremental()) {
-      LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
-      return;
-    }
-
-    testIncrementalSync("exchange_rate_messages.txt", "exchange_rate_catalog.json");
-  }
-
-  public void testIncrementalSync(String messagesFilename, String catalogFilename) throws Exception {
+  public void testSecondSync() throws Exception {
     final AirbyteCatalog catalog =
-        Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    configuredCatalog.getStreams().forEach(s -> {
-      s.withSyncMode(SyncMode.INCREMENTAL);
-      s.withDestinationSyncMode(DestinationSyncMode.APPEND);
-    });
-    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(messagesFilename).lines()
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    runSync(getConfig(), firstSyncMessages, configuredCatalog);
+    final JsonNode config = getConfig();
+    runSync(config, firstSyncMessages, configuredCatalog);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
         .withRecord(new AirbyteRecordMessage()
@@ -309,11 +321,52 @@ public abstract class TestDestination {
                 .put("HKD", 10)
                 .put("NZD", 700)
                 .build()))));
-    runSync(getConfig(), secondSyncMessages, configuredCatalog);
+
+    runSync(config, secondSyncMessages, configuredCatalog);
+    final String defaultSchema = getDefaultSchema(config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
+  }
+
+  /**
+   * Verify that the integration successfully writes records incrementally. The second run should
+   * append records to the datastore instead of overwriting the previous run.
+   */
+  @Test
+  public void testIncrementalSync() throws Exception {
+    if (!implementsAppend()) {
+      LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
+      return;
+    }
+
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    configuredCatalog.getStreams().forEach(s -> {
+      s.withSyncMode(SyncMode.INCREMENTAL);
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND);
+    });
+
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    final JsonNode config = getConfig();
+    runSync(config, firstSyncMessages, configuredCatalog);
+
+    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(catalog.getStreams().get(0).getName())
+            .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("date", "2020-03-31T00:00:00Z")
+                .put("HKD", 10)
+                .put("NZD", 700)
+                .build()))));
+    runSync(config, secondSyncMessages, configuredCatalog);
+
     final List<AirbyteMessage> expectedMessagesAfterSecondSync = new ArrayList<>();
     expectedMessagesAfterSecondSync.addAll(firstSyncMessages);
     expectedMessagesAfterSecondSync.addAll(secondSyncMessages);
-    assertSameMessages(expectedMessagesAfterSecondSync, retrieveRecordsForCatalog(catalog));
+
+    final String defaultSchema = getDefaultSchema(config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, expectedMessagesAfterSecondSync, defaultSchema);
   }
 
   /**
@@ -331,36 +384,116 @@ public abstract class TestDestination {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    runSync(getConfigWithBasicNormalization(), messages, configuredCatalog);
 
-    LOGGER.info("Comparing retrieveRecordsForCatalog for {} and {}", messagesFilename, catalogFilename);
-    assertSameMessages(messages, retrieveRecordsForCatalog(catalog));
-    LOGGER.info("Comparing retrieveNormalizedRecordsForCatalog for {} and {}", messagesFilename, catalogFilename);
-    assertSameMessages(messages, retrieveNormalizedRecordsForCatalog(catalog), true);
+    final JsonNode config = getConfigWithBasicNormalization();
+    runSync(config, messages, configuredCatalog);
+
+    String defaultSchema = getDefaultSchema(config);
+    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    assertSameMessages(messages, actualMessages, true);
   }
 
   /**
-   * Verify that the integration overwrites the first sync with the second sync.
+   * Verify that the integration successfully writes records successfully both raw and normalized and
+   * run dedup transformations.
+   *
+   * Although this test assumes append-dedup requires normalization, and almost all our Destinations
+   * do so, this is not necessarily true. This explains {@link #implementsAppendDedup()}.
    */
   @Test
-  public void testSecondSync() throws Exception {
-    final AirbyteCatalog catalog =
-        Jsons.deserialize(MoreResources.readResource("exchange_rate_catalog.json"), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource("exchange_rate_messages.txt").lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    runSync(getConfig(), firstSyncMessages, configuredCatalog);
+  public void testIncrementalDedupeSync() throws Exception {
+    if (!implementsAppendDedup()) {
+      LOGGER.info("Destination's spec.json does not include 'append_dedup' in its '\"supportedDestinationSyncModes\"'");
+      return;
+    }
 
-    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
-        .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getName())
-            .withData(Jsons.jsonNode(ImmutableMap.builder()
-                .put("date", "2020-03-31T00:00:00Z")
-                .put("HKD", 10)
-                .put("NZD", 700)
-                .build()))));
-    runSync(getConfig(), secondSyncMessages, configuredCatalog);
-    assertSameMessages(secondSyncMessages, retrieveRecordsForCatalog(catalog));
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    configuredCatalog.getStreams().forEach(s -> {
+      s.withSyncMode(SyncMode.INCREMENTAL);
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
+      s.withCursorField(Collections.emptyList());
+      // use composite primary key of various types (string, float)
+      s.withPrimaryKey(List.of(List.of("currency"), List.of("date"), List.of("NZD")));
+    });
+
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    final JsonNode config = getConfigWithBasicNormalization();
+    runSync(config, firstSyncMessages, configuredCatalog);
+
+    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(catalog.getStreams().get(0).getName())
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("currency", "EUR")
+                    .put("date", "2020-09-01T00:00:00Z")
+                    .put("HKD", 10.5)
+                    .put("NZD", 1.14)
+                    .build()))),
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(catalog.getStreams().get(0).getName())
+                .withEmittedAt(Instant.now().toEpochMilli() + 100L)
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("currency", "USD")
+                    .put("date", "2020-09-01T00:00:00Z")
+                    .put("HKD", 5.4)
+                    .put("NZD", 1.14)
+                    .build()))));
+    runSync(config, secondSyncMessages, configuredCatalog);
+
+    final List<AirbyteMessage> expectedMessagesAfterSecondSync = new ArrayList<>();
+    expectedMessagesAfterSecondSync.addAll(firstSyncMessages);
+    expectedMessagesAfterSecondSync.addAll(secondSyncMessages);
+
+    final Map<String, AirbyteMessage> latestMessagesOnly = expectedMessagesAfterSecondSync
+        .stream()
+        .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
+        .collect(Collectors.toMap(
+            message -> message.getRecord().getData().get("currency").asText() +
+                message.getRecord().getData().get("date").asText() +
+                message.getRecord().getData().get("NZD").asText(),
+            message -> message,
+            // keep only latest emitted record message per primary key/cursor
+            (a, b) -> a.getRecord().getEmittedAt() > b.getRecord().getEmittedAt() ? a : b));
+    // Filter expectedMessagesAfterSecondSync and keep latest messages only (keep same message order)
+    final List<AirbyteMessage> expectedMessages = expectedMessagesAfterSecondSync
+        .stream()
+        .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
+        .filter(message -> {
+          final String key = message.getRecord().getData().get("currency").asText() +
+              message.getRecord().getData().get("date").asText() +
+              message.getRecord().getData().get("NZD").asText();
+          return message.getRecord().getEmittedAt().equals(latestMessagesOnly.get(key).getRecord().getEmittedAt());
+        }).collect(Collectors.toList());
+
+    final String defaultSchema = getDefaultSchema(config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, expectedMessagesAfterSecondSync, defaultSchema);
+    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    assertSameMessages(expectedMessages, actualMessages, true);
+  }
+
+  @Test
+  void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final String namespace = "sourcenamespace";
+    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSync(config, messages, configuredCatalog);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
@@ -403,34 +536,20 @@ public abstract class TestDestination {
     runner.close();
   }
 
-  private List<AirbyteRecordMessage> retrieveNormalizedRecordsForCatalog(AirbyteCatalog catalog) throws Exception {
-    return retrieveRecordsForCatalog(streamName -> retrieveNormalizedRecords(testEnv, streamName), catalog);
-  }
-
-  private List<AirbyteRecordMessage> retrieveRecordsForCatalog(AirbyteCatalog catalog) throws Exception {
-    return retrieveRecordsForCatalog(streamName -> retrieveRecords(testEnv, streamName), catalog);
-  }
-
-  private List<AirbyteRecordMessage> retrieveRecordsForCatalog(CheckedFunction<String, List<JsonNode>, Exception> retriever, AirbyteCatalog catalog)
-      throws Exception {
+  private void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema) throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
-    final List<String> streamNames = catalog.getStreams()
-        .stream()
-        .map(AirbyteStream::getName)
-        .collect(Collectors.toList());
 
-    for (final String streamName : streamNames) {
-      actualMessages.addAll(retriever.apply(streamName)
+    for (final AirbyteStream stream : catalog.getStreams()) {
+      final String streamName = stream.getName();
+      final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
+      List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema)
           .stream()
           .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
-          .collect(Collectors.toList()));
+          .collect(Collectors.toList());
+      actualMessages.addAll(msgList);
     }
 
-    return actualMessages;
-  }
-
-  private void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual) {
-    assertSameMessages(expected, actual, false);
+    assertSameMessages(messages, actualMessages, false);
   }
 
   // ignores emitted at.
@@ -481,6 +600,21 @@ public abstract class TestDestination {
         assertEquals(expectedValue, actualValue);
       }
     }
+  }
+
+  private List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {
+    final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
+
+    for (final AirbyteStream stream : catalog.getStreams()) {
+      final String streamName = stream.getName();
+
+      List<AirbyteRecordMessage> msgList = retrieveNormalizedRecords(testEnv, streamName, defaultSchema)
+          .stream()
+          .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
+          .collect(Collectors.toList());
+      actualMessages.addAll(msgList);
+    }
+    return actualMessages;
   }
 
   /**

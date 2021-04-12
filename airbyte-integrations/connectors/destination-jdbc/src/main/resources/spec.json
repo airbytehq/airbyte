@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/postgres",
   "supportsIncremental": true,
-  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "JDBC Destination Spec",
@@ -23,10 +23,11 @@
         "type": "string"
       },
       "schema": {
-        "description": "Unless specifically configured, the usual value for this field is \"public\".",
+        "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
         "type": "string",
         "examples": ["public"],
-        "default": "public"
+        "default": "public",
+        "title": "Default Schema"
       }
     }
   }
