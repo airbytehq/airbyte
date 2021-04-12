@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.JdbcStateManager.CursorInfo;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
