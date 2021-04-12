@@ -499,21 +499,34 @@ public abstract class TestDestination {
 
   @Test
   void testSyncSameStreamNameDifferentNamespace() throws Exception {
+    final String namespace1 = "sourcenamespace";
+    final String namespace2 = "sourcenamespace2";
+
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     AirbyteStream exchangeRateStream = catalog.getStreams().get(0); // there is only one stream in the exchange rate config.
-    exchangeRateStream.setNamespace("sourcenamespace");
+    exchangeRateStream.setNamespace(namespace1);
 
     ObjectMapper mapper = new ObjectMapper();
     AirbyteStream copiedStream = mapper.readValue(mapper.writeValueAsString(exchangeRateStream), AirbyteStream.class);
-    copiedStream.setNamespace("sourcenamespace2");
+    copiedStream.setNamespace(namespace2);
     catalog.getStreams().add(copiedStream);
 
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    System.out.println(configuredCatalog);
 
-    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    final JsonNode data = mapper.createObjectNode().put("test", "1");
+
+    final String streamName = "exchange_rate";
+    final AirbyteRecordMessage baseRecordMsg =
+        new AirbyteRecordMessage().withStream(streamName).withData(data).withEmittedAt(System.currentTimeMillis());
+
+    final AirbyteRecordMessage schema1RecordMsg = baseRecordMsg.withNamespace(namespace1);
+    final AirbyteMessage schema1Msg = new AirbyteMessage().withRecord(schema1RecordMsg);
+
+    final AirbyteRecordMessage schema2RecordMsg = baseRecordMsg.withNamespace(namespace2);
+    final AirbyteMessage schema2Msg = new AirbyteMessage().withRecord(schema2RecordMsg);
+
+    final List<AirbyteMessage> messages = List.of(schema1Msg, schema2Msg);
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);

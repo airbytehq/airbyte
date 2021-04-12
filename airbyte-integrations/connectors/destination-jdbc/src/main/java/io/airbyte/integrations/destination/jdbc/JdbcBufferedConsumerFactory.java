@@ -136,7 +136,10 @@ public class JdbcBufferedConsumerFactory {
                                                    List<WriteConfig> writeConfigs,
                                                    ConfiguredAirbyteCatalog catalog) {
     final Map<String, WriteConfig> streamNameToWriteConfig = writeConfigs.stream()
-        .collect(Collectors.toUnmodifiableMap(config -> config.getOutputSchemaName() + "." + config.getOutputTableName(), Function.identity()));
+        .collect(Collectors.toUnmodifiableMap(config -> {
+          var key = config.getOutputSchemaName() + "." + config.getOutputTableName();
+          return key;
+        }, Function.identity()));
 
     return (fullyQualifiedTableName, recordStream) -> {
       if (!streamNameToWriteConfig.containsKey(fullyQualifiedTableName)) {

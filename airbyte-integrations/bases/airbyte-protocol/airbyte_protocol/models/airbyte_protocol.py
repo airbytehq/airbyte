@@ -46,12 +46,13 @@ class AirbyteRecordMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    stream: str = Field(..., description="the name of the stream for this record")
+    stream: str = Field(..., description="this name of this record's stream")
     data: Dict[str, Any] = Field(..., description="the record data")
     emitted_at: int = Field(
         ...,
         description="when the data was emitted from the source. epoch in millisecond.",
     )
+    namespace: Optional[str] = Field(None, description="this namespace of this record's stream")
 
 
 class AirbyteStateMessage(BaseModel):
