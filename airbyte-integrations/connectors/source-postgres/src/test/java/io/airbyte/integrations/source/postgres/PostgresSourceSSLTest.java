@@ -106,16 +106,10 @@ class PostgresSourceSSLTest {
 
   @BeforeAll
   static void init() throws IOException, URISyntaxException {
-    try {
-      Files.move(Paths.get(ClassLoader.getSystemResource("server.key").toURI()), Paths.get("/tmp/airbyte_crt/server.key"));
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withFileSystemBind("/tmp/airbyte_crt_1/server.crt", "/var/lib/postgresql/server.crt",
+        .withFileSystemBind("/tmp/airbyte_crt/server.crt", "/var/lib/postgresql/server.crt",
             BindMode.READ_WRITE)
-        .withFileSystemBind("/tmp/airbyte_crt_1/server.key", "/var/lib/postgresql/server.key",
+        .withFileSystemBind("/tmp/airbyte_crt/server.key", "/var/lib/postgresql/server.key",
             BindMode.READ_WRITE)
 //        .withClasspathResourceMapping("server.crt", "/var/lib/postgresql/server.crt",
 //            BindMode.READ_WRITE)
