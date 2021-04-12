@@ -46,8 +46,8 @@
           "title": "SSL Connection",
           "description": "Encrypt data using SSL.",
           "type": "boolean",
+          "default": false,
           "order": 5
-          "default": false
         }
       },
       "replication_method": {
