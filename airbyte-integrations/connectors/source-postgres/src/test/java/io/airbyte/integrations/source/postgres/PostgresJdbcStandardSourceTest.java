@@ -48,11 +48,6 @@ class PostgresJdbcStandardSourceTest extends JdbcSourceStandardTest {
   @BeforeAll
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
-//        .withFileSystemBind("/tmp/airbyte_crt/server.crt", "/var/lib/postgresql/server.crt",
-//            BindMode.READ_WRITE)
-//        .withFileSystemBind("/tmp/airbyte_crt/server.key", "/var/lib/postgresql/server.key", BindMode.READ_WRITE)
-//        .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
-
     PSQL_DB.start();
   }
 
@@ -66,7 +61,7 @@ class PostgresJdbcStandardSourceTest extends JdbcSourceStandardTest {
         .put("database", dbName)
         .put("username", PSQL_DB.getUsername())
         .put("password", PSQL_DB.getPassword())
-        .put("ssl", false)
+        .put("ssl", "true")
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
