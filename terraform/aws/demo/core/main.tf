@@ -16,6 +16,11 @@ data "aws_ami" "amazon-linux-2" {
     name   = "name"
     values = ["amzn2-ami-hvm-2*"]
   }
+
+  filter {
+    name   = "image-id"
+    values = [var.ami_id]
+  }
 }
 
 # Ensure we can ssh to the airbyte instance

@@ -31,6 +31,9 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.Notification;
+import io.airbyte.config.Notification.NotificationType;
+import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -74,7 +77,12 @@ public class ConfigFileArchiverTest {
         .withEmail("test@airbyte.io")
         .withName("test workspace")
         .withSlug("default")
-        .withInitialSetupComplete(false);
+        .withInitialSetupComplete(false)
+        .withTombstone(false)
+        .withNotifications(List.of(new Notification()
+            .withNotificationType(NotificationType.SLACK)
+            .withSlackConfiguration(new SlackNotificationConfiguration()
+                .withWebhook("http://airbyte.notifications"))));
   }
 
   @Test
@@ -90,7 +98,7 @@ public class ConfigFileArchiverTest {
     final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
 
     // Read operations
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.listStandardWorkspaces(true)).thenReturn(List.of(workspace));
     when(configRepository.listStandardSources()).thenReturn(List.of(standardSource));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(standardDestination));
     when(configRepository.listSourceConnection()).thenReturn(List.of(sourceConnection1, sourceConnection2));
@@ -126,7 +134,7 @@ public class ConfigFileArchiverTest {
     final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
 
     // Read operations
-    when(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID)).thenReturn(workspace);
+    when(configRepository.listStandardWorkspaces(true)).thenReturn(List.of(workspace));
     when(configRepository.listStandardSources()).thenReturn(List.of(standardSource));
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(List.of(standardDestination));
     when(configRepository.listSourceConnection()).thenReturn(List.of(sourceConnection1, sourceConnection2));

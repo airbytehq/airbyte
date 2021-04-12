@@ -27,14 +27,10 @@ package io.airbyte.config.init;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.yaml.Yamls;
+import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -50,8 +46,7 @@ import org.apache.commons.cli.ParseException;
  * as the id-name. It then writes each object to its own file in the specified output directory.
  * Each file's name is the generated uuid. The goal is that a user should be able to add objects to
  * the database seed without having to generate uuids themselves. The output files should be
- * compatible with our file system database (config persistence). It also checks that each name is
- * unique in the set it is outputting to avoid duplicates clobbering each other.
+ * compatible with our file system database (config persistence).
  */
 public class SeedRepository {
 
@@ -59,6 +54,7 @@ public class SeedRepository {
   private static final Option ID_NAME_OPTION = new Option("id", "id-name", true, "field name of the id");
   private static final Option INPUT_PATH_OPTION = new Option("i", "input-path", true, "path to input file");
   private static final Option OUTPUT_PATH_OPTION = new Option("o", "output-path", true, "path to where files will be output");
+
   static {
     ID_NAME_OPTION.setRequired(true);
     INPUT_PATH_OPTION.setRequired(true);
@@ -68,61 +64,44 @@ public class SeedRepository {
     OPTIONS.addOption(OUTPUT_PATH_OPTION);
   }
 
-  public void run(String idName, Path input, Path output) throws IOException {
-    final JsonNode seedList = Yamls.deserialize(IOs.readFile(input));;
-    final Iterator<JsonNode> elements = seedList.elements();
-    final Set<String> names = new HashSet<>();
-    final Set<UUID> ids = new HashSet<>();
-
-    // clean output directory.
-    for (Path file : Files.list(output).collect(Collectors.toList())) {
-      Files.delete(file);
-    }
-
-    // write to output directory.
-    while (elements.hasNext()) {
-      final JsonNode element = Jsons.clone(elements.next());
-      final String name = element.get("name").asText();
-      final UUID id = UUID.fromString(element.get(idName).asText());
-
-      // validate the name is unique.
-      if (names.contains(name)) {
-        throw new IllegalArgumentException("Multiple records have the name: " + name);
-      }
-      names.add(name);
-
-      // validate the id is unique.
-      if (ids.contains(id)) {
-        throw new IllegalArgumentException("Multiple records have the id: " + id);
-      }
-      ids.add(id);
-
-      IOs.writeFile(
-          output,
-          element.get(idName).asText() + ".json",
-          Jsons.toPrettyString(element));
-    }
-  }
-
-  private static CommandLine parse(String[] args) {
+  private static CommandLine parse(final String[] args) {
     final CommandLineParser parser = new DefaultParser();
     final HelpFormatter helpFormatter = new HelpFormatter();
 
     try {
       return parser.parse(OPTIONS, args);
-    } catch (ParseException e) {
+    } catch (final ParseException e) {
       helpFormatter.printHelp("", OPTIONS);
       throw new IllegalArgumentException(e);
     }
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException {
     final CommandLine parsed = parse(args);
     final String idName = parsed.getOptionValue(ID_NAME_OPTION.getOpt());
     final Path inputPath = Path.of(parsed.getOptionValue(INPUT_PATH_OPTION.getOpt()));
     final Path outputPath = Path.of(parsed.getOptionValue(OUTPUT_PATH_OPTION.getOpt()));
 
     new SeedRepository().run(idName, inputPath, outputPath);
+  }
+
+  public void run(final String idName, final Path input, final Path output) throws IOException {
+    final var jsonNode = YamlListToStandardDefinitions.verifyAndConvertToJsonNode(idName, IOs.readFile(input));
+    final var elementsIter = jsonNode.elements();
+
+    // clean output directory.
+    for (final Path file : Files.list(output).collect(Collectors.toList())) {
+      Files.delete(file);
+    }
+
+    // write to output directory.
+    while (elementsIter.hasNext()) {
+      final JsonNode element = Jsons.clone(elementsIter.next());
+      IOs.writeFile(
+          output,
+          element.get(idName).asText() + ".json",
+          Jsons.toPrettyString(element));
+    }
   }
 
 }

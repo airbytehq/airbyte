@@ -25,6 +25,6 @@
 package io.airbyte.workers;
 
 import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.StandardGetSpecOutput;
+import io.airbyte.protocol.models.ConnectorSpecification;
 
-public interface GetSpecWorker extends Worker<JobGetSpecConfig, StandardGetSpecOutput> {}
+public interface GetSpecWorker extends Worker<JobGetSpecConfig, ConnectorSpecification> {}

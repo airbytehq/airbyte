@@ -68,15 +68,15 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public void start(StandardTapConfig input, Path jobRoot) throws Exception {
     Preconditions.checkState(tapProcess == null);
 
-    IOs.writeFile(jobRoot, WorkerConstants.TAP_CONFIG_JSON_FILENAME, Jsons.serialize(input.getSourceConnectionConfiguration()));
-    IOs.writeFile(jobRoot, WorkerConstants.CATALOG_JSON_FILENAME, Jsons.serialize(input.getCatalog()));
+    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(input.getSourceConnectionConfiguration()));
+    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, Jsons.serialize(input.getCatalog()));
     if (input.getState() != null) {
       IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState().getState()));
     }
 
     tapProcess = integrationLauncher.read(jobRoot,
-        WorkerConstants.TAP_CONFIG_JSON_FILENAME,
-        WorkerConstants.CATALOG_JSON_FILENAME,
+        WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+        WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
         input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME).start();
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
@@ -110,6 +110,19 @@ public class DefaultAirbyteSource implements AirbyteSource {
     WorkerUtils.gentleClose(tapProcess, 10, TimeUnit.HOURS);
     if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
       throw new WorkerException("Tap process wasn't successful");
+    }
+  }
+
+  @Override
+  public void cancel() throws Exception {
+    LOGGER.info("Attempting to cancel source process...");
+
+    if (tapProcess == null) {
+      LOGGER.info("Source process no longer exists, cancellation is a no-op.");
+    } else {
+      LOGGER.info("Source process exists, cancelling...");
+      WorkerUtils.cancelProcess(tapProcess);
+      LOGGER.info("Cancelled source process!");
     }
   }
 

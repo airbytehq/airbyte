@@ -46,7 +46,7 @@ public class MigrationRunner {
 
     MigrateConfig migrateConfig = parse(args);
 
-    if (migrateConfig.getInputPath().toString().endsWith("gz") || migrateConfig.getInputPath().toString().endsWith(".tar.gz")) {
+    if (migrateConfig.getInputPath().toString().endsWith(".gz")) {
       LOGGER.info("Unpacking tarball");
       final Path uncompressedInputPath = Files.createDirectories(workspaceRoot.resolve("uncompressed"));
       Archives.extractArchive(migrateConfig.getInputPath(), uncompressedInputPath);
@@ -89,8 +89,8 @@ public class MigrationRunner {
         .help("Full path of the output tarball. By convention should end with .tar.gz");
 
     parser.addArgument("--target-version")
-        .required(true)
-        .help("Version to upgrade the data to");
+        .required(false)
+        .help("Version to upgrade the data to (default to latest migration available if left empty)");
 
     try {
       final Namespace parsed = parser.parseArgs(args);

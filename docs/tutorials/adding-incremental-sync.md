@@ -1,12 +1,15 @@
-# How to add Incremental Replication to a Source
+# Adding Incremental to a Source
 
 ## Overview
-This tutorial will assume that you already have a working source. If you do not, feel free to refer to the [Building a Toy Connector](./toy-connector.md) tutorial. This tutorial will build directly off the example from that article. We will also assume that you have a basic understanding of how Airbyte's Incremental-Append replication strategy works. We have a brief explanation of it [here](../architecture/incremental.md).
+
+This tutorial will assume that you already have a working source. If you do not, feel free to refer to the [Building a Toy Connector](toy-connector.md) tutorial. This tutorial will build directly off the example from that article. We will also assume that you have a basic understanding of how Airbyte's Incremental-Append replication strategy works. We have a brief explanation of it [here](../architecture/connections/incremental-append.md).
 
 ## Update Catalog in `discover`
+
 First we need to identify a given stream in the Source as supporting incremental. This information is declared in the catalog that the `discover` method returns. You will notice in the stream object contains a field called `supported_sync_modes`. If we are adding incremental to an existing stream, we just need to add `"incremental"` to that array. This tells Airbyte that this stream can either be synced in an incremental fashion. In practice, this will mean that in the UI, a user will have the ability to configure this type of sync.
 
 In the example we used in the Toy Connector tutorial, the `discover` method would not look like this. Note: that "incremental" has been added to the `support_sync_modes` array. We also set `source_defined_cursor` to `True` to declare that the Source knows what field to use for the cursor, in this case the date field, and does not require user input. Nothing else has changed.
+
 ```python
 def discover():
     catalog = {
@@ -34,12 +37,14 @@ def discover():
 ```
 
 ## Update `read`
+
 Next we will adapt the `read` method that we wrote previously. We need to change three things.
 
 First, we need to pass it information about what data was replicated in the previous sync. In Airbyte this is called a `state` object. The structure of the state object is determined by Source. This means that each Source can construct a state object that makes sense to it and does not need to worry about adhering to any other convention. That being said, a pretty typical structure for a state object is a map of stream name to the last value in the cursor field for that stream.
 
 In this case we might choose something like this:
-```json
+
+```javascript
 {
   "stock_prices": "2020-02-01"
 }
@@ -111,4 +116,5 @@ def to_datetime(date):
         return None
 ```
 
-That's all you need to do to add incremental functionality to the stock ticker Source. Incremental definitely requires more configurability than full refresh, so your implementation may deviate slightly depending on whether your cursor field is source defined or user-defined. If you think you are running into one of those cases, check out our [incremental](../architecture/incremental.md) documentation for more information on different types of configuration.
+That's all you need to do to add incremental functionality to the stock ticker Source. Incremental definitely requires more configurability than full refresh, so your implementation may deviate slightly depending on whether your cursor field is source defined or user-defined. If you think you are running into one of those cases, check out our [incremental](../architecture/connections/incremental-append.md) documentation for more information on different types of configuration.
+

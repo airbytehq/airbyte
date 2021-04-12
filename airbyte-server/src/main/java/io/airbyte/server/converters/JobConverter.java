@@ -33,14 +33,18 @@ import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
+import io.airbyte.api.model.SynchronousJobRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.scheduler.Attempt;
-import io.airbyte.scheduler.Job;
+import io.airbyte.scheduler.client.SynchronousJobMetadata;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.scheduler.models.Attempt;
+import io.airbyte.scheduler.models.Job;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 public class JobConverter {
@@ -71,7 +75,7 @@ public class JobConverter {
   public static AttemptInfoRead getAttemptInfoRead(Attempt attempt) {
     return new AttemptInfoRead()
         .attempt(getAttemptRead(attempt))
-        .logs(getLogRead(attempt));
+        .logs(getLogRead(attempt.getLogPath()));
   }
 
   public static AttemptRead getAttemptRead(Attempt attempt) {
@@ -93,12 +97,29 @@ public class JobConverter {
         .endedAt(attempt.getEndedAtInSecond().orElse(null));
   }
 
-  public static LogRead getLogRead(Attempt attempt) {
+  public static LogRead getLogRead(Path logPath) {
     try {
-      return new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, attempt.getLogPath()));
+      return new LogRead().logLines(IOs.getTail(LOG_TAIL_SIZE, logPath));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static SynchronousJobRead getSynchronousJobRead(SynchronousResponse<?> response) {
+    return getSynchronousJobRead(response.getMetadata());
+  }
+
+  public static SynchronousJobRead getSynchronousJobRead(SynchronousJobMetadata metadata) {
+    final JobConfigType configType = Enums.convertTo(metadata.getConfigType(), JobConfigType.class);
+
+    return new SynchronousJobRead()
+        .id(metadata.getId())
+        .configType(configType)
+        .configId(String.valueOf(metadata.getConfigId()))
+        .createdAt(metadata.getCreatedAt())
+        .endedAt(metadata.getEndedAt())
+        .succeeded(metadata.isSucceeded())
+        .logs(JobConverter.getLogRead(metadata.getLogPath()));
   }
 
 }

@@ -35,7 +35,7 @@ const SourceSettings: React.FC<IProps> = ({
     response: JobInfo;
   } | null>(null);
 
-  const { updateSource, deleteSource } = useSource();
+  const { updateSource, deleteSource, checkSourceConnection } = useSource();
 
   const sourceDefinitionSpecification = useResource(
     SourceDefinitionSpecificationResource.detailShape(),
@@ -64,6 +64,25 @@ const SourceSettings: React.FC<IProps> = ({
     }
   };
 
+  const onRetest = async (values: {
+    name: string;
+    serviceType: string;
+    connectionConfiguration?: ConnectionConfiguration;
+  }) => {
+    setErrorStatusRequest(null);
+    try {
+      await checkSourceConnection({
+        values,
+        sourceId: currentSource.sourceId,
+      });
+      setSaved(true);
+    } catch (e) {
+      const errorStatusMessage = createFormErrorMessage(e);
+
+      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
+    }
+  };
+
   const onDelete = async () => {
     await deleteSource({ connectionsWithSource, source: currentSource });
   };
@@ -72,13 +91,14 @@ const SourceSettings: React.FC<IProps> = ({
     <Content>
       <ContentCard title={<FormattedMessage id="sources.sourceSettings" />}>
         <ServiceForm
+          onRetest={onRetest}
           isEditMode
           onSubmit={onSubmit}
           formType="source"
           dropDownData={[
             {
-              value: currentSource.sourceDefinitionId || "",
-              text: currentSource.sourceName || "",
+              value: currentSource.sourceDefinitionId,
+              text: currentSource.sourceName,
               img: "/default-logo-catalog.svg",
             },
           ]}

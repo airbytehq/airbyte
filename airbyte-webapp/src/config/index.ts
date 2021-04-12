@@ -32,12 +32,12 @@ const config: {
   version?: string;
 } = {
   ui: {
-    technicalSupport: "https://docs.airbyte.io/technical-support",
+    technicalSupport: "https://docs.airbyte.io/faq/technical-support",
     helpLink: "https://airbyte.io/community",
     slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",
     configurationArchiveLink:
-      "https://docs.airbyte.io/architecture/configuration-archive",
+      "https://docs.airbyte.io/tutorials/upgrading-airbyte",
     tutorialLink:
       "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
     workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",

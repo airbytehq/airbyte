@@ -1,21 +1,40 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faTimes, faBan } from "@fortawesome/free-solid-svg-icons";
+
+import PauseIcon from "./components/Pause";
 
 type IProps = {
   success?: boolean;
+  inactive?: boolean;
+  empty?: boolean;
   className?: string;
   big?: boolean;
+  value?: string | number;
+};
+
+const getWidth = (props: IProps) => {
+  if (props.big) {
+    return props.value ? 57 : 40;
+  }
+
+  return props.value ? 37 : 20;
 };
 
 const Badge = styled.div<IProps>`
-  width: ${({ big }) => (big ? 40 : 20)}px;
+  width: ${(props) => getWidth(props)}px;
   height: ${({ big }) => (big ? 40 : 20)}px;
   background: ${(props) =>
-    props.success ? props.theme.successColor : props.theme.dangerColor};
+    props.success
+      ? props.theme.successColor
+      : props.inactive
+      ? props.theme.greyColor40
+      : props.empty
+      ? props.theme.attentionColor
+      : props.theme.dangerColor};
   box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
-  border-radius: 50%;
+  border-radius: ${({ value }) => (value ? "15px" : "50%")};
   margin-right: 10px;
   padding-top: 4px;
   color: ${({ theme }) => theme.whiteColor};
@@ -23,15 +42,28 @@ const Badge = styled.div<IProps>`
   line-height: ${({ big }) => (big ? 33 : 12)}px;
   text-align: center;
   display: inline-block;
+  vertical-align: top;
 `;
 
-const StatusIcon: React.FC<IProps> = ({ success, className, big }) => (
-  <Badge success={success} className={className} big={big}>
-    {success ? (
+const Value = styled.span`
+  font-weight: 500;
+  font-size: 12px;
+  padding-left: 3px;
+  vertical-align: top;
+`;
+
+const StatusIcon: React.FC<IProps> = (props) => (
+  <Badge {...props}>
+    {props.success ? (
       <FontAwesomeIcon icon={faCheck} />
+    ) : props.inactive ? (
+      <PauseIcon />
+    ) : props.empty ? (
+      <FontAwesomeIcon icon={faBan} />
     ) : (
       <FontAwesomeIcon icon={faTimes} />
     )}
+    {props.value && <Value>{props.value}</Value>}
   </Badge>
 );
 

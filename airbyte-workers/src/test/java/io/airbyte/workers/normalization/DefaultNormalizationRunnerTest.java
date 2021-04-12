@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test;
 
 class DefaultNormalizationRunnerTest {
 
-  private static final long JOB_ID = 0L;
+  private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
 
   private Path jobRoot;
@@ -66,8 +66,8 @@ class DefaultNormalizationRunnerTest {
 
     when(pbf.create(JOB_ID, JOB_ATTEMPT, jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, "run",
         "--integration-type", "bigquery",
-        "--config", WorkerConstants.TARGET_CONFIG_JSON_FILENAME,
-        "--catalog", WorkerConstants.CATALOG_JSON_FILENAME))
+        "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+        "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
             .thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));

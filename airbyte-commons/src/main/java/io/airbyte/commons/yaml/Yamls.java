@@ -25,19 +25,27 @@
 package io.airbyte.commons.yaml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
+import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
+import java.util.Iterator;
 
 public class Yamls {
 
+  public static final YAMLFactory YAML_FACTORY = new YAMLFactory();
   // Object Mapper is thread-safe
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(new YAMLFactory());
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(YAML_FACTORY);
 
   public static <T> String serialize(T object) {
     try {
@@ -47,17 +55,49 @@ public class Yamls {
     }
   }
 
-  public static <T> T deserialize(final String jsonString, final Class<T> klass) {
+  public static <T> T deserialize(final String yamlString, final Class<T> klass) {
     try {
-      return OBJECT_MAPPER.readValue(jsonString, klass);
+      return OBJECT_MAPPER.readValue(yamlString, klass);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static JsonNode deserialize(final String jsonString) {
+  public static JsonNode deserialize(final String yamlString) {
     try {
-      return OBJECT_MAPPER.readTree(jsonString);
+      return OBJECT_MAPPER.readTree(yamlString);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static AutoCloseableIterator<JsonNode> deserializeArray(final InputStream stream) {
+    try {
+      YAMLParser parser = YAML_FACTORY.createParser(stream);
+
+      // Check the first token
+      if (parser.nextToken() != JsonToken.START_ARRAY) {
+        throw new IllegalStateException("Expected content to be an array");
+      }
+
+      Iterator<JsonNode> iterator = new AbstractIterator<>() {
+
+        @Override
+        protected JsonNode computeNext() {
+          try {
+            while (parser.nextToken() != JsonToken.END_ARRAY) {
+              return parser.readValueAsTree();
+            }
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+          return endOfData();
+        }
+
+      };
+
+      return AutoCloseableIterators.fromIterator(iterator, parser::close);
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

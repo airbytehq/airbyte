@@ -110,7 +110,11 @@ docker-compose up -d
 For security reasons, we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication.
 {% endhint %}
 
-* Create ssh tunnel.
+* Create ssh tunnels for port 8000 \(the static web server\) and port 8001 \(the api server\)
+
+{% hint style="info" %}
+If you want to use different ports you will need to modify `API_URL` in your `.env` file and restart Airbyte.
+{% endhint %}
 
 ```bash
 # In your workstation terminal
@@ -121,5 +125,5 @@ ssh -i $SSH_KEY -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f ec2-user@$IN
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help!
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../faq/technical-support.md) section in our docs for common problems.
 

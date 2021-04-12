@@ -26,20 +26,13 @@ const CheckBoxContainer = styled.label`
 
 const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
   props
-) => {
-  return (
-    <CheckBoxContainer
-      onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
-    >
-      <CheckBoxInput
-        {...props}
-        type="checkbox"
-        checked={props.checked}
-        onChange={props.onChange}
-      />
-      {props.checked && <FontAwesomeIcon icon={faCheck} />}
-    </CheckBoxContainer>
-  );
-};
+) => (
+  <CheckBoxContainer
+    onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
+  >
+    <CheckBoxInput {...props} type="checkbox" />
+    {props.checked && <FontAwesomeIcon icon={faCheck} />}
+  </CheckBoxContainer>
+);
 
 export default CheckBox;

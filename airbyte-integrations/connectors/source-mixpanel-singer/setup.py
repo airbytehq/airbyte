@@ -30,12 +30,12 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "tap-mixpanel==1.2.0"],
+    install_requires=[
+        "tap-mixpanel @ https://github.com/airbytehq/tap-mixpanel/tarball/v1.2.1-airbyte",
+        "airbyte-protocol",
+        "base-python",
+        "base-singer",
+        "pytest==6.1.2",
+    ],
     package_data={"": ["*.json"]},
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-    extras_require={
-        "main": ["base-singer"],
-        "tests": ["airbyte-python-test", "pytest"],
-    },
 )

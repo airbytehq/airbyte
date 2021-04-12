@@ -76,8 +76,8 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName) throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName))
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
@@ -89,7 +89,7 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName)
+  protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
@@ -98,7 +98,7 @@ public class PostgresIntegrationTest extends TestDestination {
     // // Currently, Normalization always quote tables identifiers
     // //tableName = "\"" + tableName + "\"";
     // }
-    return retrieveRecordsFromTable(tableName);
+    return retrieveRecordsFromTable(tableName, namespace);
   }
 
   @Override
@@ -114,11 +114,11 @@ public class PostgresIntegrationTest extends TestDestination {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
             ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s ORDER BY %s ASC;", tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                 .stream()
                 .map(r -> r.formatJSON(JSON_FORMAT))
                 .map(Jsons::deserialize)

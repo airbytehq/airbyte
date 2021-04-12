@@ -1,0 +1,9 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "testFiles": [
+    "onboarding.spec.js",
+    "connection.spec.js",
+    "destination.spec.js",
+    "source.spec.js"
+  ]
+}

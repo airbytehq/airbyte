@@ -2,6 +2,6 @@
   "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
   "name": "Microsoft SQL Server (MSSQL)",
   "dockerRepository": "airbyte/source-mssql",
-  "dockerImageTag": "0.1.11",
+  "dockerImageTag": "0.2.3",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-mssql"
 }

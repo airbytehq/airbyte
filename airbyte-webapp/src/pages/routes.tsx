@@ -10,7 +10,9 @@ import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
 import PreferencesPage from "./PreferencesPage";
 import OnboardingPage from "./OnboardingPage";
+import ConnectionPage from "./ConnectionPage";
 import AdminPage from "./AdminPage";
+import SettingsPage from "./SettingsPage";
 import LoadingPage from "../components/LoadingPage";
 import MainView from "../components/MainView";
 import config from "../config";
@@ -26,6 +28,7 @@ export enum Routes {
   Preferences = "/preferences",
   Onboarding = "/onboarding",
 
+  Connections = "/connections",
   Destination = "/destination",
   Source = "/source",
   Connection = "/connection",
@@ -33,6 +36,7 @@ export enum Routes {
   SourceNew = "/new-source",
   DestinationNew = "/new-destination",
   Admin = "/admin",
+  Settings = "/settings",
   Root = "/",
 }
 
@@ -73,6 +77,12 @@ const getPageName = (pathname: string) => {
   if (pathname === Routes.Admin) {
     return "Admin Page";
   }
+  if (pathname === Routes.Settings) {
+    return "Settings Page";
+  }
+  if (pathname === Routes.Connections) {
+    return "Connections Page";
+  }
 
   return "";
 };
@@ -98,6 +108,12 @@ const MainViewRoutes = () => {
           </Route>
           <Route path={Routes.Admin}>
             <AdminPage />
+          </Route>
+          <Route path={Routes.Connections}>
+            <ConnectionPage />
+          </Route>
+          <Route path={Routes.Settings}>
+            <SettingsPage />
           </Route>
           <Route exact path={Routes.Root}>
             <SourcesPage />

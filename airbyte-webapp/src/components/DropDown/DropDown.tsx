@@ -9,25 +9,23 @@ import ValueInput from "./components/ValueInput";
 import WithButtonItem from "./components/WithButtonItem";
 import GroupHeader from "./components/GroupHeader";
 
-export type IProps = {
+type DropdownProps = {
   disabled?: boolean;
   hasFilter?: boolean;
   fullText?: boolean;
-  placeholder?: string;
   filterPlaceholder?: string;
-  value?: string;
-  data: IDataItem[];
-  onSelect?: (item: IDataItem) => void;
   withButton?: boolean;
   withBorder?: boolean;
+  error?: boolean;
   textButton?: string;
   className?: string;
-  groupBy?: string;
-};
+  name?: string;
+} & DropdownList.DropdownListProps;
 
 const StyledDropdownList = styled(DropdownList)<{
   disabled?: boolean;
   withBorder?: boolean;
+  error?: boolean;
 }>`
   text-align: left;
 
@@ -49,13 +47,18 @@ const StyledDropdownList = styled(DropdownList)<{
     height: ${({ withBorder }) => (withBorder ? 31 : 36)}px;
     box-shadow: none;
     border: 1px solid
-      ${({ theme, withBorder }) =>
-        withBorder ? theme.greyColor30 : theme.greyColor0};
+      ${({ theme, withBorder, error }) =>
+        error
+          ? theme.dangerColor
+          : withBorder
+          ? theme.greyColor30
+          : theme.greyColor0};
     background: ${({ theme }) => theme.greyColor0};
     border-radius: 4px;
 
     &:hover {
-      border-color: ${({ theme }) => theme.greyColor20};
+      border-color: ${({ theme, error }) =>
+        error ? theme.dangerColor : theme.greyColor20};
       background: ${({ theme }) => theme.greyColor20};
     }
   }
@@ -176,7 +179,7 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 `;
 
-export const DropDown: React.FC<IProps> = (props) => {
+const DropDown: React.FC<DropdownProps> = (props) => {
   const formatMessage = useIntl().formatMessage;
 
   const className = `${props.className} ${
@@ -185,6 +188,8 @@ export const DropDown: React.FC<IProps> = (props) => {
 
   return (
     <StyledDropdownList
+      data-test-id={props.name}
+      error={props.error}
       withBorder={props.withBorder}
       containerClassName={className}
       filter={props.hasFilter ? "contains" : false}
@@ -222,3 +227,5 @@ export const DropDown: React.FC<IProps> = (props) => {
 };
 
 export default DropDown;
+export { DropDown };
+export type { DropdownProps };

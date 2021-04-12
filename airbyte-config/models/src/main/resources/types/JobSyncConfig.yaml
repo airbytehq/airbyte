@@ -12,6 +12,9 @@ required:
   - sourceDockerImage
   - destinationDockerImage
 properties:
+  prefix:
+    description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+    type: string
   sourceConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
     type: object

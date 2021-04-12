@@ -1,7 +1,12 @@
 import { Connection } from "core/resources/Connection";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
-import { ITableDataItem, EntityTableDataItem } from "./types";
+import Status from "core/statuses";
+import {
+  ITableDataItem,
+  EntityTableDataItem,
+  Status as ConnectionStatus,
+} from "./types";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
@@ -38,10 +43,17 @@ export function getEntityTableData<
       name: connection[connectType]?.name || "",
       // @ts-ignore ts is not that clever to infer such types
       connector: connection[connectType]?.[`${connectType}Name`] || "",
+      status: connection.status,
+      lastSyncStatus: getConnectionSyncStatus(
+        connection.status,
+        connection.latestSyncJobStatus
+      ),
     }));
 
     const sortBySync = entityConnections.sort((item1, item2) =>
-      item1.lastSync && item2.lastSync ? item2.lastSync - item1.lastSync : 0
+      item1.latestSyncJobCreatedAt && item2.latestSyncJobCreatedAt
+        ? item2.latestSyncJobCreatedAt - item1.latestSyncJobCreatedAt
+        : 0
     );
 
     return {
@@ -49,7 +61,7 @@ export function getEntityTableData<
       entityName: entityItem.name,
       enabled: true,
       connectorName: entitySoDName,
-      lastSync: sortBySync?.[0].lastSync,
+      lastSync: sortBySync?.[0].latestSyncJobCreatedAt,
       connectEntities: connectEntities,
     };
   });
@@ -59,18 +71,40 @@ export function getEntityTableData<
 
 export const getConnectionTableData = (
   connections: Connection[],
-  type: "source" | "destination"
+  type: "source" | "destination" | "connection"
 ): ITableDataItem[] => {
   const connectType = type === "source" ? "destination" : "source";
 
   return connections.map((connection) => ({
     connectionId: connection.connectionId,
-    entityName: connection[connectType]?.name || "",
-    // @ts-ignore conditional types are not supported here
-    connectorName: connection[connectType]?.[`${connectType}Name`] || "",
-    lastSync: connection.lastSync,
-    enabled: connection.status === "active",
+    entityName:
+      type === "connection"
+        ? `${connection.source?.sourceName} - ${connection.source?.name}`
+        : connection[connectType]?.name || "",
+    connectorName:
+      type === "connection"
+        ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
+        : // @ts-ignore conditional types are not supported here
+          connection[connectType]?.[`${connectType}Name`] || "",
+    lastSync: connection.latestSyncJobCreatedAt,
+    enabled: connection.status === ConnectionStatus.ACTIVE,
     schedule: connection.schedule,
+    status: connection.status,
     isSyncing: connection.isSyncing,
+    lastSyncStatus: getConnectionSyncStatus(
+      connection.status,
+      connection.latestSyncJobStatus
+    ),
   }));
+};
+
+export const getConnectionSyncStatus = (
+  status: string,
+  lastSyncStatus: string | null
+): string | null => {
+  if (status === ConnectionStatus.INACTIVE) return ConnectionStatus.INACTIVE;
+  if (!lastSyncStatus) return ConnectionStatus.EMPTY;
+  if (lastSyncStatus === Status.FAILED) return ConnectionStatus.FAILED;
+
+  return ConnectionStatus.ACTIVE;
 };

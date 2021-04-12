@@ -13,6 +13,12 @@ export enum SyncMode {
   FullRefresh = "full_refresh",
 }
 
+export enum DestinationSyncMode {
+  Overwrite = "overwrite",
+  Append = "append",
+  Dedupted = "append_dedup",
+}
+
 export type SyncSchemaStream = {
   stream: AirbyteStream;
   config: AirbyteStreamConfiguration;
@@ -23,13 +29,16 @@ export type AirbyteStream = {
   jsonSchema: SchemaFields;
   supportedSyncModes: SyncMode[];
   sourceDefinedCursor: boolean | null;
+  sourceDefinedPrimaryKey: string[][];
   defaultCursorField: string[];
 };
 
 export type AirbyteStreamConfiguration = {
   cursorField: string[];
+  primaryKey: string[][];
   selected: boolean;
-  syncMode: string | null;
+  syncMode: SyncMode;
+  destinationSyncMode: DestinationSyncMode;
   aliasName: string;
 };
 
