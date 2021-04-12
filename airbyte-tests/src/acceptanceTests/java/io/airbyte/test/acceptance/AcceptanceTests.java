@@ -513,24 +513,16 @@ public class AcceptanceTests {
     final Database source = getDatabase(sourceDb);
 
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
-    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = sourceTables.stream().flatMap(x -> {
-      final String cleanedNameStream = x.tableName.replace(".", "_");
-      final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
-          new SchemaTableNamePair(x.schemaName, String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream)),
-          new SchemaTableNamePair(x.schemaName, String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream))));
-      if (withScdTable) {
-        explodedStreamNames.add(new SchemaTableNamePair(x.schemaName, String.format("%s%s_scd", OUTPUT_NAMESPACE, cleanedNameStream)));
-      }
-      return explodedStreamNames.stream();
-    }).collect(Collectors.toSet());
-
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable,
+        sourceTables);
     final Database destination = getDatabase(destinationPsql);
     final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
     assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
         String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
 
     for (SchemaTableNamePair pair : sourceTables) {
-      assertStreamsEquivalent(source, pair);
+      final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
+      assertRawDestinationContains(sourceRecords, pair);
     }
   }
 
@@ -554,8 +546,22 @@ public class AcceptanceTests {
         });
   }
 
+  private Set<SchemaTableNamePair> addAirbyteGeneratedTables(boolean withScdTable, Set<SchemaTableNamePair> sourceTables) {
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = sourceTables.stream().flatMap(x -> {
+      final String cleanedNameStream = x.tableName.replace(".", "_");
+      final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
+          new SchemaTableNamePair(x.schemaName, String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream)),
+          new SchemaTableNamePair(x.schemaName, String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream))));
+      if (withScdTable) {
+        explodedStreamNames.add(new SchemaTableNamePair(x.schemaName, String.format("%s%s_scd", OUTPUT_NAMESPACE, cleanedNameStream)));
+      }
+      return explodedStreamNames.stream();
+    }).collect(Collectors.toSet());
+    return sourceTablesWithRawTablesAdded;
+  }
+
   private void assertRawDestinationContains(List<JsonNode> sourceRecords, SchemaTableNamePair pair) throws Exception {
-    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(pair));
+    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveRawDestinationRecords(pair));
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
         String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
@@ -581,11 +587,6 @@ public class AcceptanceTests {
                   && r.get(COLUMN_ID).asInt() == sourceStreamRecord.get(COLUMN_ID).asInt()),
           String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
     }
-  }
-
-  private void assertStreamsEquivalent(Database source, SchemaTableNamePair pair) throws Exception {
-    final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
-    assertRawDestinationContains(sourceRecords, pair);
   }
 
   private ConnectionRead createConnection(String name,
@@ -658,7 +659,7 @@ public class AcceptanceTests {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveDestinationRecords(SchemaTableNamePair pair) throws Exception {
+  private List<JsonNode> retrieveRawDestinationRecords(SchemaTableNamePair pair) throws Exception {
     final Database destination = getDatabase(destinationPsql);
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
