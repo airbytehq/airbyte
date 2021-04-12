@@ -63,14 +63,12 @@ import org.junit.jupiter.api.Test;
 
 class DefaultAirbyteSourceTest {
 
-  private static final String NAMESPACE = "unused";
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
   private static final ConfiguredAirbyteCatalog CATALOG = CatalogHelpers.createConfiguredAirbyteCatalog(
       "hudi:latest",
-      NAMESPACE,
       Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
 
   private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
@@ -78,7 +76,7 @@ class DefaultAirbyteSourceTest {
       .withSourceConnectionConfiguration(Jsons.jsonNode(Map.of(
           "apiKey", "123",
           "region", "us-east")))
-      .withCatalog(CatalogHelpers.createConfiguredAirbyteCatalog("hudi:latest", NAMESPACE, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
+      .withCatalog(CatalogHelpers.createConfiguredAirbyteCatalog("hudi:latest", Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
 
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue"),
