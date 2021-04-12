@@ -52,8 +52,7 @@ public class Migrations {
       MIGRATION_V_0_16_0,
       MIGRATION_V_0_17_0,
       MIGRATION_V_0_18_0,
-      MIGRATION_V_0_19_0
-  // , MIGRATION_V_0_20_0
-  );
+      MIGRATION_V_0_19_0,
+      MIGRATION_V_0_20_0);
 
 }
