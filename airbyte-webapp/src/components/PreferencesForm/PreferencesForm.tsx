@@ -57,7 +57,7 @@ const Text = styled.div`
 `;
 
 const preferencesValidationSchema = yup.object().shape({
-  email: yup.string().email("form.email.error"),
+  email: yup.string().email("form.email.error").required("form.empty.error"),
 });
 
 const PreferencesForm: React.FC<PreferencesFormProps> = ({
@@ -100,7 +100,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
               {({ field, meta }: FieldProps<string>) => (
                 <LabeledInput
                   {...field}
-                  label={<FormattedMessage id="form.emailOptional" />}
+                  label={<FormattedMessage id="form.yourEmail" />}
                   placeholder={formatMessage({
                     id: "form.email.placeholder",
                   })}
@@ -113,6 +113,9 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
                   }
                   onChange={(event) => {
                     handleChange(event);
+                    if (isEdit) {
+                      return;
+                    }
                     if (
                       field.value.length === 0 &&
                       event.target.value.length > 0
