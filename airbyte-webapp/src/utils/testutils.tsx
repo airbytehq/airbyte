@@ -1,5 +1,6 @@
 import React from "react";
 import { render as rtlRender, RenderResult } from "@testing-library/react";
+import { ThemeProvider } from "styled-components";
 import { History, createMemoryHistory } from "history";
 import { Router } from "react-router-dom";
 import { IntlProvider } from "react-intl";
@@ -21,7 +22,7 @@ export function render(
 ): RenderResult {
   function Wrapper({ children }: WrapperProps) {
     return (
-      <React.StrictMode>
+      <ThemeProvider theme={{}}>
         <IntlProvider locale="en" messages={en}>
           <Router
             history={
@@ -31,7 +32,7 @@ export function render(
             {children}
           </Router>
         </IntlProvider>
-      </React.StrictMode>
+      </ThemeProvider>
     );
   }
 
