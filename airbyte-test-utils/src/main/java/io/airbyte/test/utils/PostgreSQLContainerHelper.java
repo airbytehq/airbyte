@@ -33,7 +33,7 @@ public class PostgreSQLContainerHelper {
 
   public static void runSqlScript(MountableFile file, PostgreSQLContainer db) {
     try {
-      String scriptPath = "/etc/" + UUID.randomUUID() + ".sql";
+      String scriptPath = "/etc/" + UUID.randomUUID().toString() + ".sql";
       db.copyFileToContainer(file, scriptPath);
       db.execInContainer(
           "psql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", scriptPath);

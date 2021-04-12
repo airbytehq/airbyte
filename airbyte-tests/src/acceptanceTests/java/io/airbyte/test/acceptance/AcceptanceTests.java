@@ -56,7 +56,6 @@ import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.client.model.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
 import io.airbyte.api.client.model.DestinationSyncMode;
@@ -84,7 +83,6 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -120,7 +118,7 @@ public class AcceptanceTests {
 
   private static final String OUTPUT_NAMESPACE = "output_";
   private static final String TABLE_NAME = "id_and_name";
-  private static final String STREAM_NAME = TABLE_NAME;
+  private static final String STREAM_NAME = "public." + TABLE_NAME;
   private static final String COLUMN_ID = "id";
   private static final String COLUMN_NAME = "name";
   private static final String COLUMN_NAME_DATA = "_airbyte_data";
@@ -156,26 +154,13 @@ public class AcceptanceTests {
   }
 
   @BeforeEach
-  public void setup() throws ApiException {
+  public void setup() {
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
 
     // seed database.
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-
-    // TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version
-    // is released. The namespace change requires source, destination and normalization to all use the
-    // namespace field.
-    final var updateSrc = new SourceDefinitionUpdate()
-        .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")) // Postgres
-        .dockerImageTag("dev");
-    apiClient.getSourceDefinitionApi().updateSourceDefinition(updateSrc);
-
-    final var updateDst = new DestinationDefinitionUpdate()
-        .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")) // Postgres
-        .dockerImageTag("dev");
-    apiClient.getDestinationDefinitionApi().updateDestinationDefinition(updateDst);
   }
 
   @AfterEach
@@ -286,6 +271,12 @@ public class AcceptanceTests {
   @Test
   @Order(5)
   public void testDiscoverSourceSchema() throws ApiException {
+    // TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version
+    // is released.
+    var update = new SourceDefinitionUpdate()
+        .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750"))
+        .dockerImageTag("dev");
+    apiClient.getSourceDefinitionApi().updateSourceDefinition(update);
     final UUID sourceId = createPostgresSource().getSourceId();
 
     final AirbyteCatalog actual = discoverSourceSchema(sourceId);
@@ -402,12 +393,12 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
+    assertRawDestinationContains(expectedRecords, STREAM_NAME);
 
     // reset back to no data.
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
-    assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
+    assertRawDestinationContains(Collections.emptyList(), STREAM_NAME);
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
@@ -479,7 +470,7 @@ public class AcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
 
-    assertRawDestinationContains(expectedRawRecords, new SchemaTableNamePair("public", STREAM_NAME));
+    assertRawDestinationContains(expectedRawRecords, STREAM_NAME);
     assertNormalizedDestinationContains(expectedNormalizedRecords);
   }
 
@@ -532,17 +523,27 @@ public class AcceptanceTests {
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, boolean withScdTable) throws Exception {
     final Database source = getDatabase(sourceDb);
 
-    final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
-    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable,
-        sourceTables);
+    final Set<String> sourceStreams = listStreams(source);
+    final Set<String> sourceStreamsWithRawPrefix = sourceStreams.stream().flatMap(x -> {
+      final String cleanedNameStream = x.replace(".", "_");
+      if (withScdTable) {
+        return List.of(
+            String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream),
+            String.format("%s%s_scd", OUTPUT_NAMESPACE, cleanedNameStream),
+            String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream)).stream();
+      } else {
+        return List.of(
+            String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream),
+            String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream)).stream();
+      }
+    }).collect(Collectors.toSet());
     final Database destination = getDatabase(destinationPsql);
-    final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
-    assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
-        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
+    final Set<String> destinationStreams = listDestinationStreams(destination);
+    assertEquals(sourceStreamsWithRawPrefix, destinationStreams,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
-    for (SchemaTableNamePair pair : sourceTables) {
-      final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
-      assertRawDestinationContains(sourceRecords, pair);
+    for (String table : sourceStreams) {
+      assertStreamsEquivalent(source, table);
     }
   }
 
@@ -550,7 +551,7 @@ public class AcceptanceTests {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
-  private Set<SchemaTableNamePair> listAllTables(Database database) throws SQLException {
+  private Set<String> listStreams(Database database) throws SQLException {
     return database.query(
         context -> {
           Result<Record> fetch =
@@ -558,30 +559,26 @@ public class AcceptanceTests {
                   "SELECT tablename, schemaname FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
           return fetch.stream()
               .map(record -> {
-                var schemaName = (String) record.get("schemaname");
-                var tableName = (String) record.get("tablename");
-                return new SchemaTableNamePair(schemaName, tableName);
+                final String schemaName = (String) record.get("schemaname");
+                final String tableName = (String) record.get("tablename");
+                return schemaName + "." + tableName;
               })
               .collect(Collectors.toSet());
         });
   }
 
-  private Set<SchemaTableNamePair> addAirbyteGeneratedTables(boolean withScdTable, Set<SchemaTableNamePair> sourceTables) {
-    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = sourceTables.stream().flatMap(x -> {
-      final String cleanedNameStream = x.tableName.replace(".", "_");
-      final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
-          new SchemaTableNamePair(x.schemaName, String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream)),
-          new SchemaTableNamePair(x.schemaName, String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream))));
-      if (withScdTable) {
-        explodedStreamNames.add(new SchemaTableNamePair(x.schemaName, String.format("%s%s_scd", OUTPUT_NAMESPACE, cleanedNameStream)));
-      }
-      return explodedStreamNames.stream();
-    }).collect(Collectors.toSet());
-    return sourceTablesWithRawTablesAdded;
+  private Set<String> listDestinationStreams(Database destination) throws SQLException {
+    return destination.query(ctx -> ctx.resultQuery("SELECT table_name\n" +
+        "FROM information_schema.tables\n" +
+        "WHERE table_schema = 'public'\n" +
+        "ORDER BY table_name;"))
+        .stream()
+        .map(x -> x.get("table_name", String.class))
+        .collect(Collectors.toSet());
   }
 
-  private void assertRawDestinationContains(List<JsonNode> sourceRecords, SchemaTableNamePair pair) throws Exception {
-    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveRawDestinationRecords(pair));
+  private void assertRawDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
+    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(streamName));
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
         String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
@@ -607,6 +604,11 @@ public class AcceptanceTests {
                   && r.get(COLUMN_ID).asInt() == sourceStreamRecord.get(COLUMN_ID).asInt()),
           String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
     }
+  }
+
+  private void assertStreamsEquivalent(Database source, String table) throws Exception {
+    final List<JsonNode> sourceRecords = retrieveSourceRecords(source, table);
+    assertRawDestinationContains(sourceRecords, table);
   }
 
   private ConnectionRead createConnection(String name,
@@ -666,8 +668,7 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
-    final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", cleanedName)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", table)))
         .stream()
         .map(Record::intoMap)
         .map(r -> r.get(COLUMN_NAME_DATA))
@@ -678,15 +679,13 @@ public class AcceptanceTests {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRawDestinationRecords(SchemaTableNamePair pair) throws Exception {
-    final Database destination = getDatabase(destinationPsql);
-    final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
+  private List<JsonNode> retrieveDestinationRecords(String streamName) throws Exception {
+    Database destination = getDatabase(destinationPsql);
+    Set<String> destinationStreams = listDestinationStreams(destination);
+    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, streamName.replace(".", "_"));
+    assertTrue(destinationStreams.contains(rawStreamName), "can't find a non-normalized version (raw) of " + streamName);
 
-    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, pair.tableName.replace(".", "_"));
-    final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(pair.schemaName, rawStreamName);
-    assertTrue(namePairs.contains(rawTablePair), "can't find a non-normalized version (raw) of " + rawTablePair.getFullyQualifiedTableName());
-
-    return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());
+    return retrieveDestinationRecords(destination, rawStreamName);
   }
 
   private JsonNode getSourceDbConfig() {
@@ -765,9 +764,9 @@ public class AcceptanceTests {
 
   private void clearDbData(PostgreSQLContainer db) throws SQLException {
     final Database database = getDatabase(db);
-    final Set<SchemaTableNamePair> pairs = listAllTables(database);
-    for (SchemaTableNamePair pair : pairs) {
-      database.query(context -> context.execute(String.format("DELETE FROM %s.%s", pair.schemaName, pair.tableName)));
+    final Set<String> tableNames = listStreams(database);
+    for (final String tableName : tableNames) {
+      database.query(context -> context.execute(String.format("DELETE FROM %s", tableName)));
     }
   }
 
