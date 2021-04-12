@@ -69,7 +69,7 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
     for stream_processor in CatalogProcessor.build_stream_processor(
         catalog=catalog,
         json_column_name="'json_column_name_test'",
-        default_schema="schema_test",
+        target_schema="schema_test",
         name_transformer=DestinationNameTransformer(destination_type),
         destination_type=destination_type,
         tables_registry=tables_registry,

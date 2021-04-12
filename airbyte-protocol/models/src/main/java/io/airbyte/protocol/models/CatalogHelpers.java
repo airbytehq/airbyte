@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -38,9 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Helper class for Catalog and Stream related operations. Generally only used in tests.
- */
 public class CatalogHelpers {
 
   public static AirbyteCatalog createAirbyteCatalog(String streamName, Field... fields) {
@@ -48,30 +46,60 @@ public class CatalogHelpers {
   }
 
   public static AirbyteStream createAirbyteStream(String streamName, Field... fields) {
-    // Namespace is null since not all sources set it.
-    return createAirbyteStream(streamName, null, Arrays.asList(fields));
+    return createAirbyteStream(streamName, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(String streamName, String namespace, Field... fields) {
-    return createAirbyteStream(streamName, namespace, Arrays.asList(fields));
+  public static AirbyteStream createAirbyteStream(String streamName, String schemaName, Field... fields) {
+    return createAirbyteStream(streamName, schemaName, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(String streamName, String namespace, List<Field> fields) {
-    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields));
+  public static AirbyteStream createAirbyteStream(String streamName, List<Field> fields) {
+    return new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
-  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, String namespace, Field... fields) {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
+  public static AirbyteStream createAirbyteStream(String streamName, String schemaName, List<Field> fields) {
+    return new AirbyteStream().withName(streamName).withNamespace(schemaName).withJsonSchema(fieldsToJsonSchema(fields));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String namespace, Field... fields) {
-    return createConfiguredAirbyteStream(streamName, namespace, Arrays.asList(fields));
+  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String streamName, Field... fields) {
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, fields)));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, String namespace, List<Field> fields) {
-    return new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields)))
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, Field... fields) {
+    return createConfiguredAirbyteStream(streamName, Arrays.asList(fields));
+  }
+
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(String streamName, List<Field> fields) {
+    return new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName(streamName).withJsonSchema(fieldsToJsonSchema(fields)))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+  }
+
+  public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
+                                                                                 String streamName,
+                                                                                 SyncMode syncMode,
+                                                                                 DestinationSyncMode destinationSyncMode,
+                                                                                 String cursorFieldName,
+                                                                                 List<String> primaryKeys,
+                                                                                 Field... fields) {
+    return createIncrementalConfiguredAirbyteStream(streamName, syncMode, destinationSyncMode, cursorFieldName, primaryKeys, Arrays.asList(fields));
+  }
+
+  public static ConfiguredAirbyteStream createIncrementalConfiguredAirbyteStream(
+                                                                                 String streamName,
+                                                                                 SyncMode syncMode,
+                                                                                 DestinationSyncMode destinationSyncMode,
+                                                                                 String cursorFieldName,
+                                                                                 List<String> primaryKeys,
+                                                                                 List<Field> fields) {
+    return new ConfiguredAirbyteStream()
+        .withStream(new AirbyteStream()
+            .withName(streamName)
+            .withSupportedSyncModes(Collections.singletonList(syncMode))
+            .withJsonSchema(fieldsToJsonSchema(fields)))
+        .withSyncMode(syncMode)
+        .withCursorField(Collections.singletonList(cursorFieldName))
+        .withDestinationSyncMode(destinationSyncMode)
+        .withPrimaryKey(primaryKeys.stream().map(Collections::singletonList).collect(Collectors.toList()));
   }
 
   /**

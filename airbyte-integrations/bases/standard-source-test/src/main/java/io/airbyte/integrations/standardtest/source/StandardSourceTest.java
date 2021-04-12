@@ -257,8 +257,7 @@ public abstract class StandardSourceTest {
    */
   @Test
   public void testFullRefreshRead() throws Exception {
-    ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalog());
-    final List<AirbyteMessage> allMessages = runRead(catalog);
+    final List<AirbyteMessage> allMessages = runRead(withFullRefreshSyncModes(getConfiguredCatalog()));
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
     // the worker validates the message formats, so we just validate the message content
     // We don't need to validate message format as long as we use the worker, which we will not want to

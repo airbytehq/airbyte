@@ -50,7 +50,7 @@ import org.testcontainers.containers.MSSQLServerContainer;
 class MssqlSourceTest {
 
   private static final String DB_NAME = "dbo";
-  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME = DB_NAME + ".id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
       STREAM_NAME,
       DB_NAME,
