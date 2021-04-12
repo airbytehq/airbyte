@@ -21,3 +21,4 @@ export * from "./RadioButton";
 export * from "./ArrayOfObjectsEditor";
 export * from "./ContentCard";
 export * from "./PreferencesForm";
+export * from "./ContentCard";
