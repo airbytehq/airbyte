@@ -49,9 +49,6 @@ import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,8 +61,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 class PostgresSourceSSLTest {
@@ -105,19 +102,10 @@ class PostgresSourceSSLTest {
   private String dbName;
 
   @BeforeAll
-  static void init() throws IOException, URISyntaxException {
-    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withFileSystemBind("/tmp/airbyte_crt/server.crt", "/var/lib/postgresql/server.crt",
-            BindMode.READ_WRITE)
-        .withFileSystemBind("/tmp/airbyte_crt/server.key", "/var/lib/postgresql/server.key",
-            BindMode.READ_WRITE)
-//        .withClasspathResourceMapping("server.crt", "/var/lib/postgresql/server.crt",
-//            BindMode.READ_WRITE)
-//        .withClasspathResourceMapping("server.key", "/var/lib/postgresql/server.key",
-//            BindMode.READ_WRITE)
+  static void init() {
+    PSQL_DB = new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
         .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
     PSQL_DB.start();
-
 
   }
 
