@@ -64,6 +64,10 @@ public class JdbcStateManager {
   public JdbcStateManager(JdbcState serialized, ConfiguredAirbyteCatalog catalog) {
     this.cdcStateManager = new JdbcCdcStateManager(serialized.getCdcState());
     this.isCdc = serialized.getCdc();
+    if (serialized.getCdc() == null) {
+      this.isCdc = false;
+    }
+
     streamNameToCursorInfo = new ImmutableMap.Builder<String, CursorInfo>().putAll(createCursorInfoMap(serialized, catalog)).build();
   }
 
