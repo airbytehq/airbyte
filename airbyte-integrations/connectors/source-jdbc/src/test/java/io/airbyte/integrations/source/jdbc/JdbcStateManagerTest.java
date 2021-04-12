@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.JdbcStateManager.CursorInfo;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -157,8 +156,7 @@ class JdbcStateManagerTest {
                 new JdbcStreamState().withStreamName(STREAM_NAME2).withCursorField(Lists.newArrayList(CURSOR_FIELD2)),
                 new JdbcStreamState().withStreamName(STREAM_NAME3))
             .stream().sorted(Comparator.comparing(JdbcStreamState::getStreamName)).collect(Collectors.toList()))
-            .withCdc(false)
-            .withCdcState(new CdcState())));
+            .withCdc(false)));
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(STREAM_NAME1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
     final AirbyteStateMessage expectedSecondEmission = new AirbyteStateMessage()
@@ -167,8 +165,7 @@ class JdbcStateManagerTest {
                 new JdbcStreamState().withStreamName(STREAM_NAME2).withCursorField(Lists.newArrayList(CURSOR_FIELD2)).withCursor("b"),
                 new JdbcStreamState().withStreamName(STREAM_NAME3))
             .stream().sorted(Comparator.comparing(JdbcStreamState::getStreamName)).collect(Collectors.toList()))
-            .withCdc(false)
-            .withCdcState(new CdcState())));
+            .withCdc(false)));
     final AirbyteStateMessage actualSecondEmission = stateManager.updateAndEmit(STREAM_NAME2, "b");
     assertEquals(expectedSecondEmission, actualSecondEmission);
   }
@@ -190,8 +187,7 @@ class JdbcStateManagerTest {
                 new JdbcStreamState().withStreamName(STREAM_NAME1).withCursorField(Lists.newArrayList(CURSOR_FIELD1)).withCursor("a"),
                 new JdbcStreamState().withStreamName(STREAM_NAME2))
             .stream().sorted(Comparator.comparing(JdbcStreamState::getStreamName)).collect(Collectors.toList()))
-            .withCdc(false)
-            .withCdcState(new CdcState())));
+            .withCdc(false)));
 
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(STREAM_NAME1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
