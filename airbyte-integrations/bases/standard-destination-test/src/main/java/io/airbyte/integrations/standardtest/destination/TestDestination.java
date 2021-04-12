@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -483,9 +484,33 @@ public abstract class TestDestination {
   void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
-    final String namespace = "sourcenamespace";
-    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
+    AirbyteStream exchangeRateStream = catalog.getStreams().get(0); // there is only one stream in the exchange rate config.
+    exchangeRateStream.setNamespace("sourcenamespace");
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSync(config, messages, configuredCatalog);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
+  }
+
+  @Test
+  void testSyncSameStreamNameDifferentNamespace() throws Exception {
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    AirbyteStream exchangeRateStream = catalog.getStreams().get(0); // there is only one stream in the exchange rate config.
+    exchangeRateStream.setNamespace("sourcenamespace");
+
+    ObjectMapper mapper = new ObjectMapper();
+    AirbyteStream copiedStream = mapper.readValue(mapper.writeValueAsString(exchangeRateStream), AirbyteStream.class);
+    copiedStream.setNamespace("sourcenamespace2");
+    catalog.getStreams().add(copiedStream);
+
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    System.out.println(configuredCatalog);
 
     final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());

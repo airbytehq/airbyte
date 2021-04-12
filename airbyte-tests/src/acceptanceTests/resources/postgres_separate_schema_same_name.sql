@@ -3,7 +3,7 @@ CREATE
 
 CREATE
     TABLE
-        staging.cool_employees(
+        staging.id_and_name(
             id INTEGER,
             name VARCHAR(200)
         );
@@ -33,26 +33,4 @@ INSERT
     (
         5,
         'john'
-    );
-
-CREATE
-    TABLE
-        staging.awesome_people(
-            id INTEGER,
-            name VARCHAR(200)
-        );
-
-INSERT
-    INTO
-        staging.awesome_people(
-            id,
-            name
-        )
-    VALUES(
-        1,
-        'davin'
-    ),
-    (
-        2,
-        'chris'
     );

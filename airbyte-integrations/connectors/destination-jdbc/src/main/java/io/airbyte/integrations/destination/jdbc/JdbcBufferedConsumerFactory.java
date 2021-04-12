@@ -136,15 +136,15 @@ public class JdbcBufferedConsumerFactory {
                                                    List<WriteConfig> writeConfigs,
                                                    ConfiguredAirbyteCatalog catalog) {
     final Map<String, WriteConfig> streamNameToWriteConfig = writeConfigs.stream()
-        .collect(Collectors.toUnmodifiableMap(WriteConfig::getStreamName, Function.identity()));
+        .collect(Collectors.toUnmodifiableMap(config -> config.getOutputSchemaName() + "." + config.getOutputTableName(), Function.identity()));
 
-    return (streamName, recordStream) -> {
-      if (!streamNameToWriteConfig.containsKey(streamName)) {
+    return (fullyQualifiedTableName, recordStream) -> {
+      if (!streamNameToWriteConfig.containsKey(fullyQualifiedTableName)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
       }
 
-      final WriteConfig writeConfig = streamNameToWriteConfig.get(streamName);
+      final WriteConfig writeConfig = streamNameToWriteConfig.get(fullyQualifiedTableName);
       sqlOperations.insertRecords(database, recordStream, writeConfig.getOutputSchemaName(), writeConfig.getTmpTableName());
     };
   }
