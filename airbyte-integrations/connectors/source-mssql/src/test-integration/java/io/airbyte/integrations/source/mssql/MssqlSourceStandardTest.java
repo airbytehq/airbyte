@@ -46,7 +46,8 @@ import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlSourceStandardTest extends StandardSourceTest {
 
-  private static final String STREAM_NAME = "dbo.id_and_name";
+  private static final String SCHEMA_NAME = "dbo";
+  private static final String STREAM_NAME = "id_and_name";
   private static MSSQLServerContainer<?> db;
   private JsonNode config;
 
@@ -102,6 +103,7 @@ public class MssqlSourceStandardTest extends StandardSourceTest {
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return CatalogHelpers.createConfiguredAirbyteCatalog(
         STREAM_NAME,
+        SCHEMA_NAME,
         Field.of("id", JsonSchemaPrimitive.NUMBER),
         Field.of("name", JsonSchemaPrimitive.STRING),
         Field.of("born", JsonSchemaPrimitive.STRING));
