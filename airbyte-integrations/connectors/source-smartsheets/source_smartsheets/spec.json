@@ -8,13 +8,13 @@
     "additionalProperties": false,
     "properties": {
       "access_token": {
-        "title": "Access token",
-        "description": "Smartsheet API access token.",
+        "title": "API Access token",
+        "description": "Found in Profile > Apps & Integrations > API Access within Smartsheet app",
         "type": "string"
       },
       "spreadsheet_id": {
-        "title": "Spreadsheet ID",
-        "description": "ID of smartsheet to access.",
+        "title": "Smartsheet ID",
+        "description": "Found in File > Properties",
         "type": "string"
       }
     }

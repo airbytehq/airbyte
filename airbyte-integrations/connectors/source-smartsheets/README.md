@@ -3,6 +3,20 @@
 This is the repository for the Smartsheets source connector, written in Python. 
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/smartsheets).
 
+## How Airbyte connects to your Smartsheets
+This version of the Airbyte-Smartsheet source connector utilizes API keys to access your source sheet(s). You can generate an API key for your account from a session of your Smartsheet webapp by clicking:
+
+
+- Account (top-right icon)
+- Apps & Integrations
+- API Access
+- Generate new access token
+
+
+Airbyte will ask for this token when you configure the source connector. You will also need the ID of the Smartsheet, which you can copy from your Smartsheet app session by going to:
+- File
+- Properties
+
 ## Local development
 
 ### Prerequisites
