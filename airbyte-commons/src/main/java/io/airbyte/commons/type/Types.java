@@ -22,17 +22,22 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.string;
+package io.airbyte.commons.type;
 
-import com.google.common.collect.Streams;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class Strings {
+public class Types {
 
-  public static String join(Iterable<?> iterable, CharSequence separator) {
-    return Streams.stream(iterable)
-        .map(Object::toString)
-        .collect(Collectors.joining(separator));
+  /**
+   * Convenience method converting a list to a list of lists of the same type. Each item in the
+   * original list is inserted into its own list.
+   */
+  public static <T> List<List<T>> boxToListofList(List<T> list) {
+    var nonNullEntries = list.stream().filter(Objects::nonNull);
+    return nonNullEntries.map(Collections::singletonList).collect(Collectors.toList());
   }
 
 }

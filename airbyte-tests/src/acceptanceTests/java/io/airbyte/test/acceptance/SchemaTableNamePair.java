@@ -22,17 +22,47 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.string;
+package io.airbyte.test.acceptance;
 
-import com.google.common.collect.Streams;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
-public class Strings {
+public class SchemaTableNamePair {
 
-  public static String join(Iterable<?> iterable, CharSequence separator) {
-    return Streams.stream(iterable)
-        .map(Object::toString)
-        .collect(Collectors.joining(separator));
+  public String schemaName;
+  public String tableName;
+
+  public SchemaTableNamePair(String schemaName, String tableName) {
+    this.schemaName = schemaName;
+    this.tableName = tableName;
+  }
+
+  @Override
+  public String toString() {
+    return "SchemaTableNamePair{" +
+        "schemaName='" + schemaName + '\'' +
+        ", tableName='" + tableName + '\'' +
+        '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SchemaTableNamePair that = (SchemaTableNamePair) o;
+    return Objects.equals(schemaName, that.schemaName) && Objects.equals(tableName, that.tableName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(schemaName, tableName);
+  }
+
+  public String getFullyQualifiedTableName() {
+    return schemaName + "." + tableName;
   }
 
 }

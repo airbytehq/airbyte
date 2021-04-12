@@ -32,7 +32,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
@@ -158,7 +158,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
       List<AirbyteStream> streams = getTables(database, databaseName).stream()
           .map(tableInfo -> CatalogHelpers.createAirbyteStream(tableInfo.getName(), tableInfo.getSchemaName(), tableInfo.getFields())
               .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-              .withSourceDefinedPrimaryKey(Strings.boxToListofList(tableInfo.getPrimaryKeys())))
+              .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys())))
           .collect(Collectors.toList());
       return new AirbyteCatalog().withStreams(streams);
     }
@@ -179,7 +179,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
-        getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
+        getIncrementalIterators(config, database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
         getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream.of(incrementalIterators, fullRefreshIterators)
@@ -193,7 +193,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     });
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
+                                                                             JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,

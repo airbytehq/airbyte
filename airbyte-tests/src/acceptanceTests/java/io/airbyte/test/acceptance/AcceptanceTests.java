@@ -84,6 +84,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -401,12 +402,12 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    assertRawDestinationContains(expectedRecords, STREAM_NAME);
+    assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
 
     // reset back to no data.
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
-    assertRawDestinationContains(Collections.emptyList(), STREAM_NAME);
+    assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
@@ -478,7 +479,7 @@ public class AcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
 
-    assertRawDestinationContains(expectedRawRecords, STREAM_NAME);
+    assertRawDestinationContains(expectedRawRecords, new SchemaTableNamePair("public", STREAM_NAME));
     assertNormalizedDestinationContains(expectedNormalizedRecords);
   }
 
@@ -511,27 +512,25 @@ public class AcceptanceTests {
   private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, boolean withScdTable) throws Exception {
     final Database source = getDatabase(sourceDb);
 
-    final Set<String> sourceStreams = listStreamNames(source);
-    final Set<String> sourceStreamsWithRawPrefix = sourceStreams.stream().flatMap(x -> {
-      final String cleanedNameStream = x.replace(".", "_");
+    final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = sourceTables.stream().flatMap(x -> {
+      final String cleanedNameStream = x.tableName.replace(".", "_");
+      final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
+          new SchemaTableNamePair(x.schemaName, String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream)),
+          new SchemaTableNamePair(x.schemaName, String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream))));
       if (withScdTable) {
-        return List.of(
-            String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream),
-            String.format("%s%s_scd", OUTPUT_NAMESPACE, cleanedNameStream),
-            String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream)).stream();
-      } else {
-        return List.of(
-            String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream),
-            String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream)).stream();
+        explodedStreamNames.add(new SchemaTableNamePair(x.schemaName, String.format("%s%s_scd", OUTPUT_NAMESPACE, cleanedNameStream)));
       }
+      return explodedStreamNames.stream();
     }).collect(Collectors.toSet());
-    final Database destination = getDatabase(destinationPsql);
-    final Set<String> destinationStreams = listDestinationStreams(destination);
-    assertEquals(sourceStreamsWithRawPrefix, destinationStreams,
-        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceStreams, destinationStreams));
 
-    for (String table : sourceStreams) {
-      assertStreamsEquivalent(source, table);
+    final Database destination = getDatabase(destinationPsql);
+    final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
+    assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
+
+    for (SchemaTableNamePair pair : sourceTables) {
+      assertStreamsEquivalent(source, pair);
     }
   }
 
@@ -539,30 +538,24 @@ public class AcceptanceTests {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
   }
 
-  private Set<String> listStreamNames(Database database) throws SQLException {
+  private Set<SchemaTableNamePair> listAllTables(Database database) throws SQLException {
     return database.query(
         context -> {
           Result<Record> fetch =
               context.fetch(
                   "SELECT tablename, schemaname FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
           return fetch.stream()
-              .map(record -> (String) record.get("tablename"))
+              .map(record -> {
+                var schemaName = (String) record.get("schemaname");
+                var tableName = (String) record.get("tablename");
+                return new SchemaTableNamePair(schemaName, tableName);
+              })
               .collect(Collectors.toSet());
         });
   }
 
-  private Set<String> listDestinationStreams(Database destination) throws SQLException {
-    return destination.query(ctx -> ctx.resultQuery("SELECT table_name\n" +
-        "FROM information_schema.tables\n" +
-        "WHERE table_schema = 'public'\n" +
-        "ORDER BY table_name;"))
-        .stream()
-        .map(x -> x.get("table_name", String.class))
-        .collect(Collectors.toSet());
-  }
-
-  private void assertRawDestinationContains(List<JsonNode> sourceRecords, String streamName) throws Exception {
-    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(streamName));
+  private void assertRawDestinationContains(List<JsonNode> sourceRecords, SchemaTableNamePair pair) throws Exception {
+    final Set<JsonNode> destinationRecords = new HashSet<>(retrieveDestinationRecords(pair));
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
         String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
@@ -590,9 +583,9 @@ public class AcceptanceTests {
     }
   }
 
-  private void assertStreamsEquivalent(Database source, String table) throws Exception {
-    final List<JsonNode> sourceRecords = retrieveSourceRecords(source, table);
-    assertRawDestinationContains(sourceRecords, table);
+  private void assertStreamsEquivalent(Database source, SchemaTableNamePair pair) throws Exception {
+    final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
+    assertRawDestinationContains(sourceRecords, pair);
   }
 
   private ConnectionRead createConnection(String name,
@@ -653,7 +646,8 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
-    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", table)))
+    final String cleanedName = table.replace("public.", "");
+    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", cleanedName)))
         .stream()
         .map(Record::intoMap)
         .map(r -> r.get(COLUMN_NAME_DATA))
@@ -664,13 +658,15 @@ public class AcceptanceTests {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveDestinationRecords(String streamName) throws Exception {
-    Database destination = getDatabase(destinationPsql);
-    Set<String> destinationStreams = listDestinationStreams(destination);
-    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, streamName.replace(".", "_"));
-    assertTrue(destinationStreams.contains(rawStreamName), "can't find a non-normalized version (raw) of " + streamName);
+  private List<JsonNode> retrieveDestinationRecords(SchemaTableNamePair pair) throws Exception {
+    final Database destination = getDatabase(destinationPsql);
+    final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
-    return retrieveDestinationRecords(destination, rawStreamName);
+    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, pair.tableName.replace(".", "_"));
+    final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(pair.schemaName, rawStreamName);
+    assertTrue(namePairs.contains(rawTablePair), "can't find a non-normalized version (raw) of " + rawTablePair.getFullyQualifiedTableName());
+
+    return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());
   }
 
   private JsonNode getSourceDbConfig() {
@@ -749,9 +745,9 @@ public class AcceptanceTests {
 
   private void clearDbData(PostgreSQLContainer db) throws SQLException {
     final Database database = getDatabase(db);
-    final Set<String> tableNames = listStreamNames(database);
-    for (final String tableName : tableNames) {
-      database.query(context -> context.execute(String.format("DELETE FROM %s", tableName)));
+    final Set<SchemaTableNamePair> pairs = listAllTables(database);
+    for (SchemaTableNamePair pair : pairs) {
+      database.query(context -> context.execute(String.format("DELETE FROM %s.%s", pair.schemaName, pair.tableName)));
     }
   }
 
