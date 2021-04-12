@@ -32,6 +32,7 @@ services:
     image: airbyte/scheduler:${VERSION}
     container_name: airbyte-scheduler
     environment:
+      - WEBAPP_URL=${WEBAPP_URL}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS_TIMEOUT=45
       - WAIT_HOSTS=db:5432
@@ -40,6 +41,7 @@ services:
       - DATABASE_URL=jdbc:postgresql://db:5432/${DATABASE_DB}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
       - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
+      - LOCAL_ROOT=${LOCAL_ROOT}
       - LOCAL_DOCKER_MOUNT=${LOCAL_DOCKER_MOUNT}
       - CONFIG_ROOT=${CONFIG_ROOT}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
@@ -55,6 +57,7 @@ services:
     image: airbyte/server:${VERSION}
     container_name: airbyte-server
     environment:
+      - WEBAPP_URL=${WEBAPP_URL}
       - WAIT_BEFORE_HOSTS=5
       - WAIT_HOSTS_TIMEOUT=45
       - WAIT_HOSTS=db:5432

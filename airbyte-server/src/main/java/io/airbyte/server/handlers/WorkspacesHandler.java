@@ -29,6 +29,9 @@ import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.DestinationRead;
+import io.airbyte.api.model.Notification;
+import io.airbyte.api.model.NotificationRead;
+import io.airbyte.api.model.NotificationRead.StatusEnum;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.WorkspaceCreate;
@@ -38,6 +41,7 @@ import io.airbyte.api.model.WorkspaceUpdate;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.notification.NotificationClient;
 import io.airbyte.server.converters.NotificationConverter;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.validation.json.JsonValidationException;
@@ -94,7 +98,7 @@ public class WorkspacesHandler {
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
         .withDisplaySetupWizard(false)
         .withTombstone(false)
-        .withNotifications(NotificationConverter.toConfig(workspaceCreate.getNotifications()));
+        .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()));
 
     if (!Strings.isNullOrEmpty(email)) {
       workspace.withEmail(email);
@@ -166,7 +170,7 @@ public class WorkspacesHandler {
         .withAnonymousDataCollection(workspaceUpdate.getAnonymousDataCollection())
         .withNews(workspaceUpdate.getNews())
         .withSecurityUpdates(workspaceUpdate.getSecurityUpdates())
-        .withNotifications(NotificationConverter.toConfig(workspaceUpdate.getNotifications()));
+        .withNotifications(NotificationConverter.toConfigList(workspaceUpdate.getNotifications()));
 
     configRepository.writeStandardWorkspace(persistedWorkspace);
 
@@ -174,6 +178,22 @@ public class WorkspacesHandler {
     TrackingClientSingleton.get().identify();
 
     return buildWorkspaceReadFromId(workspaceUpdate.getWorkspaceId());
+  }
+
+  public NotificationRead tryNotification(Notification notification) {
+    try {
+      final NotificationClient notificationClient = NotificationClient.createNotificationClient(NotificationConverter.toConfig(notification));
+      final String message = String.format("Hello World! This is a test from Airbyte to try %s notification settings",
+          notification.getNotificationType());
+      if (notificationClient.notify(message)) {
+        return new NotificationRead().status(StatusEnum.SUCCEEDED);
+      }
+    } catch (IllegalArgumentException e) {
+      throw new KnownException(HttpStatus.NOT_FOUND_404, e.getMessage());
+    } catch (IOException | InterruptedException e) {
+      return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
+    }
+    return new NotificationRead().status(StatusEnum.FAILED);
   }
 
   private WorkspaceRead buildWorkspaceReadFromId(UUID workspaceId) throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -193,7 +213,7 @@ public class WorkspacesHandler {
         .anonymousDataCollection(workspace.getAnonymousDataCollection())
         .news(workspace.getNews())
         .securityUpdates(workspace.getSecurityUpdates())
-        .notifications(NotificationConverter.toApi(workspace.getNotifications()));
+        .notifications(NotificationConverter.toApiList(workspace.getNotifications()));
   }
 
 }

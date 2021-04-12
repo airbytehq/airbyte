@@ -26,8 +26,10 @@ package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
@@ -81,6 +83,10 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
+  public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
+  public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
+
   private static final String JDBC_COLUMN_DATABASE_NAME = "TABLE_CAT";
   private static final String JDBC_COLUMN_SCHEMA_NAME = "TABLE_SCHEM";
   private static final String JDBC_COLUMN_TABLE_NAME = "TABLE_NAME";
@@ -120,16 +126,29 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try (final JdbcDatabase database = createDatabase(config)) {
-      // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+      for (CheckedConsumer<JdbcDatabase, Exception> checkOperation : getCheckOperations(config)) {
+        checkOperation.accept(database);
+      }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.debug("Exception while checking connection: ", e);
+      LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration.");
     }
+  }
+
+  /**
+   * Configures a list of operations that can be used to check the connection to the source.
+   *
+   * @return list of consumers that run queries for the check command.
+   */
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
+    return ImmutableList.of(database -> {
+      LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+    });
   }
 
   @Override
@@ -147,8 +166,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    final JdbcStateManager stateManager =
-        new JdbcStateManager(state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class), catalog);
+    final JdbcStateManager stateManager = new JdbcStateManager(
+        state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class),
+        catalog);
     final Instant emittedAt = Instant.now();
 
     final JdbcDatabase database = createDatabase(config);
@@ -173,7 +193,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     });
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
+                                                                             JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,
@@ -187,7 +208,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         configuredStream -> configuredStream.getSyncMode().equals(SyncMode.INCREMENTAL));
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(JsonNode config,
+                                                                             JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,
@@ -472,9 +494,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         .collect(Collectors.toList());
   }
 
-  private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
-                                                                          String streamName,
-                                                                          long emittedAt) {
+  public static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
+                                                                         String streamName,
+                                                                         long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -590,7 +612,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
    * The following two classes are internal data structures to ease managing tables. Any external
    * information should be revealed through the {@link TableInfo} class.
    */
-  static class TableInfoInternal {
+  public static class TableInfoInternal {
 
     private final String schemaName;
     private final String name;

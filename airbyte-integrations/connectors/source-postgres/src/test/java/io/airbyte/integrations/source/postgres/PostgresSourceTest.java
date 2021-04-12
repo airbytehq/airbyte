@@ -25,9 +25,11 @@
 package io.airbyte.integrations.source.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -218,6 +220,18 @@ class PostgresSourceTest {
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
+  }
+
+  @Test
+  void testIsCdc() {
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+
+    assertFalse(PostgresSource.isCdc(config));
+
+    ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
+        "replication_slot", "slot",
+        "publication", "ab_pub")));
+    assertTrue(PostgresSource.isCdc(config));
   }
 
   private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {
