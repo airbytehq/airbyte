@@ -71,6 +71,10 @@ Depending on your Docker network configuration, you may not be able to connect t
 
 If you are running into connection refused errors when running Airbyte via Docker Compose on Mac, try using `host.docker.internal` as the host. On Linux, you may have to modify `docker-compose.yml` and add a host that maps to your local machine using [`extra_hosts`](https://docs.docker.com/compose/compose-file/compose-file-v3/#extra_hosts).
 
+## **Do you support change data capture (CDC) or logical replication for databases?**
+
+We currently support [CDC for Postgres 10+](../integrations/sources/postgres.md). We are adding support for a few other databases April/May 2021.  
+
 ## **Can I disable analytics in Airbyte?**
 
 Yes, you can control what's sent outside of Airbyte for analytics purposes.

@@ -30,11 +30,11 @@ import java.util.stream.Collectors;
 
 public class NotificationConverter {
 
-  public static List<io.airbyte.config.Notification> toConfig(final List<io.airbyte.api.model.Notification> notifications) {
+  public static List<io.airbyte.config.Notification> toConfigList(final List<io.airbyte.api.model.Notification> notifications) {
     return notifications.stream().map(NotificationConverter::toConfig).collect(Collectors.toList());
   }
 
-  private static io.airbyte.config.Notification toConfig(final io.airbyte.api.model.Notification notification) {
+  public static io.airbyte.config.Notification toConfig(final io.airbyte.api.model.Notification notification) {
     return new io.airbyte.config.Notification()
         .withNotificationType(Enums.convertTo(notification.getNotificationType(), io.airbyte.config.Notification.NotificationType.class))
         .withSlackConfiguration(toConfig(notification.getSlackConfiguration()));
@@ -45,11 +45,11 @@ public class NotificationConverter {
         .withWebhook(notification.getWebhook());
   }
 
-  public static List<io.airbyte.api.model.Notification> toApi(final List<io.airbyte.config.Notification> notifications) {
+  public static List<io.airbyte.api.model.Notification> toApiList(final List<io.airbyte.config.Notification> notifications) {
     return notifications.stream().map(NotificationConverter::toApi).collect(Collectors.toList());
   }
 
-  private static io.airbyte.api.model.Notification toApi(final io.airbyte.config.Notification notification) {
+  public static io.airbyte.api.model.Notification toApi(final io.airbyte.config.Notification notification) {
     return new io.airbyte.api.model.Notification()
         .notificationType(Enums.convertTo(notification.getNotificationType(), io.airbyte.api.model.NotificationType.class))
         .slackConfiguration(toApi(notification.getSlackConfiguration()));
