@@ -1,10 +1,10 @@
 import React from "react";
+import userEvent from "@testing-library/user-event";
+import { waitFor } from "@testing-library/react";
+import { JSONSchema7 } from "json-schema";
 
 import ServiceForm from "components/ServiceForm";
 import { render } from "utils/testutils";
-import { JSONSchema7 } from "json-schema";
-import userEvent from "@testing-library/user-event";
-import { waitFor } from "@testing-library/react";
 import { ServiceFormValues } from "./types";
 
 const schema: JSONSchema7 = {
@@ -251,7 +251,7 @@ describe("Service Form", () => {
       const listPrice = container.querySelector(
         "input[name='connectionConfiguration.priceList.0.price']"
       );
-      const done = priceList!.querySelector(
+      const done = priceList?.querySelector(
         "button[data-test-id='done-button']"
       );
       userEvent.type(listName!, "test-price-list-name");
