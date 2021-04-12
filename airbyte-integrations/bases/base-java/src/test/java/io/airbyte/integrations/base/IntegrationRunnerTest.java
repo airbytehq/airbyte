@@ -37,6 +37,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -54,7 +56,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -63,7 +64,6 @@ import org.mockito.Mockito;
 class IntegrationRunnerTest {
 
   private static final String CONFIG_FILE_NAME = "config.json";
-  private static final String CATALOG_FILE_NAME = "catalog.json";
   private static final String CONFIGURED_CATALOG_FILE_NAME = "configured_catalog.json";
   private static final String STATE_FILE_NAME = "state.json";
 
@@ -182,7 +182,7 @@ class IntegrationRunnerTest {
             .withData(Jsons.jsonNode(ImmutableMap.of("names", "reginald"))));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(source.read(CONFIG, CONFIGURED_CATALOG, STATE)).thenReturn(Stream.of(message1, message2));
+    when(source.read(CONFIG, CONFIGURED_CATALOG, STATE)).thenReturn(AutoCloseableIterators.fromIterator(MoreIterators.of(message1, message2)));
 
     new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
 
@@ -195,14 +195,14 @@ class IntegrationRunnerTest {
   @Test
   void testWrite() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
-    final DestinationConsumer<AirbyteMessage> destinationConsumerMock = mock(DestinationConsumer.class);
+    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.write(CONFIG, CONFIGURED_CATALOG)).thenReturn(destinationConsumerMock);
+    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG)).thenReturn(airbyteMessageConsumerMock);
 
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null));
     runner.run(ARGS);
 
-    verify(destination).write(CONFIG, CONFIGURED_CATALOG);
+    verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG);
   }
 
   @SuppressWarnings("unchecked")
@@ -222,13 +222,13 @@ class IntegrationRunnerTest {
             .withEmittedAt(EMITTED_AT));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
 
-    final DestinationConsumer<AirbyteMessage> destinationConsumerMock = mock(DestinationConsumer.class);
-    IntegrationRunner.consumeWriteStream(destinationConsumerMock);
+    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
+    IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
 
-    InOrder inOrder = inOrder(destinationConsumerMock);
-    inOrder.verify(destinationConsumerMock).accept(singerMessage1);
-    inOrder.verify(destinationConsumerMock).accept(singerMessage2);
-    inOrder.verify(destinationConsumerMock).close();
+    InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+    inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
+    inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage2);
+    inOrder.verify(airbyteMessageConsumerMock).close();
   }
 
   @SuppressWarnings("unchecked")
@@ -248,14 +248,14 @@ class IntegrationRunnerTest {
             .withEmittedAt(EMITTED_AT));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
 
-    final DestinationConsumer<AirbyteMessage> destinationConsumerMock = mock(DestinationConsumer.class);
-    doThrow(new IOException("error")).when(destinationConsumerMock).accept(singerMessage1);
+    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
+    doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(singerMessage1);
 
-    assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(destinationConsumerMock));
+    assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
 
-    InOrder inOrder = inOrder(destinationConsumerMock);
-    inOrder.verify(destinationConsumerMock).accept(singerMessage1);
-    inOrder.verify(destinationConsumerMock).close();
+    InOrder inOrder = inOrder(airbyteMessageConsumerMock);
+    inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
+    inOrder.verify(airbyteMessageConsumerMock).close();
     inOrder.verifyNoMoreInteractions();
   }
 

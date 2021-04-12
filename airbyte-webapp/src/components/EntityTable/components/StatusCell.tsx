@@ -1,9 +1,9 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { useAsyncFn } from "react-use";
 
-import Toggle from "../../Toggle";
-import Button from "../../Button";
+import { LoadingButton, Toggle } from "components";
 
 type IProps = {
   enabled?: boolean;
@@ -14,7 +14,7 @@ type IProps = {
   onSync: (id: string) => void;
 };
 
-const SmallButton = styled(Button)`
+const SmallButton = styled(LoadingButton)`
   padding: 6px 8px 7px;
 `;
 
@@ -28,12 +28,15 @@ const StatusCell: React.FC<IProps> = ({
   id,
   onChangeStatus,
   isSyncing,
-  onSync
+  onSync,
 }) => {
-  const OnLaunch = (event: React.SyntheticEvent) => {
-    event.stopPropagation();
-    onSync(id);
-  };
+  const [{ loading }, OnLaunch] = useAsyncFn(
+    async (event: React.SyntheticEvent) => {
+      event.stopPropagation();
+      await onSync(id);
+    },
+    []
+  );
 
   const OnToggleClick = (event: React.SyntheticEvent) => {
     event.stopPropagation();
@@ -53,7 +56,7 @@ const StatusCell: React.FC<IProps> = ({
   }
 
   return (
-    <SmallButton onClick={OnLaunch}>
+    <SmallButton onClick={OnLaunch} isLoading={loading}>
       <FormattedMessage id="tables.launch" />
     </SmallButton>
   );

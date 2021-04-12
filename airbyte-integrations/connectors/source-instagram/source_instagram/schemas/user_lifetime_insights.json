@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "page_id": {
+      "type": ["null", "string"]
+    },
+    "business_account_id": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "metric": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": ["integer", "object"]
+    }
+  }
+}

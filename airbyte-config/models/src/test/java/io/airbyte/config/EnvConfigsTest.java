@@ -129,7 +129,7 @@ class EnvConfigsTest {
     Assertions.assertEquals("abc/def", config.getWorkspaceDockerMount());
 
     when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn("root");
-    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn(null);
+    when(function.apply(EnvConfigs.WORKSPACE_ROOT)).thenReturn("abc/def");
     Assertions.assertEquals("root", config.getWorkspaceDockerMount());
 
     when(function.apply(EnvConfigs.WORKSPACE_DOCKER_MOUNT)).thenReturn(null);
@@ -144,7 +144,7 @@ class EnvConfigsTest {
     Assertions.assertEquals("abc/def", config.getLocalDockerMount());
 
     when(function.apply(EnvConfigs.LOCAL_DOCKER_MOUNT)).thenReturn("root");
-    when(function.apply(EnvConfigs.LOCAL_ROOT)).thenReturn(null);
+    when(function.apply(EnvConfigs.LOCAL_ROOT)).thenReturn("abc/def");
     Assertions.assertEquals("root", config.getLocalDockerMount());
 
     when(function.apply(EnvConfigs.LOCAL_DOCKER_MOUNT)).thenReturn(null);

@@ -4,13 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Slack Api Singer Spec",
     "type": "object",
-    "required": [
-      "start_date",
-      "token",
-      "private_channels",
-      "join_public_channels",
-      "exclude_archived"
-    ],
+    "required": ["start_date", "token"],
     "additionalProperties": false,
     "properties": {
       "start_date": {
@@ -21,25 +15,8 @@
       },
       "token": {
         "type": "string",
-        "description": "The Slack API token to interact with your Slack workspace."
-      },
-      "private_channels": {
-        "title": "Private channels",
-        "type": "boolean",
-        "description": "Whether to sync data from private channels.",
-        "default": false
-      },
-      "join_public_channels": {
-        "title": "Join Public channels",
-        "type": "boolean",
-        "description": "Whether to sync data from all public channels in your organization.",
-        "default": true
-      },
-      "exclude_archived": {
-        "title": "Exclude Archived channels",
-        "type": "boolean",
-        "description": "Whether to exclude information about archived channels from syncs.",
-        "default": false
+        "description": "The Slack API token to interact with your Slack workspace.",
+        "airbyte_secret": true
       }
     }
   }

@@ -9,27 +9,26 @@ import ValueInput from "./components/ValueInput";
 import WithButtonItem from "./components/WithButtonItem";
 import GroupHeader from "./components/GroupHeader";
 
-export type IProps = {
+type DropdownProps = {
   disabled?: boolean;
   hasFilter?: boolean;
   fullText?: boolean;
-  placeholder?: string;
   filterPlaceholder?: string;
-  value?: string;
-  data: Array<IDataItem>;
-  onSelect?: (item: IDataItem) => void;
   withButton?: boolean;
   withBorder?: boolean;
+  error?: boolean;
   textButton?: string;
   className?: string;
-  groupBy?: string;
-};
+  name?: string;
+} & DropdownList.DropdownListProps;
 
 const StyledDropdownList = styled(DropdownList)<{
   disabled?: boolean;
   withBorder?: boolean;
+  error?: boolean;
 }>`
   text-align: left;
+
   &.rw-state-disabled {
     pointer-events: none;
     cursor: auto;
@@ -37,6 +36,7 @@ const StyledDropdownList = styled(DropdownList)<{
     & .rw-btn {
       opacity: 0;
     }
+
     & .rw-placeholder,
     & .rw-input {
       color: ${({ theme }) => theme.greyColor40};
@@ -47,13 +47,18 @@ const StyledDropdownList = styled(DropdownList)<{
     height: ${({ withBorder }) => (withBorder ? 31 : 36)}px;
     box-shadow: none;
     border: 1px solid
-      ${({ theme, withBorder }) =>
-        withBorder ? theme.greyColor30 : theme.greyColor0};
+      ${({ theme, withBorder, error }) =>
+        error
+          ? theme.dangerColor
+          : withBorder
+          ? theme.greyColor30
+          : theme.greyColor0};
     background: ${({ theme }) => theme.greyColor0};
     border-radius: 4px;
 
     &:hover {
-      border-color: ${({ theme }) => theme.greyColor20};
+      border-color: ${({ theme, error }) =>
+        error ? theme.dangerColor : theme.greyColor20};
       background: ${({ theme }) => theme.greyColor20};
     }
   }
@@ -120,6 +125,7 @@ const StyledDropdownList = styled(DropdownList)<{
 
   & > .rw-popup-container {
     min-width: 260px;
+
     & .rw-select {
       display: none;
     }
@@ -133,7 +139,7 @@ const StyledDropdownList = styled(DropdownList)<{
 
   & .withButton,
   &.rw-state-focus .withButton {
-    border: 1px solid ${props => props.theme.primaryColor};
+    border: 1px solid ${(props) => props.theme.primaryColor};
     outline: none;
     border-radius: 4px;
     padding: 5px 10px 6px;
@@ -143,8 +149,8 @@ const StyledDropdownList = styled(DropdownList)<{
     text-align: center;
     letter-spacing: 0.03em;
     cursor: pointer;
-    color: ${props => props.theme.whiteColor};
-    background: ${props => props.theme.primaryColor};
+    color: ${(props) => props.theme.whiteColor};
+    background: ${(props) => props.theme.primaryColor};
     text-decoration: none;
     min-width: 130px;
     height: 28px;
@@ -152,17 +158,20 @@ const StyledDropdownList = styled(DropdownList)<{
     &:hover {
       box-shadow: 0 1px 3px rgba(53, 53, 66, 0.2),
         0 1px 2px rgba(53, 53, 66, 0.12), 0 1px 1px rgba(53, 53, 66, 0.14);
-      background: ${props => props.theme.primaryColor};
-      border: 1px solid ${props => props.theme.primaryColor};
+      background: ${(props) => props.theme.primaryColor};
+      border: 1px solid ${(props) => props.theme.primaryColor};
     }
+
     & .rw-input,
     & .rw-placeholder {
       padding: 0;
-      color: ${props => props.theme.whiteColor};
+      color: ${(props) => props.theme.whiteColor};
     }
+
     & .rw-select {
       display: none;
     }
+
     & ~ .rw-popup-container {
       min-width: 260px;
       left: auto;
@@ -170,7 +179,7 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 `;
 
-const DropDown: React.FC<IProps> = props => {
+const DropDown: React.FC<DropdownProps> = (props) => {
   const formatMessage = useIntl().formatMessage;
 
   const className = `${props.className} ${
@@ -179,6 +188,8 @@ const DropDown: React.FC<IProps> = props => {
 
   return (
     <StyledDropdownList
+      data-test-id={props.name}
+      error={props.error}
       withBorder={props.withBorder}
       containerClassName={className}
       filter={props.hasFilter ? "contains" : false}
@@ -189,8 +200,8 @@ const DropDown: React.FC<IProps> = props => {
       messages={{
         filterPlaceholder: props.filterPlaceholder || "",
         emptyFilter: formatMessage({
-          id: "form.noResult"
-        })
+          id: "form.noResult",
+        }),
       }}
       textField="text"
       valueField="value"
@@ -205,12 +216,16 @@ const DropDown: React.FC<IProps> = props => {
           <ValueInput item={item} />
         )
       }
-      itemComponent={item => <ListItem item={item} fullText={props.fullText} />}
+      itemComponent={(item) => (
+        <ListItem item={item} fullText={props.fullText} />
+      )}
       onSelect={props.onSelect}
-      // @ts-ignore
+      // @ts-ignore wrong typing
       searchIcon=""
     />
   );
 };
 
 export default DropDown;
+export { DropDown };
+export type { DropdownProps };

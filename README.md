@@ -5,7 +5,7 @@
 ![](docs/.gitbook/assets/airbyte_horizontal_color_white-background.svg)
 
 **Data integration made simple, secure and extensible.**  
-The new open-source standard to sync data from applications, APIs & databases to warehouses.
+The new open-source standard to sync data from applications, APIs & databases to warehouses, lakes & other destinations.
 
 [![](docs/.gitbook/assets/deploy-locally.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
 
@@ -50,7 +50,7 @@ Here is a [step-by-step guide](docs/getting-started.md) showing you how to load 
 
 We love contributions to Airbyte, big or small.
 
-See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://drift.me/micheltricot/meeting) with one of our core contributors.
+See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://calendly.com/michel-airbyte/contribution-1-1) with one of our core contributors.
 
 **Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
 

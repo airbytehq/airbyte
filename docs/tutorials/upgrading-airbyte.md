@@ -1,24 +1,18 @@
 # Upgrading Airbyte
 
-{% hint style="warning" %}
-Coming soon! This tutorial is a work in progress for a feature that is currently in development. It is not usable yet!
-{% endhint %}
-
-## Upgrading Airbyte
-
-### Overview
+## Overview
 
 This tutorial will describe how to determine if you need to run this upgrade process, and if you do, how to do so. This process does require temporarily turning off Airbyte.
 
-### Determining if you need to Upgrade
+## Determining if you need to Upgrade
 
 All minor and major version releases requiring updating the data that Airbyte stores internally. We follow standard [Semantic Versioning](https://semver.org/) conventions. You can always find the latest stable version of Airbyte in our repository [here](https://github.com/airbytehq/airbyte/blob/master/.env#L1). If you are upgrading to a new major or minor version follow the steps below to upgrade your configuration data.
 
 {% hint style="info" %}
-If you inadvertently upgrade to a version of Airbyte that is not compatible with your data, the docker containers will not start up and will log an error stating the incompatibility. In these cases, you should downgrade to the previous version that worked and follow the steps below.
+If you inadvertently upgrade to a version of Airbyte that is not compatible with your data, the docker containers will not start up and will log an error stating the incompatibility. In these cases, you should downgrade to the previous version that worked and follow the steps below. On the other hand, if you don't mind losing your current Airbyte configuration or have never setup any proper connections yet, you can skip the migrating operations and jump directly to step 5 below.
 {% endhint %}
 
-### Upgrading \(Docker\)
+## Upgrading \(Docker\)
 
 1. Turn off Airbyte
 
@@ -39,16 +33,15 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    docker run --rm -v <path to directory containing downloaded airbyte_archive.tar.gz>:/config airbyte/migration:<version you are upgrading to> --\
    --input /config/airbyte_archive.tar.gz\
    --output <path to where migrated archive will be written (should end in .tar.gz)>\
-   --target-version <version you are migrating to>
+   --target-version <version you are migrating to or empty for latest>
    ```
 
 Here's an example of what might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
 ```bash
-docker run --rm -v /tmp:/config airbyte/migration:0.11.1-alpha --\
+docker run --rm -v /tmp:/config airbyte/migration:0.19.0-alpha --\
   --input /config/airbyte_archive.tar.gz\
-  --output /config/airbyte_archive_migrated.tar.gz\
-  --target-version 0.11.1-alpha
+  --output /config/airbyte_archive_migrated.tar.gz
 ```
 
 {% hint style="info" %}
@@ -83,7 +76,7 @@ It may seem confusing that you need to specify the target version twice. The ver
 
 This step will throw an exception if the data you are trying to upload does not match the version of Airbyte that is running.
 
-### API Instruction
+## API Instruction
 
 If you prefer to import and export your data via API instead the UI, follow these instructions:
 
@@ -105,7 +98,7 @@ Here is an example of what this request might look like assuming that the migrat
 curl -H "Content-Type: application/x-gzip" -X POST localhost:8001/api/v1/deployment/import --data-binary @/tmp/airbyte_archive_migrated.tar.gz
 ```
 
-### Upgrading \(K8s\)
+## Upgrading \(K8s\)
 
 _coming soon_
 

@@ -25,7 +25,10 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
+import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
@@ -37,20 +40,28 @@ import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.Schedule;
-import io.airbyte.config.Schema;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.server.converters.SchemaConverter;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConnectionsHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionsHandler.class);
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidGenerator;
@@ -72,14 +83,16 @@ public class ConnectionsHandler {
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
+        .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
 
-    if (connectionCreate.getSyncSchema() != null) {
-      standardSync.withSchema(SchemaConverter.toPersistenceSchema(connectionCreate.getSyncSchema()));
+    // TODO Undesirable behavior: sending a null configured catalog should not be valid?
+    if (connectionCreate.getSyncCatalog() != null) {
+      standardSync.withCatalog(CatalogConverter.toProtocol(connectionCreate.getSyncCatalog()));
     } else {
-      standardSync.withSchema(new Schema().withStreams(Collections.emptyList()));
+      standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
     }
 
     configRepository.writeStandardSync(standardSync);
@@ -99,13 +112,50 @@ public class ConnectionsHandler {
 
     configRepository.writeStandardSchedule(standardSyncSchedule);
 
+    trackNewConnection(standardSync, standardSyncSchedule);
+
     return buildConnectionRead(connectionId);
+  }
+
+  private void trackNewConnection(final StandardSync standardSync, final StandardSyncSchedule standardSyncSchedule) {
+    try {
+      final Builder<String, Object> metadataBuilder = generateMetadata(standardSync, standardSyncSchedule);
+      TrackingClientSingleton.get().track("New Connection - Backend", metadataBuilder.build());
+    } catch (Exception e) {
+      LOGGER.error("failed while reporting usage.", e);
+    }
+  }
+
+  private Builder<String, Object> generateMetadata(final StandardSync standardSync, final StandardSyncSchedule standardSyncSchedule) {
+    final Builder<String, Object> metadata = ImmutableMap.builder();
+
+    final UUID connectionId = standardSync.getConnectionId();
+    final StandardSourceDefinition sourceDefinition = configRepository
+        .getSourceDefinitionFromConnection(connectionId);
+    final StandardDestinationDefinition destinationDefinition = configRepository
+        .getDestinationDefinitionFromConnection(connectionId);
+
+    metadata.put("connector_source", sourceDefinition.getName());
+    metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
+    metadata.put("connector_destination", destinationDefinition.getName());
+    metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+
+    final String frequencyString;
+    if (standardSyncSchedule.getManual()) {
+      frequencyString = "manual";
+    } else {
+      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSyncSchedule.getSchedule()));
+      frequencyString = intervalInMinutes + " min";
+    }
+    metadata.put("frequency", frequencyString);
+    return metadata;
   }
 
   public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
-        .withSchema(SchemaConverter.toPersistenceSchema(connectionUpdate.getSyncSchema()))
+        .withPrefix(connectionUpdate.getPrefix())
+        .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
     return updateConnection(connectionUpdate, persistedSync);
@@ -167,8 +217,9 @@ public class ConnectionsHandler {
 
   public void deleteConnection(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+        .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
-        .syncSchema(connectionRead.getSyncSchema())
+        .syncCatalog(connectionRead.getSyncCatalog())
         .schedule(connectionRead.getSchedule())
         .status(ConnectionStatus.DEPRECATED);
 
@@ -208,7 +259,8 @@ public class ConnectionsHandler {
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())
-        .syncSchema(SchemaConverter.toApiSchema(standardSync.getSchema()));
+        .prefix(standardSync.getPrefix())
+        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
   }
 
   private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {

@@ -27,12 +27,13 @@ package io.airbyte.integrations.source.mysql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
-import java.util.Optional;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -51,13 +52,15 @@ class MySqlJdbcStandardTest extends JdbcSourceStandardTest {
   private Database database;
 
   @BeforeAll
-  static void init() {
-    // test containers withInitScript only accepts scripts that are mounted as resources.
-    MoreResources.writeResource("init.sql",
-        "CREATE USER '" + TEST_USER + "'@'%' IDENTIFIED BY '" + TEST_PASSWORD + "';\n"
-            + "GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-    container = new MySQLContainer<>("mysql:8.0").withInitScript("init.sql").withUsername("root").withPassword("");
+  static void init() throws SQLException {
+    container = new MySQLContainer<>("mysql:8.0")
+        .withUsername(TEST_USER)
+        .withPassword(TEST_PASSWORD)
+        .withEnv("MYSQL_ROOT_HOST", "%")
+        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
     container.start();
+    Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", TEST_PASSWORD);
+    connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
 
   @BeforeEach
@@ -77,6 +80,7 @@ class MySqlJdbcStandardTest extends JdbcSourceStandardTest {
             config.get("host").asText(),
             config.get("port").asText()),
         MySqlSource.DRIVER_CLASS,
+
         SQLDialect.MYSQL);
 
     database.query(ctx -> {
@@ -89,8 +93,9 @@ class MySqlJdbcStandardTest extends JdbcSourceStandardTest {
   }
 
   @AfterEach
-  void tearDown() throws Exception {
+  void tearDownMySql() throws Exception {
     database.close();
+    super.tearDown();
   }
 
   @AfterAll
@@ -100,8 +105,8 @@ class MySqlJdbcStandardTest extends JdbcSourceStandardTest {
 
   // MySql does not support schemas in the way most dbs do. Instead we namespace by db name.
   @Override
-  public Optional<String> getDefaultSchemaName() {
-    return Optional.of(config.get("database").asText());
+  public boolean supportsSchemas() {
+    return false;
   }
 
   @Override

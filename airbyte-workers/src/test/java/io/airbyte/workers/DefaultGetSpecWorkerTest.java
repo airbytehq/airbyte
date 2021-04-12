@@ -25,6 +25,7 @@
 package io.airbyte.workers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -35,7 +36,6 @@ import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.StandardGetSpecOutput;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -71,7 +71,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testSuccessfulRun() throws IOException, InterruptedException {
+  public void testSuccessfulRun() throws IOException, InterruptedException, WorkerException {
     String expectedSpecString = MoreResources.readResource("valid_spec.json");
 
     final AirbyteMessage message = new AirbyteMessage()
@@ -82,10 +82,8 @@ class DefaultGetSpecWorkerTest {
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 
-    OutputAndStatus<StandardGetSpecOutput> actualOutput = worker.run(config, jobRoot);
-    OutputAndStatus<StandardGetSpecOutput> expectedOutput =
-        new OutputAndStatus<>(JobStatus.SUCCEEDED,
-            new StandardGetSpecOutput().withSpecification(Jsons.deserialize(expectedSpecString, ConnectorSpecification.class)));
+    ConnectorSpecification actualOutput = worker.run(config, jobRoot);
+    ConnectorSpecification expectedOutput = Jsons.deserialize(expectedSpecString, ConnectorSpecification.class);
 
     assertEquals(expectedOutput, actualOutput);
   }
@@ -97,10 +95,7 @@ class DefaultGetSpecWorkerTest {
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 
-    OutputAndStatus<StandardGetSpecOutput> actualOutput = worker.run(config, jobRoot);
-    OutputAndStatus<StandardGetSpecOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
-
-    assertEquals(expectedOutput, actualOutput);
+    assertThrows(WorkerException.class, () -> worker.run(config, jobRoot));
   }
 
   @Test
@@ -108,10 +103,7 @@ class DefaultGetSpecWorkerTest {
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(1);
 
-    OutputAndStatus<StandardGetSpecOutput> actualOutput = worker.run(config, jobRoot);
-    OutputAndStatus<StandardGetSpecOutput> expectedOutput = new OutputAndStatus<>(JobStatus.FAILED);
-
-    assertEquals(expectedOutput, actualOutput);
+    assertThrows(WorkerException.class, () -> worker.run(config, jobRoot));
   }
 
 }

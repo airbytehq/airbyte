@@ -15,41 +15,44 @@ test("should build schema for simple case", () => {
         type: "integer",
         maximum: 65536,
         minimum: 0,
-        description: "Port of the database."
+        description: "Port of the database.",
       },
       user: {
         type: "string",
-        description: "Username to use to access the database."
+        description: "Username to use to access the database.",
       },
       is_sandbox: {
         type: "boolean",
-        default: false
+        default: false,
       },
       is_field_no_default: {
-        type: "boolean"
+        type: "boolean",
       },
       dbname: { type: "string", description: "Name of the database." },
       password: {
         type: "string",
-        description: "Password associated with the username."
-      }
+        description: "Password associated with the username.",
+      },
+      reports: {
+        type: "array",
+        items: {
+          type: "string",
+        },
+      },
     },
-    additionalProperties: false
+    additionalProperties: false,
   };
   const yupSchema = buildYupFormForJsonSchema(schema);
 
   const expectedSchema = yup.object().shape({
-    host: yup.string().required("form.empty.error"),
-    port: yup
-      .number()
-      .min(0)
-      .max(65536)
-      .required("form.empty.error"),
-    user: yup.string().required("form.empty.error"),
+    host: yup.string().trim().required("form.empty.error"),
+    port: yup.number().min(0).max(65536).required("form.empty.error"),
+    user: yup.string().trim().required("form.empty.error"),
     is_sandbox: yup.boolean().default(false),
     is_field_no_default: yup.boolean().required("form.empty.error"),
-    dbname: yup.string().required("form.empty.error"),
-    password: yup.string()
+    dbname: yup.string().trim().required("form.empty.error"),
+    password: yup.string().trim(),
+    reports: yup.array().of(yup.string().trim()),
   });
 
   expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
@@ -62,7 +65,7 @@ test("should build schema for conditional case", () => {
       required: ["start_date", "credentials"],
       properties: {
         start_date: {
-          type: "string"
+          type: "string",
         },
         credentials: {
           type: "object",
@@ -72,9 +75,9 @@ test("should build schema for conditional case", () => {
               required: ["api_key"],
               properties: {
                 api_key: {
-                  type: "string"
-                }
-              }
+                  type: "string",
+                },
+              },
             },
             {
               title: "oauth",
@@ -82,22 +85,22 @@ test("should build schema for conditional case", () => {
               properties: {
                 redirect_uri: {
                   type: "string",
-                  examples: ["https://api.hubspot.com/"]
-                }
-              }
-            }
-          ]
-        }
-      }
+                  examples: ["https://api.hubspot.com/"],
+                },
+              },
+            },
+          ],
+        },
+      },
     },
     { credentials: { selectedItem: "api key" } }
   );
 
   const expectedSchema = yup.object().shape({
-    start_date: yup.string().required("form.empty.error"),
+    start_date: yup.string().trim().required("form.empty.error"),
     credentials: yup.object().shape({
-      api_key: yup.string().required("form.empty.error")
-    })
+      api_key: yup.string().trim().required("form.empty.error"),
+    }),
   });
 
   expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
@@ -116,9 +119,9 @@ test("should build schema for conditional case with inner schema and selected ui
               required: ["api_key"],
               properties: {
                 api_key: {
-                  type: "string"
-                }
-              }
+                  type: "string",
+                },
+              },
             },
             {
               title: "oauth",
@@ -126,13 +129,13 @@ test("should build schema for conditional case with inner schema and selected ui
               properties: {
                 redirect_uri: {
                   type: "string",
-                  examples: ["https://api.hubspot.com/"]
-                }
-              }
-            }
-          ]
-        }
-      }
+                  examples: ["https://api.hubspot.com/"],
+                },
+              },
+            },
+          ],
+        },
+      },
     },
     { "key.credentials": { selectedItem: "oauth" } },
     undefined,
@@ -141,8 +144,8 @@ test("should build schema for conditional case with inner schema and selected ui
 
   const expectedSchema = yup.object().shape({
     credentials: yup.object().shape({
-      redirect_uri: yup.string().required("form.empty.error")
-    })
+      redirect_uri: yup.string().trim().required("form.empty.error"),
+    }),
   });
 
   expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));

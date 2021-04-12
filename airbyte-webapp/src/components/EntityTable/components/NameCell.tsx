@@ -1,13 +1,15 @@
 import React from "react";
 import styled from "styled-components";
 
-// If we have errorStatus - will add it
-// import StatusIcon from "../../../../../components/StatusIcon";
+import StatusIcon from "components/StatusIcon";
+import ImageBlock from "components/ImageBlock";
+import { Status } from "../types";
 
 type IProps = {
   value: string;
-  error?: boolean;
   enabled?: boolean;
+  status?: string | null;
+  icon?: boolean;
 };
 
 const Content = styled.div`
@@ -30,11 +32,23 @@ const Space = styled.div`
   opacity: 0;
 `;
 
-const NameCell: React.FC<IProps> = ({ value, enabled }) => {
+const Image = styled(ImageBlock)`
+  margin-right: 6px;
+`;
+
+const NameCell: React.FC<IProps> = ({ value, enabled, status, icon }) => {
   return (
     <Content>
-      <Space />
-      {/*{enabled ? <StatusIcon success={!error} /> : <Space />}*/}
+      {status ? (
+        <StatusIcon
+          empty={status === Status.EMPTY}
+          success={status === Status.ACTIVE}
+          inactive={status === Status.INACTIVE}
+        />
+      ) : (
+        <Space />
+      )}
+      {icon && <Image small />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

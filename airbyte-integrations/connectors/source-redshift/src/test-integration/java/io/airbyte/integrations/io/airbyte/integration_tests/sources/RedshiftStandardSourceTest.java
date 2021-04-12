@@ -30,6 +30,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.redshift.RedshiftSource;
 import io.airbyte.integrations.standardtest.source.StandardSourceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -40,14 +42,15 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class RedshiftStandardSourceTest extends StandardSourceTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
-  private static final String SCHEMA_NAME = "integration_test";
-  private static final String STREAM_NAME = SCHEMA_NAME + ".customer";
   private JsonNode config;
   private JdbcDatabase database;
+  private String schemaName;
+  private String streamName;
 
   private static JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
@@ -55,7 +58,6 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
     config = getStaticConfig();
 
     database = Databases.createJdbcDatabase(
@@ -65,22 +67,31 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        "com.amazon.redshift.jdbc.Driver");
+        RedshiftSource.DRIVER_CLASS);
 
-    database.execute(connection -> connection.createStatement().execute(createSchemaQuery));
+    schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5)).toLowerCase();
+    final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
+    database.execute(connection -> {
+      connection.createStatement().execute(createSchemaQuery);
+    });
+
+    streamName = "customer";
+    final String fqTableName = JdbcUtils.getFullyQualifiedTableName(schemaName, streamName);
     String createTestTable =
-        String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", STREAM_NAME);
-    database.execute(connection -> connection.createStatement().execute(createTestTable));
-    String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", STREAM_NAME);
+        String.format("CREATE TABLE IF NOT EXISTS %s (c_custkey INTEGER, c_name VARCHAR(16), c_nation VARCHAR(16));\n", fqTableName);
+    database.execute(connection -> {
+      connection.createStatement().execute(createTestTable);
+    });
+
+    String insertTestData = String.format("insert into %s values (1, 'Chris', 'France');\n", fqTableName);
     database.execute(connection -> {
       connection.createStatement().execute(insertTestData);
-      System.out.println("more to be done.");
     });
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws SQLException {
-    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", SCHEMA_NAME);
+    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", schemaName);
     database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
   }
 
@@ -102,7 +113,8 @@ public class RedshiftStandardSourceTest extends StandardSourceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return CatalogHelpers.createConfiguredAirbyteCatalog(
-        STREAM_NAME,
+        streamName,
+        schemaName,
         Field.of("c_custkey", Field.JsonSchemaPrimitive.NUMBER),
         Field.of("c_name", Field.JsonSchemaPrimitive.STRING),
         Field.of("c_nation", Field.JsonSchemaPrimitive.STRING));

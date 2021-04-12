@@ -26,6 +26,7 @@ package io.airbyte.config;
 
 import com.google.common.base.Preconditions;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,9 +48,11 @@ public class EnvConfigs implements Configs {
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
   public static final String DATABASE_URL = "DATABASE_URL";
+  public static final String WEBAPP_URL = "WEBAPP_URL";
   private static final String MINIMUM_WORKSPACE_RETENTION_DAYS = "MINIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
+  private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
 
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
@@ -75,6 +78,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getAirbyteVersion() {
     return getEnsureEnv(AIRBYTE_VERSION);
+  }
+
+  @Override
+  public String getAirbyteVersionOrWarning() {
+    return Optional.ofNullable(getEnv(AIRBYTE_VERSION)).orElse("version not set");
   }
 
   @Override
@@ -108,63 +116,40 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getWorkspaceDockerMount() {
-    final String mount = getEnv.apply(WORKSPACE_DOCKER_MOUNT);
-    if (mount != null) {
-      return mount;
-    }
+  public String getWebappUrl() {
+    return getEnsureEnv(WEBAPP_URL);
+  }
 
-    LOGGER.info(WORKSPACE_DOCKER_MOUNT + " not found, defaulting to " + WORKSPACE_ROOT);
-    return getWorkspaceRoot().toString();
+  @Override
+  public String getWorkspaceDockerMount() {
+    return getEnvOrDefault(WORKSPACE_DOCKER_MOUNT, getWorkspaceRoot().toString());
   }
 
   @Override
   public String getLocalDockerMount() {
-    final String mount = getEnv.apply(LOCAL_DOCKER_MOUNT);
-    if (mount != null) {
-      return mount;
-    }
-
-    LOGGER.info(LOCAL_DOCKER_MOUNT + " not found, defaulting to " + LOCAL_ROOT);
-    return getLocalRoot().toString();
+    return getEnvOrDefault(LOCAL_DOCKER_MOUNT, getLocalRoot().toString());
   }
 
   @Override
   public String getDockerNetwork() {
-    final String network = getEnv.apply(DOCKER_NETWORK);
-    if (network != null) {
-      return network;
-    }
-
-    LOGGER.info(DOCKER_NETWORK + " not found, defaulting to " + DEFAULT_NETWORK);
-    return DEFAULT_NETWORK;
+    return getEnvOrDefault(DOCKER_NETWORK, DEFAULT_NETWORK);
   }
 
   @Override
   public TrackingStrategy getTrackingStrategy() {
-    final String trackingStrategy = getEnv.apply(TRACKING_STRATEGY);
-    if (trackingStrategy == null) {
-      LOGGER.info("TRACKING_STRATEGY not set, defaulting to " + TrackingStrategy.LOGGING);
-      return TrackingStrategy.LOGGING;
-    }
-
-    try {
-      return TrackingStrategy.valueOf(trackingStrategy.toUpperCase());
-    } catch (IllegalArgumentException e) {
-      LOGGER.info(trackingStrategy + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
-      return TrackingStrategy.LOGGING;
-    }
+    return getEnvOrDefault(TRACKING_STRATEGY, TrackingStrategy.LOGGING, s -> {
+      try {
+        return TrackingStrategy.valueOf(s.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        LOGGER.info(s + " not recognized, defaulting to " + TrackingStrategy.LOGGING);
+        return TrackingStrategy.LOGGING;
+      }
+    });
   }
 
   @Override
   public WorkerEnvironment getWorkerEnvironment() {
-    final String workerEnvironment = getEnv.apply(WORKER_ENVIRONMENT);
-    if (workerEnvironment != null) {
-      return WorkerEnvironment.valueOf(workerEnvironment.toUpperCase());
-    }
-
-    LOGGER.info(WORKER_ENVIRONMENT + " not found, defaulting to " + WorkerEnvironment.DOCKER);
-    return WorkerEnvironment.DOCKER;
+    return getEnvOrDefault(WORKER_ENVIRONMENT, WorkerEnvironment.DOCKER, s -> WorkerEnvironment.valueOf(s.toUpperCase()));
   }
 
   @Override
@@ -176,10 +161,23 @@ public class EnvConfigs implements Configs {
     return new WorkspaceRetentionConfig(minDays, maxDays, maxSizeMb);
   }
 
-  public long getEnvOrDefault(String key, long defaultValue) {
+  @Override
+  public String getTemporalHost() {
+    return getEnvOrDefault(TEMPORAL_HOST, "airbyte-temporal:7233");
+  }
+
+  private String getEnvOrDefault(String key, String defaultValue) {
+    return getEnvOrDefault(key, defaultValue, Function.identity());
+  }
+
+  private long getEnvOrDefault(String key, long defaultValue) {
+    return getEnvOrDefault(key, defaultValue, Long::parseLong);
+  }
+
+  private <T> T getEnvOrDefault(String key, T defaultValue, Function<String, T> parser) {
     final String value = getEnv.apply(key);
     if (value != null) {
-      return Long.parseLong(value);
+      return parser.apply(value);
     } else {
       LOGGER.info(key + " not found, defaulting to " + defaultValue);
       return defaultValue;

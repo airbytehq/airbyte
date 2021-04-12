@@ -17,6 +17,7 @@ jobs:
           token: ${{ secrets.SLASH_COMMAND_PAT }}
           commands: |
             test
+            publish
           static-args: |
             ref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}

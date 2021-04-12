@@ -2,8 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Modal from "../../../components/Modal";
-import Button from "../../../components/Button";
+import Modal from "components/Modal";
+import Button from "components/Button";
 
 export type IProps = {
   onClose: () => void;
@@ -41,7 +41,7 @@ const DeleteModal: React.FC<IProps> = ({ onClose, onSubmit, type }) => {
           <ButtonWithMargin onClick={onClose} type="button" secondary>
             <FormattedMessage id="form.cancel" />
           </ButtonWithMargin>
-          <Button type="button" danger onClick={onSubmit}>
+          <Button type="button" danger onClick={onSubmit} data-id="delete">
             <FormattedMessage id="form.delete" />
           </Button>
         </ButtonContent>

@@ -111,7 +111,9 @@
           }
         },
         "supported_sync_modes": ["full_refresh"]
-      }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -304,7 +306,9 @@
           }
         },
         "supported_sync_modes": ["full_refresh"]
-      }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

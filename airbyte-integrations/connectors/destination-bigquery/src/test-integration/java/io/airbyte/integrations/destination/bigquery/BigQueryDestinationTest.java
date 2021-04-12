@@ -43,8 +43,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.DestinationConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -102,16 +104,13 @@ class BigQueryDestinationTest {
   private static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
-  private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-      CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
-          io.airbyte.protocol.models.Field
-              .of("id", JsonSchemaPrimitive.STRING)),
-      CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, Field.of("goal", JsonSchemaPrimitive.STRING))));
+  private static final NamingConventionTransformer NAMING_RESOLVER = new StandardNameTransformer();
 
   private JsonNode config;
 
   private BigQuery bigquery;
   private Dataset dataset;
+  private ConfiguredAirbyteCatalog catalog;
 
   private boolean tornDown = true;
 
@@ -137,6 +136,13 @@ class BigQueryDestinationTest {
         .getService();
 
     final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
+
+    catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
+            io.airbyte.protocol.models.Field.of("name", JsonSchemaPrimitive.STRING),
+            io.airbyte.protocol.models.Field
+                .of("id", JsonSchemaPrimitive.STRING)),
+        CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaPrimitive.STRING))));
 
     final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
     dataset = bigquery.create(datasetInfo);
@@ -202,15 +208,17 @@ class BigQueryDestinationTest {
   void testCheckFailure() {
     ((ObjectNode) config).put(BigQueryDestination.CONFIG_PROJECT_ID, "fake");
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
-    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED)
-        .withMessage("Access Denied: Project fake: User does not have bigquery.datasets.create permission in project fake.");
-    assertEquals(expected, actual);
+    final String actualMessage = actual.getMessage();
+    LOGGER.info("Checking expected failure message:" + actualMessage);
+    assertTrue(actualMessage.contains("Access Denied:"));
+    final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("");
+    assertEquals(expected, actual.withMessage(""));
   }
 
   @Test
   void testWriteSuccess() throws Exception {
     final BigQueryDestination destination = new BigQueryDestination();
-    final DestinationConsumer<AirbyteMessage> consumer = destination.write(config, CATALOG);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -219,17 +227,17 @@ class BigQueryDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final List<JsonNode> usersActual = retrieveRecords(destination.getNamingTransformer().getRawTableName(USERS_STREAM_NAME));
+    final List<JsonNode> usersActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(USERS_STREAM_NAME));
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
-    final List<JsonNode> tasksActual = retrieveRecords(destination.getNamingTransformer().getRawTableName(TASKS_STREAM_NAME));
+    final List<JsonNode> tasksActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(TASKS_STREAM_NAME));
     final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
 
-    assertTmpTablesNotPresent(CATALOG.getStreams()
+    assertTmpTablesNotPresent(catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
@@ -242,18 +250,18 @@ class BigQueryDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final DestinationConsumer<AirbyteMessage> consumer = spy(new BigQueryDestination().write(config, CATALOG));
+    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);
     consumer.close();
 
-    final List<String> tableNames = CATALOG.getStreams()
+    final List<String> tableNames = catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)
         .collect(toList());
-    assertTmpTablesNotPresent(CATALOG.getStreams()
+    assertTmpTablesNotPresent(catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStream::getName)

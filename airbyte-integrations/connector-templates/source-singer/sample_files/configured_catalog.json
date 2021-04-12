@@ -2,45 +2,22 @@
   "streams": [
     {
       "stream": {
-        "name": "TODO fix this file",
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": "column1",
+        "name": "table_name",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
           "properties": {
-            "column1": {
+            "column_name": {
               "type": "string"
-            },
-            "column2": {
-              "type": "number"
             }
-          }
-        }
-      },
-      "sync_mode": "full_refresh"
-    },
-    {
-      "stream": {
-        "name": "table1",
-        "supported_sync_modes": ["full_refresh", "incremental"],
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "column1": {
-              "type": "string"
-            },
-            "column2": {
-              "type": "number"
-            }
-          }
-        }
+        "default_cursor_field": ["column_name"]
       },
-      "sync_mode": "incremental",
-      "cursor_field": ["column1"]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

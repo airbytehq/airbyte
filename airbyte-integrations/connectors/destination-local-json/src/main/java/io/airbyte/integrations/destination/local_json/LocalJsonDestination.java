@@ -29,19 +29,19 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.DestinationConsumer;
-import io.airbyte.integrations.base.FailureTrackingConsumer;
+import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -84,11 +84,6 @@ public class LocalJsonDestination implements Destination {
     return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
   }
 
-  @Override
-  public StandardNameTransformer getNamingTransformer() {
-    return namingResolver;
-  }
-
   /**
    * @param config - destination config.
    * @param catalog - schema of the incoming messages.
@@ -96,7 +91,7 @@ public class LocalJsonDestination implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public DestinationConsumer<AirbyteMessage> write(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
@@ -104,15 +99,18 @@ public class LocalJsonDestination implements Destination {
     final Map<String, WriteConfig> writeConfigs = new HashMap<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
-      final Path finalPath = destinationDir.resolve(getNamingTransformer().getRawTableName(streamName) + ".jsonl");
-      final Path tmpPath = destinationDir.resolve(getNamingTransformer().getTmpTableName(streamName) + ".jsonl");
-
-      final boolean isIncremental = stream.getSyncMode() == SyncMode.INCREMENTAL;
-      if (isIncremental && finalPath.toFile().exists()) {
+      final Path finalPath = destinationDir.resolve(namingResolver.getRawTableName(streamName) + ".jsonl");
+      final Path tmpPath = destinationDir.resolve(namingResolver.getTmpTableName(streamName) + ".jsonl");
+      final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      if (syncMode == null) {
+        throw new IllegalStateException("Undefined destination sync mode");
+      }
+      final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
+      if (isAppendMode && finalPath.toFile().exists()) {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
       }
 
-      final Writer writer = new FileWriter(tmpPath.toFile(), isIncremental);
+      final Writer writer = new FileWriter(tmpPath.toFile(), isAppendMode);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(writer, tmpPath, finalPath));
     }
 
@@ -144,7 +142,7 @@ public class LocalJsonDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class JsonConsumer extends FailureTrackingConsumer<AirbyteMessage> {
+  private static class JsonConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
@@ -161,23 +159,21 @@ public class LocalJsonDestination implements Destination {
     }
 
     @Override
-    protected void acceptTracked(AirbyteMessage message) throws Exception {
+    protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
 
       // ignore other message types.
-      if (message.getType() == AirbyteMessage.Type.RECORD) {
-        if (!writeConfigs.containsKey(message.getRecord().getStream())) {
-          throw new IllegalArgumentException(
-              String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                  Jsons.serialize(catalog), Jsons.serialize(message)));
-        }
-
-        final Writer writer = writeConfigs.get(message.getRecord().getStream()).getWriter();
-        writer.write(Jsons.serialize(ImmutableMap.of(
-            JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID(),
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT, message.getRecord().getEmittedAt(),
-            JavaBaseConstants.COLUMN_NAME_DATA, message.getRecord().getData())));
-        writer.write(System.lineSeparator());
+      if (!writeConfigs.containsKey(message.getStream())) {
+        throw new IllegalArgumentException(
+            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
+                Jsons.serialize(catalog), Jsons.serialize(message)));
       }
+
+      final Writer writer = writeConfigs.get(message.getStream()).getWriter();
+      writer.write(Jsons.serialize(ImmutableMap.of(
+          JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID(),
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, message.getEmittedAt(),
+          JavaBaseConstants.COLUMN_NAME_DATA, message.getData())));
+      writer.write(System.lineSeparator());
     }
 
     @Override

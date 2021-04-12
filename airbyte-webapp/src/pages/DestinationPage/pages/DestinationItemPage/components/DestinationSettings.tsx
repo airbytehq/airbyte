@@ -3,16 +3,17 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import ContentCard from "../../../../../components/ContentCard";
-import ServiceForm from "../../../../../components/ServiceForm";
-import { Destination } from "../../../../../core/resources/Destination";
-import DestinationDefinitionSpecificationResource from "../../../../../core/resources/DestinationDefinitionSpecification";
-import useDestination from "../../../../../components/hooks/services/useDestinationHook";
-import DeleteBlock from "../../../../../components/DeleteBlock";
-import { Connection } from "../../../../../core/resources/Connection";
-import { JobInfo } from "../../../../../core/resources/Scheduler";
-import { JobsLogItem } from "../../../../../components/JobItem";
-import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
+import ContentCard from "components/ContentCard";
+import ServiceForm from "components/ServiceForm";
+import { Destination } from "core/resources/Destination";
+import DestinationDefinitionSpecificationResource from "core/resources/DestinationDefinitionSpecification";
+import useDestination from "components/hooks/services/useDestinationHook";
+import DeleteBlock from "components/DeleteBlock";
+import { Connection } from "core/resources/Connection";
+import { JobInfo } from "core/resources/Scheduler";
+import { JobsLogItem } from "components/JobItem";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 const Content = styled.div`
   width: 100%;
@@ -27,7 +28,7 @@ type IProps = {
 
 const DestinationsSettings: React.FC<IProps> = ({
   currentDestination,
-  connectionsWithDestination
+  connectionsWithDestination,
 }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
@@ -38,24 +39,47 @@ const DestinationsSettings: React.FC<IProps> = ({
   const destinationSpecification = useResource(
     DestinationDefinitionSpecificationResource.detailShape(),
     {
-      destinationDefinitionId: currentDestination.destinationDefinitionId
+      destinationDefinitionId: currentDestination.destinationDefinitionId,
     }
   );
 
-  const { updateDestination, deleteDestination } = useDestination();
+  const {
+    updateDestination,
+    deleteDestination,
+    checkDestinationConnection,
+  } = useDestination();
 
   const onSubmitForm = async (values: {
     name: string;
     serviceType: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     setErrorStatusRequest(null);
     try {
       await updateDestination({
         values,
-        destinationId: currentDestination.destinationId
+        destinationId: currentDestination.destinationId,
       });
 
+      setSaved(true);
+    } catch (e) {
+      const errorStatusMessage = createFormErrorMessage(e);
+
+      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
+    }
+  };
+
+  const onRetest = async (values: {
+    name: string;
+    serviceType: string;
+    connectionConfiguration?: ConnectionConfiguration;
+  }) => {
+    setErrorStatusRequest(null);
+    try {
+      await checkDestinationConnection({
+        values,
+        destinationId: currentDestination.destinationId,
+      });
       setSaved(true);
     } catch (e) {
       const errorStatusMessage = createFormErrorMessage(e);
@@ -67,7 +91,7 @@ const DestinationsSettings: React.FC<IProps> = ({
   const onDelete = async () => {
     await deleteDestination({
       connectionsWithDestination,
-      destination: currentDestination
+      destination: currentDestination,
     });
   };
 
@@ -77,6 +101,7 @@ const DestinationsSettings: React.FC<IProps> = ({
         title={<FormattedMessage id="destination.destinationSettings" />}
       >
         <ServiceForm
+          onRetest={onRetest}
           isEditMode
           onSubmit={onSubmitForm}
           formType="destination"
@@ -84,12 +109,12 @@ const DestinationsSettings: React.FC<IProps> = ({
             {
               value: currentDestination.destinationDefinitionId,
               text: currentDestination.destinationName,
-              img: "/default-logo-catalog.svg"
-            }
+              img: "/default-logo-catalog.svg",
+            },
           ]}
           formValues={{
             ...currentDestination,
-            serviceType: currentDestination.destinationDefinitionId
+            serviceType: currentDestination.destinationDefinitionId,
           }}
           specifications={destinationSpecification.connectionSpecification}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}

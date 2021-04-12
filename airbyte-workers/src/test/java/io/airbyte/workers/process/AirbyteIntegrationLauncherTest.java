@@ -33,7 +33,7 @@ import org.mockito.Mockito;
 
 class AirbyteIntegrationLauncherTest {
 
-  private static final long JOB_ID = 0L;
+  private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
   private static final Path JOB_ROOT = Path.of("abc");
   public static final String FAKE_IMAGE = "fake_image";

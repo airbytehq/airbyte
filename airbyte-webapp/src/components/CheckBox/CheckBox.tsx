@@ -24,22 +24,15 @@ const CheckBoxContainer = styled.label`
   cursor: pointer;
 `;
 
-const CheckBox: React.FC<React.InputHTMLAttributes<
-  HTMLInputElement
->> = props => {
-  return (
-    <CheckBoxContainer
-      onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
-    >
-      <CheckBoxInput
-        {...props}
-        type="checkbox"
-        checked={props.checked}
-        onChange={props.onChange}
-      />
-      {props.checked && <FontAwesomeIcon icon={faCheck} />}
-    </CheckBoxContainer>
-  );
-};
+const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
+  props
+) => (
+  <CheckBoxContainer
+    onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
+  >
+    <CheckBoxInput {...props} type="checkbox" />
+    {props.checked && <FontAwesomeIcon icon={faCheck} />}
+  </CheckBoxContainer>
+);
 
 export default CheckBox;

@@ -1,45 +1,59 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import PageTitle from "../../../../components/PageTitle";
-import useRouter from "../../../../components/hooks/useRouterHook";
-import StepsMenu from "../../../../components/StepsMenu";
+import PageTitle from "components/PageTitle";
+import useRouter from "components/hooks/useRouterHook";
+import StepsMenu from "components/StepsMenu";
 import StatusView from "./components/StatusView";
 import SettingsView from "./components/SettingsView";
-import ConnectionResource from "../../../../core/resources/Connection";
-import LoadingPage from "../../../../components/LoadingPage";
-import MainPageWithScroll from "../../../../components/MainPageWithScroll";
-import config from "../../../../config";
-import { AnalyticsService } from "../../../../core/analytics/AnalyticsService";
-import FrequencyConfig from "../../../../data/FrequencyConfig.json";
-import Link from "../../../../components/Link";
+import ConnectionResource from "core/resources/Connection";
+import LoadingPage from "components/LoadingPage";
+import MainPageWithScroll from "components/MainPageWithScroll";
+import config from "config";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import FrequencyConfig from "data/FrequencyConfig.json";
+import Link from "components/Link";
 import { Routes } from "../../../routes";
 
-const ConnectionItemPage: React.FC = () => {
-  const { query } = useRouter();
+type ConnectionItemPageProps = {
+  currentStep: "status" | "settings";
+};
+
+const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
+  currentStep,
+}) => {
+  const { query, push } = useRouter<{ id: string }>();
 
   const connection = useResource(ConnectionResource.detailShape(), {
-    // @ts-ignore
-    connectionId: query.id
+    connectionId: query.id,
   });
 
   const frequency = FrequencyConfig.find(
-    item => JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+    (item) =>
+      JSON.stringify(item.config) === JSON.stringify(connection.schedule)
   );
 
   const steps = [
     {
       id: "status",
-      name: <FormattedMessage id={"sources.status"} />
+      name: <FormattedMessage id={"sources.status"} />,
     },
     {
       id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />
-    }
+      name: <FormattedMessage id={"sources.settings"} />,
+    },
   ];
-  const [currentStep, setCurrentStep] = useState("status");
-  const onSelectStep = (id: string) => setCurrentStep(id);
+
+  const onSelectStep = (id: string) => {
+    if (id === "settings") {
+      push(
+        `${Routes.Connections}/${connection.connectionId}${Routes.Settings}`
+      );
+    } else {
+      push(`${Routes.Connections}/${connection.connectionId}`);
+    }
+  };
 
   const onAfterSaveSchema = () => {
     AnalyticsService.track("Source - Action", {
@@ -50,7 +64,7 @@ const ConnectionItemPage: React.FC = () => {
       connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id:
         connection.destination?.destinationDefinitionId,
-      frequency: frequency?.text
+      frequency: frequency?.text,
     });
   };
 
@@ -65,6 +79,7 @@ const ConnectionItemPage: React.FC = () => {
       <SettingsView
         onAfterSaveSchema={onAfterSaveSchema}
         connectionId={connection.connectionId}
+        frequencyText={frequency?.text}
       />
     );
   };
@@ -94,7 +109,7 @@ const ConnectionItemPage: React.FC = () => {
               id="connection.fromTo"
               values={{
                 source: linkToSource(),
-                destination: linkToDestination()
+                destination: linkToDestination(),
               }}
             />
           }

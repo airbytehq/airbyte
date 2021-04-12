@@ -25,15 +25,16 @@
 package io.airbyte.migrate;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.set.MoreSets;
 import io.airbyte.commons.stream.MoreStreams;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.migrate.migrations.MigrationV0_11_0;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.BufferedWriter;
@@ -45,12 +46,11 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
-import java.util.stream.BaseStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,15 +60,12 @@ public class Migrate {
 
   public static final String VERSION_FILE_NAME = "VERSION";
 
-  // all migrations must be added to the list in the order that they should be applied.
-  private static final List<Migration> MIGRATIONS = ImmutableList.of(new MigrationV0_11_0());
-
   private final Path migrateRoot;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final List<Migration> migrations;
 
   public Migrate(Path migrateRoot) {
-    this(migrateRoot, MIGRATIONS);
+    this(migrateRoot, Migrations.MIGRATIONS);
   }
 
   public Migrate(Path migrateRoot, List<Migration> migrations) {
@@ -85,13 +82,22 @@ public class Migrate {
     final String currentVersion = getCurrentVersion(initialInputPath);
     // detect desired version.
     final String targetVersion = migrateConfig.getTargetVersion();
-    // select migrations to run.
+    Preconditions.checkArgument(!currentVersion.equals("dev"), "Cannot migrate data with version dev.");
+    Preconditions.checkArgument(targetVersion == null || !targetVersion.equals("dev"), "Cannot migrate data to version dev.");
 
     LOGGER.info("Starting migrations. Current version: {}, Target version: {}", currentVersion, targetVersion);
 
-    final int currentVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(currentVersion);
+    // select migrations to run.
+    final List<AirbyteVersion> migrationVersions = migrations.stream().map(m -> new AirbyteVersion(m.getVersion())).collect(Collectors.toList());
+    final int currentVersionIndex = getPreviousMigration(migrationVersions, new AirbyteVersion(currentVersion));
     Preconditions.checkArgument(currentVersionIndex >= 0, "No migration found for current version: " + currentVersion);
-    final int targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
+    final int targetVersionIndex;
+    if (Strings.isNotEmpty(targetVersion)) {
+      targetVersionIndex = migrations.stream().map(Migration::getVersion).collect(Collectors.toList()).indexOf(targetVersion);
+    } else {
+      targetVersionIndex = migrations.size() - 1;
+    }
+
     Preconditions.checkArgument(targetVersionIndex >= 0, "No migration found for target version: " + targetVersion);
     Preconditions.checkArgument(currentVersionIndex < targetVersionIndex, String.format(
         "Target version is not greater than the current version. current version: %s, target version: %s. Note migration order is determined by membership in migrations list, not any canonical sorting of the version string itself.",
@@ -121,27 +127,38 @@ public class Migrate {
     final Path tmpOutputDir = Files.createDirectories(migrateRoot.resolve(migration.getVersion()));
 
     // create a map of each input resource path to the input stream.
-    final Map<ResourceId, Stream<JsonNode>> inputData = createInputStreams(migration, migrationInputRoot);
+    final Map<ResourceId, AutoCloseableIterator<JsonNode>> inputData = createInputStreams(migration, migrationInputRoot);
+    final Map<ResourceId, Stream<JsonNode>> inputDataStreams = inputData.entrySet().stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            entry -> MoreStreams.toStream(entry.getValue())
+                .peek(r -> {
+                  try {
+                    jsonSchemaValidator.ensure(migration.getInputSchema().get(entry.getKey()), r);
+                  } catch (JsonValidationException e) {
+                    throw new IllegalArgumentException("Input data schema does not match declared input schema.", e);
+                  }
+                })));
 
     final Map<ResourceId, RecordConsumer> outputStreams = createOutputStreams(migration, tmpOutputDir);
     // make the java compiler happy (it can't resolve that RecordConsumer is, in fact, a
     // Consumer<JsonNode>).
-    final Map<ResourceId, Consumer<JsonNode>> outputDataWithGenericType = mapRecordConsumerToConsumer(outputStreams);
+    final Map<ResourceId, Consumer<JsonNode>> outputDataWithGenericType = MigrationUtils.mapRecordConsumerToConsumer(outputStreams);
 
     // do the migration.
-    migration.migrate(inputData, outputDataWithGenericType);
+    new MigrateWithMetadata(migration).migrate(inputDataStreams, outputDataWithGenericType);
 
     // clean up.
-    inputData.values().forEach(BaseStream::close);
+    inputData.values().forEach(v -> Exceptions.toRuntime(v::close));
     outputStreams.values().forEach(v -> Exceptions.toRuntime(v::close));
 
     return tmpOutputDir;
   }
 
-  private Map<ResourceId, Stream<JsonNode>> createInputStreams(Migration migration, Path migrationInputRoot) {
-    final Map<ResourceId, Stream<JsonNode>> resourceIdToInputStreams = MoreMaps.merge(
-        createInputStreamsForResourceType(migration, migrationInputRoot, ResourceType.CONFIG),
-        createInputStreamsForResourceType(migration, migrationInputRoot, ResourceType.JOB));
+  private Map<ResourceId, AutoCloseableIterator<JsonNode>> createInputStreams(Migration migration, Path migrationInputRoot) {
+    final Map<ResourceId, AutoCloseableIterator<JsonNode>> resourceIdToInputStreams = MoreMaps.merge(
+        createInputStreamsForResourceType(migrationInputRoot, ResourceType.CONFIG),
+        createInputStreamsForResourceType(migrationInputRoot, ResourceType.JOB));
 
     try {
       MoreSets.assertEqualsVerbose(migration.getInputSchema().keySet(), resourceIdToInputStreams.keySet());
@@ -151,25 +168,16 @@ public class Migrate {
     return resourceIdToInputStreams;
   }
 
-  private Map<ResourceId, Stream<JsonNode>> createInputStreamsForResourceType(Migration migration,
-                                                                              Path migrationInputRoot,
-                                                                              ResourceType resourceType) {
+  private Map<ResourceId, AutoCloseableIterator<JsonNode>> createInputStreamsForResourceType(Path migrationInputRoot, ResourceType resourceType) {
     final List<Path> inputFilePaths = FileUtils.listFiles(migrationInputRoot.resolve(resourceType.getDirectoryName()).toFile(), null, false)
         .stream()
         .map(File::toPath)
         .collect(Collectors.toList());
 
-    final Map<ResourceId, Stream<JsonNode>> inputData = new HashMap<>();
+    final Map<ResourceId, AutoCloseableIterator<JsonNode>> inputData = new HashMap<>();
     for (final Path absolutePath : inputFilePaths) {
       final ResourceId resourceId = ResourceId.fromRecordFilePath(resourceType, absolutePath);
-      final Stream<JsonNode> recordInputStream = MoreStreams.toStream(Yamls.deserialize(IOs.readFile(absolutePath)).elements())
-          .peek(r -> {
-            try {
-              jsonSchemaValidator.ensure(migration.getInputSchema().get(resourceId), r);
-            } catch (JsonValidationException e) {
-              throw new IllegalArgumentException("Input data schema does not match declared input schema.", e);
-            }
-          });
+      AutoCloseableIterator<JsonNode> recordInputStream = Yamls.deserializeArray(IOs.inputStream(absolutePath));
       inputData.put(resourceId, recordInputStream);
     }
 
@@ -193,14 +201,25 @@ public class Migrate {
     return pathToOutputStream;
   }
 
-  private static Map<ResourceId, Consumer<JsonNode>> mapRecordConsumerToConsumer(Map<ResourceId, RecordConsumer> recordConsumers) {
-    return recordConsumers.entrySet()
-        .stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> (v) -> e.getValue().accept(v)));
-  }
-
   private static String getCurrentVersion(Path path) {
     return IOs.readFile(path.resolve(VERSION_FILE_NAME)).trim();
+  }
+
+  @VisibleForTesting
+  static int getPreviousMigration(List<AirbyteVersion> migrationVersions, AirbyteVersion currentVersion) {
+    for (int i = 0; i < migrationVersions.size(); i++) {
+      final AirbyteVersion migrationVersion = migrationVersions.get(i);
+      if (migrationVersion.patchVersionCompareTo(currentVersion) == 0) {
+        return i;
+      }
+      if (migrationVersions.size() > i + 1) {
+        final AirbyteVersion nextVersion = migrationVersions.get(i + 1);
+        if (nextVersion.patchVersionCompareTo(currentVersion) > 0) {
+          return i;
+        }
+      }
+    }
+    return -1;
   }
 
 }

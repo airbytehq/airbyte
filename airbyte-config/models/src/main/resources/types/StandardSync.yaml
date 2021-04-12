@@ -8,9 +8,12 @@ required:
   - sourceId
   - destinationId
   - name
-  - schema
+  - catalog
 additionalProperties: false
 properties:
+  prefix:
+    description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+    type: string
   sourceId:
     type: string
     format: uuid
@@ -22,8 +25,8 @@ properties:
     format: uuid
   name:
     type: string
-  schema:
-    "$ref": StandardDataSchema.yaml#/definitions/schema
+  catalog:
+    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
   status:
     type: string
     enum:

@@ -19,17 +19,20 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation 'com.amazon.redshift:redshift-jdbc42:1.2.43.1067'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
+    implementation 'com.amazon.redshift:redshift-jdbc42-no-awssdk:1.2.51.1078' // use the no-sdk library to avoid aws classpath conflicts
+    implementation 'org.apache.commons:commons-csv:1.4'
+    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+
+    testImplementation project(':airbyte-test-utils')
 
     testImplementation 'org.apache.commons:commons-text:1.9'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
 
-    testImplementation project(':airbyte-test-utils')
-
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-redshift')
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 }

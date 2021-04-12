@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import ImageBlock from "../../ImageBlock";
+import ImageBlock from "components/ImageBlock";
 
 type IProps = {
   value: string;
@@ -12,6 +12,7 @@ const Content = styled.div<{ enabled?: boolean }>`
   display: flex;
   align-items: center;
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
+  font-weight: 500;
 `;
 
 const Image = styled(ImageBlock)`

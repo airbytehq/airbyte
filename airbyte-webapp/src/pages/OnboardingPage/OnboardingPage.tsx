@@ -5,27 +5,39 @@ import { useResource } from "rest-hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 
-import { H2 } from "../../components/Titles";
-import StepsMenu from "../../components/StepsMenu";
+import { H2 } from "components/Titles";
+import StepsMenu from "components/StepsMenu";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
-import SourceResource from "../../core/resources/Source";
-import DestinationResource from "../../core/resources/Destination";
-import config from "../../config";
+import SourceResource from "core/resources/Source";
+import DestinationResource from "core/resources/Destination";
+import config from "config";
 import UseGetStepsConfig, { StepsTypes } from "./components/useGetStepsConfig";
 import usePrepareDropdownLists from "./components/usePrepareDropdownLists";
-import { AnalyticsService } from "../../core/analytics/AnalyticsService";
-import useSource from "../../components/hooks/services/useSourceHook";
-import useDestination from "../../components/hooks/services/useDestinationHook";
-import Link from "../../components/Link";
-import { JobInfo } from "../../core/resources/Scheduler";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import useSource from "components/hooks/services/useSourceHook";
+import useDestination from "components/hooks/services/useDestinationHook";
+import Link from "components/Link";
+import Version from "components/Version";
+import { JobInfo } from "core/resources/Scheduler";
+import { ConnectionConfiguration } from "core/domain/connection";
 
-const Content = styled.div`
+const Content = styled.div<{ big?: boolean }>`
   width: 100%;
-  max-width: 813px;
+  max-width: ${({ big }) => (big ? 1140 : 813)}px;
   margin: 0 auto;
-  padding: 33px 0;
+  padding: 33px 0 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 100%;
+  overflow: hidden;
+`;
+
+const Main = styled.div`
+  width: 100%;
 `;
 
 const Img = styled.img`
@@ -73,10 +85,10 @@ const OnboardingPage: React.FC = () => {
   const { createDestination, recreateDestination } = useDestination();
 
   const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
   const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId
+    workspaceId: config.ui.workspaceId,
   });
 
   const [successRequest, setSuccessRequest] = useState(false);
@@ -101,14 +113,14 @@ const OnboardingPage: React.FC = () => {
     sourcesDropDownData,
     destinationsDropDownData,
     getSourceDefinitionById,
-    getDestinationDefinitionById
+    getDestinationDefinitionById,
   } = usePrepareDropdownLists();
 
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
     sourceId?: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     setErrorStatusRequest(null);
     const sourceConnector = getSourceDefinitionById(values.serviceType);
@@ -117,7 +129,7 @@ const OnboardingPage: React.FC = () => {
       if (!!sources.length) {
         await recreateSource({
           values,
-          sourceId: sources[0].sourceId
+          sourceId: sources[0].sourceId,
         });
       } else {
         await createSource({ values, sourceConnector });
@@ -137,7 +149,7 @@ const OnboardingPage: React.FC = () => {
     name: string;
     serviceType: string;
     destinationDefinitionId?: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     setErrorStatusRequest(null);
     const destinationConnector = getDestinationDefinitionById(
@@ -148,12 +160,12 @@ const OnboardingPage: React.FC = () => {
       if (!!destinations.length) {
         await recreateDestination({
           values,
-          destinationId: destinations[0].destinationId
+          destinationId: destinations[0].destinationId,
         });
       } else {
         await createDestination({
           values,
-          destinationConnector
+          destinationConnector,
         });
       }
 
@@ -208,22 +220,30 @@ const OnboardingPage: React.FC = () => {
   };
 
   return (
-    <Content>
-      <Img src="/welcome.svg" height={132} />
-      <MainTitle center>
-        <FormattedMessage id="onboarding.title" />
-      </MainTitle>
-      <Subtitle>
-        <FormattedMessage id="onboarding.subtitle" />
-      </Subtitle>
-      <StepsCover>
-        <StepsMenu data={steps} activeStep={currentStep} />
-      </StepsCover>
-      {renderStep()}
-      <TutorialLink as="a" clear target="_blank" href={config.ui.tutorialLink}>
-        <PlayIcon icon={faPlay} />
-        <FormattedMessage id="onboarding.tutorial" />
-      </TutorialLink>
+    <Content big={currentStep === StepsTypes.SET_UP_CONNECTION}>
+      <Main>
+        <Img src="/welcome.svg" height={132} />
+        <MainTitle center>
+          <FormattedMessage id="onboarding.title" />
+        </MainTitle>
+        <Subtitle>
+          <FormattedMessage id="onboarding.subtitle" />
+        </Subtitle>
+        <StepsCover>
+          <StepsMenu data={steps} activeStep={currentStep} />
+        </StepsCover>
+        {renderStep()}
+        <TutorialLink
+          as="a"
+          clear
+          target="_blank"
+          href={config.ui.tutorialLink}
+        >
+          <PlayIcon icon={faPlay} />
+          <FormattedMessage id="onboarding.tutorial" />
+        </TutorialLink>
+      </Main>
+      <Version />
     </Content>
   );
 };

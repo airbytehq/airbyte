@@ -25,7 +25,8 @@ SOFTWARE.
 import unittest
 from unittest.mock import Mock, patch
 
-from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
+from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode
 from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
@@ -103,8 +104,16 @@ class TestHelpers(unittest.TestCase):
 
         catalog = ConfiguredAirbyteCatalog(
             streams=[
-                ConfiguredAirbyteStream(stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema)),
-                ConfiguredAirbyteStream(stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema)),
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(name=sheet1, json_schema=sheet1_schema),
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                ),
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(name=sheet2, json_schema=sheet2_schema),
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                ),
             ]
         )
 

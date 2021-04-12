@@ -46,13 +46,22 @@ public class LoggingTrackingClient implements TrackingClient {
   }
 
   @Override
+  public void alias(String previousCustomerId) {
+    LOGGER.info("merge. userId: {} previousUserId: {}", identitySupplier.get().getCustomerId(), previousCustomerId);
+  }
+
+  @Override
   public void track(String action) {
     track(action, Collections.emptyMap());
   }
 
   @Override
   public void track(String action, Map<String, Object> metadata) {
-    LOGGER.info("track. userId: {} action: {}, metadata: {}", identitySupplier.get().getCustomerId(), action, metadata);
+    LOGGER.info("track. version: {}, userId: {}, action: {}, metadata: {}",
+        identitySupplier.get().getAirbyteVersion(),
+        identitySupplier.get().getCustomerId(),
+        action,
+        metadata);
   }
 
 }

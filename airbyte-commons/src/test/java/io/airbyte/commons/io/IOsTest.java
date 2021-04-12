@@ -34,6 +34,7 @@ import java.io.Closeable;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -53,6 +54,23 @@ class IOsTest {
     assertEquals(path.resolve("file"), filePath);
     assertEquals("abc", IOs.readFile(path, "file"));
     assertEquals("abc", IOs.readFile(path.resolve("file")));
+  }
+
+  @Test
+  void testWriteBytes() throws IOException {
+    final Path path = Files.createTempDirectory("tmp");
+
+    final Path filePath = IOs.writeFile(path.resolve("file"), "abc".getBytes(StandardCharsets.UTF_8));
+
+    assertEquals(path.resolve("file"), filePath);
+    assertEquals("abc", IOs.readFile(path, "file"));
+  }
+
+  @Test
+  public void testWriteFileToRandomDir() throws IOException {
+    final String contents = "something to remember";
+    final String tmpFilePath = IOs.writeFileToRandomTmpDir("file.txt", contents);
+    assertEquals(contents, Files.readString(Path.of(tmpFilePath)));
   }
 
   @Test
@@ -87,6 +105,13 @@ class IOsTest {
 
     List<String> tail = IOs.getTail(expectedTail.size(), stdoutFile);
     assertEquals(expectedTail, tail);
+  }
+
+  @Test
+  void testInputStream() {
+    assertThrows(RuntimeException.class, () -> {
+      IOs.inputStream(Path.of("idontexist"));
+    });
   }
 
   @Test

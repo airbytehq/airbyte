@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from collections import defaultdict
+from normalization import DestinationType
 
 # https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#reserved_keywords
 BIGQUERY = {
@@ -124,6 +124,7 @@ BIGQUERY = {
 }
 
 # https://docs.aws.amazon.com/redshift/latest/dg/r_pg_keywords.html
+# Some additional keywords not supported by redshift are missing from their docs...
 REDSHIFT = {
     "AES128",
     "AES256",
@@ -159,6 +160,7 @@ REDSHIFT = {
     "CURRENT_TIMESTAMP",
     "CURRENT_USER",
     "CURRENT_USER_ID",
+    "DATETIME",
     "DEFAULT",
     "DEFERRABLE",
     "DEFLATE",
@@ -197,6 +199,7 @@ REDSHIFT = {
     "INITIALLY",
     "INNER",
     "INTERSECT",
+    "INTERVAL",
     "INTO",
     "IS",
     "ISNULL",
@@ -262,6 +265,7 @@ REDSHIFT = {
     "TEXT255",
     "TEXT32K",
     "THEN",
+    "TIME",
     "TIMESTAMP",
     "TO",
     "TOP",
@@ -576,7 +580,6 @@ POSTGRES = {
     "GREATEST",
     "GROUP",
     "GROUPING",
-    "GROUPS",
     "HANDLER",
     "HAVING",
     "HEADER",
@@ -827,7 +830,6 @@ POSTGRES = {
     "PROGRAM",
     "PRUNE",
     "PTF",
-    "PUBLIC",
     "PUBLICATION",
     "QUOTE",
     "QUOTES",
@@ -1132,6 +1134,7 @@ SNOWFLAKE = {
     "CURRENT_TIMESTAMP",
     "CURRENT_USER",
     "DATABASE",
+    "DEFAULT",
     "DELETE",
     "DISTINCT",
     "DROP",
@@ -1202,8 +1205,13 @@ SNOWFLAKE = {
     "WITH",
 }
 
-RESERVED_KEYWORDS = defaultdict(set, {"bigquery": BIGQUERY, "postgres": POSTGRES, "redshift": REDSHIFT, "snowflake": SNOWFLAKE})
+RESERVED_KEYWORDS = {
+    DestinationType.BIGQUERY.value: BIGQUERY,
+    DestinationType.POSTGRES.value: POSTGRES,
+    DestinationType.REDSHIFT.value: REDSHIFT,
+    DestinationType.SNOWFLAKE.value: SNOWFLAKE,
+}
 
 
-def is_reserved_keyword(token: str, integration_type: str) -> bool:
-    return token.upper() in RESERVED_KEYWORDS[integration_type]
+def is_reserved_keyword(token: str, integration_type: DestinationType) -> bool:
+    return token.upper() in RESERVED_KEYWORDS[integration_type.value]

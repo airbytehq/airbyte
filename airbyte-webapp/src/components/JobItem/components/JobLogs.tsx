@@ -2,16 +2,16 @@ import React, { useState } from "react";
 import { useResource, useSubscription } from "rest-hooks";
 import { FormattedMessage } from "react-intl";
 
-import JobResource from "../../../core/resources/Job";
+import JobResource from "core/resources/Job";
 import AttemptDetails from "./AttemptDetails";
 import DownloadButton from "./DownloadButton";
 import Logs from "./Logs";
 import Tabs from "./Tabs";
 import CenteredDetails from "./CenteredDetails";
-import Status from "../../../core/statuses";
+import Status from "core/statuses";
 
 type IProps = {
-  id: number;
+  id: number | string;
   jobIsFailed?: boolean;
 };
 
@@ -19,7 +19,7 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
   const job = useResource(JobResource.detailShape(), { id });
   useSubscription(JobResource.detailShape(), { id });
 
-  const [attemptNumber, setAttemptNumber] = useState<any>(
+  const [attemptNumber, setAttemptNumber] = useState<number>(
     job.attempts.length ? job.attempts.length - 1 : 0
   );
 
@@ -31,15 +31,18 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
     );
   }
 
-  const data = job.attempts.map((item, key: any) => ({
-    id: key,
+  const data = job.attempts.map((item, index) => ({
+    id: index.toString(),
     status:
       item.status === Status.FAILED || item.status === Status.SUCCEEDED
         ? item.status
         : undefined,
     name: (
-      <FormattedMessage id="sources.attemptNum" values={{ number: key + 1 }} />
-    )
+      <FormattedMessage
+        id="sources.attemptNum"
+        values={{ number: index + 1 }}
+      />
+    ),
   }));
 
   const hasLogs = !!job.logsByAttempt[attemptNumber]?.logLines?.length;
@@ -47,8 +50,8 @@ const JobLogs: React.FC<IProps> = ({ id, jobIsFailed }) => {
     <>
       {job.attempts.length > 1 ? (
         <Tabs
-          activeStep={attemptNumber}
-          onSelect={setAttemptNumber}
+          activeStep={attemptNumber.toString()}
+          onSelect={(at) => setAttemptNumber(parseInt(at))}
           data={data}
           isFailed={jobIsFailed}
         />

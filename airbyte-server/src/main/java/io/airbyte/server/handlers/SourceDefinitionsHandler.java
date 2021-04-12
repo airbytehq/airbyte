@@ -30,9 +30,12 @@ import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.scheduler.client.CachingSchedulerJobClient;
+import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
+import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -42,34 +45,46 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SourceDefinitionsHandler {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SourceDefinitionsHandler.class);
 
   private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final CachingSchedulerJobClient schedulerJobClient;
+  private final AirbyteGithubStore githubStore;
+  private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
-                                  final CachingSchedulerJobClient schedulerJobClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerJobClient);
+                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
+    this(configRepository, imageValidator, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
                                   final DockerImageValidator imageValidator,
                                   final Supplier<UUID> uuidSupplier,
-                                  final CachingSchedulerJobClient schedulerJobClient) {
+                                  final CachingSynchronousSchedulerClient schedulerSynchronousClient,
+                                  final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.imageValidator = imageValidator;
-    this.schedulerJobClient = schedulerJobClient;
+    this.schedulerSynchronousClient = schedulerSynchronousClient;
+    this.githubStore = githubStore;
+  }
+
+  private static SourceDefinitionRead buildSourceDefinitionRead(StandardSourceDefinition standardSourceDefinition) {
+    try {
+      return new SourceDefinitionRead()
+          .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
+          .name(standardSourceDefinition.getName())
+          .dockerRepository(standardSourceDefinition.getDockerRepository())
+          .dockerImageTag(standardSourceDefinition.getDockerImageTag())
+          .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()));
+    } catch (URISyntaxException | NullPointerException e) {
+      throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
+    }
   }
 
   public SourceDefinitionReadList listSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -78,6 +93,26 @@ public class SourceDefinitionsHandler {
         .map(SourceDefinitionsHandler::buildSourceDefinitionRead)
         .collect(Collectors.toList());
     return new SourceDefinitionReadList().sourceDefinitions(reads);
+  }
+
+  public SourceDefinitionReadList listLatestSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
+    List<StandardSourceDefinition> sourceDefs;
+    try {
+      sourceDefs = YamlListToStandardDefinitions.toStandardSourceDefinitions(getLatestSources());
+    } catch (RuntimeException e) {
+      throw new KnownException(500, "Error retrieving latest source definitions", e);
+    }
+
+    final var reads = sourceDefs.stream().map(SourceDefinitionsHandler::buildSourceDefinitionRead).collect(Collectors.toList());
+    return new SourceDefinitionReadList().sourceDefinitions(reads);
+  }
+
+  private String getLatestSources() {
+    try {
+      return githubStore.getLatestSources();
+    } catch (IOException | InterruptedException e) {
+      throw new KnownException(500, "Request to retrieve latest source definitions failed", e);
+    }
   }
 
   public SourceDefinitionRead getSourceDefinition(SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
@@ -116,21 +151,8 @@ public class SourceDefinitionsHandler {
 
     configRepository.writeStandardSource(newSource);
     // we want to re-fetch the spec for updated definitions.
-    schedulerJobClient.resetCache();
+    schedulerSynchronousClient.resetCache();
     return buildSourceDefinitionRead(newSource);
-  }
-
-  private static SourceDefinitionRead buildSourceDefinitionRead(StandardSourceDefinition standardSourceDefinition) {
-    try {
-      return new SourceDefinitionRead()
-          .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
-          .name(standardSourceDefinition.getName())
-          .dockerRepository(standardSourceDefinition.getDockerRepository())
-          .dockerImageTag(standardSourceDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()));
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }

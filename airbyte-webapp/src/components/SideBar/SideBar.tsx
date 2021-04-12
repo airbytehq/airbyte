@@ -1,23 +1,32 @@
 import React from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLifeRing, faBook, faCog } from "@fortawesome/free-solid-svg-icons";
+import {
+  faLifeRing,
+  faBook,
+  faCog,
+  faTools,
+} from "@fortawesome/free-solid-svg-icons";
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
 import Link from "../Link";
 import Source from "./components/Source";
+import Connections from "./components/Connections";
+import Version from "../Version";
 import Destination from "./components/Destination";
-import { Routes } from "../../pages/routes";
-import config from "../../config";
+import { Routes } from "pages/routes";
+import config from "config";
+import Indicator from "../Indicator";
+import useNotification from "../hooks/services/useNotification";
 
 const Bar = styled.nav`
   width: 100px;
   min-width: 65px;
   height: 100%;
   background: ${({ theme }) => theme.darkPrimaryColor};
-  padding: 23px 3px 23px 4px;
+  padding: 23px 3px 15px 4px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -45,6 +54,7 @@ const MenuItem = styled(NavLink)`
   line-height: 15px;
   margin-top: 7px;
   text-decoration: none;
+  position: relative;
 
   &.active {
     color: ${({ theme }) => theme.whiteColor};
@@ -83,11 +93,19 @@ const HelpIcon = styled(FontAwesomeIcon)`
 `;
 
 const AdminIcon = styled(FontAwesomeIcon)`
-  font-size: 15px;
+  font-size: 16px;
   line-height: 15px;
 `;
 
+const Notification = styled(Indicator)`
+  position: absolute;
+  top: 11px;
+  right: 23px;
+`;
+
 const SideBar: React.FC = () => {
+  const { hasNewVersions } = useNotification();
+
   return (
     <Bar>
       <div>
@@ -95,6 +113,14 @@ const SideBar: React.FC = () => {
           <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
         </Link>
         <Menu>
+          <li>
+            <MenuItem to={Routes.Connections} activeClassName="active">
+              <Connections />
+              <Text>
+                <FormattedMessage id="sidebar.connections" />
+              </Text>
+            </MenuItem>
+          </li>
           <li>
             <MenuItem
               to={Routes.Root}
@@ -115,13 +141,14 @@ const SideBar: React.FC = () => {
             <MenuItem to={Routes.Destination} activeClassName="active">
               <Destination />
               <Text>
-                <FormattedMessage id="sidebar.destination" />
+                <FormattedMessage id="sidebar.destinations" />
               </Text>
             </MenuItem>
           </li>
           <li>
             <MenuItem to={Routes.Admin} activeClassName="active">
-              <AdminIcon icon={faCog} />
+              {hasNewVersions ? <Notification /> : null}
+              <AdminIcon icon={faTools} />
               <Text>
                 <FormattedMessage id="sidebar.admin" />
               </Text>
@@ -132,7 +159,7 @@ const SideBar: React.FC = () => {
       <Menu>
         <li>
           <MenuLinkItem href={config.ui.slackLink} target="_blank">
-            {/*@ts-ignore*/}
+            {/*@ts-ignore slack icon fails here*/}
             <HelpIcon icon={faSlack} />
             <Text>
               <FormattedMessage id="sidebar.slack" />
@@ -155,6 +182,19 @@ const SideBar: React.FC = () => {
             </Text>
           </MenuLinkItem>
         </li>
+        <li>
+          <MenuItem to={Routes.Settings} activeClassName="active">
+            <AdminIcon icon={faCog} />
+            <Text>
+              <FormattedMessage id="sidebar.settings" />
+            </Text>
+          </MenuItem>
+        </li>
+        {config.version ? (
+          <li>
+            <Version primary />
+          </li>
+        ) : null}
       </Menu>
     </Bar>
   );

@@ -10,4 +10,34 @@ node {
 
 assemble.dependsOn(npmInstall)
 
-// TODO add gradle tasks which generate one module for each generator we support and tests that the resulting code is valid.
+task testScaffoldTemplates
+
+def addScaffoldTemplateTask(name, scaffoldParams=[]) {
+    def taskName = "testScaffoldTemplate_${name}"
+    def outputDir = "airbyte-integrations/connectors/source-scaffold-${name}"
+
+   def task = tasks.create(taskName) {
+        inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/${name}")
+
+        doLast {
+            exec {
+                workingDir rootDir
+                commandLine 'rm', '-rf', outputDir
+            }
+            exec {
+                workingDir rootDir
+                def cmd = ['./tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"]
+                cmd.addAll(scaffoldParams)
+                commandLine cmd
+            }
+        }
+
+        outputs.dir rootProject.file(outputDir)
+    }
+
+    testScaffoldTemplates.dependsOn task
+}
+
+addScaffoldTemplateTask('source-python')
+// TODO: enable Singer template testing
+//addScaffoldTask('source-python-singer', ['tap-exchangeratesapi'])

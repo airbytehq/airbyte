@@ -2,11 +2,14 @@
 .idea
 *.iml
 build
+out
 .DS_Store
 data
 .dockerversions
 
+# Secrets
 secrets
+!airbyte-integrations/connector-templates/**/secrets
 
 # Python
 *.egg-info

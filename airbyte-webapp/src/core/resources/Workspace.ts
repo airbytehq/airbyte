@@ -1,10 +1,11 @@
-import { Resource } from "rest-hooks";
+import { MutateShape, ReadShape, Resource, SchemaDetail } from "rest-hooks";
 import BaseResource from "./BaseResource";
 
 export interface Workspace {
   workspaceId: string;
   customerId: string;
   name: string;
+  email: string;
   slug: string;
   initialSetupComplete: boolean;
   anonymousDataCollection: boolean;
@@ -13,10 +14,12 @@ export interface Workspace {
   displaySetupWizard: boolean;
 }
 
-export default class WorkspaceResource extends BaseResource
+export default class WorkspaceResource
+  extends BaseResource
   implements Workspace {
   readonly workspaceId: string = "";
   readonly customerId: string = "";
+  readonly email: string = "";
   readonly name: string = "";
   readonly slug: string = "";
   readonly initialSetupComplete: boolean = false;
@@ -25,30 +28,36 @@ export default class WorkspaceResource extends BaseResource
   readonly securityUpdates: boolean = false;
   readonly displaySetupWizard: boolean = true;
 
-  pk() {
+  pk(): string {
     return this.workspaceId?.toString();
   }
 
   static urlRoot = "workspaces";
 
-  static listShape<T extends typeof Resource>(this: T) {
+  static listShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Workspace[]>> {
     return {
       ...super.listShape(),
-      schema: { workspaces: [this.asSchema()] }
+      schema: { workspaces: [this] },
     };
   }
 
-  static detailShape<T extends typeof Resource>(this: T) {
+  static detailShape<T extends typeof Resource>(
+    this: T
+  ): ReadShape<SchemaDetail<Workspace>> {
     return {
       ...super.detailShape(),
-      schema: this.asSchema()
+      schema: this,
     };
   }
 
-  static updateShape<T extends typeof Resource>(this: T) {
+  static updateShape<T extends typeof Resource>(
+    this: T
+  ): MutateShape<SchemaDetail<Workspace>> {
     return {
       ...super.partialUpdateShape(),
-      schema: this.asSchema()
+      schema: this,
     };
   }
 }

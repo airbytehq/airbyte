@@ -16,6 +16,11 @@ data "aws_ami" "amazon-linux-2" {
     name   = "name"
     values = ["amzn2-ami-hvm-2*"]
   }
+
+  filter {
+    name   = "image-id"
+    values = [var.ami_id]
+  }
 }
 
 # Ensure we can ssh to the airbyte instance
@@ -51,6 +56,10 @@ resource "aws_instance" "airbyte-instance" {
   key_name = var.key-name
 
   user_data = file("${path.module}/init.sh")
+
+  root_block_device {
+    volume_size = 60
+  }
 
   tags = {
     Name = "${var.name}-airbyte-app"

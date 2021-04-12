@@ -1,49 +1,35 @@
-import React, { useMemo } from "react";
-import { useField } from "formik";
-import { FormattedMessage } from "react-intl";
+import React from "react";
+import { ControlLabels } from "components/LabeledControl";
+import { FormBaseItem } from "core/form/types";
 
-import TextWithHTML from "../../../TextWithHTML";
-import { ControlLabels } from "../../../LabeledControl";
-import { FormBaseItem } from "../../../../core/form/types";
+import { LabelMessage } from "./LabelMessage";
 
-type IProps = {
+type LabelMessageProps = {
   property: FormBaseItem;
+  error: string | undefined;
+  touched: boolean;
 };
 
-const Label: React.FC<IProps> = ({ property, children }) => {
-  const [, meta] = useField(property.fieldName);
+const Label: React.FC<LabelMessageProps> = ({
+  property,
+  error,
+  touched,
+  children,
+}) => {
+  const labelText = property.title || property.fieldKey;
+  const labelRequiredAppendix = property.isRequired ? " *" : "";
+  const label = `${labelText}${labelRequiredAppendix}`;
 
-  const label = `${property.title || property.fieldKey}${
-    property.isRequired ? " *" : ""
-  }`;
-
-  const displayError = !!meta.error && meta.touched;
-
-  const constructMessage = useMemo(() => {
-    const errorMessage =
-      displayError && meta.error === "form.pattern.error" ? (
-        <FormattedMessage
-          id={meta.error}
-          values={{ pattern: property.pattern }}
-        />
-      ) : null;
-
-    const message = property.description ? (
-      <TextWithHTML text={property.description} />
-    ) : null;
-
-    return (
-      <>
-        {message} {errorMessage}
-      </>
-    );
-  }, [displayError, meta.error, property.description, property.pattern]);
+  const displayError = !!error && touched;
 
   return (
     <ControlLabels
+      labelAdditionLength={0}
       error={displayError}
       label={label}
-      message={constructMessage}
+      message={
+        <LabelMessage property={property} error={error} touched={touched} />
+      }
     >
       {children}
     </ControlLabels>

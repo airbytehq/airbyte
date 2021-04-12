@@ -2,16 +2,18 @@ import React, { useEffect, useState } from "react";
 
 import { FormattedMessage } from "react-intl";
 
-import config from "../../../config";
-import Link from "../../Link";
+import config from "config";
+import { Link } from "components";
 
-type IProps = {
+type ShowLoadingMessageProps = {
   connector?: string;
 };
 
 const TIMEOUT_MS = 10000;
 
-const ShowLoadingMessage: React.FC<IProps> = ({ connector }) => {
+const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({
+  connector,
+}) => {
   const [longLoading, setLongLoading] = useState(false);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ const ShowLoadingMessage: React.FC<IProps> = ({ connector }) => {
           <Link target="_blank" href={config.ui.technicalSupport} as="a">
             {lnk}
           </Link>
-        )
+        ),
       }}
     />
   ) : (

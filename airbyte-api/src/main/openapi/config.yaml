@@ -30,7 +30,7 @@ externalDocs:
   description: Find out more about Airbyte
   url: "https://airbyte.io"
 servers:
-  - url: "http://localhost:8001"
+  - url: "http://localhost:8001/api"
 tags:
   - name: workspace
     description: Workspace related resources.
@@ -56,6 +56,46 @@ tags:
     description: Export/Import Airbyte Configuration and Database resources.
 
 paths:
+  /v1/workspaces/create:
+    post:
+      tags:
+        - workspace
+      summary: Creates a workspace
+      operationId: createWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/workspaces/delete:
+    post:
+      tags:
+        - workspace
+      summary: Deletes a workspace
+      operationId: deleteWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          description: Source not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/workspaces/get:
     post:
       tags:
@@ -125,6 +165,29 @@ paths:
           description: Workspace not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/notifications/try:
+    post:
+      tags:
+        - notifications
+      summary: Try sending a notifications
+      operationId: tryNotificationConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Notification"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationRead"
+        "404":
+          description: Notification Client not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/source_definitions/create:
     post:
       tags:
@@ -171,8 +234,22 @@ paths:
     post:
       tags:
         - source_definition
-      summary: List all of the sourceDefinitions that Airbyte supports
+      summary: List all the sourceDefinitions the current Airbyte deployment is configured to use
       operationId: listSourceDefinitions
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceDefinitionReadList"
+  /v1/source_definitions/list_latest:
+    post:
+      tags:
+        - source_definition
+      summary: List the latest sourceDefinitions Airbyte supports
+      description: Guaranteed to retrieve the latest information on supported sources.
+      operationId: listLatestSourceDefinitions
       responses:
         "200":
           description: Successful operation
@@ -183,7 +260,7 @@ paths:
   /v1/source_definitions/get:
     post:
       tags:
-        - source
+        - source_definition
       summary: Get source
       operationId: getSourceDefinition
       requestBody:
@@ -386,7 +463,7 @@ paths:
     post:
       tags:
         - source
-      summary: Discover the schema of the source
+      summary: Discover the schema catalog of the source
       operationId: discoverSchemaForSource
       requestBody:
         content:
@@ -452,8 +529,22 @@ paths:
     post:
       tags:
         - destination_definition
-      summary: List all of the destinationDefinitions that Airbyte supports
+      summary: List all the destinationDefinitions the current Airbyte deployment is configured to use
       operationId: listDestinationDefinitions
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDefinitionReadList"
+  /v1/destination_definitions/list_latest:
+    post:
+      tags:
+        - destination_definition
+      summary: List the latest destinationDefinitions Airbyte supports
+      description: Guaranteed to retrieve the latest information on supported destinations.
+      operationId: listLatestDestinationDefinitions
       responses:
         "200":
           description: Successful operation
@@ -577,7 +668,7 @@ paths:
     post:
       tags:
         - destination
-      summary: get configured destination
+      summary: Get configured destination
       operationId: getDestination
       requestBody:
         content:
@@ -1033,6 +1124,29 @@ paths:
           description: Job not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/jobs/cancel:
+    post:
+      tags:
+        - jobs
+      summary: Cancels a job
+      operationId: cancelJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobInfoRead"
+        "404":
+          description: Job not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/health:
     get:
       tags:
@@ -1070,6 +1184,20 @@ paths:
           description: Logs not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/openapi:
+    get:
+      tags:
+        - openapi
+      summary: Returns the openapi specification
+      operationId: getOpenApiSpec
+      responses:
+        "200":
+          description: Returns the openapi specification file
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: binary
   /v1/deployment/export:
     post:
       tags:
@@ -1116,6 +1244,62 @@ components:
     CustomerId:
       type: string
       format: uuid
+    WorkspaceCreate:
+      type: object
+      required:
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+        anonymousDataCollection:
+          type: boolean
+        name:
+          type: string
+        news:
+          type: boolean
+        securityUpdates:
+          type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+    Notification:
+      type: object
+      required:
+        - notificationType
+      properties:
+        # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
+        # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
+        notificationType:
+          $ref: "#/components/schemas/NotificationType"
+        slackConfiguration:
+          $ref: "#/components/schemas/SlackNotificationConfiguration"
+    SlackNotificationConfiguration:
+      type: object
+      required:
+        - webhook
+      properties:
+        webhook:
+          type: string
+    NotificationType:
+      type: string
+      enum:
+        - slack
+        # - email
+        # - webhook
+    NotificationRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        message:
+          type: string
     WorkspaceIdRequestBody:
       type: object
       required:
@@ -1136,6 +1320,9 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         customerId:
           $ref: "#/components/schemas/CustomerId"
+        email:
+          type: string
+          format: email
         name:
           type: string
         slug:
@@ -1150,6 +1337,10 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
     WorkspaceUpdate:
       type: object
       required:
@@ -1174,6 +1365,10 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
     # SLUG
     SlugRequestBody:
       type: object
@@ -1258,7 +1453,7 @@ components:
       type: object
       required:
         - sourceDefinitionId
-        - connectionSpecification
+        - jobInfo
       properties:
         sourceDefinitionId:
           $ref: "#/components/schemas/SourceDefinitionId"
@@ -1266,6 +1461,8 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceDefinitionSpecification"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
     # SOURCE
     SourceId:
       type: string
@@ -1366,15 +1563,15 @@ components:
           items:
             $ref: "#/components/schemas/SourceRead"
     SourceDiscoverSchemaRead:
-      description: Returns the results of a discover schema job. If the job was not successful, the schema field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
+      description: Returns the results of a discover catalog job. If the job was not successful, the catalog field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object
       required:
         - jobInfo
       properties:
-        schema:
-          $ref: "#/components/schemas/SourceSchema"
+        catalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
         jobInfo:
-          $ref: "#/components/schemas/JobInfoRead"
+          $ref: "#/components/schemas/SynchronousJobRead"
     # DESTINATION DEFINITION
     DestinationDefinitionId:
       type: string
@@ -1450,7 +1647,7 @@ components:
       type: object
       required:
         - destinationDefinitionId
-        - connectionSpecification
+        - jobInfo
       properties:
         destinationDefinitionId:
           $ref: "#/components/schemas/DestinationDefinitionId"
@@ -1458,6 +1655,12 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
+        supportedDestinationSyncModes:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationSyncMode"
     # DESTINATION
     DestinationId:
       type: string
@@ -1588,12 +1791,15 @@ components:
         name:
           type: string
           description: Optional name of the connection
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -1602,13 +1808,16 @@ components:
       type: object
       required:
         - connectionId
-        - syncSchema
+        - syncCatalog
         - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
-        syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -1627,19 +1836,22 @@ components:
         - name
         - sourceId
         - destinationId
-        - syncSchema
+        - syncCatalog
         - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
+        prefix:
+          type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -1692,9 +1904,9 @@ components:
       properties:
         logType:
           $ref: "#/components/schemas/LogType"
-    # SCHEMA
-    SourceSchema:
-      description: describes the available schema.
+    # SCHEMA CATALOG
+    AirbyteCatalog:
+      description: describes the available schema (catalog).
       type: object
       required:
         - streams
@@ -1702,55 +1914,83 @@ components:
         streams:
           type: array
           items:
-            $ref: "#/components/schemas/SourceSchemaStream"
-    SourceSchemaStream:
+            $ref: "#/components/schemas/AirbyteStreamAndConfiguration"
+    AirbyteStreamAndConfiguration:
+      description: each stream is split in two parts; the immutable schema from source and mutable configuration for destination
       type: object
+      additionalProperties: false
+      properties:
+        stream:
+          $ref: "#/components/schemas/AirbyteStream"
+        config:
+          $ref: "#/components/schemas/AirbyteStreamConfiguration"
+    AirbyteStream:
+      description: the immutable schema defined by the source
+      type: object
+      additionalProperties: false
       required:
         - name
-        - fields
-        - supportedSyncModes
+        - json_schema
+        # todo (cgardens) - make required once sources are migrated
+        # - supported_sync_modes
       properties:
-        # immutable
         name:
           type: string
-        cleanedName:
-          type: string
-        fields:
-          type: array
-          items:
-            $ref: "#/components/schemas/SourceSchemaField"
+          description: Stream's name.
+        jsonSchema:
+          description: Stream schema using Json Schema specs.
+          $ref: "#/components/schemas/StreamJsonSchema"
         supportedSyncModes:
           type: array
           items:
             $ref: "#/components/schemas/SyncMode"
         sourceDefinedCursor:
+          description: If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
           type: boolean
         defaultCursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
           type: array
           items:
             type: string
-        # configurable
-        selected:
-          type: boolean
+        sourceDefinedPrimaryKey:
+          description: If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        namespace:
+          type: string
+          description: Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to.
+    StreamJsonSchema:
+      type: object
+    AirbyteStreamConfiguration:
+      description: the mutable part of the stream to configure the destination
+      type: object
+      additionalProperties: false
+      required:
+        - syncMode
+        - destinationSyncMode
+      properties:
         syncMode:
           $ref: "#/components/schemas/SyncMode"
         cursorField:
+          description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
           type: array
           items:
             type: string
-    SourceSchemaField:
-      type: object
-      required:
-        - name
-        - dataType
-        - selected
-      properties:
-        name:
+        destinationSyncMode:
+          $ref: "#/components/schemas/DestinationSyncMode"
+        primaryKey:
+          description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        aliasName:
+          description: Alias name to the stream to be used in the destination
           type: string
-        cleanedName:
-          type: string
-        dataType:
-          $ref: "#/components/schemas/DataType"
         selected:
           type: boolean
     DataType:
@@ -1826,7 +2066,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptRead"
-
     JobStatus:
       type: string
       enum:
@@ -1910,6 +2149,33 @@ components:
           type: array
           items:
             type: string
+    SynchronousJobRead:
+      type: object
+      required:
+        - id
+        - configType
+        - createdAt
+        - endedAt
+        - succeeded
+      properties:
+        id:
+          type: string
+          format: uuid
+        configType:
+          $ref: "#/components/schemas/JobConfigType"
+        configId:
+          description: only present if a config id was provided.
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        endedAt:
+          type: integer
+          format: int64
+        succeeded:
+          type: boolean
+        logs:
+          $ref: "#/components/schemas/LogRead"
     # Health
     HealthCheckRead:
       type: object
@@ -1933,7 +2199,7 @@ components:
         message:
           type: string
         jobInfo:
-          $ref: "#/components/schemas/JobInfoRead"
+          $ref: "#/components/schemas/SynchronousJobRead"
     # Web Backend
     WbConnectionRead:
       type: object
@@ -1942,7 +2208,7 @@ components:
         - name
         - sourceId
         - destinationId
-        - syncSchema
+        - syncCatalog
         - status
         - source
         - destination
@@ -1952,12 +2218,14 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
+        prefix:
+          type: string
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
-        syncSchema:
-          $ref: "#/components/schemas/SourceSchema"
+        syncCatalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
@@ -1966,10 +2234,12 @@ components:
           $ref: "#/components/schemas/SourceRead"
         destination:
           $ref: "#/components/schemas/DestinationRead"
-        lastSync:
-          description: epoch time of last sync. null if no sync has taken place.
+        latestSyncJobCreatedAt:
+          description: epoch time of the latest sync job. null if no sync job has taken place.
           type: integer
           format: int64
+        latestSyncJobStatus:
+          $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
     WbConnectionReadList:
@@ -1986,6 +2256,13 @@ components:
       enum:
         - full_refresh
         - incremental
+    DestinationSyncMode:
+      type: string
+      enum:
+        - append
+        - overwrite
+        #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
+        - append_dedup # SCD Type 1 & 2
     AirbyteArchive:
       type: string
       format: binary

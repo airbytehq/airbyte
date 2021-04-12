@@ -3,16 +3,17 @@ import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
-import { Source } from "../../../../../core/resources/Source";
-import ContentCard from "../../../../../components/ContentCard";
-import ServiceForm from "../../../../../components/ServiceForm";
-import useSource from "../../../../../components/hooks/services/useSourceHook";
-import SourceDefinitionSpecificationResource from "../../../../../core/resources/SourceDefinitionSpecification";
-import DeleteBlock from "../../../../../components/DeleteBlock";
-import { Connection } from "../../../../../core/resources/Connection";
-import { JobInfo } from "../../../../../core/resources/Scheduler";
-import { JobsLogItem } from "../../../../../components/JobItem";
-import { createFormErrorMessage } from "../../../../../utils/errorStatusMessage";
+import { Source } from "core/resources/Source";
+import ContentCard from "components/ContentCard";
+import ServiceForm from "components/ServiceForm";
+import useSource from "components/hooks/services/useSourceHook";
+import SourceDefinitionSpecificationResource from "core/resources/SourceDefinitionSpecification";
+import DeleteBlock from "components/DeleteBlock";
+import { Connection } from "core/resources/Connection";
+import { JobInfo } from "core/resources/Scheduler";
+import { JobsLogItem } from "components/JobItem";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectionConfiguration } from "core/domain/connection";
 
 const Content = styled.div`
   max-width: 813px;
@@ -26,7 +27,7 @@ type IProps = {
 
 const SourceSettings: React.FC<IProps> = ({
   currentSource,
-  connectionsWithSource
+  connectionsWithSource,
 }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
@@ -34,27 +35,46 @@ const SourceSettings: React.FC<IProps> = ({
     response: JobInfo;
   } | null>(null);
 
-  const { updateSource, deleteSource } = useSource();
+  const { updateSource, deleteSource, checkSourceConnection } = useSource();
 
   const sourceDefinitionSpecification = useResource(
     SourceDefinitionSpecificationResource.detailShape(),
     {
-      sourceDefinitionId: currentSource.sourceDefinitionId
+      sourceDefinitionId: currentSource.sourceDefinitionId,
     }
   );
 
   const onSubmit = async (values: {
     name: string;
     serviceType: string;
-    connectionConfiguration?: any;
+    connectionConfiguration?: ConnectionConfiguration;
   }) => {
     setErrorStatusRequest(null);
     try {
       await updateSource({
         values,
-        sourceId: currentSource.sourceId
+        sourceId: currentSource.sourceId,
       });
 
+      setSaved(true);
+    } catch (e) {
+      const errorStatusMessage = createFormErrorMessage(e);
+
+      setErrorStatusRequest({ ...e, statusMessage: errorStatusMessage });
+    }
+  };
+
+  const onRetest = async (values: {
+    name: string;
+    serviceType: string;
+    connectionConfiguration?: ConnectionConfiguration;
+  }) => {
+    setErrorStatusRequest(null);
+    try {
+      await checkSourceConnection({
+        values,
+        sourceId: currentSource.sourceId,
+      });
       setSaved(true);
     } catch (e) {
       const errorStatusMessage = createFormErrorMessage(e);
@@ -71,21 +91,22 @@ const SourceSettings: React.FC<IProps> = ({
     <Content>
       <ContentCard title={<FormattedMessage id="sources.sourceSettings" />}>
         <ServiceForm
+          onRetest={onRetest}
           isEditMode
           onSubmit={onSubmit}
           formType="source"
           dropDownData={[
             {
-              value: currentSource.sourceDefinitionId || "",
-              text: currentSource.sourceName || "",
-              img: "/default-logo-catalog.svg"
-            }
+              value: currentSource.sourceDefinitionId,
+              text: currentSource.sourceName,
+              img: "/default-logo-catalog.svg",
+            },
           ]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           errorMessage={errorStatusRequest?.statusMessage}
           formValues={{
             ...currentSource,
-            serviceType: currentSource.sourceDefinitionId
+            serviceType: currentSource.sourceDefinitionId,
           }}
           specifications={
             sourceDefinitionSpecification?.connectionSpecification

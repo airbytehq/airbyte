@@ -26,6 +26,8 @@ install_airbyte() {
 
 install_demo_pg() {
   docker run --rm --name postgres-demo -e POSTGRES_PASSWORD=password -p 3000:5432 -d postgres
+  docker exec postgres-demo psql -U postgres -c 'create database analytics;'
+  docker exec postgres-demo psql -U postgres -c 'grant all privileges on database analytics to postgres;'
 }
 
 main() {
@@ -33,6 +35,7 @@ main() {
   install_docker
   install_docker_compose
   install_airbyte
+  install_demo_pg
 }
 
 main > /tmp/init.log 2>&1

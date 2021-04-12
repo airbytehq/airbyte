@@ -78,7 +78,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   }
 
   @Override
-  public ProcessBuilder create(long jobId, int attempt, final Path jobRoot, final String imageName, final String... args) throws WorkerException {
+  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String... args) throws WorkerException {
 
     if (!checkImageExists(imageName)) {
       throw new WorkerException("Could not find image: " + imageName);
@@ -89,6 +89,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             "docker",
             "run",
             "--rm",
+            "--init",
             "-i",
             "-v",
             String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),
@@ -118,7 +119,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
-      WorkerUtils.gentleClose(process, 2, TimeUnit.MINUTES);
+      WorkerUtils.gentleClose(process, 10, TimeUnit.MINUTES);
 
       if (process.isAlive()) {
         throw new WorkerException("Process to check if image exists is stuck. Exiting.");
