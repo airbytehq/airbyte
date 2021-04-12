@@ -193,8 +193,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     });
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
-                                                                             JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,
@@ -208,8 +207,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         configuredStream -> configuredStream.getSyncMode().equals(SyncMode.INCREMENTAL));
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(JsonNode config,
-                                                                             JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,

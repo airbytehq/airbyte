@@ -38,7 +38,11 @@ public class Strings {
         .collect(Collectors.joining(separator));
   }
 
-  public static List<List<String>> boxToListofList(List<String> list) {
+  /**
+   * Convenience method converting a list to a list of lists of the same type. Each item in the
+   * original list is inserted into its own list.
+   */
+  public static <T> List<List<T>> boxToListofList(List<T> list) {
     var nonNullEntries = list.stream().filter(Objects::nonNull);
     return nonNullEntries.map(Collections::singletonList).collect(Collectors.toList());
   }
