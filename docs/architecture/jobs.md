@@ -23,6 +23,8 @@ There are 2 flavors of workers:
 
 In the first case, the worker is generally extracting data from the connector and reporting it back to the scheduler. It does this by listening to STDOUT of the connector. In the second case, the worker is facilitating passing data (via record messages) from the source to the destination. It does this by listening on STDOUT of the source and writing to STDIN on the destination.
 
+For more information on the schema of the messages that are passed, refer to [Airbyte Specification](./airbyte-specification.md).
+
 ## Worker Lifecycle
 
 This section will depict the lifecycle of a worker. It will only show the 2 connector version. The since connector version is the same with one side removed.
