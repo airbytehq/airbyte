@@ -57,6 +57,8 @@ import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -84,13 +86,13 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s",
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
 
     if (config.get("ssl").asBoolean()) {
-      jdbcUrl.append("?ssl=true&sslmode=require");
+      jdbcUrl.append("ssl=true&sslmode=require");
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
