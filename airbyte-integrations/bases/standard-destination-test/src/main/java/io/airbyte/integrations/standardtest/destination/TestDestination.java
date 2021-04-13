@@ -521,10 +521,10 @@ public abstract class TestDestination {
         new AirbyteRecordMessage().withStream(streamName).withData(data).withEmittedAt(System.currentTimeMillis());
 
     final AirbyteRecordMessage schema1RecordMsg = baseRecordMsg.withNamespace(namespace1);
-    final AirbyteMessage schema1Msg = new AirbyteMessage().withRecord(schema1RecordMsg);
+    final AirbyteMessage schema1Msg = new AirbyteMessage().withRecord(schema1RecordMsg).withType(Type.RECORD);
 
     final AirbyteRecordMessage schema2RecordMsg = baseRecordMsg.withNamespace(namespace2);
-    final AirbyteMessage schema2Msg = new AirbyteMessage().withRecord(schema2RecordMsg);
+    final AirbyteMessage schema2Msg = new AirbyteMessage().withRecord(schema2RecordMsg).withType(Type.RECORD);
 
     final List<AirbyteMessage> messages = List.of(schema1Msg, schema2Msg);
 
