@@ -52,6 +52,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
@@ -61,6 +62,7 @@ import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +74,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
+import org.jooq.RowCountQuery;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -478,6 +481,43 @@ class CdcPostgresSourceTest {
     assertThrows(Exception.class, () -> {
       source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
     });
+  }
+
+  @Test
+  void testDiscover() throws Exception {
+    final AirbyteCatalog expectedCatalog = Jsons.clone(CATALOG);
+
+    // stream with PK
+    expectedCatalog.getStreams().get(0).setNamespace("public");
+    expectedCatalog.getStreams().get(0).setSourceDefinedCursor(true);
+    addCdcMetadataColumns(expectedCatalog.getStreams().get(0));
+
+    // stream with no PK.
+    expectedCatalog.getStreams().get(1).setNamespace("public");
+    expectedCatalog.getStreams().get(1).setSourceDefinedPrimaryKey(Collections.emptyList());
+    expectedCatalog.getStreams().get(1).setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
+    addCdcMetadataColumns(expectedCatalog.getStreams().get(1));
+
+    database.query(ctx -> ctx.execute(String.format("ALTER TABLE %s DROP CONSTRAINT models_pkey", MODELS_STREAM_NAME)));
+
+    final AirbyteCatalog actualCatalog = source.discover(getConfig(PSQL_DB, dbName));
+
+    assertEquals(
+        expectedCatalog.getStreams().stream().sorted(Comparator.comparing(AirbyteStream::getName)).collect(Collectors.toList()),
+        actualCatalog.getStreams().stream().sorted(Comparator.comparing(AirbyteStream::getName)).collect(Collectors.toList())
+    );
+  }
+
+  private static AirbyteStream addCdcMetadataColumns(AirbyteStream stream) {
+    ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
+
+    final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
+    properties.set(AbstractJdbcSource.CDC_LSN, numberType);
+    properties.set(AbstractJdbcSource.CDC_UPDATED_AT, numberType);
+    properties.set(AbstractJdbcSource.CDC_DELETED_AT, numberType);
+
+    return stream;
   }
 
   private void writeMakeRecord(DSLContext ctx, JsonNode recordJson) {
