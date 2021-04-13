@@ -31,12 +31,14 @@ import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.apis.ConfigurationApi;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.util.Map;
 import org.glassfish.hk2.api.Factory;
 import org.slf4j.MDC;
 
 public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
 
+  private static WorkflowServiceStubs temporalService;
   private static ConfigRepository configRepository;
   private static JobPersistence jobPersistence;
   private static SchedulerJobClient schedulerJobClient;
@@ -73,6 +75,10 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.mdc = mdc;
   }
 
+  public static void setTemporalService(final WorkflowServiceStubs temporalService) {
+    ConfigurationApiFactory.temporalService = temporalService;
+  }
+
   @Override
   public ConfigurationApi provide() {
     MDC.setContextMap(mdc);
@@ -83,7 +89,8 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
         ConfigurationApiFactory.schedulerJobClient,
         ConfigurationApiFactory.synchronousSchedulerClient,
         ConfigurationApiFactory.configs,
-        ConfigurationApiFactory.archiveTtlManager);
+        ConfigurationApiFactory.archiveTtlManager,
+        ConfigurationApiFactory.temporalService);
   }
 
   @Override

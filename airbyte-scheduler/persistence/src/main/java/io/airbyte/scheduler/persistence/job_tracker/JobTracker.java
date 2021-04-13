@@ -114,7 +114,8 @@ public class JobTracker {
   public void trackSync(Job job, JobState jobState) {
     Exceptions.swallow(() -> {
       final ConfigType configType = job.getConfigType();
-      Preconditions.checkArgument(configType == ConfigType.SYNC || configType == ConfigType.RESET_CONNECTION);
+      final boolean allowedJob = configType == ConfigType.SYNC || configType == ConfigType.RESET_CONNECTION;
+      Preconditions.checkArgument(allowedJob, "Job type " + configType + " is not allowed!");
       final long jobId = job.getId();
       final UUID connectionId = UUID.fromString(job.getScope());
       final UUID sourceDefinitionId = configRepository.getSourceDefinitionFromConnection(connectionId).getSourceDefinitionId();

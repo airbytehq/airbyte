@@ -12,6 +12,7 @@ const Content = styled.div<{ enabled?: boolean }>`
   display: flex;
   align-items: center;
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
+  font-weight: 500;
 `;
 
 const Image = styled(ImageBlock)`
