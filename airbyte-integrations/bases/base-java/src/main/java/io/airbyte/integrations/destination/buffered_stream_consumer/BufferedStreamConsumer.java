@@ -115,28 +115,22 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
 
+    LOGGER.info("{} started.", BufferedStreamConsumer.class);
+
     LOGGER.info("Buffer creation started for {} streams.", streamNamePairs.size());
-    final Path queueRoot;
-    try {
-      queueRoot = Files.createTempDirectory("queues");
-      for (AirbyteStreamNameNamespacePair pair : streamNamePairs) {
-        LOGGER.info("Buffer creation for stream {}.", pair);
-        final var fqName = Path.of(pair.getNamespace(), pair.getName());
-        final var writeBuffer = new BigQueue(queueRoot.resolve(pair.getName()), pair.getName());
-        pairToWriteBuffers.put(pair, writeBuffer);
-      }
-    } catch (IOException e) {
-      LOGGER.error("Unable to create write buffers", e);
-      throw new RuntimeException();
+    final Path queueRoot = Files.createTempDirectory("queues");
+    for (AirbyteStreamNameNamespacePair pair : streamNamePairs) {
+      LOGGER.info("Buffer creation for stream {}.", pair);
+      final var fqName = Path.of(pair.getNamespace(), pair.getName());
+      final var writeBuffer = new BigQueue(queueRoot.resolve(pair.getName()), pair.getName());
+      pairToWriteBuffers.put(pair, writeBuffer);
     }
     LOGGER.info("Buffer creation completed.");
-
-    LOGGER.info("{} started.", BufferedStreamConsumer.class);
 
     onStart.call();
 
     writerPool.scheduleWithFixedDelay(
-        () -> writeStreamsWithNRecords(MIN_RECORDS, pairToWriteBuffers, recordWriter),
+        () -> writeStreamsWithNRecords(MIN_RECORDS, streamNamePairs, pairToWriteBuffers, recordWriter),
         THREAD_DELAY_MILLIS,
         THREAD_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
@@ -175,7 +169,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       writerPool.awaitTermination(GRACEFUL_SHUTDOWN_MINUTES, TimeUnit.MINUTES);
 
       // write anything that is left in the buffers.
-      writeStreamsWithNRecords(0, pairToWriteBuffers, recordWriter);
+      writeStreamsWithNRecords(0, streamNamePairs, pairToWriteBuffers, recordWriter);
     }
 
     onClose.accept(hasFailed);
@@ -186,6 +180,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private static void writeStreamsWithNRecords(int minRecords,
+                                               Set<AirbyteStreamNameNamespacePair> pairs,
                                                Map<AirbyteStreamNameNamespacePair, CloseableQueue<byte[]>> writeBuffers,
                                                RecordWriter recordWriter) {
     for (AirbyteStreamNameNamespacePair pair : writeBuffers.keySet()) {
