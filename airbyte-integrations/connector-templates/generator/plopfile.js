@@ -9,13 +9,13 @@ Success!
 
 Your ${connectorName} connector has been created at ${path.resolve(outputPath)}.
 
-Follow instructions in NEW_SOURCE_CHECKLIST.md to finish your connector.
+Follow the TODOs in the generated module to implement your connector. 
 
 Questions, comments, or concerns? Let us know at:
 Slack: https://slack.airbyte.io
 Github: https://github.com/airbytehq/airbyte
 
-We're always happy to provide you with any support :)
+We're always happy to provide any support!
 
 ${additionalMessage || ""}
 `
@@ -68,7 +68,7 @@ module.exports = function (plop) {
       {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"', filter: function (name) {
         return name.endsWith('-singer') ? name.replace(/-singer$/, '') : name;
       }},
-       {type: 'input', name: 'tap_name', message: 'Singer tap package'},
+       {type: 'input', name: 'tap_name', message: 'Singer tap package e.g "tap-mixpanel"'},
     ],
     actions: [
        {
