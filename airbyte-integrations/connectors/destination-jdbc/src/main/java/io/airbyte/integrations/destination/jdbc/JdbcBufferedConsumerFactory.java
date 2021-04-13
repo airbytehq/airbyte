@@ -103,6 +103,9 @@ public class JdbcBufferedConsumerFactory {
   /**
    * Defer to the {@link AirbyteStream}'s namespace. If this is not set, use the destination's default
    * schema. This namespace is source-provided, and can be potentially empty.
+   *
+   * The logic here matches the logic in the catalog_process.py for Normalization. Any modifications
+   * need to be reflected there and vice versa.
    */
   private static String getOutputSchema(AirbyteStream stream, String defaultDestSchema) {
     final String sourceSchema = stream.getNamespace();
