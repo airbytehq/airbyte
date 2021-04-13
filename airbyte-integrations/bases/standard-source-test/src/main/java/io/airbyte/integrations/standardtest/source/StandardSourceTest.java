@@ -113,7 +113,8 @@ public abstract class StandardSourceTest {
       "airbyte/source-stripe-singer",
       "airbyte/source-github-singer",
       "airbyte/source-gitlab-singer",
-      "airbyte/source-google-workspace-admin-reports");
+      "airbyte/source-google-workspace-admin-reports",
+      "airbyte/source-zendesk-talk");
 
   /**
    * FIXME: Some sources can't guarantee that there will be no events between two sequential sync

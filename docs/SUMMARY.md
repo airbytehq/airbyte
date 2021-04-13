@@ -62,6 +62,7 @@
     * [Stripe](integrations/sources/stripe.md)
     * [Twilio](integrations/sources/twilio.md)
     * [Zendesk Support](integrations/sources/zendesk-support.md)
+    * [Zendesk Talk](integrations/sources/zendesk-talk.md)
     * [Zoom](integrations/sources/zoom.md)
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
