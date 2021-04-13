@@ -48,7 +48,6 @@
           "type": "boolean",
           "default": false,
           "order": 5
-        }
       },
       "replication_method": {
         "type": "object",
