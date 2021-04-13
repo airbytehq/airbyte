@@ -145,6 +145,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     // ignore other message types.
     final String streamName = message.getStream();
     final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
+    LOGGER.info("pair: {}", pair);
     if (!streamNames.contains(pair)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
