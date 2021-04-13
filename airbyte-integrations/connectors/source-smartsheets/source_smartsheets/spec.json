@@ -10,7 +10,8 @@
       "access_token": {
         "title": "API Access token",
         "description": "Found in Profile > Apps & Integrations > API Access within Smartsheet app",
-        "type": "string"
+        "type": "string",
+        "airbyte_secret": true
       },
       "spreadsheet_id": {
         "title": "Smartsheet ID",

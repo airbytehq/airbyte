@@ -69,7 +69,7 @@ class SourceSmartsheets(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         try:
             access_token = config["access_token"]
-            spreadsheet_id = config["spreadsheet_id"]
+            spreadsheet_id = config["spreadsheet_id"] + 1
 
             smartsheet_client = smartsheet.Smartsheet(access_token)
             smartsheet_client.errors_as_exceptions(True)
@@ -79,11 +79,12 @@ class SourceSmartsheets(Source):
         except Exception as e:
             if isinstance(e, smartsheet.exceptions.ApiError):
                 err = e.error.result
-                reason = f"{err.error_code}\n{err.message}\n{err.name} - Check your configuration values."
+                code = 404 if err.code == 1006 else err.code
+                reason = f"{err.name}: {code} - {err.message} | Check your spreadsheet ID."
             else:
                 reason = str(e)
             logger.error(reason)
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {reason}")
+        return AirbyteConnectionStatus(status=Status.FAILED)
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         access_token = config["access_token"]
@@ -94,17 +95,16 @@ class SourceSmartsheets(Source):
         try:
             sheet = smartsheet_client.Sheets.get_sheet(spreadsheet_id)
             sheet = json.loads(str(sheet))  # make it subscriptable
+            sheet_json_schema = get_json_schema(sheet)
 
             logger.info(f"Running discovery on sheet: {sheet['name']} with {spreadsheet_id}")
-
-            sheet_json_schema = get_json_schema(sheet)
-            print(sheet_json_schema)
 
             try:
                 stream = AirbyteStream(name=sheet["name"], json_schema=sheet_json_schema)
                 streams.append(stream)
             except Exception as e:
-                logger.error(f"Stream creation failed with error: {str(e)}")
+                rec = "Check that your source's column names don't contain spaces or _"
+                logger.error(f"Stream creation failed: {str(e)} - {rec} ")
         except Exception as e:
             raise Exception(f"Could not run discovery: {str(e)}")
 
