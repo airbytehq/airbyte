@@ -208,3 +208,8 @@
   dockerRepository: airbyte/source-oracle
   dockerImageTag: 0.2.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-oracle
+- sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
+  name: Zendesk Talk
+  dockerRepository: airbyte/source-zendesk-talk
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-talk
