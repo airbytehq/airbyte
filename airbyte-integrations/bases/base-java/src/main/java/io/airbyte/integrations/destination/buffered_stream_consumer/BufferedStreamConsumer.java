@@ -80,7 +80,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private static final int BATCH_SIZE = 10000;
 
   private final VoidCallable onStart;
-  private final CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriter;
+  private final RecordWriter recordWriter;
   private final CheckedConsumer<Boolean, Exception> onClose;
   private final Set<String> streamNames;
   private final Map<String, CloseableQueue<byte[]>> writeBuffers;
@@ -90,7 +90,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private boolean hasStarted;
 
   public BufferedStreamConsumer(VoidCallable onStart,
-                                CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriter,
+                                RecordWriter recordWriter,
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
                                 Set<String> streamNames) {
@@ -177,7 +177,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private static void writeStreamsWithNRecords(int minRecords,
                                                Set<String> streamNames,
                                                Map<String, CloseableQueue<byte[]>> writeBuffers,
-                                               CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriter) {
+                                               RecordWriter recordWriter) {
     for (final String streamName : streamNames) {
       final CloseableQueue<byte[]> writeBuffer = writeBuffers.get(streamName);
       while (writeBuffer.size() > minRecords) {

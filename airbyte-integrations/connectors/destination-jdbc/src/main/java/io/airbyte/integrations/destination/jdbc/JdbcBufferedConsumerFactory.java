@@ -96,7 +96,7 @@ public class JdbcBufferedConsumerFactory {
       final String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
-      return new WriteConfig(streamName, outputSchema, tmpTableName, tableName, syncMode);
+      return new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
     };
   }
 
