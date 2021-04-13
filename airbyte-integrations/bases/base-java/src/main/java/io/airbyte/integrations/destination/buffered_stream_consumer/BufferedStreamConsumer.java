@@ -83,6 +83,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final VoidCallable onStart;
   private final RecordWriter recordWriter;
+  private final Set<AirbyteStreamNameNamespacePair> streamNamePairs;
   private final CheckedConsumer<Boolean, Exception> onClose;
   private final Map<AirbyteStreamNameNamespacePair, CloseableQueue<byte[]>> pairToWriteBuffers;
   private final ScheduledExecutorService writerPool;
@@ -100,32 +101,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.recordWriter = recordWriter;
     this.onClose = onClose;
     this.catalog = catalog;
+    this.streamNamePairs = streamNamePairs;
 
     this.writerPool = Executors.newSingleThreadScheduledExecutor();
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofMinutes(GRACEFUL_SHUTDOWN_MINUTES), writerPool));
 
-    this.pairToWriteBuffers = createWriteBuffers(streamNamePairs);
-  }
-
-  // comment why this is happening in constructor
-  private static HashMap<AirbyteStreamNameNamespacePair, CloseableQueue<byte[]>> createWriteBuffers(Set<AirbyteStreamNameNamespacePair> streamNamePairs) {
-    var writeBuffers = new HashMap<AirbyteStreamNameNamespacePair, CloseableQueue<byte[]>>();
-    LOGGER.info("Buffer creation started for {} streams.", streamNamePairs.size());
-    final Path queueRoot;
-    try {
-      queueRoot = Files.createTempDirectory("queues");
-      for (AirbyteStreamNameNamespacePair pair : streamNamePairs) {
-        LOGGER.info("Buffer creation for stream {}.", pair);
-        final var fqName = Path.of(pair.getNamespace(), pair.getName());
-        final var writeBuffer = new BigQueue(queueRoot.resolve(fqName), fqName.toString());
-        writeBuffers.put(pair, writeBuffer);
-      }
-    } catch (IOException e) {
-      LOGGER.error("Unable to create write buffers", e);
-      throw new RuntimeException();
-    }
-    LOGGER.info("Buffer creation completed.");
-    return writeBuffers;
+    this.pairToWriteBuffers = new HashMap<>();
   }
 
   @Override
@@ -133,6 +114,22 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     // todo (cgardens) - if we reuse this pattern, consider moving it into FailureTrackingConsumer.
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
+
+    LOGGER.info("Buffer creation started for {} streams.", streamNamePairs.size());
+    final Path queueRoot;
+    try {
+      queueRoot = Files.createTempDirectory("queues");
+      for (AirbyteStreamNameNamespacePair pair : streamNamePairs) {
+        LOGGER.info("Buffer creation for stream {}.", pair);
+        final var fqName = Path.of(pair.getNamespace(), pair.getName());
+        final var writeBuffer = new BigQueue(queueRoot.resolve(pair.getName()), pair.getName());
+        pairToWriteBuffers.put(pair, writeBuffer);
+      }
+    } catch (IOException e) {
+      LOGGER.error("Unable to create write buffers", e);
+      throw new RuntimeException();
+    }
+    LOGGER.info("Buffer creation completed.");
 
     LOGGER.info("{} started.", BufferedStreamConsumer.class);
 
