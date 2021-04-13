@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.OnCloseFunction;
@@ -72,7 +73,7 @@ public class JdbcBufferedConsumerFactory {
         recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
-        writeConfigs.stream().map(WriteConfig::getStreamName).collect(Collectors.toSet()));
+        writeConfigs.stream().map(JdbcBufferedConsumerFactory::toNameNamespacePair).collect(Collectors.toSet()));
   }
 
   private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver, JsonNode config, ConfiguredAirbyteCatalog catalog) {
@@ -135,8 +136,8 @@ public class JdbcBufferedConsumerFactory {
                                                    SqlOperations sqlOperations,
                                                    List<WriteConfig> writeConfigs,
                                                    ConfiguredAirbyteCatalog catalog) {
-    final Map<String, WriteConfig> streamNameToWriteConfig = writeConfigs.stream()
-        .collect(Collectors.toUnmodifiableMap(WriteConfig::getStreamName, Function.identity()));
+    final Map<AirbyteStreamNameNamespacePair, WriteConfig> streamNameToWriteConfig = writeConfigs.stream()
+        .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
 
     return (streamName, recordStream) -> {
       if (!streamNameToWriteConfig.containsKey(streamName)) {
@@ -188,6 +189,10 @@ public class JdbcBufferedConsumerFactory {
       }
       LOGGER.info("Cleaning tmp tables in destination completed.");
     };
+  }
+
+  private static AirbyteStreamNameNamespacePair toNameNamespacePair(WriteConfig config) {
+    return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
 }
