@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.OnCloseFunction;
@@ -39,6 +40,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +74,7 @@ public class JdbcBufferedConsumerFactory {
         recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
-        writeConfigs.stream().map(WriteConfig::getStreamName).collect(Collectors.toSet()));
+        writeConfigs.stream().map(JdbcBufferedConsumerFactory::toNameNamespacePair).collect(Collectors.toSet()));
   }
 
   private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver, JsonNode config, ConfiguredAirbyteCatalog catalog) {
@@ -92,11 +94,12 @@ public class JdbcBufferedConsumerFactory {
       final String outputSchema = getOutputSchema(abStream, defaultSchemaName);
 
       final String streamName = abStream.getName();
+      final String namespace = abStream.getNamespace();
       final String tableName = Names.concatQuotedNames("_airbyte_raw_", namingResolver.getIdentifier(streamName));
       final String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
-      return new WriteConfig(streamName, outputSchema, tmpTableName, tableName, syncMode);
+      return new WriteConfig(streamName, namespace, outputSchema, tmpTableName, tableName, syncMode);
     };
   }
 
@@ -135,19 +138,16 @@ public class JdbcBufferedConsumerFactory {
                                                    SqlOperations sqlOperations,
                                                    List<WriteConfig> writeConfigs,
                                                    ConfiguredAirbyteCatalog catalog) {
-    final Map<String, WriteConfig> streamNameToWriteConfig = writeConfigs.stream()
-        .collect(Collectors.toUnmodifiableMap(config -> {
-          var key = config.getOutputSchemaName() + "." + config.getOutputTableName();
-          return key;
-        }, Function.identity()));
+    final Map<AirbyteStreamNameNamespacePair, WriteConfig> nameNamespacePairToWriteConfig = writeConfigs.stream()
+        .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
 
-    return (fullyQualifiedTableName, recordStream) -> {
-      if (!streamNameToWriteConfig.containsKey(fullyQualifiedTableName)) {
+    return (nameNamespacePair, recordStream) -> {
+      if (!nameNamespacePairToWriteConfig.containsKey(nameNamespacePair)) {
         throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
+            String.format("Message contained record from a stream that was not in the catalog. message: %s\n \ncatalog: %s", nameNamespacePair, Jsons.serialize(catalog)));
       }
-
-      final WriteConfig writeConfig = streamNameToWriteConfig.get(fullyQualifiedTableName);
+      LOGGER.info("Writing: {}", recordStream);
+      var writeConfig = nameNamespacePairToWriteConfig.get(nameNamespacePair);
       sqlOperations.insertRecords(database, recordStream, writeConfig.getOutputSchemaName(), writeConfig.getTmpTableName());
     };
   }
@@ -191,6 +191,10 @@ public class JdbcBufferedConsumerFactory {
       }
       LOGGER.info("Cleaning tmp tables in destination completed.");
     };
+  }
+
+  private static AirbyteStreamNameNamespacePair toNameNamespacePair(WriteConfig config) {
+    return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
 }

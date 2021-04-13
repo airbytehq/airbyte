@@ -508,22 +508,23 @@ public abstract class TestDestination {
     exchangeRateStream.setNamespace(namespace1);
 
     ObjectMapper mapper = new ObjectMapper();
-    AirbyteStream copiedStream = mapper.readValue(mapper.writeValueAsString(exchangeRateStream), AirbyteStream.class);
-    copiedStream.setNamespace(namespace2);
-    catalog.getStreams().add(copiedStream);
+    AirbyteStream clonedStream = mapper.readValue(mapper.writeValueAsString(exchangeRateStream), AirbyteStream.class);
+    clonedStream.setNamespace(namespace2);
+    catalog.getStreams().add(clonedStream);
 
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-
-    final JsonNode data = mapper.createObjectNode().put("test", "1");
+    System.out.println(configuredCatalog);
 
     final String streamName = "exchange_rate";
     final AirbyteRecordMessage baseRecordMsg =
-        new AirbyteRecordMessage().withStream(streamName).withData(data).withEmittedAt(System.currentTimeMillis());
+        new AirbyteRecordMessage().withStream(streamName).withEmittedAt(System.currentTimeMillis());
 
-    final AirbyteRecordMessage schema1RecordMsg = baseRecordMsg.withNamespace(namespace1);
+    final AirbyteRecordMessage clonedMsg1 = mapper.readValue(mapper.writeValueAsString(baseRecordMsg), AirbyteRecordMessage.class);
+    final AirbyteRecordMessage schema1RecordMsg = clonedMsg1.withNamespace(namespace1).withData(mapper.createObjectNode().put("test", "1"));
     final AirbyteMessage schema1Msg = new AirbyteMessage().withRecord(schema1RecordMsg).withType(Type.RECORD);
 
-    final AirbyteRecordMessage schema2RecordMsg = baseRecordMsg.withNamespace(namespace2);
+    final AirbyteRecordMessage clonedMsg2 = mapper.readValue(mapper.writeValueAsString(baseRecordMsg), AirbyteRecordMessage.class);
+    final AirbyteRecordMessage schema2RecordMsg = clonedMsg2.withNamespace(namespace2).withData(mapper.createObjectNode().put("test", "2"));
     final AirbyteMessage schema2Msg = new AirbyteMessage().withRecord(schema2RecordMsg).withType(Type.RECORD);
 
     final List<AirbyteMessage> messages = List.of(schema1Msg, schema2Msg);
@@ -545,7 +546,6 @@ public abstract class TestDestination {
   }
 
   private void runSync(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog) throws Exception {
-
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withConnectionId(UUID.randomUUID())
         .withCatalog(catalog)
@@ -554,7 +554,10 @@ public abstract class TestDestination {
     final AirbyteDestination target = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
 
     target.start(targetConfig, jobRoot);
-    messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));
+    messages.forEach(message -> Exceptions.toRuntime(() -> {
+      System.out.println("sending message: " + message);
+      target.accept(message);
+    }));
     target.notifyEndOfStream();
     target.close();
 
