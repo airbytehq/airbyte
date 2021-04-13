@@ -116,8 +116,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       queueRoot = Files.createTempDirectory("queues");
       for (AirbyteStreamNameNamespacePair pair : streamNamePairs) {
         LOGGER.info("Buffer creation for stream {}.", pair);
-        final var fqName = pair.getUnsanitizedFullyQualifiedJdbcName();
-        final var writeBuffer = new BigQueue(queueRoot.resolve(fqName), fqName);
+        final var fqName = Path.of(pair.getNamespace(), pair.getName());
+        final var writeBuffer = new BigQueue(queueRoot.resolve(fqName), fqName.toString());
         writeBuffers.put(pair, writeBuffer);
       }
     } catch (IOException e) {
