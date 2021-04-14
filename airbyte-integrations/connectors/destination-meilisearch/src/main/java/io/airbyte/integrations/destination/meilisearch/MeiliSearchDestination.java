@@ -138,8 +138,8 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
   }
 
   private static RecordWriter recordWriterFunction(final Map<String, Index> indexNameToWriteConfig) {
-    return (streamName, recordStream) -> {
-      final String resolvedIndexName = getIndexName(streamName);
+    return (namePair, recordStream) -> {
+      final String resolvedIndexName = getIndexName(namePair.getName());
       if (!indexNameToWriteConfig.containsKey(resolvedIndexName)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \nexpected streams: %s",
