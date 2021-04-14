@@ -37,7 +37,7 @@ class TestIncremental(BaseTest):
         records_1 = filter_output(output, type_=Type.RECORD)
         states_1 = filter_output(output, type_=Type.STATE)
 
-        assert states_1, "Should produce at least one state"
+        assert states_1, "The first incremental sync should produce at least one STATE message"
         assert records_1, "Should produce at least one record"
 
         latest_state = states_1[-1].data
