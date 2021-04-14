@@ -263,7 +263,7 @@ class HttpStream(Stream, ABC):
         # re-read for the benefit of syncing the child stream.
         stream_state = stream_state or {}
         if self._parent_stream:
-            for parent_stream_record in self._parent_stream.read_stream():
+            for parent_stream_record in self._parent_stream.read_stream(configured_stream=configured_stream):
                 yield from self._list_records(parent_stream_record=parent_stream_record, stream_state=stream_state)
         else:
             yield from self._list_records(stream_state=stream_state)
