@@ -377,6 +377,7 @@ public abstract class JdbcSourceStandardTest {
           .map(Jsons::clone)
           .peek(m -> {
             m.getRecord().setStream(streamName2);
+            m.getRecord().setNamespace(getDefaultNamespace());
             ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
             ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
                 convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
@@ -548,13 +549,13 @@ public abstract class JdbcSourceStandardTest {
         (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_4,
                     COL_NAME, "riker",
                     COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName)
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_5,
                     COL_NAME, "data",
@@ -769,20 +770,20 @@ public abstract class JdbcSourceStandardTest {
   private List<AirbyteMessage> getTestMessages() {
     return Lists.newArrayList(
         new AirbyteMessage().withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_1,
                         COL_NAME, "picard",
                         COL_UPDATED_AT, "2004-10-19T00:00:00Z")))),
         new AirbyteMessage().withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_2,
                         COL_NAME, "crusher",
                         COL_UPDATED_AT,
                         "2005-10-19T00:00:00Z")))),
         new AirbyteMessage().withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName)
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
