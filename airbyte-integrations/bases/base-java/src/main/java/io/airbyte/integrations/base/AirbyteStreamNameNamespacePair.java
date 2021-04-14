@@ -37,7 +37,7 @@ import java.util.Set;
  * comparison checks. This is helpful since these two fields are often used as an Airbyte Stream's
  * unique identifiers.
  */
-public class AirbyteStreamNameNamespacePair {
+public class AirbyteStreamNameNamespacePair implements Comparable<AirbyteStreamNameNamespacePair> {
 
   final private String name;
   final private String namespace;
@@ -80,12 +80,33 @@ public class AirbyteStreamNameNamespacePair {
     return Objects.hash(name, namespace);
   }
 
-  /**
-   * Returns the fully qualified Jdbc name. This is unsanitized, which means special characters may be
-   * present, and is not recommended to be directly used when writing to a table.
-   */
-  public String getUnsanitizedFullyQualifiedJdbcName() {
-    return namespace + "." + name;
+  @Override
+  public int compareTo(AirbyteStreamNameNamespacePair o) {
+    if (o == null) {
+      return 1;
+    }
+
+    // first sort by name
+    int nameCheck = name.compareTo(o.getName());
+    if (nameCheck != 0) {
+      return nameCheck;
+    }
+
+    // then sort by namespace
+    if (namespace == null && o.getNamespace() == null) {
+      return 0;
+    }
+    if (namespace == null && o.getNamespace() != null) {
+      return -1;
+    }
+    if (namespace != null && o.getNamespace() == null) {
+      return 1;
+    }
+    return namespace.compareTo(o.getNamespace());
+  }
+
+  public static void main(String[] args) {
+    System.out.println("test".compareTo(null));
   }
 
   public static AirbyteStreamNameNamespacePair fromRecordMessage(AirbyteRecordMessage msg) {
@@ -94,6 +115,10 @@ public class AirbyteStreamNameNamespacePair {
 
   public static AirbyteStreamNameNamespacePair fromAirbyteSteam(AirbyteStream stream) {
     return new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace());
+  }
+
+  public static AirbyteStreamNameNamespacePair fromConfiguredAirbyteSteam(ConfiguredAirbyteStream stream) {
+    return fromAirbyteSteam(stream.getStream());
   }
 
   public static Set<AirbyteStreamNameNamespacePair> fromConfiguredCatalog(ConfiguredAirbyteCatalog catalog) {

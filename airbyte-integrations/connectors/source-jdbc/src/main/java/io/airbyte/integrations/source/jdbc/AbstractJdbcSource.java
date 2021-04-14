@@ -40,6 +40,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -261,6 +262,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                                                    Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
     final Set<String> selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
     final List<String> selectedDatabaseFields = table.getFields()
         .stream()
@@ -271,7 +273,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     final AutoCloseableIterator<AirbyteMessage> iterator;
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
-      final Optional<String> cursorOptional = stateManager.getCursor(streamName);
+      final Optional<String> cursorOptional = stateManager.getCursor(pair);
 
       final AutoCloseableIterator<AirbyteMessage> airbyteMessageIterator;
       if (cursorOptional.isPresent()) {
@@ -286,7 +288,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
       iterator = AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
           autoCloseableIterator,
           stateManager,
-          streamName,
+          pair,
           cursorField,
           cursorOptional.orElse(null),
           cursorType),
