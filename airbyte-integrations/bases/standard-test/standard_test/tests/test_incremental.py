@@ -38,7 +38,7 @@ class TestIncremental(BaseTest):
         states_1 = filter_output(output, type_=Type.STATE)
 
         assert states_1, "The first incremental sync should produce at least one STATE message"
-        assert records_1, "Should produce at least one record"
+        assert records_1, "The first incremental sync should should produce at least one RECORD message"
 
         latest_state = states_1[-1].data
         output = docker_runner.call_read_with_state(connector_config, configured_catalog, state={})
