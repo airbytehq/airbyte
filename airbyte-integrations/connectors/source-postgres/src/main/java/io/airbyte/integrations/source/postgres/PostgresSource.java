@@ -98,9 +98,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
       additionalParameters.add("sslmode=require");
     }
 
-    if (!additionalParameters.isEmpty()) {
-      additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
-    }
+    additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
