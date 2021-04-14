@@ -69,7 +69,7 @@ class SourceSmartsheets(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         try:
             access_token = config["access_token"]
-            spreadsheet_id = config["spreadsheet_id"] + 1
+            spreadsheet_id = config["spreadsheet_id"]
 
             smartsheet_client = smartsheet.Smartsheet(access_token)
             smartsheet_client.errors_as_exceptions(True)
