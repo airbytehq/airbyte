@@ -30,6 +30,10 @@ const StyledRadioButton = styled(RadioButton)`
   vertical-align: middle;
 `;
 
+const EmptyField = styled.span`
+  color: ${({ theme }) => theme.greyColor40};
+`;
+
 const supportedModes: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
   [SyncMode.FullRefresh, DestinationSyncMode.Append],
@@ -156,6 +160,15 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
           isItemHasChildren={hasChildren}
           isItemOpen={isRowExpanded}
         />
+        <Cell>
+          {stream.namespace || (
+            <EmptyField>
+              {formatMessage({
+                id: "form.noNamespace",
+              })}
+            </EmptyField>
+          )}
+        </Cell>
         <Cell />
         <OverflowCell title={config.aliasName}>{config.aliasName}</OverflowCell>
         <Cell>
@@ -195,6 +208,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
                 isItemChecked={true}
                 depth={depth}
               />
+              <Cell />
               <OverflowCell>{field.type}</OverflowCell>
               <OverflowCell title={field.cleanedName}>
                 {field.cleanedName}

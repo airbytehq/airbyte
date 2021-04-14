@@ -92,6 +92,9 @@ const SchemaView: React.FC<IProps> = ({
           />
         </Cell>
         <LightCell>
+          <FormattedMessage id="form.namespace" />
+        </LightCell>
+        <LightCell>
           <FormattedMessage id="form.dataType" />
         </LightCell>
         <LightCell>
