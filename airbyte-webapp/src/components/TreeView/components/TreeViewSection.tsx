@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import { useSet } from "react-use";
-import { useIntl } from "react-intl";
+import { useIntl, FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import {
@@ -163,9 +163,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
         <Cell>
           {stream.namespace || (
             <EmptyField>
-              {formatMessage({
-                id: "form.noNamespace",
-              })}
+              <FormattedMessage id="form.noNamespace" />
             </EmptyField>
           )}
         </Cell>
@@ -178,7 +176,10 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
               isItemOpen={isRowExpanded}
               tooltipItems={pkKeyItems}
             >
-              {pkKeyItems.join(",")}
+              <FormattedMessage
+                id="form.pkSelected"
+                values={{ count: pkKeyItems.length, items: pkKeyItems }}
+              />
             </ExpandFieldCell>
           )}
         </Cell>

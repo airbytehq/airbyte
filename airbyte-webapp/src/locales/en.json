@@ -89,6 +89,7 @@
   "form.items": "Items",
   "form.toSaveSchema": "To save the new schema, click on Save changes.",
   "form.noteStartSync": "Note that it will delete all the data in your destination and start syncing from scratch. ",
+  "form.pkSelected": "{count, plural, =0 { } one {{items}} other {# keys selected}}",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
