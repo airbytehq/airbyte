@@ -29,3 +29,4 @@ This test verifies that all streams in the input catalog which support increment
 ## testEmptyStateIncrementalIdenticalToFullRefresh
 
 If the source does not support incremental sync, this test is skipped. Otherwise, this test runs two syncs: one where all streams provided in the input catalog sync in full refresh mode, and another where all the streams which in the input catalog which support incremental, sync in incremental mode \(streams which don't support incremental sync in full refresh mode\). Then, the test asserts that the two syncs produced the same RECORD messages. Any other type of message is disregarded.
+
