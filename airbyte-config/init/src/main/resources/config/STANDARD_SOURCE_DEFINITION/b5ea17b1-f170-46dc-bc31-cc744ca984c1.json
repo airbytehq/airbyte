@@ -3,5 +3,6 @@
   "name": "Microsoft SQL Server (MSSQL)",
   "dockerRepository": "airbyte/source-mssql",
   "dockerImageTag": "0.2.3",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-mssql"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-mssql",
+  "svg": "mssql"
 }

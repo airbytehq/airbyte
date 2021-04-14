@@ -3,5 +3,6 @@
   "name": "Zoom",
   "dockerRepository": "airbyte/source-zoom-singer",
   "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zoom-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zoom-singer",
+  "svg": "zoom"
 }

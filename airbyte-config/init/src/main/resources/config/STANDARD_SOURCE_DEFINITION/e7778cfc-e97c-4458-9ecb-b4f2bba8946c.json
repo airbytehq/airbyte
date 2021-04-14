@@ -3,5 +3,6 @@
   "name": "Facebook Marketing",
   "dockerRepository": "airbyte/source-facebook-marketing",
   "dockerImageTag": "0.2.2",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-facebook-marketing"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-facebook-marketing",
+  "svg": "facebook"
 }

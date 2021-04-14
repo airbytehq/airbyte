@@ -3,5 +3,6 @@
   "name": "Zendesk Support",
   "dockerRepository": "airbyte/source-zendesk-support-singer",
   "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zendesk-support-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zendesk-support-singer",
+  "svg": "zendesk"
 }

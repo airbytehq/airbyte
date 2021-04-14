@@ -3,5 +3,6 @@
   "name": "Looker",
   "dockerRepository": "airbyte/source-looker",
   "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-looker"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-looker",
+  "svg": "looker"
 }

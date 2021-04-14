@@ -1435,6 +1435,8 @@ components:
         documentationUrl:
           type: string
           format: uri
+        svg:
+          type: string
     SourceDefinitionReadList:
       type: object
       required:
@@ -1630,6 +1632,8 @@ components:
         documentationUrl:
           type: string
           format: uri
+        svg:
+          type: string
     DestinationDefinitionReadList:
       type: object
       required:

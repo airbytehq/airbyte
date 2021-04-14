@@ -3,5 +3,6 @@
   "name": "Exchange Rates Api",
   "dockerRepository": "airbyte/source-exchangeratesapi-singer",
   "dockerImageTag": "0.2.2",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-exchangeratesapi-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-exchangeratesapi-singer",
+  "svg": "exchangeratesapi"
 }
