@@ -76,7 +76,7 @@ class GoogleSheetsSource(Source):
             for sheet_name in sheet_names:
                 try:
                     header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
-                    stream = Helpers.headers_to_airbyte_stream(sheet_name, header_row_data)
+                    stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_row_data)
                     streams.append(stream)
                 except Exception as err:
                     logger.error(str(err))
@@ -94,6 +94,7 @@ class GoogleSheetsSource(Source):
         client = GoogleSheetsClient(json.loads(config["credentials_json"]))
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
+        logger.info(f"AAAAAAAAAAAAAAAAAAAAAAAAAAAASheets and column mapping : {sheet_to_column_name}")
         spreadsheet_id = config["spreadsheet_id"]
 
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")

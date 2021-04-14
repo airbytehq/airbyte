@@ -26,6 +26,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
 
+from base_python import AirbyteLogger
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
 from google.oauth2 import service_account
 from googleapiclient import discovery
@@ -51,7 +52,7 @@ class Helpers(object):
         return service_account.Credentials.from_service_account_info(credentials, scopes=scopes)
 
     @staticmethod
-    def headers_to_airbyte_stream(sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
+    def headers_to_airbyte_stream(logger: AirbyteLogger, sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
         """
         Parses sheet headers from the provided row. This method assumes that data is contiguous
         i.e: every cell contains a value and the first cell which does not contain a value denotes the end
@@ -59,14 +60,20 @@ class Helpers(object):
         will parse the headers as ["One", "Two"]. This assumption is made for simplicity and can be modified later.
         """
         fields = []
+        duplicate_fields = set()
         for cell_value in header_row_values:
             if cell_value:
                 if cell_value in fields:
-                    raise Exception(f"Duplicate header {cell_value} found in {sheet_name}. Please ensure all headers are unique")
+                    # Store the duplicate fields for removal later
+                    duplicate_fields.add(cell_value)
                 else:
                     fields.append(cell_value)
             else:
                 break
+
+        # Removing all duplicate fields
+        fields = [field for field in fields if field not in duplicate_fields]
+        logger.warn(f"Duplicate headers found. Ignoring them : {duplicate_fields}")
 
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
