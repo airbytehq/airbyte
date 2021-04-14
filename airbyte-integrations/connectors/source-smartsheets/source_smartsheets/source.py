@@ -54,7 +54,7 @@ def get_prop(col_type: str) -> Dict[str, any]:
         return props["TEXT_NUMBER"]
 
 
-def get_json_schema(sheet: Smartsheet) -> Dict:
+def get_json_schema(sheet: Dict) -> Dict:
     column_info = {i["title"]: get_prop(i["type"]) for i in sheet["columns"]}
     json_schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",
