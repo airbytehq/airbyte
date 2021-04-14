@@ -94,7 +94,6 @@ class GoogleSheetsSource(Source):
         client = GoogleSheetsClient(json.loads(config["credentials_json"]))
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
-        logger.info(f"AAAAAAAAAAAAAAAAAAAAAAAAAAAASheets and column mapping : {sheet_to_column_name}")
         spreadsheet_id = config["spreadsheet_id"]
 
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
