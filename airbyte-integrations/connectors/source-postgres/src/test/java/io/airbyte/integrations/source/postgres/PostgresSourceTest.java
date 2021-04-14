@@ -95,13 +95,13 @@ class PostgresSourceTest {
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null)));
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", null, "name", "piccolo", "power", null)));
 
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
-      createRecord(STREAM_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
+      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
+      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -234,8 +234,8 @@ class PostgresSourceTest {
     assertTrue(PostgresSource.isCdc(config));
   }
 
-  private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream));
+  private static AirbyteMessage createRecord(String stream, String namespace, Map<Object, Object> data) {
+    return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(namespace));
   }
 
   private static Map<Object, Object> map(Object... entries) {
