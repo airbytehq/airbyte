@@ -72,8 +72,9 @@ class Helpers(object):
                 break
 
         # Removing all duplicate fields
-        fields = [field for field in fields if field not in duplicate_fields]
-        logger.warn(f"Duplicate headers found. Ignoring them : {duplicate_fields}")
+        if duplicate_fields:
+            fields = [field for field in fields if field not in duplicate_fields]
+            logger.warn(f"Duplicate headers found. Ignoring them : {duplicate_fields}")
 
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
