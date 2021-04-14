@@ -81,7 +81,8 @@ public class DestinationDefinitionsHandler {
           .name(standardDestinationDefinition.getName())
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()));
+          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
+          .svg(standardDestinationDefinition.getSvg());
     } catch (URISyntaxException | NullPointerException e) {
       throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
     }
@@ -133,7 +134,8 @@ public class DestinationDefinitionsHandler {
         .withDockerRepository(destinationDefinitionCreate.getDockerRepository())
         .withDockerImageTag(destinationDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(destinationDefinitionCreate.getDocumentationUrl().toString())
-        .withName(destinationDefinitionCreate.getName());
+        .withName(destinationDefinitionCreate.getName())
+        .withSvg(destinationDefinitionCreate.getSvg());
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -152,7 +154,8 @@ public class DestinationDefinitionsHandler {
         .withDockerImageTag(destinationDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentDestination.getDockerRepository())
         .withName(currentDestination.getName())
-        .withDocumentationUrl(currentDestination.getDocumentationUrl());
+        .withDocumentationUrl(currentDestination.getDocumentationUrl())
+        .withSvg(currentDestination.getSvg());
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     // we want to re-fetch the spec for updated definitions.

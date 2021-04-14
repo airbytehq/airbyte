@@ -81,7 +81,8 @@ public class SourceDefinitionsHandler {
           .name(standardSourceDefinition.getName())
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()));
+          .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
+          .svg(standardSourceDefinition.getSvg());
     } catch (URISyntaxException | NullPointerException e) {
       throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
     }
@@ -129,7 +130,8 @@ public class SourceDefinitionsHandler {
         .withDockerRepository(sourceDefinitionCreate.getDockerRepository())
         .withDockerImageTag(sourceDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl().toString())
-        .withName(sourceDefinitionCreate.getName());
+        .withName(sourceDefinitionCreate.getName())
+        .withSvg(sourceDefinitionCreate.getSvg());
 
     configRepository.writeStandardSource(sourceDefinition);
 
@@ -147,7 +149,8 @@ public class SourceDefinitionsHandler {
         .withDockerImageTag(sourceDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentSourceDefinition.getDockerRepository())
         .withDocumentationUrl(currentSourceDefinition.getDocumentationUrl())
-        .withName(currentSourceDefinition.getName());
+        .withName(currentSourceDefinition.getName())
+        .withSvg(currentSourceDefinition.getSvg());
 
     configRepository.writeStandardSource(newSource);
     // we want to re-fetch the spec for updated definitions.
