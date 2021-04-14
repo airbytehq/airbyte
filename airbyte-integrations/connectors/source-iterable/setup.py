@@ -30,6 +30,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "pytest==6.1.2", "pendulum", "requests"],
+    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2", "pendulum", "requests"],
     package_data={"": ["*.json", "schemas/*.json"]},
 )
