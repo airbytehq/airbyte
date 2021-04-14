@@ -132,7 +132,3 @@ def main():
         raise Exception("Source implementation provided does not implement Source class!")
 
     launch(source, sys.argv[1:])
-
-
-if __name__ == '__main__':
-    main()
