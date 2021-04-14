@@ -153,6 +153,7 @@ public class AcceptanceTests {
   @AfterAll
   public static void end() {
     sourcePsql.stop();
+    destinationPsql.stop();
   }
 
   @BeforeEach
@@ -181,6 +182,7 @@ public class AcceptanceTests {
   @AfterEach
   public void tearDown() throws ApiException, SQLException {
     clearDbData(sourcePsql);
+    clearDbData(destinationPsql);
 
     for (UUID sourceId : sourceIds) {
       deleteSource(sourceId);
@@ -442,6 +444,27 @@ public class AcceptanceTests {
 
   @Test
   @Order(10)
+  public void testMultipleSchemasAndTablesSync() throws Exception {
+    // create tables in another schema
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_table.sql"), sourcePsql);
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+    assertSourceAndTargetDbInSync(sourcePsql, false);
+  }
+
+  @Test
+  @Order(11)
   public void testIncrementalDedupSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -484,7 +507,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(11)
+  @Order(12)
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = Files.readLines(
@@ -513,8 +536,7 @@ public class AcceptanceTests {
     final Database source = getDatabase(sourceDb);
 
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
-    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable,
-        sourceTables);
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
     final Database destination = getDatabase(destinationPsql);
     final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
     assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
@@ -639,7 +661,7 @@ public class AcceptanceTests {
 
   private List<JsonNode> retrieveSourceRecords(Database database, String table) throws SQLException {
     final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", cleanedName)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", cleanedName)))
         .stream()
         .map(Record::intoMap)
         .map(Jsons::jsonNode)
@@ -648,7 +670,7 @@ public class AcceptanceTests {
 
   private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
     final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", cleanedName)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", cleanedName)))
         .stream()
         .map(Record::intoMap)
         .map(r -> r.get(COLUMN_NAME_DATA))
