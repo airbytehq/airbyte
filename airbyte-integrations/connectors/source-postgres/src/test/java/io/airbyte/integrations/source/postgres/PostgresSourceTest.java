@@ -235,7 +235,8 @@ class PostgresSourceTest {
   }
 
   private static AirbyteMessage createRecord(String stream, String namespace, Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(namespace));
+    return new AirbyteMessage().withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(namespace));
   }
 
   private static Map<Object, Object> map(Object... entries) {
