@@ -86,13 +86,20 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
 
+    List<String> additionalParameters = new ArrayList<>();
+
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText()));
 
     if (config.get("ssl").asBoolean()) {
-      jdbcUrl.append("ssl=true&sslmode=require");
+      additionalParameters.add("ssl=true");
+      additionalParameters.add("sslmode=require");
+    }
+
+    if (!additionalParameters.isEmpty()) {
+      additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
