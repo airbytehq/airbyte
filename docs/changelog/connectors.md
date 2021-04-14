@@ -12,6 +12,10 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
 
+## 04/13/2021
+
+* New connector: **[Oracle DB](https://docs.airbyte.io/integrations/sources/oracle)**
+
 ## 04/07/2021
 
 * New connector: **[Google Workspace Admin Reports](https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports)** (audit logs)
