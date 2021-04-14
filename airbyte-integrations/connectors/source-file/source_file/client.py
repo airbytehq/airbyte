@@ -286,9 +286,11 @@ class Client:
             raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
-        if skip_data and self._reader_format == "csv":
-            reader_options["nrows"] = 0
-            reader_options["index_col"] = 0
+        if self._reader_format == "csv":
+            reader_options["chunksize"] = 10000
+            if skip_data:
+                reader_options["nrows"] = 0
+                reader_options["index_col"] = 0
 
         return [reader(fp, **reader_options)]
 
@@ -322,10 +324,17 @@ class Client:
             if self._reader_format == "json" or self._reader_format == "jsonl":
                 yield from self.load_nested_json(fp)
             else:
+                fields = list(fields)
                 for df in self.load_dataframes(fp):
-                    columns = set(fields).intersection(set(df.columns)) if fields else df.columns
-                    df = df.replace(np.nan, "NaN", regex=True)
-                    yield from df[columns].to_dict(orient="records")
+                    if self._reader_format == "csv" and isinstance(df, pd.io.parsers.TextFileReader):
+                        for chunk in df:
+                            columns = set(fields).intersection(set(chunk.columns)) if fields else chunk.columns
+                            chunk = chunk.replace(np.nan, "NaN", regex=True)
+                            yield from chunk[columns].to_dict(orient="records")
+                    else:
+                        columns = set(fields).intersection(set(df.columns)) if fields else df.columns
+                        df = df.replace(np.nan, "NaN", regex=True)
+                        yield from df[columns].to_dict(orient="records")
 
     def _stream_properties(self):
         with self.reader.open(binary=self.binary_source) as fp:
@@ -335,6 +344,11 @@ class Client:
             df_list = self.load_dataframes(fp, skip_data=False)
             fields = {}
             for df in df_list:
+                if self._reader_format == "csv" and isinstance(df, pd.io.parsers.TextFileReader):
+                    # Since `chunksize` parameter is used for loading csv files, `df` object will be instance
+                    # of `TextFileReader` type.
+                    df = next(df)
+
                 for col in df.columns:
                     fields[col] = self.dtype_to_json_type(df[col].dtype)
             return {field: {"type": fields[field]} for field in fields}
