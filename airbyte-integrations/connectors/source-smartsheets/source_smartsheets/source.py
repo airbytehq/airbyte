@@ -145,7 +145,7 @@ class SourceSmartsheets(Source):
                             record=AirbyteRecordMessage(stream=name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                         )
                     except TypeError as e:
-                        logger.error(f"{e}: BOGUS!")
+                        logger.error(f"Unable to encode row into an AirbyteMessage with the following error: {e}")
 
             except Exception as e:
                 logger.error(f"Could not read smartsheet: {name}")
