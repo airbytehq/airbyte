@@ -153,8 +153,8 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
 
     return (
       <CreateConnectionContent
-        source={source}
-        destination={destination}
+        source={source!}
+        destination={destination!}
         afterSubmitConnection={afterSubmitConnection}
       />
     );

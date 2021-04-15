@@ -4,14 +4,8 @@ import styled from "styled-components";
 
 import TreeView from "components/TreeView";
 import { Cell, Header, LightCell } from "components/SimpleTableComponents";
-import { SyncSchema } from "core/domain/catalog";
+import { DestinationSyncMode, SyncSchema } from "core/domain/catalog";
 import Search from "./Search";
-
-type IProps = {
-  additionalControl?: React.ReactNode;
-  schema: SyncSchema;
-  onChangeSchema: (schema: SyncSchema) => void;
-};
 
 const TreeViewContainer = styled.div`
   width: 100%;
@@ -33,8 +27,16 @@ const SchemaTitle = styled.div`
   margin: 0 11px 13px 0;
 `;
 
-const SchemaView: React.FC<IProps> = ({
+type SchemaViewProps = {
+  additionalControl?: React.ReactNode;
+  schema: SyncSchema;
+  onChangeSchema: (schema: SyncSchema) => void;
+  destinationSupportedSyncModes: DestinationSyncMode[];
+};
+
+const SchemaView: React.FC<SchemaViewProps> = ({
   schema,
+  destinationSupportedSyncModes,
   onChangeSchema,
   additionalControl,
 }) => {
@@ -103,7 +105,7 @@ const SchemaView: React.FC<IProps> = ({
         <LightCell>
           <FormattedMessage id="form.cursorField" />
         </LightCell>
-        <LightCell>
+        <LightCell flex={1.5}>
           <FormattedMessage id="form.syncSettings" />
         </LightCell>
       </SchemaHeader>
@@ -111,6 +113,7 @@ const SchemaView: React.FC<IProps> = ({
         <TreeView
           schema={schema}
           onChangeSchema={onChangeSchema}
+          destinationSupportedSyncModes={destinationSupportedSyncModes}
           filter={searchString}
         />
       </TreeViewContainer>
