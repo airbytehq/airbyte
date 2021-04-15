@@ -52,6 +52,17 @@ class TestHelpers(unittest.TestCase):
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
         self.assertEqual(expected_stream, actual_stream)
 
+    def test_duplicate_headers_retrived(self):
+        header_values = ["h1", "h1", "h3"]
+
+        expected_valid_header_values = ["h3"]
+        expected_duplicate_header_values = ["h1"]
+
+        actual_header_values, actual_duplicate_header_values = Helpers.get_vaild_headers_and_duplicates(header_values)
+
+        self.assertEqual(expected_duplicate_header_values, actual_duplicate_header_values)
+        self.assertEqual(expected_valid_header_values, actual_header_values)
+
     def test_duplicate_headers_to_ab_stream_ignores_duplicates(self):
         sheet_name = "sheet1"
         header_values = ["h1", "h1", "h3"]
