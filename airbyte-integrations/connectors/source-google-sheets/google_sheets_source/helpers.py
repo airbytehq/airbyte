@@ -61,7 +61,7 @@ class Helpers(object):
         """
         fields, duplicate_fields = Helpers.get_vaild_headers_and_duplicates(header_row_values)
         if duplicate_fields:
-            logger.warn(f"Duplicate headers found. Ignoring them :{duplicate_fields}")
+            logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
 
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
