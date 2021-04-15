@@ -111,33 +111,30 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
             }
           ),
         })),
-    [stream.supportedSyncModes, formatMessage]
+    [stream.supportedSyncModes, destinationSupportedSyncModes, formatMessage]
   );
 
   const pkPaths = useMemo(
-    () =>
-      new Set(
-        config.primaryKey.map((pkPath) => `${stream.name}.${pkPath.join(".")}`)
-      ),
-    [config, stream]
+    () => new Set(config.primaryKey.map((pkPath) => pkPath.join("."))),
+    [config]
   );
 
   const onPkSelect = (field: SyncSchemaField) => {
-    const pkPath = field.name.replace(`${stream.name}.`, "").split(".");
+    const pkPath = field.name.split(".");
+
+    let newPrimaryKey: string[][];
 
     if (pkPaths.has(field.name)) {
-      updateItem(streamId, {
-        primaryKey: config.primaryKey.filter((key) => !equal(key, pkPath)),
-      });
+      newPrimaryKey = config.primaryKey.filter((key) => !equal(key, pkPath));
     } else {
-      updateItem(streamId, { primaryKey: [...config.primaryKey, pkPath] });
+      newPrimaryKey = [...config.primaryKey, pkPath];
     }
+
+    updateItem(streamId, { primaryKey: newPrimaryKey });
   };
 
-  const selectedCursorPath = `${stream.name}.${config.cursorField.join(".")}`;
-
   const onCursorSelect = (field: SyncSchemaField) => {
-    const cursorPath = field.name.replace(`${stream.name}.`, "").split(".");
+    const cursorPath = field.name.split(".");
 
     updateItem(streamId, { cursorField: cursorPath });
   };
@@ -150,6 +147,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   const showCursor = !stream.sourceDefinedCursor;
 
   const pkKeyItems = config.primaryKey.map((k) => k.join("."));
+  const selectedCursorPath = config.cursorField.join(".");
 
   return (
     <>
@@ -171,7 +169,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
               isItemOpen={isRowExpanded}
               tooltipItems={pkKeyItems}
             >
-              {pkKeyItems.join(",")}
+              {pkKeyItems.length}
             </ExpandFieldCell>
           )}
         </Cell>

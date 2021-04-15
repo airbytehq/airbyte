@@ -11,15 +11,16 @@ import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
 
-import Link from "../Link";
-import Source from "./components/Source";
-import Connections from "./components/Connections";
-import Version from "../Version";
-import Destination from "./components/Destination";
 import { Routes } from "pages/routes";
 import config from "config";
-import Indicator from "../Indicator";
-import useNotification from "../hooks/services/useNotification";
+
+import useNotification from "components/hooks/services/useNotification";
+import Link from "components/Link";
+import Version from "components/Version";
+import Indicator from "components/Indicator";
+import Source from "./components/Source";
+import Connections from "./components/Connections";
+import Destination from "./components/Destination";
 
 const Bar = styled.nav`
   width: 100px;
