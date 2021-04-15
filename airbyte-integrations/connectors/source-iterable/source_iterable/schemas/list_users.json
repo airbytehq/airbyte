@@ -5,10 +5,6 @@
     },
     "listId": {
       "type": ["null", "integer"]
-    },
-    "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
     }
   },
   "type": ["null", "object"]

@@ -25,7 +25,6 @@ SOFTWARE.
 import json
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -50,6 +49,9 @@ class IterableStream(HttpStream, ABC):
         return self.BACKOFF_TIME_CONSTANT
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Iterable API does not support pagination
+        """
         return None
 
     def request_params(
@@ -112,7 +114,7 @@ class ListUsers(IterableStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         list_id = self._get_list_id(response.url)
         for user in response.iter_lines():
-            yield {"email": user.decode(), "listId": list_id, "updatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+            yield {"email": user.decode(), "listId": list_id}
 
     @staticmethod
     def _get_list_id(url: str) -> int:

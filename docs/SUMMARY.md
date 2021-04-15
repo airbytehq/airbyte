@@ -41,6 +41,7 @@
     * [Hubspot](integrations/sources/hubspot.md)
     * [Instagram](integrations/sources/instagram.md)
     * [Intercom](integrations/sources/intercom.md)
+    * [Iterable](integrations/sources/iterable.md)
     * [Jira](integrations/sources/jira.md)
     * [Looker](integrations/sources/looker.md)
     * [Mailchimp](integrations/sources/mailchimp.md)

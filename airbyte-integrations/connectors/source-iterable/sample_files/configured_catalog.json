@@ -739,10 +739,6 @@
             },
             "listId": {
               "type": ["null", "integer"]
-            },
-            "updatedAt": {
-              "type": ["null", "string"],
-              "format": "date-time"
             }
           },
           "type": ["null", "object"]
@@ -1187,6 +1183,45 @@
             "shopify_updated_at": {
               "type": ["null", "string"],
               "format": "date-time"
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "templates",
+        "json_schema": {
+          "properties": {
+            "templateId": {
+              "type": ["null", "number"]
+            },
+            "createdAt": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "creatorUserId": {
+              "type": ["null", "string"]
+            },
+            "messageTypeId": {
+              "type": ["null", "number"]
+            },
+            "campaignId": {
+              "type": ["null", "number"]
+            },
+            "clientTemplateId": {
+              "type": ["null", "string"]
             }
           },
           "type": ["null", "object"]

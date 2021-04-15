@@ -24,12 +24,22 @@ SOFTWARE.
 
 from setuptools import find_packages, setup
 
+MAIN_REQUIREMENTS = [
+    "airbyte-protocol",
+    "base-python",
+    "pendulum==1.2.0",
+    "requests==2.25.1",
+]
+
+TEST_REQUIREMENTS = ["pytest==6.1.2"]
+
+
 setup(
     name="source_iterable",
     description="Source implementation for Iterable.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "pytest==6.1.2", "pendulum", "requests"],
+    install_requires=MAIN_REQUIREMENTS + TEST_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json"]},
 )
