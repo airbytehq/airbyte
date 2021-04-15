@@ -133,7 +133,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Could not connect with provided configuration.");
+          .withMessage("Could not connect with provided configuration. Error: " + e.getMessage());
     }
   }
 
