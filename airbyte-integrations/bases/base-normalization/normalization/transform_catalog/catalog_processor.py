@@ -62,8 +62,8 @@ class CatalogProcessor:
         @param json_column_name is the column name containing the JSON Blob with the raw data
         @param default_schema is the final schema where to output the final transformed data to
         """
-        # Registry of all tables in all schemas
-        tables_registry: Set[str] = set()
+        # Registry of all tables in for each schema
+        tables_registry: Dict[str, Set[str]] = {}
         # Registry of source tables in each schemas
         schema_to_source_tables: Dict[str, Set[str]] = {}
 
@@ -101,7 +101,7 @@ class CatalogProcessor:
         default_schema: str,
         name_transformer: DestinationNameTransformer,
         destination_type: DestinationType,
-        tables_registry: Set[str],
+        tables_registry: Dict[str, Set[str]],
     ) -> List[StreamProcessor]:
         result = []
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
@@ -158,7 +158,7 @@ class CatalogProcessor:
             result.append(stream_processor)
         return result
 
-    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Set[str]):
+    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Dict[str, Set[str]]):
         """
         Handle nested stream/substream/children
         """
@@ -273,18 +273,22 @@ def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_na
         raise KeyError(f"Duplicate table {table_name} in {schema_name}")
 
 
-def add_table_to_registry(tables_registry: Set[str], processor: StreamProcessor):
+def add_table_to_registry(tables_registry: Dict[str, Set[str]], processor: StreamProcessor):
     """
     Keeps track of all table names created by this catalog, regardless of their destination schema
 
     @param tables_registry where all table names are recorded
     @param processor the processor that created tables as part of its process
     """
-    for table_name in processor.local_registry:
-        if table_name not in tables_registry:
-            tables_registry.add(table_name)
+    for schema in processor.local_registry:
+        if schema not in tables_registry:
+            tables_registry[schema] = processor.local_registry[schema]
         else:
-            raise KeyError(f"Duplicate table {table_name}")
+            for table_name in processor.local_registry[schema]:
+                if table_name not in tables_registry[schema]:
+                    tables_registry[schema].add(table_name)
+                else:
+                    raise KeyError(f"Duplicate table {table_name} in schema {schema}")
 
 
 def output_sql_file(file: str, sql: str):
