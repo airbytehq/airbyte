@@ -280,6 +280,12 @@
 
   "settings.accountSettings": "Account Settings",
   "settings.changeSaved": "change saved!",
+  "settings.webhook": "Connection failure Webhook",
+  "settings.webhookTitle": "Connection failure Webhook URL",
+  "settings.webhookDescriprion": "Get notifications the way you want (for instance, on Slack, or other).",
+  "settings.webhookTestText": "Testing the Webhook will send a “Hello World”. ",
+  "settings.yourWebhook": "Your Webhook URL",
+  "settings.test": "Test",
 
   "demo.message.title": "This demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."

@@ -4,10 +4,16 @@ import styled from "styled-components";
 
 import { ContentCard, PreferencesForm } from "components";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import WebHookForm from "./WebHookForm";
 
 const SettingsCard = styled(ContentCard)`
   max-width: 638px;
   width: 100%;
+  margin-top: 12px;
+
+  &:first-child {
+    margin-top: 0;
+  }
 `;
 
 const Content = styled.div`
@@ -36,22 +42,29 @@ const AccountSettings: React.FC = () => {
   };
 
   return (
-    <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
-      <Content>
-        <PreferencesForm
-          errorMessage={errorMessage}
-          successMessage={successMessage}
-          onSubmit={onSubmit}
-          isEdit
-          preferencesValues={{
-            email: workspace.email,
-            anonymousDataCollection: workspace.anonymousDataCollection,
-            news: workspace.news,
-            securityUpdates: workspace.securityUpdates,
-          }}
-        />
-      </Content>
-    </SettingsCard>
+    <>
+      <SettingsCard title={<FormattedMessage id="settings.webhook" />}>
+        <Content>
+          <WebHookForm />
+        </Content>
+      </SettingsCard>
+      <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
+        <Content>
+          <PreferencesForm
+            errorMessage={errorMessage}
+            successMessage={successMessage}
+            onSubmit={onSubmit}
+            isEdit
+            preferencesValues={{
+              email: workspace.email,
+              anonymousDataCollection: workspace.anonymousDataCollection,
+              news: workspace.news,
+              securityUpdates: workspace.securityUpdates,
+            }}
+          />
+        </Content>
+      </SettingsCard>
+    </>
   );
 };
 
