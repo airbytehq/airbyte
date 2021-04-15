@@ -12,6 +12,19 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
 
+## 04/13/2021
+
+* New connector: **[Oracle DB](https://docs.airbyte.io/integrations/sources/oracle)**
+
+## 04/07/2021
+
+* New connector: **[Google Workspace Admin Reports](https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports)** (audit logs)
+* Bugfix in the base python connector library that caused errors to be silently skipped rather than failing the sync
+* **Exchangeratesapi.io** bugfix: to point to the updated API URL
+* **Redshift destination** bugfix: quote keywords “DATETIME” and “TIME” when used as identifiers
+* **GitHub** bugfix: syncs failing when a personal repository doesn’t contain collaborators or team streams available
+* **Mixpanel** connector: sync at most the last 90 days of data in the annotations stream to adhere to API limits
+
 ## 03/29/2021
 
 * We started measuring throughput of connectors. This will help us improve that point for all connectors. 

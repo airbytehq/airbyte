@@ -33,19 +33,19 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
   );
 
   const onSync = useCallback(
-    (connectionId: string) => {
+    async (connectionId: string) => {
       const connection = connections.find(
         (item) => item.connectionId === connectionId
       );
       if (connection) {
-        syncManualConnection(connection);
+        await syncManualConnection(connection);
       }
     },
     [connections, syncManualConnection]
   );
 
   const clickRow = (source: ITableDataItem) =>
-    push(`${Routes.Destination}${Routes.Connection}/${source.connectionId}`);
+    push(`${Routes.Connections}/${source.connectionId}`);
 
   return (
     <ConnectionTable

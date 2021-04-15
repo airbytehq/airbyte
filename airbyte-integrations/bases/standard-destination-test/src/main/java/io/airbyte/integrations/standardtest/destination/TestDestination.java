@@ -43,6 +43,7 @@ import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -63,10 +64,13 @@ import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -148,16 +152,32 @@ public abstract class TestDestination {
   }
 
   /**
-   * Detects if a destination implements incremental mode from the spec.json that should include
+   * Detects if a destination implements append mode from the spec.json that should include
    * 'supportsIncremental' = true
    *
    * @return - a boolean.
    */
-  protected boolean implementsIncremental() throws WorkerException {
+  protected boolean implementsAppend() throws WorkerException {
     final ConnectorSpecification spec = runSpec();
     assertNotNull(spec);
     if (spec.getSupportsIncremental() != null) {
       return spec.getSupportsIncremental();
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Detects if a destination implements append dedup mode from the spec.json that should include
+   * 'supportedDestinationSyncMode'
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsAppendDedup() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportedDestinationSyncModes() != null) {
+      return spec.getSupportedDestinationSyncModes().contains(DestinationSyncMode.APPEND_DEDUP);
     } else {
       return false;
     }
@@ -313,7 +333,7 @@ public abstract class TestDestination {
    */
   @Test
   public void testIncrementalSync() throws Exception {
-    if (!implementsIncremental()) {
+    if (!implementsAppend()) {
       LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
       return;
     }
@@ -371,6 +391,92 @@ public abstract class TestDestination {
     String defaultSchema = getDefaultSchema(config);
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
     assertSameMessages(messages, actualMessages, true);
+  }
+
+  /**
+   * Verify that the integration successfully writes records successfully both raw and normalized and
+   * run dedup transformations.
+   *
+   * Although this test assumes append-dedup requires normalization, and almost all our Destinations
+   * do so, this is not necessarily true. This explains {@link #implementsAppendDedup()}.
+   */
+  @Test
+  public void testIncrementalDedupeSync() throws Exception {
+    if (!implementsAppendDedup()) {
+      LOGGER.info("Destination's spec.json does not include 'append_dedup' in its '\"supportedDestinationSyncModes\"'");
+      return;
+    }
+
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    configuredCatalog.getStreams().forEach(s -> {
+      s.withSyncMode(SyncMode.INCREMENTAL);
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
+      s.withCursorField(Collections.emptyList());
+      // use composite primary key of various types (string, float)
+      s.withPrimaryKey(List.of(List.of("currency"), List.of("date"), List.of("NZD")));
+    });
+
+    final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    final JsonNode config = getConfigWithBasicNormalization();
+    runSync(config, firstSyncMessages, configuredCatalog);
+
+    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(catalog.getStreams().get(0).getName())
+                .withEmittedAt(Instant.now().toEpochMilli())
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("currency", "EUR")
+                    .put("date", "2020-09-01T00:00:00Z")
+                    .put("HKD", 10.5)
+                    .put("NZD", 1.14)
+                    .build()))),
+        new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(new AirbyteRecordMessage()
+                .withStream(catalog.getStreams().get(0).getName())
+                .withEmittedAt(Instant.now().toEpochMilli() + 100L)
+                .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("currency", "USD")
+                    .put("date", "2020-09-01T00:00:00Z")
+                    .put("HKD", 5.4)
+                    .put("NZD", 1.14)
+                    .build()))));
+    runSync(config, secondSyncMessages, configuredCatalog);
+
+    final List<AirbyteMessage> expectedMessagesAfterSecondSync = new ArrayList<>();
+    expectedMessagesAfterSecondSync.addAll(firstSyncMessages);
+    expectedMessagesAfterSecondSync.addAll(secondSyncMessages);
+
+    final Map<String, AirbyteMessage> latestMessagesOnly = expectedMessagesAfterSecondSync
+        .stream()
+        .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
+        .collect(Collectors.toMap(
+            message -> message.getRecord().getData().get("currency").asText() +
+                message.getRecord().getData().get("date").asText() +
+                message.getRecord().getData().get("NZD").asText(),
+            message -> message,
+            // keep only latest emitted record message per primary key/cursor
+            (a, b) -> a.getRecord().getEmittedAt() > b.getRecord().getEmittedAt() ? a : b));
+    // Filter expectedMessagesAfterSecondSync and keep latest messages only (keep same message order)
+    final List<AirbyteMessage> expectedMessages = expectedMessagesAfterSecondSync
+        .stream()
+        .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
+        .filter(message -> {
+          final String key = message.getRecord().getData().get("currency").asText() +
+              message.getRecord().getData().get("date").asText() +
+              message.getRecord().getData().get("NZD").asText();
+          return message.getRecord().getEmittedAt().equals(latestMessagesOnly.get(key).getRecord().getEmittedAt());
+        }).collect(Collectors.toList());
+
+    final String defaultSchema = getDefaultSchema(config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, expectedMessagesAfterSecondSync, defaultSchema);
+    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    assertSameMessages(expectedMessages, actualMessages, true);
   }
 
   @Test

@@ -33,5 +33,10 @@ enum Status {
   EMPTY = "empty",
 }
 
+enum SortOrderEnum {
+  DESC = "desc",
+  ASC = "asc",
+}
+
 export type { ITableDataItem, EntityTableDataItem };
-export { Status };
+export { Status, SortOrderEnum };

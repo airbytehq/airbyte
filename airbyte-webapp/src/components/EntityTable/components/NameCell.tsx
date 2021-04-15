@@ -1,13 +1,16 @@
 import React from "react";
 import styled from "styled-components";
+import { useIntl } from "react-intl";
 
 import StatusIcon from "components/StatusIcon";
+import ImageBlock from "components/ImageBlock";
 import { Status } from "../types";
 
 type IProps = {
   value: string;
   enabled?: boolean;
   status?: string | null;
+  icon?: boolean;
 };
 
 const Content = styled.div`
@@ -30,11 +33,34 @@ const Space = styled.div`
   opacity: 0;
 `;
 
-const NameCell: React.FC<IProps> = ({ value, enabled, status }) => {
+const Image = styled(ImageBlock)`
+  margin-right: 6px;
+`;
+
+const NameCell: React.FC<IProps> = ({ value, enabled, status, icon }) => {
+  const formatMessage = useIntl().formatMessage;
+  const title =
+    status === Status.EMPTY
+      ? formatMessage({
+          id: "connection.noSyncData",
+        })
+      : status === Status.INACTIVE
+      ? formatMessage({
+          id: "connection.disabledConnection",
+        })
+      : status === Status.ACTIVE
+      ? formatMessage({
+          id: "connection.successSync",
+        })
+      : formatMessage({
+          id: "connection.failedSync",
+        });
+
   return (
     <Content>
       {status ? (
         <StatusIcon
+          title={title}
           empty={status === Status.EMPTY}
           success={status === Status.ACTIVE}
           inactive={status === Status.INACTIVE}
@@ -42,6 +68,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status }) => {
       ) : (
         <Space />
       )}
+      {icon && <Image small />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

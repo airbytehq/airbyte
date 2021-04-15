@@ -42,7 +42,7 @@ const StatusMainInfo: React.FC<IProps> = ({ connection, frequencyText }) => {
           <FormattedMessage id="sources.source" />
         </Cell>
         <Cell flex={2}>
-          <FormattedMessage id="sidebar.destination" />
+          <FormattedMessage id="sidebar.destinations" />
         </Cell>
         <Cell>
           <FormattedMessage id="tables.frequency" />

@@ -49,8 +49,8 @@ public class TemporalClient {
   private final Path workspaceRoot;
   private final WorkflowClient client;
 
-  public static TemporalClient production(Path workspaceRoot) {
-    return new TemporalClient(TemporalUtils.TEMPORAL_CLIENT, workspaceRoot);
+  public static TemporalClient production(String temporalHost, Path workspaceRoot) {
+    return new TemporalClient(TemporalUtils.createTemporalClient(temporalHost), workspaceRoot);
   }
 
   // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to

@@ -1,8 +1,11 @@
 require_relative './airbyte_protocol.rb'
+require_relative './airbyte_logger.rb'
 
 require_relative './mongodb_types_explorer.rb'
 
 class MongodbStream
+  DISCOVER_LIMIT = 10_000
+
   AIRBYTE_TYPES = {
     boolean: 'boolean',
     number: 'number',
@@ -46,11 +49,9 @@ class MongodbStream
 
 
   def discover_property_type(property)
-    explorer = MongodbTypesExplorer.new(collection: @collection, field: property) do |type|
+    MongodbTypesExplorer.run(collection: @collection, field: property) do |type|
       TYPES_MAPPING[type] || FALLBACK_TYPE
-    end
-
-    explorer.field_type || FALLBACK_TYPE
+    end || FALLBACK_TYPE
   end
 
   def discover_properties
@@ -62,13 +63,14 @@ class MongodbStream
       raw: true,
     }
 
-    view = Mongo::Collection::View.new(@collection)
+    view = Mongo::Collection::View.new(@collection, {}, limit: DISCOVER_LIMIT)
     props = view.map_reduce(map, reduce, opts).map do |obj|
       obj['_id']
     end
 
     props.each do |prop|
       @properties[prop] = { 'type' => discover_property_type(prop) }
+      AirbyteLogger.log("  #{@collection.name}.#{prop} TYPE IS #{@properties[prop]['type']}")
     end
   end
 end

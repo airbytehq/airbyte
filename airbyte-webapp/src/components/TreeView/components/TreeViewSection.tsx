@@ -40,6 +40,7 @@ const supportedModes: [SyncMode, DestinationSyncMode][] = [
 type TreeViewRowProps = {
   isChild?: boolean;
   streamNode: SyncSchemaStream;
+  destinationSupportedSyncModes: DestinationSyncMode[];
   updateItem: (
     streamId: string,
     newConfiguration: Partial<AirbyteStreamConfiguration>
@@ -49,6 +50,7 @@ type TreeViewRowProps = {
 const TreeViewSection: React.FC<TreeViewRowProps> = ({
   streamNode,
   updateItem,
+  destinationSupportedSyncModes,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const { stream, config } = streamNode;
@@ -85,7 +87,11 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   const fullData = useMemo(
     () =>
       supportedModes
-        .filter(([syncMode]) => stream.supportedSyncModes.includes(syncMode))
+        .filter(
+          ([syncMode, destinationSyncMode]) =>
+            stream.supportedSyncModes.includes(syncMode) &&
+            destinationSupportedSyncModes.includes(destinationSyncMode)
+        )
         .map(([syncMode, destinationSyncMode]) => ({
           value: `${syncMode}.${destinationSyncMode}`,
           text: formatMessage(
@@ -219,7 +225,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
                     />
                   )}
               </Cell>
-              <Cell />
+              <Cell flex={1.5} />
             </TreeRowWrapper>
           )}
         </Rows>

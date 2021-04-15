@@ -48,6 +48,15 @@ public class IOs {
     return writeFile(filePath, contents);
   }
 
+  public static Path writeFile(Path filePath, byte[] contents) {
+    try {
+      Files.write(filePath, contents);
+      return filePath;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static Path writeFile(Path filePath, String contents) {
     try {
       Files.writeString(filePath, contents, StandardCharsets.UTF_8);
