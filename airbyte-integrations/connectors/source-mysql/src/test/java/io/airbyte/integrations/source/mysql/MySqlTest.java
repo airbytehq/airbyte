@@ -117,7 +117,21 @@ class MySqlTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"TINYINT", "SMALLINT", "MEDIUMINT", "INT", "BIGINT"})
+  @ValueSource(strings = {
+    "TINYINT",
+    "SMALLINT",
+    "MEDIUMINT",
+    "INT",
+    "BIGINT",
+    "INT(1)",
+    "INT(2)",
+    "INT(3)",
+    "INT(4)",
+    "INT(5)",
+    "INT(6)",
+    "INT(7)",
+    "INT(8)"
+  })
   void testSmallIntTypes(String type) throws Exception {
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE TABLE %s(id %s)", JdbcUtils.getFullyQualifiedTableName(null, TABLE_NAME), type));
