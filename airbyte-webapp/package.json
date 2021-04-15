@@ -44,9 +44,9 @@
     "yup": "^0.28.1"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
     "@types/flat": "^5.0.1",
     "@types/jest": "^24.0.0",
     "@types/json-schema": "^7.0.6",
