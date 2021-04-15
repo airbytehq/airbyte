@@ -51,25 +51,25 @@ def standard_test_config_fixture(pytestconfig):
 
 @pytest.fixture(name="connector_config_path")
 def connector_config_path_fixture(inputs, base_path):
-    """Fixture with connector's config path (relative to base_path)"""
+    """Fixture with connector's config path"""
     return Path(base_path) / getattr(inputs, "config_path")
 
 
 @pytest.fixture(name="invalid_connector_config_path")
 def invalid_connector_config_path_fixture(inputs, base_path):
-    """Fixture with connector's config path (relative to base_path)"""
+    """Fixture with connector's config path"""
     return Path(base_path) / getattr(inputs, "invalid_config_path")
 
 
 @pytest.fixture(name="connector_spec_path")
 def connector_spec_path_fixture(inputs, base_path):
-    """Fixture with connector's specification path (relative to base_path)"""
+    """Fixture with connector's specification path"""
     return Path(base_path) / getattr(inputs, "spec_path")
 
 
 @pytest.fixture(name="configured_catalog_path")
 def configured_catalog_path_fixture(inputs, base_path):
-    """Fixture with connector's configured_catalog path (relative to base_path)"""
+    """Fixture with connector's configured_catalog path"""
     if getattr(inputs, "configured_catalog_path"):
         return Path(base_path) / getattr(inputs, "configured_catalog_path")
     return None
@@ -96,7 +96,7 @@ def image_tag_fixture(standard_test_config):
 
 @pytest.fixture(name="connector_config")
 def connector_config_fixture(base_path, connector_config_path):
-    with open(str(Path(base_path) / connector_config_path), "r") as file:
+    with open(str(connector_config_path), "r") as file:
         contents = file.read()
     return json.loads(contents)
 
@@ -104,7 +104,7 @@ def connector_config_fixture(base_path, connector_config_path):
 @pytest.fixture(name="invalid_connector_config")
 def invalid_connector_config_fixture(base_path, invalid_connector_config_path):
     """TODO: implement default value - generate from valid config"""
-    with open(str(Path(base_path) / invalid_connector_config_path), "r") as file:
+    with open(str(invalid_connector_config_path), "r") as file:
         contents = file.read()
     return json.loads(contents)
 

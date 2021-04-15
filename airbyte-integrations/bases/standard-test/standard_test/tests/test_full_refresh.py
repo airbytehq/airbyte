@@ -21,7 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import json
 
+import pytest
 from airbyte_protocol import Type
 
 from standard_test.base import BaseTest
@@ -29,15 +31,16 @@ from standard_test.connector_runner import ConnectorRunner
 from standard_test.utils import full_refresh_only_catalog
 
 
+@pytest.mark.timeout(300)
 class TestFullRefresh(BaseTest):
     def test_sequential_reads(self, connector_config, configured_catalog, docker_runner: ConnectorRunner):
         configured_catalog = full_refresh_only_catalog(configured_catalog)
         output = docker_runner.call_read(connector_config, configured_catalog)
-        records_1 = [message.record for message in output if message.type == Type.RECORD]
+        records_1 = [message.record.data for message in output if message.type == Type.RECORD]
 
         output = docker_runner.call_read(connector_config, configured_catalog)
-        records_2 = [message.record for message in output if message.type == Type.RECORD]
+        records_2 = [message.record.data for message in output if message.type == Type.RECORD]
 
         assert not (
-            set(records_1) - set(records_2)
-        ), "The two sequal reads should produce either equal set of records or one of them is a strict subset of the other"
+            set(map(json.dumps, records_1)) - set(map(json.dumps, records_2))
+        ), "The two sequential reads should produce either equal set of records or one of them is a strict subset of the other"

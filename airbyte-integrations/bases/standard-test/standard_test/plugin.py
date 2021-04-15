@@ -56,7 +56,6 @@ def pytest_generate_tests(metafunc):
         config_key = metafunc.cls.config_key()
         test_name = f"{metafunc.cls.__name__}.{metafunc.function.__name__}"
         config = load_config(metafunc.config.getoption("--standard_test_config"))
-        # print(config.dict())
         if not hasattr(config.tests, config_key) or not getattr(config.tests, config_key):
             pytest.skip(f"Skipping {test_name} because not found in the config")
         else:

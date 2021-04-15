@@ -1,6 +1,6 @@
 # Running Standard Source Tests
 ```bash
-PYTHONPATH=. pytest standard_test.py --standard_test_config=/connectors/source-hubspot/ -vvv
+python -m pytest standard_test/tests --standard_test_config=../../connectors/source-hubspot/ -vvv
 ```
 
 ## How to

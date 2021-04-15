@@ -32,6 +32,7 @@ from standard_test.base import BaseTest
 from standard_test.connector_runner import ConnectorRunner
 
 
+@pytest.mark.timeout(10)
 class TestSpec(BaseTest):
     def test_spec(self, connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
@@ -42,6 +43,7 @@ class TestSpec(BaseTest):
             assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
 
 
+@pytest.mark.timeout(30)
 class TestConnection(BaseTest):
     def test_check(self, connector_config, docker_runner: ConnectorRunner):
         output = docker_runner.call_check(config=connector_config)
@@ -50,12 +52,12 @@ class TestConnection(BaseTest):
         assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
         assert con_messages[0].connectionStatus.status == Status.SUCCEEDED
 
-    def test_check_without_network(self, connector_config, docker_runner: ConnectorRunner):
-        output = docker_runner.call_check(config=connector_config, network_disabled=True)
-        con_messages = [message for message in output if message.type == Type.CONNECTION_STATUS]
-
-        assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
-        assert con_messages[0].connectionStatus.status == Status.FAILED
+    # def test_check_without_network(self, connector_config, docker_runner: ConnectorRunner):
+    #     output = docker_runner.call_check(config=connector_config, network_disabled=True)
+    #     con_messages = [message for message in output if message.type == Type.CONNECTION_STATUS]
+    #
+    #     assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
+    #     assert con_messages[0].connectionStatus.status == Status.FAILED
 
     def test_check_with_invalid_config(self, invalid_connector_config, docker_runner: ConnectorRunner):
         with pytest.raises(ContainerError) as err:
@@ -65,6 +67,7 @@ class TestConnection(BaseTest):
         assert "Traceback" in err.value.stderr.decode("utf-8"), "Connector should print exception"
 
 
+@pytest.mark.timeout(30)
 class TestDiscovery(BaseTest):
     def test_discover(self, connector_config, catalog, docker_runner: ConnectorRunner):
         output = docker_runner.call_discover(config=connector_config)
@@ -75,6 +78,7 @@ class TestDiscovery(BaseTest):
             assert catalog_messages[0].catalog == catalog, "Catalog should match the one that was provided"
 
 
+@pytest.mark.timeout(300)
 class TestBasicRead(BaseTest):
     def test_read(self, connector_config, configured_catalog, validate_output_from_all_streams, docker_runner: ConnectorRunner):
         output = docker_runner.call_read(connector_config, configured_catalog)

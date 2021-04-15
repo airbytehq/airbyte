@@ -29,8 +29,10 @@ MAIN_REQUIREMENTS = [
     "docker==4.4.4",
     "PyYAML==5.3.1",
     "inflection==0.5.1",
+    "pendulum==1.2.0",
     "pydantic==1.6.1",
     "pytest==6.1.2",
+    "pytest-timeout==1.4.2",
 ]
 
 setuptools.setup(
