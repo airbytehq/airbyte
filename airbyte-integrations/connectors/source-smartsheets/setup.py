@@ -22,5 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-def test_example_method():
-    assert True
+from setuptools import find_packages, setup
+
+setup(
+    name="source_smartsheets",
+    description="Source implementation for Smartsheets.",
+    author="Nate Nowack",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2", "smartsheet-python-sdk"],
+    package_data={"": ["*.json"]},
+)
