@@ -64,7 +64,7 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 ## Run in `dev` mode with `docker-compose`
 
 ```bash
-./gradlew build
+CORE_ONLY=1 ./gradlew build
 VERSION=dev docker-compose up
 ```
 
@@ -77,7 +77,7 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
-./gradlew build
+CORE_ONLY=1 ./gradlew build
 VERSION=dev docker-compose up
 ./gradlew :airbyte-tests:acceptanceTests
 ```
@@ -130,7 +130,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 * Rebuild the project
 
   ```bash
-   ./gradlew build
+   CORE_ONLY=1 ./gradlew build
    VERSION=dev docker-compose up -V
   ```
 

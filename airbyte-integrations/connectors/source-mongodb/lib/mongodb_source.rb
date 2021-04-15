@@ -40,6 +40,7 @@ class MongodbSource
     @config = JSON.parse(File.read(config))
 
     streams = client.collections.map do |collection|
+      AirbyteLogger.log("Discovering stream #{collection.name}")
       MongodbStream.new(collection: collection).discover
     end
 
