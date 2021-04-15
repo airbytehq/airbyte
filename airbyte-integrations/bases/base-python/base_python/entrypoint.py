@@ -30,8 +30,8 @@ import tempfile
 
 from airbyte_protocol import AirbyteMessage, Status, Type
 
-from .integration import Source
-from .logger import AirbyteLogger
+from base_python.integration import Source
+from base_python.logger import AirbyteLogger
 
 logger = AirbyteLogger()
 
@@ -116,7 +116,6 @@ class AirbyteEntrypoint(object):
 
 
 def launch(source, args):
-
     AirbyteEntrypoint(source).start(args)
 
 
