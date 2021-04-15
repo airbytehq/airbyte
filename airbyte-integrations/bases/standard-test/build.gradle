@@ -4,7 +4,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'base_python_test'
+    moduleDirectory 'standard_test'
 }
 
 

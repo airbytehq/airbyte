@@ -9,3 +9,5 @@ RUN pip install .
 
 LABEL io.airbyte.version=0.1.0
 LABEL io.airbyte.name=airbyte/standard-test
+
+ENTRYPOINT ["python", "-m", "pytest", "standard_test/tests", "-rsx", "-vvv"]

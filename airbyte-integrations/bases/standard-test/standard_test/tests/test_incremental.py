@@ -52,10 +52,15 @@ def future_state_fixture(future_state_path):
 
 
 @pytest.fixture(name="cursor_paths")
-def cursor_paths_fixture(inputs):
-    if getattr(inputs, "cursor_paths"):
-        return getattr(inputs, "cursor_paths")
-    pytest.skip("`cursor_paths` not specified, skipping")
+def cursor_paths_fixture(inputs, configured_catalog_for_incremental):
+    cursor_paths = getattr(inputs, "cursor_paths")
+    result = {}
+
+    for stream in configured_catalog_for_incremental.streams:
+        path = cursor_paths.get(stream.stream.name, [stream.cursor_field[-1]])
+        result[stream.stream.name] = path
+
+    return result
 
 
 @pytest.fixture(name="configured_catalog_for_incremental")

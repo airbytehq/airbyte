@@ -26,10 +26,10 @@ from typing import List, Optional, Mapping
 
 from pydantic import BaseModel, Field
 
-config_path: str = Field(description="Path to a JSON object representing a valid connector configuration")
+config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
-spec_path: str = Field(description="Path to a JSON object representing the spec expected to be output by this connector")
-configured_catalog_path: str = Field(description="Path to configured catalog")
+spec_path: str = Field(default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector")
+configured_catalog_path: str = Field(default="sample_files/configured_catalog.json", description="Path to configured catalog")
 
 
 class BaseConfig(BaseModel):
@@ -81,21 +81,4 @@ class TestConfig(BaseConfig):
 class Config(BaseConfig):
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     base_path: Optional[str] = Field(description="Base path for all relative paths")
-    tests: TestConfig = Field(description="TODO")
-
-
-""" Why we using fixtures for each field?
- Pros:
- - do not duplicate logic of loading data that depends on this fields, config, etc
- - still possible to override behaviour locally inside the tests, by changing only base fixture
-   for example we want to patch config to read latest 30 days, so we need to put now - 30 days, and can't hardcode it
- 
- Cons:
- - we need to have fixture for each attribute of config
- 
- 
- - would be nice to skip some tests depending on fixture
- 
- return None,
- 
-"""
+    tests: TestConfig = Field(description="List of the tests with their configs")

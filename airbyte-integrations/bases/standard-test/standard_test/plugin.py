@@ -24,7 +24,7 @@ SOFTWARE.
 
 import pytest
 
-from .utils import load_config
+from standard_test.utils import load_config
 
 
 def pytest_addoption(parser):

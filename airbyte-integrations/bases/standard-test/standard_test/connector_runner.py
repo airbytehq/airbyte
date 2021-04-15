@@ -27,11 +27,6 @@ import logging
 from pathlib import Path
 from typing import Iterable, Mapping, Optional
 
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
 import docker
 from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog
 
@@ -48,7 +43,6 @@ class ConnectorRunner:
         output_path = self._volume_base / f"run_{self._runs}" / "output"
         input_path.mkdir(parents=True)
         output_path.mkdir(parents=True)
-        # print(input_path, output_path)
 
         if config:
             with open(str(input_path / "tap_config.json"), "w") as outfile:
