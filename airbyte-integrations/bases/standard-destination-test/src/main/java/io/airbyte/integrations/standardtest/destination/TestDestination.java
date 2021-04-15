@@ -489,6 +489,12 @@ public abstract class TestDestination {
 
     final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    messages.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace);
+          }
+        });
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);

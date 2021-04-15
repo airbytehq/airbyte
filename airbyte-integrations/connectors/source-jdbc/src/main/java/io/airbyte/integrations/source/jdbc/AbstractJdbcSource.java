@@ -40,6 +40,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -260,6 +261,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                                                    JdbcStateManager stateManager,
                                                                    Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
+    final String namespace = airbyteStream.getStream().getNamespace();
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
     final Set<String> selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
     final List<String> selectedDatabaseFields = table.getFields()
         .stream()
@@ -270,14 +273,14 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     final AutoCloseableIterator<AirbyteMessage> iterator;
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
-      final Optional<String> cursorOptional = stateManager.getCursor(streamName);
+      final Optional<String> cursorOptional = stateManager.getCursor(pair);
 
       final AutoCloseableIterator<AirbyteMessage> airbyteMessageIterator;
       if (cursorOptional.isPresent()) {
         airbyteMessageIterator = getIncrementalStream(database, airbyteStream, selectedDatabaseFields, table, cursorOptional.get(), emittedAt);
       } else {
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
-        airbyteMessageIterator = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, emittedAt);
+        airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
       }
 
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
@@ -285,13 +288,13 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
       iterator = AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
           autoCloseableIterator,
           stateManager,
-          streamName,
+          pair,
           cursorField,
           cursorOptional.orElse(null),
           cursorType),
           airbyteMessageIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-      iterator = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, emittedAt);
+      iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
     } else if (airbyteStream.getSyncMode() == null) {
       throw new IllegalArgumentException(String.format("%s requires a source sync mode", AbstractJdbcSource.class));
     } else {
@@ -315,6 +318,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                                                             String cursor,
                                                                             Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
+    final String namespace = airbyteStream.getStream().getNamespace();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
     final JDBCType cursorJdbcType = table.getFields().stream()
         .filter(info -> info.getColumnName().equals(cursorField))
@@ -334,17 +338,18 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         cursorJdbcType,
         cursor);
 
-    return getMessageIterator(queryIterator, streamName, emittedAt.toEpochMilli());
+    return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli());
   }
 
   private static AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(JdbcDatabase database,
                                                                             String streamName,
+                                                                            String namespace,
                                                                             List<String> selectedDatabaseFields,
                                                                             TableInfoInternal table,
                                                                             Instant emittedAt) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getSchemaName(), table.getName());
-    return getMessageIterator(queryStream, streamName, emittedAt.toEpochMilli());
+    return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -495,11 +500,13 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   public static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
                                                                          String streamName,
+                                                                         String namespace,
                                                                          long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(streamName)
+            .withNamespace(namespace)
             .withEmittedAt(emittedAt)
             .withData(r)));
   }

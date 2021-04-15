@@ -29,18 +29,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
-import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +110,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
         recordWriterFunction(indexNameToIndex),
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),
         catalog,
-        CatalogHelpers.getStreamNames(catalog));
+        AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog));
   }
 
   private static Map<String, Index> createIndices(ConfiguredAirbyteCatalog catalog, Client client) throws Exception {
@@ -138,9 +137,9 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
         .anyMatch(actualIndexName -> actualIndexName.equals(indexName));
   }
 
-  private static CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriterFunction(final Map<String, Index> indexNameToWriteConfig) {
-    return (streamName, recordStream) -> {
-      final String resolvedIndexName = getIndexName(streamName);
+  private static RecordWriter recordWriterFunction(final Map<String, Index> indexNameToWriteConfig) {
+    return (namePair, recordStream) -> {
+      final String resolvedIndexName = getIndexName(namePair.getName());
       if (!indexNameToWriteConfig.containsKey(resolvedIndexName)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \nexpected streams: %s",
