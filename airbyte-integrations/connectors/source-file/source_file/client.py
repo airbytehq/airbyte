@@ -324,15 +324,15 @@ class Client:
             if self._reader_format == "json" or self._reader_format == "jsonl":
                 yield from self.load_nested_json(fp)
             else:
-                fields = list(fields)
+                fields = set(fields) if fields else None
                 for df in self.load_dataframes(fp):
                     if self._reader_format == "csv" and isinstance(df, pd.io.parsers.TextFileReader):
                         for chunk in df:
-                            columns = set(fields).intersection(set(chunk.columns)) if fields else chunk.columns
+                            columns = fields.intersection(set(chunk.columns)) if fields else chunk.columns
                             chunk = chunk.replace(np.nan, "NaN", regex=True)
                             yield from chunk[columns].to_dict(orient="records")
                     else:
-                        columns = set(fields).intersection(set(df.columns)) if fields else df.columns
+                        columns = fields.intersection(set(df.columns)) if fields else df.columns
                         df = df.replace(np.nan, "NaN", regex=True)
                         yield from df[columns].to_dict(orient="records")
 
