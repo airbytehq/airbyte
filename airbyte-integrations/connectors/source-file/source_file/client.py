@@ -326,15 +326,15 @@ class Client:
             else:
                 fields = set(fields) if fields else None
                 for df in self.load_dataframes(fp):
+                    chunks = [df]
+
                     if self._reader_format == "csv" and isinstance(df, pd.io.parsers.TextFileReader):
-                        for chunk in df:
-                            columns = fields.intersection(set(chunk.columns)) if fields else chunk.columns
-                            chunk = chunk.replace(np.nan, "NaN", regex=True)
-                            yield from chunk[columns].to_dict(orient="records")
-                    else:
-                        columns = fields.intersection(set(df.columns)) if fields else df.columns
-                        df = df.replace(np.nan, "NaN", regex=True)
-                        yield from df[columns].to_dict(orient="records")
+                        chunks = df
+
+                    for chunk in chunks:
+                        columns = fields.intersection(set(chunk.columns)) if fields else chunk.columns
+                        chunk = chunk.replace(np.nan, "NaN", regex=True)
+                        yield from chunk[columns].to_dict(orient="records")
 
     def _stream_properties(self):
         with self.reader.open(binary=self.binary_source) as fp:
