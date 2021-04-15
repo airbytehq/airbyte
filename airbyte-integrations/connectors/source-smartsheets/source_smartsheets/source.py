@@ -38,7 +38,6 @@ from airbyte_protocol import (
     Type,
 )
 from base_python import AirbyteLogger, Source
-from smartsheet.smartsheet import Smartsheet
 
 
 # helpers
