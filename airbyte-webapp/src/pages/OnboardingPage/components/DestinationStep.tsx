@@ -8,7 +8,6 @@ import ConnectionBlock from "components/ConnectionBlock";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
-import { Destination } from "core/resources/Destination";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import { IDataItem } from "components/DropDown/components/ListItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -18,7 +17,6 @@ import SkipOnboardingButton from "./SkipOnboardingButton";
 import { ConnectionConfiguration } from "core/domain/connection";
 
 type IProps = {
-  destination?: Destination;
   dropDownData: IDataItem[];
   hasSuccess?: boolean;
   onSubmit: (values: {
@@ -39,13 +37,10 @@ const DestinationStep: React.FC<IProps> = ({
   hasSuccess,
   error,
   currentSourceDefinitionId,
-  destination,
   jobInfo,
   afterSelectConnector,
 }) => {
-  const [destinationDefinitionId, setDestinationDefinitionId] = useState(
-    destination?.destinationDefinitionId || ""
-  );
+  const [destinationDefinitionId, setDestinationDefinitionId] = useState("");
   const {
     destinationDefinitionSpecification,
     isLoading,
@@ -107,15 +102,6 @@ const DestinationStep: React.FC<IProps> = ({
             destinationDefinitionSpecification?.documentationUrl
           }
           isLoading={isLoading}
-          formValues={
-            destination
-              ? {
-                  ...destination.connectionConfiguration,
-                  name: destination.name,
-                  serviceType: destination.destinationDefinitionId,
-                }
-              : null
-          }
         />
         <JobsLogItem jobInfo={jobInfo} />
       </ContentCard>
