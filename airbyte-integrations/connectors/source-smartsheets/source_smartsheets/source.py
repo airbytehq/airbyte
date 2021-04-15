@@ -99,12 +99,9 @@ class SourceSmartsheets(Source):
 
             logger.info(f"Running discovery on sheet: {sheet['name']} with {spreadsheet_id}")
 
-            try:
-                stream = AirbyteStream(name=sheet["name"], json_schema=sheet_json_schema)
-                streams.append(stream)
-            except Exception as e:
-                rec = "Check that your source's column names don't contain spaces or _"
-                logger.error(f"Stream creation failed: {str(e)} - {rec} ")
+            stream = AirbyteStream(name=sheet["name"], json_schema=sheet_json_schema)
+            streams.append(stream)
+
         except Exception as e:
             raise Exception(f"Could not run discovery: {str(e)}")
 
