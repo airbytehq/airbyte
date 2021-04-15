@@ -146,18 +146,18 @@ public class AcceptanceTests {
         .withUsername(SOURCE_USERNAME)
         .withPassword(SOURCE_PASSWORD);
     sourcePsql.start();
-    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-    destinationPsql.start();
   }
 
   @AfterAll
   public static void end() {
     sourcePsql.stop();
-    destinationPsql.stop();
   }
 
   @BeforeEach
   public void setup() throws ApiException {
+    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+    destinationPsql.start();
+
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
@@ -182,7 +182,7 @@ public class AcceptanceTests {
   @AfterEach
   public void tearDown() throws ApiException, SQLException {
     clearDbData(sourcePsql);
-    clearDbData(destinationPsql);
+    destinationPsql.stop();
 
     for (UUID sourceId : sourceIds) {
       deleteSource(sourceId);
