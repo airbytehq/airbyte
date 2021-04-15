@@ -171,7 +171,7 @@
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
 
   "destinationSyncMode.append": "Append",
-  "destinationSyncMode.append_dedup": "Dedupted + story",
+  "destinationSyncMode.append_dedup": "Deduped + history",
   "destinationSyncMode.overwrite": "Overwrite",
 
   "syncMode.full_refresh": "Full refresh",
@@ -192,6 +192,11 @@
   "connection.updateSchemaText": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch. Are you sure you want to do this?",
   "connection.newConnection": "+ new connection",
   "connection.newConnectionTitle": "New connection",
+  "connection.noConnections": "Connection list is empty",
+  "connection.disabledConnection": "Disabled connection",
+  "connection.failedSync": "Failed sync",
+  "connection.successSync": "Succeeded sync",
+  "connection.noSyncData": "Sync was not started",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",

@@ -165,6 +165,29 @@ paths:
           description: Workspace not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/notifications/try:
+    post:
+      tags:
+        - notifications
+      summary: Try sending a notifications
+      operationId: tryNotificationConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Notification"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationRead"
+        "404":
+          description: Notification Client not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/source_definitions/create:
     post:
       tags:
@@ -1237,6 +1260,46 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+    Notification:
+      type: object
+      required:
+        - notificationType
+      properties:
+        # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
+        # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
+        notificationType:
+          $ref: "#/components/schemas/NotificationType"
+        slackConfiguration:
+          $ref: "#/components/schemas/SlackNotificationConfiguration"
+    SlackNotificationConfiguration:
+      type: object
+      required:
+        - webhook
+      properties:
+        webhook:
+          type: string
+    NotificationType:
+      type: string
+      enum:
+        - slack
+        # - email
+        # - webhook
+    NotificationRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        message:
+          type: string
     WorkspaceIdRequestBody:
       type: object
       required:
@@ -1274,6 +1337,10 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
     WorkspaceUpdate:
       type: object
       required:
@@ -1298,6 +1365,10 @@ components:
           type: boolean
         securityUpdates:
           type: boolean
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
     # SLUG
     SlugRequestBody:
       type: object
