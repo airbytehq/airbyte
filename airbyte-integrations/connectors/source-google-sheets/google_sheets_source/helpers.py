@@ -59,22 +59,9 @@ class Helpers(object):
         of the headers. For example, if the first row contains "One | Two | | Three" then this method
         will parse the headers as ["One", "Two"]. This assumption is made for simplicity and can be modified later.
         """
-        fields = []
-        duplicate_fields = set()
-        for cell_value in header_row_values:
-            if cell_value:
-                if cell_value in fields:
-                    # Store the duplicate fields for removal later
-                    duplicate_fields.add(cell_value)
-                else:
-                    fields.append(cell_value)
-            else:
-                break
-
-        # Removing all duplicate fields
+        fields, duplicate_fields = Helpers.get_vaild_headers_and_duplicates(header_row_values)
         if duplicate_fields:
-            fields = [field for field in fields if field not in duplicate_fields]
-            logger.warn(f"Duplicate headers found. Ignoring them : {duplicate_fields}")
+            logger.warn(f"Duplicate headers found. Ignoring them :{duplicate_fields}")
 
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -84,6 +71,25 @@ class Helpers(object):
         }
 
         return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema)
+
+    @staticmethod
+    def get_vaild_headers_and_duplicates(header_row_values: List[str]) -> (List[str], List[str]):
+        fields = []
+        duplicate_fields = set()
+        for cell_value in header_row_values:
+            if cell_value:
+                if cell_value in fields:
+                    duplicate_fields.add(cell_value)
+                else:
+                    fields.append(cell_value)
+            else:
+                break
+
+        # Removing all duplicate fields
+        if duplicate_fields:
+            fields = [field for field in fields if field not in duplicate_fields]
+
+        return fields, list(duplicate_fields)
 
     @staticmethod
     def get_formatted_row_values(row_data: RowData) -> List[str]:
