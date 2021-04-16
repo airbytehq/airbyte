@@ -22,13 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List, Optional, Mapping
+from typing import List, Mapping, Optional
 
 from pydantic import BaseModel, Field
 
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
-spec_path: str = Field(default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector")
+spec_path: str = Field(
+    default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector"
+)
 configured_catalog_path: str = Field(default="sample_files/configured_catalog.json", description="Path to configured catalog")
 
 
@@ -65,7 +67,9 @@ class FullRefreshConfig(BaseConfig):
 class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: str = configured_catalog_path
-    cursor_paths: Optional[Mapping[str, List[str]]] = Field(description="For each stream, the path of its cursor field in the output state messages.")
+    cursor_paths: Optional[Mapping[str, List[str]]] = Field(
+        description="For each stream, the path of its cursor field in the output state messages."
+    )
     state_path: Optional[str] = Field(description="Path to state file")
 
 

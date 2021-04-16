@@ -34,7 +34,6 @@ except ImportError:
     from yaml import Loader
 
 from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
-
 from standard_test.config import Config
 
 

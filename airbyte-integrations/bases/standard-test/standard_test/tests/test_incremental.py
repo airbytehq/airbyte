@@ -23,16 +23,14 @@ SOFTWARE.
 """
 
 import json
-
 from pathlib import Path
 
 import pytest
-from airbyte_protocol import Type, ConfiguredAirbyteCatalog
-
+from airbyte_protocol import ConfiguredAirbyteCatalog, Type
 from standard_test import BaseTest
 from standard_test.connector_runner import ConnectorRunner
-from standard_test.utils import filter_output, incremental_only_catalog
 from standard_test.json_schema_helper import JsonSchemaHelper
+from standard_test.utils import filter_output, incremental_only_catalog
 
 
 @pytest.fixture(name="future_state_path")
@@ -85,10 +83,7 @@ class TestIncremental(BaseTest):
 
     def test_two_sequential_reads(self, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner):
         output = docker_runner.call_read(connector_config, configured_catalog_for_incremental)
-        stream_mapping = {
-            stream.stream.name: stream
-            for stream in configured_catalog_for_incremental.streams
-        }
+        stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
 
         records_1 = filter_output(output, type_=Type.RECORD)
         states_1 = filter_output(output, type_=Type.STATE)
@@ -99,7 +94,9 @@ class TestIncremental(BaseTest):
             helper = JsonSchemaHelper(schema=stream.stream.json_schema)
             record_value = helper.get_cursor_value(record=record.record.data, cursor_path=stream.cursor_field)
             state_value = helper.get_state_value(state=latest_state[stream_name], cursor_path=cursor_paths[stream_name])
-            assert record_value <= state_value, "First incremental sync should produce records younger or equal to cursor value from the state"
+            assert (
+                record_value <= state_value
+            ), "First incremental sync should produce records younger or equal to cursor value from the state"
 
         output = docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=latest_state)
         records_2 = filter_output(output, type_=Type.RECORD)
@@ -110,7 +107,9 @@ class TestIncremental(BaseTest):
             helper = JsonSchemaHelper(schema=stream.stream.json_schema)
             record_value = helper.get_cursor_value(record=record.record.data, cursor_path=stream.cursor_field)
             state_value = helper.get_state_value(state=latest_state[stream_name], cursor_path=cursor_paths[stream_name])
-            assert record_value >= state_value, "Second incremental sync should produce records older or equal to cursor value from the state"
+            assert (
+                record_value >= state_value
+            ), "Second incremental sync should produce records older or equal to cursor value from the state"
 
     def test_state_with_abnormally_large_values(self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner):
         configured_catalog = incremental_only_catalog(configured_catalog)

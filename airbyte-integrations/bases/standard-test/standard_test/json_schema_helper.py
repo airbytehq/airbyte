@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from functools import reduce
 from typing import List
 
 import pendulum
-from functools import reduce
 
 
 class JsonSchemaHelper:
@@ -34,21 +34,21 @@ class JsonSchemaHelper:
 
     def get_ref(self, path):
         node = self._schema
-        for segment in path.split('/')[1:]:
+        for segment in path.split("/")[1:]:
             node = node[segment]
         return node
 
     def get_property(self, path: List[str]):
         node = self._schema
         for segment in path:
-            if '$ref' in node:
-                node = self.get_ref(node['$ref'])
-            node = node['properties'][segment]
+            if "$ref" in node:
+                node = self.get_ref(node["$ref"])
+            node = node["properties"][segment]
         return node
 
     def get_type_for_key_path(self, path: List[str]):
         try:
-            return self.get_property(path)['type']
+            return self.get_property(path)["type"]
         except KeyError:
             return None
 

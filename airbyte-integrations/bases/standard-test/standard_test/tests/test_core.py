@@ -27,7 +27,6 @@ from collections import Counter
 import pytest
 from airbyte_protocol import ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
-
 from standard_test.base import BaseTest
 from standard_test.connector_runner import ConnectorRunner
 

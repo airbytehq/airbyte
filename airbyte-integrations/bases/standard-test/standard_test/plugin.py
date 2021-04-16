@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import pytest
-
 from standard_test.utils import load_config
 
 
