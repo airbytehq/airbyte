@@ -60,7 +60,7 @@ def setup_test_path():
 )
 def test_stream_processor_tables_naming(integration_type: str, catalog_file: str, setup_test_path):
     destination_type = DestinationType.from_string(integration_type)
-    tables_registry = set()
+    tables_registry = {}
 
     substreams = []
     catalog = read_json(f"resources/{catalog_file}.json")
@@ -75,13 +75,18 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
         tables_registry=tables_registry,
     ):
         nested_processors = stream_processor.process()
-        for table in stream_processor.local_registry:
-            found_sql_output = False
-            for sql_output in stream_processor.sql_outputs:
-                if re.match(r".*/" + table + ".sql", sql_output) is not None:
-                    found_sql_output = True
-                    break
-            assert found_sql_output
+        for schema in stream_processor.local_registry:
+            for table in stream_processor.local_registry[schema]:
+                found_sql_output = False
+                for sql_output in stream_processor.sql_outputs:
+                    file_name = f"{schema}_{table}"
+                    if len(file_name) > stream_processor.name_transformer.get_name_max_length():
+                        file_name = stream_processor.name_transformer.truncate_identifier_name(input_name=file_name)
+
+                    if re.match(r".*/" + file_name + ".sql", sql_output) is not None:
+                        found_sql_output = True
+                        break
+                assert found_sql_output
         add_table_to_registry(tables_registry, stream_processor)
         if nested_processors and len(nested_processors) > 0:
             substreams += nested_processors
@@ -115,7 +120,13 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
         elif DestinationType.REDSHIFT.value == destination_type.value:
             expected_nested = {table.lower() for table in expected_nested}
 
-    assert (tables_registry - expected_top_level) == expected_nested
+    # TODO(davin): Instead of unwrapping all tables, rewrite this test so tables are compared based on schema.
+    all_tables = set()
+    for schema in tables_registry:
+        for tables in tables_registry[schema]:
+            all_tables.add(tables)
+
+    assert (all_tables - expected_top_level) == expected_nested
 
 
 @pytest.mark.parametrize(
