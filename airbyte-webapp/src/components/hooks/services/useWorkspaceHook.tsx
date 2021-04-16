@@ -18,6 +18,7 @@ const useWorkspace = (): {
     news: boolean;
     securityUpdates: boolean;
   }) => Promise<void>;
+  updateWebhook: (data: { webhook: string }) => Promise<void>;
   finishOnboarding: (skipStep?: string) => Promise<void>;
 } => {
   const updateWorkspace = useFetcher(WorkspaceResource.updateShape());
@@ -79,11 +80,34 @@ const useWorkspace = (): {
     );
   };
 
+  const updateWebhook = async (data: { webhook: string }) => {
+    await updateWorkspace(
+      {},
+      {
+        workspaceId: config.ui.workspaceId,
+        initialSetupComplete: workspace.initialSetupComplete,
+        displaySetupWizard: workspace.displaySetupWizard,
+        anonymousDataCollection: workspace.anonymousDataCollection,
+        news: workspace.news,
+        securityUpdates: workspace.securityUpdates,
+        notifications: [
+          {
+            notificationType: "slack",
+            slackConfiguration: {
+              webhook: data.webhook,
+            },
+          },
+        ],
+      }
+    );
+  };
+
   return {
     workspace,
     finishOnboarding,
     setInitialSetupConfig,
     updatePreferences,
+    updateWebhook,
   };
 };
 

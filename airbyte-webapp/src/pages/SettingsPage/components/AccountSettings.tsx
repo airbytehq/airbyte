@@ -21,9 +21,10 @@ const Content = styled.div`
 `;
 
 const AccountSettings: React.FC = () => {
-  const { workspace, updatePreferences } = useWorkspace();
+  const { workspace, updatePreferences, updateWebhook } = useWorkspace();
   const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
   const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null);
+  const [feedBack, setFeedBack] = useState("");
 
   const onSubmit = async (data: {
     email: string;
@@ -41,11 +42,45 @@ const AccountSettings: React.FC = () => {
     }
   };
 
+  const onSubmitWebhook = async (data: { webhook: string }) => {
+    setFeedBack("");
+    try {
+      await updateWebhook(data);
+      setFeedBack("success");
+
+      setTimeout(() => {
+        setFeedBack("");
+      }, 2000);
+    } catch (e) {
+      setFeedBack("error");
+
+      setTimeout(() => {
+        setFeedBack("");
+      }, 2000);
+    }
+  };
+
+  const onTestWebhook = async (data: { webhook: string }) => {
+    // TODO: add test api call
+    await updateWebhook(data);
+  };
+
+  const initialWebhookUrl =
+    workspace.notifications && workspace.notifications.length
+      ? workspace.notifications[0].slackConfiguration.webhook
+      : "";
+
   return (
     <>
       <SettingsCard title={<FormattedMessage id="settings.webhook" />}>
         <Content>
-          <WebHookForm />
+          <WebHookForm
+            notificationUrl={initialWebhookUrl}
+            onSubmit={onSubmitWebhook}
+            onTest={onTestWebhook}
+            error={feedBack === "error"}
+            success={feedBack === "success"}
+          />
         </Content>
       </SettingsCard>
       <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>

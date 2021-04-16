@@ -34,25 +34,91 @@ const FeedbackCell = styled(Cell)`
   padding-left: 11px;
 `;
 
+const Success = styled.div`
+  font-size: 13px;
+  color: ${({ theme }) => theme.successColor};
+`;
+
+const Error = styled(Success)`
+  color: ${({ theme }) => theme.dangerColor};
+`;
+
 const webhookValidationSchema = yup.object().shape({
-  webhook: yup.string().required("form.empty.error"),
+  webhook: yup.string(),
 });
 
-const WebHookForm: React.FC = () => {
+type WebHookFormProps = {
+  notificationUrl: string;
+  success?: boolean;
+  error?: boolean;
+  onSubmit: (data: { webhook: string }) => void;
+  onTest: (data: { webhook: string }) => void;
+};
+
+const WebHookForm: React.FC<WebHookFormProps> = ({
+  notificationUrl,
+  onSubmit,
+  success,
+  error,
+  onTest,
+}) => {
   const formatMessage = useIntl().formatMessage;
+
+  const feedBackBlock = (
+    dirty: boolean,
+    isSubmitting: boolean,
+    webhook?: string
+  ) => {
+    if (success) {
+      return (
+        <Success>
+          <FormattedMessage id="settings.changeSaved" />
+        </Success>
+      );
+    }
+
+    if (error) {
+      return (
+        <Error>
+          <FormattedMessage id="form.someError" />
+        </Error>
+      );
+    }
+
+    if (dirty) {
+      return (
+        <LoadingButton isLoading={isSubmitting} type="submit">
+          <FormattedMessage id="form.saveChanges" />
+        </LoadingButton>
+      );
+    }
+
+    if (webhook) {
+      return (
+        <LoadingButton isLoading={isSubmitting} type="submit">
+          <FormattedMessage id="settings.test" />
+        </LoadingButton>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <Formik
-      initialValues={{ webhook: "" }}
+      initialValues={{ webhook: notificationUrl }}
       validateOnBlur={true}
       validateOnChange={false}
       validationSchema={webhookValidationSchema}
       onSubmit={async (values) => {
-        console.log(values);
-        // await onSubmit(values);
+        if (notificationUrl && notificationUrl === values.webhook) {
+          await onTest(values);
+        } else {
+          await onSubmit(values);
+        }
       }}
     >
-      {({ isSubmitting, initialValues, values }) => (
+      {({ isSubmitting, initialValues, dirty }) => (
         <Form>
           <Label>
             <FormattedMessage id="settings.webhookTitle" />
@@ -75,11 +141,7 @@ const WebHookForm: React.FC = () => {
               </Field>
             </Cell>
             <FeedbackCell>
-              {values.webhook ? (
-                <LoadingButton isLoading={isSubmitting}>
-                  <FormattedMessage id="settings.test" />
-                </LoadingButton>
-              ) : null}
+              {feedBackBlock(dirty, isSubmitting, initialValues.webhook)}
             </FeedbackCell>
           </InputRow>
           {initialValues.webhook ? (
