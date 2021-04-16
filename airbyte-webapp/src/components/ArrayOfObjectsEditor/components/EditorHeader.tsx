@@ -28,7 +28,12 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
   return (
     <Content>
       <FormattedMessage id="form.items" values={{ count: itemsCount }} />
-      <Button secondary type="button" onClick={onAddItem}>
+      <Button
+        secondary
+        type="button"
+        onClick={onAddItem}
+        data-test-id="addItemButton"
+      >
         <FormattedMessage id="form.addItems" />
       </Button>
     </Content>

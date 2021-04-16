@@ -62,7 +62,11 @@ const ArrayOfObjectsEditor: React.FC<ArrayOfObjectsEditorProps> = ({
           <SmallButton onClick={onCancelEdit} type="button" secondary>
             <FormattedMessage id="form.cancel" />
           </SmallButton>
-          <SmallButton onClick={onDone} type="button">
+          <SmallButton
+            onClick={onDone}
+            type="button"
+            data-test-id="done-button"
+          >
             <FormattedMessage id="form.done" />
           </SmallButton>
         </ButtonContainer>
