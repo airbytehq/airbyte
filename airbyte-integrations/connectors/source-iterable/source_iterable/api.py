@@ -69,13 +69,7 @@ class IterableExportStream(IterableStream, ABC):
         super(IterableExportStream, self).__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
 
-    @property
-    @abstractmethod
-    def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
-        and define a cursor field.
-        """
+    cursor_field = "createdAt"
 
     @staticmethod
     def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
@@ -162,49 +156,41 @@ class Channels(IterableStream):
 class EmailBounce(IterableExportStream):
     name = "email_bounce"
     data_field = "emailBounce"
-    cursor_field = "createdAt"
 
 
 class EmailClick(IterableExportStream):
     name = "email_click"
     data_field = "emailClick"
-    cursor_field = "createdAt"
 
 
 class EmailComplaint(IterableExportStream):
     name = "email_complaint"
     data_field = "emailComplaint"
-    cursor_field = "createdAt"
 
 
 class EmailOpen(IterableExportStream):
     name = "email_open"
     data_field = "emailOpen"
-    cursor_field = "createdAt"
 
 
 class EmailSend(IterableExportStream):
     name = "email_send"
     data_field = "emailSend"
-    cursor_field = "createdAt"
 
 
 class EmailSendSkip(IterableExportStream):
     name = "email_send_skip"
     data_field = "emailSendSkip"
-    cursor_field = "createdAt"
 
 
 class EmailSubscribe(IterableExportStream):
     name = "email_subscribe"
     data_field = "emailSubscribe"
-    cursor_field = "createdAt"
 
 
 class EmailUnsubscribe(IterableExportStream):
     name = "email_unsubscribe"
     data_field = "emailUnsubscribe"
-    cursor_field = "createdAt"
 
 
 class MessageTypes(IterableStream):
@@ -224,7 +210,6 @@ class Metadata(IterableStream):
 
 class Templates(IterableExportStream):
     data_field = "templates"
-    cursor_field = "createdAt"
     template_types = ["Base", "Blast", "Triggered", "Workflow"]
     message_types = ["Email", "Push", "InApp", "SMS"]
 
