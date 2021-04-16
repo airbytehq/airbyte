@@ -54,7 +54,7 @@ class SourceIterable(AbstractSource):
             list(Lists(authenticator=authenticator)._list_records(stream_state={}))
             return True, None
         except Exception as e:
-            return False, e
+            return False, f"Unable to connect to Iterable API with the provided credentials - {e}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = ParamsAuthenticator(config["api_key"])
