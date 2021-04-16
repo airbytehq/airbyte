@@ -136,6 +136,10 @@ class BigQueryDestinationTest {
         .getService();
 
     final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
+    MESSAGE_USERS1.getRecord().setNamespace(datasetId);
+    MESSAGE_USERS2.getRecord().setNamespace(datasetId);
+    MESSAGE_TASKS1.getRecord().setNamespace(datasetId);
+    MESSAGE_TASKS2.getRecord().setNamespace(datasetId);
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
