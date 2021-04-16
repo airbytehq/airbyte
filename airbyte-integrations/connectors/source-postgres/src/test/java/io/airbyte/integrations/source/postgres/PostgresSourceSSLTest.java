@@ -63,9 +63,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-class PostgresSourceTest {
+class PostgresSourceSSLTest {
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = SCHEMA_NAME + ".id_and_name";
@@ -99,17 +100,14 @@ class PostgresSourceTest {
       createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
       createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null)));
 
-  private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
-      createRecord(STREAM_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
-
   private static PostgreSQLContainer<?> PSQL_DB;
 
   private String dbName;
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
+    PSQL_DB = new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
+        .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
     PSQL_DB.start();
   }
 
@@ -143,7 +141,7 @@ class PostgresSourceTest {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        String.format("jdbc:postgresql://%s:%s/%s?sslmode=require",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
@@ -158,7 +156,7 @@ class PostgresSourceTest {
         .put("database", dbName)
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
-        .put("ssl", false)
+        .put("ssl", true)
         .build());
   }
 
@@ -169,28 +167,6 @@ class PostgresSourceTest {
   @AfterAll
   static void cleanUp() {
     PSQL_DB.close();
-  }
-
-  @Test
-  public void testCanReadUtf8() throws Exception {
-    // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
-    // default settings are in another encoding
-    try (PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine").withCommand("postgres -c client_encoding=sql_ascii")) {
-      db.start();
-      final JsonNode config = getConfig(db);
-      try (final Database database = getDatabaseFromConfig(config)) {
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-          ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');");
-          return null;
-        });
-      }
-
-      final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(config, CONFIGURED_CATALOG, null));
-      setEmittedAtToNull(actualMessages);
-
-      assertEquals(UTF8_MESSAGES, actualMessages);
-    }
   }
 
   private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {

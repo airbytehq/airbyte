@@ -193,6 +193,7 @@ class CdcPostgresSourceTest {
         .put("database", dbName)
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
+        .put("ssl", false)
         .put("replication_method", replicationMethod)
         .build());
   }
