@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -370,6 +371,81 @@ public abstract class TestDestination {
   }
 
   /**
+   * Verify the destination uses the namespace field if it is set.
+   */
+  @Test
+  void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
+    // TODO(davin): make these tests part of the catalog file.
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final String namespace = "sourcenamespace";
+    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    messages.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace);
+          }
+        });
+
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSync(config, messages, configuredCatalog);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
+  }
+
+  /**
+   * Verify a destination is able to write tables with the same name to different namespaces.
+   */
+  @Test
+  void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
+    // TODO(davin): make these tests part of the catalog file.
+    final var catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final var namespace1 = "sourcenamespace";
+    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
+
+    final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
+    final var namespace2 = "diff_source_namespace";
+    final var mapper = new ObjectMapper();
+    for (AirbyteStream stream : catalog.getStreams()) {
+      var clonedStream = mapper.readValue(mapper.writeValueAsString(stream), AirbyteStream.class);
+      clonedStream.setNamespace(namespace2);
+      diffNamespaceStreams.add(clonedStream);
+    }
+    catalog.getStreams().addAll(diffNamespaceStreams);
+
+    final var configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final var ns1Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    ns1Msgs.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace1);
+          }
+        });
+    final var ns2Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    ns2Msgs.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace2);
+          }
+        });
+
+    final var allMessages = new ArrayList<>(ns1Msgs);
+    allMessages.addAll(ns2Msgs);
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSync(config, allMessages, configuredCatalog);
+    retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
+  }
+
+  /**
    * Verify that the integration successfully writes records successfully both raw and normalized.
    * Tests a wide variety of messages an schemas (aspirationally, anyway).
    */
@@ -479,29 +555,6 @@ public abstract class TestDestination {
     assertSameMessages(expectedMessages, actualMessages, true);
   }
 
-  @Test
-  void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
-    final AirbyteCatalog catalog =
-        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
-    final String namespace = "sourcenamespace";
-    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-
-    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    messages.forEach(
-        message -> {
-          if (message.getRecord() != null) {
-            message.getRecord().setNamespace(namespace);
-          }
-        });
-
-    final JsonNode config = getConfig();
-    final String defaultSchema = getDefaultSchema(config);
-    runSync(config, messages, configuredCatalog);
-    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
-  }
-
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
@@ -544,7 +597,6 @@ public abstract class TestDestination {
 
   private void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema) throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
-
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
