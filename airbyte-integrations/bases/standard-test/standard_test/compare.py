@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import os
+import py
 from typing import List, Optional
 
 import icdiff
 from pprintpp import pformat
 
-MAX_COLS = os.get_terminal_size().columns
+MAX_COLS = py.io.TerminalWriter().fullwidth
 MARGIN_LEFT = 20
 GUTTER = 3
 MARGINS = MARGIN_LEFT + GUTTER + 1
