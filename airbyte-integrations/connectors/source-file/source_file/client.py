@@ -256,7 +256,7 @@ class Client:
                 result = [result]
         return result
 
-    def load_dataframes(self, fp, skip_data=False) -> List:
+    def load_dataframes(self, fp, skip_data=False) -> Iterable:
         """load and return the appropriate pandas dataframe.
 
         :param fp: file-like object to read from
