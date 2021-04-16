@@ -36,6 +36,9 @@
             "createdByUserId": {
               "type": ["null", "string"]
             },
+            "updatedByUserId": {
+              "type": ["null", "string"]
+            },
             "campaignState": {
               "type": ["null", "string"]
             },
@@ -136,10 +139,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -205,10 +210,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -250,10 +257,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -310,10 +319,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -448,10 +459,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -586,10 +599,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -636,10 +651,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -698,10 +715,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -846,6 +865,47 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "templates",
+        "json_schema": {
+          "properties": {
+            "templateId": {
+              "type": ["null", "number"]
+            },
+            "createdAt": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": ["null", "string"],
+              "format": "date-time"
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "creatorUserId": {
+              "type": ["null", "string"]
+            },
+            "messageTypeId": {
+              "type": ["null", "number"]
+            },
+            "campaignId": {
+              "type": ["null", "number"]
+            },
+            "clientTemplateId": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdAt"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1187,49 +1247,12 @@
           },
           "type": ["null", "object"]
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["profileUpdatedAt"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "templates",
-        "json_schema": {
-          "properties": {
-            "templateId": {
-              "type": ["null", "number"]
-            },
-            "createdAt": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "updatedAt": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "creatorUserId": {
-              "type": ["null", "string"]
-            },
-            "messageTypeId": {
-              "type": ["null", "number"]
-            },
-            "campaignId": {
-              "type": ["null", "number"]
-            },
-            "clientTemplateId": {
-              "type": ["null", "string"]
-            }
-          },
-          "type": ["null", "object"]
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     }
   ]
 }

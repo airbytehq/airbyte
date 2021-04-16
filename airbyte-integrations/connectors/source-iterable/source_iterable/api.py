@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -54,13 +54,7 @@ class IterableStream(HttpStream, ABC):
         """
         return None
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        request_configuration: Optional[Mapping] = None,
-        next_page_token: Mapping[str, Any] = None,
-        parent_stream_record: Mapping = None,
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
         params = self.authenticator.get_auth_params()
         return params
@@ -75,17 +69,43 @@ class IterableExportStream(IterableStream, ABC):
         super(IterableExportStream, self).__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        request_configuration: Optional[Mapping] = None,
-        next_page_token: Mapping[str, Any] = None,
-        parent_stream_record: Mapping = None,
-    ) -> MutableMapping[str, Any]:
+    @property
+    @abstractmethod
+    def cursor_field(self) -> str:
+        """
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
+        """
+
+    @staticmethod
+    def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
+        if isinstance(value, int):
+            value = pendulum.from_timestamp(value / 1000.0)
+        elif isinstance(value, str):
+            value = pendulum.parse(value)
+        else:
+            raise ValueError(f"Unsupported type of datetime field {type(value)}")
+        return value
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        latest_benchmark = self._field_to_datetime(latest_record[self.cursor_field])
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: str(max(latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field])))}
+        return {self.cursor_field: str(latest_benchmark)}
+
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
         params = super(IterableExportStream, self).request_params(stream_state=stream_state)
+        start_datetime = self._start_date
+        if stream_state.get(self.cursor_field):
+            start_datetime = pendulum.parse(stream_state[self.cursor_field])
+
         params.update(
-            {"startDateTime": self._start_date.strftime("%Y-%m-%d %H:%M:%S"), "endDateTime": pendulum.now().strftime("%Y-%m-%d %H:%M:%S")}
+            {"startDateTime": start_datetime.strftime("%Y-%m-%d %H:%M:%S"), "endDateTime": pendulum.now().strftime("%Y-%m-%d %H:%M:%S")}
         )
         return params
 
@@ -142,41 +162,49 @@ class Channels(IterableStream):
 class EmailBounce(IterableExportStream):
     name = "email_bounce"
     data_field = "emailBounce"
+    cursor_field = "createdAt"
 
 
 class EmailClick(IterableExportStream):
     name = "email_click"
     data_field = "emailClick"
+    cursor_field = "createdAt"
 
 
 class EmailComplaint(IterableExportStream):
     name = "email_complaint"
     data_field = "emailComplaint"
+    cursor_field = "createdAt"
 
 
 class EmailOpen(IterableExportStream):
     name = "email_open"
     data_field = "emailOpen"
+    cursor_field = "createdAt"
 
 
 class EmailSend(IterableExportStream):
     name = "email_send"
     data_field = "emailSend"
+    cursor_field = "createdAt"
 
 
 class EmailSendSkip(IterableExportStream):
     name = "email_send_skip"
     data_field = "emailSendSkip"
+    cursor_field = "createdAt"
 
 
 class EmailSubscribe(IterableExportStream):
     name = "email_subscribe"
     data_field = "emailSubscribe"
+    cursor_field = "createdAt"
 
 
 class EmailUnsubscribe(IterableExportStream):
     name = "email_unsubscribe"
     data_field = "emailUnsubscribe"
+    cursor_field = "createdAt"
 
 
 class MessageTypes(IterableStream):
@@ -196,6 +224,7 @@ class Metadata(IterableStream):
 
 class Templates(IterableExportStream):
     data_field = "templates"
+    cursor_field = "createdAt"
     template_types = ["Base", "Blast", "Triggered", "Workflow"]
     message_types = ["Email", "Push", "InApp", "SMS"]
 
@@ -229,3 +258,4 @@ class Templates(IterableExportStream):
 
 class Users(IterableExportStream):
     data_field = "user"
+    cursor_field = "profileUpdatedAt"
