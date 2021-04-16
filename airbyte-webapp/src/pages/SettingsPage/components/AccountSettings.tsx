@@ -21,7 +21,12 @@ const Content = styled.div`
 `;
 
 const AccountSettings: React.FC = () => {
-  const { workspace, updatePreferences, updateWebhook } = useWorkspace();
+  const {
+    workspace,
+    updatePreferences,
+    updateWebhook,
+    testWebhook,
+  } = useWorkspace();
   const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
   const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null);
   const [feedBack, setFeedBack] = useState("");
@@ -61,8 +66,7 @@ const AccountSettings: React.FC = () => {
   };
 
   const onTestWebhook = async (data: { webhook: string }) => {
-    // TODO: add test api call
-    await updateWebhook(data);
+    await testWebhook(data.webhook);
   };
 
   const initialWebhookUrl =
