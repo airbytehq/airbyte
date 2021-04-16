@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import pytest
-from standard_test.utils import load_config
 from standard_test.compare import diff_dicts
+from standard_test.utils import load_config
 
 
 def pytest_addoption(parser):
@@ -67,7 +67,7 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_assertrepr_compare(config, op, left, right):
-    if op != '==':
+    if op != "==":
         return
 
     use_markup = config.get_terminal_writer().hasmarkup

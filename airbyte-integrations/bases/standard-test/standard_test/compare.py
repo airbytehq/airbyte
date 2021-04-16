@@ -25,9 +25,8 @@ SOFTWARE.
 import os
 from typing import List, Optional
 
-from pprintpp import pformat
 import icdiff
-
+from pprintpp import pformat
 
 MAX_COLS = os.get_terminal_size().columns
 MARGIN_LEFT = 20
@@ -46,7 +45,7 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
         # avoid small diffs far apart by smooshing them up to the left
         smallest_left = pformat(left, indent=2, width=1).splitlines()
         smallest_right = pformat(right, indent=2, width=1).splitlines()
-        max_side = max(len(l) + 1 for l in smallest_left + smallest_right)
+        max_side = max(len(line) + 1 for line in smallest_left + smallest_right)
         if (max_side * 2 + MARGIN_LEFT) < MAX_COLS:
             diff_cols = max_side * 2 + GUTTER
             pretty_left = pformat(left, indent=2, width=max_side).splitlines()
@@ -60,10 +59,10 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
         # no option in icdiff to disable it, so we replace its colorization
         # function with a no-op
         differ.colorize = lambda string: string
-        color_off = ''
+        color_off = ""
     else:
-        color_off = icdiff.color_codes['none']
+        color_off = icdiff.color_codes["none"]
 
     icdiff_lines = list(differ.make_table(pretty_left, pretty_right, context=True))
 
-    return ['equals failed'] + [color_off + l for l in icdiff_lines]
+    return ["equals failed"] + [color_off + line for line in icdiff_lines]
