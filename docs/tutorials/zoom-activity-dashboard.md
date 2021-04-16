@@ -44,19 +44,19 @@ Choosing Zoom as **source type** will cause Airbyte to display the configuration
 
 ![](../.gitbook/assets/02_setting-zoom-connector-name.png)
 
-The Zoom connector for Airbyte requires you to provide it with a Zoom JWT token. Let’s take a detour and look at how to obtain one from Zoom.
+The Zoom connector for Airbyte requires you to provide it with a Zoom JWT token. Let’s take a detour and look at how to obtain one from Zoom. 
 
 ### Obtaining a Zoom JWT Token
 
-To obtain a Zoom JWT Token, login to your Zoom account and go to the [Zoom Marketplace](https://marketplace.zoom.us/). If this is your first time in the marketplace, you will need to agree to the Zoom’s marketplace terms of use.
+To obtain a Zoom JWT Token, login to your Zoom account and go to the [Zoom Marketplace](https://marketplace.zoom.us/). If this is your first time in the marketplace, you will need to agree to the Zoom’s marketplace terms of use. 
 
-Once you are in, you need to click on the **Develop** dropdown and then click on **Build App.**
+Once you are in, you need to click on the **Develop** dropdown and then click on **Build App.** 
 
 ![](../.gitbook/assets/03_click.png)
 
 Clicking on **Build App** for the first time will display a modal for you to accept the Zoom’s API license and terms of use. Do accept if you agree and you will be presented with the below screen.
 
-![](../.gitbook/assets/zoom-marketplace-build-screen.png)
+![](../.gitbook/assets/04_zoom-marketplace-build-screen.png)
 
 Select **JWT** as the app you want to build and click on the **Create** button on the card. You will be presented with a modal to enter the app name; type in `airbyte-zoom`.
 
@@ -78,15 +78,15 @@ After copying it, click on the **Continue** button.
 
 ![](../.gitbook/assets/08_activate-webhook.png)
 
-You will be taken to a screen to activate **Event Subscriptions**. Just leave it as is, as we won’t be needing Webhooks. Click on **Continue**, and your app should be marked as activated.
+You will be taken to a screen to activate **Event Subscriptions**. Just leave it as is, as we won’t be needing Webhooks. Click on **Continue**, and your app should be marked as activated. 
 
 ### Connecting Zoom on Airbyte
 
 So let’s go back to the Airbyte web UI and provide it with the JWT token we copied from our Zoom app.
 
-Now click on the **Set up source** button. You will see the below success message when the connection is made successfully.
+Now click on the **Set up source** button. You will see the below success message when the connection is made successfully. 
 
-![](../.gitbook/assets/setup-successful%20%281%29.png)
+![](../.gitbook/assets/09_setup-successful.png)
 
 And you will be taken to the page to add your destination.
 
@@ -94,19 +94,19 @@ And you will be taken to the page to add your destination.
 
 ![](../.gitbook/assets/10_destination.png)
 
-For our destination, we will be using a PostgreSQL database, since Tableau supports PostgreSQL as a data source. Click on the **add destination** button, and then in the drop down click on **+ add a new destination**. In the page that presents itself, add the destination name and choose the Postgres destination.
+For our destination, we will be using a PostgreSQL database, since Tableau supports PostgreSQL as a data source. Click on the **add destination** button, and then in the drop down click on **+ add a new destination**.  In the page that presents itself, add the destination name and choose the Postgres destination.
 
 ![](../.gitbook/assets/11_choose-postgres-destination.png)
 
-To supply Airbyte with the PostgreSQL configuration parameters needed to make a PostgreSQL destination, we will spin off a PostgreSQL container with Docker using the following command in our terminal.
-
+To supply Airbyte with the PostgreSQL configuration parameters needed to make a PostgreSQL destination, we will spin off a PostgreSQL container with Docker using the following command in our terminal.  
+  
 `docker run --rm --name airbyte-zoom-db -e POSTGRES_PASSWORD=password -v airbyte_zoom_data:/var/lib/postgresql/data -p 2000:5432 -d postgres`
 
-This will spin a docker container and persist the data we will be replicating in the PostgreSQL database in a Docker volume `airbyte_zoom_data`.
-
+This will spin a docker container and persist the data we will be replicating in the PostgreSQL database in a Docker volume `airbyte_zoom_data`.  
+  
 Now, let’s supply the above credentials to the Airbyte UI requiring those credentials.
 
-![](../.gitbook/assets/postgres_credentials.png)
+![](../.gitbook/assets/12_postgres_credentials.png)
 
 Then click on the **Set up destination** button.
 
@@ -114,20 +114,20 @@ After the connection has been made to your PostgreSQL database successfully, Air
 
 Leave all the fields checked.
 
-![](../.gitbook/assets/schema.png)
+![](../.gitbook/assets/13_schema.png)
 
 Select a **Sync frequency** of **manual** and then click on **Set up connection**.
 
 After successfully making the connection, you will see your PostgreSQL destination. Click on the Launch button to start the data replication.
 
-![](../.gitbook/assets/launch%20%281%29.png)
+![](../.gitbook/assets/14_launch.png)
 
-Then click on the **airbyte-zoom-destination** to see the Sync page.
+Then click on the **airbyte-zoom-destination** to see the Sync page. 
 
-![](../.gitbook/assets/sync-screen%20%281%29.png)
+![](../.gitbook/assets/15_sync-screen.png)
 
-Syncing should take a few minutes or longer depending on the size of the data being replicated. Once Airbyte is done replicating the data, you will get a **succeeded** status.
-
+Syncing should take a few minutes or longer depending on the size of the data being replicated. Once Airbyte is done replicating the data, you will get a **succeeded** status.  
+  
 Then, you can run the following SQL command on the PostgreSQL container to confirm that the sync was done successfully.
 
 `docker exec airbyte-zoom-db psql -U postgres -c "SELECT * FROM public.users;"`
@@ -144,21 +144,23 @@ Go ahead and install Tableau on your machine. After the installation is complete
 
 Once your activation is successful, you will see your Tableau dashboard.
 
-![](../.gitbook/assets/tableau-dashboard.png)
+![](../.gitbook/assets/16_tableau-dashboard.png)
 
 On the sidebar menu under the **To a Server** section, click on the **More…** menu. You will see a list of datasource connectors you can connect Tableau with.
 
-![](../.gitbook/assets/datasources%20%282%29.png)
+![](../.gitbook/assets/17_datasources.png)
 
 Select **PostgreSQL** and you will be presented with a connection credentials modal.
 
-Fill in the same details of the PostgreSQL database we used as the destination in Airbyte.
+Fill in the same details of the PostgreSQL database we used as the destination in Airbyte. 
 
 ![](../.gitbook/assets/18_fill-in-connection-details.png)
 
 Next, click on the **Sign In** button. If the connection was made successfully, you will see the Tableau dashboard for the database you just connected.
 
 _Note: If you are having trouble connecting PostgreSQL with Tableau, it might be because the driver Tableau comes with for PostgreSQL might not work for newer versions of PostgreSQL. You can download the JDBC driver for PostgreSQL_ [_here_](https://www.tableau.com/support/drivers?_ga=2.62351404.1800241672.1616922684-1838321730.1615100968) _and follow the setup instructions._
+
+------
 
 Now that we have replicated our Zoom data into a PostgreSQL database using Airbyte’s Zoom connector, and connected Tableau with our PostgreSQL database containing our Zoom data, let’s proceed to creating the charts we need to visualize the time spent by a team in Zoom calls.
 
@@ -170,23 +172,25 @@ To create this chart, we will need to use the count of the meetings and the **cr
 
 ![](../.gitbook/assets/19_tableau-view-with-all-tables.png)
 
-Drag the **meetings** table from the sidebar onto the space with the prompt.
+Drag the **meetings** table from the sidebar onto the space with the prompt. 
 
-Now that we have the meetings table, we can start building out the chart by clicking on **Sheet 1** at the bottom left of Tableau.
+
+
+Now that we have the meetings table, we can start building out the chart by clicking on **Sheet 1** at the bottom left of Tableau. 
 
 ![](../.gitbook/assets/20_empty-meeting-sheet.png)
 
-As stated earlier, we need **Created At**, but currently it’s a String data type. Let’s change that by converting it to a data time. So right click on **Created At**, then select `ChangeDataType` and choose Date & Time. And that’s it! That field is now of type **Date** & **Time**.
+As stated earlier, we need **Created At**, but currently it’s a String data type. Let’s change that by converting it to a data time. So right click on **Created At**, then select `ChangeDataType` and choose Date & Time. And that’s it! That field is now of type **Date** & **Time**. 
 
 ![](../.gitbook/assets/21_change-to-date-time.png)
 
-Next, drag **Created At** to **Columns**.
+Next, drag **Created At** to **Columns**. 
 
 ![](../.gitbook/assets/22_drag-created-at.png)
 
 Currently, we get the Created At in **YEAR**, but per our requirement we want them in Weeks, so right click on the **YEAR\(Created At\)** and choose **Week Number**.
 
-![](../.gitbook/assets/change-to-per-week.png)
+![](../.gitbook/assets/23_change-to-per-week.png)
 
 Tableau should now look like this:
 
@@ -194,7 +198,7 @@ Tableau should now look like this:
 
 Now, to finish up, we need to add the **meetings\(Count\) measure** Tableau already calculated for us in the **Rows** section. So drag **meetings\(Count\)** onto the Columns section to complete the chart.
 
-![](../.gitbook/assets/evolution-of-meetings-per-week%20%281%29.png)
+![](../.gitbook/assets/25_evolution-of-meetings-per-week.png)
 
 And now we are done with the very first chart. Let's save the sheet and create a new Dashboard that we will add this sheet to as well as the others we will be creating.
 
@@ -220,19 +224,19 @@ Note: We are adding a filter on the Duration to filter out null values. You can 
 
 ### Evolution of the number of participants for all meetings per week
 
-For this chart, we will need to have a calculated field called **\# of meetings attended**, which will be an aggregate of the counts of rows matching a particular user's email in the `report_meeting_participants` table plotted against the **Created At** field of the **meetings** table. To get this done, right click on the **User Email** field. Select **create** and click on **calculatedField**, then enter the title of the field as **\# of meetings attended**. Next, enter the below formula:
+For this chart, we will need to have a calculated field called **\# of meetings attended**, which will be an aggregate of the counts of rows matching a particular user's  email in the `report_meeting_participants` table plotted against the **Created At** field of the **meetings** table. To get this done, right click on the **User Email** field. Select **create** and click on **calculatedField**, then enter the title of the field as **\# of meetings attended**. Next, enter the below formula:
 
 `COUNT(IF [User Email] == [User Email] THEN [Id (Report Meeting Participants)] END)`
 
 Then click on apply. Finally, drag the **Created At** fields \(make sure it’s on the **Weekly** number\) and the calculated field you just created to match the below screenshot:
 
-![](../.gitbook/assets/number_of_participants_per_weekly_meetings.png)
+![](../.gitbook/assets/28_number_of_participants_per_weekly_meetings.png)
 
 ### Listing of team members with the number of meetings per week and number of hours spent in meetings, ranked.
 
 To get this chart, we need to create a relationship between the **meetings table** and the `report_meeting_participants` table. You can do this by dragging the `report_meeting_participants` table in as a source alongside the **meetings** table and relate both via the **meeting id**. Then you will be able to create a new worksheet that looks like this:
 
-![](../.gitbook/assets/meetings-participant-ranked.png)
+![](../.gitbook/assets/29_meetings-participant-ranked.png)
 
 Note: To achieve the ranking, we simply use the sort menu icon on the top menu bar.
 
@@ -246,7 +250,7 @@ The rest of the charts will be needing the **webinars** and `report_webinar_part
 
 For this chart, as for the meeting’s counterpart, we will get a calculated field off the Duration field to get the **Webinar Duration in Hours**, and then plot **Created At** against the **Sum of Webinar Duration in Hours**, as shown in the screenshot below. Note: Make sure you create a new sheet for each of these graphs.
 
-![](../.gitbook/assets/duration-spent-in-weekly-webinars%20%281%29.png)
+![](../.gitbook/assets/31_time-spent-in-weekly-webinars.png)
 
 ### Evolution of the number of participants for all webinars per week
 
@@ -260,7 +264,7 @@ Below is the chart:
 
 ![](../.gitbook/assets/32_number_of_webinar_attended_per_week.png)
 
-#### Listing of team members with the number of webinars per week and number of hours spent in meetings, ranked
+#### Listing of team members with the number of webinars per week and number of hours spent in meetings, ranked 
 
 Below is the chart with these specs
 
@@ -268,7 +272,6 @@ Below is the chart with these specs
 
 ## Conclusion
 
-In this article, we see how we can use Airbyte to get data off the Zoom API onto a PostgreSQL database, and then use that data to create some chart visualizations in Tableau.
+In this article, we see how we can use Airbyte to get data off the Zoom API onto a PostgreSQL database, and then use that data to create some chart visualizations in Tableau. 
 
-You can leverage Airbyte and Tableau to produce graphs on any collaboration tool. We just used Zoom to illustrate how it can be done. Hope this is helpful!
-
+You can leverage Airbyte and Tableau to produce graphs on any collaboration tool. We just used Zoom to illustrate how it can be done. Hope this is helpful!  
