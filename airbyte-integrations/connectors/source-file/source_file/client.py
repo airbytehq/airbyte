@@ -292,7 +292,9 @@ class Client:
                 reader_options["nrows"] = 0
                 reader_options["index_col"] = 0
 
-        return [reader(fp, **reader_options)]
+            yield from reader(fp, **reader_options)
+        else:
+            yield reader(fp, **reader_options)
 
     @staticmethod
     def dtype_to_json_type(dtype) -> str:
@@ -326,15 +328,9 @@ class Client:
             else:
                 fields = set(fields) if fields else None
                 for df in self.load_dataframes(fp):
-                    chunks = [df]
-
-                    if self._reader_format == "csv" and isinstance(df, pd.io.parsers.TextFileReader):
-                        chunks = df
-
-                    for chunk in chunks:
-                        columns = fields.intersection(set(chunk.columns)) if fields else chunk.columns
-                        chunk = chunk.replace(np.nan, "NaN", regex=True)
-                        yield from chunk[columns].to_dict(orient="records")
+                    columns = fields.intersection(set(df.columns)) if fields else df.columns
+                    df = df.replace(np.nan, "NaN", regex=True)
+                    yield from df[columns].to_dict(orient="records")
 
     def _stream_properties(self):
         with self.reader.open(binary=self.binary_source) as fp:
@@ -344,11 +340,6 @@ class Client:
             df_list = self.load_dataframes(fp, skip_data=False)
             fields = {}
             for df in df_list:
-                if self._reader_format == "csv" and isinstance(df, pd.io.parsers.TextFileReader):
-                    # Since `chunksize` parameter is used for loading csv files, `df` object will be instance
-                    # of `TextFileReader` type.
-                    df = next(df)
-
                 for col in df.columns:
                     fields[col] = self.dtype_to_json_type(df[col].dtype)
             return {field: {"type": fields[field]} for field in fields}
