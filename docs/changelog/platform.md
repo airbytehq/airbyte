@@ -12,7 +12,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 ## [04-12-2021 - 0.20.0](https://github.com/airbytehq/airbyte/releases/tag/v0.20.0-alpha)
 
-* **Change Data Capture \(CDC\)** is now supported for Postgres, thanks to [@jrhizor](https://github.com/jrhizor) and [@cgardens](https://github.com/cgardens). We will now expand it to MySQL and MSSQL in the coming weeks.
+* **Change Data Capture (CDC)** is now supported for Postgres, thanks to [@jrhizor](https://github.com/jrhizor) and [@cgardens](https://github.com/cgardens). We will now expand it to MySQL and MSSQL in the coming weeks.
 * When displaying the schema for a source, you can now search for table names, thanks to [@jamakase](https://github.com/jamakase)
 * Better feedback UX when manually triggering a sync with “Sync now”
 
