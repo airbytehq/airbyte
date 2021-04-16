@@ -1,6 +1,0 @@
-{
-  "email": "<place your Zendesk email here>",
-  "api_token": "<place your api token here>",
-  "subdomain": "<place your subdomain here>",
-  "start_date": "2021-04-01T00:00:00Z"
-}

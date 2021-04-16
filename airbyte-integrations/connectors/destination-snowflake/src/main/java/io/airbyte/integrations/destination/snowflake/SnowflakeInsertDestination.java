@@ -22,43 +22,34 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination;
+package io.airbyte.integrations.destination.snowflake;
 
-/**
- * When choosing identifiers names in destinations, extended Names can handle more special
- * characters than standard Names by using the quoting characters: "..."
- *
- * This class detects when such special characters are used and adds the appropriate quoting when
- * necessary.
- */
-public class ExtendedNameTransformer extends StandardNameTransformer {
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class SnowflakeInsertDestination extends AbstractJdbcDestination implements Destination {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
+
+  public SnowflakeInsertDestination() {
+    // the driver class is a no op because we override getDatabase.
+    super("", new SnowflakeSQLNameTransformer(), new SnowflakeSqlOperations());
+  }
 
   @Override
-  public String convertStreamName(String input) {
-    return super.convertStreamName(input);
+  protected JdbcDatabase getDatabase(JsonNode config) {
+    return SnowflakeDatabase.getDatabase(config);
   }
 
-  // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785)
-  protected String disabled_convertStreamName(String input) {
-    if (useExtendedIdentifiers(input)) {
-      return "\"" + input + "\"";
-    } else {
-      return applyDefaultCase(input);
-    }
-  }
-
-  protected String applyDefaultCase(String input) {
-    return input;
-  }
-
-  protected boolean useExtendedIdentifiers(String input) {
-    boolean result = false;
-    if (input.matches("[^\\p{Alpha}_].*")) {
-      result = true;
-    } else if (input.matches(".*[^\\p{Alnum}_].*")) {
-      result = true;
-    }
-    return result;
+  // this is a no op since we override getDatabase.
+  @Override
+  public JsonNode toJdbcConfig(JsonNode config) {
+    return Jsons.emptyObject();
   }
 
 }

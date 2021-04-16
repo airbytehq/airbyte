@@ -25,32 +25,48 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeDestination extends AbstractJdbcDestination implements Destination {
+public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
 
+  enum DestinationType {
+    INSERT,
+    COPY_S3
+  }
+
   public SnowflakeDestination() {
-    // the driver class is a no op because we override getDatabase.
-    super("", new SnowflakeSQLNameTransformer(), new SnowflakeSqlOperations());
+    super(DestinationType.class, SnowflakeDestination::getTypeFromConfig, getTypeToDestination());
+  }
+
+  public static DestinationType getTypeFromConfig(JsonNode config) {
+    if (config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name")) {
+      return DestinationType.COPY_S3;
+    } else {
+      return DestinationType.INSERT;
+    }
+  }
+
+  public static Map<DestinationType, Destination> getTypeToDestination() {
+    final SnowflakeInsertDestination insertDestination = new SnowflakeInsertDestination();
+    final SnowflakeCopyS3Destination copyS3Destination = new SnowflakeCopyS3Destination();
+
+    return ImmutableMap.of(
+        DestinationType.INSERT, insertDestination,
+        DestinationType.COPY_S3, copyS3Destination);
   }
 
   @Override
-  protected JdbcDatabase getDatabase(JsonNode config) {
-    return SnowflakeDatabase.getDatabase(config);
-  }
-
-  // this is a no op since we override getDatabase.
-  @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
-    return Jsons.emptyObject();
+  public ConnectorSpecification spec() throws Exception {
+    return AbstractJdbcDestination.getSpec();
   }
 
   public static void main(String[] args) throws Exception {

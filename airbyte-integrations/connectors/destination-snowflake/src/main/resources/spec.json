@@ -22,50 +22,106 @@
         "description": "Host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",
         "examples": ["accountname.us-east-2.aws.snowflakecomputing.com"],
         "type": "string",
-        "title": "Host"
+        "title": "Host",
+        "order": 0
       },
       "role": {
         "description": "The role you created for Airbyte to access Snowflake.",
         "examples": ["AIRBYTE_ROLE"],
         "type": "string",
-        "title": "Role"
+        "title": "Role",
+        "order": 1
       },
       "warehouse": {
         "description": "The warehouse you created for Airbyte to sync data into.",
         "examples": ["AIRBYTE_WAREHOUSE"],
         "type": "string",
-        "title": "Warehouse"
+        "title": "Warehouse",
+        "order": 2
       },
       "database": {
         "description": "The database you created for Airbyte to sync data into.",
         "examples": ["AIRBYTE_DATABASE"],
         "type": "string",
-        "title": "Database"
+        "title": "Database",
+        "order": 3
       },
       "schema": {
         "description": "The default Snowflake schema tables are written to if the source does not specify a namespace.",
         "examples": ["AIRBYTE_SCHEMA"],
         "type": "string",
-        "title": "Default Schema"
+        "title": "Default Schema",
+        "order": 4
       },
       "username": {
         "description": "The username you created to allow Airbyte to access the database.",
         "examples": ["AIRBYTE_USER"],
         "type": "string",
-        "title": "Username"
+        "title": "Username",
+        "order": 5
       },
       "password": {
         "description": "Password associated with the username.",
         "type": "string",
         "airbyte_secret": true,
-        "title": "Password"
+        "title": "Password",
+        "order": 6
+      },
+      "loading_method": {
+        "type": "object",
+        "title": "Loading Method",
+        "description": "Loading method used to send data to Snowflake.",
+        "order": 7,
+        "oneOf": [
+          {
+            "title": "Standard Inserts",
+            "additionalProperties": false,
+            "description": "Uses <pre>INSERT</pre> statements to send batches of records to Snowflake. Easiest (no setup) but not recommended for large production workloads due to slow speed.",
+            "required": [],
+            "properties": {}
+          },
+          {
+            "title": "AWS S3 Staging",
+            "additionalProperties": false,
+            "description": "Writes large batches of records to a file, uploads the file to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "required": [
+              "s3_bucket_name",
+              "access_key_id",
+              "secret_access_key"
+            ],
+            "properties": {
+              "s3_bucket_name": {
+                "title": "S3 Bucket Name",
+                "type": "string",
+                "description": "The name of the staging S3 bucket. Airbyte will write files to this bucket and read them via <pre>COPY</pre> statements on Snowflake.",
+                "examples": ["airbyte.staging"],
+                "order": 0
+              },
+              "access_key_id": {
+                "type": "string",
+                "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
+                "title": "S3 Key Id",
+                "airbyte_secret": true,
+                "order": 1
+              },
+              "secret_access_key": {
+                "type": "string",
+                "description": "The corresponding secret to the above access key id.",
+                "title": "S3 Access Key",
+                "airbyte_secret": true,
+                "order": 2
+              }
+            }
+          }
+        ]
       },
       "basic_normalization": {
         "type": "boolean",
         "default": true,
         "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
         "title": "Basic Normalization",
-        "examples": [true, false]
+        "examples": [true, false],
+        "order": 8
       }
     }
   }

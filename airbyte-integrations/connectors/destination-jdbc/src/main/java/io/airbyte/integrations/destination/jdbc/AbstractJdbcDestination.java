@@ -60,9 +60,7 @@ public abstract class AbstractJdbcDestination implements Destination {
 
   @Override
   public ConnectorSpecification spec() throws IOException {
-    // return a JsonSchema representation of the spec for the integration.
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
+    return getSpec();
   }
 
   @Override
@@ -111,6 +109,12 @@ public abstract class AbstractJdbcDestination implements Destination {
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     return JdbcBufferedConsumerFactory.create(getDatabase(config), sqlOperations, namingResolver, config, catalog);
+  }
+
+  public static ConnectorSpecification getSpec() throws IOException {
+    // return a JsonSchema representation of the spec for the integration.
+    final String resourceString = MoreResources.readResource("spec.json");
+    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
 }
