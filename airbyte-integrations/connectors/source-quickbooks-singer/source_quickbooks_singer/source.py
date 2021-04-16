@@ -50,9 +50,7 @@ class SourceQuickbooksSinger(BaseSingerSource):
         token = {"refresh_token": config["refresh_token"], "token_type": "Bearer", "access_token": "wrong", "expires_in": "-30"}
         extra = {"client_id": config["client_id"], "client_secret": config["client_secret"]}
 
-        sandbox = False
-        if config.get("sandbox") in ["true", "True", True]:
-            sandbox = True
+        sandbox = bool(config.get("sandbox", False))
 
         user_agent = config["user_agent"]
         realm_id = config["realm_id"]
