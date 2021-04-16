@@ -4,9 +4,7 @@
 
 The Airbyte Redshift destination allows you to sync data to Redshift.
 
-This Redshift destination connector has two replication strategies:
-1) INSERT: Replicates data via SQL INSERT queries. This is built on top of the destination-jdbc code base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in Redshift documentation [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). Not recommended for production workloads as this does not scale well.
-2) COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html). Requires an S3 bucket and credentials.
+This Redshift destination connector has two replication strategies: 1\) INSERT: Replicates data via SQL INSERT queries. This is built on top of the destination-jdbc code base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in Redshift documentation [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). Not recommended for production workloads as this does not scale well. 2\) COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html). Requires an S3 bucket and credentials.
 
 Airbyte automatically picks an approach depending on the given configuration - if S3 configuration is present, Airbyte will use the COPY strategy and vice versa.
 
@@ -39,7 +37,7 @@ You will need to choose an existing database or create a new database that will 
 
 1. Active Redshift cluster
 2. Allow connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
-3. A staging S3 bucket with credentials (for the COPY strategy).
+3. A staging S3 bucket with credentials \(for the COPY strategy\).
 
 ### Setup guide
 
@@ -61,7 +59,7 @@ You should have all the requirements needed to configure Redshift as a destinati
 * **Database**
   * This database needs to exist within the cluster provided.
 
-#### 2a. Fill up S3 info (for COPY strategy)
+#### 2a. Fill up S3 info \(for COPY strategy\)
 
 Provide the required S3 info.
 
