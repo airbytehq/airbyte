@@ -74,7 +74,11 @@ class TestDiscovery(BaseTest):
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
         if catalog:
-            assert catalog_messages[0].catalog == catalog, "Catalog should match the one that was provided"
+            for stream1, stream2 in zip(catalog_messages[0].catalog.streams, catalog.streams):
+                assert stream1.json_schema == stream2.json_schema, f"Streams: {stream1.name} vs {stream2.name}, stream schemas should match"
+                stream1.json_schema = None
+                stream2.json_schema = None
+                assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
 
 
 @pytest.mark.timeout(300)

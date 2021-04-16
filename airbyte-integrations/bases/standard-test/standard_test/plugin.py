@@ -24,6 +24,7 @@ SOFTWARE.
 
 import pytest
 from standard_test.utils import load_config
+from standard_test.compare import diff_dicts
 
 
 def pytest_addoption(parser):
@@ -63,3 +64,11 @@ def pytest_generate_tests(metafunc):
                 pytest.skip(f"Skipping {test_name} because no inputs provided")
 
             metafunc.parametrize("inputs", test_inputs)
+
+
+def pytest_assertrepr_compare(config, op, left, right):
+    if op != '==':
+        return
+
+    use_markup = config.get_terminal_writer().hasmarkup
+    return diff_dicts(left, right, use_markup=use_markup)

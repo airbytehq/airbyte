@@ -314,6 +314,9 @@
                 "hs_total_deal_value": {
                   "type": "number"
                 },
+                "hs_unique_creation_key": {
+                  "type": "string"
+                },
                 "hs_updated_by_user_id": {
                   "type": "number"
                 },
@@ -4119,7 +4122,7 @@
             }
           }
         },
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["created"]
       },
@@ -5748,7 +5751,7 @@
             }
           }
         },
-        "supported_sync_modes": ["incremental", "full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["timestamp"]
       },

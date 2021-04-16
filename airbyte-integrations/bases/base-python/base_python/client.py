@@ -173,7 +173,7 @@ class BaseClient(StreamStateMixin, ABC):
             supported_sync_modes = [SyncMode.full_refresh]
             source_defined_cursor = False
             if self.stream_has_state(name):
-                supported_sync_modes = [SyncMode.incremental]
+                supported_sync_modes += [SyncMode.incremental]
                 source_defined_cursor = True
 
             yield AirbyteStream(
