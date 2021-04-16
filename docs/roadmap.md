@@ -13,15 +13,14 @@ Check out our [Roadmap for Core](https://github.com/airbytehq/airbyte/milestones
 We understand that we're not "production-ready" for a lot of companies yet. In the end, we just got started in July 2020, so we're at the beginning of the journey. Here is a highlight of the main features we are planning on releasing in the next few months:
 
 **April or so:**
-
 * Low-code framework to build new connectors
 * Support of most popular databases as both sources and destinations
-* CDC \(change data capture\) support across most popular databases \(MySQL / SQL Server / Oracle DB\)
+* CDC \(change data capture\) support across most popular databases (MySQL / SQL Server / Oracle DB)
 * Support of data lakes, starting with Delta Lake
 * Support for custom DBT transformations
 
-**Coming a bit later:**
 
+**Coming a bit later:**
 * Our declarative interface \(CLI\)
 * Credential and secrets vaulting \([\#837](https://github.com/airbytehq/airbyte/issues/837)\)
 * OAuth support for connector configuration \([\#768](https://github.com/airbytehq/airbyte/issues/768)\)

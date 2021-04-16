@@ -1,12 +1,17 @@
-# Oracle DB
+# Oracle
 
 ## Overview
 
-The Oracle Database source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Oracle Database source supports both Full Refresh and Incremental syncs. You can choose if this
+connector will copy only the new or updated data, or all rows in the tables and columns you set up
+for replication, every time a sync is run.
+
 
 ### Resulting schema
 
-The Oracle source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
+The Oracle source does not alter the schema present in your database. Depending on the destination
+connected to this source, however, the schema may be altered. See the destination's documentation
+for more details.
 
 ### Data type mapping
 
@@ -14,13 +19,14 @@ Oracle data types are mapped to the following data types when synchronizing data
 
 | Oracle Type | Resulting Type | Notes |
 | :--- | :--- | :--- |
-| `number` | number |  |
+| `number` | number | |
 | `integer` | number |  |
 | `decimal` | number |  |
 | `float` | number |  |
 | everything else | string |  |
 
-If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
+If you do not see a type in this list, assume that it is coerced into a string. We are happy to 
+take feedback on preferred mappings.
 
 ### Features
 
@@ -67,11 +73,9 @@ GRANT SELECT ANY TABLE TO airbyte;
 ```
 
 Or you can be more granular:
-
 ```sql
 GRANT SELECT ON "<schema_a>"."<table_1>" TO airbyte;
 GRANT SELECT ON "<schema_b>"."<table_2>" TO airbyte;
 ```
 
 Your database user should now be ready for use with Airbyte.
-
