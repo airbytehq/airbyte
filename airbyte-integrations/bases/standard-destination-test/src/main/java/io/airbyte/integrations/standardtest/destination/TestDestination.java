@@ -561,9 +561,9 @@ public abstract class TestDestination {
             message.getRecord().setNamespace(namespace2);
           }
         });
-
     final var allMessages = new ArrayList<>(ns1Msgs);
     allMessages.addAll(ns2Msgs);
+
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     runSync(config, allMessages, configuredCatalog);
