@@ -356,7 +356,7 @@ public class BigQueryDestination implements Destination {
           }
         }));
         if (!hasFailed) {
-          LOGGER.error("executing on success close procedure.");
+          LOGGER.info("executing on success close procedure.");
           writeConfigs.values()
               .forEach(writeConfig -> copyTable(bigquery, writeConfig.getTmpTable(), writeConfig.getTable(), writeConfig.getSyncMode()));
         }

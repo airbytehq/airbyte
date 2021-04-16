@@ -568,8 +568,15 @@ from {{ from_table }}
         schema = self.get_schema(is_intermediate)
         table_name = self.generate_new_table_name(is_intermediate, suffix)
         self.add_table_to_local_registry(table_name, is_intermediate)
+        # TODO(davin): Check with Chris if there is a better way of doing this.
         # File names need to match the ref() macro returned in the ref_table function.
-        file = f"{schema}_{table_name}.sql"
+        # Dbt uses file names to generate internal model. Include schem in the name to
+        # dedup tables with the same name and different schema.
+        file_name = f"{schema}_{table_name}"
+        if len(file_name) > self.name_transformer.get_name_max_length():
+            file_name = self.name_transformer.truncate_identifier_name(input_name=file_name)
+
+        file = f"{file_name}.sql"
         if is_intermediate:
             output = os.path.join("airbyte_views", self.schema, file)
         else:
@@ -585,7 +592,7 @@ from {{ from_table }}
 """
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
-        return ref_table(schema, table_name)
+        return ref_table(file_name)
 
     def get_model_tags(self, is_intermediate: bool) -> str:
         tags = ""
@@ -703,8 +710,8 @@ where {column_name} is not null"""
 # Static Functions
 
 
-def ref_table(schema_name: str, table_name: str) -> str:
-    return f"ref('{schema_name}_{table_name}')"
+def ref_table(file_name: str) -> str:
+    return f"ref('{file_name}')"
 
 
 def find_properties_object(path: List[str], field: str, properties) -> Dict[str, Dict]:

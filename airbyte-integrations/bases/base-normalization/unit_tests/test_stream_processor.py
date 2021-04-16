@@ -79,7 +79,11 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
             for table in stream_processor.local_registry[schema]:
                 found_sql_output = False
                 for sql_output in stream_processor.sql_outputs:
-                    if re.match(r".*/" + schema + "_" + table + ".sql", sql_output) is not None:
+                    file_name = f"{schema}_{table}"
+                    if len(file_name) > stream_processor.name_transformer.get_name_max_length():
+                        file_name = stream_processor.name_transformer.truncate_identifier_name(input_name=file_name)
+
+                    if re.match(r".*/" + file_name + ".sql", sql_output) is not None:
                         found_sql_output = True
                         break
                 assert found_sql_output

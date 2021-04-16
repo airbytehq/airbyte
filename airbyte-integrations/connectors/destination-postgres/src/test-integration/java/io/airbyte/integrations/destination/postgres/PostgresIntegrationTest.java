@@ -89,6 +89,11 @@ public class PostgresIntegrationTest extends TestDestination {
   }
 
   @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
