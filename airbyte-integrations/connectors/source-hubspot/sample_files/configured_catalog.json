@@ -97,7 +97,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["lastUpdatedTime"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -515,7 +515,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -622,7 +622,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -3551,7 +3551,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -3632,7 +3632,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -3992,7 +3992,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -4771,7 +4771,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["lastUpdated"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -5060,7 +5060,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -5220,7 +5220,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -5304,7 +5304,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -5425,7 +5425,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -5684,7 +5684,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -6003,7 +6003,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
@@ -6061,7 +6061,7 @@
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
-        "default_cursor_field": null
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
       "cursor_field": null,
