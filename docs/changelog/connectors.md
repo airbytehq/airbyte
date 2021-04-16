@@ -14,11 +14,11 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 
 ## 04/13/2021
 
-* New connector: **[Oracle DB](https://docs.airbyte.io/integrations/sources/oracle)**
+* New connector: [**Oracle DB**](https://docs.airbyte.io/integrations/sources/oracle)
 
 ## 04/07/2021
 
-* New connector: **[Google Workspace Admin Reports](https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports)** (audit logs)
+* New connector: [**Google Workspace Admin Reports**](https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports) \(audit logs\)
 * Bugfix in the base python connector library that caused errors to be silently skipped rather than failing the sync
 * **Exchangeratesapi.io** bugfix: to point to the updated API URL
 * **Redshift destination** bugfix: quote keywords “DATETIME” and “TIME” when used as identifiers

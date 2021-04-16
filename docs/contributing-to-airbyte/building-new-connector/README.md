@@ -42,7 +42,7 @@ npm run generate
 
 and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
 
-Search the generated directory for "TODO"s and follow them to implement your connector. 
+Search the generated directory for "TODO"s and follow them to implement your connector.
 
 If you are developing a Python connector, you may find the [building a Python connector tutorial](../../tutorials/building-a-python-source.md) helpful.
 
@@ -54,14 +54,14 @@ At a minimum, your connector must implement the standard tests described in [Tes
 
 If you're writing in Python or Java, skip this section -- it is provided automatically.
 
-If you're writing in another language, please document the commands needed to: 
+If you're writing in another language, please document the commands needed to:
 
 1. Build your connector docker image \(usually this is just `docker build .` but let us know if there are necessary flags, gotchas, etc..\) 
 2. Run any unit or integration tests _in a Docker image_.
 
 Your integration and unit tests must be runnable entirely within a Docker image. This is important to guarantee consistent build environments.
 
-When you submit a PR to Airbyte with your connector, the reviewer will use the commands you provide to integrate your connector into Airbyte's build system as follows: 
+When you submit a PR to Airbyte with your connector, the reviewer will use the commands you provide to integrate your connector into Airbyte's build system as follows:
 
 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image 
 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
