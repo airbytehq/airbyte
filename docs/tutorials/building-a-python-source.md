@@ -9,7 +9,7 @@ This article provides a checklist for how to create a python source. Each step i
 Docker, Python, and Java with the versions listed in the [tech stack section](../architecture/tech-stack.md).
 
 {% hint style="info" %}
-All the commands below assume that `python` points to a version of python >3.7. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
+All the commands below assume that `python` points to a version of python &gt;3.7. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
 {% endhint %}
 
 ## Checklist
