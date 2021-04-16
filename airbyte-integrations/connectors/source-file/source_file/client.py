@@ -24,7 +24,7 @@ SOFTWARE.
 
 import json
 import traceback
-from typing import Iterable, List
+from typing import Iterable
 from urllib.parse import urlparse
 
 import google
