@@ -94,6 +94,9 @@ const SchemaView: React.FC<SchemaViewProps> = ({
           />
         </Cell>
         <LightCell>
+          <FormattedMessage id="form.namespace" />
+        </LightCell>
+        <LightCell>
           <FormattedMessage id="form.dataType" />
         </LightCell>
         <LightCell>
