@@ -162,6 +162,7 @@ public class BigQueue extends AbstractQueue<byte[]> implements CloseableQueue<by
   private interface NonBlockingOp {
 
     static <T> T execute(ReadWriteLock lock, Supplier<T> supplier) {
+      // ReadLocks always execute unless a WriteLock is held.
       lock.readLock().lock();
       try {
         return supplier.get();
@@ -177,13 +178,13 @@ public class BigQueue extends AbstractQueue<byte[]> implements CloseableQueue<by
   private interface BlockingOp {
 
     static <T> T execute(ReadWriteLock lock, Supplier<T> supplier) {
-      lock.readLock().lock();
+      lock.writeLock().lock();
       try {
         return supplier.get();
       } catch (Exception e) {
         throw new RuntimeException(e);
       } finally {
-        lock.readLock().unlock();
+        lock.writeLock().unlock();
       }
     }
 
