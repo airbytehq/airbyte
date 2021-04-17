@@ -44,16 +44,15 @@ import java.util.function.Supplier;
  *
  * Due to the mechanics of how AbstractQueues are accessed. This class uses a
  * {@link ReentrantReadWriteLock} to ensure the underlying queue is preserved in the event this
- * class is logged/printing or it's iterator is accessed.
+ * class is logged/printed or it's iterator is accessed.
  *
  * Lock behavior:
- * <li>{@link #offer(byte[])} and {@link #iterator()} cannot be called at the same time since they
- * modify the queue's contents.</li>
+ * <li>{@link #offer(byte[])} and {@link #iterator()} cannot be called if any other method is called
+ * since they modify the queue's contents.</li>
  * <li>{@link #poll()} and {@link #peek()} and {@link #size()} can always be called unless the
  * blocking methods are executing. Although these operations interact with the queue, no logic
- * exists within this class, and rely on {@link BigQueueImpl}'s internal locking guarantees.</li>
- *
- *
+ * exists within this class and we safely rely on {@link BigQueueImpl}'s internal locking
+ * guarantees.</li>
  *
  */
 public class BigQueue extends AbstractQueue<byte[]> implements CloseableQueue<byte[]> {
