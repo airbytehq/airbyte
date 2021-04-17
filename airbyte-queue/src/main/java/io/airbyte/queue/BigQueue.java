@@ -47,12 +47,12 @@ import java.util.function.Supplier;
  * class is logged/printed or it's iterator is accessed.
  *
  * Lock behavior:
- * <li>{@link #offer(byte[])} and {@link #iterator()} cannot be called if any other method is called
+ * <li>No other methods can be called if {@link #offer(byte[])} or {@link #iterator()} are called
  * since they modify the queue's contents.</li>
  * <li>{@link #poll()} and {@link #peek()} and {@link #size()} can always be called unless the
  * blocking methods are executing. Although these operations interact with the queue, no logic
  * exists within this class and we safely rely on {@link BigQueueImpl}'s internal locking
- * guarantees.</li>
+ * guarantees for read operations.</li>
  *
  */
 public class BigQueue extends AbstractQueue<byte[]> implements CloseableQueue<byte[]> {
@@ -114,7 +114,9 @@ public class BigQueue extends AbstractQueue<byte[]> implements CloseableQueue<by
    *
    * When constructing an iterator, no other method is allowed to function to preserve order.
    *
-   * Since this reads a disk-based queue into memory, care must be taken when printing this queue.
+   * Since this reads a disk-based queue into memory, care must be taken when retrieving this queue's
+   * iterator. Attempting to return the iterator of a queue that is too big will result in an
+   * {@link OutOfMemoryError}.
    */
   @Override
   public Iterator<byte[]> iterator() {
