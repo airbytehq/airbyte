@@ -22,25 +22,47 @@
  * SOFTWARE.
  */
 
-package io.airbyte.test.utils;
+package io.airbyte.test.acceptance;
 
-import java.io.IOException;
-import java.util.UUID;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
+import java.util.Objects;
 
-public class PostgreSQLContainerHelper {
+public class SchemaTableNamePair {
 
-  public static void runSqlScript(MountableFile file, PostgreSQLContainer db) {
-    try {
-      String scriptPath = "/etc/" + UUID.randomUUID() + ".sql";
-      db.copyFileToContainer(file, scriptPath);
-      db.execInContainer(
-          "psql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", scriptPath);
+  public String schemaName;
+  public String tableName;
 
-    } catch (InterruptedException | IOException e) {
-      throw new RuntimeException(e);
+  public SchemaTableNamePair(String schemaName, String tableName) {
+    this.schemaName = schemaName;
+    this.tableName = tableName;
+  }
+
+  @Override
+  public String toString() {
+    return "SchemaTableNamePair{" +
+        "schemaName='" + schemaName + '\'' +
+        ", tableName='" + tableName + '\'' +
+        '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SchemaTableNamePair that = (SchemaTableNamePair) o;
+    return Objects.equals(schemaName, that.schemaName) && Objects.equals(tableName, that.tableName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(schemaName, tableName);
+  }
+
+  public String getFullyQualifiedTableName() {
+    return schemaName + "." + tableName;
   }
 
 }
