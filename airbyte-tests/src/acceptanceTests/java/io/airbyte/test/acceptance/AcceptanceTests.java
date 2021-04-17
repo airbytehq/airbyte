@@ -78,8 +78,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -689,8 +687,11 @@ public class AcceptanceTests {
     try {
       final Map<Object, Object> dbConfig = new HashMap<>();
 
+      // todo (cgardens) - hack to get building passing in CI. need to follow up on why this was necessary
+      // (and affect on the k8s version of these tests).
+      dbConfig.put("host", "localhost");
       // necessary for minikube tests on Github Actions instead of psql.getHost()
-      dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+      // dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
 
       if (hiddenPassword) {
         dbConfig.put("password", "**********");
@@ -711,7 +712,7 @@ public class AcceptanceTests {
       }
 
       return Jsons.jsonNode(dbConfig);
-    } catch (UnknownHostException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
