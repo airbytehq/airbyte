@@ -51,8 +51,8 @@ import java.util.function.Supplier;
  * since they modify the queue's contents.</li>
  * <li>{@link #poll()} and {@link #peek()} and {@link #size()} can always be called unless the
  * blocking methods are executing. Although these operations interact with the queue, no logic
- * exists within this class and we safely rely on {@link BigQueueImpl}'s internal locking
- * guarantees for read operations.</li>
+ * exists within this class and we safely rely on {@link BigQueueImpl}'s internal locking guarantees
+ * for read operations.</li>
  *
  */
 public class BigQueue extends AbstractQueue<byte[]> implements CloseableQueue<byte[]> {
