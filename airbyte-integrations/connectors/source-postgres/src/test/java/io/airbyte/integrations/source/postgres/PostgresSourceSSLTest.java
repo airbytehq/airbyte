@@ -69,7 +69,7 @@ import org.testcontainers.utility.MountableFile;
 class PostgresSourceSSLTest {
 
   private static final String SCHEMA_NAME = "public";
-  private static final String STREAM_NAME = SCHEMA_NAME + ".id_and_name";
+  private static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
@@ -87,7 +87,7 @@ class PostgresSourceSSLTest {
           Field.of("power", JsonSchemaPrimitive.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
-          "public.names",
+          "names",
           SCHEMA_NAME,
           Field.of("first_name", JsonSchemaPrimitive.STRING),
           Field.of("last_name", JsonSchemaPrimitive.STRING),
@@ -191,8 +191,9 @@ class PostgresSourceSSLTest {
   @Test
   void testReadSuccess() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog =
-        CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
-            Collectors.toList()));
+        CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME))
+            .collect(Collectors.toList()));
+
     final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
     setEmittedAtToNull(actualMessages);
 
@@ -212,7 +213,8 @@ class PostgresSourceSSLTest {
   }
 
   private static AirbyteMessage createRecord(String stream, Map<Object, Object> data) {
-    return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream));
+    return new AirbyteMessage().withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(SCHEMA_NAME));
   }
 
   private static Map<Object, Object> map(Object... entries) {
