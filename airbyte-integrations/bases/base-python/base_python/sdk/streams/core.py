@@ -23,12 +23,11 @@ SOFTWARE.
 """
 
 import inspect
-import math
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import base_python.sdk.utils.casing as casing
-from airbyte_protocol import AirbyteStream, ConfiguredAirbyteStream, SyncMode
+from airbyte_protocol import AirbyteStream, SyncMode
 from base_python.logger import AirbyteLogger
 from base_python.schema_helpers import ResourceSchemaLoader
 
@@ -51,16 +50,11 @@ class Stream(ABC):
         return casing.camel_to_snake(self.__class__.__name__)
 
     @abstractmethod
-    def read_stream(
-        self, configured_stream: ConfiguredAirbyteStream, stream_state: Mapping[str, Any] = None
+    def read_records(
+            self, sync_mode: SyncMode, cursor_field: List[str] = None, batch: Mapping[str, any] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Mapping[str, Any]]:
         """
-        This method should be overridden by subclasses
-
-        :param configured_stream: The configured stream object containing
-        :param stream_state: State dict to use when extracting records.
-        :return: A generator which yields all the records in this stream. Each record is a dict from properties to their values matching the schema
-         of the stream.
+        This method should be overridden by subclasses to read records based on the inputs
         """
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -108,19 +102,30 @@ class Stream(ABC):
         """
         return True
 
+    def batches(
+            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+        """
+        Override to define the batches for this stream. See the batching section of the docs for more information.
+
+        :param stream_state:
+        :return:
+        """
+        return [None]
+
     @property
-    def state_checkpoint_interval(self) -> Union[int, float]:
+    def state_checkpoint_interval(self) -> Optional[int]:
         """
         Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
         100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.
 
         Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.
 
-        return math.inf if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
-        ascending order with respect to the cursor field. This can happen if e.g: the source does not support reading records in ascending order of
-        created_at date. In those cases, state must only be saved once the full stream has been read.
+        return None if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
+        ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
+        created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.
         """
-        return math.inf
+        return None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """

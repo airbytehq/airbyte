@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import copy
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, List
 
 import requests
-from airbyte_protocol import ConfiguredAirbyteStream
+from airbyte_protocol import ConfiguredAirbyteStream, SyncMode
 from base_python.sdk.streams.auth.core import HttpAuthenticator, NoAuth
 from base_python.sdk.streams.core import Stream
 from base_python.sdk.streams.exceptions import DefaultBackoffException, UserDefinedBackoffException
@@ -37,9 +36,8 @@ from base_python.sdk.streams.rate_limiting import default_backoff_handler, user_
 class HttpStream(Stream, ABC):
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
 
-    def __init__(self, authenticator: HttpAuthenticator = NoAuth(), parent_stream: "HttpStream" = None):
+    def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
         self._authenticator = authenticator
-        self._parent_stream = parent_stream
         self._session = requests.Session()
 
     @property
@@ -60,23 +58,6 @@ class HttpStream(Stream, ABC):
     def authenticator(self) -> HttpAuthenticator:
         return self._authenticator
 
-    def request_configurations(self, stream_state: Mapping[str, Any], parent_stream_record: Mapping = None) -> Iterable[Optional[Mapping]]:
-        """
-        Override this method to control the number of HTTP requests (not counting pagination) this stream makes.
-
-        For example, if a single request reads data for a particular date and you want to read data from multiple dates, then this method should
-        return one dict for each request that should be made e.g: [{'date':'01-01-2020'}, {'date':'01-02-2020'}], etc.
-
-        Alternatively, if you want to make no requests (e.g: if you don't want to use up more than 30% of your API's rate limit for the day) then
-        return an empty iterable.
-
-        Each element in the returned iterable will be passed as input to most other methods in this class to initiate a single HTTP request, plus any
-        subsequent requests needed for pagination.
-
-        :return: An iterable (list or generator) of request configurations
-        """
-        return [None]
-
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -89,22 +70,20 @@ class HttpStream(Stream, ABC):
 
     @abstractmethod
     def path(
-        self,
-        stream_state: Mapping[str, Any],
-        request_configuration: Optional[Mapping] = None,
-        next_page_token: Mapping[str, Any] = None,
-        parent_stream_record: Mapping = None,
+            self,
+            stream_state: Mapping[str, Any] = None,
+            batch: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> str:
         """
         Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         """
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        request_configuration: Optional[Mapping] = None,
-        next_page_token: Mapping[str, Any] = None,
-        parent_stream_record: Mapping = None,
+            self,
+            stream_state: Mapping[str, Any],
+            batch: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """
         Override this method to define the query parameters that should be set on an outgoing HTTP request given the inputs.
@@ -114,11 +93,10 @@ class HttpStream(Stream, ABC):
         return {}
 
     def request_headers(
-        self,
-        stream_state: Mapping[str, Any],
-        request_configuration: Optional[Mapping] = None,
-        next_page_token: Mapping[str, Any] = None,
-        parent_stream_record: Mapping = None,
+            self,
+            stream_state: Mapping[str, Any],
+            batch: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         """
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -126,11 +104,10 @@ class HttpStream(Stream, ABC):
         return {}
 
     def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        request_configuration: Optional[Mapping] = None,
-        next_page_token: Mapping[str, Any] = None,
-        parent_stream_record: Mapping = None,
+            self,
+            stream_state: Mapping[str, Any],
+            batch: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         """
         TODO make this possible to do for non-JSON APIs
@@ -138,8 +115,13 @@ class HttpStream(Stream, ABC):
         """
         return None
 
+    @abstractmethod
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, request_configuration: Optional[Mapping] = None
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            batch: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         """
         Parses the raw response object into a list of records.
@@ -147,11 +129,6 @@ class HttpStream(Stream, ABC):
         :param response:
         :return: An iterable containing the parsed response
         """
-        response_json = response.json()
-        if isinstance(response_json, Iterable):
-            yield from response_json
-        else:
-            yield [response]
 
     # TODO move all the retry logic to a functor/decorator which is input as an init parameter
     def should_retry(self, response: requests.Response) -> bool:
@@ -178,12 +155,13 @@ class HttpStream(Stream, ABC):
         return None
 
     def _create_prepared_request(
-        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
+            self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
     ) -> requests.PreparedRequest:
         args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params}
 
         if self.http_method.upper() == "POST":
-            args["body"] = json
+            # TODO support non-json bodies
+            args["json"] = json
 
         return requests.Request(**args).prepare()
 
@@ -218,52 +196,38 @@ class HttpStream(Stream, ABC):
                 raise DefaultBackoffException(request=request, response=response)
         else:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
+            # TODO handle ignoring errors
             response.raise_for_status()
 
         return response
 
-    def _list_records(self, stream_state: Mapping[str, Any], parent_stream_record: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        """
-        :param parent_stream_record If this is a child stream, this is a record from the parent stream. Otherwise, this record is None.
-        :return:
-        """
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            batch: Optional[Mapping[str, Any]] = None,
+            stream_state: Optional[Mapping[str, Any]] = None,
+            cursor_field: List[str] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        args = {"stream_state": stream_state, "batch": batch}
+        pagination_complete = False
+        while not pagination_complete:
+            request = self._create_prepared_request(
+                path=self.path(**args),
+                headers=dict(self.request_headers(**args), **self.authenticator.get_auth_header()),
+                params=self.request_params(**args),
+                json=self.request_body_json(**args),
+            )
 
-        args = {"stream_state": stream_state}
-        if parent_stream_record:
-            args["parent_stream_record"] = parent_stream_record
+            # print(request.__dict__)
+            response = self._send_request(request)
+            yield from self.parse_response(response, **args)
 
-        for request_configuration in self.request_configurations(**copy.deepcopy(args)):
-            args["request_configuration"] = request_configuration
-            pagination_complete = False
-
-            while not pagination_complete:
-                request = self._create_prepared_request(
-                    path=self.path(**args),
-                    headers=dict(self.request_headers(**args), **self.authenticator.get_auth_header()),
-                    params=self.request_params(**args),
-                    json=self.request_body_json(**args),
-                )
-
-                response = self._send_request(request)
-                yield from self.parse_response(response, stream_state=stream_state, request_configuration=request_configuration)
-
-                next_page_token = self.next_page_token(response)
-                if next_page_token:
-                    args["next_page_token"] = next_page_token
-                else:
-                    pagination_complete = True
+            next_page_token = self.next_page_token(response)
+            if next_page_token:
+                args["next_page_token"] = next_page_token
+            else:
+                pagination_complete = True
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
-
-    def read_stream(
-        self, configured_stream: ConfiguredAirbyteStream, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Mapping[str, Any]]:
-        # TODO this can be made more efficient if syncs are sequenced so that each API endpoint is called exactly once. Right now parent streams are
-        # re-read for the benefit of syncing the child stream.
-        stream_state = stream_state or {}
-        if self._parent_stream:
-            for parent_stream_record in self._parent_stream.read_stream(configured_stream=configured_stream):
-                yield from self._list_records(parent_stream_record=parent_stream_record, stream_state=stream_state)
-        else:
-            yield from self._list_records(stream_state=stream_state)

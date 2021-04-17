@@ -44,7 +44,10 @@ def default_backoff_handler(max_tries: int, factor: int, **kwargs):
 
     def should_give_up(exc):
         # If a 4XX error makes it this far, it means it was unexpected and probably consistent, so we shouldn't back off
-        return exc.response is not None and 400 <= exc.response.status_code < 500
+        give_up = exc.response is not None and 400 <= exc.response.status_code < 500 and exc.response.status_code != 429
+        if give_up:
+            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}")
+        return give_up
 
     return backoff.on_exception(
         backoff.expo,
