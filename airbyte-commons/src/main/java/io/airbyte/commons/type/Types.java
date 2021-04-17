@@ -22,25 +22,22 @@
  * SOFTWARE.
  */
 
-package io.airbyte.test.utils;
+package io.airbyte.commons.type;
 
-import java.io.IOException;
-import java.util.UUID;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-public class PostgreSQLContainerHelper {
+public class Types {
 
-  public static void runSqlScript(MountableFile file, PostgreSQLContainer db) {
-    try {
-      String scriptPath = "/etc/" + UUID.randomUUID() + ".sql";
-      db.copyFileToContainer(file, scriptPath);
-      db.execInContainer(
-          "psql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", scriptPath);
-
-    } catch (InterruptedException | IOException e) {
-      throw new RuntimeException(e);
-    }
+  /**
+   * Convenience method converting a list to a list of lists of the same type. Each item in the
+   * original list is inserted into its own list.
+   */
+  public static <T> List<List<T>> boxToListofList(List<T> list) {
+    var nonNullEntries = list.stream().filter(Objects::nonNull);
+    return nonNullEntries.map(Collections::singletonList).collect(Collectors.toList());
   }
 
 }
