@@ -34,13 +34,14 @@ from airbyte_protocol import (
     AirbyteRecordMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
+    AirbyteStateMessage,
     Status,
     Type,
 )
 from base_python import AirbyteLogger, Source
 
 
-class SourceNmbgmrPressureGwl(Source):
+class SourceNmbgmrAcousticGwl(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
@@ -85,8 +86,24 @@ class SourceNmbgmrPressureGwl(Source):
                            "DateMeasured": {"type": "string"},
                            "DepthToWaterBGS": {"type": "double"}}}
 
-        streams = [AirbyteStream(name=pointid['PointID'], json_schema=json_schema)
-                   for pointid in get_pointids(logger, config)]
+        # streams = []
+        # for pointid in get_pointids(logger, config):
+        #     streams.append(AirbyteStream(name=pointid['PointID'],
+        #                                  supported_sync_modes=["full_refresh", "incremental"],
+        #                                  source_defined_cursor=True,
+        #                                  json_schema=json_schema))
+        streams = [AirbyteStream(name='Acoustic',
+                                 supported_sync_modes=["full_refresh", "incremental"],
+                                 source_defined_cursor=True,
+                                 json_schema=json_schema),
+                   AirbyteStream(name='Manual',
+                                 supported_sync_modes=["full_refresh", "incremental"],
+                                 source_defined_cursor=True,
+                                 json_schema=json_schema),
+                   AirbyteStream(name='Pressure',
+                                 supported_sync_modes=["full_refresh", "incremental"],
+                                 source_defined_cursor=True,
+                                 json_schema=json_schema)]
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -111,16 +128,15 @@ class SourceNmbgmrPressureGwl(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        # stream_name = "TableName"  # Example
-        # data = {"columnName": "Hello World"}  # Example
+
         for stream in catalog.streams:
             name = stream.stream.name
-            data = get_data(logger, name, state, config)
+            data = get_data(logger, stream, state, config)
             if data:
                 for di in data:
                     yield AirbyteMessage(
                         type=Type.RECORD,
-                        record=AirbyteRecordMessage(stream=stream.stream.name, data=di,
+                        record=AirbyteRecordMessage(stream=name, data=di,
                                                     emitted_at=int(datetime.now().timestamp()) * 1000))
             else:
                 logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
@@ -130,27 +146,25 @@ def public_url(config):
     return f'{config["url"]}/maps/data/public'
 
 
-def pressure_url(config, tag):
+def records_url(config, tag):
     pu = public_url(config)
-    url = f'{pu}/waterlevels/pressure/{tag}'
+    url = f'{pu}/waterlevels/{tag}/records'
     return url
 
 
-def get_pointids(logger, config):
-    url = pressure_url(config, 'pointids')
-    jobj = get_json(logger, url)
-    return jobj
-
-
-def get_data(logger, pointid, state, config):
-    url = pressure_url(config, pointid)
-    if pointid in state:
-        url = f'?{url}&start_date={state["pointid"]}'
+def get_data(logger, stream, state, config):
+    key = stream.stream.name
+    url = records_url(config, key.lower())
+    if stream.sync_mode == 'incremental' and key in state:
+        url = f'{url}?start_date={state[key]}'
+    else:
+        url = f'{url}?count=10'
 
     jobj = get_json(logger, url)
     if jobj:
         # update state
-        state[pointid] = jobj[-1]['DateMeasured']
+        output_message = {"type": "STATE", "state": {"data": {key: jobj[-1]['DateMeasured']}}}
+        print(json.dumps(output_message))
         return jobj
 
 

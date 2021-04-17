@@ -35,7 +35,7 @@ From the Airbyte repository root, run:
 
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/nmbgmr-gwl)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_nmbgmr_acoustic_gwl/spec.json` file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_nmbgmr_gwl/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 

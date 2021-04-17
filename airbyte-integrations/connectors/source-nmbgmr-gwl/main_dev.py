@@ -22,8 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# format anchor
+import sys
 
+from base_python.entrypoint import launch
+from source_nmbgmr_gwl import SourceNmbgmrAcousticGwl
 
-def test_example_method():
-    assert True
+if __name__ == "__main__":
+    source = SourceNmbgmrAcousticGwl()
+    launch(source, sys.argv[1:])

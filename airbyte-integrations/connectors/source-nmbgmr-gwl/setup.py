@@ -25,7 +25,7 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_nmbgmr_pressure_gwl",
+    name="source_nmbgmr_gwl",
     description="Source implementation for Nmbgmr Gwl.",
     author="Airbyte",
     author_email="contact@airbyte.io",
