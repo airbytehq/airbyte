@@ -53,17 +53,17 @@ class CatalogProcessor:
         self.destination_type: DestinationType = destination_type
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
 
-    def process(self, catalog_file: str, json_column_name: str, target_schema: str):
+    def process(self, catalog_file: str, json_column_name: str, default_schema: str):
         """
         This method first parse and build models to handle top-level streams.
         In a second loop will go over the substreams that were nested in a breadth-first traversal manner.
 
         @param catalog_file input AirbyteCatalog file in JSON Schema describing the structure of the raw data
         @param json_column_name is the column name containing the JSON Blob with the raw data
-        @param target_schema is the final schema where to output the final transformed data to
+        @param default_schema is the final schema where to output the final transformed data to
         """
-        # Registry of all tables in all schemas
-        tables_registry: Set[str] = set()
+        # Registry of all tables in for each schema
+        tables_registry: Dict[str, Set[str]] = {}
         # Registry of source tables in each schemas
         schema_to_source_tables: Dict[str, Set[str]] = {}
 
@@ -73,7 +73,7 @@ class CatalogProcessor:
         for stream_processor in self.build_stream_processor(
             catalog=catalog,
             json_column_name=json_column_name,
-            target_schema=target_schema,
+            default_schema=default_schema,
             name_transformer=self.name_transformer,
             destination_type=self.destination_type,
             tables_registry=tables_registry,
@@ -98,16 +98,22 @@ class CatalogProcessor:
     def build_stream_processor(
         catalog: Dict,
         json_column_name: str,
-        target_schema: str,
+        default_schema: str,
         name_transformer: DestinationNameTransformer,
         destination_type: DestinationType,
-        tables_registry: Set[str],
+        tables_registry: Dict[str, Set[str]],
     ) -> List[StreamProcessor]:
         result = []
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
             stream_config = get_field(configured_stream, "stream", "Invalid Stream: 'stream' is not defined in Catalog streams")
-            schema_name = name_transformer.normalize_schema_name(target_schema)
-            raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{target_schema}", truncate=False)
+
+            # The logic here matches the logic in JdbcBufferedConsumerFactory.java. Any modifications need to be reflected there and vice versa.
+            schema = default_schema
+            if "namespace" in stream_config:
+                schema = stream_config["namespace"]
+
+            schema_name = name_transformer.normalize_schema_name(schema)
+            raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=False)
 
@@ -152,7 +158,7 @@ class CatalogProcessor:
             result.append(stream_processor)
         return result
 
-    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Set[str]):
+    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Dict[str, Set[str]]):
         """
         Handle nested stream/substream/children
         """
@@ -267,18 +273,22 @@ def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_na
         raise KeyError(f"Duplicate table {table_name} in {schema_name}")
 
 
-def add_table_to_registry(tables_registry: Set[str], processor: StreamProcessor):
+def add_table_to_registry(tables_registry: Dict[str, Set[str]], processor: StreamProcessor):
     """
     Keeps track of all table names created by this catalog, regardless of their destination schema
 
     @param tables_registry where all table names are recorded
     @param processor the processor that created tables as part of its process
     """
-    for table_name in processor.local_registry:
-        if table_name not in tables_registry:
-            tables_registry.add(table_name)
+    for schema in processor.local_registry:
+        if schema not in tables_registry:
+            tables_registry[schema] = processor.local_registry[schema]
         else:
-            raise KeyError(f"Duplicate table {table_name}")
+            for table_name in processor.local_registry[schema]:
+                if table_name not in tables_registry[schema]:
+                    tables_registry[schema].add(table_name)
+                else:
+                    raise KeyError(f"Duplicate table {table_name} in schema {schema}")
 
 
 def output_sql_file(file: str, sql: str):

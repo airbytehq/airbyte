@@ -89,6 +89,11 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
   }
 
   @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
     if (!tableName.startsWith("\"")) {
