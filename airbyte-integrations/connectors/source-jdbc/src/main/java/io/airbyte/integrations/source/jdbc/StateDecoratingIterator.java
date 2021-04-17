@@ -25,6 +25,7 @@
 package io.airbyte.integrations.source.jdbc;
 
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -39,7 +40,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
   private final Iterator<AirbyteMessage> messageIterator;
   private final JdbcStateManager stateManager;
-  private final String streamName;
+  private final AirbyteStreamNameNamespacePair pair;
   private final String cursorField;
   private final JsonSchemaPrimitive cursorType;
 
@@ -48,13 +49,13 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
   public StateDecoratingIterator(Iterator<AirbyteMessage> messageIterator,
                                  JdbcStateManager stateManager,
-                                 String streamName,
+                                 AirbyteStreamNameNamespacePair pair,
                                  String cursorField,
                                  String initialCursor,
                                  JsonSchemaPrimitive cursorType) {
     this.messageIterator = messageIterator;
     this.stateManager = stateManager;
-    this.streamName = streamName;
+    this.pair = pair;
     this.cursorField = cursorField;
     this.cursorType = cursorType;
     this.maxCursor = initialCursor;
@@ -74,15 +75,15 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
       return message;
     } else if (!hasEmittedState) {
-      final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(streamName, maxCursor);
+      final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor);
       LOGGER.info("State Report: stream name: {}, original cursor field: {}, original cursor {}, cursor field: {}, new cursor: {}",
-          streamName,
-          stateManager.getOriginalCursorField(streamName).orElse(null),
-          stateManager.getOriginalCursor(streamName).orElse(null),
-          stateManager.getCursorField(streamName).orElse(null),
-          stateManager.getCursor(streamName).orElse(null));
-      if (stateManager.getCursor(streamName).isEmpty()) {
-        LOGGER.warn("Cursor was for stream {} was null. This stream will replicate all records on the next run", streamName);
+          pair,
+          stateManager.getOriginalCursorField(pair).orElse(null),
+          stateManager.getOriginalCursor(pair).orElse(null),
+          stateManager.getCursorField(pair).orElse(null),
+          stateManager.getCursor(pair).orElse(null));
+      if (stateManager.getCursor(pair).isEmpty()) {
+        LOGGER.warn("Cursor was for stream {} was null. This stream will replicate all records on the next run", pair);
       }
 
       hasEmittedState = true;
