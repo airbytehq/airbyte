@@ -29,17 +29,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.lang.CloseableQueue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.Executors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class BigQueueTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueueTest.class);
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private CloseableQueue<byte[]> queue;
 
@@ -83,6 +89,54 @@ class BigQueueTest {
     assertThrows(IllegalStateException.class, () -> queue.offer(toBytes("hello")));
     assertThrows(IllegalStateException.class, () -> queue.poll());
     assertThrows(IllegalStateException.class, () -> queue.iterator());
+  }
+
+  @Test
+  void testIteratorOrPrintingOrLoggingQueueShouldNotEmptyQueue() {
+    queue.offer(toBytes("hello"));
+    assertEquals(1, queue.size());
+
+    LOGGER.info("{}", queue);
+    assertEquals(1, queue.size());
+
+    System.out.println(queue);
+    assertEquals(1, queue.size());
+
+    var elements = ImmutableList.copyOf(queue.iterator());
+    assertEquals(1, elements.size());
+
+    assertEquals("hello", new String(Objects.requireNonNull(queue.peek()), Charsets.UTF_8));
+  }
+
+  @Nested
+  class LockingBehavior {
+
+    @Test
+    void testIteratorWaitForOffer() throws InterruptedException {
+      var writeService = Executors.newSingleThreadScheduledExecutor();
+      writeService.submit(() -> queue.offer(toBytes("hello")));
+      Thread.sleep(5); // Sleep 5ms to allow write to grab write lock. Any lower presents race conditions.
+
+      var elements = ImmutableList.copyOf(queue.iterator());
+      assertEquals(1, elements.size());
+      assertEquals("hello", new String(Objects.requireNonNull(elements.get(0)), Charsets.UTF_8));
+
+      assertEquals("hello", new String(Objects.requireNonNull(queue.peek()), Charsets.UTF_8));
+    }
+
+    @Test
+    void testOfferWaitForIterator() throws InterruptedException {
+      var printService = Executors.newSingleThreadScheduledExecutor();
+      printService.submit(() -> {
+        var elements = ImmutableList.copyOf(queue.iterator());
+        assertEquals(0, elements.size());
+      });
+      Thread.sleep(5); // Sleep 5ms to allow write to grab write lock. Any lower presents race conditions.
+
+      queue.offer(toBytes("hello"));
+      assertEquals("hello", new String(Objects.requireNonNull(queue.peek()), Charsets.UTF_8));
+    }
+
   }
 
   @SuppressWarnings("SameParameterValue")
