@@ -26,18 +26,44 @@ See all the test cases and their description in [Standard Source Tests](standard
 
 ### Setting up standard tests for your connector
 
-Standard tests are typically run from a docker container. The default standard test runner is the File-based Standard Test suite, which gets its name because its inputs are passed as files via Docker volume mounts. This is the simplest way to run the standard test suite: the only requirements are that you place its input files inside your connector's directory, and to pass the paths to those input files as arguments to the Gradle plugin required to invoke it. This is setup by default inside the `build.gradle` file on all connectors generated from templates.
+Standard tests are typically run from a docker container. 
+The default standard test runner is the File-based Standard Test suite, which gets its name because its inputs are passed as files via Docker volume mounts.
+This is the simplest way to run the standard test suite: the only requirements are that you place its input files inside your connector's directory, 
+create `standard_test_config.yml` file and specify the paths to those input files there.
+This is setup by default inside the `build.gradle` file on all connectors generated from templates.
 
 For reference, to configure the file-based standard test suite the only requirement is to add the following block in your connectors `build.gradle` file:
 
 ```text
-apply plugin: 'airbyte-standard-source-test-file'
-airbyteStandardSourceTestFile { 
-  // all these paths must be inside your connector's directory
-  configPath = "/path/to/config"
-  specPath = "/path/to/spec"
-  configuredCatalogPath = "/path/to/catalog"
-}
+apply plugin: 'airbyte-standard-test'
+```
+and create `standard_test_config.yml` in the root folder of your connector:
+```yaml
+connector_image: airbyte/source-hubspot:dev
+tests:
+  spec:
+    - spec_path: "source_hubspot/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "sample_files/invalid_config.json"
+      status: "exception"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "sample_files/configured_catalog.json"
+      validate_output_from_all_streams: yes
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "sample_files/configured_catalog.json"
+      state_path: "sample_files/abnormal_state.json"
+      cursor_paths:
+        subscription_changes: ["timestamp"]
+        email_events: ["timestamp"]
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "sample_files/configured_catalog.json"
 ```
 
 These inputs are all described in the [Airbyte Specification](../../architecture/airbyte-specification.md) and will be used as follows:
