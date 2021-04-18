@@ -60,7 +60,7 @@ class SourceHttpRequest(Source):
             "properties": {"data": {"type": "object"}},
         }
 
-        # json body wi99ll be returned as the "data" stream". we can't know its schema ahead of time, so we assume it's object (i.e. valid json).
+        # json body will be returned as the "data" stream". we can't know its schema ahead of time, so we assume it's object (i.e. valid json).
         return AirbyteCatalog(streams=[AirbyteStream(name=SourceHttpRequest.STREAM_NAME, json_schema=json_schema)])
 
     def read(
