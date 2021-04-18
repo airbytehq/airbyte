@@ -25,11 +25,11 @@ SOFTWARE.
 import copy
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, MutableMapping, Any
 
 import pytest
 from airbyte_protocol import AirbyteCatalog, ConfiguredAirbyteCatalog, ConnectorSpecification
-
+from standard_test.config import Config
 from standard_test.connector_runner import ConnectorRunner
 from standard_test.utils import load_config
 
@@ -42,33 +42,33 @@ def base_path_fixture(pytestconfig, standard_test_config):
     return Path(pytestconfig.getoption("--standard_test_config")).absolute()
 
 
-@pytest.fixture(name="standard_test_config")
-def standard_test_config_fixture(pytestconfig):
+@pytest.fixture(name="standard_test_config", scope="session")
+def standard_test_config_fixture(pytestconfig) -> Config:
     """Fixture with test's config"""
     return load_config(pytestconfig.getoption("--standard_test_config"))
 
 
 @pytest.fixture(name="connector_config_path")
-def connector_config_path_fixture(inputs, base_path):
-    """Fixture with connector's config path (relative to base_path)"""
+def connector_config_path_fixture(inputs, base_path) -> Path:
+    """Fixture with connector's config path"""
     return Path(base_path) / getattr(inputs, "config_path")
 
 
 @pytest.fixture(name="invalid_connector_config_path")
-def invalid_connector_config_path_fixture(inputs, base_path):
-    """Fixture with connector's config path (relative to base_path)"""
+def invalid_connector_config_path_fixture(inputs, base_path) -> Path:
+    """Fixture with connector's config path"""
     return Path(base_path) / getattr(inputs, "invalid_config_path")
 
 
 @pytest.fixture(name="connector_spec_path")
-def connector_spec_path_fixture(inputs, base_path):
-    """Fixture with connector's specification path (relative to base_path)"""
+def connector_spec_path_fixture(inputs, base_path) -> Path:
+    """Fixture with connector's specification path"""
     return Path(base_path) / getattr(inputs, "spec_path")
 
 
 @pytest.fixture(name="configured_catalog_path")
-def configured_catalog_path_fixture(inputs, base_path):
-    """Fixture with connector's configured_catalog path (relative to base_path)"""
+def configured_catalog_path_fixture(inputs, base_path) -> Optional[str]:
+    """Fixture with connector's configured_catalog path"""
     if getattr(inputs, "configured_catalog_path"):
         return Path(base_path) / getattr(inputs, "configured_catalog_path")
     return None
@@ -89,27 +89,27 @@ def catalog_fixture(configured_catalog: ConfiguredAirbyteCatalog) -> Optional[Ai
 
 
 @pytest.fixture(name="image_tag")
-def image_tag_fixture(standard_test_config):
+def image_tag_fixture(standard_test_config) -> str:
     return standard_test_config.connector_image
 
 
 @pytest.fixture(name="connector_config")
-def connector_config_fixture(base_path, connector_config_path):
-    with open(str(Path(base_path) / connector_config_path), "r") as file:
+def connector_config_fixture(base_path, connector_config_path) -> MutableMapping[str, Any]:
+    with open(str(connector_config_path), "r") as file:
         contents = file.read()
     return json.loads(contents)
 
 
 @pytest.fixture(name="invalid_connector_config")
-def invalid_connector_config_fixture(base_path, invalid_connector_config_path):
+def invalid_connector_config_fixture(base_path, invalid_connector_config_path) -> MutableMapping[str, Any]:
     """TODO: implement default value - generate from valid config"""
-    with open(str(Path(base_path) / invalid_connector_config_path), "r") as file:
+    with open(str(invalid_connector_config_path), "r") as file:
         contents = file.read()
     return json.loads(contents)
 
 
 @pytest.fixture(name="malformed_connector_config")
-def malformed_connector_config_fixture(connector_config):
+def malformed_connector_config_fixture(connector_config) -> MutableMapping[str, Any]:
     """TODO: drop required field, add extra"""
     malformed_config = copy.deepcopy(connector_config)
     return malformed_config
@@ -125,7 +125,7 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
     return ConnectorRunner(image_tag, volume=tmp_path)
 
 
-@pytest.fixture(name="validate_output_from_all_streams")
-def validate_output_from_all_streams_fixture(inputs):
-    """Fixture to provide value of `validate output from all streams` flag"""
-    return getattr(inputs, "validate_output_from_all_streams")
+@pytest.fixture(scope="session", autouse=True)
+def pull_docker_image(standard_test_config) -> None:
+    """Startup fixture to pull docker image"""
+    ConnectorRunner(image_tag=standard_test_config.connector_image)

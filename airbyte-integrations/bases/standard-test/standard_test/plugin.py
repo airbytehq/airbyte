@@ -1,6 +1,30 @@
-import pytest
+"""
+MIT License
 
-from .utils import load_config
+Copyright (c) 2020 Airbyte
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+import pytest
+from standard_test.compare import diff_dicts
+from standard_test.utils import load_config
 
 
 def pytest_addoption(parser):
@@ -32,7 +56,6 @@ def pytest_generate_tests(metafunc):
         config_key = metafunc.cls.config_key()
         test_name = f"{metafunc.cls.__name__}.{metafunc.function.__name__}"
         config = load_config(metafunc.config.getoption("--standard_test_config"))
-        # print(config.dict())
         if not hasattr(config.tests, config_key) or not getattr(config.tests, config_key):
             pytest.skip(f"Skipping {test_name} because not found in the config")
         else:
@@ -41,3 +64,11 @@ def pytest_generate_tests(metafunc):
                 pytest.skip(f"Skipping {test_name} because no inputs provided")
 
             metafunc.parametrize("inputs", test_inputs)
+
+
+def pytest_assertrepr_compare(config, op, left, right):
+    if op != "==":
+        return
+
+    use_markup = config.get_terminal_writer().hasmarkup
+    return diff_dicts(left, right, use_markup=use_markup)
