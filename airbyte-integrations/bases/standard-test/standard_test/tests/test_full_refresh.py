@@ -27,8 +27,7 @@ import json
 import pytest
 from airbyte_protocol import Type
 from standard_test.base import BaseTest
-from standard_test.connector_runner import ConnectorRunner
-from standard_test.utils import full_refresh_only_catalog
+from standard_test.utils import full_refresh_only_catalog, ConnectorRunner
 
 
 @pytest.mark.timeout(20 * 60)

@@ -29,9 +29,7 @@ from typing import Mapping, Any, Tuple, Iterable
 import pytest
 from airbyte_protocol import ConfiguredAirbyteCatalog, Type
 from standard_test import BaseTest
-from standard_test.connector_runner import ConnectorRunner
-from standard_test.json_schema_helper import JsonSchemaHelper
-from standard_test.utils import filter_output, incremental_only_catalog
+from standard_test.utils import filter_output, incremental_only_catalog, JsonSchemaHelper, ConnectorRunner
 
 
 @pytest.fixture(name="future_state_path")

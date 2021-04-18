@@ -46,11 +46,11 @@ class ConnectorRunner:
 
         if config:
             with open(str(input_path / "tap_config.json"), "w") as outfile:
-                json.dump(config, outfile)
+                json.dump(dict(config), outfile)
 
         if state:
             with open(str(input_path / "state.json"), "w") as outfile:
-                json.dump(state, outfile)
+                json.dump(dict(state), outfile)
 
         if catalog:
             with open(str(input_path / "catalog.json"), "w") as outfile:

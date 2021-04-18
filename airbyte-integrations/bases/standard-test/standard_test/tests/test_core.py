@@ -29,7 +29,7 @@ from airbyte_protocol import ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from standard_test.base import BaseTest
 from standard_test.config import BasicReadTestConfig, ConnectionTestConfig
-from standard_test.connector_runner import ConnectorRunner
+from standard_test.utils import ConnectorRunner
 
 
 @pytest.mark.timeout(10)
