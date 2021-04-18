@@ -98,6 +98,11 @@ public class BigQueryStandardTest extends TestDestination {
   }
 
   @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
   protected String getDefaultSchema(JsonNode config) {
     return config.get(CONFIG_DATASET_ID).asText();
   }

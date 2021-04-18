@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import { useSet } from "react-use";
-import { useIntl } from "react-intl";
+import { useIntl, FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import {
@@ -28,6 +28,10 @@ import { Rows } from "./Rows";
 
 const StyledRadioButton = styled(RadioButton)`
   vertical-align: middle;
+`;
+
+const EmptyField = styled.span`
+  color: ${({ theme }) => theme.greyColor40};
 `;
 
 const supportedModes: [SyncMode, DestinationSyncMode][] = [
@@ -160,6 +164,13 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
           isItemHasChildren={hasChildren}
           isItemOpen={isRowExpanded}
         />
+        <Cell>
+          {stream.namespace || (
+            <EmptyField>
+              <FormattedMessage id="form.noNamespace" />
+            </EmptyField>
+          )}
+        </Cell>
         <Cell />
         <OverflowCell title={config.aliasName}>{config.aliasName}</OverflowCell>
         <Cell>
@@ -169,7 +180,10 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
               isItemOpen={isRowExpanded}
               tooltipItems={pkKeyItems}
             >
-              {pkKeyItems.length}
+              <FormattedMessage
+                id="form.pkSelected"
+                values={{ count: pkKeyItems.length, items: pkKeyItems }}
+              />
             </ExpandFieldCell>
           )}
         </Cell>
@@ -199,6 +213,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
                 isItemChecked={true}
                 depth={depth}
               />
+              <Cell />
               <OverflowCell>{field.type}</OverflowCell>
               <OverflowCell title={field.cleanedName}>
                 {field.cleanedName}

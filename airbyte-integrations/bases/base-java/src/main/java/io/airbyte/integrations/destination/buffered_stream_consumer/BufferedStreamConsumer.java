@@ -33,6 +33,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.lang.Queues;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -80,31 +81,31 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private static final int BATCH_SIZE = 10000;
 
   private final VoidCallable onStart;
-  private final CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriter;
+  private final RecordWriter recordWriter;
   private final CheckedConsumer<Boolean, Exception> onClose;
-  private final Set<String> streamNames;
-  private final Map<String, CloseableQueue<byte[]>> writeBuffers;
+  private final Set<AirbyteStreamNameNamespacePair> pairs;
+  private final Map<AirbyteStreamNameNamespacePair, CloseableQueue<byte[]>> pairToWriteBuffer;
   private final ScheduledExecutorService writerPool;
   private final ConfiguredAirbyteCatalog catalog;
 
   private boolean hasStarted;
 
   public BufferedStreamConsumer(VoidCallable onStart,
-                                CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriter,
+                                RecordWriter recordWriter,
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
-                                Set<String> streamNames) {
+                                Set<AirbyteStreamNameNamespacePair> pairs) {
     this.hasStarted = false;
     this.onStart = onStart;
     this.recordWriter = recordWriter;
     this.onClose = onClose;
     this.catalog = catalog;
-    this.streamNames = streamNames;
+    this.pairs = pairs;
 
     this.writerPool = Executors.newSingleThreadScheduledExecutor();
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofMinutes(GRACEFUL_SHUTDOWN_MINUTES), writerPool));
 
-    this.writeBuffers = new HashMap<>();
+    this.pairToWriteBuffer = new HashMap<>();
   }
 
   @Override
@@ -115,19 +116,23 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
     LOGGER.info("{} started.", BufferedStreamConsumer.class);
 
-    LOGGER.info("Buffer creation started for {} streams.", streamNames.size());
+    LOGGER.info("Buffer creation started for {} streams.", pairs.size());
     final Path queueRoot = Files.createTempDirectory("queues");
-    for (String streamName : streamNames) {
-      LOGGER.info("Buffer creation for stream {}.", streamName);
-      final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(streamName), streamName);
-      writeBuffers.put(streamName, writeBuffer);
+    for (AirbyteStreamNameNamespacePair pair : pairs) {
+      LOGGER.info("Buffer creation for stream {}.", pair);
+      try {
+        final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(pair.getName()), pair.getName());
+        pairToWriteBuffer.put(pair, writeBuffer);
+      } catch (Exception e) {
+        LOGGER.error("Error creating buffer: ", e);
+      }
     }
     LOGGER.info("Buffer creation completed.");
 
     onStart.call();
-
+    LOGGER.info("write buffers: {}", pairToWriteBuffer);
     writerPool.scheduleWithFixedDelay(
-        () -> writeStreamsWithNRecords(MIN_RECORDS, streamNames, writeBuffers, recordWriter),
+        () -> writeStreamsWithNRecords(MIN_RECORDS, pairToWriteBuffer, recordWriter),
         THREAD_DELAY_MILLIS,
         THREAD_DELAY_MILLIS,
         TimeUnit.MILLISECONDS);
@@ -139,12 +144,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
     // ignore other message types.
     final String streamName = message.getStream();
-    if (!streamNames.contains(streamName)) {
+    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
+    if (!pairs.contains(pair)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
               Jsons.serialize(catalog), Jsons.serialize(message)));
     }
-    writeBuffers.get(streamName).offer(Jsons.serialize(message).getBytes(Charsets.UTF_8));
+    pairToWriteBuffer.get(pair).offer(Jsons.serialize(message).getBytes(Charsets.UTF_8));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -164,22 +170,21 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       writerPool.awaitTermination(GRACEFUL_SHUTDOWN_MINUTES, TimeUnit.MINUTES);
 
       // write anything that is left in the buffers.
-      writeStreamsWithNRecords(0, streamNames, writeBuffers, recordWriter);
+      writeStreamsWithNRecords(0, pairToWriteBuffer, recordWriter);
     }
 
     onClose.accept(hasFailed);
 
-    for (CloseableQueue<byte[]> writeBuffer : writeBuffers.values()) {
+    for (CloseableQueue<byte[]> writeBuffer : pairToWriteBuffer.values()) {
       writeBuffer.close();
     }
   }
 
   private static void writeStreamsWithNRecords(int minRecords,
-                                               Set<String> streamNames,
-                                               Map<String, CloseableQueue<byte[]>> writeBuffers,
-                                               CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriter) {
-    for (final String streamName : streamNames) {
-      final CloseableQueue<byte[]> writeBuffer = writeBuffers.get(streamName);
+                                               Map<AirbyteStreamNameNamespacePair, CloseableQueue<byte[]>> pairToWriteBuffers,
+                                               RecordWriter recordWriter) {
+    for (final AirbyteStreamNameNamespacePair pair : pairToWriteBuffers.keySet()) {
+      final CloseableQueue<byte[]> writeBuffer = pairToWriteBuffers.get(pair);
       while (writeBuffer.size() > minRecords) {
         try {
           final List<AirbyteRecordMessage> records = Queues.toStream(writeBuffer)
@@ -188,8 +193,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
               .collect(Collectors.toList());
 
           LOGGER.info("Writing stream {}. Max batch size: {}, Actual batch size: {}, Remaining buffered records: {}",
-              streamName, BufferedStreamConsumer.BATCH_SIZE, records.size(), writeBuffer.size());
-          recordWriter.accept(streamName, records.stream());
+              pair, BufferedStreamConsumer.BATCH_SIZE, records.size(), writeBuffer.size());
+          recordWriter.accept(pair, records.stream());
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -199,10 +204,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   public interface OnStartFunction extends VoidCallable {}
 
-  public interface RecordWriter extends CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> {
+  public interface RecordWriter extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, Stream<AirbyteRecordMessage>, Exception> {
 
     @Override
-    void accept(String streamName, Stream<AirbyteRecordMessage> recordStream) throws Exception;
+    void accept(AirbyteStreamNameNamespacePair pair, Stream<AirbyteRecordMessage> recordStream) throws Exception;
 
   }
 

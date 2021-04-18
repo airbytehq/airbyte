@@ -152,9 +152,6 @@ jobs:
           GIT_REVISION: ${{ github.sha }}
           CORE_ONLY: true
 
-      - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
-
       - name: Run Docker End-to-End Acceptance Tests
         run: |
           ./tools/bin/acceptance_test.sh
@@ -215,9 +212,6 @@ jobs:
 #        env:
 #          GIT_REVISION: ${{ github.sha }}
 #          CORE_ONLY: true
-#
-#      - name: Ensure no file change
-#        run: git status --porcelain && test -z "$(git status --porcelain)"
 #
 #      - name: Run Kubernetes End-to-End Acceptance Tests
 #        run: |
