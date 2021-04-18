@@ -79,4 +79,4 @@ def filter_output(records: Iterable[AirbyteMessage], type_) -> List[AirbyteMessa
 
 class SecretDict(UserDict):
     def __str__(self) -> str:
-        return str(self.__class__)
+        return f"{self.__class__}(******)"
