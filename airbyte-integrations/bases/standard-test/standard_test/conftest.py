@@ -30,8 +30,7 @@ from typing import Optional, MutableMapping, Any
 import pytest
 from airbyte_protocol import AirbyteCatalog, ConfiguredAirbyteCatalog, ConnectorSpecification
 from standard_test.config import Config
-from standard_test.connector_runner import ConnectorRunner
-from standard_test.utils import load_config, SecretDict
+from standard_test.utils import load_config, SecretDict, ConnectorRunner
 
 
 @pytest.fixture(name="base_path")

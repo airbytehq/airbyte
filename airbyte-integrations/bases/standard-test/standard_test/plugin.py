@@ -23,8 +23,7 @@ SOFTWARE.
 """
 
 import pytest
-from standard_test.compare import diff_dicts
-from standard_test.utils import load_config
+from standard_test.utils import load_config, diff_dicts
 
 
 def pytest_addoption(parser):
