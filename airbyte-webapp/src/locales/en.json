@@ -87,6 +87,7 @@
   "form.items": "Items",
   "form.toSaveSchema": "To save the new schema, click on Save changes.",
   "form.noteStartSync": "Note that it will delete all the data in your destination and start syncing from scratch. ",
+  "form.url.error": "field must be a valid URL",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",

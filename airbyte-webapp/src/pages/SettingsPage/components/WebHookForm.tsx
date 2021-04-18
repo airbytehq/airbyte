@@ -44,13 +44,13 @@ const Error = styled(Success)`
 `;
 
 const webhookValidationSchema = yup.object().shape({
-  webhook: yup.string(),
+  webhook: yup.string().url("form.url.error"),
 });
 
 type WebHookFormProps = {
   notificationUrl: string;
-  success?: boolean;
-  error?: boolean;
+  successMessage?: React.ReactNode;
+  errorMessage?: React.ReactNode;
   onSubmit: (data: { webhook: string }) => void;
   onTest: (data: { webhook: string }) => void;
 };
@@ -58,8 +58,8 @@ type WebHookFormProps = {
 const WebHookForm: React.FC<WebHookFormProps> = ({
   notificationUrl,
   onSubmit,
-  success,
-  error,
+  successMessage,
+  errorMessage,
   onTest,
 }) => {
   const formatMessage = useIntl().formatMessage;
@@ -69,20 +69,12 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
     isSubmitting: boolean,
     webhook?: string
   ) => {
-    if (success) {
-      return (
-        <Success>
-          <FormattedMessage id="settings.changeSaved" />
-        </Success>
-      );
+    if (successMessage) {
+      return <Success>{successMessage}</Success>;
     }
 
-    if (error) {
-      return (
-        <Error>
-          <FormattedMessage id="form.someError" />
-        </Error>
-      );
+    if (errorMessage) {
+      return <Error>{errorMessage}</Error>;
     }
 
     if (dirty) {
@@ -118,9 +110,19 @@ const WebHookForm: React.FC<WebHookFormProps> = ({
         }
       }}
     >
-      {({ isSubmitting, initialValues, dirty }) => (
+      {({ isSubmitting, initialValues, dirty, errors }) => (
         <Form>
-          <Label>
+          <Label
+            error={!!errors.webhook}
+            message={
+              !!errors.webhook && (
+                <FormattedMessage
+                  id={errors.webhook}
+                  defaultMessage={errors.webhook}
+                />
+              )
+            }
+          >
             <FormattedMessage id="settings.webhookTitle" />
           </Label>
           <Text>

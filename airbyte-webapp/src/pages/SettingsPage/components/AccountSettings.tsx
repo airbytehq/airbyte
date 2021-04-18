@@ -29,7 +29,14 @@ const AccountSettings: React.FC = () => {
   } = useWorkspace();
   const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
   const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null);
-  const [feedBack, setFeedBack] = useState("");
+  const [
+    errorWebhookMessage,
+    setErrorWebhookMessage,
+  ] = useState<React.ReactNode>(null);
+  const [
+    successWebhookMessage,
+    setSuccessWebhookMessage,
+  ] = useState<React.ReactNode>(null);
 
   const onSubmit = async (data: {
     email: string;
@@ -48,19 +55,20 @@ const AccountSettings: React.FC = () => {
   };
 
   const onSubmitWebhook = async (data: { webhook: string }) => {
-    setFeedBack("");
+    setSuccessWebhookMessage(null);
+    setErrorWebhookMessage(null);
     try {
       await updateWebhook(data);
-      setFeedBack("success");
+      setSuccessWebhookMessage(<FormattedMessage id="settings.changeSaved" />);
 
       setTimeout(() => {
-        setFeedBack("");
+        setSuccessWebhookMessage(null);
       }, 2000);
     } catch (e) {
-      setFeedBack("error");
+      setErrorWebhookMessage(<FormattedMessage id="form.someError" />);
 
       setTimeout(() => {
-        setFeedBack("");
+        setErrorWebhookMessage(null);
       }, 2000);
     }
   };
@@ -82,8 +90,8 @@ const AccountSettings: React.FC = () => {
             notificationUrl={initialWebhookUrl}
             onSubmit={onSubmitWebhook}
             onTest={onTestWebhook}
-            error={feedBack === "error"}
-            success={feedBack === "success"}
+            errorMessage={errorWebhookMessage}
+            successMessage={successWebhookMessage}
           />
         </Content>
       </SettingsCard>

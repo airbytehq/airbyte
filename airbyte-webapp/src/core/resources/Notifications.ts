@@ -28,7 +28,7 @@ export default class NotificationsResource
       fetch: async (
         params: Readonly<Record<string, unknown>>
       ): Promise<Notifications> =>
-        await this.fetch("post", `${this.url(params)}try`, params),
+        await this.fetch("post", `${this.url(params)}/try`, params),
       schema: this,
     };
   }
