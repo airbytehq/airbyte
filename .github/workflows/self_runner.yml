@@ -21,7 +21,7 @@ jobs:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
           ec2-image-id: ami-0ca5c3bd5a268e7db
-          ec2-instance-type: t3.nano
+          ec2-instance-type: c6g.2xlarge
           subnet-id: subnet-0745a9998151424f5
           security-group-id: sg-0cde1fbd9bd760970
   do-the-job:
