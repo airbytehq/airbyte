@@ -128,4 +128,4 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
 @pytest.fixture(scope="session", autouse=True)
 def pull_docker_image(standard_test_config) -> None:
     """Startup fixture to pull docker image"""
-    ConnectorRunner(image_tag=standard_test_config.connector_image)
+    ConnectorRunner(image_name=standard_test_config.connector_image)
