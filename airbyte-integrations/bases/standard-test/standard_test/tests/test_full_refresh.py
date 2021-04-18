@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import json
+from functools import partial
 
 import pytest
 from airbyte_protocol import Type
@@ -39,7 +40,8 @@ class TestFullRefresh(BaseTest):
 
         output = docker_runner.call_read(connector_config, configured_catalog)
         records_2 = [message.record.data for message in output if message.type == Type.RECORD]
+        serialize = partial(json.dumps, sort_keys=True)
 
         assert not (
-            set(map(json.dumps, records_1)) - set(map(json.dumps, records_2))
+            set(map(serialize, records_1)) - set(map(serialize, records_2))
         ), "The two sequential reads should produce either equal set of records or one of them is a strict subset of the other"
