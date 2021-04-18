@@ -25,16 +25,16 @@ SOFTWARE.
 import json
 import logging
 from pathlib import Path
-from typing import Iterable, Mapping, Optional
+from typing import Iterable, Mapping, Optional, List
 
 import docker
 from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog
 
 
 class ConnectorRunner:
-    def __init__(self, name: str, volume: Path):
-        self._name = name
+    def __init__(self, image_name: str, volume: Path):
         self._client = docker.from_env()
+        self._image = self._client.images.pull(image_name)
         self._runs = 0
         self._volume_base = volume
 
@@ -68,27 +68,27 @@ class ConnectorRunner:
         }
         return volumes
 
-    def call_spec(self, **kwargs):
+    def call_spec(self, **kwargs) -> List[AirbyteMessage]:
         cmd = "spec"
         output = list(self.run(cmd=cmd, **kwargs))
         return output
 
-    def call_check(self, config, **kwargs):
+    def call_check(self, config, **kwargs) -> List[AirbyteMessage]:
         cmd = "check --config tap_config.json"
         output = list(self.run(cmd=cmd, config=config, **kwargs))
         return output
 
-    def call_discover(self, config, **kwargs):
+    def call_discover(self, config, **kwargs) -> List[AirbyteMessage]:
         cmd = "discover --config tap_config.json"
         output = list(self.run(cmd=cmd, config=config, **kwargs))
         return output
 
-    def call_read(self, config, catalog, **kwargs):
+    def call_read(self, config, catalog, **kwargs) -> List[AirbyteMessage]:
         cmd = "read --config tap_config.json --catalog catalog.json"
         output = list(self.run(cmd=cmd, config=config, catalog=catalog, **kwargs))
         return output
 
-    def call_read_with_state(self, config, catalog, state, **kwargs):
+    def call_read_with_state(self, config, catalog, state, **kwargs) -> List[AirbyteMessage]:
         cmd = "read --config tap_config.json --catalog catalog.json --state state.json"
         output = list(self.run(cmd=cmd, config=config, catalog=catalog, state=state, **kwargs))
         return output
@@ -97,8 +97,9 @@ class ConnectorRunner:
         self._runs += 1
         volumes = self._prepare_volumes(config, state, catalog)
         logs = self._client.containers.run(
-            image=self._name, command=cmd, working_dir="/data", volumes=volumes, network="host", stdout=True, stderr=True, **kwargs
+            image=self._image, command=cmd, working_dir="/data", volumes=volumes, network="host", stdout=True, stderr=True, **kwargs
         )
+        logging.info("Running docker, folders: %s", volumes)
         for line in logs.decode("utf-8").splitlines():
             logging.info(AirbyteMessage.parse_raw(line).type)
             yield AirbyteMessage.parse_raw(line)

@@ -4,7 +4,9 @@ tests:
     - spec_path: "source_hubspot/spec.json"
   connection:
     - config_path: "secrets/config.json"
-      invalid_config_path: "sample_files/invalid_config.json"
+      status: "succeed"
+    - config_path: "sample_files/invalid_config.json"
+      status: "exception"
   discovery:
     - config_path: "secrets/config.json"
   basic_read:

@@ -24,6 +24,7 @@ SOFTWARE.
 
 import json
 from pathlib import Path
+from typing import Mapping, Any, Tuple, Iterable
 
 import pytest
 from airbyte_protocol import ConfiguredAirbyteCatalog, Type
@@ -34,7 +35,7 @@ from standard_test.utils import filter_output, incremental_only_catalog
 
 
 @pytest.fixture(name="future_state_path")
-def future_state_path_fixture(inputs, base_path):
+def future_state_path_fixture(inputs, base_path) -> Path:
     """Fixture with connector's future state path (relative to base_path)"""
     if getattr(inputs, "state_path"):
         return Path(base_path) / getattr(inputs, "state_path")
@@ -42,7 +43,7 @@ def future_state_path_fixture(inputs, base_path):
 
 
 @pytest.fixture(name="future_state")
-def future_state_fixture(future_state_path):
+def future_state_fixture(future_state_path) -> Path:
     """"""
     with open(str(future_state_path), "r") as file:
         contents = file.read()
@@ -50,7 +51,7 @@ def future_state_fixture(future_state_path):
 
 
 @pytest.fixture(name="cursor_paths")
-def cursor_paths_fixture(inputs, configured_catalog_for_incremental):
+def cursor_paths_fixture(inputs, configured_catalog_for_incremental) -> Mapping[str, Any]:
     cursor_paths = getattr(inputs, "cursor_paths")
     result = {}
 
@@ -70,43 +71,39 @@ def configured_catalog_for_incremental_fixture(configured_catalog) -> Configured
     return catalog
 
 
-@pytest.mark.timeout(300)
+def records_with_state(records, state, stream_mapping, state_cursor_paths) -> Iterable[Tuple[Any, Any]]:
+    """Iterate over records and return cursor value with corresponding cursor value from state"""
+    for record in records:
+        stream_name = record.record.stream
+        stream = stream_mapping[stream_name]
+        helper = JsonSchemaHelper(schema=stream.stream.json_schema)
+        record_value = helper.get_cursor_value(record=record.record.data, cursor_path=stream.cursor_field)
+        state_value = helper.get_state_value(state=state[stream_name], cursor_path=state_cursor_paths[stream_name])
+        yield record_value, state_value
+
+
+@pytest.mark.timeout(20 * 60)
 class TestIncremental(BaseTest):
-    def test_read(self, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner):
-        output = docker_runner.call_read(connector_config, configured_catalog_for_incremental)
-
-        records = filter_output(output, type_=Type.RECORD)
-        states = filter_output(output, type_=Type.STATE)
-
-        assert states, "Should produce at least one state"
-        assert records, "Should produce at least one record"
-
     def test_two_sequential_reads(self, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner):
-        output = docker_runner.call_read(connector_config, configured_catalog_for_incremental)
         stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
 
+        output = docker_runner.call_read(connector_config, configured_catalog_for_incremental)
         records_1 = filter_output(output, type_=Type.RECORD)
         states_1 = filter_output(output, type_=Type.STATE)
+
+        assert states_1, "Should produce at least one state"
+        assert records_1, "Should produce at least one record"
+
         latest_state = states_1[-1].state.data
-        for record in records_1:
-            stream_name = record.record.stream
-            stream = stream_mapping[stream_name]
-            helper = JsonSchemaHelper(schema=stream.stream.json_schema)
-            record_value = helper.get_cursor_value(record=record.record.data, cursor_path=stream.cursor_field)
-            state_value = helper.get_state_value(state=latest_state[stream_name], cursor_path=cursor_paths[stream_name])
+        for record_value, state_value in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
             assert (
-                record_value <= state_value
+                    record_value <= state_value
             ), "First incremental sync should produce records younger or equal to cursor value from the state"
 
         output = docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=latest_state)
         records_2 = filter_output(output, type_=Type.RECORD)
 
-        for record in records_2:
-            stream_name = record.record.stream
-            stream = stream_mapping[stream_name]
-            helper = JsonSchemaHelper(schema=stream.stream.json_schema)
-            record_value = helper.get_cursor_value(record=record.record.data, cursor_path=stream.cursor_field)
-            state_value = helper.get_state_value(state=latest_state[stream_name], cursor_path=cursor_paths[stream_name])
+        for record_value, state_value in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
             assert (
                 record_value >= state_value
             ), "Second incremental sync should produce records older or equal to cursor value from the state"

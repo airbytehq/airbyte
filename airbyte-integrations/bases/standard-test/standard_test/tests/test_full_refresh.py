@@ -31,7 +31,7 @@ from standard_test.connector_runner import ConnectorRunner
 from standard_test.utils import full_refresh_only_catalog
 
 
-@pytest.mark.timeout(300)
+@pytest.mark.timeout(20 * 60)
 class TestFullRefresh(BaseTest):
     def test_sequential_reads(self, connector_config, configured_catalog, docker_runner: ConnectorRunner):
         configured_catalog = full_refresh_only_catalog(configured_catalog)
