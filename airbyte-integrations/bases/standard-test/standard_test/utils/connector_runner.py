@@ -101,5 +101,6 @@ class ConnectorRunner:
         )
         logging.info("Running docker, folders: %s", volumes)
         for line in logs.decode("utf-8").splitlines():
-            logging.info(AirbyteMessage.parse_raw(line).type)
-            yield AirbyteMessage.parse_raw(line)
+            message = AirbyteMessage.parse_raw(line)
+            logging.info(message.type)
+            yield message
