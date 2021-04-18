@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
+from collections import UserDict
 from pathlib import Path
 from typing import Iterable, List
 
@@ -75,3 +75,8 @@ def incremental_only_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Co
 def filter_output(records: Iterable[AirbyteMessage], type_) -> List[AirbyteMessage]:
     """Filter messages to match specific type"""
     return list(filter(lambda x: x.type == type_, records))
+
+
+class SecretDict(UserDict):
+    def __str__(self) -> str:
+        return str(self.__class__)

@@ -31,7 +31,7 @@ import pytest
 from airbyte_protocol import AirbyteCatalog, ConfiguredAirbyteCatalog, ConnectorSpecification
 from standard_test.config import Config
 from standard_test.connector_runner import ConnectorRunner
-from standard_test.utils import load_config
+from standard_test.utils import load_config, SecretDict
 
 
 @pytest.fixture(name="base_path")
@@ -94,10 +94,10 @@ def image_tag_fixture(standard_test_config) -> str:
 
 
 @pytest.fixture(name="connector_config")
-def connector_config_fixture(base_path, connector_config_path) -> MutableMapping[str, Any]:
+def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
     with open(str(connector_config_path), "r") as file:
         contents = file.read()
-    return json.loads(contents)
+    return SecretDict(json.loads(contents))
 
 
 @pytest.fixture(name="invalid_connector_config")
@@ -128,4 +128,4 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
 @pytest.fixture(scope="session", autouse=True)
 def pull_docker_image(standard_test_config) -> None:
     """Startup fixture to pull docker image"""
-    ConnectorRunner(image_name=standard_test_config.connector_image)
+    ConnectorRunner(image_name=standard_test_config.connector_image, volume=Path("."))
