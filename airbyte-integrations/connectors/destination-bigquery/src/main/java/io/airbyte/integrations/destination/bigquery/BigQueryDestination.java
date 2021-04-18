@@ -54,6 +54,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -62,6 +63,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -207,16 +209,17 @@ public class BigQueryDestination implements Destination {
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     final BigQuery bigquery = getBigQuery(config);
-    Map<String, WriteConfig> writeConfigs = new HashMap<>();
-    Set<String> schemaSet = new HashSet<>();
+    Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs = new HashMap<>();
+    Set<String> existingSchemas = new HashSet<>();
 
     // create tmp tables if not exist
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String streamName = stream.getStream().getName();
-      final String schemaName = getSchema(config, stream);
+    for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
+      final AirbyteStream stream = configStream.getStream();
+      final String streamName = stream.getName();
+      final String schemaName = getSchema(config, configStream);
       final String tableName = namingResolver.getRawTableName(streamName);
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
-      createSchemaAndTableIfNeeded(bigquery, schemaSet, schemaName, tmpTableName);
+      createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName);
 
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
@@ -226,11 +229,11 @@ public class BigQueryDestination implements Destination {
           .setFormatOptions(FormatOptions.json()).build(); // new-line delimited json.
 
       final TableDataWriteChannel writer = bigquery.writer(JobId.of(UUID.randomUUID().toString()), writeChannelConfiguration);
-      final WriteDisposition syncMode = getWriteDisposition(stream.getDestinationSyncMode());
+      final WriteDisposition syncMode = getWriteDisposition(configStream.getDestinationSyncMode());
 
-      writeConfigs.put(streamName, new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode));
+      writeConfigs.put(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+          new WriteConfig(TableId.of(schemaName, tableName), TableId.of(schemaName, tmpTableName), writer, syncMode));
     }
-
     // write to tmp tables
     // if success copy delete main table if exists. rename tmp tables to real tables.
     return new RecordConsumer(bigquery, writeConfigs, catalog);
@@ -246,10 +249,10 @@ public class BigQueryDestination implements Destination {
     return srcNamespace;
   }
 
-  private void createSchemaAndTableIfNeeded(BigQuery bigquery, Set<String> schemaSet, String schemaName, String tmpTableName) {
-    if (!schemaSet.contains(schemaName)) {
+  private void createSchemaAndTableIfNeeded(BigQuery bigquery, Set<String> existingSchemas, String schemaName, String tmpTableName) {
+    if (!existingSchemas.contains(schemaName)) {
       createSchemaTable(bigquery, schemaName);
-      schemaSet.add(schemaName);
+      existingSchemas.add(schemaName);
     }
     createTable(bigquery, schemaName, tmpTableName);
   }
@@ -278,9 +281,9 @@ public class BigQueryDestination implements Destination {
       final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
       bigquery.create(tableInfo);
-      LOGGER.info("Table created successfully");
+      LOGGER.info("Table: {} created successfully", tableId);
     } catch (BigQueryException e) {
-      LOGGER.info("Table was not created. \n" + e.toString());
+      LOGGER.info("Table was not created. \n", e);
     }
   }
 
@@ -301,15 +304,16 @@ public class BigQueryDestination implements Destination {
     if (jobStringImmutablePair.getRight() != null) {
       throw new RuntimeException("BigQuery was unable to copy table due to an error: \n" + job.getStatus().getError());
     }
+    LOGGER.info("successfully copied tmp table: {} to final table: {}", sourceTableId, destinationTableId);
   }
 
   public static class RecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     private final BigQuery bigquery;
-    private final Map<String, WriteConfig> writeConfigs;
+    private final Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public RecordConsumer(BigQuery bigquery, Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
+    public RecordConsumer(BigQuery bigquery, Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
       this.bigquery = bigquery;
       this.writeConfigs = writeConfigs;
       this.catalog = catalog;
@@ -323,7 +327,8 @@ public class BigQueryDestination implements Destination {
     @Override
     public void acceptTracked(AirbyteRecordMessage message) {
       // ignore other message types.
-      if (!writeConfigs.containsKey(message.getStream())) {
+      AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
+      if (!writeConfigs.containsKey(pair)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                 Jsons.serialize(catalog), Jsons.serialize(message)));
@@ -339,7 +344,7 @@ public class BigQueryDestination implements Destination {
           JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(message.getData()),
           JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
       try {
-        writeConfigs.get(message.getStream()).getWriter()
+        writeConfigs.get(pair).getWriter()
             .write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -356,7 +361,7 @@ public class BigQueryDestination implements Destination {
           }
         }));
         if (!hasFailed) {
-          LOGGER.error("executing on success close procedure.");
+          LOGGER.info("executing on success close procedure.");
           writeConfigs.values()
               .forEach(writeConfig -> copyTable(bigquery, writeConfig.getTmpTable(), writeConfig.getTable(), writeConfig.getSyncMode()));
         }

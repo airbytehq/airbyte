@@ -24,7 +24,7 @@ SOFTWARE.
 
 import json
 import traceback
-from typing import Iterable, List
+from typing import Iterable
 from urllib.parse import urlparse
 
 import google
@@ -256,7 +256,7 @@ class Client:
                 result = [result]
         return result
 
-    def load_dataframes(self, fp, skip_data=False) -> List:
+    def load_dataframes(self, fp, skip_data=False) -> Iterable:
         """load and return the appropriate pandas dataframe.
 
         :param fp: file-like object to read from
@@ -286,11 +286,15 @@ class Client:
             raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
-        if skip_data and self._reader_format == "csv":
-            reader_options["nrows"] = 0
-            reader_options["index_col"] = 0
+        if self._reader_format == "csv":
+            reader_options["chunksize"] = 10000
+            if skip_data:
+                reader_options["nrows"] = 0
+                reader_options["index_col"] = 0
 
-        return [reader(fp, **reader_options)]
+            yield from reader(fp, **reader_options)
+        else:
+            yield reader(fp, **reader_options)
 
     @staticmethod
     def dtype_to_json_type(dtype) -> str:
@@ -322,8 +326,9 @@ class Client:
             if self._reader_format == "json" or self._reader_format == "jsonl":
                 yield from self.load_nested_json(fp)
             else:
+                fields = set(fields) if fields else None
                 for df in self.load_dataframes(fp):
-                    columns = set(fields).intersection(set(df.columns)) if fields else df.columns
+                    columns = fields.intersection(set(df.columns)) if fields else df.columns
                     df = df.replace(np.nan, "NaN", regex=True)
                     yield from df[columns].to_dict(orient="records")
 
