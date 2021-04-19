@@ -21,5 +21,10 @@ trap "echo 'docker-compose logs:' && docker-compose logs -t --tail 150 && docker
 echo "Waiting for services to begin"
 sleep 10 # TODO need a better way to wait
 
+# This is temporary
+echo "Build the necessary Postgres images"
+./gradlew :airbyte-integrations:connectors:source-postgres:build
+./gradlew :airbyte-integrations:connectors:destination-postgres:build
+
 echo "Running e2e tests via gradle"
 ./gradlew --no-daemon :airbyte-tests:acceptanceTests --rerun-tasks --scan
