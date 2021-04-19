@@ -25,16 +25,16 @@ SOFTWARE.
 import copy
 import json
 from pathlib import Path
-from typing import Optional, MutableMapping, Any
+from typing import Optional, MutableMapping, Any, List
 
 import pytest
-from airbyte_protocol import AirbyteCatalog, ConfiguredAirbyteCatalog, ConnectorSpecification
+from airbyte_protocol import AirbyteCatalog, ConfiguredAirbyteCatalog, ConnectorSpecification, AirbyteMessage
 from standard_test.config import Config
 from standard_test.utils import load_config, SecretDict, ConnectorRunner
 
 
 @pytest.fixture(name="base_path")
-def base_path_fixture(pytestconfig, standard_test_config):
+def base_path_fixture(pytestconfig, standard_test_config) -> Path:
     """Fixture to define base path for every path-like fixture"""
     if standard_test_config.base_path:
         return Path(standard_test_config.base_path).absolute()
@@ -127,4 +127,16 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
 @pytest.fixture(scope="session", autouse=True)
 def pull_docker_image(standard_test_config) -> None:
     """Startup fixture to pull docker image"""
+    print("Pulling docker image", standard_test_config.connector_image)
     ConnectorRunner(image_name=standard_test_config.connector_image, volume=Path("."))
+    print("Pulling completed")
+
+
+@pytest.fixture(name="expected_records")
+def expected_records_fixture(inputs, base_path) -> List[AirbyteMessage]:
+    path = getattr(inputs, "expected_records_path")
+    if not path:
+        return []
+
+    with open(str(base_path / path)) as f:
+        return [AirbyteMessage.parse_raw(line) for line in f]
