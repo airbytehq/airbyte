@@ -38,30 +38,36 @@ class ConnectorRunner:
         self._runs = 0
         self._volume_base = volume
 
+    @property
+    def output_folder(self) -> Path:
+        return self._volume_base / f"run_{self._runs}" / "output"
+
+    @property
+    def input_folder(self) -> Path:
+        return self._volume_base / f"run_{self._runs}" / "input"
+
     def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping], catalog: Optional[ConfiguredAirbyteCatalog]):
-        input_path = self._volume_base / f"run_{self._runs}" / "input"
-        output_path = self._volume_base / f"run_{self._runs}" / "output"
-        input_path.mkdir(parents=True)
-        output_path.mkdir(parents=True)
+        self.input_folder.mkdir(parents=True)
+        self.output_folder.mkdir(parents=True)
 
         if config:
-            with open(str(input_path / "tap_config.json"), "w") as outfile:
+            with open(str(self.input_folder / "tap_config.json"), "w") as outfile:
                 json.dump(dict(config), outfile)
 
         if state:
-            with open(str(input_path / "state.json"), "w") as outfile:
+            with open(str(self.input_folder / "state.json"), "w") as outfile:
                 json.dump(dict(state), outfile)
 
         if catalog:
-            with open(str(input_path / "catalog.json"), "w") as outfile:
+            with open(str(self.input_folder / "catalog.json"), "w") as outfile:
                 outfile.write(catalog.json())
 
         volumes = {
-            str(input_path): {
+            str(self.input_folder): {
                 "bind": "/data",
                 # "mode": "ro",
             },
-            str(output_path): {
+            str(self.output_folder): {
                 "bind": "/local",
                 "mode": "rw",
             },
@@ -99,8 +105,10 @@ class ConnectorRunner:
         logs = self._client.containers.run(
             image=self._image, command=cmd, working_dir="/data", volumes=volumes, network="host", stdout=True, stderr=True, **kwargs
         )
-        logging.info("Running docker, folders: %s", volumes)
+        logging.info("Docker run: \n%s\ninput: %s\noutput: %s", cmd, self.input_folder, self.output_folder)
+
+        with open(str(self.output_folder / "raw"), "wb+") as f:
+            f.write(logs)
+
         for line in logs.decode("utf-8").splitlines():
-            message = AirbyteMessage.parse_raw(line)
-            logging.info(message.type)
-            yield message
+            yield AirbyteMessage.parse_raw(line)
