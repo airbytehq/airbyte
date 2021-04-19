@@ -104,6 +104,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-intercom-singer",
       "airbyte/source-exchangeratesapi-singer",
       "airbyte/source-hubspot",
+      "airbyte/source-iterable",
       "airbyte/source-marketo-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-mixpanel-singer",
