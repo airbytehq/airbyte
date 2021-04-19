@@ -262,7 +262,7 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
     [
         ([["id"]], "string", False, ["id"], "id"),
         ([["first_name"], ["last_name"]], "string", False, ["first_name", "last_name"], "first_name, last_name"),
-        ([["float_id"]], "number", False, ["float_id"], "cast(adapter.quote('float_id') as {{ dbt_utils.type_string() }})"),
+        ([["float_id"]], "number", False, ["float_id"], "cast({{ adapter.quote('float_id') }} as {{ dbt_utils.type_string() }})"),
         ([["_airbyte_emitted_at"]], "string", False, [], "cast(_airbyte_emitted_at as {{ dbt_utils.type_string() }})"),
         (None, "string", True, [], ""),
         ([["parent", "nested_field"]], "string", True, [], ""),

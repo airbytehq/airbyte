@@ -523,7 +523,7 @@ from {{ from_table }}
                     property_type = "object"
                 if is_number(property_type) or is_boolean(property_type) or is_array(property_type) or is_object(property_type):
                     # some destinations don't handle float columns (or other types) as primary keys, turn everything to string
-                    return f"cast({self.safe_cast_to_string(field, self.properties[field], column_names[field][1])} as {jinja_call('dbt_utils.type_string()')})"
+                    return f"cast({jinja_call(self.safe_cast_to_string(field, self.properties[field], column_names[field][1]))} as {jinja_call('dbt_utils.type_string()')})"
                 else:
                     return field
             else:
