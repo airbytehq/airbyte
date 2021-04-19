@@ -1,4 +1,4 @@
-connector_image: airbyte/source-hubspot:dev
+connector_image: airbyte/source-hubspot:0.1.1
 tests:
   spec:
     - spec_path: "source_hubspot/spec.json"
@@ -12,7 +12,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
-      validate_output_from_all_streams: true
+      validate_output_from_all_streams: yes
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"

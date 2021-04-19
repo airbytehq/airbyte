@@ -22,16 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import inflection
-import pytest
+from .json_schema_helper import JsonSchemaHelper
+from .common import load_config, full_refresh_only_catalog, incremental_only_catalog, filter_output, SecretDict
+from .connector_runner import ConnectorRunner
+from .compare import diff_dicts
 
-
-@pytest.mark.usefixtures("inputs")
-class BaseTest:
-    @classmethod
-    def config_key(cls):
-        """Name of the test in configuration file, used to override test inputs,"""
-        class_name = cls.__name__
-        if class_name.startswith("Test"):
-            class_name = class_name[len("Test") :]
-        return inflection.underscore(class_name)
+__all__ = ["JsonSchemaHelper", "load_config", "filter_output", "full_refresh_only_catalog", "incremental_only_catalog", "SecretDict",
+           "ConnectorRunner", "diff_dicts"]

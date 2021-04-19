@@ -22,8 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+from functools import partial
+
+import pytest
+from airbyte_protocol import Type
 from standard_test.base import BaseTest
+from standard_test.utils import full_refresh_only_catalog, ConnectorRunner
 
 
+@pytest.mark.timeout(20 * 60)
 class TestFullRefresh(BaseTest):
-    pass
+    def test_sequential_reads(self, connector_config, configured_catalog, docker_runner: ConnectorRunner):
+        configured_catalog = full_refresh_only_catalog(configured_catalog)
+        output = docker_runner.call_read(connector_config, configured_catalog)
+        records_1 = [message.record.data for message in output if message.type == Type.RECORD]
+
+        output = docker_runner.call_read(connector_config, configured_catalog)
+        records_2 = [message.record.data for message in output if message.type == Type.RECORD]
+        serialize = partial(json.dumps, sort_keys=True)
+
+        assert not (
+            set(map(serialize, records_1)) - set(map(serialize, records_2))
+        ), "The two sequential reads should produce either equal set of records or one of them is a strict subset of the other"

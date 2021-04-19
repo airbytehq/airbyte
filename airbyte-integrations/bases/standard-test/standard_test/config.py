@@ -22,68 +22,64 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List, Optional
+from typing import List, Mapping, Optional
 
+from enum import Enum
 from pydantic import BaseModel, Field
 
-config_path: str = Field(description="Path to a JSON object representing a valid connector configuration")
+config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
-spec_path: str = Field(description="Path to a JSON object representing the spec expected to be output by this connector")
-configured_catalog_path: str = Field(description="Path to configured catalog")
+spec_path: str = Field(
+    default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector"
+)
+configured_catalog_path: str = Field(default="sample_files/configured_catalog.json", description="Path to configured catalog")
 
 
-class SpecTestConfig(BaseModel):
+class BaseConfig(BaseModel):
     class Config:
         extra = "forbid"
 
+
+class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
 
 
-class ConnectionTestConfig(BaseModel):
-    class Config:
-        extra = "forbid"
+class ConnectionTestConfig(BaseConfig):
+    class Status(Enum):
+        Succeed = 'succeed'
+        Failed = 'failed'
+        Exception = 'exception'
 
     config_path: str = config_path
-    invalid_config_path: str = invalid_config_path
+    status: Status = Field(Status.Succeed, description="Indicate if connection check should succeed with provided config")
 
 
-class DiscoveryTestConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-
+class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
 
 
-class BasicReadTestConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-
+class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
     validate_output_from_all_streams: bool = Field(False, description="Verify that all streams have records")
 
 
-class FullRefreshConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-
+class FullRefreshConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: str = configured_catalog_path
 
 
-class IncrementalConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-
+class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: str = configured_catalog_path
+    cursor_paths: Optional[Mapping[str, List[str]]] = Field(
+        description="For each stream, the path of its cursor field in the output state messages."
+    )
+    state_path: Optional[str] = Field(description="Path to state file")
 
 
-class TestConfig(BaseModel):
-    class Config:
-        extra = "forbid"
-
+class TestConfig(BaseConfig):
     spec: Optional[List[SpecTestConfig]] = Field(description="TODO")
     connection: Optional[List[ConnectionTestConfig]] = Field(description="TODO")
     discovery: Optional[List[DiscoveryTestConfig]] = Field(description="TODO")
@@ -92,10 +88,7 @@ class TestConfig(BaseModel):
     incremental: Optional[List[IncrementalConfig]] = Field(description="TODO")
 
 
-class Config(BaseModel):
-    class Config:
-        extra = "forbid"
-
+class Config(BaseConfig):
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     base_path: Optional[str] = Field(description="Base path for all relative paths")
-    tests: TestConfig = Field(description="TODO")
+    tests: TestConfig = Field(description="List of the tests with their configs")

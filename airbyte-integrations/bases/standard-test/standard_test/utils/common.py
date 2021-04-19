@@ -22,7 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from collections import UserDict
 from pathlib import Path
+from typing import Iterable, List
 
 import pytest
 from yaml import load
@@ -32,8 +34,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-from airbyte_protocol import ConfiguredAirbyteCatalog, SyncMode
-
+from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
 from standard_test.config import Config
 
 
@@ -48,7 +49,7 @@ def load_config(path: str) -> Config:
         return Config.parse_obj(data)
 
 
-def full_refresh_only_catalog(configured_catalog: ConfiguredAirbyteCatalog):
+def full_refresh_only_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> ConfiguredAirbyteCatalog:
     """Transform provided catalog to catalog with all streams configured to use Full Refresh sync (when possible)"""
     streams = []
     for stream in configured_catalog.streams:
@@ -60,7 +61,7 @@ def full_refresh_only_catalog(configured_catalog: ConfiguredAirbyteCatalog):
     return configured_catalog
 
 
-def incremental_only_catalog(configured_catalog: ConfiguredAirbyteCatalog):
+def incremental_only_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> ConfiguredAirbyteCatalog:
     """Transform provided catalog to catalog with all streams configured to use Incremental sync (when possible)"""
     streams = []
     for stream in configured_catalog.streams:
@@ -70,3 +71,16 @@ def incremental_only_catalog(configured_catalog: ConfiguredAirbyteCatalog):
 
     configured_catalog.streams = streams
     return configured_catalog
+
+
+def filter_output(records: Iterable[AirbyteMessage], type_) -> List[AirbyteMessage]:
+    """Filter messages to match specific type"""
+    return list(filter(lambda x: x.type == type_, records))
+
+
+class SecretDict(UserDict):
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(******)"
+
+    def __repr__(self) -> str:
+        return str(self)
