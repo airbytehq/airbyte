@@ -4,5 +4,5 @@
   "dockerRepository": "airbyte/source-redshift",
   "dockerImageTag": "0.2.3",
   "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-redshift",
-  "svg": "redshift"
+  "icon": "redshift"
 }

@@ -23,5 +23,5 @@ properties:
     type: string
   documentationUrl:
     type: string
-  svg:
+  icon:
     type: string

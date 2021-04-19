@@ -4,5 +4,5 @@
   "dockerRepository": "airbyte/source-zendesk-support-singer",
   "dockerImageTag": "0.2.1",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-zendesk-support-singer",
-  "svg": "zendesk"
+  "icon": "zendesk"
 }

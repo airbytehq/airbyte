@@ -4,5 +4,5 @@
   "dockerRepository": "airbyte/source-microsoft-teams",
   "dockerImageTag": "0.2.1",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-microsoft-teams",
-  "svg": "microsoft-teams"
+  "icon": "microsoft-teams"
 }

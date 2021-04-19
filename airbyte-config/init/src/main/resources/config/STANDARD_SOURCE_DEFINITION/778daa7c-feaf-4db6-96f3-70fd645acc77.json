@@ -4,5 +4,5 @@
   "dockerRepository": "airbyte/source-file",
   "dockerImageTag": "0.2.1",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-file",
-  "svg": "file"
+  "icon": "file"
 }

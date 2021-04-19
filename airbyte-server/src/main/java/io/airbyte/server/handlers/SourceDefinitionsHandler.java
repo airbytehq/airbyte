@@ -29,6 +29,7 @@ import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -82,8 +83,8 @@ public class SourceDefinitionsHandler {
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
-          .svg(standardSourceDefinition.getSvg());
-    } catch (URISyntaxException | NullPointerException e) {
+          .icon(LoadIcon(standardSourceDefinition.getIcon()));
+    } catch (URISyntaxException | NullPointerException | IOException e) {
       throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
     }
   }
@@ -131,7 +132,7 @@ public class SourceDefinitionsHandler {
         .withDockerImageTag(sourceDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl().toString())
         .withName(sourceDefinitionCreate.getName())
-        .withSvg(sourceDefinitionCreate.getSvg());
+        .withIcon(LoadIcon(sourceDefinitionCreate.getIcon()));
 
     configRepository.writeStandardSource(sourceDefinition);
 
@@ -150,12 +151,16 @@ public class SourceDefinitionsHandler {
         .withDockerRepository(currentSourceDefinition.getDockerRepository())
         .withDocumentationUrl(currentSourceDefinition.getDocumentationUrl())
         .withName(currentSourceDefinition.getName())
-        .withSvg(currentSourceDefinition.getSvg());
+        .withIcon(LoadIcon(currentSourceDefinition.getIcon()));
 
     configRepository.writeStandardSource(newSource);
     // we want to re-fetch the spec for updated definitions.
     schedulerSynchronousClient.resetCache();
     return buildSourceDefinitionRead(newSource);
+  }
+
+  private static String LoadIcon(String name) throws IOException {
+    return name == null ? null : MoreResources.readResource(String.format("icons/%s.svg", name));
   }
 
 }

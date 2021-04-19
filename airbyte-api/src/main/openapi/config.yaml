@@ -1405,7 +1405,7 @@ components:
         documentationUrl:
           type: string
           format: uri
-        svg:
+        icon:
           type: string
     SourceDefinitionUpdate:
       type: object
@@ -1437,7 +1437,7 @@ components:
         documentationUrl:
           type: string
           format: uri
-        svg:
+        icon:
           type: string
     SourceDefinitionReadList:
       type: object
@@ -1604,7 +1604,7 @@ components:
         documentationUrl:
           type: string
           format: uri
-        svg:
+        icon:
           type: string
     DestinationDefinitionUpdate:
       type: object
@@ -1636,7 +1636,7 @@ components:
         documentationUrl:
           type: string
           format: uri
-        svg:
+        icon:
           type: string
     DestinationDefinitionReadList:
       type: object
