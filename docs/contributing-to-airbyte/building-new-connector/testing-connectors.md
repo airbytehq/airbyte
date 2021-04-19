@@ -29,7 +29,7 @@ See all the test cases and their description in [Standard Source Tests](standard
 Standard tests are typically run from a docker container. 
 The default standard test runner is the File-based Standard Test suite, which gets its name because its inputs are passed as files via Docker volume mounts.
 This is the simplest way to run the standard test suite: the only requirements are that you place its input files inside your connector's directory, 
-create `standard_test_config.yml` file and specify the paths to those input files there.
+by creating a `standard_test_config.yml` file and specify the paths to those input files there.
 This is setup by default inside the `build.gradle` file on all connectors generated from templates.
 
 For reference, to configure the file-based standard test suite the only requirement is to add the following block in your connectors `build.gradle` file:
@@ -122,4 +122,3 @@ Note that integration tests can be triggered with a slightly different syntax fo
 Commits to `master` attempt to launch integration tests. Two workflows launch for each commit: one is a launcher for integration tests, the other is the core build \(the same as the default for PR and branch builds\).
 
 Since some of our connectors use rate-limited external resources, we don't want to overload from multiple commits to master. If a certain threshold of `master` integration tests are running, the integration test launcher passes but does not launch any tests. This can manually be re-run if necessary. The `master` build also runs every few hours automatically, and will launch the integration tests at that time.
-
