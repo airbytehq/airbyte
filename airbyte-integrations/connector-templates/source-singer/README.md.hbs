@@ -99,6 +99,10 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 1. To run additional integration tests, create a directory `integration_tests` which contain your tests and run them with `pytest integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
+### Standard Tests
+1. Update standard_test_config.yml file to disable/repeat or customize behaviour/inputs of specific tests.
+2. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:integrationTest` to run the standard integration test suite
+
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
 
