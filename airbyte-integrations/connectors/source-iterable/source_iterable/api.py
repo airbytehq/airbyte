@@ -222,12 +222,12 @@ class Templates(IterableExportStream):
         :return:
         """
 
-        for templete in self.template_types:
+        for template in self.template_types:
             for message in self.message_types:
                 args = {"stream_state": stream_state}
 
                 request = self._create_prepared_request(
-                    path=self.path().format(templete, message),
+                    path=self.path().format(template, message),
                     headers=dict(self.request_headers(**args), **self.authenticator.get_auth_header()),
                     params=self.request_params(**args),
                     json=self.request_body_json(**args),
