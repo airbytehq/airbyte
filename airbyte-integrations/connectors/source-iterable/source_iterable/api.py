@@ -29,6 +29,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+from airbyte_protocol import ConfiguredAirbyteStream
 from base_python import HttpStream
 
 
@@ -37,6 +38,10 @@ class IterableStream(HttpStream, ABC):
 
     # Hardcode the value because it is not returned from the API
     BACKOFF_TIME_CONSTANT = 10.0
+
+    def __init__(self, api_key, **kwargs):
+        super().__init__(**kwargs)
+        self._api_key = api_key
 
     @property
     @abstractmethod
@@ -54,10 +59,8 @@ class IterableStream(HttpStream, ABC):
         """
         return None
 
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
-        params = self.authenticator.get_auth_params()
-        return params
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        return {"api_key": self._api_key}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -66,8 +69,9 @@ class IterableStream(HttpStream, ABC):
 
 class IterableExportStream(IterableStream, ABC):
     def __init__(self, start_date, **kwargs):
-        super(IterableExportStream, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
+        self.stream_params = {"dataTypeName": self.data_field}
 
     cursor_field = "createdAt"
 
@@ -93,18 +97,19 @@ class IterableExportStream(IterableStream, ABC):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
-        params = super(IterableExportStream, self).request_params(stream_state=stream_state)
+        params = super().request_params(stream_state=stream_state)
         start_datetime = self._start_date
         if stream_state.get(self.cursor_field):
             start_datetime = pendulum.parse(stream_state[self.cursor_field])
 
         params.update(
-            {"startDateTime": start_datetime.strftime("%Y-%m-%d %H:%M:%S"), "endDateTime": pendulum.now().strftime("%Y-%m-%d %H:%M:%S")}
+            {"startDateTime": start_datetime.strftime("%Y-%m-%d %H:%M:%S"), "endDateTime": pendulum.now().strftime("%Y-%m-%d %H:%M:%S")},
+            **self.stream_params,
         )
         return params
 
     def path(self, **kwargs) -> str:
-        return f"/export/data.json?dataTypeName={self.data_field}"
+        return "/export/data.json"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for obj in response.iter_lines():
@@ -214,27 +219,15 @@ class Templates(IterableExportStream):
     message_types = ["Email", "Push", "InApp", "SMS"]
 
     def path(self, **kwargs) -> str:
-        return "templates?templateType={}&messageMedium={}"
+        return "templates"
 
-    def _list_records(self, stream_state: Mapping[str, Any], parent_stream_record: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        """
-        :param parent_stream_record If this is a child stream, this is a record from the parent stream. Otherwise, this record is None.
-        :return:
-        """
-
+    def read_stream(
+        self, configured_stream: ConfiguredAirbyteStream, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Mapping[str, Any]]:
         for template in self.template_types:
             for message in self.message_types:
-                args = {"stream_state": stream_state}
-
-                request = self._create_prepared_request(
-                    path=self.path().format(template, message),
-                    headers=dict(self.request_headers(**args), **self.authenticator.get_auth_header()),
-                    params=self.request_params(**args),
-                    json=self.request_body_json(**args),
-                )
-
-                response = self._send_request(request)
-                yield from self.parse_response(response, stream_state=stream_state)
+                self.stream_params = {"templateType": template, "messageMedium": message}
+                yield from super().read_stream(configured_stream=configured_stream, stream_state=stream_state)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()

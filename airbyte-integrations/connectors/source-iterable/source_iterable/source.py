@@ -44,37 +44,34 @@ from .api import (
     Templates,
     Users,
 )
-from .auth import ParamsAuthenticator
 
 
 class SourceIterable(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            authenticator = ParamsAuthenticator(config["api_key"])
-            list(Lists(authenticator=authenticator)._list_records(stream_state={}))
+            list(Lists(api_key=config["api_key"])._list_records(stream_state={}))
             return True, None
         except Exception as e:
             return False, f"Unable to connect to Iterable API with the provided credentials - {e}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = ParamsAuthenticator(config["api_key"])
 
-        lists = Lists(authenticator=authenticator)
+        lists = Lists(api_key=config["api_key"])
         return [
-            Campaigns(authenticator=authenticator),
-            Channels(authenticator=authenticator),
-            EmailBounce(start_date=config["start_date"], authenticator=authenticator),
-            EmailClick(start_date=config["start_date"], authenticator=authenticator),
-            EmailComplaint(start_date=config["start_date"], authenticator=authenticator),
-            EmailOpen(start_date=config["start_date"], authenticator=authenticator),
-            EmailSend(start_date=config["start_date"], authenticator=authenticator),
-            EmailSendSkip(start_date=config["start_date"], authenticator=authenticator),
-            EmailSubscribe(start_date=config["start_date"], authenticator=authenticator),
-            EmailUnsubscribe(start_date=config["start_date"], authenticator=authenticator),
+            Campaigns(api_key=config["api_key"]),
+            Channels(api_key=config["api_key"]),
+            EmailBounce(api_key=config["api_key"], start_date=config["start_date"]),
+            EmailClick(api_key=config["api_key"], start_date=config["start_date"]),
+            EmailComplaint(api_key=config["api_key"], start_date=config["start_date"]),
+            EmailOpen(api_key=config["api_key"], start_date=config["start_date"]),
+            EmailSend(api_key=config["api_key"], start_date=config["start_date"]),
+            EmailSendSkip(api_key=config["api_key"], start_date=config["start_date"]),
+            EmailSubscribe(api_key=config["api_key"], start_date=config["start_date"]),
+            EmailUnsubscribe(api_key=config["api_key"], start_date=config["start_date"]),
             lists,
-            ListUsers(authenticator=authenticator, parent_stream=lists),
-            MessageTypes(authenticator=authenticator),
-            Metadata(authenticator=authenticator),
-            Templates(start_date=config["start_date"], authenticator=authenticator),
-            Users(start_date=config["start_date"], authenticator=authenticator),
+            ListUsers(api_key=config["api_key"], parent_stream=lists),
+            MessageTypes(api_key=config["api_key"]),
+            Metadata(api_key=config["api_key"]),
+            Templates(api_key=config["api_key"], start_date=config["start_date"]),
+            Users(api_key=config["api_key"], start_date=config["start_date"]),
         ]
