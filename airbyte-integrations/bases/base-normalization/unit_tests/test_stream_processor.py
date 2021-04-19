@@ -260,9 +260,9 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
 @pytest.mark.parametrize(
     "primary_key, column_type, expecting_exception, expected_primary_keys, expected_final_primary_key_string",
     [
-        ([["id"]], "string", False, ["id"], "id"),
+        ([["id"]], "string", False, ["id"], "{{ adapter.quote('id') }}"),
         ([["first_name"], ["last_name"]], "string", False, ["first_name", "last_name"], "first_name, last_name"),
-        ([["float_id"]], "number", False, ["float_id"], "cast(adapter.quote('float_id') as {{ dbt_utils.type_string() }})"),
+        ([["float_id"]], "number", False, ["float_id"], "cast({{ 'float_id' }} as {{ dbt_utils.type_string() }})"),
         ([["_airbyte_emitted_at"]], "string", False, [], "cast(_airbyte_emitted_at as {{ dbt_utils.type_string() }})"),
         (None, "string", True, [], ""),
         ([["parent", "nested_field"]], "string", True, [], ""),
@@ -290,10 +290,7 @@ def test_primary_key(
         from_table="",
     )
     try:
-        assert (
-            stream_processor.get_primary_key(column_names={key: (key, f"adapter.quote('{key}')") for key in expected_primary_keys})
-            == expected_final_primary_key_string
-        )
+        assert stream_processor.get_primary_key(column_names=stream_processor.extract_column_names()) == expected_final_primary_key_string
     except ValueError as e:
         if not expecting_exception:
             raise e

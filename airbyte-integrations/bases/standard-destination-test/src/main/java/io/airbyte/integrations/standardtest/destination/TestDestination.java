@@ -325,6 +325,8 @@ public abstract class TestDestination {
         .withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getName())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 1)
+                .put("currency", "USD")
                 .put("date", "2020-03-31T00:00:00Z")
                 .put("HKD", 10)
                 .put("NZD", 700)
@@ -363,6 +365,8 @@ public abstract class TestDestination {
         .withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getName())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 1)
+                .put("currency", "USD")
                 .put("date", "2020-03-31T00:00:00Z")
                 .put("HKD", 10)
                 .put("NZD", 700)
@@ -423,7 +427,7 @@ public abstract class TestDestination {
       s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
       s.withCursorField(Collections.emptyList());
       // use composite primary key of various types (string, float)
-      s.withPrimaryKey(List.of(List.of("currency"), List.of("date"), List.of("NZD")));
+      s.withPrimaryKey(List.of(List.of("id"), List.of("currency"), List.of("date"), List.of("NZD")));
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
@@ -438,6 +442,7 @@ public abstract class TestDestination {
                 .withStream(catalog.getStreams().get(0).getName())
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 2)
                     .put("currency", "EUR")
                     .put("date", "2020-09-01T00:00:00Z")
                     .put("HKD", 10.5)
@@ -449,6 +454,7 @@ public abstract class TestDestination {
                 .withStream(catalog.getStreams().get(0).getName())
                 .withEmittedAt(Instant.now().toEpochMilli() + 100L)
                 .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-09-01T00:00:00Z")
                     .put("HKD", 5.4)
@@ -464,7 +470,8 @@ public abstract class TestDestination {
         .stream()
         .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
         .collect(Collectors.toMap(
-            message -> message.getRecord().getData().get("currency").asText() +
+            message -> message.getRecord().getData().get("id").asText() +
+                message.getRecord().getData().get("currency").asText() +
                 message.getRecord().getData().get("date").asText() +
                 message.getRecord().getData().get("NZD").asText(),
             message -> message,
@@ -475,7 +482,8 @@ public abstract class TestDestination {
         .stream()
         .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
         .filter(message -> {
-          final String key = message.getRecord().getData().get("currency").asText() +
+          final String key = message.getRecord().getData().get("id").asText() +
+              message.getRecord().getData().get("currency").asText() +
               message.getRecord().getData().get("date").asText() +
               message.getRecord().getData().get("NZD").asText();
           return message.getRecord().getEmittedAt().equals(latestMessagesOnly.get(key).getRecord().getEmittedAt());
