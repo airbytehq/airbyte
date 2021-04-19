@@ -424,10 +424,13 @@ from {{ from_table }}
         return sql
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-        return [StreamProcessor.safe_cast_to_string(field, self.properties[field], column_names[field][1]) for field in column_names]
+        return [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names]
 
     @staticmethod
-    def safe_cast_to_string(property_name: str, definition: Dict, column_name: str) -> str:
+    def safe_cast_to_string(definition: Dict, column_name: str) -> str:
+        """
+        Note that the result from this static method should always be used within a jinja context (for example, from jinja macro surrogate_key call)
+        """
         if "type" not in definition:
             return column_name
         elif is_boolean(definition["type"]):
@@ -523,9 +526,9 @@ from {{ from_table }}
                     property_type = "object"
                 if is_number(property_type) or is_boolean(property_type) or is_array(property_type) or is_object(property_type):
                     # some destinations don't handle float columns (or other types) as primary keys, turn everything to string
-                    return f"cast({jinja_call(self.safe_cast_to_string(field, self.properties[field], column_names[field][1]))} as {jinja_call('dbt_utils.type_string()')})"
+                    return f"cast({jinja_call(self.safe_cast_to_string(self.properties[field], column_names[field][1]))} as {jinja_call('dbt_utils.type_string()')})"
                 else:
-                    return field
+                    return column_names[field][0]
             else:
                 # using an airbyte generated column
                 return f"cast({field} as {jinja_call('dbt_utils.type_string()')})"
