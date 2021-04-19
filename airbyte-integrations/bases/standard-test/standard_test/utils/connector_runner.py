@@ -99,8 +99,10 @@ class ConnectorRunner:
         logs = self._client.containers.run(
             image=self._image, command=cmd, working_dir="/data", volumes=volumes, network="host", stdout=True, stderr=True, **kwargs
         )
-        logging.info("Running docker, folders: %s", volumes)
+        logging.info("Docker run: \n%s\ninput: %s\noutput: %s", cmd, self.input_folder, self.output_folder)
+
+        with open(str(self.output_folder / "raw"), "wb+") as f:
+            f.write(logs)
+
         for line in logs.decode("utf-8").splitlines():
-            message = AirbyteMessage.parse_raw(line)
-            logging.info(message.type)
-            yield message
+            yield AirbyteMessage.parse_raw(line)
