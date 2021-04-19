@@ -24,6 +24,7 @@
 
 package io.airbyte.server.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.SourceDefinitionCreate;
 import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
@@ -31,7 +32,6 @@ import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
@@ -42,6 +42,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -75,7 +76,8 @@ public class SourceDefinitionsHandler {
     this.githubStore = githubStore;
   }
 
-  private static SourceDefinitionRead buildSourceDefinitionRead(StandardSourceDefinition standardSourceDefinition) {
+  @VisibleForTesting
+  static SourceDefinitionRead buildSourceDefinitionRead(StandardSourceDefinition standardSourceDefinition) {
     try {
       return new SourceDefinitionRead()
           .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
@@ -89,31 +91,28 @@ public class SourceDefinitionsHandler {
     }
   }
 
-  public SourceDefinitionReadList listSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<SourceDefinitionRead> reads = configRepository.listStandardSources()
-        .stream()
+  public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
+    return toSourceDefinitionReadList(configRepository.listStandardSources());
+  }
+
+  private static SourceDefinitionReadList toSourceDefinitionReadList(List<StandardSourceDefinition> defs) {
+    final List<SourceDefinitionRead> reads = defs.stream()
         .map(SourceDefinitionsHandler::buildSourceDefinitionRead)
         .collect(Collectors.toList());
     return new SourceDefinitionReadList().sourceDefinitions(reads);
   }
 
-  public SourceDefinitionReadList listLatestSourceDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    List<StandardSourceDefinition> sourceDefs;
-    try {
-      sourceDefs = YamlListToStandardDefinitions.toStandardSourceDefinitions(getLatestSources());
-    } catch (RuntimeException e) {
-      throw new KnownException(500, "Error retrieving latest source definitions", e);
-    }
-
-    final var reads = sourceDefs.stream().map(SourceDefinitionsHandler::buildSourceDefinitionRead).collect(Collectors.toList());
-    return new SourceDefinitionReadList().sourceDefinitions(reads);
+  public SourceDefinitionReadList listLatestSourceDefinitions() {
+    return toSourceDefinitionReadList(getLatestDestinations());
   }
 
-  private String getLatestSources() {
+  private List<StandardSourceDefinition> getLatestDestinations() {
     try {
       return githubStore.getLatestSources();
-    } catch (IOException | InterruptedException e) {
-      throw new KnownException(500, "Request to retrieve latest source definitions failed", e);
+    } catch (IOException e) {
+      return Collections.emptyList();
+    } catch (InterruptedException e) {
+      throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
     }
   }
 
