@@ -22,21 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Optional, Mapping, Any
+from typing import Optional, Mapping
 
 import requests
 
 from base_python import AbstractSource, HttpStream, Stream
-from typing import Any, Tuple, List
+from typing import Any, Tuple, List, Iterable
 
 class ExchangeRates(HttpStream):
+    url_base = "https://api.ratesapi.io/"
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(self, **kwargs) -> str:
         return "api/latest"
 
-    url_base = "https://api.ratesapi.io/"
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        yield from [response_json]
+
 
 class SourceExchangeRates(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
