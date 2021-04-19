@@ -91,7 +91,7 @@ Once you've finished iterating on the changes to a connector as specified in its
    # to run integration tests for the connector
    /test connector=(connectors|bases)/<connector_name> 
    # to run integration tests and publish the connector
-   /publish connector=(connectors|bases)/<connector_name>
+   /publish connector=<connector_name>
    ```
 
 6. The new version of the connector is now available for everyone who uses it. Thank you!
