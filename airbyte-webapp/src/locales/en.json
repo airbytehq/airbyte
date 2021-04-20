@@ -200,6 +200,7 @@
   "connection.failedSync": "Failed sync",
   "connection.successSync": "Succeeded sync",
   "connection.noSyncData": "Sync was not started",
+  "connection.refreshSchema": "Refresh schema",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",
