@@ -73,7 +73,7 @@ public abstract class AbstractJdbcDestination implements Destination {
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.debug("Exception while checking connection: ", e);
+      LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
