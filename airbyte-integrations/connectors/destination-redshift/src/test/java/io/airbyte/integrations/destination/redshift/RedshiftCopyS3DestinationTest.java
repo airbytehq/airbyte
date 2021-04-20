@@ -22,20 +22,21 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.destination.redshift;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class S3Config {
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-  public final String bucketName;
-  public final String accessKeyId;
-  public final String secretAccessKey;
+@DisplayName("Redshift Destination Efficient Upload")
+public class RedshiftCopyS3DestinationTest {
 
-  public S3Config(JsonNode config) {
-    this.bucketName = config.get("s3_bucket_name").asText();
-    this.accessKeyId = config.get("access_key_id").asText();
-    this.secretAccessKey = config.get("secret_access_key").asText();
+  @Test
+  @DisplayName("Should correctly extract region from Redshift url")
+  void extractRegionFromRedshiftUrlTest() {
+    var region = RedshiftCopyS3Destination.extractRegionFromRedshiftUrl("redshift-cluster-1.c5lzdndklo9c.us-east-2.redshift.amazonaws.com");
+    assertEquals("us-east-2", region);
   }
 
 }

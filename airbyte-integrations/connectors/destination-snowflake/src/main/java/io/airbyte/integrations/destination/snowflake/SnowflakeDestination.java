@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.Map;
 import org.slf4j.Logger;

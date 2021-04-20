@@ -32,7 +32,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.destination.redshift.RedshiftCopyDestination.S3Config;
+import io.airbyte.integrations.destination.redshift.RedshiftCopyS3Destination.S3Config;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -68,8 +68,7 @@ public class RedshiftInsertIntegrationTest extends TestDestination {
   }
 
   private static JsonNode getStaticConfig() {
-    var original = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
-    return S3Config.purge(original);
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override

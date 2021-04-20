@@ -27,69 +27,69 @@ package io.airbyte.integrations.destination.snowflake;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.copy.Copier;
+import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
+import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3Copier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopierSupplier;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import java.util.UUID;
-import net.snowflake.client.jdbc.internal.amazonaws.auth.AWSStaticCredentialsProvider;
-import net.snowflake.client.jdbc.internal.amazonaws.auth.BasicAWSCredentials;
-import net.snowflake.client.jdbc.internal.amazonaws.services.s3.AmazonS3;
-import net.snowflake.client.jdbc.internal.amazonaws.services.s3.AmazonS3ClientBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.airbyte.protocol.models.DestinationSyncMode;
 
-public class SnowflakeCopyS3Destination implements Destination {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeCopyS3Destination.class);
-  private static final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
+public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    return new SnowflakeCopyS3Consumer(config, catalog);
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+    return new CopyConsumer(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), this::getCopier, getSqlOperations(), getNameTransformer());
   }
 
   @Override
-  public ConnectorSpecification spec() throws Exception {
-    return AbstractJdbcDestination.getSpec();
+  public void attemptWriteToPersistence(JsonNode config) {
+    S3Copier.attemptWriteToPersistence(getS3Config(config));
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) throws Exception {
-    // todo: dry
-    try {
-      final String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
-      final S3Config s3Config = new S3Config(config);
-      attemptWriteAndDeleteS3Object(s3Config, outputTableName);
-
-      var outputSchema = nameTransformer.convertStreamName(config.get("schema").asText());
-      JdbcDatabase database = SnowflakeDatabase.getDatabase(config);
-      AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, new SnowflakeSqlOperations());
-
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } catch (Exception e) {
-      LOGGER.debug("Exception while checking connection: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
-    }
+  public ExtendedNameTransformer getNameTransformer() {
+    return new SnowflakeSQLNameTransformer();
   }
 
-  private void attemptWriteAndDeleteS3Object(S3Config s3Config, String outputTableName) {
-    var s3 = getAmazonS3(s3Config);
-    var s3Bucket = s3Config.bucketName;
-    s3.putObject(s3Bucket, outputTableName, "check-content");
-    s3.deleteObject(s3Bucket, outputTableName);
+  @Override
+  public JdbcDatabase getDatabase(JsonNode config) {
+    return SnowflakeDatabase.getDatabase(config);
   }
 
-  public static AmazonS3 getAmazonS3(S3Config s3Config) {
-    var accessKeyId = s3Config.accessKeyId;
-    var secretAccessKey = s3Config.secretAccessKey;
-    var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-    return AmazonS3ClientBuilder.standard()
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-        .build();
+  @Override
+  public SqlOperations getSqlOperations() {
+    return new SnowflakeSqlOperations();
+  }
+
+  private Copier getCopier(String configuredSchema,
+                           S3Config s3Config,
+                           String stagingFolder,
+                           DestinationSyncMode destinationSyncMode,
+                           AirbyteStream airbyteStream,
+                           ExtendedNameTransformer nameTransformer,
+                           JdbcDatabase jdbcDatabase,
+                           SqlOperations sqlOperations) {
+    return new S3CopierSupplier(SnowflakeS3Copier::new).get(configuredSchema, s3Config, stagingFolder, destinationSyncMode, airbyteStream, nameTransformer,
+        jdbcDatabase, sqlOperations);
+  }
+
+  private String getConfiguredSchema(JsonNode config) {
+    return config.get("schema").asText();
+  }
+
+  private S3Config getS3Config(JsonNode config) {
+    final JsonNode loadingMethod = config.get("loading_method");
+    return new S3Config(
+            loadingMethod.get("s3_bucket_name").asText(),
+            loadingMethod.get("access_key_id").asText(),
+            loadingMethod.get("secret_access_key").asText(),
+            null
+    );
   }
 
 }

@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.integrations.destination.redshift.RedshiftCopyDestination.RedshiftCopyDestinationConsumer;
+import io.airbyte.integrations.destination.redshift.RedshiftCopyS3Destination.RedshiftCopyDestinationConsumer;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,7 @@ public class RedshiftDestinationTest {
   @Test
   @DisplayName("When given S3 credentials should use COPY")
   public void useCopyStrategyTest() throws Exception {
-    var copyMock = mock(RedshiftCopyDestination.class);
+    var copyMock = mock(RedshiftCopyS3Destination.class);
     when(copyMock.getConsumer(any(), any())).thenReturn(mock(RedshiftCopyDestinationConsumer.class));
     var insertMock = mock(RedshiftInsertDestination.class);
     var redshiftDest = new RedshiftDestination(copyMock, insertMock);
@@ -64,7 +64,7 @@ public class RedshiftDestinationTest {
   @Test
   @DisplayName("When not given S3 credentials should use INSERT")
   public void useInsertStrategyTest() throws Exception {
-    var copyMock = mock(RedshiftCopyDestination.class);
+    var copyMock = mock(RedshiftCopyS3Destination.class);
     var insertMock = mock(RedshiftInsertDestination.class);
     when(insertMock.getConsumer(any(), any())).thenReturn(mock(RedshiftCopyDestinationConsumer.class));
     var redshiftDest = new RedshiftDestination(copyMock, insertMock);

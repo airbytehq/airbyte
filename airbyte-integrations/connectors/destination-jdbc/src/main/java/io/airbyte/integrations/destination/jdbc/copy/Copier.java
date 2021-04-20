@@ -22,21 +22,17 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.redshift;
+package io.airbyte.integrations.destination.jdbc.copy;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.sql.Timestamp;
+import java.util.UUID;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+public interface Copier {
 
-@DisplayName("Redshift Destination Efficient Upload")
-public class RedshiftCopyDestinationTest {
+  void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception;
 
-  @Test
-  @DisplayName("Should correctly extract region from Redshift url")
-  void extractRegionFromRedshiftUrlTest() {
-    var region = RedshiftCopyDestination.extractRegionFromRedshiftUrl("redshift-cluster-1.c5lzdndklo9c.us-east-2.redshift.amazonaws.com");
-    assertEquals("us-east-2", region);
-  }
+  String copyToTmpTableAndPrepMergeToFinalTable(boolean hasFailed) throws Exception;
+
+  void removeFileAndDropTmpTable() throws Exception;
 
 }

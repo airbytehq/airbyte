@@ -22,42 +22,55 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.destination.jdbc.copy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import net.snowflake.client.jdbc.internal.amazonaws.services.s3.AmazonS3;
 
-public class SnowflakeCopyS3Consumer extends FailureTrackingAirbyteMessageConsumer {
+public class CopyConsumer extends FailureTrackingAirbyteMessageConsumer {
 
-  private static final SnowflakeSQLNameTransformer nameTransformer = new SnowflakeSQLNameTransformer();
-
-  private final ConfiguredAirbyteCatalog catalog;
-  private final String defaultSchema;
-  private final JdbcDatabase db;
+  private final String configuredSchema;
   private final S3Config s3Config;
-  private final AmazonS3 s3Client;
-  private final Map<String, SnowflakeCopier> streamNameToCopier;
+  private final ConfiguredAirbyteCatalog catalog;
+  private final JdbcDatabase db;
+  private final CopierSupplier copierSupplier;
+  private final SqlOperations sqlOperations;
+  private final ExtendedNameTransformer nameTransformer;
+  private final Map<String, Copier> streamNameToCopier;
 
-  public SnowflakeCopyS3Consumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public CopyConsumer(String configuredSchema,
+                      S3Config s3Config,
+                      ConfiguredAirbyteCatalog catalog,
+                      JdbcDatabase db,
+                      CopierSupplier copierSupplier,
+                      SqlOperations sqlOperations,
+                      ExtendedNameTransformer nameTransformer) {
+    this.configuredSchema = configuredSchema;
+    this.s3Config = s3Config;
     this.catalog = catalog;
-    this.db = SnowflakeDatabase.getDatabase(config);
-    this.defaultSchema = config.get("schema").asText();
-    this.s3Config = new S3Config(config);
-    this.s3Client = SnowflakeCopyS3Destination.getAmazonS3(s3Config);
+    this.db = db;
+    this.copierSupplier = copierSupplier;
+    this.sqlOperations = sqlOperations;
+    this.nameTransformer = nameTransformer;
     this.streamNameToCopier = new HashMap<>();
   }
 
   @Override
-  protected void startTracked() throws Exception {
+  protected void startTracked() {
     var stagingFolder = UUID.randomUUID().toString();
     for (var configuredStream : catalog.getStreams()) {
       if (configuredStream.getDestinationSyncMode() == null) {
@@ -66,9 +79,8 @@ public class SnowflakeCopyS3Consumer extends FailureTrackingAirbyteMessageConsum
       var stream = configuredStream.getStream();
       var streamName = stream.getName();
       var syncMode = configuredStream.getDestinationSyncMode();
-      var schema =
-          stream.getNamespace() != null ? nameTransformer.convertStreamName(stream.getNamespace()) : nameTransformer.convertStreamName(defaultSchema);
-      var copier = new SnowflakeCopier(s3Config.bucketName, stagingFolder, syncMode, schema, streamName, s3Client, db, s3Config);
+      var copier = copierSupplier.get(configuredSchema, s3Config, stagingFolder, syncMode, stream, nameTransformer, db, sqlOperations);
+
       streamNameToCopier.put(streamName, copier);
     }
   }
@@ -82,18 +94,36 @@ public class SnowflakeCopyS3Consumer extends FailureTrackingAirbyteMessageConsum
               Jsons.serialize(catalog), Jsons.serialize(msg)));
     }
 
-    streamNameToCopier.get(streamName).uploadToS3(msg);
+    var id = UUID.randomUUID();
+    var data = Jsons.serialize(msg.getData());
+    var emittedAt = Timestamp.from(Instant.ofEpochMilli(msg.getEmittedAt()));
+
+    streamNameToCopier.get(streamName).write(id, data, emittedAt);
   }
 
   /**
-   * Although 'close' suggests a focus on clean up, this method also loads S3 files into Redshift.
+   * Although 'close' suggests a focus on clean up, this method also loads files into the warehouse.
    * First, move the files into temporary table, then merge the temporary tables with the final
-   * destination tables. Lastly, do actual clean up and best-effort remove the S3 files and temporary
+   * destination tables. Lastly, do actual clean up and best-effort remove the files and temporary
    * tables.
    */
-  @Override
-  protected void close(boolean hasFailed) throws Exception {
-    SnowflakeCopier.closeAsOneTransaction(new ArrayList<>(streamNameToCopier.values()), hasFailed, db);
+  public void close(boolean hasFailed) throws Exception {
+    closeAsOneTransaction(new ArrayList<>(streamNameToCopier.values()), hasFailed, db);
+  }
+
+  public void closeAsOneTransaction(List<Copier> copiers, boolean hasFailed, JdbcDatabase db) throws Exception {
+    try {
+      StringBuilder mergeCopiersToFinalTableQuery = new StringBuilder();
+      for (var copier : copiers) {
+        var mergeQuery = copier.copyToTmpTableAndPrepMergeToFinalTable(hasFailed);
+        mergeCopiersToFinalTableQuery.append(mergeQuery);
+      }
+      sqlOperations.executeTransaction(db, mergeCopiersToFinalTableQuery.toString());
+    } finally {
+      for (var copier : copiers) {
+        copier.removeFileAndDropTmpTable();
+      }
+    }
   }
 
 }

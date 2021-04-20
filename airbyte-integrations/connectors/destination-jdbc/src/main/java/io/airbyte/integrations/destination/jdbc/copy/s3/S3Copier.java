@@ -22,43 +22,34 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.commons.json.Jsons;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.integrations.destination.jdbc.copy.Copier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * This class is meant to represent all the required operations to replicate an
- * {@link io.airbyte.protocol.models.AirbyteStream} into Snowflake using the Copy strategy. The data
- * is streamed into a staging S3 bucket in multiple parts. This file is then loaded into a Snowflake
- * temporary table via a Copy statement, before being moved into the final destination table. The
- * staging files and temporary tables are best-effort cleaned up. A single S3 file is currently
- * sufficiently performant.
- */
-public class SnowflakeCopier {
+public abstract class S3Copier implements Copier {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeCopier.class);
-  private static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
-  private static final SqlOperations SQL_OPS = new SnowflakeSqlOperations();
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3Copier.class);
 
   private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
@@ -67,7 +58,6 @@ public class SnowflakeCopier {
   // WARNING: Too large a part size can cause potential OOM errors.
   private static final int PART_SIZE_MB = 10;
 
-  private final String s3BucketName;
   private final String stagingFolder;
   private final DestinationSyncMode destSyncMode;
   private final String schemaName;
@@ -75,22 +65,23 @@ public class SnowflakeCopier {
   private final AmazonS3 s3Client;
   private final JdbcDatabase db;
   private final S3Config s3Config;
+  private final ExtendedNameTransformer nameTransformer;
+  private final SqlOperations sqlOperations;
   private final StreamTransferManager multipartUploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
   private final String tmpTableName;
 
-  public SnowflakeCopier(
-                         String s3BucketName,
-                         String stagingFolder,
-                         DestinationSyncMode destSyncMode,
-                         String schema,
-                         String streamName,
-                         AmazonS3 client,
-                         JdbcDatabase db,
-                         S3Config s3Config)
+  public S3Copier(String stagingFolder,
+                  DestinationSyncMode destSyncMode,
+                  String schema,
+                  String streamName,
+                  AmazonS3 client,
+                  JdbcDatabase db,
+                  S3Config s3Config,
+                  ExtendedNameTransformer nameTransformer,
+                  SqlOperations sqlOperations)
       throws IOException {
-    this.s3BucketName = s3BucketName;
     this.stagingFolder = stagingFolder;
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
@@ -98,8 +89,10 @@ public class SnowflakeCopier {
     this.s3Client = client;
     this.db = db;
     this.s3Config = s3Config;
+    this.nameTransformer = nameTransformer;
+    this.sqlOperations = sqlOperations;
 
-    this.tmpTableName = NAME_TRANSFORMER.getTmpTableName(streamName);
+    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
     // The alternative is first writing the entire output to disk before loading into S3. This is not
@@ -108,7 +101,7 @@ public class SnowflakeCopier {
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     this.multipartUploadManager =
-        new StreamTransferManager(s3BucketName, getPath(stagingFolder, streamName), client)
+        new StreamTransferManager(s3Config.getBucketName(), getPath(stagingFolder, streamName), client)
             .numUploadThreads(DEFAULT_UPLOAD_THREADS)
             .queueCapacity(DEFAULT_QUEUE_CAPACITY)
             .partSize(PART_SIZE_MB);
@@ -120,38 +113,33 @@ public class SnowflakeCopier {
     this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
   }
 
-  public static void closeAsOneTransaction(List<SnowflakeCopier> copiers, boolean hasFailed, JdbcDatabase redshiftDb) throws Exception {
-    try {
-      StringBuilder mergeCopiersToFinalTableQuery = new StringBuilder();
-      for (var copier : copiers) {
-        var mergeQuery = copier.copyToRedshiftTmpTableAndPrepMergeToFinalTable(hasFailed);
-        mergeCopiersToFinalTableQuery.append(mergeQuery);
-      }
-      SQL_OPS.executeTransaction(redshiftDb, mergeCopiersToFinalTableQuery.toString());
-    } finally {
-      for (var copier : copiers) {
-        copier.removeS3FileAndDropTmpTable();
-      }
+  @Override
+  public void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception {
+    csvPrinter.printRecord(id, jsonDataString, emittedAt);
+  }
+
+  @Override
+  public String copyToTmpTableAndPrepMergeToFinalTable(boolean hasFailed) throws Exception {
+    if (hasFailed) {
+      multipartUploadManager.abort();
+      return "";
     }
+    closeS3WriteStreamAndUpload();
+    createTmpTableAndCopyS3FileInto();
+    return mergeIntoDestTableIncrementalOrFullRefreshQuery();
   }
 
-  public void uploadToS3(AirbyteRecordMessage message) throws IOException {
-    var id = UUID.randomUUID();
-    var data = Jsons.serialize(message.getData());
-    var emittedAt = Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt()));
-    csvPrinter.printRecord(id, data, emittedAt);
-  }
-
-  public void removeS3FileAndDropTmpTable() throws Exception {
+  @Override
+  public void removeFileAndDropTmpTable() throws Exception {
     var s3StagingFile = getPath(stagingFolder, streamName);
     LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
-    if (s3Client.doesObjectExist(s3BucketName, s3StagingFile)) {
-      s3Client.deleteObject(s3BucketName, s3StagingFile);
+    if (s3Client.doesObjectExist(s3Config.getBucketName(), s3StagingFile)) {
+      s3Client.deleteObject(s3Config.getBucketName(), s3StagingFile);
     }
     LOGGER.info("S3 staging file {} cleaned.", s3StagingFile);
 
     LOGGER.info("Begin cleaning {} tmp table in destination.", tmpTableName);
-    SQL_OPS.dropTableIfExists(db, schemaName, tmpTableName);
+    sqlOperations.dropTableIfExists(db, schemaName, tmpTableName);
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
   }
 
@@ -163,16 +151,6 @@ public class SnowflakeCopier {
     return String.join("/", "s3:/", s3BucketName, runFolder, key);
   }
 
-  private String copyToRedshiftTmpTableAndPrepMergeToFinalTable(boolean hasFailed) throws Exception {
-    if (hasFailed) {
-      multipartUploadManager.abort();
-      return "";
-    }
-    closeS3WriteStreamAndUpload();
-    createTmpTableAndCopyS3FileInto();
-    return mergeIntoDestTableIncrementalOrFullRefreshQuery();
-  }
-
   private void closeS3WriteStreamAndUpload() throws IOException {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
     csvPrinter.close();
@@ -182,47 +160,56 @@ public class SnowflakeCopier {
   }
 
   private void createTmpTableAndCopyS3FileInto() throws Exception {
-    SQL_OPS.createSchemaIfNotExists(db, schemaName);
+    sqlOperations.createSchemaIfNotExists(db, schemaName);
     LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
-    SQL_OPS.createTableIfNotExists(db, schemaName, tmpTableName);
+    sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName);
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    copyS3CsvFileIntoTable(db, getFullS3Path(s3BucketName, stagingFolder, streamName), schemaName, tmpTableName, s3Config);
+    copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), stagingFolder, streamName), schemaName, tmpTableName, s3Config);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
   private String mergeIntoDestTableIncrementalOrFullRefreshQuery() throws Exception {
     LOGGER.info("Preparing tmp table {} in destination.", tmpTableName);
-    var destTableName = NAME_TRANSFORMER.getRawTableName(streamName);
-    SQL_OPS.createTableIfNotExists(db, schemaName, destTableName);
+    var destTableName = nameTransformer.getRawTableName(streamName);
+    sqlOperations.createTableIfNotExists(db, schemaName, destTableName);
     LOGGER.info("Tmp table {} in destination prepared.", tmpTableName);
 
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
     var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
-      queries.append(SQL_OPS.truncateTableQuery(schemaName, destTableName));
+      queries.append(sqlOperations.truncateTableQuery(schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
-    queries.append(SQL_OPS.copyTableQuery(schemaName, tmpTableName, destTableName));
+    queries.append(sqlOperations.copyTableQuery(schemaName, tmpTableName, destTableName));
     return queries.toString();
   }
 
-  public void copyS3CsvFileIntoTable(JdbcDatabase database,
-                                     String s3FileLocation,
-                                     String schema,
-                                     String tableName,
-                                     S3Config s3Config)
-      throws SQLException {
-    final var copyQuery = String.format(
-        "COPY INTO %s.%s FROM '%s' " // todo: test quoting
-            + "CREDENTIALS=(aws_access_key_id='%s';aws_secret_access_key='%s') "
-            + "file_format = (type = csv field_delimiter = ',' skip_header = 0);", // todo: check csv writing escaping
-        schema,
-        tableName,
-        s3FileLocation,
-        s3Config.accessKeyId,
-        s3Config.secretAccessKey);
-
-    database.execute(copyQuery);
+  public static void attemptWriteToPersistence(S3Config s3Config) {
+    final String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+    attemptWriteAndDeleteS3Object(s3Config, outputTableName);
   }
+
+  private static void attemptWriteAndDeleteS3Object(S3Config s3Config, String outputTableName) {
+    var s3 = getAmazonS3(s3Config);
+    var s3Bucket = s3Config.getBucketName();
+    s3.putObject(s3Bucket, outputTableName, "check-content");
+    s3.deleteObject(s3Bucket, outputTableName);
+  }
+
+  public static AmazonS3 getAmazonS3(S3Config s3Config) {
+    var accessKeyId = s3Config.getAccessKeyId();
+    var secretAccessKey = s3Config.getSecretAccessKey();
+    var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+    return AmazonS3ClientBuilder.standard()
+        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+        .build();
+  }
+
+  public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
+                                              String s3FileLocation,
+                                              String schema,
+                                              String tableName,
+                                              S3Config s3Config)
+      throws SQLException;
 
 }

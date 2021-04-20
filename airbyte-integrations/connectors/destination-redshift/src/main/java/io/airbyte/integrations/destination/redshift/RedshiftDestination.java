@@ -26,17 +26,21 @@ package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.redshift.RedshiftCopyDestination.S3Config;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  * The Redshift Destination offers two replication strategies. The first inserts via a typical SQL
@@ -44,62 +48,49 @@ import org.slf4j.LoggerFactory;
  * {@link RedshiftInsertDestination} for more detail. The second inserts via streaming the data to
  * an S3 bucket, and Cop-ing the date into Redshift. This is more efficient, and recommended for
  * production workloads, but does require users to set up an S3 bucket and pass in additional
- * credentials. See {@link RedshiftCopyDestination} for more detail. This class inspect the given
+ * credentials. See {@link RedshiftCopyS3Destination} for more detail. This class inspect the given
  * arguments to determine which strategy to use.
  */
-public class RedshiftDestination implements Destination {
+public class RedshiftDestination extends SwitchingDestination<RedshiftDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
 
-  private final RedshiftInsertDestination insert;
-  private final RedshiftCopyDestination copy;
+  enum DestinationType {
+    INSERT,
+    COPY_S3
+  }
+
+  public RedshiftDestination() {
+    super(DestinationType.class, RedshiftDestination::getTypeFromConfig, getTypeToDestination());
+  }
+
+  public static DestinationType getTypeFromConfig(JsonNode config) {
+    if (RedshiftCopyS3Destination.isPresent(config)) {
+      return DestinationType.COPY_S3;
+    } else {
+      return DestinationType.INSERT;
+    }
+  }
+
+  public static Map<DestinationType, Destination> getTypeToDestination() {
+    final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination();
+    final RedshiftCopyS3Destination copyS3Destination = new RedshiftCopyS3Destination();
+
+    return ImmutableMap.of(
+            DestinationType.INSERT, insertDestination,
+            DestinationType.COPY_S3, copyS3Destination);
+  }
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    return AbstractJdbcDestination.getSpec();
+  }
 
   public static void main(String[] args) throws Exception {
     final Destination destination = new RedshiftDestination();
     LOGGER.info("starting destination: {}", RedshiftDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", RedshiftDestination.class);
-  }
-
-  public RedshiftDestination() {
-    this(new RedshiftCopyDestination(), new RedshiftInsertDestination());
-  }
-
-  @VisibleForTesting
-  public RedshiftDestination(RedshiftCopyDestination copy, RedshiftInsertDestination insert) {
-    this.copy = copy;
-    this.insert = insert;
-  }
-
-  @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    if (hasCopyConfigs(config)) {
-      return copy.getConsumer(config, catalog);
-    }
-    return insert.getConsumer(config, catalog);
-  }
-
-  @Override
-  public ConnectorSpecification spec() throws Exception {
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
-  }
-
-  @Override
-  public AirbyteConnectionStatus check(JsonNode config) throws Exception {
-    if (hasCopyConfigs(config)) {
-      return copy.check(config);
-    }
-    return insert.check(config);
-  }
-
-  public static boolean hasCopyConfigs(JsonNode config) {
-    if (S3Config.isPresent(config)) {
-      LOGGER.info("Using Redshift COPY strategy.");
-      return true;
-    }
-    LOGGER.info("Using Redshift INSERT strategy.");
-    return false;
   }
 
 }
