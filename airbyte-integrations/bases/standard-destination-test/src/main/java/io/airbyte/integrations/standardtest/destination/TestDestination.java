@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -149,6 +150,13 @@ public abstract class TestDestination {
       return null;
     }
     return config.get("schema").asText();
+  }
+
+  /**
+   * Override to return true if a destination implements namespaces and should be tested as such.
+   */
+  protected boolean implementsNamespaces() {
+    return false;
   }
 
   /**
@@ -317,6 +325,8 @@ public abstract class TestDestination {
         .withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getName())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 1)
+                .put("currency", "USD")
                 .put("date", "2020-03-31T00:00:00Z")
                 .put("HKD", 10)
                 .put("NZD", 700)
@@ -355,6 +365,8 @@ public abstract class TestDestination {
         .withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getName())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 1)
+                .put("currency", "USD")
                 .put("date", "2020-03-31T00:00:00Z")
                 .put("HKD", 10)
                 .put("NZD", 700)
@@ -415,7 +427,7 @@ public abstract class TestDestination {
       s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
       s.withCursorField(Collections.emptyList());
       // use composite primary key of various types (string, float)
-      s.withPrimaryKey(List.of(List.of("currency"), List.of("date"), List.of("NZD")));
+      s.withPrimaryKey(List.of(List.of("id"), List.of("currency"), List.of("date"), List.of("NZD")));
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
@@ -430,6 +442,7 @@ public abstract class TestDestination {
                 .withStream(catalog.getStreams().get(0).getName())
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 2)
                     .put("currency", "EUR")
                     .put("date", "2020-09-01T00:00:00Z")
                     .put("HKD", 10.5)
@@ -441,6 +454,7 @@ public abstract class TestDestination {
                 .withStream(catalog.getStreams().get(0).getName())
                 .withEmittedAt(Instant.now().toEpochMilli() + 100L)
                 .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-09-01T00:00:00Z")
                     .put("HKD", 5.4)
@@ -456,7 +470,8 @@ public abstract class TestDestination {
         .stream()
         .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
         .collect(Collectors.toMap(
-            message -> message.getRecord().getData().get("currency").asText() +
+            message -> message.getRecord().getData().get("id").asText() +
+                message.getRecord().getData().get("currency").asText() +
                 message.getRecord().getData().get("date").asText() +
                 message.getRecord().getData().get("NZD").asText(),
             message -> message,
@@ -467,7 +482,8 @@ public abstract class TestDestination {
         .stream()
         .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
         .filter(message -> {
-          final String key = message.getRecord().getData().get("currency").asText() +
+          final String key = message.getRecord().getData().get("id").asText() +
+              message.getRecord().getData().get("currency").asText() +
               message.getRecord().getData().get("date").asText() +
               message.getRecord().getData().get("NZD").asText();
           return message.getRecord().getEmittedAt().equals(latestMessagesOnly.get(key).getRecord().getEmittedAt());
@@ -479,8 +495,16 @@ public abstract class TestDestination {
     assertSameMessages(expectedMessages, actualMessages, true);
   }
 
+  /**
+   * Verify the destination uses the namespace field if it is set.
+   */
   @Test
   void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
+    if (!implementsNamespaces()) {
+      return;
+    }
+
+    // TODO(davin): make these tests part of the catalog file.
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final String namespace = "sourcenamespace";
@@ -489,11 +513,69 @@ public abstract class TestDestination {
 
     final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    messages.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace);
+          }
+        });
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     runSync(config, messages, configuredCatalog);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
+  }
+
+  /**
+   * Verify a destination is able to write tables with the same name to different namespaces.
+   */
+  @Test
+  void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
+    if (!implementsNamespaces()) {
+      return;
+    }
+
+    // TODO(davin): make these tests part of the catalog file.
+    final var catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final var namespace1 = "sourcenamespace";
+    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
+
+    final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
+    final var namespace2 = "diff_source_namespace";
+    final var mapper = new ObjectMapper();
+    for (AirbyteStream stream : catalog.getStreams()) {
+      var clonedStream = mapper.readValue(mapper.writeValueAsString(stream), AirbyteStream.class);
+      clonedStream.setNamespace(namespace2);
+      diffNamespaceStreams.add(clonedStream);
+    }
+    catalog.getStreams().addAll(diffNamespaceStreams);
+
+    final var configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final var ns1Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    ns1Msgs.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace1);
+          }
+        });
+    final var ns2Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    ns2Msgs.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace2);
+          }
+        });
+    final var allMessages = new ArrayList<>(ns1Msgs);
+    allMessages.addAll(ns2Msgs);
+
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSync(config, allMessages, configuredCatalog);
+    retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
@@ -538,13 +620,12 @@ public abstract class TestDestination {
 
   private void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema) throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
-
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
       List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema)
           .stream()
-          .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
+          .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data))
           .collect(Collectors.toList());
       actualMessages.addAll(msgList);
     }

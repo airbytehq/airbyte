@@ -26,6 +26,7 @@ export type SyncSchemaStream = {
 
 export type AirbyteStream = {
   name: string;
+  namespace?: string;
   jsonSchema: SchemaFields;
   supportedSyncModes: SyncMode[];
   sourceDefinedCursor: boolean | null;

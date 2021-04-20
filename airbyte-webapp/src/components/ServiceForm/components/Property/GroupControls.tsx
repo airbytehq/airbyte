@@ -26,15 +26,17 @@ const FormGroup = styled.div`
 type GroupControlsProps = {
   title: React.ReactNode;
   description?: string;
+  name?: string;
 };
 
 const GroupControls: React.FC<GroupControlsProps> = ({
   title,
   description,
   children,
+  name,
 }) => {
   return (
-    <FormGroup>
+    <FormGroup data-test-id={name}>
       <GroupTitle>{title}</GroupTitle>
       {description && <Label message={<TextWithHTML text={description} />} />}
       {children}

@@ -80,6 +80,7 @@
   * [On AWS \(EC2\)](deploying-airbyte/on-aws-ec2.md)
   * [On GCP \(Compute Engine\)](deploying-airbyte/on-gcp-compute-engine.md)
   * [On Kubernetes \(Alpha\)](deploying-airbyte/on-kubernetes.md)
+  * [On AWS ECS \(Coming Soon\)](deploying-airbyte/on-aws-ecs.md)
 * [API documentation](api-documentation.md)
 * [Architecture](architecture/README.md)
   * [AirbyteCatalog & ConfiguredAirbyteCatalog](architecture/catalog.md)
