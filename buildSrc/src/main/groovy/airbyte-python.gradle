@@ -36,7 +36,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             module = "black"
             // the line length should match .isort.cfg
             command = ". --line-length 140"
-            dependsOn project.rootProject.spotlessPythonApply
+            dependsOn project.spotlessPythonApply
             dependsOn project.isortFormat
         }
 

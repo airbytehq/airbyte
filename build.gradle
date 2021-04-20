@@ -15,107 +15,6 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
-def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
-    /*
-    In java, we don't have a second linter/styling tool other than spotless so it doesn't really
-    matter if we write a newline or not for startComment/endComment.
-
-    However, in python, we are using black that double-checks and reformats the code.
-    Thus, writing an extra empty newline (not removed by trimTrailingWhitespace() is actually a
-    big deal and would be reformatted (removed) because of black's specs.
-    */
-    def tmp = File.createTempFile('tmp', '.tmp')
-    tmp.withWriter {
-        def w = it
-        if (startComment.length() > 0 || !isPython) {
-            w.writeLine(startComment)
-        }
-        license.eachLine {
-            w << lineComment
-            w.writeLine(it)
-        }
-        if (endComment.length() > 0 || !isPython) {
-            w.writeLine(endComment)
-        }
-        w.writeLine("")
-        if (isPython) {
-            w.writeLine("")
-        }
-    }
-    return tmp
-}
-
-def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '', '', "# ", true)
-}
-
-def createJavaLicenseWith = { license ->
-    return createLicenseWith(license, '/*', ' */', " * ", false)
-}
-
-// We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a
-// monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
-def createSpotlessTarget = { pattern ->
-    def excludes = [
-        '.gradle',
-        'node_modules',
-        '.eggs',
-        '.mypy_cache',
-        '.venv',
-        '*.egg-info',
-        'build',
-        'dbt-project-template',
-        'dbt_data_tests',
-        'dbt_schema_tests',
-        'normalization_test_output',
-        'tools',
-        'secrets'
-    ]
-
-    if (System.getenv().containsKey("CORE_ONLY")) {
-        excludes.add("airbyte-integrations/connectors")
-    }
-
-    return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect { "**/${it}" })
-}
-
-spotless {
-    java {
-        target createSpotlessTarget('**/*.java')
-
-        importOrder()
-
-        eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
-
-        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE'))
-        removeUnusedImports()
-        trimTrailingWhitespace()
-    }
-    groovyGradle {
-        target createSpotlessTarget('**/*.gradle')
-    }
-    sql {
-        target createSpotlessTarget('**/*.sql')
-
-        dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
-    }
-    python {
-        target createSpotlessTarget('**/*.py')
-
-        // Many __init__.py files are blank which makes it hard to write a regex to know where to add a license
-        targetExclude createSpotlessTarget('**/__init__.py')
-
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
-        trimTrailingWhitespace()
-    }
-    format 'styling', {
-        target createSpotlessTarget(['**/*.yaml', '**/*.json'])
-
-        prettier()
-    }
-}
-check.dependsOn 'spotlessApply'
-
 allprojects {
     apply plugin: 'base'
 
@@ -147,6 +46,105 @@ allprojects {
 
 // Java projects common configurations
 subprojects {
+    def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
+        /*
+        In java, we don't have a second linter/styling tool other than spotless so it doesn't really
+        matter if we write a newline or not for startComment/endComment.
+
+        However, in python, we are using black that double-checks and reformats the code.
+        Thus, writing an extra empty newline (not removed by trimTrailingWhitespace() is actually a
+        big deal and would be reformatted (removed) because of black's specs.
+        */
+        def tmp = File.createTempFile('tmp', '.tmp')
+        tmp.withWriter {
+            def w = it
+            if (startComment.length() > 0 || !isPython) {
+                w.writeLine(startComment)
+            }
+            license.eachLine {
+                w << lineComment
+                w.writeLine(it)
+            }
+            if (endComment.length() > 0 || !isPython) {
+                w.writeLine(endComment)
+            }
+            w.writeLine("")
+            if (isPython) {
+                w.writeLine("")
+            }
+        }
+        return tmp
+    }
+
+    def createPythonLicenseWith = { license ->
+        return createLicenseWith(license, '', '', "# ", true)
+    }
+
+    def createJavaLicenseWith = { license ->
+        return createLicenseWith(license, '/*', ' */', " * ", false)
+    }
+
+    // We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a
+    // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
+    def createSpotlessTarget = { pattern ->
+        def excludes = [
+                '.gradle',
+                'node_modules',
+                '.eggs',
+                '.mypy_cache',
+                '.venv',
+                '*.egg-info',
+                'build',
+                'dbt-project-template',
+                'dbt_data_tests',
+                'dbt_schema_tests',
+                'normalization_test_output',
+                'tools',
+                'secrets'
+        ]
+
+        return fileTree(dir: project.projectDir, include: pattern, exclude: excludes.collect {"**/${it}"})
+    }
+
+    apply plugin: "com.diffplug.spotless"
+
+    spotless {
+        java {
+            target createSpotlessTarget('**/*.java')
+
+            importOrder()
+
+            eclipse('4.16.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+
+            licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE'))
+            removeUnusedImports()
+            trimTrailingWhitespace()
+        }
+        groovyGradle {
+            target createSpotlessTarget('**/*.gradle')
+        }
+        sql {
+            target createSpotlessTarget('**/*.sql')
+
+            dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
+        }
+        python {
+            target createSpotlessTarget('**/*.py')
+
+            // Many __init__.py files are blank which makes it hard to write a regex to know where to add a license
+            targetExclude createSpotlessTarget('**/__init__.py')
+
+            licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
+            trimTrailingWhitespace()
+        }
+        format 'styling', {
+            target createSpotlessTarget(['**/*.yaml', '**/*.json'])
+
+            prettier()
+        }
+    }
+    check.dependsOn 'spotlessApply'
+
 
     if (project.name == 'airbyte-webapp' || project.name == 'airbyte-e2e-testing') {
         return
@@ -240,7 +238,7 @@ task('generate') {
 
 task('format') {
     dependsOn generate
-    dependsOn spotlessApply
+    dependsOn subprojects.collect { it.getTasksByName('spotlessApply', true) }
     dependsOn subprojects.collect { it.getTasksByName('airbytePythonFormat', true) }
 }
 
