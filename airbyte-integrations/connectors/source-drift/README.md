@@ -62,7 +62,7 @@ python -m pytest unit_tests
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/drift:dev
+docker build . -t airbyte/source-drift:dev
 ```
 
 You can also build the connector image via Gradle:
@@ -85,15 +85,6 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-drift:integrationTest` to run the standard integration test suite.
 1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
-
-#### Populating your Drift account with seed data
-
-The following will create 120 accounts and conversations
-```bash
-export DRIFT_TOKEN=<PUT_YOUR_TOKEN_HERE>
-cd airbyte-integrations/connectors/source-drift/source_drift/
-python -m client.fixture
-```
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.

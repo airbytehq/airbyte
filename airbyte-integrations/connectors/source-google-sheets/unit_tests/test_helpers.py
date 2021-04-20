@@ -27,9 +27,12 @@ from unittest.mock import Mock, patch
 
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode
+from base_python import AirbyteLogger
 from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
+
+logger = AirbyteLogger()
 
 
 class TestHelpers(unittest.TestCase):
@@ -47,14 +50,38 @@ class TestHelpers(unittest.TestCase):
             },
         )
 
-        actual_stream = Helpers.headers_to_airbyte_stream(sheet_name, header_values)
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
         self.assertEqual(expected_stream, actual_stream)
 
-    def test_duplicate_headers_to_ab_stream_fails(self):
+    def test_duplicate_headers_retrived(self):
+        header_values = ["h1", "h1", "h3"]
+
+        expected_valid_header_values = ["h3"]
+        expected_duplicate_header_values = ["h1"]
+
+        actual_header_values, actual_duplicate_header_values = Helpers.get_valid_headers_and_duplicates(header_values)
+
+        self.assertEqual(expected_duplicate_header_values, actual_duplicate_header_values)
+        self.assertEqual(expected_valid_header_values, actual_header_values)
+
+    def test_duplicate_headers_to_ab_stream_ignores_duplicates(self):
         sheet_name = "sheet1"
         header_values = ["h1", "h1", "h3"]
-        with self.assertRaises(BaseException):
-            Helpers.headers_to_airbyte_stream(sheet_name, header_values)
+
+        # h1 is ignored because it is duplicate
+        expected_stream_header_values = ["h3"]
+        expected_stream = AirbyteStream(
+            name=sheet_name,
+            json_schema={
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                # For simplicity, the type of every cell is a string
+                "properties": {header: {"type": "string"} for header in expected_stream_header_values},
+            },
+        )
+
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
+        self.assertEqual(expected_stream, actual_stream)
 
     def test_headers_to_airbyte_stream_blank_values_terminate_row(self):
         sheet_name = "sheet1"
@@ -69,7 +96,7 @@ class TestHelpers(unittest.TestCase):
                 "properties": {"h1": {"type": "string"}},
             },
         )
-        actual_stream = Helpers.headers_to_airbyte_stream(sheet_name, header_values)
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
 
         self.assertEqual(expected_stream, actual_stream)
 

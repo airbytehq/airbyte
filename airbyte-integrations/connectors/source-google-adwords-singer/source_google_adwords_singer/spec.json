@@ -39,6 +39,12 @@
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2017-01-25T00:00:00Z"]
       },
+      "conversion_window_days": {
+        "type": "string",
+        "description": "Define the historical replication start date. Change this setting if you want to replicate data beyond Google Ads’s default setting of 30 days.",
+        "examples": ["-30"],
+        "pattern": "^(-)?[0-9]+"
+      },
       "customer_ids": {
         "type": "string",
         "pattern": "^[0-9]{10}$",

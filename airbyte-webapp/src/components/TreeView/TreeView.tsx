@@ -1,11 +1,16 @@
 import React, { useCallback, useMemo } from "react";
 
 import { TreeViewSection } from "./components/TreeViewSection";
-import { SyncSchema, AirbyteStreamConfiguration } from "core/domain/catalog";
+import {
+  SyncSchema,
+  AirbyteStreamConfiguration,
+  DestinationSyncMode,
+} from "core/domain/catalog";
 
 type IProps = {
   filter?: string;
   schema: SyncSchema;
+  destinationSupportedSyncModes: DestinationSyncMode[];
   onChangeSchema: (schema: SyncSchema) => void;
 };
 
@@ -16,7 +21,12 @@ function compareByName<T extends { name: string }>(o1: T, o2: T): -1 | 0 | 1 {
   return o1.name > o2.name ? 1 : -1;
 }
 
-const TreeView: React.FC<IProps> = ({ schema, onChangeSchema, filter }) => {
+const TreeView: React.FC<IProps> = ({
+  schema,
+  destinationSupportedSyncModes,
+  onChangeSchema,
+  filter,
+}) => {
   const filteringSchema = useMemo(() => {
     return filter
       ? {
@@ -59,6 +69,7 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema, filter }) => {
         <TreeViewSection
           key={streamNode.stream.name}
           streamNode={streamNode}
+          destinationSupportedSyncModes={destinationSupportedSyncModes}
           updateItem={onUpdateItem}
         />
       ))}

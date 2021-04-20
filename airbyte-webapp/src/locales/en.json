@@ -81,12 +81,16 @@
   "form.prefix.message": "Prefix to prefix all destination tables created as part of this connection. Useful for identifying tables on a per-connection basis and namespacing streams from different sources so they do not overwrite each other.",
   "form.prefix.placeholder": "prefix-",
   "form.nameSearch": "Search name",
+  "form.namespace": "Namespace",
+  "form.noNamespace": "No namespace",
   "form.sourceConnector": "Source connector",
   "form.destinationConnector": "Destination connector",
   "form.addItems": "Add",
   "form.items": "Items",
   "form.toSaveSchema": "To save the new schema, click on Save changes.",
   "form.noteStartSync": "Note that it will delete all the data in your destination and start syncing from scratch. ",
+  "form.pkSelected": "{count, plural, =0 { } one {{items}} other {# keys selected}}",
+  "form.url.error": "field must be a valid URL",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
@@ -193,6 +197,11 @@
   "connection.newConnection": "+ new connection",
   "connection.newConnectionTitle": "New connection",
   "connection.noConnections": "Connection list is empty",
+  "connection.disabledConnection": "Disabled connection",
+  "connection.failedSync": "Failed sync",
+  "connection.successSync": "Succeeded sync",
+  "connection.noSyncData": "Sync was not started",
+  "connection.refreshSchema": "Refresh schema",
 
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",
@@ -276,6 +285,12 @@
 
   "settings.accountSettings": "Account Settings",
   "settings.changeSaved": "change saved!",
+  "settings.webhook": "Connection failure Webhook",
+  "settings.webhookTitle": "Connection failure Webhook URL",
+  "settings.webhookDescriprion": "Get notifications the way you want (for instance, on Slack, or other).",
+  "settings.webhookTestText": "Testing the Webhook will send a “Hello World”. ",
+  "settings.yourWebhook": "Your Webhook URL",
+  "settings.test": "Test",
 
   "demo.message.title": "This demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."

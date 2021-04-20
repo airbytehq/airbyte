@@ -7,7 +7,7 @@
 - sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   name: File
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-file
   icon: file.svg
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
@@ -31,7 +31,7 @@
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.7
   documentationUrl: https://hub.docker.com/r/airbyte/source-postgres
   icon: postgresql.svg
 - sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
@@ -55,13 +55,13 @@
 - sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   name: Google Sheets
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-google-sheets
   icon: google-sheets.svg
 - sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   name: MySQL
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
 - sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
@@ -211,7 +211,7 @@
 - sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
   name: Mongo DB
   dockerRepository: airbyte/source-mongodb
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-mongodb
   icon: mongodb.svg
 - sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
@@ -239,8 +239,29 @@
   dockerRepository: airbyte/source-tempo
   dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-tempo
+# bring this back once https://github.com/airbytehq/airbyte/issues/2902 is done
+#- sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
+#  name: Smartsheets
+#  dockerRepository: airbyte/source-smartsheets
+#  dockerImageTag: 0.1.1
+#  documentationUrl: https://hub.docker.com/r/airbyte/source-smartsheets
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
-  name: Oracle
+  name: Oracle DB
   dockerRepository: airbyte/source-oracle
   dockerImageTag: 0.2.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-oracle
+- sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
+  name: Zendesk Talk
+  dockerRepository: airbyte/source-zendesk-talk
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-talk
+- sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
+  name: Quickbooks
+  dockerRepository: airbyte/source-quickbooks-singer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-quickbooks-singer
+- sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
+  name: Iterable
+  dockerRepository: airbyte/source-iterable
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-iterable

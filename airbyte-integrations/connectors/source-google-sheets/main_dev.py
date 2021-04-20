@@ -25,8 +25,7 @@ SOFTWARE.
 import sys
 
 from base_python.entrypoint import launch
-
-from .google_sheets_source import GoogleSheetsSource
+from google_sheets_source import GoogleSheetsSource
 
 if __name__ == "__main__":
     source = GoogleSheetsSource()

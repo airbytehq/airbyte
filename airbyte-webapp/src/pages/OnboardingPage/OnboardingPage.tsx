@@ -189,7 +189,7 @@ const OnboardingPage: React.FC = () => {
           dropDownData={sourcesDropDownData}
           hasSuccess={successRequest}
           error={errorStatusRequest}
-          source={sources.length && !successRequest ? sources[0] : undefined}
+          // source={sources.length && !successRequest ? sources[0] : undefined}
         />
       );
     }
@@ -203,9 +203,9 @@ const OnboardingPage: React.FC = () => {
           hasSuccess={successRequest}
           error={errorStatusRequest}
           currentSourceDefinitionId={sources[0].sourceDefinitionId}
-          destination={
-            destinations.length && !successRequest ? destinations[0] : undefined
-          }
+          // destination={
+          //   destinations.length && !successRequest ? destinations[0] : undefined
+          // }
         />
       );
     }
@@ -213,8 +213,8 @@ const OnboardingPage: React.FC = () => {
     return (
       <ConnectionStep
         errorStatus={errorStatusRequest?.status}
-        source={sources.length ? sources[0] : undefined}
-        destination={destinations.length ? destinations[0] : undefined}
+        source={sources[0]}
+        destination={destinations[0]}
       />
     );
   };

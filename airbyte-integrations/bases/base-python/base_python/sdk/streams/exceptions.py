@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Union
+
 import requests
 
 
@@ -34,7 +36,7 @@ class UserDefinedBackoffException(BaseBackoffException):
     An exception that exposes how long it attempted to backoff
     """
 
-    def __init__(self, backoff: int, request: requests.PreparedRequest, response: requests.Response):
+    def __init__(self, backoff: Union[int, float], request: requests.PreparedRequest, response: requests.Response):
         """
         :param backoff: how long to backoff in seconds
         :param request: the request that triggered this backoff exception
