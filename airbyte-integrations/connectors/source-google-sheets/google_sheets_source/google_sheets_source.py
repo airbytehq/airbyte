@@ -76,16 +76,19 @@ class GoogleSheetsSource(Source):
             except Exception as err:
                 logger.error(str(err))
                 return AirbyteConnectionStatus(
-                    status=Status.FAILED,
-                    message=f"Unable to read the schema of sheet {sheet_name}. Error: {str(err)}"
+                    status=Status.FAILED, message=f"Unable to read the schema of sheet {sheet_name}. Error: {str(err)}"
                 )
         if duplicate_headers_in_sheet:
-            duplicate_headers_error_message = ", ".join([f"[sheet:{sheet_name}, headers:{duplicate_sheet_headers}]"
-                                                         for sheet_name,duplicate_sheet_headers in duplicate_headers_in_sheet.items()])
+            duplicate_headers_error_message = ", ".join(
+                [
+                    f"[sheet:{sheet_name}, headers:{duplicate_sheet_headers}]"
+                    for sheet_name, duplicate_sheet_headers in duplicate_headers_in_sheet.items()
+                ]
+            )
             return AirbyteConnectionStatus(
                 status=Status.FAILED,
                 message="The following duplicate headers were found in the following sheets. Please fix them to continue: "
-                        + duplicate_headers_error_message
+                + duplicate_headers_error_message,
             )
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)

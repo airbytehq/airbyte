@@ -25,14 +25,15 @@ SOFTWARE.
 import unittest
 from unittest.mock import Mock, patch
 
-from base_python import AirbyteLogger
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode
+from base_python import AirbyteLogger
 from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
 
 logger = AirbyteLogger()
+
 
 class TestHelpers(unittest.TestCase):
     def test_headers_to_airbyte_stream(self):

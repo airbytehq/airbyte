@@ -46,7 +46,7 @@
 - sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   name: Google Sheets
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-google-sheets
 - sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   name: MySQL
@@ -210,7 +210,7 @@
 #  dockerImageTag: 0.1.1
 #  documentationUrl: https://hub.docker.com/r/airbyte/source-smartsheets
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
-  name: Oracle
+  name: Oracle DB
   dockerRepository: airbyte/source-oracle
   dockerImageTag: 0.2.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-oracle
@@ -220,7 +220,7 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-talk
 - sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
-  name: Qucikbooks
+  name: Quickbooks
   dockerRepository: airbyte/source-quickbooks-singer
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-quickbooks-singer
