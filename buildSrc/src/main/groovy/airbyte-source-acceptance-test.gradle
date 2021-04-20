@@ -3,7 +3,7 @@ import org.gradle.api.Project
 
 class AirbyteStandardTestPlugin implements Plugin<Project> {
     void apply(Project project) {
-        project.task('standardTest') {
+        project.task('SourceAcceptanceTest') {
             doFirst {
                 project.exec {
                     def targetMountDirectory = "/test_input"
@@ -16,7 +16,7 @@ class AirbyteStandardTestPlugin implements Plugin<Project> {
                         '-v', "/tmp:/tmp",
                         // mount the project dir. all provided input paths must be relative to that dir.
                         '-v', "${project.projectDir.absolutePath}:${targetMountDirectory}",
-                        'airbyte/standard-test:dev',
+                        'airbyte/source-acceptance-test:dev',
                         '--standard_test_config', "$targetMountDirectory",
                     ]
                     commandLine args
@@ -26,7 +26,7 @@ class AirbyteStandardTestPlugin implements Plugin<Project> {
             outputs.upToDateWhen { false }
         }
 
-        project.standardTest.dependsOn(':airbyte-integrations:bases:standard-test:airbyteDocker')
+        project.standardTest.dependsOn(':airbyte-integrations:bases:source-acceptance-test:airbyteDocker')
         project.standardTest.dependsOn(project.build)
         project.standardTest.dependsOn(project.airbyteDocker)
         if (project.hasProperty('airbyteDockerTest')){

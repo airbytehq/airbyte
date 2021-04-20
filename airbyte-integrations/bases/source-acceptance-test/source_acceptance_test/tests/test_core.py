@@ -27,9 +27,9 @@ from collections import Counter
 import pytest
 from airbyte_protocol import ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
-from standard_test.base import BaseTest
-from standard_test.config import BasicReadTestConfig, ConnectionTestConfig
-from standard_test.utils import ConnectorRunner
+from source_acceptance_test.base import BaseTest
+from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
+from source_acceptance_test.utils import ConnectorRunner
 
 
 @pytest.mark.timeout(10)

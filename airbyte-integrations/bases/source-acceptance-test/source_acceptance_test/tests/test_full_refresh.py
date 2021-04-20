@@ -27,8 +27,8 @@ from functools import partial
 
 import pytest
 from airbyte_protocol import Type
-from standard_test.base import BaseTest
-from standard_test.utils import ConnectorRunner, full_refresh_only_catalog
+from source_acceptance_test.base import BaseTest
+from source_acceptance_test.utils import ConnectorRunner, full_refresh_only_catalog
 
 
 @pytest.mark.timeout(20 * 60)

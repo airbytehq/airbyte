@@ -38,12 +38,12 @@ MAIN_REQUIREMENTS = [
 ]
 
 setuptools.setup(
-    name="standard-test",
+    name="source-acceptance-test",
     description="Contains classes for running integration tests.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    entry_points={"pytest11": ["pytest-airbyte = standard_test.plugin"]},
+    entry_points={"pytest11": ["pytest-airbyte = source_acceptance_test.plugin"]},
 )

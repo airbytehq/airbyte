@@ -29,8 +29,8 @@ from typing import Any, List, MutableMapping, Optional
 
 import pytest
 from airbyte_protocol import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
-from standard_test.config import Config
-from standard_test.utils import ConnectorRunner, SecretDict, load_config
+from source_acceptance_test.config import Config
+from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
 
 
 @pytest.fixture(name="base_path")
@@ -38,13 +38,13 @@ def base_path_fixture(pytestconfig, standard_test_config) -> Path:
     """Fixture to define base path for every path-like fixture"""
     if standard_test_config.base_path:
         return Path(standard_test_config.base_path).absolute()
-    return Path(pytestconfig.getoption("--standard_test_config")).absolute()
+    return Path(pytestconfig.getoption("--acceptance-test-config")).absolute()
 
 
 @pytest.fixture(name="standard_test_config", scope="session")
 def standard_test_config_fixture(pytestconfig) -> Config:
     """Fixture with test's config"""
-    return load_config(pytestconfig.getoption("--standard_test_config"))
+    return load_config(pytestconfig.getoption("--acceptance-test-config"))
 
 
 @pytest.fixture(name="connector_config_path")

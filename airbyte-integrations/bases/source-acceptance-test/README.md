@@ -2,7 +2,7 @@
 This package uses pytest to discover, configure and execute the tests.
 It implemented as a pytest plugin.
 
-It adds new configuration option `--standard_test_config` - path to configuration file (by default is current folder). 
+It adds new configuration option `--acceptance-test-config` - path to configuration file (by default is current folder). 
 Configuration stored in YaML format and validated by pydantic.
 
 Example configuration can be found in `sample_files/` folder:
@@ -33,9 +33,16 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
 ```
-# Running
+Required steps to test connector are the following:
+* Build docker image for connector
+* Create `acceptance-test-config.yml` file with test settings, Note: all paths in this files are relative to its location
+* Use one of the following ways to run tests:
+
+## Running
+Using python
 ```bash
-python -m pytest standard_test/tests --standard_test_config=<path_to_your_connector> -vvv
+cd ../../base/source-acceptance-test
+python -m pytest source_acceptance_test/tests --acceptance-test-config=<path_to_your_connector> -vvv
 ```
 _Note: this will assume that docker image for connector is already built_
 
@@ -43,4 +50,10 @@ Using Gradle
 ```bash
 ./gradlew :airbyte-integrations:connectors:source-<name>:standardTest
 ```
-_Note: this will also build docker image for connector_
+_Note: this way will also build docker image for the connector_
+
+Using Bash
+```bash
+./source-acceptance-test.sh -vv
+```
+_Note: you can append any arguments to this command, they will be forwarded to pytest

@@ -35,12 +35,12 @@ except ImportError:
     from yaml import Loader
 
 from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
-from standard_test.config import Config
+from source_acceptance_test.config import Config
 
 
 def load_config(path: str) -> Config:
     """Function to load test config, avoid duplication of code in places where we can't use fixture"""
-    path = Path(path) / "standard_test_config.yml"
+    path = Path(path) / "acceptance-test-config.yml"
     if not path.exists():
         pytest.fail(f"config file {path.absolute()} does not exist")
 

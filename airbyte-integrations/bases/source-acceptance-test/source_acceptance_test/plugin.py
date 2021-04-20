@@ -23,13 +23,13 @@ SOFTWARE.
 """
 
 import pytest
-from standard_test.utils import diff_dicts, load_config
+from source_acceptance_test.utils import diff_dicts, load_config
 
 
 def pytest_addoption(parser):
     """Hook function to add CLI option `standard_test_config`"""
     parser.addoption(
-        "--standard_test_config", action="store", default=".", help="Folder with standard test config - standard_test_config.yml"
+        "--acceptance-test-config", action="store", default=".", help="Folder with standard test config - acceptance_test_config.yml"
     )
 
 
@@ -54,7 +54,7 @@ def pytest_generate_tests(metafunc):
     if "inputs" in metafunc.fixturenames:
         config_key = metafunc.cls.config_key()
         test_name = f"{metafunc.cls.__name__}.{metafunc.function.__name__}"
-        config = load_config(metafunc.config.getoption("--standard_test_config"))
+        config = load_config(metafunc.config.getoption("--acceptance-test-config"))
         if not hasattr(config.tests, config_key) or not getattr(config.tests, config_key):
             pytest.skip(f"Skipping {test_name} because not found in the config")
         else:
