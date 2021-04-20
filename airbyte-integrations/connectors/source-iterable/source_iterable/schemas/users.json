@@ -1,0 +1,337 @@
+{
+  "properties": {
+    "country": {
+      "type": ["null", "string"]
+    },
+    "firstOrderDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "addresses": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "first_name": {
+            "type": ["null", "string"]
+          },
+          "city": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "zip": {
+            "type": ["null", "string"]
+          },
+          "country": {
+            "type": ["null", "string"]
+          },
+          "address1": {
+            "type": ["null", "string"]
+          },
+          "address2": {
+            "type": ["null", "string"]
+          },
+          "company": {
+            "type": ["null", "string"]
+          },
+          "country_code": {
+            "type": ["null", "string"]
+          },
+          "default": {
+            "type": ["null", "boolean"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          },
+          "last_name": {
+            "type": ["null", "string"]
+          },
+          "province": {
+            "type": ["null", "string"]
+          },
+          "province_code": {
+            "type": ["null", "string"]
+          },
+          "country_name": {
+            "type": ["null", "string"]
+          },
+          "phone": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "emailAcquiredDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "emailSegmentStatus": {
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "mostRecentEmailList": {
+      "type": ["null", "string"]
+    },
+    "mostRecentEmailSegment": {
+      "type": ["null", "string"]
+    },
+    "aov": {
+      "type": ["null", "number"]
+    },
+    "firstCampaign": {
+      "type": ["null", "string"]
+    },
+    "thirdMostRecentOrderDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "firstPurchaseDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "firstMedium": {
+      "type": ["null", "string"]
+    },
+    "default_address": {
+      "type": ["null", "object"],
+      "properties": {
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "address2": {
+          "type": ["null", "string"]
+        },
+        "company": {
+          "type": ["null", "string"]
+        },
+        "country_code": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "address1": {
+          "type": ["null", "string"]
+        },
+        "default": {
+          "type": ["null", "boolean"]
+        },
+        "province": {
+          "type": ["null", "string"]
+        },
+        "province_code": {
+          "type": ["null", "string"]
+        },
+        "country_name": {
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "emailListIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "accepts_marketing": {
+      "type": ["null", "boolean"]
+    },
+    "secondMostRecentOrderDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "mostRecentCampaign": {
+      "type": ["null", "string"]
+    },
+    "zip": {
+      "type": ["null", "string"]
+    },
+    "total_spent": {
+      "type": ["null", "number"]
+    },
+    "mostRecentOrderDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "last_order_id": {
+      "type": ["null", "string"]
+    },
+    "tax_exempt": {
+      "type": ["null", "boolean"]
+    },
+    "mostRecentSource": {
+      "type": ["null", "string"]
+    },
+    "twelveMonthLtr": {
+      "type": ["null", "integer"]
+    },
+    "verified_email": {
+      "type": ["null", "boolean"]
+    },
+    "mostRecentMedium": {
+      "type": ["null", "string"]
+    },
+    "orders_count": {
+      "type": ["null", "integer"]
+    },
+    "firstName": {
+      "type": ["null", "string"]
+    },
+    "lastInteractionTs": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "boughtSas": {
+      "type": ["null", "boolean"]
+    },
+    "secondMostRecentOrderCards": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "unsubscribedChannelIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "last_order_name": {
+      "type": ["null", "string"]
+    },
+    "secondOrderDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "hasAccount": {
+      "type": ["null", "boolean"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "mostRecentOrderCards": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "itblInternal": {
+      "type": ["null", "object"],
+      "properties": {
+        "emailDomain": {
+          "type": ["null", "string"]
+        },
+        "documentUpdatedAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "documentCreatedAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "hasReminder": {
+      "type": ["null", "boolean"]
+    },
+    "thirdOrderDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "subscribedMessageTypeIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "firstSource": {
+      "type": ["null", "string"]
+    },
+    "unsubscribedMessageTypeIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "thirdMostRecentOrderCards": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "profileUpdatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "signupDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "businessLines": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "secondOrderCards": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "address1": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "ltr": {
+      "type": ["null", "integer"]
+    },
+    "userId": {
+      "type": ["null", "string"]
+    },
+    "shopify_created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "signupSource": {
+      "type": ["null", "string"]
+    },
+    "thirdOrderCards": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "firstOrderCards": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "totalOrders": {
+      "type": ["null", "integer"]
+    },
+    "shopify_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  },
+  "type": ["null", "object"]
+}
