@@ -84,7 +84,8 @@ public class DefaultSyncWorker implements SyncWorker {
 
     LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
         .stream()
-        .collect(Collectors.toMap(s -> s.getStream().getName(), s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
+        .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
+            s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
     final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
     targetConfig.setCatalog(mapper.mapCatalog(targetConfig.getCatalog()));

@@ -25,22 +25,15 @@
 package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * The Redshift Destination offers two replication strategies. The first inserts via a typical SQL
@@ -77,8 +70,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     final RedshiftCopyS3Destination copyS3Destination = new RedshiftCopyS3Destination();
 
     return ImmutableMap.of(
-            DestinationType.INSERT, insertDestination,
-            DestinationType.COPY_S3, copyS3Destination);
+        DestinationType.INSERT, insertDestination,
+        DestinationType.COPY_S3, copyS3Destination);
   }
 
   @Override

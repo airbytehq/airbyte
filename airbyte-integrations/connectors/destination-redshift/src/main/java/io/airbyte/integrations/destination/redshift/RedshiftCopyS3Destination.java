@@ -24,20 +24,11 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.Copier;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
@@ -45,19 +36,9 @@ import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Copier;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopierSupplier;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import io.airbyte.protocol.models.DestinationSyncMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A more efficient Redshift Destination than the sql-based {@link RedshiftDestination}. Instead of
@@ -73,7 +54,8 @@ import org.slf4j.LoggerFactory;
 public class RedshiftCopyS3Destination extends CopyDestination {
 
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    return new CopyConsumer(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), this::getCopier, getSqlOperations(), getNameTransformer());
+    return new CopyConsumer(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), this::getCopier, getSqlOperations(),
+        getNameTransformer());
   }
 
   @Override
@@ -90,10 +72,10 @@ public class RedshiftCopyS3Destination extends CopyDestination {
   public JdbcDatabase getDatabase(JsonNode config) throws Exception {
     var jdbcConfig = RedshiftInsertDestination.getJdbcConfig(config);
     return Databases.createJdbcDatabase(
-            jdbcConfig.get("username").asText(),
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-            jdbcConfig.get("jdbc_url").asText(),
-            RedshiftInsertDestination.DRIVER_CLASS);
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get("jdbc_url").asText(),
+        RedshiftInsertDestination.DRIVER_CLASS);
   }
 
   @Override
@@ -107,11 +89,10 @@ public class RedshiftCopyS3Destination extends CopyDestination {
 
   private S3Config getS3Config(JsonNode config) {
     return new S3Config(
-            config.get("s3_bucket_name").asText(),
-            config.get("access_key_id").asText(),
-            config.get("secret_access_key").asText(),
-            config.get("s3_bucket_region").asText()
-    );
+        config.get("s3_bucket_name").asText(),
+        config.get("access_key_id").asText(),
+        config.get("secret_access_key").asText(),
+        config.get("s3_bucket_region").asText());
   }
 
   private Copier getCopier(String configuredSchema,
@@ -122,8 +103,9 @@ public class RedshiftCopyS3Destination extends CopyDestination {
                            ExtendedNameTransformer nameTransformer,
                            JdbcDatabase jdbcDatabase,
                            SqlOperations sqlOperations) {
-    return new S3CopierSupplier(RedshiftCopier::new).get(configuredSchema, s3Config, stagingFolder, destinationSyncMode, airbyteStream, nameTransformer,
-            jdbcDatabase, sqlOperations);
+    return new S3CopierSupplier(RedshiftCopier::new).get(configuredSchema, s3Config, stagingFolder, destinationSyncMode, airbyteStream,
+        nameTransformer,
+        jdbcDatabase, sqlOperations);
   }
 
   public static boolean isPresent(JsonNode config) {

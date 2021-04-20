@@ -65,11 +65,13 @@ jobs:
           HUBSPOT_INTEGRATION_TESTS_CREDS: ${{ secrets.HUBSPOT_INTEGRATION_TESTS_CREDS }}
           INSTAGRAM_INTEGRATION_TESTS_CREDS: ${{ secrets.INSTAGRAM_INTEGRATION_TESTS_CREDS }}
           INTERCOM_INTEGRATION_TEST_CREDS: ${{ secrets.INTERCOM_INTEGRATION_TEST_CREDS }}
+          ITERABLE_INTEGRATION_TEST_CREDS: ${{ secrets.ITERABLE_INTEGRATION_TEST_CREDS }}
           JIRA_INTEGRATION_TEST_CREDS: ${{ secrets.JIRA_INTEGRATION_TEST_CREDS }}
           LOOKER_INTEGRATION_TEST_CREDS: ${{ secrets.LOOKER_INTEGRATION_TEST_CREDS }}
           MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
           MICROSOFT_TEAMS_TEST_CREDS: ${{ secrets.MICROSOFT_TEAMS_TEST_CREDS }}
           MIXPANEL_INTEGRATION_TEST_CREDS: ${{ secrets.MIXPANEL_INTEGRATION_TEST_CREDS }}
+          QUICKBOOKS_TEST_CREDS: ${{ secrets.QUICKBOOKS_TEST_CREDS }}
           SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
           SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
           SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
@@ -90,6 +92,8 @@ jobs:
         id: test
         env:
           ACTION_RUN_ID: ${{github.run_id}}
+          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
+          TZ: UTC
       - name: Report Status
         if: github.ref == 'refs/heads/master' && always()
         run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}

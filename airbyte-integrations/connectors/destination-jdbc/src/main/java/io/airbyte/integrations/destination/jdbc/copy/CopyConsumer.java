@@ -24,9 +24,9 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -50,7 +50,7 @@ public class CopyConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final CopierSupplier copierSupplier;
   private final SqlOperations sqlOperations;
   private final ExtendedNameTransformer nameTransformer;
-  private final Map<String, Copier> streamNameToCopier;
+  private final Map<AirbyteStreamNameNamespacePair, Copier> pairToCopier;
 
   public CopyConsumer(String configuredSchema,
                       S3Config s3Config,
@@ -66,7 +66,7 @@ public class CopyConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.copierSupplier = copierSupplier;
     this.sqlOperations = sqlOperations;
     this.nameTransformer = nameTransformer;
-    this.streamNameToCopier = new HashMap<>();
+    this.pairToCopier = new HashMap<>();
   }
 
   @Override
@@ -77,28 +77,28 @@ public class CopyConsumer extends FailureTrackingAirbyteMessageConsumer {
         throw new IllegalStateException("Undefined destination sync mode.");
       }
       var stream = configuredStream.getStream();
-      var streamName = stream.getName();
+      var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       var syncMode = configuredStream.getDestinationSyncMode();
       var copier = copierSupplier.get(configuredSchema, s3Config, stagingFolder, syncMode, stream, nameTransformer, db, sqlOperations);
 
-      streamNameToCopier.put(streamName, copier);
+      pairToCopier.put(pair, copier);
     }
   }
 
   @Override
-  protected void acceptTracked(AirbyteRecordMessage msg) throws Exception {
-    var streamName = msg.getStream();
-    if (!streamNameToCopier.containsKey(streamName)) {
+  protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
+    var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
+    if (!pairToCopier.containsKey(pair)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-              Jsons.serialize(catalog), Jsons.serialize(msg)));
+              Jsons.serialize(catalog), Jsons.serialize(message)));
     }
 
     var id = UUID.randomUUID();
-    var data = Jsons.serialize(msg.getData());
-    var emittedAt = Timestamp.from(Instant.ofEpochMilli(msg.getEmittedAt()));
+    var data = Jsons.serialize(message.getData());
+    var emittedAt = Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt()));
 
-    streamNameToCopier.get(streamName).write(id, data, emittedAt);
+    pairToCopier.get(pair).write(id, data, emittedAt);
   }
 
   /**
@@ -108,7 +108,7 @@ public class CopyConsumer extends FailureTrackingAirbyteMessageConsumer {
    * tables.
    */
   public void close(boolean hasFailed) throws Exception {
-    closeAsOneTransaction(new ArrayList<>(streamNameToCopier.values()), hasFailed, db);
+    closeAsOneTransaction(new ArrayList<>(pairToCopier.values()), hasFailed, db);
   }
 
   public void closeAsOneTransaction(List<Copier> copiers, boolean hasFailed, JdbcDatabase db) throws Exception {

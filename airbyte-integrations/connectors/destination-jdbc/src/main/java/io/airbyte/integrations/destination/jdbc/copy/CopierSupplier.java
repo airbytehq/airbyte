@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;

@@ -104,6 +104,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-intercom-singer",
       "airbyte/source-exchangeratesapi-singer",
       "airbyte/source-hubspot",
+      "airbyte/source-iterable",
       "airbyte/source-marketo-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-mixpanel-singer",
@@ -114,7 +115,8 @@ public abstract class StandardSourceTest {
       "airbyte/source-github-singer",
       "airbyte/source-gitlab-singer",
       "airbyte/source-google-workspace-admin-reports",
-      "airbyte/source-zendesk-talk");
+      "airbyte/source-zendesk-talk",
+      "airbyte/source-quickbooks-singer");
 
   /**
    * FIXME: Some sources can't guarantee that there will be no events between two sequential sync
@@ -258,7 +260,8 @@ public abstract class StandardSourceTest {
    */
   @Test
   public void testFullRefreshRead() throws Exception {
-    final List<AirbyteMessage> allMessages = runRead(withFullRefreshSyncModes(getConfiguredCatalog()));
+    ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalog());
+    final List<AirbyteMessage> allMessages = runRead(catalog);
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
     // the worker validates the message formats, so we just validate the message content
     // We don't need to validate message format as long as we use the worker, which we will not want to

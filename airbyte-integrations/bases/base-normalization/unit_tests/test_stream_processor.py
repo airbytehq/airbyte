@@ -60,7 +60,7 @@ def setup_test_path():
 )
 def test_stream_processor_tables_naming(integration_type: str, catalog_file: str, setup_test_path):
     destination_type = DestinationType.from_string(integration_type)
-    tables_registry = set()
+    tables_registry = {}
 
     substreams = []
     catalog = read_json(f"resources/{catalog_file}.json")
@@ -69,19 +69,24 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
     for stream_processor in CatalogProcessor.build_stream_processor(
         catalog=catalog,
         json_column_name="'json_column_name_test'",
-        target_schema="schema_test",
+        default_schema="schema_test",
         name_transformer=DestinationNameTransformer(destination_type),
         destination_type=destination_type,
         tables_registry=tables_registry,
     ):
         nested_processors = stream_processor.process()
-        for table in stream_processor.local_registry:
-            found_sql_output = False
-            for sql_output in stream_processor.sql_outputs:
-                if re.match(r".*/" + table + ".sql", sql_output) is not None:
-                    found_sql_output = True
-                    break
-            assert found_sql_output
+        for schema in stream_processor.local_registry:
+            for table in stream_processor.local_registry[schema]:
+                found_sql_output = False
+                for sql_output in stream_processor.sql_outputs:
+                    file_name = f"{schema}_{table}"
+                    if len(file_name) > stream_processor.name_transformer.get_name_max_length():
+                        file_name = stream_processor.name_transformer.truncate_identifier_name(input_name=file_name)
+
+                    if re.match(r".*/" + file_name + ".sql", sql_output) is not None:
+                        found_sql_output = True
+                        break
+                assert found_sql_output
         add_table_to_registry(tables_registry, stream_processor)
         if nested_processors and len(nested_processors) > 0:
             substreams += nested_processors
@@ -115,7 +120,13 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
         elif DestinationType.REDSHIFT.value == destination_type.value:
             expected_nested = {table.lower() for table in expected_nested}
 
-    assert (tables_registry - expected_top_level) == expected_nested
+    # TODO(davin): Instead of unwrapping all tables, rewrite this test so tables are compared based on schema.
+    all_tables = set()
+    for schema in tables_registry:
+        for tables in tables_registry[schema]:
+            all_tables.add(tables)
+
+    assert (all_tables - expected_top_level) == expected_nested
 
 
 @pytest.mark.parametrize(
@@ -249,9 +260,9 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
 @pytest.mark.parametrize(
     "primary_key, column_type, expecting_exception, expected_primary_keys, expected_final_primary_key_string",
     [
-        ([["id"]], "string", False, ["id"], "id"),
+        ([["id"]], "string", False, ["id"], "{{ adapter.quote('id') }}"),
         ([["first_name"], ["last_name"]], "string", False, ["first_name", "last_name"], "first_name, last_name"),
-        ([["float_id"]], "number", False, ["float_id"], "cast(adapter.quote('float_id') as {{ dbt_utils.type_string() }})"),
+        ([["float_id"]], "number", False, ["float_id"], "cast({{ 'float_id' }} as {{ dbt_utils.type_string() }})"),
         ([["_airbyte_emitted_at"]], "string", False, [], "cast(_airbyte_emitted_at as {{ dbt_utils.type_string() }})"),
         (None, "string", True, [], ""),
         ([["parent", "nested_field"]], "string", True, [], ""),
@@ -279,10 +290,7 @@ def test_primary_key(
         from_table="",
     )
     try:
-        assert (
-            stream_processor.get_primary_key(column_names={key: (key, f"adapter.quote('{key}')") for key in expected_primary_keys})
-            == expected_final_primary_key_string
-        )
+        assert stream_processor.get_primary_key(column_names=stream_processor.extract_column_names()) == expected_final_primary_key_string
     except ValueError as e:
         if not expecting_exception:
             raise e

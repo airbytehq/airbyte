@@ -32,7 +32,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.destination.redshift.RedshiftCopyS3Destination.S3Config;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -97,6 +96,11 @@ public class RedshiftInsertIntegrationTest extends TestDestination {
 
   @Override
   protected boolean implementsBasicNormalization() {
+    return true;
+  }
+
+  @Override
+  protected boolean implementsNamespaces() {
     return true;
   }
 

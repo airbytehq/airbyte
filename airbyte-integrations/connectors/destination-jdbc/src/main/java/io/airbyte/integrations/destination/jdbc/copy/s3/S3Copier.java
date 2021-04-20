@@ -30,7 +30,6 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -58,7 +57,7 @@ public abstract class S3Copier implements Copier {
   // WARNING: Too large a part size can cause potential OOM errors.
   private static final int PART_SIZE_MB = 10;
 
-  private final String stagingFolder;
+  private final String s3StagingFile;
   private final DestinationSyncMode destSyncMode;
   private final String schemaName;
   private final String streamName;
@@ -82,7 +81,6 @@ public abstract class S3Copier implements Copier {
                   ExtendedNameTransformer nameTransformer,
                   SqlOperations sqlOperations)
       throws IOException {
-    this.stagingFolder = stagingFolder;
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -91,6 +89,8 @@ public abstract class S3Copier implements Copier {
     this.s3Config = s3Config;
     this.nameTransformer = nameTransformer;
     this.sqlOperations = sqlOperations;
+
+    this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
 
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
@@ -101,7 +101,7 @@ public abstract class S3Copier implements Copier {
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     this.multipartUploadManager =
-        new StreamTransferManager(s3Config.getBucketName(), getPath(stagingFolder, streamName), client)
+        new StreamTransferManager(s3Config.getBucketName(), s3StagingFile, client)
             .numUploadThreads(DEFAULT_UPLOAD_THREADS)
             .queueCapacity(DEFAULT_QUEUE_CAPACITY)
             .partSize(PART_SIZE_MB);
@@ -131,7 +131,6 @@ public abstract class S3Copier implements Copier {
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
-    var s3StagingFile = getPath(stagingFolder, streamName);
     LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
     if (s3Client.doesObjectExist(s3Config.getBucketName(), s3StagingFile)) {
       s3Client.deleteObject(s3Config.getBucketName(), s3StagingFile);
@@ -143,12 +142,8 @@ public abstract class S3Copier implements Copier {
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
   }
 
-  private static String getPath(String runFolder, String key) {
-    return String.join("/", runFolder, key);
-  }
-
-  private static String getFullS3Path(String s3BucketName, String runFolder, String key) {
-    return String.join("/", "s3:/", s3BucketName, runFolder, key);
+  private static String getFullS3Path(String s3BucketName, String s3StagingFile) {
+    return String.join("/", "s3:/", s3BucketName, s3StagingFile);
   }
 
   private void closeS3WriteStreamAndUpload() throws IOException {
@@ -164,7 +159,7 @@ public abstract class S3Copier implements Copier {
     LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
     sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName);
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), stagingFolder, streamName), schemaName, tmpTableName, s3Config);
+    copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 

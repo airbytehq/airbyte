@@ -43,7 +43,8 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
-    return new CopyConsumer(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), this::getCopier, getSqlOperations(), getNameTransformer());
+    return new CopyConsumer(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), this::getCopier, getSqlOperations(),
+        getNameTransformer());
   }
 
   @Override
@@ -74,7 +75,8 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
                            ExtendedNameTransformer nameTransformer,
                            JdbcDatabase jdbcDatabase,
                            SqlOperations sqlOperations) {
-    return new S3CopierSupplier(SnowflakeS3Copier::new).get(configuredSchema, s3Config, stagingFolder, destinationSyncMode, airbyteStream, nameTransformer,
+    return new S3CopierSupplier(SnowflakeS3Copier::new).get(configuredSchema, s3Config, stagingFolder, destinationSyncMode, airbyteStream,
+        nameTransformer,
         jdbcDatabase, sqlOperations);
   }
 
@@ -85,11 +87,10 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
   private S3Config getS3Config(JsonNode config) {
     final JsonNode loadingMethod = config.get("loading_method");
     return new S3Config(
-            loadingMethod.get("s3_bucket_name").asText(),
-            loadingMethod.get("access_key_id").asText(),
-            loadingMethod.get("secret_access_key").asText(),
-            null
-    );
+        loadingMethod.get("s3_bucket_name").asText(),
+        loadingMethod.get("access_key_id").asText(),
+        loadingMethod.get("secret_access_key").asText(),
+        null);
   }
 
 }

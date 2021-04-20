@@ -24,8 +24,8 @@
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.Copier;
@@ -52,10 +52,11 @@ public class S3CopierSupplier implements CopierSupplier {
                     JdbcDatabase db,
                     SqlOperations sqlOperations) {
     try {
-      var streamName = stream.getName();
+      var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       var schema = getSchema(stream, configuredSchema, nameTransformer);
       var s3Client = S3Copier.getAmazonS3(s3Config);
-      return delegate.get(stagingFolder, syncMode, schema, streamName, s3Client, db, s3Config, nameTransformer, sqlOperations);
+
+      return delegate.get(stagingFolder, syncMode, schema, pair.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
