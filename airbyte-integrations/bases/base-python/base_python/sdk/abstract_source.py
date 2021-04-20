@@ -145,7 +145,10 @@ class AbstractSource(Source, ABC):
         for batch in batches:
             record_counter = 0
             records = stream_instance.read_records(
-                sync_mode=SyncMode.incremental, batch=batch, stream_state=stream_state, cursor_field=configured_stream.cursor_field or None
+                sync_mode=SyncMode.incremental,
+                stream_slice=batch,
+                stream_state=stream_state,
+                cursor_field=configured_stream.cursor_field or None,
             )
             for record_data in records:
                 record_counter += 1
@@ -159,7 +162,7 @@ class AbstractSource(Source, ABC):
     def _read_full_refresh(self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream) -> Iterator[AirbyteMessage]:
         args = {"sync_mode": SyncMode.full_refresh, "cursor_field": configured_stream.cursor_field}
         for batch in stream_instance.stream_slices(**args):
-            for record in stream_instance.read_records(batch=batch, **args):
+            for record in stream_instance.read_records(stream_slice=batch, **args):
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
 
     def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):
