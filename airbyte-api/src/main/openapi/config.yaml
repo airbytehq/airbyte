@@ -1405,6 +1405,8 @@ components:
         documentationUrl:
           type: string
           format: uri
+        icon:
+          type: string
     SourceDefinitionUpdate:
       type: object
       description: Update the SourceDefinition. Currently, the only allowed attribute to update is the default docker image version.
@@ -1435,6 +1437,8 @@ components:
         documentationUrl:
           type: string
           format: uri
+        icon:
+          type: string
     SourceDefinitionReadList:
       type: object
       required:
@@ -1600,6 +1604,8 @@ components:
         documentationUrl:
           type: string
           format: uri
+        icon:
+          type: string
     DestinationDefinitionUpdate:
       type: object
       required:
@@ -1630,6 +1636,8 @@ components:
         documentationUrl:
           type: string
           format: uri
+        icon:
+          type: string
     DestinationDefinitionReadList:
       type: object
       required:

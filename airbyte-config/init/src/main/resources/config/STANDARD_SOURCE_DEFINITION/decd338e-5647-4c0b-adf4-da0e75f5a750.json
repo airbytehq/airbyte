@@ -3,5 +3,6 @@
   "name": "Postgres",
   "dockerRepository": "airbyte/source-postgres",
   "dockerImageTag": "0.2.7",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-postgres"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-postgres",
+  "icon": "postgresql.svg"
 }

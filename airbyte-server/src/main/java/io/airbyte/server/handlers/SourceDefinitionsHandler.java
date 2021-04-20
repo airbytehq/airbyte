@@ -29,6 +29,7 @@ import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -81,8 +82,9 @@ public class SourceDefinitionsHandler {
           .name(standardSourceDefinition.getName())
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()));
-    } catch (URISyntaxException | NullPointerException e) {
+          .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
+          .icon(LoadIcon(standardSourceDefinition.getIcon()));
+    } catch (URISyntaxException | NullPointerException | IOException e) {
       throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
     }
   }
@@ -129,7 +131,8 @@ public class SourceDefinitionsHandler {
         .withDockerRepository(sourceDefinitionCreate.getDockerRepository())
         .withDockerImageTag(sourceDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl().toString())
-        .withName(sourceDefinitionCreate.getName());
+        .withName(sourceDefinitionCreate.getName())
+        .withIcon(sourceDefinitionCreate.getIcon());
 
     configRepository.writeStandardSource(sourceDefinition);
 
@@ -147,12 +150,17 @@ public class SourceDefinitionsHandler {
         .withDockerImageTag(sourceDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentSourceDefinition.getDockerRepository())
         .withDocumentationUrl(currentSourceDefinition.getDocumentationUrl())
-        .withName(currentSourceDefinition.getName());
+        .withName(currentSourceDefinition.getName())
+        .withIcon(currentSourceDefinition.getIcon());
 
     configRepository.writeStandardSource(newSource);
     // we want to re-fetch the spec for updated definitions.
     schedulerSynchronousClient.resetCache();
     return buildSourceDefinitionRead(newSource);
+  }
+
+  private static String LoadIcon(String name) throws IOException {
+    return name == null ? null : MoreResources.readResource("icons/" + name);
   }
 
 }

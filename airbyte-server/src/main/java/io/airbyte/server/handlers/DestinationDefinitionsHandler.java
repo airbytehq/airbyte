@@ -30,6 +30,7 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -81,8 +82,9 @@ public class DestinationDefinitionsHandler {
           .name(standardDestinationDefinition.getName())
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
-          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()));
-    } catch (URISyntaxException | NullPointerException e) {
+          .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
+          .icon(LoadIcon(standardDestinationDefinition.getIcon()));
+    } catch (URISyntaxException | NullPointerException | IOException e) {
       throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
     }
   }
@@ -133,7 +135,8 @@ public class DestinationDefinitionsHandler {
         .withDockerRepository(destinationDefinitionCreate.getDockerRepository())
         .withDockerImageTag(destinationDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(destinationDefinitionCreate.getDocumentationUrl().toString())
-        .withName(destinationDefinitionCreate.getName());
+        .withName(destinationDefinitionCreate.getName())
+        .withIcon(destinationDefinitionCreate.getIcon());
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -152,12 +155,17 @@ public class DestinationDefinitionsHandler {
         .withDockerImageTag(destinationDefinitionUpdate.getDockerImageTag())
         .withDockerRepository(currentDestination.getDockerRepository())
         .withName(currentDestination.getName())
-        .withDocumentationUrl(currentDestination.getDocumentationUrl());
+        .withDocumentationUrl(currentDestination.getDocumentationUrl())
+        .withIcon(currentDestination.getIcon());
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     // we want to re-fetch the spec for updated definitions.
     schedulerSynchronousClient.resetCache();
     return buildDestinationDefinitionRead(newDestination);
+  }
+
+  private static String LoadIcon(String name) throws IOException {
+    return name == null ? null : MoreResources.readResource("icons/" + name);
   }
 
 }
