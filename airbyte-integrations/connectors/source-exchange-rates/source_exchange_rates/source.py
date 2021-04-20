@@ -73,8 +73,8 @@ class ExchangeRates(HttpStream):
 
 def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, any]]:
     """
-    Returns a list of the beginning and ending timetsamps of each day between the start date and now.
-    The return value is a list of dicts {'oldest': float, 'latest': float} which can be used directly with the Slack API
+    Returns a list of each day between the start date and now.
+    The return value is a list of dicts {'date': date_string}.
     """
     days = []
     now = pendulum.now()

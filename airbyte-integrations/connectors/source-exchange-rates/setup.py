@@ -25,7 +25,7 @@ SOFTWARE.
 from setuptools import find_packages, setup
 
 setup(
-    name="source_exchange_rate",
+    name="source_exchange_rates",
     description="Source implementation for Exchange Rate API.",
     author="Airbyte",
     author_email="contact@airbyte.io",

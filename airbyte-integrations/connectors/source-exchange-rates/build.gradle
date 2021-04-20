@@ -5,7 +5,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_slack'
+    moduleDirectory 'source_exchange_rates'
 }
 
 airbyteStandardSourceTestFile {
