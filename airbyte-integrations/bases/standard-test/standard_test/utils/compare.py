@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import py
 from typing import List, Optional
 
 import icdiff
+import py
 from pprintpp import pformat
 
 MAX_COLS = py.io.TerminalWriter().fullwidth

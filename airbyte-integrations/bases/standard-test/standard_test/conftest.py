@@ -25,12 +25,12 @@ SOFTWARE.
 import copy
 import json
 from pathlib import Path
-from typing import Optional, MutableMapping, Any, List
+from typing import Any, List, MutableMapping, Optional
 
 import pytest
-from airbyte_protocol import AirbyteCatalog, ConfiguredAirbyteCatalog, ConnectorSpecification, AirbyteMessage
+from airbyte_protocol import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from standard_test.config import Config
-from standard_test.utils import load_config, SecretDict, ConnectorRunner
+from standard_test.utils import ConnectorRunner, SecretDict, load_config
 
 
 @pytest.fixture(name="base_path")

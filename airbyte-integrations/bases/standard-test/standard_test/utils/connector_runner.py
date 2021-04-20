@@ -25,7 +25,7 @@ SOFTWARE.
 import json
 import logging
 from pathlib import Path
-from typing import Iterable, Mapping, Optional, List
+from typing import Iterable, List, Mapping, Optional
 
 import docker
 from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog

@@ -24,12 +24,12 @@ SOFTWARE.
 
 import json
 from pathlib import Path
-from typing import Mapping, Any, Tuple, Iterable
+from typing import Any, Iterable, Mapping, Tuple
 
 import pytest
 from airbyte_protocol import ConfiguredAirbyteCatalog, Type
 from standard_test import BaseTest
-from standard_test.utils import filter_output, incremental_only_catalog, JsonSchemaHelper, ConnectorRunner
+from standard_test.utils import ConnectorRunner, JsonSchemaHelper, filter_output, incremental_only_catalog
 
 
 @pytest.fixture(name="future_state_path")
@@ -95,7 +95,7 @@ class TestIncremental(BaseTest):
         latest_state = states_1[-1].state.data
         for record_value, state_value in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
             assert (
-                    record_value <= state_value
+                record_value <= state_value
             ), "First incremental sync should produce records younger or equal to cursor value from the state"
 
         output = docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=latest_state)

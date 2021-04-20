@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from enum import Enum
 from typing import List, Mapping, Optional
 
-from enum import Enum
 from pydantic import BaseModel, Field
 
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
@@ -46,9 +46,9 @@ class SpecTestConfig(BaseConfig):
 
 class ConnectionTestConfig(BaseConfig):
     class Status(Enum):
-        Succeed = 'succeed'
-        Failed = 'failed'
-        Exception = 'exception'
+        Succeed = "succeed"
+        Failed = "failed"
+        Exception = "exception"
 
     config_path: str = config_path
     status: Status = Field(Status.Succeed, description="Indicate if connection check should succeed with provided config")

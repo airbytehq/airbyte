@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import pytest
-from standard_test.utils import load_config, diff_dicts
+from standard_test.utils import diff_dicts, load_config
 
 
 def pytest_addoption(parser):
