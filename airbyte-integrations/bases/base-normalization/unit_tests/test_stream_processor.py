@@ -44,6 +44,7 @@ def setup_test_path():
 @pytest.mark.parametrize(
     "catalog_file",
     [
+        "edge_cases_catalog",
         "hubspot_catalog",
         "facebook_catalog",
         "stripe_catalog",
