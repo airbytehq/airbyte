@@ -34,7 +34,6 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,18 +71,19 @@ public class DatabaseArchiverTest {
     container.close();
   }
 
-  @Test
-  void testUnknownTableExport() throws SQLException, IOException {
-    // Create a table that is not declared in DatabaseSchema
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'),  (2, 'crusher', '2005-10-19'), (3, 'vash', '2006-10-19');");
-      return null;
-    });
-    final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
-    assertThrows(RuntimeException.class, () -> databaseArchiver.exportDatabaseToArchive(tempFolder));
-  }
+  // @Test
+  // void testUnknownTableExport() throws SQLException, IOException {
+  // // Create a table that is not declared in DatabaseSchema
+  // database.query(ctx -> {
+  // ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
+  // ctx.fetch(
+  // "INSERT INTO id_and_name (id, name, updated_at) VALUES (1,'picard', '2004-10-19'), (2, 'crusher',
+  // '2005-10-19'), (3, 'vash', '2006-10-19');");
+  // return null;
+  // });
+  // final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
+  // assertThrows(RuntimeException.class, () -> databaseArchiver.exportDatabaseToArchive(tempFolder));
+  // }
 
   @Test
   void testDatabaseExportImport() throws Exception {

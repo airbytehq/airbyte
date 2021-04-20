@@ -455,11 +455,19 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private Map<DatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
+    System.out.println("==========LIST DB TABLES BEFORE=============");
     final List<String> tables = listTables(schema);
     final Map<DatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
+
     for (final String table : tables) {
-      result.put(DatabaseSchema.valueOf(table.toUpperCase()), exportTable(schema, table));
+      try {
+        result.put(DatabaseSchema.valueOf(table.toUpperCase()), exportTable(schema, table));
+      } catch (IllegalArgumentException e) {
+        continue;
+      }
     }
+
+    System.out.println("==========LIST DB TABLES AFTER=============");
     return result;
   }
 
