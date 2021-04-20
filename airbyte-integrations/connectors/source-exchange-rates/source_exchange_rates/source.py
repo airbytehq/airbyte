@@ -39,7 +39,6 @@ class ExchangeRates(HttpStream):
 
     def __init__(self, base: str, start_date: DateTime):
         super().__init__()
-        # validate base is a valid symbol
         self._base = base
         self._start_date = start_date
 
