@@ -4,5 +4,5 @@
   "dockerRepository": "airbyte/source-mongodb",
   "dockerImageTag": "0.2.0",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-mongodb",
-  "icon": "mongodb"
+  "icon": "mongodb.svg"
 }

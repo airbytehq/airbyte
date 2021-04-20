@@ -4,5 +4,5 @@
   "dockerRepository": "airbyte/source-greenhouse",
   "dockerImageTag": "0.2.2",
   "documentationUrl": "https://https://docs.airbyte.io/integrations/sources/greenhouse",
-  "icon": "greenhouse"
+  "icon": "greenhouse.svg"
 }

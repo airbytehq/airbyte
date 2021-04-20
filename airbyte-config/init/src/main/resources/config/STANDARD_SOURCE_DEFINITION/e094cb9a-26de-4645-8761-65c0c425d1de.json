@@ -4,5 +4,5 @@
   "dockerRepository": "airbyte/source-stripe-singer",
   "dockerImageTag": "0.2.1",
   "documentationUrl": "https://hub.docker.com/r/airbyte/integration-singer-stripe-source",
-  "icon": "stripe"
+  "icon": "stripe.svg"
 }

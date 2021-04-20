@@ -4,5 +4,5 @@
   "dockerRepository": "airbyte/source-shopify-singer",
   "dockerImageTag": "0.2.1",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-shopify-singer",
-  "icon": "shopify"
+  "icon": "shopify.svg"
 }

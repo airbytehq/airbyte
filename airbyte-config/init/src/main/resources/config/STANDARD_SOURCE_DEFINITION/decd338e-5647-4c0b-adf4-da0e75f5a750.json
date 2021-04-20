@@ -4,5 +4,5 @@
   "dockerRepository": "airbyte/source-postgres",
   "dockerImageTag": "0.2.4",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-postgres",
-  "icon": "postgresql"
+  "icon": "postgresql.svg"
 }

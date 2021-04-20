@@ -13,7 +13,7 @@
   dockerRepository: airbyte/destination-postgres
   dockerImageTag: 0.2.4
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
-  icon: postgresql
+  icon: postgresql.svg
 - destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   name: BigQuery
   dockerRepository: airbyte/destination-bigquery
@@ -29,7 +29,7 @@
   dockerRepository: airbyte/destination-redshift
   dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
-  icon: redshift
+  icon: redshift.svg
 - destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
   name: MeiliSearch
   dockerRepository: airbyte/destination-meilisearch

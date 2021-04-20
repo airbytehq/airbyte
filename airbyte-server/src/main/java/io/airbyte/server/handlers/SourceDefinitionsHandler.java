@@ -132,7 +132,7 @@ public class SourceDefinitionsHandler {
         .withDockerImageTag(sourceDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl().toString())
         .withName(sourceDefinitionCreate.getName())
-        .withIcon(LoadIcon(sourceDefinitionCreate.getIcon()));
+        .withIcon(sourceDefinitionCreate.getIcon());
 
     configRepository.writeStandardSource(sourceDefinition);
 
@@ -151,7 +151,7 @@ public class SourceDefinitionsHandler {
         .withDockerRepository(currentSourceDefinition.getDockerRepository())
         .withDocumentationUrl(currentSourceDefinition.getDocumentationUrl())
         .withName(currentSourceDefinition.getName())
-        .withIcon(LoadIcon(currentSourceDefinition.getIcon()));
+        .withIcon(currentSourceDefinition.getIcon());
 
     configRepository.writeStandardSource(newSource);
     // we want to re-fetch the spec for updated definitions.
@@ -160,7 +160,7 @@ public class SourceDefinitionsHandler {
   }
 
   private static String LoadIcon(String name) throws IOException {
-    return name == null ? null : MoreResources.readResource(String.format("icons/%s.svg", name));
+    return name == null ? null : MoreResources.readResource("icons/" + name);
   }
 
 }

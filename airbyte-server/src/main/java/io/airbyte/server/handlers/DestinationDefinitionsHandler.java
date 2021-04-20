@@ -136,7 +136,7 @@ public class DestinationDefinitionsHandler {
         .withDockerImageTag(destinationDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(destinationDefinitionCreate.getDocumentationUrl().toString())
         .withName(destinationDefinitionCreate.getName())
-        .withIcon(LoadIcon(destinationDefinitionCreate.getIcon()));
+        .withIcon(destinationDefinitionCreate.getIcon());
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
@@ -156,7 +156,7 @@ public class DestinationDefinitionsHandler {
         .withDockerRepository(currentDestination.getDockerRepository())
         .withName(currentDestination.getName())
         .withDocumentationUrl(currentDestination.getDocumentationUrl())
-        .withIcon(LoadIcon(currentDestination.getIcon()));
+        .withIcon(currentDestination.getIcon());
 
     configRepository.writeStandardDestinationDefinition(newDestination);
     // we want to re-fetch the spec for updated definitions.
@@ -165,7 +165,7 @@ public class DestinationDefinitionsHandler {
   }
 
   private static String LoadIcon(String name) throws IOException {
-    return name == null ? null : MoreResources.readResource(String.format("icons/%s.svg", name));
+    return name == null ? null : MoreResources.readResource("icons/" + name);
   }
 
 }
