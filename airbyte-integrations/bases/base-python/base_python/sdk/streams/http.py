@@ -96,7 +96,7 @@ class HttpStream(Stream, ABC):
             self,
             stream_state: Mapping[str, Any],
             batch: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -219,7 +219,6 @@ class HttpStream(Stream, ABC):
                 json=self.request_body_json(**args),
             )
 
-            # print(request.__dict__)
             response = self._send_request(request)
             yield from self.parse_response(response, **args)
 
