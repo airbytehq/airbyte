@@ -28,7 +28,7 @@ import time
 import backoff
 from base_python.logger import AirbyteLogger
 from base_python.sdk.streams.exceptions import DefaultBackoffException, UserDefinedBackoffException
-from requests import exceptions
+from requests import codes, exceptions
 
 TRANSIENT_EXCEPTIONS = (DefaultBackoffException, exceptions.ConnectTimeout, exceptions.ReadTimeout, exceptions.ConnectionError)
 
@@ -43,8 +43,11 @@ def default_backoff_handler(max_tries: int, factor: int, **kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
-        # If a 4XX error makes it this far, it means it was unexpected and probably consistent, so we shouldn't back off
-        return exc.response is not None and 400 <= exc.response.status_code < 500
+        # If a non-rate-limiting related 4XX error makes it this far, it means it was unexpected and probably consistent, so we shouldn't back off
+        give_up = exc.response is not None and exc.response.status_code != codes.too_many_requests and 400 <= exc.response.status_code < 500
+        if give_up:
+            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}")
+        return give_up
 
     return backoff.on_exception(
         backoff.expo,
