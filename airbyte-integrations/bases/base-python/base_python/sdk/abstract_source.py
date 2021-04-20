@@ -25,7 +25,7 @@ SOFTWARE.
 import copy
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -45,11 +45,8 @@ from base_python.sdk.streams.core import Stream
 
 
 class AbstractSource(Source, ABC):
-    def __init__(self):
-        super().__init__()
-
     @abstractmethod
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
         source using the provided configuration.
@@ -75,9 +72,12 @@ class AbstractSource(Source, ABC):
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Check connection"""
-        check_succeeded, error = self.check_connection(logger, config)
-        if not check_succeeded:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=str(error))
+        try:
+            check_succeeded, error = self.check_connection(logger, config)
+            if not check_succeeded:
+                return AirbyteConnectionStatus(status=Status.FAILED, message=str(error))
+        except Exception as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
@@ -85,8 +85,7 @@ class AbstractSource(Source, ABC):
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
 
-        state = state or {}
-        total_state = copy.deepcopy(state)
+        connector_state = copy.deepcopy(state or {})
         logger.info(f"Starting syncing {self.name}")
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
@@ -95,7 +94,7 @@ class AbstractSource(Source, ABC):
             try:
                 stream_instance = stream_instances[configured_stream.stream.name]
                 yield from self._read_stream(
-                    logger=logger, stream_instance=stream_instance, configured_stream=configured_stream, state=total_state
+                    logger=logger, stream_instance=stream_instance, configured_stream=configured_stream, connector_state=connector_state
                 )
             except Exception as e:
                 logger.exception(f"Encountered an exception while reading stream {self.name}")
@@ -104,31 +103,71 @@ class AbstractSource(Source, ABC):
         logger.info(f"Finished syncing {self.name}")
 
     def _read_stream(
-        self, logger: AirbyteLogger, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]
+        self,
+        logger: AirbyteLogger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        connector_state: MutableMapping[str, Any],
+    ) -> Iterator[AirbyteMessage]:
+
+        use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
+        if use_incremental:
+            record_iterator = self._read_incremental(logger, stream_instance, configured_stream, connector_state)
+        else:
+            record_iterator = self._read_full_refresh(stream_instance, configured_stream)
+
+        record_counter = 0
+        stream_name = configured_stream.stream.name
+        logger.info(f"Syncing stream: {stream_name} ")
+        for record in record_iterator:
+            if record.type == MessageType.RECORD:
+                record_counter += 1
+            yield record
+
+        logger.info(f"Read {record_counter} records from {stream_name} stream")
+
+    def _read_incremental(
+        self,
+        logger: AirbyteLogger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        connector_state: MutableMapping[str, Any],
     ) -> Iterator[AirbyteMessage]:
         stream_name = configured_stream.stream.name
-        use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
+        stream_state = connector_state.get(stream_name, {})
+        if stream_state:
+            logger.info(f"Setting state of {stream_name} stream to {stream_state.get(stream_name)}")
 
-        stream_state = {}
-        if use_incremental and state.get(stream_name):
-            logger.info(f"Set state of {stream_name} stream to {state.get(stream_name)}")
-            stream_state = state.get(stream_name)
+        checkpoint_interval = stream_instance.state_checkpoint_interval
+        batches = stream_instance.stream_slices(
+            cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
+        )
+        for batch in batches:
+            record_counter = 0
+            records = stream_instance.read_records(
+                sync_mode=SyncMode.incremental, batch=batch, stream_state=stream_state, cursor_field=configured_stream.cursor_field or None
+            )
+            for record_data in records:
+                record_counter += 1
+                yield self._as_airbyte_record(stream_name, record_data)
+                stream_state = stream_instance.get_updated_state(stream_state, record_data)
+                if checkpoint_interval and record_counter % checkpoint_interval == 0:
+                    yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
-        logger.info(f"Syncing stream: {stream_name} ")
-        record_counter = 0
-        for record in stream_instance.read_stream(configured_stream=configured_stream, stream_state=copy.deepcopy(stream_state)):
-            now_millis = int(datetime.now().timestamp()) * 1000
-            message = AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=now_millis)
-            yield AirbyteMessage(type=MessageType.RECORD, record=message)
+            yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
-            record_counter += 1
-            if use_incremental:
-                stream_state = stream_instance.get_updated_state(stream_state, record)
-                if record_counter % stream_instance.state_checkpoint_interval == 0:
-                    state[stream_name] = stream_state
-                    yield AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=state))
+    def _read_full_refresh(self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream) -> Iterator[AirbyteMessage]:
+        args = {"sync_mode": SyncMode.full_refresh, "cursor_field": configured_stream.cursor_field}
+        for batch in stream_instance.stream_slices(**args):
+            for record in stream_instance.read_records(batch=batch, **args):
+                yield self._as_airbyte_record(configured_stream.stream.name, record)
 
-        if use_incremental and stream_state:
-            state[stream_name] = stream_state
-            # output state object only together with other stream states
-            yield AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=state))
+    def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):
+        logger.info(f"Setting state of {stream_name} stream to {stream_state}")
+        connector_state[stream_name] = stream_state
+        return AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage(data=connector_state))
+
+    def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
+        now_millis = int(datetime.now().timestamp()) * 1000
+        message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
+        return AirbyteMessage(type=MessageType.RECORD, record=message)

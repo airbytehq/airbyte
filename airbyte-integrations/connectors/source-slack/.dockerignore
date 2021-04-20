@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!Dockerfile.test
+!source_slack
+!setup.py
+!secrets
