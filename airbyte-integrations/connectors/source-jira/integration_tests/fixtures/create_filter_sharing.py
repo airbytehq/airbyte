@@ -22,27 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ..base import BaseStream
-from .issues import IssueRelatedMixin
+from data_generator.streams.filter_sharing import FilterSharing
 
 
-class IssueWatchers(BaseStream, IssueRelatedMixin):
-    list_endpoint = "watchers"
-    generate_endpoint = "issue/{key}/watchers"
+def create():
+    stream = FilterSharing()
+    stream.generate()
 
-    def extract(self, response):
-        pass
 
-    def list(self):
-        pass
-
-    def generate_issue_votes(self, url):
-        self.make_request("POST", url)
-
-    def generate(self):
-        """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-post"""
-        issues_batch = self.get_issues()
-        for item in issues_batch:
-            key = item.get("key")
-            url = self.get_url(self.generate_endpoint.format(key=key))
-            self.generate_issue_votes(url)
+if __name__ == "__main__":
+    create()

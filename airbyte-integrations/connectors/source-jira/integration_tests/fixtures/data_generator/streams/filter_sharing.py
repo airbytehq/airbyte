@@ -22,13 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+import random
+
 from ..base import BaseStream
-from .issues import IssueRelatedMixin
+from .filters import FilterRelatedMixin
 
 
-class IssueWatchers(BaseStream, IssueRelatedMixin):
-    list_endpoint = "watchers"
-    generate_endpoint = "issue/{key}/watchers"
+class FilterSharing(BaseStream, FilterRelatedMixin):
+    list_endpoint = "permission"
+    generate_endpoint = "filter/{id}/permission"
 
     def extract(self, response):
         pass
@@ -36,13 +39,16 @@ class IssueWatchers(BaseStream, IssueRelatedMixin):
     def list(self):
         pass
 
-    def generate_issue_votes(self, url):
-        self.make_request("POST", url)
+    def generate_filter_sharing(self, url):
+        for index in range(random.randrange(4)):
+            group_name = random.choice(["Test group 0", "Test group 1", "Test group 2"])
+            payload = json.dumps({"type": "group", "groupname": group_name})
+            self.make_request("POST", url, data=payload)
 
     def generate(self):
-        """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-post"""
-        issues_batch = self.get_issues()
-        for item in issues_batch:
-            key = item.get("key")
-            url = self.get_url(self.generate_endpoint.format(key=key))
-            self.generate_issue_votes(url)
+        """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-post"""
+        filters_batch = self.get_filters()
+        for item in filters_batch:
+            key = item.get("id")
+            url = self.get_url(self.generate_endpoint.format(id=key))
+            self.generate_filter_sharing(url)

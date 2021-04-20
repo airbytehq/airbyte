@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import json
+
 from ..base import BaseStream
-from .issues import IssueRelatedMixin
 
 
-class IssueWatchers(BaseStream, IssueRelatedMixin):
-    list_endpoint = "watchers"
-    generate_endpoint = "issue/{key}/watchers"
+class Workflows(BaseStream):
+    list_endpoint = "workflow"
+    generate_endpoint = "workflow"
 
     def extract(self, response):
         pass
@@ -36,13 +37,19 @@ class IssueWatchers(BaseStream, IssueRelatedMixin):
     def list(self):
         pass
 
-    def generate_issue_votes(self, url):
-        self.make_request("POST", url)
+    def generate_workflows(self, url):
+        for index in range(30):
+            payload = json.dumps(
+                {
+                    "name": f"Test workflow {index}",
+                    "description": "This is a workflow used for Stories and Tasks",
+                    "statuses": [{"id": "1"}],
+                    "transitions": [{"name": "Created", "from": [], "to": "1", "type": "initial"}],
+                }
+            )
+            self.make_request("POST", url, data=payload)
 
     def generate(self):
-        """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-post"""
-        issues_batch = self.get_issues()
-        for item in issues_batch:
-            key = item.get("key")
-            url = self.get_url(self.generate_endpoint.format(key=key))
-            self.generate_issue_votes(url)
+        """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-post"""
+        url = self.get_url(self.generate_endpoint)
+        self.generate_workflows(url)
