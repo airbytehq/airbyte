@@ -3,5 +3,6 @@
   "name": "Sendgrid",
   "dockerRepository": "airbyte/source-sendgrid",
   "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-sendgrid"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-sendgrid",
+  "icon": "sendgrid.svg"
 }

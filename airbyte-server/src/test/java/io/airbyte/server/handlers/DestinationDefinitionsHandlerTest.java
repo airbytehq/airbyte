@@ -38,6 +38,7 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -86,7 +87,8 @@ class DestinationDefinitionsHandlerTest {
         .withName("presto")
         .withDockerImageTag("12.3")
         .withDockerRepository("repo")
-        .withDocumentationUrl("https://hulu.com");
+        .withDocumentationUrl("https://hulu.com")
+        .withIcon("http.svg");
   }
 
   @Test
@@ -101,14 +103,16 @@ class DestinationDefinitionsHandlerTest {
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()));
+        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .icon(LoadIcon(destination.getIcon()));
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
         .destinationDefinitionId(destination2.getDestinationDefinitionId())
         .name(destination2.getName())
         .dockerRepository(destination2.getDockerRepository())
         .dockerImageTag(destination2.getDockerImageTag())
-        .documentationUrl(new URI(destination2.getDocumentationUrl()));
+        .documentationUrl(new URI(destination2.getDocumentationUrl()))
+        .icon(LoadIcon(destination2.getIcon()));
 
     final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationHandler.listDestinationDefinitions();
 
@@ -128,7 +132,8 @@ class DestinationDefinitionsHandlerTest {
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()));
+        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .icon(LoadIcon(destination.getIcon()));
 
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
         .destinationDefinitionId(destination.getDestinationDefinitionId());
@@ -147,14 +152,16 @@ class DestinationDefinitionsHandlerTest {
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()));
+        .documentationUrl(new URI(destination.getDocumentationUrl()))
+        .icon(destination.getIcon());
 
     final DestinationDefinitionRead expectedRead = new DestinationDefinitionRead()
         .name(destination.getName())
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .destinationDefinitionId(destination.getDestinationDefinitionId());
+        .destinationDefinitionId(destination.getDestinationDefinitionId())
+        .icon(LoadIcon(destination.getIcon()));
 
     final DestinationDefinitionRead actualRead = destinationHandler.createDestinationDefinition(create);
 
@@ -228,6 +235,14 @@ class DestinationDefinitionsHandlerTest {
       assertThrows(KnownException.class, () -> destinationHandler.listLatestDestinationDefinitions());
     }
 
+  }
+
+  private static String LoadIcon(String name) {
+    try {
+      return name == null ? null : MoreResources.readResource("icons/" + name);
+    } catch (IOException e) {
+      return "Error";
+    }
   }
 
 }
