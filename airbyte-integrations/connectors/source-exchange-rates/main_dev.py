@@ -25,8 +25,8 @@ SOFTWARE.
 import sys
 
 from base_python.entrypoint import launch
-from source_exchange_rate import SourceExchangeRates
+from source_exchange_rates import SourceExchangeRates
 
 if __name__ == "__main__":
-  source = SourceExchangeRates()
-  launch(source, sys.argv[1:])
+    source = SourceExchangeRates()
+    launch(source, sys.argv[1:])

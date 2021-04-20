@@ -24,6 +24,4 @@ SOFTWARE.
 
 from .source import SourceExchangeRates
 
-__all__ = [
-    "SourceExchangeRates"
-]
+__all__ = ["SourceExchangeRates"]

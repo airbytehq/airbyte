@@ -22,15 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Optional, Mapping
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import requests
-
 from base_python import AbstractSource, HttpStream, Stream
-from typing import Any, Tuple, List, Iterable
+from pendulum import DateTime
+
 
 class ExchangeRates(HttpStream):
     url_base = "https://api.ratesapi.io/"
+
+    def __init__(self, default_start_date: DateTime):
+        self._default_start_date = default_start_date
+        super().__init__()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -56,8 +60,4 @@ class SourceExchangeRates(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [ExchangeRates()]
-
-
-
-
+        return [ExchangeRates(config["start_date"])]
