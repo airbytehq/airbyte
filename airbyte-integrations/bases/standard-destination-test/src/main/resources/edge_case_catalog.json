@@ -96,6 +96,22 @@
           }
         }
       }
+    },
+    {
+      "name": "withVeryLongRecords",
+      "json_schema": {
+        "properties": {
+          "text_column": {
+            "type": "string"
+          },
+          "integer_column": {
+            "type": "integer"
+          },
+          "boolean_column": {
+            "type": "boolean"
+          }
+        }
+      }
     }
   ]
 }
