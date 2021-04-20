@@ -25,8 +25,8 @@ SOFTWARE.
 import sys
 
 from base_python.entrypoint import launch
-from source_nmbgmr_gwl import SourceNmbgmrAcousticGwl
+from source_nmbgmr_gwl import SourceNmbgmrGwl
 
 if __name__ == "__main__":
-    source = SourceNmbgmrAcousticGwl()
+    source = SourceNmbgmrGwl()
     launch(source, sys.argv[1:])

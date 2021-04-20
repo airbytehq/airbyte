@@ -22,6 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .source import SourceNmbgmrAcousticGwl
+from .source import SourceNmbgmrGwl
 
-__all__ = ["SourceNmbgmrAcousticGwl"]
+__all__ = ["SourceNmbgmrGwl"]

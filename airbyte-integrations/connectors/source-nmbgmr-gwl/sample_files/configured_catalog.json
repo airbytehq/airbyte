@@ -12,11 +12,11 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": false,
         "default_cursor_field": ["column_name"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {"stream": {

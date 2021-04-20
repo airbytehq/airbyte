@@ -37,11 +37,12 @@ from airbyte_protocol import (
     AirbyteStateMessage,
     Status,
     Type,
+    SyncMode
 )
 from base_python import AirbyteLogger, Source
 
 
-class SourceNmbgmrAcousticGwl(Source):
+class SourceNmbgmrGwl(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
@@ -84,14 +85,8 @@ class SourceNmbgmrAcousticGwl(Source):
             "type": "object",
             "properties": {"PointID": {"type": "string"},
                            "DateMeasured": {"type": "string"},
-                           "DepthToWaterBGS": {"type": "double"}}}
+                           "DepthToWaterBGS": {"type": "float"}}}
 
-        # streams = []
-        # for pointid in get_pointids(logger, config):
-        #     streams.append(AirbyteStream(name=pointid['PointID'],
-        #                                  supported_sync_modes=["full_refresh", "incremental"],
-        #                                  source_defined_cursor=True,
-        #                                  json_schema=json_schema))
         streams = [AirbyteStream(name='Acoustic',
                                  supported_sync_modes=["full_refresh", "incremental"],
                                  source_defined_cursor=True,
@@ -143,27 +138,29 @@ class SourceNmbgmrAcousticGwl(Source):
 
 
 def public_url(config):
-    return f'{config["url"]}/maps/data/public'
+    return f'{config["url"]}/maps/data/waterlevels'
 
 
 def records_url(config, tag):
     pu = public_url(config)
-    url = f'{pu}/waterlevels/{tag}/records'
+    url = f'{pu}/records/{tag}'
     return url
 
 
 def get_data(logger, stream, state, config):
     key = stream.stream.name
     url = records_url(config, key.lower())
-    if stream.sync_mode == 'incremental' and key in state:
-        url = f'{url}?start_date={state[key]}'
+    logger.debug(f'****** mode {stream.sync_mode} state={state}')
+    if stream.sync_mode == SyncMode.incremental and key in state:
+        url = f'{url}?start_date={state.get(key)}'
     else:
         url = f'{url}?count=10'
 
     jobj = get_json(logger, url)
     if jobj:
         # update state
-        output_message = {"type": "STATE", "state": {"data": {key: jobj[-1]['DateMeasured']}}}
+        state[key] = jobj[-1]['DateMeasured']
+        output_message = {"type": "STATE", "state": {"data": state}}
         print(json.dumps(output_message))
         return jobj
 

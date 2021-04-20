@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 ENV CODE_PATH="source_nmbgmr_gwl"
 ENV AIRBYTE_IMPL_MODULE="source_nmbgmr_gwl"
-ENV AIRBYTE_IMPL_PATH="SourceNmbgmrAcousticGwl"
+ENV AIRBYTE_IMPL_PATH="SourceNmbgmrGwl"
 
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
@@ -13,4 +13,4 @@ COPY setup.py ./
 RUN pip install .
 
 LABEL io.airbyte.version=0.1.1
-LABEL io.airbyte.name=airbyte/source-nmbgmr-acoustic-gwl
+LABEL io.airbyte.name=airbyte/source-nmbgmr-gwl
