@@ -88,8 +88,10 @@ class CdcPostgresSourceTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(CdcPostgresSourceTest.class);
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
-  private static final String MAKES_STREAM_NAME = "public.makes";
-  private static final String MODELS_STREAM_NAME = "public.models";
+  private static final String MAKES_SCHEMA = "public";
+  private static final String MAKES_STREAM_NAME = "makes";
+  private static final String MODELS_SCHEMA = "staging";
+  private static final String MODELS_STREAM_NAME = "models";
   private static final Set<String> STREAM_NAMES = Sets.newHashSet(MAKES_STREAM_NAME, MODELS_STREAM_NAME);
   private static final String COL_ID = "id";
   private static final String COL_MAKE = "make";
@@ -100,12 +102,14 @@ class CdcPostgresSourceTest {
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           MAKES_STREAM_NAME,
+          MAKES_SCHEMA,
           Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
           Field.of(COL_MAKE, JsonSchemaPrimitive.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
       CatalogHelpers.createAirbyteStream(
           MODELS_STREAM_NAME,
+          MODELS_SCHEMA,
           Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
           Field.of(COL_MAKE_ID, JsonSchemaPrimitive.NUMBER),
           Field.of(COL_MODEL, JsonSchemaPrimitive.STRING))
@@ -165,9 +169,11 @@ class CdcPostgresSourceTest {
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'pgoutput');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
-      ctx.execute(String.format("CREATE TABLE %s(%s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));", MAKES_STREAM_NAME, COL_ID, COL_MAKE, COL_ID));
-      ctx.execute(String.format("CREATE TABLE %s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
-          MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
+      ctx.execute("CREATE SCHEMA %s;", MODELS_SCHEMA);
+      ctx.execute(String.format("CREATE TABLE $s.%s(%s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));", MAKES_SCHEMA, MAKES_STREAM_NAME, COL_ID,
+          COL_MAKE, COL_ID));
+      ctx.execute(String.format("CREATE TABLE %s.%s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
+          MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
 
       for (JsonNode recordJson : MAKE_RECORDS) {
         writeMakeRecord(ctx, recordJson);
@@ -211,7 +217,7 @@ class CdcPostgresSourceTest {
   }
 
   @Test
-  @DisplayName("On the first First sync, produces returns records that exist in the database.")
+  @DisplayName("On the first sync, produce returns records that exist in the database.")
   void testExistingData() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read = source.read(getConfig(PSQL_DB, dbName), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
@@ -233,7 +239,7 @@ class CdcPostgresSourceTest {
     assertExpectedStateMessages(stateMessages1);
 
     database.query(ctx -> {
-      ctx.execute(String.format("DELETE FROM %s WHERE %s = %s", MODELS_STREAM_NAME, COL_ID, 11));
+      ctx.execute(String.format("DELETE FROM %s.%s WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, 11));
       return null;
     });
 
@@ -262,7 +268,7 @@ class CdcPostgresSourceTest {
     assertExpectedStateMessages(stateMessages1);
 
     database.query(ctx -> {
-      ctx.execute(String.format("UPDATE %s SET %s = '%s' WHERE %s = %s", MODELS_STREAM_NAME, COL_MODEL, updatedModel, COL_ID, 11));
+      ctx.execute(String.format("UPDATE %s.%s SET %s = '%s' WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME, COL_MODEL, updatedModel, COL_ID, 11));
       return null;
     });
 
@@ -397,12 +403,12 @@ class CdcPostgresSourceTest {
   @DisplayName("When no records exist, no records are returned.")
   void testNoData() throws Exception {
     database.query(ctx -> {
-      ctx.execute(String.format("DELETE FROM %s", MAKES_STREAM_NAME));
+      ctx.execute(String.format("DELETE FROM %s.%s", MAKES_SCHEMA, MAKES_STREAM_NAME));
       return null;
     });
 
     database.query(ctx -> {
-      ctx.execute(String.format("DELETE FROM %s", MODELS_STREAM_NAME));
+      ctx.execute(String.format("DELETE FROM %s.%s", MODELS_SCHEMA, MODELS_STREAM_NAME));
       return null;
     });
 
@@ -475,13 +481,14 @@ class CdcPostgresSourceTest {
   }
 
   private void writeMakeRecord(DSLContext ctx, JsonNode recordJson) {
-    ctx.execute(String.format("INSERT INTO %s (%s, %s) VALUES (%s, '%s');", MAKES_STREAM_NAME, COL_ID, COL_MAKE,
+    ctx.execute(String.format("INSERT INTO %s.%s (%s, %s) VALUES (%s, '%s');", MAKES_SCHEMA, MAKES_STREAM_NAME, COL_ID, COL_MAKE,
         recordJson.get(COL_ID).asInt(), recordJson.get(COL_MAKE).asText()));
   }
 
   private void writeModelRecord(DSLContext ctx, JsonNode recordJson) {
-    ctx.execute(String.format("INSERT INTO %s (%s, %s, %s) VALUES (%s, %s, '%s');", MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL,
-        recordJson.get(COL_ID).asInt(), recordJson.get(COL_MAKE_ID).asInt(), recordJson.get(COL_MODEL).asText()));
+    ctx.execute(
+        String.format("INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');", MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL,
+            recordJson.get(COL_ID).asInt(), recordJson.get(COL_MAKE_ID).asInt(), recordJson.get(COL_MODEL).asText()));
   }
 
   private Set<AirbyteRecordMessage> extractRecordMessages(List<AirbyteMessage> messages) {
