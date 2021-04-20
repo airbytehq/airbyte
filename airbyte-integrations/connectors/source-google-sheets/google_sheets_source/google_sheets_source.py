@@ -63,16 +63,16 @@ class GoogleSheetsSource(Source):
                 status=Status.FAILED, message=f"Unable to connect with the provided credentials to spreadsheet. Error: {reason}"
             )
 
-        # Check for duplicates
+        # Check for duplicate headers
         spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
         sheet_names = [sheet.properties.title for sheet in spreadsheet_metadata.sheets]
         duplicate_headers_in_sheet = {}
         for sheet_name in sheet_names:
             try:
                 header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
-                _, duplilcate_headers = Helpers.get_vaild_headers_and_duplicates(header_row_data)
-                if duplilcate_headers:
-                    duplicate_headers_in_sheet[sheet_name] = duplilcate_headers
+                _, duplicate_headers = Helpers.get_valid_headers_and_duplicates(header_row_data)
+                if duplicate_headers:
+                    duplicate_headers_in_sheet[sheet_name] = duplicate_headers
             except Exception as err:
                 logger.error(str(err))
                 return AirbyteConnectionStatus(

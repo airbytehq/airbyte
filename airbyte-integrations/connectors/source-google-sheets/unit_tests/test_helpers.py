@@ -58,7 +58,7 @@ class TestHelpers(unittest.TestCase):
         expected_valid_header_values = ["h3"]
         expected_duplicate_header_values = ["h1"]
 
-        actual_header_values, actual_duplicate_header_values = Helpers.get_vaild_headers_and_duplicates(header_values)
+        actual_header_values, actual_duplicate_header_values = Helpers.get_valid_headers_and_duplicates(header_values)
 
         self.assertEqual(expected_duplicate_header_values, actual_duplicate_header_values)
         self.assertEqual(expected_valid_header_values, actual_header_values)

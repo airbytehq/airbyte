@@ -59,7 +59,7 @@ class Helpers(object):
         of the headers. For example, if the first row contains "One | Two | | Three" then this method
         will parse the headers as ["One", "Two"]. This assumption is made for simplicity and can be modified later.
         """
-        fields, duplicate_fields = Helpers.get_vaild_headers_and_duplicates(header_row_values)
+        fields, duplicate_fields = Helpers.get_valid_headers_and_duplicates(header_row_values)
         if duplicate_fields:
             logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
 
@@ -73,7 +73,7 @@ class Helpers(object):
         return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema)
 
     @staticmethod
-    def get_vaild_headers_and_duplicates(header_row_values: List[str]) -> (List[str], List[str]):
+    def get_valid_headers_and_duplicates(header_row_values: List[str]) -> (List[str], List[str]):
         fields = []
         duplicate_fields = set()
         for cell_value in header_row_values:
