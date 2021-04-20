@@ -22,29 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Union
+from setuptools import find_packages, setup
 
-import requests
-
-
-class BaseBackoffException(requests.exceptions.HTTPError):
-    pass
-
-
-class UserDefinedBackoffException(BaseBackoffException):
-    """
-    An exception that exposes how long it attempted to backoff
-    """
-
-    def __init__(self, backoff: Union[int, float], request: requests.PreparedRequest, response: requests.Response):
-        """
-        :param backoff: how long to backoff in seconds
-        :param request: the request that triggered this backoff exception
-        :param response: the response that triggered the backoff exception
-        """
-        self.backoff = backoff
-        super().__init__(request=request, response=response)
-
-
-class DefaultBackoffException(BaseBackoffException):
-    pass
+setup(
+    name="source_slack",
+    description="Source implementation for Slack.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2", "slack_sdk==3.4.2", "pendulum>=2,<3"],
+    package_data={"": ["*.json"]},
+)
