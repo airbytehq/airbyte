@@ -139,14 +139,14 @@ class AbstractSource(Source, ABC):
             logger.info(f"Setting state of {stream_name} stream to {stream_state.get(stream_name)}")
 
         checkpoint_interval = stream_instance.state_checkpoint_interval
-        batches = stream_instance.stream_slices(
+        slices = stream_instance.stream_slices(
             cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
         )
-        for batch in batches:
+        for slice in slices:
             record_counter = 0
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
-                stream_slice=batch,
+                stream_slice=slice,
                 stream_state=stream_state,
                 cursor_field=configured_stream.cursor_field or None,
             )
@@ -161,8 +161,8 @@ class AbstractSource(Source, ABC):
 
     def _read_full_refresh(self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream) -> Iterator[AirbyteMessage]:
         args = {"sync_mode": SyncMode.full_refresh, "cursor_field": configured_stream.cursor_field}
-        for batch in stream_instance.stream_slices(**args):
-            for record in stream_instance.read_records(stream_slice=batch, **args):
+        for slices in stream_instance.stream_slices(**args):
+            for record in stream_instance.read_records(stream_slice=slices, **args):
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
 
     def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):
