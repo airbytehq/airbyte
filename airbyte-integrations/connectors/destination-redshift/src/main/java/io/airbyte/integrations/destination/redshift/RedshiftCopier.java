@@ -35,7 +35,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -67,7 +66,7 @@ public class RedshiftCopier {
   private static final int PART_SIZE_MB = 10;
 
   private final String s3BucketName;
-  private final String stagingFolder;
+  private final String s3StagingFile;
   private final DestinationSyncMode destSyncMode;
   private final String schemaName;
   private final String streamName;
@@ -95,7 +94,6 @@ public class RedshiftCopier {
                         String s3Region)
       throws IOException {
     this.s3BucketName = s3BucketName;
-    this.stagingFolder = stagingFolder;
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -105,6 +103,7 @@ public class RedshiftCopier {
     this.s3Key = s3key;
     this.s3Region = s3Region;
 
+    this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
     this.tmpTableName = NAMING_RESOLVER.getTmpTableName(streamName);
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
@@ -114,7 +113,7 @@ public class RedshiftCopier {
     // configured part size.
     // Memory consumption is queue capacity * part size = 10 * 10 = 100 MB at current configurations.
     this.multipartUploadManager =
-        new StreamTransferManager(s3BucketName, getPath(stagingFolder, streamName), client)
+        new StreamTransferManager(s3BucketName, s3StagingFile, client)
             .numUploadThreads(DEFAULT_UPLOAD_THREADS)
             .queueCapacity(DEFAULT_QUEUE_CAPACITY)
             .partSize(PART_SIZE_MB);
@@ -149,7 +148,6 @@ public class RedshiftCopier {
   }
 
   public void removeS3FileAndDropTmpTable() throws Exception {
-    var s3StagingFile = getPath(stagingFolder, streamName);
     LOGGER.info("Begin cleaning s3 staging file {}.", s3StagingFile);
     if (s3Client.doesObjectExist(s3BucketName, s3StagingFile)) {
       s3Client.deleteObject(s3BucketName, s3StagingFile);
@@ -161,12 +159,8 @@ public class RedshiftCopier {
     LOGGER.info("{} tmp table in destination cleaned.", tmpTableName);
   }
 
-  private static String getPath(String runFolder, String key) {
-    return String.join("/", runFolder, key);
-  }
-
-  private static String getFullS3Path(String s3BucketName, String runFolder, String key) {
-    return String.join("/", "s3:/", s3BucketName, runFolder, key);
+  private static String getFullS3Path(String s3BucketName, String s3StagingFile) {
+    return String.join("/", "s3:/", s3BucketName, s3StagingFile);
   }
 
   private String copyToRedshiftTmpTableAndPrepMergeToFinalTable(boolean hasFailed) throws Exception {
@@ -187,11 +181,12 @@ public class RedshiftCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
-  private void createTmpTableAndCopyS3FileInto() throws SQLException {
-    LOGGER.info("Preparing tmp table in destination for stream {}. tmp table name: {}.", streamName, tmpTableName);
+  private void createTmpTableAndCopyS3FileInto() throws Exception {
+    REDSHIFT_SQL_OPS.createSchemaIfNotExists(redshiftDb, schemaName);
+    LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
     REDSHIFT_SQL_OPS.createTableIfNotExists(redshiftDb, schemaName, tmpTableName);
-    LOGGER.info("Starting copy to tmp table {} in destination for stream {} .", tmpTableName, streamName);
-    REDSHIFT_SQL_OPS.copyS3CsvFileIntoTable(redshiftDb, getFullS3Path(s3BucketName, stagingFolder, streamName), schemaName, tmpTableName, s3KeyId,
+    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
+    REDSHIFT_SQL_OPS.copyS3CsvFileIntoTable(redshiftDb, getFullS3Path(s3BucketName, s3StagingFile), schemaName, tmpTableName, s3KeyId,
         s3Key,
         s3Region);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
@@ -203,11 +198,11 @@ public class RedshiftCopier {
     REDSHIFT_SQL_OPS.createTableIfNotExists(redshiftDb, schemaName, destTableName);
     LOGGER.info("Tmp table {} in destination prepared.", tmpTableName);
 
-    LOGGER.info("Preparing to merge tmp table {} to dest table {} in destination.", tmpTableName, destTableName);
+    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
     var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(REDSHIFT_SQL_OPS.truncateTableQuery(schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table {} truncated.", destTableName);
+      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
     queries.append(REDSHIFT_SQL_OPS.copyTableQuery(schemaName, tmpTableName, destTableName));
     return queries.toString();

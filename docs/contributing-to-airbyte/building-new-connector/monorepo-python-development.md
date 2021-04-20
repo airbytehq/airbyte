@@ -1,11 +1,10 @@
 # Monorepo Python Development
 
-This guide contains instructions on how to setup Python with Gradle within the Airbyte Monorepo. If you are a contributor working on one or two connectors, 
-this page is most likely not relevant to you. Instead, you should use your standard Python development flow.    
+This guide contains instructions on how to setup Python with Gradle within the Airbyte Monorepo. If you are a contributor working on one or two connectors, this page is most likely not relevant to you. Instead, you should use your standard Python development flow.
 
 ## Python Connector Development
 
-Before working with connectors written in Python, we recommend running `./gradlew build` from the root project directory. This will create a `virtualenv` for every connector and helper project and install dependencies locally.
+Before working with connectors written in Python, we recommend running `./gradlew :airbyte-integrations:connectors:<connector directory name>:build` (e.g. `./gradlew :airbyte-integrations:connectors:source-postgres:build`) from the root project directory. This will create a `virtualenv` and install dependencies for the connector you want to work on as well as any internal Airbyte python packages it depends on.
 
 When iterating on a single connector, you will often iterate by running
 

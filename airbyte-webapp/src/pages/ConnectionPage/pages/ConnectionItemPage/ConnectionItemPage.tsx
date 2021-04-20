@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
@@ -16,8 +16,14 @@ import FrequencyConfig from "data/FrequencyConfig.json";
 import Link from "components/Link";
 import { Routes } from "../../../routes";
 
-const ConnectionItemPage: React.FC = () => {
-  const { query } = useRouter<{ id: string }>();
+type ConnectionItemPageProps = {
+  currentStep: "status" | "settings";
+};
+
+const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
+  currentStep,
+}) => {
+  const { query, push } = useRouter<{ id: string }>();
 
   const connection = useResource(ConnectionResource.detailShape(), {
     connectionId: query.id,
@@ -38,8 +44,16 @@ const ConnectionItemPage: React.FC = () => {
       name: <FormattedMessage id={"sources.settings"} />,
     },
   ];
-  const [currentStep, setCurrentStep] = useState("status");
-  const onSelectStep = (id: string) => setCurrentStep(id);
+
+  const onSelectStep = (id: string) => {
+    if (id === "settings") {
+      push(
+        `${Routes.Connections}/${connection.connectionId}${Routes.Settings}`
+      );
+    } else {
+      push(`${Routes.Connections}/${connection.connectionId}`);
+    }
+  };
 
   const onAfterSaveSchema = () => {
     AnalyticsService.track("Source - Action", {

@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobGetSpecConfig;
@@ -75,6 +76,10 @@ import org.slf4j.LoggerFactory;
 
 public abstract class StandardSourceTest {
 
+  public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
+  public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
+
   private static final long JOB_ID = 0L;
   private static final int JOB_ATTEMPT = 0;
 
@@ -99,6 +104,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-intercom-singer",
       "airbyte/source-exchangeratesapi-singer",
       "airbyte/source-hubspot",
+      "airbyte/source-iterable",
       "airbyte/source-marketo-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-mixpanel-singer",
@@ -107,7 +113,10 @@ public abstract class StandardSourceTest {
       "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
       "airbyte/source-github-singer",
-      "airbyte/source-gitlab-singer");
+      "airbyte/source-gitlab-singer",
+      "airbyte/source-google-workspace-admin-reports",
+      "airbyte/source-zendesk-talk",
+      "airbyte/source-quickbooks-singer");
 
   /**
    * FIXME: Some sources can't guarantee that there will be no events between two sequential sync
@@ -251,7 +260,8 @@ public abstract class StandardSourceTest {
    */
   @Test
   public void testFullRefreshRead() throws Exception {
-    final List<AirbyteMessage> allMessages = runRead(withFullRefreshSyncModes(getConfiguredCatalog()));
+    ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalog());
+    final List<AirbyteMessage> allMessages = runRead(catalog);
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
     // the worker validates the message formats, so we just validate the message content
     // We don't need to validate message format as long as we use the worker, which we will not want to
@@ -445,7 +455,11 @@ public abstract class StandardSourceTest {
 
   private void assertSameRecords(List<AirbyteRecordMessage> expected, List<AirbyteRecordMessage> actual, String message) {
     final List<AirbyteRecordMessage> prunedExpected = expected.stream().map(this::pruneEmittedAt).collect(Collectors.toList());
-    final List<AirbyteRecordMessage> prunedActual = actual.stream().map(this::pruneEmittedAt).collect(Collectors.toList());
+    final List<AirbyteRecordMessage> prunedActual = actual
+        .stream()
+        .map(this::pruneEmittedAt)
+        .map(this::pruneCdcMetadata)
+        .collect(Collectors.toList());
     assertEquals(prunedExpected.size(), prunedActual.size(), message);
     assertTrue(prunedExpected.containsAll(prunedActual), message);
     assertTrue(prunedActual.containsAll(prunedExpected), message);
@@ -453,6 +467,14 @@ public abstract class StandardSourceTest {
 
   private AirbyteRecordMessage pruneEmittedAt(AirbyteRecordMessage m) {
     return Jsons.clone(m).withEmittedAt(null);
+  }
+
+  private AirbyteRecordMessage pruneCdcMetadata(AirbyteRecordMessage m) {
+    final AirbyteRecordMessage clone = Jsons.clone(m);
+    ((ObjectNode) clone.getData()).remove(CDC_LSN);
+    ((ObjectNode) clone.getData()).remove(CDC_UPDATED_AT);
+    ((ObjectNode) clone.getData()).remove(CDC_DELETED_AT);
+    return clone;
   }
 
   public static class TestDestinationEnv {

@@ -31,6 +31,7 @@ type FormConditionItem = {
   fieldKey: string;
   isRequired: boolean;
   title?: string;
+  description?: string;
   conditions: { [key: string]: FormGroupItem | FormBaseItem };
 };
 
@@ -40,6 +41,7 @@ type FormObjectArrayItem = {
   fieldKey: string;
   isRequired: boolean;
   title?: string;
+  description?: string;
   properties: FormBlock;
 };
 

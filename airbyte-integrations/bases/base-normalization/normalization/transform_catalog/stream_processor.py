@@ -80,7 +80,7 @@ class StreamProcessor(object):
         primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
-        tables_registry: Set[str],
+        tables_registry: Dict[str, Set[str]],
         from_table: str,
     ):
         """
@@ -96,14 +96,14 @@ class StreamProcessor(object):
         self.primary_key: List[List[str]] = primary_key
         self.json_column_name: str = json_column_name
         self.properties: Dict = properties
-        self.tables_registry: Set[str] = tables_registry
+        self.tables_registry: Dict[str, Set[str]] = tables_registry
         self.from_table: str = from_table
 
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.json_path: List[str] = [stream_name]
         self.final_table_name: str = ""
         self.sql_outputs: Dict[str, str] = {}
-        self.local_registry: Set[str] = set()
+        self.local_registry: Dict[str, Set[str]] = {}
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
 
@@ -155,7 +155,7 @@ class StreamProcessor(object):
         primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
-        tables_registry: Set[str],
+        tables_registry: Dict[str, Set[str]],
         from_table: str,
     ) -> "StreamProcessor":
         """
@@ -233,11 +233,6 @@ class StreamProcessor(object):
         for field in self.properties.keys():
             if not is_airbyte_column(field):
                 fields.append(field)
-            if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
-                # When deduping, some airbyte columns could be used as special cursor or primary key columns
-                if field in self.cursor_field[0] or field in [f[0] for f in self.primary_key if len(f) == 1]:
-                    if field not in fields:
-                        fields.append(field)
         result = {}
         field_names = set()
         for field in fields:
@@ -429,10 +424,13 @@ from {{ from_table }}
         return sql
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-        return [StreamProcessor.safe_cast_to_string(field, self.properties[field], column_names[field][1]) for field in column_names]
+        return [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names]
 
     @staticmethod
-    def safe_cast_to_string(property_name: str, definition: Dict, column_name: str) -> str:
+    def safe_cast_to_string(definition: Dict, column_name: str) -> str:
+        """
+        Note that the result from this static method should always be used within a jinja context (for example, from jinja macro surrogate_key call)
+        """
         if "type" not in definition:
             return column_name
         elif is_boolean(definition["type"]):
@@ -501,13 +499,16 @@ from {{ from_table }}
         return sql
 
     def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]]) -> str:
-        if self.cursor_field and len(self.cursor_field) == 1:
-            return column_names[self.cursor_field[0]][0]
-        else:
-            if self.cursor_field:
-                raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
+        if not self.cursor_field:
+            return "_airbyte_emitted_at"
+        elif len(self.cursor_field) == 1:
+            if not is_airbyte_column(self.cursor_field[0]):
+                return column_names[self.cursor_field[0]][0]
             else:
-                raise ValueError(f"No cursor field specified for stream {self.stream_name}")
+                # using an airbyte generated column
+                return self.cursor_field[0]
+        else:
+            raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
 
     def get_primary_key(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         if self.primary_key and len(self.primary_key) > 0:
@@ -517,7 +518,20 @@ from {{ from_table }}
 
     def get_primary_key_from_path(self, column_names: Dict[str, Tuple[str, str]], path: List[str]) -> str:
         if path and len(path) == 1:
-            return column_names[path[0]][0]
+            field = path[0]
+            if not is_airbyte_column(field):
+                if "type" in self.properties[field]:
+                    property_type = self.properties[field]["type"]
+                else:
+                    property_type = "object"
+                if is_number(property_type) or is_boolean(property_type) or is_array(property_type) or is_object(property_type):
+                    # some destinations don't handle float columns (or other types) as primary keys, turn everything to string
+                    return f"cast({jinja_call(self.safe_cast_to_string(self.properties[field], column_names[field][1]))} as {jinja_call('dbt_utils.type_string()')})"
+                else:
+                    return column_names[field][0]
+            else:
+                # using an airbyte generated column
+                return f"cast({field} as {jinja_call('dbt_utils.type_string()')})"
         else:
             if path:
                 raise ValueError(f"Unsupported nested path {'.'.join(path)} for stream {self.stream_name}")
@@ -556,14 +570,23 @@ from {{ from_table }}
     def add_to_outputs(self, sql: str, is_intermediate: bool, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
         table_name = self.generate_new_table_name(is_intermediate, suffix)
-        self.add_table_to_local_registry(table_name)
-        file = f"{table_name}.sql"
+        self.add_table_to_local_registry(table_name, is_intermediate)
+        # TODO(davin): Check with Chris if there is a better way of doing this.
+        # File names need to match the ref() macro returned in the ref_table function.
+        # Dbt uses file names to generate internal model. Include schem in the name to
+        # dedup tables with the same name and different schema.
+        file_name = f"{schema}_{table_name}"
+        if len(file_name) > self.name_transformer.get_name_max_length():
+            file_name = self.name_transformer.truncate_identifier_name(input_name=file_name)
+
+        file = f"{file_name}.sql"
         if is_intermediate:
             output = os.path.join("airbyte_views", self.schema, file)
         else:
             output = os.path.join("airbyte_tables", self.schema, file)
         tags = self.get_model_tags(is_intermediate)
-        header = jinja_call(f'config(schema="{schema}", tags=[{tags}])')
+        # The alias() macro configs a model's final table name.
+        header = jinja_call(f'config(alias="{table_name}", schema="{schema}", tags=[{tags}])')
         self.sql_outputs[
             output
         ] = f"""
@@ -572,7 +595,7 @@ from {{ from_table }}
 """
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
-        return ref_table(table_name)
+        return ref_table(file_name)
 
     def get_model_tags(self, is_intermediate: bool) -> str:
         tags = ""
@@ -586,20 +609,17 @@ from {{ from_table }}
 
     def generate_new_table_name(self, is_intermediate: bool, suffix: str) -> str:
         """
-        Generates a new table names that is not registered in the schema yet (based on normalized_stream_name())
+        Generates a new table name that is not registered in the schema yet (based on normalized_stream_name())
         """
-        tables_registry = self.tables_registry.union(self.local_registry)
+        tables_registry = union_registries(self.tables_registry, self.local_registry)
         new_table_name = self.normalized_stream_name()
         if not is_intermediate and self.parent is None:
             if suffix:
                 norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
                 new_table_name = new_table_name + norm_suffix
             # Top-level stream has priority on table_names
-            if new_table_name in tables_registry:
-                # TODO handle collisions between different schemas (dbt works with only one schema for ref()?)
-                # so filenames should always be different for dbt but the final table can be same as long as schemas are different:
-                # see alias in dbt: https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-aliases/
-                raise ValueError(f"Conflict: Table name {new_table_name} already exists!")
+            if self.schema in tables_registry and new_table_name in tables_registry[self.schema]:
+                raise ValueError(f"Conflict: Table name {new_table_name} in schema {self.schema} already exists!")
         elif not self.parent:
             new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
         else:
@@ -609,12 +629,18 @@ from {{ from_table }}
             self.final_table_name = new_table_name
         return new_table_name
 
-    def add_table_to_local_registry(self, table_name: str):
-        tables_registry = self.tables_registry.union(self.local_registry)
-        if table_name not in tables_registry:
-            self.local_registry.add(table_name)
+    def add_table_to_local_registry(self, table_name: str, is_intermediate: bool):
+        tables_registry = union_registries(self.tables_registry, self.local_registry)
+        schema = self.get_schema(is_intermediate)
+        if schema not in tables_registry:
+            self.local_registry[schema] = {table_name}
         else:
-            raise KeyError(f"Duplicate table {table_name}")
+            if table_name not in tables_registry[schema]:
+                if schema not in self.local_registry:
+                    self.local_registry[schema] = set()
+                self.local_registry[schema].add(table_name)
+            else:
+                raise KeyError(f"Duplicate table {table_name} in schema {schema}")
 
     def get_schema(self, is_intermediate: bool) -> str:
         if is_intermediate:
@@ -687,8 +713,8 @@ where {column_name} is not null"""
 # Static Functions
 
 
-def ref_table(table_name) -> str:
-    return f"ref('{table_name}')"
+def ref_table(file_name: str) -> str:
+    return f"ref('{file_name}')"
 
 
 def find_properties_object(path: List[str], field: str, properties) -> Dict[str, Dict]:
@@ -757,3 +783,13 @@ def get_table_name(name_transformer: DestinationNameTransformer, parent: str, ch
         norm_child_max_length = max_length - min_parent_length - len(json_path_hash) - len(norm_suffix)
         trunc_norm_child = name_transformer.truncate_identifier_name(norm_child, norm_child_max_length)
         return f"{norm_parent[:min_parent_length]}_{json_path_hash}_{trunc_norm_child}{norm_suffix}"
+
+
+def union_registries(table_registry: Dict[str, Set[str]], local_registry: Dict[str, Set[str]]) -> Dict[str, Set[str]]:
+    union = dict(table_registry)
+    for schema in local_registry:
+        if schema not in union:
+            union[schema] = local_registry[schema]
+        else:
+            union[schema] = union[schema].union(local_registry[schema])
+    return union

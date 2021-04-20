@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-singer:0.1.0
+FROM airbyte/integration-base-singer:0.1.1
 
 RUN apt-get update && apt-get install -y jq curl bash && rm -rf /var/lib/apt/lists/*
 
@@ -12,5 +12,5 @@ COPY setup.py ./
 RUN pip install tap-adwords==1.12.0
 RUN pip install .
 
-LABEL io.airbyte.version=0.2.0
+LABEL io.airbyte.version=0.2.1
 LABEL io.airbyte.name=airbyte/source-google-adwords-singer

@@ -52,7 +52,7 @@ definitions:
       - emitted_at
     properties:
       stream:
-        description: "the name of the stream for this record"
+        description: "the name of this record's stream"
         type: string
       data:
         description: "the record data"
@@ -61,6 +61,9 @@ definitions:
       emitted_at:
         description: "when the data was emitted from the source. epoch in millisecond."
         type: integer
+      namespace:
+        description: "the namespace of this record's stream"
+        type: string
   AirbyteStateMessage:
     type: object
     additionalProperties: true
@@ -151,6 +154,9 @@ definitions:
           type: array
           items:
             type: string
+      namespace:
+        description: Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.
+        type: string
   ConfiguredAirbyteCatalog:
     description: Airbyte stream schema catalog
     type: object

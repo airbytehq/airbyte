@@ -117,6 +117,7 @@ A custom report can contain no more than 10 unique metrics. The default availabl
 [Analytics Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas)
 
 * Number of requests per day per project: 50,000
-* Number of requests per view (profile) per day: 10,000 (cannot be increased)
+* Number of requests per view \(profile\) per day: 10,000 \(cannot be increased\)
 * Number of requests per 100 seconds per project: 2,000
-* Number of requests per 100 seconds per user per project: 100 (can be increased in Google API Console to 1,000).
+* Number of requests per 100 seconds per user per project: 100 \(can be increased in Google API Console to 1,000\).
+

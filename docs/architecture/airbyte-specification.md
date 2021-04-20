@@ -169,7 +169,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 * Input:
   1. `config` - A configuration JSON object that has been validated using the `ConnectorSpecification`.
   2. `catalog` - An `ConfiguredAirbyteCatalog`. This `catalog` should be constructed from the `catalog` returned by the `discover` command. To convert an `AirbyteStream` to a `ConfiguredAirbyteStream` copy the `AirbyteStream` into the stream field of the `ConfiguredAirbyteStream`. Any additional configurations can be specified in the `ConfiguredAirbyteStream`. More details on how this is configured in the [catalog documentation](catalog.md). This catalog will be used in the `read` command to both select what data is transferred and how it is replicated.
-  3. `state` - A JSON object. This object is only ever written or read by the source, so it is a JSON blob with whatever information is necessary to keep track of how much of the data source has already been read. This is important whenever we need to replicate data with Incremental sync modes such as [Incremental Append](incremental-append.md) or [Incremental Deduped History](incremental-deduped-history.md). Note that this is not currently based on the state of data existing on the destination side.
+  3. `state` - A JSON object. This object is only ever written or read by the source, so it is a JSON blob with whatever information is necessary to keep track of how much of the data source has already been read. This is important whenever we need to replicate data with Incremental sync modes such as [Incremental Append](connections/incremental-append.md) or [Incremental Deduped History](connections/incremental-deduped-history.md). Note that this is not currently based on the state of data existing on the destination side.
 * Output:
   1. `message stream` - A stream of `AirbyteRecordMessage`s and `AirbyteStateMessage`s piped to stdout.
 * This command reads data from the underlying data source and converts it into `AirbyteRecordMessage`.
@@ -185,9 +185,9 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 The first argument passed to the image must be the command \(e.g. `spec`, `check`, `write`\). Additional arguments can be passed after the command. Note: The system running the container will handle mounting the appropriate paths so that the config files are available to the container. This code snippet does not include that logic.
 
 ```text
-docker run --rm -i <source-image-name> spec
-docker run --rm -i <source-image-name> check --config <config-file-path>
-cat <&0 | docker run --rm -i <source-image-name> write --config <config-file-path> --catalog <catalog-file-path>
+docker run --rm -i <destination-image-name> spec
+docker run --rm -i <destination-image-name> check --config <config-file-path>
+cat <&0 | docker run --rm -i <destination-image-name> write --config <config-file-path> --catalog <catalog-file-path>
 ```
 
 The `write` command will consume `AirbyteMessage`s from stdin.

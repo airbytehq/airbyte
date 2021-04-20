@@ -24,10 +24,12 @@
 
 package io.airbyte.commons.resources;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Sets;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -40,6 +42,14 @@ class MoreResourcesTest {
     assertEquals("content2\n", MoreResources.readResource("subdir/resource_test_sub"));
 
     assertThrows(IllegalArgumentException.class, () -> MoreResources.readResource("invalid"));
+  }
+
+  @Test
+  void testReadBytes() throws IOException {
+    assertEquals("content1\n", new String(MoreResources.readBytes("resource_test"), StandardCharsets.UTF_8));
+    assertEquals("content2\n", new String(MoreResources.readBytes("subdir/resource_test_sub"), StandardCharsets.UTF_8));
+
+    assertThrows(IllegalArgumentException.class, () -> MoreResources.readBytes("invalid"));
   }
 
   @Test
@@ -56,13 +66,6 @@ class MoreResourcesTest {
             .map(Path::getFileName)
             .map(Path::toString)
             .collect(Collectors.toSet()));
-  }
-
-  @Test
-  void testWriteResource() throws IOException {
-    final String contents = "something to remember";
-    MoreResources.writeResource("file.txt", contents);
-    assertEquals(contents, MoreResources.readResource("file.txt"));
   }
 
 }

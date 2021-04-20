@@ -26,10 +26,13 @@ package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
@@ -37,6 +40,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -45,6 +49,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -78,6 +83,10 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractJdbcSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
+
+  public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
+  public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
 
   private static final String JDBC_COLUMN_DATABASE_NAME = "TABLE_CAT";
   private static final String JDBC_COLUMN_SCHEMA_NAME = "TABLE_SCHEM";
@@ -118,57 +127,62 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try (final JdbcDatabase database = createDatabase(config)) {
-      // attempt to get metadata from the database as a cheap way of seeing if we can connect.
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+      for (CheckedConsumer<JdbcDatabase, Exception> checkOperation : getCheckOperations(config)) {
+        checkOperation.accept(database);
+      }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.debug("Exception while checking connection: ", e);
+      LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Could not connect with provided configuration.");
+          .withMessage("Could not connect with provided configuration. Error: " + e.getMessage());
     }
+  }
+
+  /**
+   * Configures a list of operations that can be used to check the connection to the source.
+   *
+   * @return list of consumers that run queries for the check command.
+   */
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
+    return ImmutableList.of(database -> {
+      LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
+      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), JdbcUtils::rowToJson);
+    });
   }
 
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
     try (final JdbcDatabase database = createDatabase(config)) {
-      return new AirbyteCatalog()
-          .withStreams(getTables(
-              database,
-              Optional.ofNullable(config.get("database")).map(JsonNode::asText),
-              Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
-                  .stream()
-                  .map(t -> CatalogHelpers.createAirbyteStream(t.getName(), t.getFields())
-                      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-                      .withSourceDefinedPrimaryKey(t.getPrimaryKeys()
-                          .stream()
-                          .filter(Objects::nonNull)
-                          .map(Collections::singletonList)
-                          .collect(Collectors.toList())))
-                  .collect(Collectors.toList()));
+      Optional<String> databaseName = Optional.ofNullable(config.get("database")).map(JsonNode::asText);
+      List<AirbyteStream> streams = getTables(database, databaseName).stream()
+          .map(tableInfo -> CatalogHelpers.createAirbyteStream(tableInfo.getName(), tableInfo.getSchemaName(), tableInfo.getFields())
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys())))
+          .collect(Collectors.toList());
+      return new AirbyteCatalog().withStreams(streams);
     }
   }
 
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    final JdbcStateManager stateManager =
-        new JdbcStateManager(state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class), catalog);
+    final JdbcStateManager stateManager = new JdbcStateManager(
+        state == null ? JdbcStateManager.emptyState() : Jsons.object(state, JdbcState.class),
+        catalog);
     final Instant emittedAt = Instant.now();
 
     final JdbcDatabase database = createDatabase(config);
 
-    final Map<String, TableInfoInternal> tableNameToTable = discoverInternal(
-        database,
-        Optional.ofNullable(config.get("database")).map(JsonNode::asText),
-        Optional.ofNullable(config.get("schema")).map(JsonNode::asText))
+    final Map<String, TableInfoInternal> fullyQualifiedTableNameToInfo =
+        discoverInternal(database, Optional.ofNullable(config.get("database")).map(JsonNode::asText))
             .stream()
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getSchemaName(), t.getName()), Function.identity()));
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
-        getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+        getIncrementalIterators(config, database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
-        getFullRefreshIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+        getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager, emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream.of(incrementalIterators, fullRefreshIterators)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
@@ -180,7 +194,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     });
   }
 
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
+                                                                             JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,
@@ -208,6 +223,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         configuredStream -> configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH));
   }
 
+  // TODO(dchia): Refactor the following functions and objects so they better operate around a Table
+  // abstraction. Indexes and strings are currently hardcoded all around making code brittle.
   private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(JdbcDatabase database,
                                                                            ConfiguredAirbyteCatalog catalog,
                                                                            Map<String, TableInfoInternal> tableNameToTable,
@@ -215,16 +232,16 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                                                            Instant emittedAt,
                                                                            Predicate<ConfiguredAirbyteStream> selector) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
-
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       if (selector.test(airbyteStream)) {
-        final String streamName = airbyteStream.getStream().getName();
-        if (!tableNameToTable.containsKey(streamName)) {
-          LOGGER.info("Skipping stream {} because it is not in the source", streamName);
+        final AirbyteStream stream = airbyteStream.getStream();
+        final String fullyQualifiedTableName = JdbcUtils.getFullyQualifiedTableName(stream.getNamespace(), stream.getName());
+        if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
+          LOGGER.info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
           continue;
         }
 
-        final TableInfoInternal table = tableNameToTable.get(streamName);
+        final TableInfoInternal table = tableNameToTable.get(fullyQualifiedTableName);
         final AutoCloseableIterator<AirbyteMessage> tableReadIterator = createReadIterator(
             database,
             airbyteStream,
@@ -244,6 +261,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                                                    JdbcStateManager stateManager,
                                                                    Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
+    final String namespace = airbyteStream.getStream().getNamespace();
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
     final Set<String> selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
     final List<String> selectedDatabaseFields = table.getFields()
         .stream()
@@ -254,14 +273,14 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
     final AutoCloseableIterator<AirbyteMessage> iterator;
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
-      final Optional<String> cursorOptional = stateManager.getCursor(streamName);
+      final Optional<String> cursorOptional = stateManager.getCursor(pair);
 
       final AutoCloseableIterator<AirbyteMessage> airbyteMessageIterator;
       if (cursorOptional.isPresent()) {
         airbyteMessageIterator = getIncrementalStream(database, airbyteStream, selectedDatabaseFields, table, cursorOptional.get(), emittedAt);
       } else {
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
-        airbyteMessageIterator = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, emittedAt);
+        airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
       }
 
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
@@ -269,13 +288,13 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
       iterator = AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
           autoCloseableIterator,
           stateManager,
-          streamName,
+          pair,
           cursorField,
           cursorOptional.orElse(null),
           cursorType),
           airbyteMessageIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-      iterator = getFullRefreshStream(database, streamName, selectedDatabaseFields, table, emittedAt);
+      iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
     } else if (airbyteStream.getSyncMode() == null) {
       throw new IllegalArgumentException(String.format("%s requires a source sync mode", AbstractJdbcSource.class));
     } else {
@@ -299,6 +318,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
                                                                             String cursor,
                                                                             Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
+    final String namespace = airbyteStream.getStream().getNamespace();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
     final JDBCType cursorJdbcType = table.getFields().stream()
         .filter(info -> info.getColumnName().equals(cursorField))
@@ -318,26 +338,24 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         cursorJdbcType,
         cursor);
 
-    return getMessageIterator(queryIterator, streamName, emittedAt.toEpochMilli());
+    return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli());
   }
 
   private static AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(JdbcDatabase database,
                                                                             String streamName,
+                                                                            String namespace,
                                                                             List<String> selectedDatabaseFields,
                                                                             TableInfoInternal table,
                                                                             Instant emittedAt) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getSchemaName(), table.getName());
-    return getMessageIterator(queryStream, streamName, emittedAt.toEpochMilli());
+    return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private List<TableInfo> getTables(final JdbcDatabase database,
-                                    final Optional<String> databaseOptional,
-                                    final Optional<String> schemaOptional)
-      throws Exception {
-    final List<TableInfoInternal> tableInfos = discoverInternal(database, databaseOptional, schemaOptional);
-    final Map<String, List<String>> tablePrimaryKeys = discoverPrimaryKeys(database, databaseOptional, schemaOptional, tableInfos);
+  private List<TableInfo> getTables(final JdbcDatabase database, final Optional<String> databaseOptional) throws Exception {
+    final List<TableInfoInternal> tableInfos = discoverInternal(database, databaseOptional);
+    final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(database, databaseOptional, tableInfos);
     return tableInfos.stream()
         .map(t -> {
           // some databases return multiple copies of the same record for a column (e.g. redshift) because
@@ -349,9 +367,10 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
               .map(f -> Field.of(f.getColumnName(), JdbcUtils.getType(f.getColumnType())))
               .distinct()
               .collect(Collectors.toList());
-          final String streamName = JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName());
-          final List<String> primaryKeys = tablePrimaryKeys.getOrDefault(streamName, Collections.emptyList());
-          return new TableInfo(streamName, fields, primaryKeys);
+          final String fullyQualifiedTableName = JdbcUtils.getFullyQualifiedTableName(t.getSchemaName(), t.getName());
+          final List<String> primaryKeys = fullyQualifiedTableNameToPrimaryKeys.getOrDefault(fullyQualifiedTableName, Collections.emptyList());
+
+          return new TableInfo(t.getSchemaName(), t.getName(), fields, primaryKeys);
         })
         .collect(Collectors.toList());
   }
@@ -367,12 +386,11 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
    */
   private Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
                                                         Optional<String> databaseOptional,
-                                                        Optional<String> schemaOptional,
                                                         List<TableInfoInternal> tableInfos) {
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-          conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), schemaOptional.orElse(null), null),
+          conn -> conn.getMetaData().getPrimaryKeys(databaseOptional.orElse(null), null, null),
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
@@ -437,13 +455,11 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private List<TableInfoInternal> discoverInternal(final JdbcDatabase database,
-                                                   final Optional<String> databaseOptional,
-                                                   final Optional<String> schemaOptional)
+  private List<TableInfoInternal> discoverInternal(final JdbcDatabase database, final Optional<String> databaseOptional)
       throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalSchemas());
     return database.bufferedResultSetQuery(
-        conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), schemaOptional.orElse(null), null, null),
+        conn -> conn.getMetaData().getColumns(databaseOptional.orElse(null), null, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
             .put(INTERNAL_SCHEMA_NAME,
@@ -482,13 +498,15 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         .collect(Collectors.toList());
   }
 
-  private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
-                                                                          String streamName,
-                                                                          long emittedAt) {
+  public static AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
+                                                                         String streamName,
+                                                                         String namespace,
+                                                                         long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(streamName)
+            .withNamespace(namespace)
             .withEmittedAt(emittedAt)
             .withData(r)));
   }
@@ -561,16 +579,25 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         jdbcStreamingQueryConfiguration);
   }
 
+  /**
+   * This class encapsulates all externally relevant Table information.
+   */
   protected static class TableInfo {
 
+    private final String schemaName;
     private final String name;
     private final List<Field> fields;
     private final List<String> primaryKeys;
 
-    public TableInfo(String name, List<Field> fields, List<String> primaryKeys) {
+    public TableInfo(String schemaName, String name, List<Field> fields, List<String> primaryKeys) {
+      this.schemaName = schemaName;
       this.name = name;
       this.fields = fields;
       this.primaryKeys = primaryKeys;
+    }
+
+    public String getSchemaName() {
+      return schemaName;
     }
 
     public String getName() {
@@ -587,7 +614,11 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   }
 
-  protected static class TableInfoInternal {
+  /**
+   * The following two classes are internal data structures to ease managing tables. Any external
+   * information should be revealed through the {@link TableInfo} class.
+   */
+  public static class TableInfoInternal {
 
     private final String schemaName;
     private final String name;
@@ -613,7 +644,7 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
 
   }
 
-  protected static class ColumnInfo {
+  static class ColumnInfo {
 
     private final String columnName;
     private final JDBCType columnType;

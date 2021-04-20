@@ -10,10 +10,16 @@ properties:
 definitions:
   JdbcState:
     type: object
-    additionalProperties: false
-    required:
-      - streams
     properties:
+      cdc:
+        type: boolean
+      cdc_state:
+        type: object
+        properties:
+          state:
+            description: json representation of debezium state.
+            type: object
+            existingJavaType: com.fasterxml.jackson.databind.JsonNode
       streams:
         description: "State for each stream."
         type: array
@@ -24,9 +30,13 @@ definitions:
     additionalProperties: false
     required:
       - stream_name
+      - stream_namespace
     properties:
       stream_name:
         description: name of the stream
+        type: string
+      stream_namespace:
+        description: namespace of the stream
         type: string
       cursor_field:
         description: field that was used to record the cursor.

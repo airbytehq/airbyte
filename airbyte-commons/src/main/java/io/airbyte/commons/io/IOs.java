@@ -34,9 +34,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 
 public class IOs {
@@ -46,10 +48,36 @@ public class IOs {
     return writeFile(filePath, contents);
   }
 
+  public static Path writeFile(Path filePath, byte[] contents) {
+    try {
+      Files.write(filePath, contents);
+      return filePath;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static Path writeFile(Path filePath, String contents) {
     try {
       Files.writeString(filePath, contents, StandardCharsets.UTF_8);
       return filePath;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Writes a file to a random directory in the /tmp folder. Useful as a staging group for test
+   * resources.
+   */
+  public static String writeFileToRandomTmpDir(String filename, String contents) {
+    final Path source = Paths.get("/tmp", UUID.randomUUID().toString());
+    try {
+      Path tmpFile = source.resolve(filename);
+      Files.deleteIfExists(tmpFile);
+      Files.createDirectory(source);
+      writeFile(tmpFile, contents);
+      return tmpFile.toString();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

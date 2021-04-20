@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import { useSet } from "react-use";
-import { useIntl } from "react-intl";
+import { useIntl, FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import {
@@ -30,6 +30,10 @@ const StyledRadioButton = styled(RadioButton)`
   vertical-align: middle;
 `;
 
+const EmptyField = styled.span`
+  color: ${({ theme }) => theme.greyColor40};
+`;
+
 const supportedModes: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
   [SyncMode.FullRefresh, DestinationSyncMode.Append],
@@ -40,6 +44,7 @@ const supportedModes: [SyncMode, DestinationSyncMode][] = [
 type TreeViewRowProps = {
   isChild?: boolean;
   streamNode: SyncSchemaStream;
+  destinationSupportedSyncModes: DestinationSyncMode[];
   updateItem: (
     streamId: string,
     newConfiguration: Partial<AirbyteStreamConfiguration>
@@ -49,6 +54,7 @@ type TreeViewRowProps = {
 const TreeViewSection: React.FC<TreeViewRowProps> = ({
   streamNode,
   updateItem,
+  destinationSupportedSyncModes,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const { stream, config } = streamNode;
@@ -85,7 +91,11 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   const fullData = useMemo(
     () =>
       supportedModes
-        .filter(([syncMode]) => stream.supportedSyncModes.includes(syncMode))
+        .filter(
+          ([syncMode, destinationSyncMode]) =>
+            stream.supportedSyncModes.includes(syncMode) &&
+            destinationSupportedSyncModes.includes(destinationSyncMode)
+        )
         .map(([syncMode, destinationSyncMode]) => ({
           value: `${syncMode}.${destinationSyncMode}`,
           text: formatMessage(
@@ -156,6 +166,13 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
           isItemHasChildren={hasChildren}
           isItemOpen={isRowExpanded}
         />
+        <Cell>
+          {stream.namespace || (
+            <EmptyField>
+              <FormattedMessage id="form.noNamespace" />
+            </EmptyField>
+          )}
+        </Cell>
         <Cell />
         <OverflowCell title={config.aliasName}>{config.aliasName}</OverflowCell>
         <Cell>
@@ -165,7 +182,10 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
               isItemOpen={isRowExpanded}
               tooltipItems={pkKeyItems}
             >
-              {pkKeyItems.join(",")}
+              <FormattedMessage
+                id="form.pkSelected"
+                values={{ count: pkKeyItems.length, items: pkKeyItems }}
+              />
             </ExpandFieldCell>
           )}
         </Cell>
@@ -195,6 +215,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
                 isItemChecked={true}
                 depth={depth}
               />
+              <Cell />
               <OverflowCell>{field.type}</OverflowCell>
               <OverflowCell title={field.cleanedName}>
                 {field.cleanedName}
@@ -219,7 +240,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
                     />
                   )}
               </Cell>
-              <Cell />
+              <Cell flex={1.5} />
             </TreeRowWrapper>
           )}
         </Rows>

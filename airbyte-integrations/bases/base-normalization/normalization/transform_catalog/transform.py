@@ -78,7 +78,7 @@ python3 main_dev_transform_catalog.py \
         processor = CatalogProcessor(output_directory=output, destination_type=destination_type)
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
-            processor.process(catalog_file=catalog_file, json_column_name=json_col, target_schema=schema)
+            processor.process(catalog_file=catalog_file, json_column_name=json_col, default_schema=schema)
 
 
 def read_profiles_yml(profile_dir: str) -> Any:
