@@ -51,7 +51,7 @@ class Stream(ABC):
 
     @abstractmethod
     def read_records(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, batch: Mapping[str, any] = None, stream_state: Mapping[str, Any] = None
+            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, any] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Mapping[str, Any]]:
         """
         This method should be overridden by subclasses to read records based on the inputs
@@ -102,11 +102,11 @@ class Stream(ABC):
         """
         return True
 
-    def batches(
+    def stream_slices(
             self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
         """
-        Override to define the batches for this stream. See the batching section of the docs for more information.
+        Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 
         :param stream_state:
         :return:

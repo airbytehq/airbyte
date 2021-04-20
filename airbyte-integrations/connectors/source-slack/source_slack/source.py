@@ -51,7 +51,7 @@ class SlackStream(HttpStream, ABC):
     def request_params(
             self,
             stream_state: Mapping[str, Any],
-            batch: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"limit": 100}
@@ -63,7 +63,7 @@ class SlackStream(HttpStream, ABC):
             self,
             response: requests.Response,
             stream_state: Mapping[str, Any] = None,
-            batch: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         json_response = response.json()
@@ -100,17 +100,17 @@ class ChannelMembers(SlackStream):
     def path(self, **kwargs) -> str:
         return "conversations.members"
 
-    def request_params(self, stream_state: Mapping[str, Any], batch: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, batch=batch, **kwargs)
-        params["channel"] = batch["channel_id"]
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params["channel"] = stream_slice["channel_id"]
         return params
 
-    def parse_response(self, response: requests.Response, batch: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for member_id in super().parse_response(response, **kwargs):
             # Slack just returns raw IDs as a string, so we want to put them in a "join table" format
-            yield {"member_id": member_id, "channel_id": batch["channel_id"]}
+            yield {"member_id": member_id, "channel_id": stream_slice["channel_id"]}
 
-    def batches(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         channels_stream = Channels(authenticator=self.authenticator)
         for channel_record in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel_id": channel_record['id']}
@@ -131,7 +131,7 @@ def chunk_date_range(start_date: DateTime, interval=1) -> Iterable[Mapping[str, 
     """
     intervals = []
     now = pendulum.now()
-    # Each batch contains the beginning and ending timestamp for a 24 hour period
+    # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date <= now:
         end = start_date.add(days=interval)
         intervals.append({'oldest': start_date.timestamp(), 'latest': end.timestamp()})
@@ -148,9 +148,9 @@ class IncrementalMessageStream(SlackStream, ABC):
         self._default_start_date = default_start_date
         super().__init__(**kwargs)
 
-    def request_params(self, stream_state: Mapping[str, Any], batch: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, batch=batch, **kwargs)
-        params.update(**batch)
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        params.update(**stream_slice)
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
@@ -163,21 +163,21 @@ class ChannelMessages(IncrementalMessageStream):
     def path(self, **kwargs) -> str:
         return "conversations.history"
 
-    def batches(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = pendulum.from_timestamp(stream_state.get("start_ts", self._default_start_date.timestamp()))
         return chunk_date_range(start_date)
 
-    def read_records(self, batch: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # Channel is provided when reading threads
-        if 'channel' in batch:
-            yield from super().read_records(batch=batch, **kwargs)
+        if 'channel' in stream_slice:
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
         else:
             # if channel is not provided, then get channels and read accordingly
             channels = Channels(authenticator=self.authenticator)
             for channel_record in channels.read_records(sync_mode=SyncMode.full_refresh):
-                batch['channel'] = channel_record['id']
-                yield from super().read_records(batch=batch, **kwargs)
+                stream_slice['channel'] = channel_record['id']
+                yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
 
 class Threads(IncrementalMessageStream):
@@ -188,7 +188,7 @@ class Threads(IncrementalMessageStream):
     def path(self, **kwargs) -> str:
         return "conversations.replies"
 
-    def batches(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         """
         The logic for incrementally syncing threads is not very obvious, so buckle up.
 
@@ -199,7 +199,7 @@ class Threads(IncrementalMessageStream):
         way to guarantee that a thread deep in the past didn't receive a new message.
 
         A pragmatic workaround is to say we want threads to be at least N days fresh i.e: look back N days into the past, get every message since,
-        and read all of the thread responses. This is essentially the approach we're taking here via batching: create batches from N days into the
+        and read all of the thread responses. This is essentially the approach we're taking here via slicing: create slices from N days into the
         past and read all messages in threads since then. We could optionally filter out records we have already read, but that's omitted to keep
         the logic simple to reason about.
 
@@ -218,10 +218,10 @@ class Threads(IncrementalMessageStream):
             messages_start_date = self._default_start_date
         messages_stream = ChannelMessages(authenticator=self.authenticator, default_start_date=messages_start_date)
 
-        for message_chunk in messages_stream.batches(stream_state={"start_ts": messages_start_date.timestamp()}):
+        for message_chunk in messages_stream.stream_slices(stream_state={"start_ts": messages_start_date.timestamp()}):
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
                 message_chunk['channel'] = channel['id']
-                for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, batch=message_chunk):
+                for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
                     yield {"channel": channel['id'], "ts": message['ts']}
 
 
@@ -234,8 +234,8 @@ class JoinChannelsStream(HttpStream):
     url_base = "https://slack.com/api/"
     http_method = "POST"
 
-    def parse_response(self, response: requests.Response, batch: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        return [{"message": f"Successfully joined channel: {batch['channel_name']}"}]
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        return [{"message": f"Successfully joined channel: {stream_slice['channel_name']}"}]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None  # No pagination
@@ -243,13 +243,13 @@ class JoinChannelsStream(HttpStream):
     def path(self, **kwargs) -> str:
         return "conversations.join"
 
-    def batches(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         channels_stream = Channels(authenticator=self.authenticator)
         for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {'channel': channel['id'], 'channel_name': channel['name']}
 
-    def request_body_json(self, batch: Mapping = None, **kwargs) -> Optional[Mapping]:
-        return {'channel': batch['channel']}
+    def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:
+        return {'channel': stream_slice['channel']}
 
 
 class SourceSlack(AbstractSource):
@@ -279,8 +279,8 @@ class SourceSlack(AbstractSource):
         logger = AirbyteLogger()
         logger.info("joining Slack channels")
         join_channels_stream = JoinChannelsStream(authenticator=authenticator)
-        for batch in join_channels_stream.batches():
-            for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, batch=batch):
+        for stream_slice in join_channels_stream.stream_slices():
+            for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 logger.info(message['message'])
 
         return streams

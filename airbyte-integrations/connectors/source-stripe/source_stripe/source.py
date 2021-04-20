@@ -20,7 +20,7 @@ class StripeStream(HttpStream, ABC):
     def request_params(
             self,
             stream_state: Mapping[str, Any],
-            batch: Mapping[str, any] = None,
+            stream_slice: Mapping[str, any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
@@ -92,14 +92,14 @@ class Charges(IncrementalStripeStream):
 class CustomerBalanceTransactions(StripeStream):
     name = "customer_balance_transactions"
 
-    def path(self, batch: Mapping[str, any] = None, **kwargs):
-        customer_id = batch['customer_id']
+    def path(self, stream_slice: Mapping[str, any] = None, **kwargs):
+        customer_id = stream_slice['customer_id']
         return f"customers/{customer_id}/balance_transactions"
 
-    def read_records(self, batch: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         customers_stream = Customers(authenticator=self.authenticator)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(batch={'customer_id': customer['id']}, **kwargs)
+            yield from super().read_records(stream_slice={'customer_id': customer['id']}, **kwargs)
 
 
 class Coupons(IncrementalStripeStream):
@@ -133,13 +133,13 @@ class Invoices(IncrementalStripeStream):
 class InvoiceLineItems(StripeStream):
     name = 'invoice_line_items'
 
-    def path(self, batch: Mapping[str, any] = None, **kwargs):
-        return f"invoices/{batch['invoice_id']}/lines"
+    def path(self, stream_slice: Mapping[str, any] = None, **kwargs):
+        return f"invoices/{stream_slice['invoice_id']}/lines"
 
-    def read_records(self, batch: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         invoices_stream = Invoices(authenticator=self.authenticator)
         for invoice in invoices_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(batch={'invoice_id': invoice['id']}, **kwargs)
+            yield from super().read_records(stream_slice={'invoice_id': invoice['id']}, **kwargs)
 
 
 class InvoiceItems(IncrementalStripeStream):
@@ -184,15 +184,15 @@ class SubscriptionItems(StripeStream):
     def path(self, **kwargs):
         return "subscription_items"
 
-    def request_params(self, batch: Mapping[str, any] = None, **kwargs):
-        params = super().request_params(batch=batch, **kwargs)
-        params['subscription'] = batch['subscription_id']
+    def request_params(self, stream_slice: Mapping[str, any] = None, **kwargs):
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params['subscription'] = stream_slice['subscription_id']
         return params
 
-    def read_records(self, batch: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         subscriptions_stream = Subscriptions(authenticator=self.authenticator)
         for subscriptions in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(batch={'subscription_id': subscriptions['id']}, **kwargs)
+            yield from super().read_records(stream_slice={'subscription_id': subscriptions['id']}, **kwargs)
 
 
 class Transfers(IncrementalStripeStream):

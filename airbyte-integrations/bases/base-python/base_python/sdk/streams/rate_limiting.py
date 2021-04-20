@@ -26,7 +26,6 @@ import sys
 import time
 
 import backoff
-import requests
 
 from base_python.logger import AirbyteLogger
 from base_python.sdk.streams.exceptions import DefaultBackoffException, UserDefinedBackoffException
