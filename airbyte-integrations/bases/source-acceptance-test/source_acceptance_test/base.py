@@ -22,27 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import inflection
+import pytest
 
-MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "base-python",
-    "backoff==1.10.0",
-    "pendulum==1.2.0",
-    "requests==2.25.1",
-]
 
-TEST_REQUIREMENTS = ["pytest==6.1.2", "requests_mock==1.8.0"]
-
-setup(
-    name="source_hubspot",
-    description="Source implementation for Hubspot.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+@pytest.mark.usefixtures("inputs")
+class BaseTest:
+    @classmethod
+    def config_key(cls):
+        """Name of the test in configuration file, used to override test inputs,"""
+        class_name = cls.__name__
+        if class_name.startswith("Test"):
+            class_name = class_name[len("Test") :]
+        return inflection.underscore(class_name)

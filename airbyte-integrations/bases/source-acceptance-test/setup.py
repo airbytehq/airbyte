@@ -22,27 +22,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import setuptools
 
 MAIN_REQUIREMENTS = [
     "airbyte-protocol",
-    "base-python",
-    "backoff==1.10.0",
+    "docker==4.4.4",
+    "PyYAML==5.3.1",
+    "inflection==0.5.1",
+    "icdiff==1.9.1",
     "pendulum==1.2.0",
-    "requests==2.25.1",
+    "pydantic==1.6.1",
+    "pytest==6.1.2",
+    "pytest-timeout==1.4.2",
+    "pprintpp==0.4.0",
 ]
 
-TEST_REQUIREMENTS = ["pytest==6.1.2", "requests_mock==1.8.0"]
-
-setup(
-    name="source_hubspot",
-    description="Source implementation for Hubspot.",
+setuptools.setup(
+    name="source-acceptance-test",
+    description="Contains classes for running integration tests.",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    packages=find_packages(),
+    url="https://github.com/airbytehq/airbyte",
+    packages=setuptools.find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
+    entry_points={"pytest11": ["pytest-airbyte = source_acceptance_test.plugin"]},
 )
