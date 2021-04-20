@@ -22,27 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from .common import SecretDict, filter_output, full_refresh_only_catalog, incremental_only_catalog, load_config
+from .compare import diff_dicts
+from .connector_runner import ConnectorRunner
+from .json_schema_helper import JsonSchemaHelper
 
-MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "base-python",
-    "backoff==1.10.0",
-    "pendulum==1.2.0",
-    "requests==2.25.1",
+__all__ = [
+    "JsonSchemaHelper",
+    "load_config",
+    "filter_output",
+    "full_refresh_only_catalog",
+    "incremental_only_catalog",
+    "SecretDict",
+    "ConnectorRunner",
+    "diff_dicts",
 ]
-
-TEST_REQUIREMENTS = ["pytest==6.1.2", "requests_mock==1.8.0"]
-
-setup(
-    name="source_hubspot",
-    description="Source implementation for Hubspot.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)

@@ -1,0 +1,44 @@
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+
+class AirbyteStandardTestPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.task('SourceAcceptanceTest') {
+            doFirst {
+                project.exec {
+                    def targetMountDirectory = "/test_input"
+                    def args = [
+                        'docker', 'run', '--rm', '-i',
+                        // provide access to the docker daemon
+                        '-v', "/var/run/docker.sock:/var/run/docker.sock",
+                        // A container within a container mounts from the host filesystem, not the parent container.
+                        // this forces /tmp to be the same directory for host, parent container, and child container.
+                        '-v', "/tmp:/tmp",
+                        // mount the project dir. all provided input paths must be relative to that dir.
+                        '-v', "${project.projectDir.absolutePath}:${targetMountDirectory}",
+                        'airbyte/source-acceptance-test:dev',
+                        '--standard_test_config', "$targetMountDirectory",
+                    ]
+                    commandLine args
+                }
+            }
+
+            outputs.upToDateWhen { false }
+        }
+
+        project.standardTest.dependsOn(':airbyte-integrations:bases:source-acceptance-test:airbyteDocker')
+        project.standardTest.dependsOn(project.build)
+        project.standardTest.dependsOn(project.airbyteDocker)
+        if (project.hasProperty('airbyteDockerTest')){
+            project.standardTest.dependsOn(project.airbyteDockerTest)
+        }
+
+        // make sure we create the integrationTest task once in case a java integration test was already initialized
+        if (!project.hasProperty('integrationTest')) {
+            project.task('integrationTest')
+        }
+
+        project.integrationTest.dependsOn(project.standardTest)
+    }
+}
+
