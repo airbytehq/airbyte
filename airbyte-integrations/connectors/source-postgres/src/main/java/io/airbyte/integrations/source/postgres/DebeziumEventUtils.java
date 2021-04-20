@@ -39,14 +39,14 @@ public class DebeziumEventUtils {
     final JsonNode before = debeziumRecord.get("before");
     final JsonNode after = debeziumRecord.get("after");
     final JsonNode source = debeziumRecord.get("source");
-    final String op = debeziumRecord.get("op").asText();
 
     final JsonNode data = formatDebeziumData(before, after, source);
-
-    final String streamName = source.get("schema").asText() + "." + source.get("table").asText();
+    final String schemaName = source.get("schema").asText();
+    final String streamName = source.get("table").asText();
 
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage()
         .withStream(streamName)
+        .withNamespace(schemaName)
         .withEmittedAt(emittedAt.toEpochMilli())
         .withData(data);
 
