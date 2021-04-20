@@ -17,9 +17,7 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh"
-      ]
+      "supported_sync_modes": ["full_refresh"]
     }
   },
   {
@@ -64,62 +62,38 @@
               "image_24": {
                 "type": "string",
                 "format": "uri",
-                "qt-uri-protocols": [
-                  "https"
-                ],
-                "qt-uri-extensions": [
-                  ".jpg"
-                ]
+                "qt-uri-protocols": ["https"],
+                "qt-uri-extensions": [".jpg"]
               },
               "image_32": {
                 "type": "string",
                 "format": "uri",
-                "qt-uri-protocols": [
-                  "https"
-                ],
-                "qt-uri-extensions": [
-                  ".jpg"
-                ]
+                "qt-uri-protocols": ["https"],
+                "qt-uri-extensions": [".jpg"]
               },
               "image_48": {
                 "type": "string",
                 "format": "uri",
-                "qt-uri-protocols": [
-                  "https"
-                ],
-                "qt-uri-extensions": [
-                  ".jpg"
-                ]
+                "qt-uri-protocols": ["https"],
+                "qt-uri-extensions": [".jpg"]
               },
               "image_72": {
                 "type": "string",
                 "format": "uri",
-                "qt-uri-protocols": [
-                  "https"
-                ],
-                "qt-uri-extensions": [
-                  ".jpg"
-                ]
+                "qt-uri-protocols": ["https"],
+                "qt-uri-extensions": [".jpg"]
               },
               "image_192": {
                 "type": "string",
                 "format": "uri",
-                "qt-uri-protocols": [
-                  "https"
-                ],
-                "qt-uri-extensions": [
-                  ".jpg"
-                ]
+                "qt-uri-protocols": ["https"],
+                "qt-uri-extensions": [".jpg"]
               },
               "image_512": {
                 "type": "string",
                 "format": "uri",
-                "qt-uri-protocols": [
-                  "https"
-                ],
-                "qt-uri-extensions": [
-                  ".jpg"
-                ]
+                "qt-uri-protocols": ["https"],
+                "qt-uri-extensions": [".jpg"]
               },
               "team": {
                 "type": "string"
@@ -127,16 +101,12 @@
               "image_1024": {
                 "type": "string",
                 "format": "uri",
-                "qt-uri-protocols": [
-                  "https"
-                ]
+                "qt-uri-protocols": ["https"]
               },
               "image_original": {
                 "type": "string",
                 "format": "uri",
-                "qt-uri-protocols": [
-                  "https"
-                ]
+                "qt-uri-protocols": ["https"]
               },
               "first_name": {
                 "type": "string"
@@ -208,9 +178,7 @@
           }
         }
       },
-      "supported_sync_modes": [
-        "full_refresh"
-      ]
+      "supported_sync_modes": ["full_refresh"]
     },
     "sync_mode": "full_refresh",
     "destination_sync_mode": "overwrite"

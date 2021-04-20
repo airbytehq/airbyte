@@ -21,19 +21,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
-from pendulum import DateTime
-
 from airbyte_protocol import SyncMode
 from base_python.logger import AirbyteLogger
 from base_python.sdk.abstract_source import AbstractSource
 from base_python.sdk.streams.auth.token import TokenAuthenticator
 from base_python.sdk.streams.core import Stream
 from base_python.sdk.streams.http import HttpStream
+from pendulum import DateTime
 from slack_sdk import WebClient
 
 
@@ -49,10 +49,10 @@ class SlackStream(HttpStream, ABC):
             return {"cursor": json_response.get("response_metadata", {}).get("next_cursor")}
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"limit": 100}
         if next_page_token:
@@ -60,11 +60,11 @@ class SlackStream(HttpStream, ABC):
         return params
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         json_response = response.json()
         for record in json_response.get(self.data_field, []):
@@ -114,7 +114,7 @@ class ChannelMembers(SlackStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         channels_stream = Channels(authenticator=self.authenticator)
         for channel_record in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"channel_id": channel_record['id']}
+            yield {"channel_id": channel_record["id"]}
 
 
 class Users(SlackStream):
@@ -135,7 +135,7 @@ def chunk_date_range(start_date: DateTime, interval=1) -> Iterable[Mapping[str, 
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date <= now:
         end = start_date.add(days=interval)
-        intervals.append({'oldest': start_date.timestamp(), 'latest': end.timestamp()})
+        intervals.append({"oldest": start_date.timestamp(), "latest": end.timestamp()})
         start_date = start_date.add(days=1)
 
     return intervals
@@ -156,7 +156,7 @@ class IncrementalMessageStream(SlackStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         current_stream_state = current_stream_state or {}
-        current_stream_state['ts'] = max(float(latest_record['ts']), current_stream_state.get('ts', 0))
+        current_stream_state["ts"] = max(float(latest_record["ts"]), current_stream_state.get("ts", 0))
         return current_stream_state
 
 
@@ -171,13 +171,13 @@ class ChannelMessages(IncrementalMessageStream):
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # Channel is provided when reading threads
-        if 'channel' in stream_slice:
+        if "channel" in stream_slice:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         else:
             # if channel is not provided, then get channels and read accordingly
             channels = Channels(authenticator=self.authenticator)
             for channel_record in channels.read_records(sync_mode=SyncMode.full_refresh):
-                stream_slice['channel'] = channel_record['id']
+                stream_slice["channel"] = channel_record["id"]
                 yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
 
@@ -221,9 +221,9 @@ class Threads(IncrementalMessageStream):
 
         for message_chunk in messages_stream.stream_slices(stream_state={"start_ts": messages_start_date.timestamp()}):
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
-                message_chunk['channel'] = channel['id']
+                message_chunk["channel"] = channel["id"]
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
-                    yield {"channel": channel['id'], "ts": message['ts']}
+                    yield {"channel": channel["id"], "ts": message["ts"]}
 
 
 class JoinChannelsStream(HttpStream):
@@ -247,10 +247,10 @@ class JoinChannelsStream(HttpStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         channels_stream = Channels(authenticator=self.authenticator)
         for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {'channel': channel['id'], 'channel_name': channel['name']}
+            yield {"channel": channel["id"], "channel_name": channel["name"]}
 
     def request_body_json(self, stream_slice: Mapping = None, **kwargs) -> Optional[Mapping]:
-        return {'channel': stream_slice['channel']}
+        return {"channel": stream_slice["channel"]}
 
 
 class SourceSlack(AbstractSource):
@@ -265,7 +265,7 @@ class SourceSlack(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["api_token"])
         default_start_date = pendulum.now().subtract(days=14)  # TODO make this configurable
-        threads_lookback_window = {'days': 7}  # TODO make this configurable
+        threads_lookback_window = {"days": 7}  # TODO make this configurable
 
         streams = [
             Channels(authenticator=authenticator),
@@ -282,6 +282,6 @@ class SourceSlack(AbstractSource):
         join_channels_stream = JoinChannelsStream(authenticator=authenticator)
         for stream_slice in join_channels_stream.stream_slices():
             for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                logger.info(message['message'])
+                logger.info(message["message"])
 
         return streams

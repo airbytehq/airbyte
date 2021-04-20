@@ -82,7 +82,7 @@ class AbstractSource(Source, ABC):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-            self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
 
         connector_state = copy.deepcopy(state or {})
@@ -103,11 +103,11 @@ class AbstractSource(Source, ABC):
         logger.info(f"Finished syncing {self.name}")
 
     def _read_stream(
-            self,
-            logger: AirbyteLogger,
-            stream_instance: Stream,
-            configured_stream: ConfiguredAirbyteStream,
-            connector_state: MutableMapping[str, Any],
+        self,
+        logger: AirbyteLogger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        connector_state: MutableMapping[str, Any],
     ) -> Iterator[AirbyteMessage]:
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
@@ -127,11 +127,11 @@ class AbstractSource(Source, ABC):
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
     def _read_incremental(
-            self,
-            logger: AirbyteLogger,
-            stream_instance: Stream,
-            configured_stream: ConfiguredAirbyteStream,
-            connector_state: MutableMapping[str, Any],
+        self,
+        logger: AirbyteLogger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        connector_state: MutableMapping[str, Any],
     ) -> Iterator[AirbyteMessage]:
         stream_name = configured_stream.stream.name
         stream_state = connector_state.get(stream_name, {})
@@ -139,11 +139,14 @@ class AbstractSource(Source, ABC):
             logger.info(f"Setting state of {stream_name} stream to {stream_state.get(stream_name)}")
 
         checkpoint_interval = stream_instance.state_checkpoint_interval
-        batches = stream_instance.stream_slices(cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state)
+        batches = stream_instance.stream_slices(
+            cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
+        )
         for batch in batches:
             record_counter = 0
-            records = stream_instance.read_records(sync_mode=SyncMode.incremental, batch=batch, stream_state=stream_state,
-                                                   cursor_field=configured_stream.cursor_field or None)
+            records = stream_instance.read_records(
+                sync_mode=SyncMode.incremental, batch=batch, stream_state=stream_state, cursor_field=configured_stream.cursor_field or None
+            )
             for record_data in records:
                 record_counter += 1
                 yield self._as_airbyte_record(stream_name, record_data)
@@ -154,7 +157,7 @@ class AbstractSource(Source, ABC):
             yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
     def _read_full_refresh(self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream) -> Iterator[AirbyteMessage]:
-        args = {'sync_mode': SyncMode.full_refresh, 'cursor_field': configured_stream.cursor_field}
+        args = {"sync_mode": SyncMode.full_refresh, "cursor_field": configured_stream.cursor_field}
         for batch in stream_instance.stream_slices(**args):
             for record in stream_instance.read_records(batch=batch, **args):
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
