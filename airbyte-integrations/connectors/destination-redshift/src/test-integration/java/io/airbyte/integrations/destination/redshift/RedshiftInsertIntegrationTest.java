@@ -68,7 +68,16 @@ public class RedshiftInsertIntegrationTest extends TestDestination {
   }
 
   private static JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
+  }
+
+  public static JsonNode purge(JsonNode config) {
+    var original = (ObjectNode) Jsons.clone(config);
+    original.remove("s3_bucket_name");
+    original.remove("s3_bucket_region");
+    original.remove("access_key_id");
+    original.remove("secret_access_key");
+    return original;
   }
 
   @Override
