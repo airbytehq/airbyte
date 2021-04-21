@@ -32,7 +32,6 @@ import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
@@ -43,6 +42,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -75,7 +75,8 @@ public class DestinationDefinitionsHandler {
     this.githubStore = githubStore;
   }
 
-  private static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
+  @VisibleForTesting
+  static DestinationDefinitionRead buildDestinationDefinitionRead(StandardDestinationDefinition standardDestinationDefinition) {
     try {
       return new DestinationDefinitionRead()
           .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
@@ -89,31 +90,27 @@ public class DestinationDefinitionsHandler {
     }
   }
 
-  public DestinationDefinitionReadList listDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<DestinationDefinitionRead> reads = configRepository
-        .listStandardDestinationDefinitions()
-        .stream()
+  public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
+    return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions());
+  }
+
+  private static DestinationDefinitionReadList toDestinationDefinitionReadList(List<StandardDestinationDefinition> defs) {
+    final List<DestinationDefinitionRead> reads = defs.stream()
         .map(DestinationDefinitionsHandler::buildDestinationDefinitionRead)
         .collect(Collectors.toList());
-
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
-  public DestinationDefinitionReadList listLatestDestinationDefinitions() throws ConfigNotFoundException, IOException, JsonValidationException {
-    final List<StandardDestinationDefinition> destDefs;
-    try {
-      destDefs = YamlListToStandardDefinitions.toStandardDestinationDefinitions(getLatestDestinations());
-    } catch (RuntimeException e) {
-      throw new KnownException(500, "Error retrieving latest destination definitions", e);
-    }
-    final var reads = destDefs.stream().map(DestinationDefinitionsHandler::buildDestinationDefinitionRead).collect(Collectors.toList());
-    return new DestinationDefinitionReadList().destinationDefinitions(reads);
+  public DestinationDefinitionReadList listLatestDestinationDefinitions() {
+    return toDestinationDefinitionReadList(getLatestDestinations());
   }
 
-  private String getLatestDestinations() {
+  private List<StandardDestinationDefinition> getLatestDestinations() {
     try {
       return githubStore.getLatestDestinations();
-    } catch (InterruptedException | IOException e) {
+    } catch (IOException e) {
+      return Collections.emptyList();
+    } catch (InterruptedException e) {
       throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
     }
   }
