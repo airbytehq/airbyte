@@ -26,6 +26,7 @@ This section should contain a table with the following format:
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | Coming soon |  |
+| Namespaces | No |  |
 
 ### Performance considerations
 
