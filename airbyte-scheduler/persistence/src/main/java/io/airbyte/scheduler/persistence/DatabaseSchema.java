@@ -29,6 +29,9 @@ import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.List;
 
 /**
  * Whenever a new table is created in the Airbyte Database, we should also add a corresponding yaml
@@ -63,4 +66,7 @@ public enum DatabaseSchema {
     return JsonSchemaValidator.getSchema(getFile());
   }
 
+  public static List<String> getTableNames() {
+    return Stream.of(DatabaseSchema.values()).map(Enum::name).collect(Collectors.toList());
+  }
 }
