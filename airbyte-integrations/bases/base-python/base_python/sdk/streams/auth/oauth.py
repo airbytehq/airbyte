@@ -25,12 +25,17 @@ SOFTWARE.
 from typing import Any, Mapping
 
 import requests
-
 from base_python.sdk.streams.auth.core import HttpAuthenticator
 
 
 class Oauth2Authenticator(HttpAuthenticator):
-    def __init__(self, client_id: str, client_secret: str, refresh_token: str, access_token: str = None, ):
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: str,
+        refresh_token: str,
+        access_token: str = None,
+    ):
         # set expires at timestamp to something in the past.
         raise NotImplementedError
 
@@ -50,7 +55,3 @@ class Oauth2Authenticator(HttpAuthenticator):
     def refresh_access_token(self) -> None:
         # how do we know where to refresh the access token?
         raise NotImplementedError
-
-
-
-
