@@ -14,3 +14,6 @@ Airbyte continues to sync data using the configured schema until that schema is 
 
 For now, the schema can only be updated manually in the UI \(by clicking "Update Schema" in the settings page for the connection\). When a schema is updated Airbyte will re-sync all data for that source using the new schema.
 
+## **How does Airbyte handle namespaces (or schemas for the DB-inclined)?**
+
+Airbyte respects source-defined namespaces when syncing data with a namespace-supported destination. See [this](../architecture/namespaces.md) for more details.
