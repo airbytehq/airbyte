@@ -42,13 +42,13 @@ class ExchangeRates(HttpStream):
         self._base = base
         self._start_date = start_date
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"api/{stream_slice[self.date_field_name]}"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = {"base": self._base}
@@ -56,7 +56,7 @@ class ExchangeRates(HttpStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        yield from [response_json]
+        yield response_json
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
@@ -73,13 +73,15 @@ class ExchangeRates(HttpStream):
 
 def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, any]]:
     """
-    Returns a list of each day between the start date and now.
+    Returns a list of each day between the start date and now. Ignore weekends since exchanges don't run on weekends.
     The return value is a list of dicts {'date': date_string}.
     """
     days = []
     now = pendulum.now()
     while start_date < now:
-        days.append({"date": f"{start_date.to_date_string()}"})
+        day_of_week = start_date.day_of_week
+        if day_of_week != pendulum.SATURDAY & day_of_week != pendulum.SUNDAY:
+            days.append({"date": start_date.to_date_string()})
         start_date = start_date.add(days=1)
 
     return days
