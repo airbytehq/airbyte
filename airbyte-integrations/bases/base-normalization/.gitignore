@@ -1,4 +1,20 @@
 build/
 logs/
 dbt-project-template/models/generated/
+dbt-project-template/test_output.log
 dbt_modules/
+secrets/
+
+# ignore files copied from dbt-project-template
+integration_tests/normalization_test_output/*/*/macros
+integration_tests/normalization_test_output/*/*/dbt_output.log
+integration_tests/normalization_test_output/*/*/dbt_project.yml
+integration_tests/normalization_test_output/*/*/destination_catalog.json
+integration_tests/normalization_test_output/*/*/destination_config.json
+integration_tests/normalization_test_output/*/*/destination_output.log
+integration_tests/normalization_test_output/*/*/packages.yml
+integration_tests/normalization_test_output/*/*/profile.yml
+integration_tests/normalization_test_output/*/*/README.md
+
+# ignore runtime files
+integration_tests/normalization_test_output/*/*/output.log

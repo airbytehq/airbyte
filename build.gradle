@@ -50,6 +50,7 @@ def createSpotlessTarget = { pattern ->
         '*.egg-info',
         'build',
         'dbt-project-template',
+        'normalization_test_output',
         'tools',
         'secrets'
     ]

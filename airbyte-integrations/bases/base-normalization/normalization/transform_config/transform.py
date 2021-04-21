@@ -69,11 +69,11 @@ class TransformConfig:
         )
 
         transformed_integration_config = {
-            DestinationType.bigquery: self.transform_bigquery,
-            DestinationType.postgres: self.transform_postgres,
-            DestinationType.redshift: self.transform_redshift,
-            DestinationType.snowflake: self.transform_snowflake,
-        }[integration_type](config)
+            DestinationType.bigquery.value: self.transform_bigquery,
+            DestinationType.postgres.value: self.transform_postgres,
+            DestinationType.redshift.value: self.transform_redshift,
+            DestinationType.snowflake.value: self.transform_snowflake,
+        }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
         base_profile["normalize"]["outputs"]["prod"] = transformed_integration_config

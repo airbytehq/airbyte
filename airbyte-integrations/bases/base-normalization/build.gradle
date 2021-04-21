@@ -15,3 +15,10 @@ installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs"
 
 project.task('integrationTest')
 integrationTest.dependsOn(build)
+
+task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs){
+    module = "pytest"
+    command = "-s integration_tests"
+}
+
+integrationTest.dependsOn("customIntegrationTestPython")
