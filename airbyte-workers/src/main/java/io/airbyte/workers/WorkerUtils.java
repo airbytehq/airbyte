@@ -32,6 +32,7 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -53,6 +54,49 @@ public class WorkerUtils {
       LOGGER.error("Exception while while waiting for process to finish", e);
     }
     if (process.isAlive()) {
+      LOGGER.warn("Process is taking too long to finish. Killing it");
+      process.destroy();
+      try {
+        process.waitFor(1, TimeUnit.MINUTES);
+      } catch (InterruptedException e) {
+        LOGGER.error("Exception while while killing the process", e);
+      }
+      if (process.isAlive()) {
+        LOGGER.warn("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
+      }
+    }
+  }
+
+  /**
+   * As long as the the heartbeatMonitor detects a heartbeat, the process will be allowed to continue.
+   * This method checks the heartbeat once every minute. Once there is no heartbeat detected, if the
+   * process has ended, then the method returns. If the process is still running it is given a grace
+   * period of the timeout arguments passed into the method. Once those expire the process is killed
+   * forcibly.
+   *
+   * @param process - process to monitor.
+   * @param heartbeatMonitor - tracks if the heart is still beating for the given process.
+   * @param timeout - grace period to give the process to die after its heart stops beating.
+   * @param timeUnit - grace period to give the process to die after its heart stops beating.
+   */
+  public static void gentleCloseWithHeartbeat(final Process process,
+                                              final HeartbeatMonitor heartbeatMonitor,
+                                              final long timeout,
+                                              final TimeUnit timeUnit) {
+    while (process.isAlive() && heartbeatMonitor.isBeating()) {
+      try {
+        process.waitFor(1, TimeUnit.MINUTES);
+      } catch (InterruptedException e) {
+        LOGGER.error("Exception while while waiting for process to finish", e);
+      }
+    }
+
+    if (process.isAlive()) {
+      try {
+        process.waitFor(timeout, timeUnit);
+      } catch (InterruptedException e) {
+        LOGGER.error("Exception while while waiting for process to finish", e);
+      }
       LOGGER.warn("Process is taking too long to finish. Killing it");
       process.destroy();
       try {

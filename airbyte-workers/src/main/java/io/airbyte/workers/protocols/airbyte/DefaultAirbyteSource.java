@@ -49,19 +49,22 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
+  private final HeartbeatMonitor heartbeatMonitor;
 
   private Process tapProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory());
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor());
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory) {
+                       final AirbyteStreamFactory streamFactory,
+                       final HeartbeatMonitor heartbeatMonitor) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
+    this.heartbeatMonitor = heartbeatMonitor;
   }
 
   @Override
@@ -82,6 +85,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream()))
+        .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE)
         .iterator();
   }
@@ -107,7 +111,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
 
     LOGGER.debug("Closing tap process");
-    WorkerUtils.gentleClose(tapProcess, 10, TimeUnit.HOURS);
+    WorkerUtils.gentleCloseWithHeartbeat(tapProcess, heartbeatMonitor, 10, TimeUnit.MINUTES);
     if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
       throw new WorkerException("Tap process wasn't successful");
     }
