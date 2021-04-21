@@ -81,63 +81,18 @@ public class ArchiveHandler {
       final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), ARCHIVE_FILE_NAME);
       final File archive = Files.createTempFile(ARCHIVE_FILE_NAME, ".tar.gz").toFile();
       fileTtlManager.register(archive.toPath());
-
-      System.out.println("==========ARCHIVING=============");
-      System.out.println(tempFolder);
-
       try {
-        System.out.println("==========EXPORT VERSION FILE=============");
-
         exportVersionFile(tempFolder);
-      } catch (Exception e) {
-        System.out.println(e);
-        // System.out.println(e.printStackTrace());
-      }
-
-      try {
-        System.out.println("==========EXPORT CONFIGS =============");
-
         configFileArchiver.exportConfigsToArchive(tempFolder);
-      } catch (Exception e) {
-        System.out.println(e);
-        // System.out.println(e.printStackTrace());
-      }
-
-      try {
-        System.out.println("==========EXPORT DATABSE =============");
-
         databaseArchiver.exportDatabaseToArchive(tempFolder);
-      } catch (Exception e) {
-        System.out.println(e);
-        // System.out.println(e.printStackTrace());
-      }
-
-      try {
-        System.out.println("==========CREATE ARCHIVE=============");
-
         Archives.createArchive(tempFolder, archive.toPath());
       } catch (Exception e) {
-        System.out.println(e);
-        // System.out.println(e.printStackTrace());
+        LOGGER.error("Export Data failed.");
+        FileUtils.deleteQuietly(archive);
+        throw new RuntimeException(e);
+      } finally {
+        FileUtils.deleteDirectory(tempFolder.toFile());
       }
-
-      // try {
-      // exportVersionFile(tempFolder);
-      // configFileArchiver.exportConfigsToArchive(tempFolder);
-      // databaseArchiver.exportDatabaseToArchive(tempFolder);
-      // Archives.createArchive(tempFolder, archive.toPath());
-      // } catch (Exception e) {
-      // LOGGER.error("Export Data failed.");
-      // FileUtils.deleteQuietly(archive);
-      //
-      // System.out.println(e);
-      // System.out.println(e.printStackTrace());
-      //
-      // throw new RuntimeException(e);
-      // } finally {
-      // FileUtils.deleteDirectory(tempFolder.toFile());
-      // }
-      FileUtils.deleteDirectory(tempFolder.toFile());
       return archive;
     } catch (IOException e) {
       LOGGER.error("Export Data failed.");
