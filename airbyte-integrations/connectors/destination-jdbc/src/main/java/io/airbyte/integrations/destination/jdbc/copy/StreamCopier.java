@@ -27,7 +27,7 @@ package io.airbyte.integrations.destination.jdbc.copy;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-public interface Copier {
+public interface StreamCopier {
 
   void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception;
 

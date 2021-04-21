@@ -30,7 +30,6 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.Timestamp;
@@ -47,23 +46,23 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
   private final T config;
   private final ConfiguredAirbyteCatalog catalog;
   private final JdbcDatabase db;
-  private final CopierSupplier<T> copierSupplier;
+  private final StreamCopierFactory<T> streamCopierFactory;
   private final SqlOperations sqlOperations;
   private final ExtendedNameTransformer nameTransformer;
-  private final Map<AirbyteStreamNameNamespacePair, Copier> pairToCopier;
+  private final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier;
 
   public CopyConsumer(String configuredSchema,
                       T config,
                       ConfiguredAirbyteCatalog catalog,
                       JdbcDatabase db,
-                      CopierSupplier<T> copierSupplier,
+                      StreamCopierFactory<T> streamCopierFactory,
                       SqlOperations sqlOperations,
                       ExtendedNameTransformer nameTransformer) {
     this.configuredSchema = configuredSchema;
     this.config = config;
     this.catalog = catalog;
     this.db = db;
-    this.copierSupplier = copierSupplier;
+    this.streamCopierFactory = streamCopierFactory;
     this.sqlOperations = sqlOperations;
     this.nameTransformer = nameTransformer;
     this.pairToCopier = new HashMap<>();
@@ -79,7 +78,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
       var stream = configuredStream.getStream();
       var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       var syncMode = configuredStream.getDestinationSyncMode();
-      var copier = copierSupplier.get(configuredSchema, config, stagingFolder, syncMode, stream, nameTransformer, db, sqlOperations);
+      var copier = streamCopierFactory.create(configuredSchema, config, stagingFolder, syncMode, stream, nameTransformer, db, sqlOperations);
 
       pairToCopier.put(pair, copier);
     }
@@ -111,16 +110,16 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
     closeAsOneTransaction(new ArrayList<>(pairToCopier.values()), hasFailed, db);
   }
 
-  public void closeAsOneTransaction(List<Copier> copiers, boolean hasFailed, JdbcDatabase db) throws Exception {
+  public void closeAsOneTransaction(List<StreamCopier> streamCopiers, boolean hasFailed, JdbcDatabase db) throws Exception {
     try {
       StringBuilder mergeCopiersToFinalTableQuery = new StringBuilder();
-      for (var copier : copiers) {
+      for (var copier : streamCopiers) {
         var mergeQuery = copier.copyToTmpTableAndPrepMergeToFinalTable(hasFailed);
         mergeCopiersToFinalTableQuery.append(mergeQuery);
       }
       sqlOperations.executeTransaction(db, mergeCopiersToFinalTableQuery.toString());
     } finally {
-      for (var copier : copiers) {
+      for (var copier : streamCopiers) {
         copier.removeFileAndDropTmpTable();
       }
     }

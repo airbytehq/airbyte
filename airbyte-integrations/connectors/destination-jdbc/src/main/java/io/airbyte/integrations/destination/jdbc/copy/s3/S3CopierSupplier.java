@@ -28,13 +28,13 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.Copier;
-import io.airbyte.integrations.destination.jdbc.copy.CopierSupplier;
+import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 
-public class S3CopierSupplier implements CopierSupplier<S3Config> {
+public class S3CopierSupplier implements StreamCopierFactory<S3Config> {
 
   private final S3CopierSupplierDelegate delegate;
 
@@ -43,18 +43,18 @@ public class S3CopierSupplier implements CopierSupplier<S3Config> {
   }
 
   @Override
-  public Copier get(String configuredSchema,
-                    S3Config s3Config,
-                    String stagingFolder,
-                    DestinationSyncMode syncMode,
-                    AirbyteStream stream,
-                    ExtendedNameTransformer nameTransformer,
-                    JdbcDatabase db,
-                    SqlOperations sqlOperations) {
+  public StreamCopier create(String configuredSchema,
+                             S3Config s3Config,
+                             String stagingFolder,
+                             DestinationSyncMode syncMode,
+                             AirbyteStream stream,
+                             ExtendedNameTransformer nameTransformer,
+                             JdbcDatabase db,
+                             SqlOperations sqlOperations) {
     try {
       var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       var schema = getSchema(stream, configuredSchema, nameTransformer);
-      var s3Client = S3Copier.getAmazonS3(s3Config);
+      var s3Client = S3StreamCopier.getAmazonS3(s3Config);
 
       return delegate.get(stagingFolder, syncMode, schema, pair.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
     } catch (IOException e) {

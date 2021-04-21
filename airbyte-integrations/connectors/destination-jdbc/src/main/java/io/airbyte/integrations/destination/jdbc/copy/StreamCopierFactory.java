@@ -27,19 +27,18 @@ package io.airbyte.integrations.destination.jdbc.copy;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
-public interface CopierSupplier<T> {
+public interface StreamCopierFactory<T> {
 
-  Copier get(String configuredSchema,
-             T config,
-             String stagingFolder,
-             DestinationSyncMode syncMode,
-             AirbyteStream stream,
-             ExtendedNameTransformer nameTransformer,
-             JdbcDatabase db,
-             SqlOperations sqlOperations);
+  StreamCopier create(String configuredSchema,
+                      T config,
+                      String stagingFolder,
+                      DestinationSyncMode syncMode,
+                      AirbyteStream stream,
+                      ExtendedNameTransformer nameTransformer,
+                      JdbcDatabase db,
+                      SqlOperations sqlOperations);
 
 }

@@ -33,7 +33,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.Copier;
+import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -46,9 +46,9 @@ import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class S3Copier implements Copier {
+public abstract class S3StreamCopier implements StreamCopier {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3Copier.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopier.class);
 
   private static final int DEFAULT_UPLOAD_THREADS = 10; // The S3 cli uses 10 threads by default.
   private static final int DEFAULT_QUEUE_CAPACITY = DEFAULT_UPLOAD_THREADS;
@@ -71,15 +71,15 @@ public abstract class S3Copier implements Copier {
   private final CSVPrinter csvPrinter;
   private final String tmpTableName;
 
-  public S3Copier(String stagingFolder,
-                  DestinationSyncMode destSyncMode,
-                  String schema,
-                  String streamName,
-                  AmazonS3 client,
-                  JdbcDatabase db,
-                  S3Config s3Config,
-                  ExtendedNameTransformer nameTransformer,
-                  SqlOperations sqlOperations)
+  public S3StreamCopier(String stagingFolder,
+                        DestinationSyncMode destSyncMode,
+                        String schema,
+                        String streamName,
+                        AmazonS3 client,
+                        JdbcDatabase db,
+                        S3Config s3Config,
+                        ExtendedNameTransformer nameTransformer,
+                        SqlOperations sqlOperations)
       throws IOException {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;

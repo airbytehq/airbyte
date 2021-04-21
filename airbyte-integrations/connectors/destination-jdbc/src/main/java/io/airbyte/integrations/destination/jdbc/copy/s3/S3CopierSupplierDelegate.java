@@ -28,21 +28,21 @@ import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.Copier;
+import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 
 public interface S3CopierSupplierDelegate {
 
-  Copier get(String stagingFolder,
-             DestinationSyncMode syncMode,
-             String schema,
-             String streamName,
-             AmazonS3 s3Client,
-             JdbcDatabase db,
-             S3Config s3Config,
-             ExtendedNameTransformer nameTransformer,
-             SqlOperations sqlOperations)
+  StreamCopier get(String stagingFolder,
+                   DestinationSyncMode syncMode,
+                   String schema,
+                   String streamName,
+                   AmazonS3 s3Client,
+                   JdbcDatabase db,
+                   S3Config s3Config,
+                   ExtendedNameTransformer nameTransformer,
+                   SqlOperations sqlOperations)
       throws IOException;
 
 }

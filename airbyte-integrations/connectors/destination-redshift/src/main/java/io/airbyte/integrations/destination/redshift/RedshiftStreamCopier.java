@@ -22,29 +22,29 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.destination.redshift;
 
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Copier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class SnowflakeS3Copier extends S3Copier {
+public class RedshiftStreamCopier extends S3StreamCopier {
 
-  public SnowflakeS3Copier(String stagingFolder,
-                           DestinationSyncMode destSyncMode,
-                           String schema,
-                           String streamName,
-                           AmazonS3 client,
-                           JdbcDatabase db,
-                           S3Config s3Config,
-                           ExtendedNameTransformer nameTransformer,
-                           SqlOperations sqlOperations)
+  public RedshiftStreamCopier(String stagingFolder,
+                              DestinationSyncMode destSyncMode,
+                              String schema,
+                              String streamName,
+                              AmazonS3 client,
+                              JdbcDatabase db,
+                              S3Config s3Config,
+                              ExtendedNameTransformer nameTransformer,
+                              SqlOperations sqlOperations)
       throws IOException {
     super(stagingFolder, destSyncMode, schema, streamName, client, db, s3Config, nameTransformer, sqlOperations);
   }
@@ -53,14 +53,15 @@ public class SnowflakeS3Copier extends S3Copier {
   public void copyS3CsvFileIntoTable(JdbcDatabase database, String s3FileLocation, String schema, String tableName, S3Config s3Config)
       throws SQLException {
     final var copyQuery = String.format(
-        "COPY INTO %s.%s FROM '%s' "
-            + "CREDENTIALS=(aws_access_key_id='%s';aws_secret_access_key='%s') "
-            + "file_format = (type = csv field_delimiter = ',' skip_header = 0);",
+        "COPY %s.%s FROM '%s'\n"
+            + "CREDENTIALS 'aws_access_key_id=%s;aws_secret_access_key=%s'\n"
+            + "CSV REGION '%s' TIMEFORMAT 'auto';\n",
         schema,
         tableName,
         s3FileLocation,
         s3Config.getAccessKeyId(),
-        s3Config.getSecretAccessKey());
+        s3Config.getSecretAccessKey(),
+        s3Config.getRegion());
 
     database.execute(copyQuery);
   }

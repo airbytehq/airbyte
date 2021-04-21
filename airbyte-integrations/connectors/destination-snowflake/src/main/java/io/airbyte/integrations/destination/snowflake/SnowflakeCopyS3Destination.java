@@ -29,11 +29,11 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.Copier;
+import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Copier;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopierSupplier;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -49,7 +49,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
   public void attemptWriteToPersistence(JsonNode config) {
-    S3Copier.attemptWriteToPersistence(getS3Config(config));
+    S3StreamCopier.attemptWriteToPersistence(getS3Config(config));
   }
 
   @Override
@@ -67,15 +67,15 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
     return new SnowflakeSqlOperations();
   }
 
-  private Copier getCopier(String configuredSchema,
-                           S3Config s3Config,
-                           String stagingFolder,
-                           DestinationSyncMode destinationSyncMode,
-                           AirbyteStream airbyteStream,
-                           ExtendedNameTransformer nameTransformer,
-                           JdbcDatabase jdbcDatabase,
-                           SqlOperations sqlOperations) {
-    return new S3CopierSupplier(SnowflakeS3Copier::new).get(configuredSchema, s3Config, stagingFolder, destinationSyncMode, airbyteStream,
+  private StreamCopier getCopier(String configuredSchema,
+                                 S3Config s3Config,
+                                 String stagingFolder,
+                                 DestinationSyncMode destinationSyncMode,
+                                 AirbyteStream airbyteStream,
+                                 ExtendedNameTransformer nameTransformer,
+                                 JdbcDatabase jdbcDatabase,
+                                 SqlOperations sqlOperations) {
+    return new S3CopierSupplier(SnowflakeS3StreamCopier::new).create(configuredSchema, s3Config, stagingFolder, destinationSyncMode, airbyteStream,
         nameTransformer,
         jdbcDatabase, sqlOperations);
   }
