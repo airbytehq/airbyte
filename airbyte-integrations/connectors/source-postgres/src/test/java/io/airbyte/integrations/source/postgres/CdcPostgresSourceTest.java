@@ -487,17 +487,15 @@ class CdcPostgresSourceTest {
     final AirbyteCatalog expectedCatalog = Jsons.clone(CATALOG);
 
     // stream with PK
-    expectedCatalog.getStreams().get(0).setNamespace("public");
     expectedCatalog.getStreams().get(0).setSourceDefinedCursor(true);
     addCdcMetadataColumns(expectedCatalog.getStreams().get(0));
 
     // stream with no PK.
-    expectedCatalog.getStreams().get(1).setNamespace("public");
     expectedCatalog.getStreams().get(1).setSourceDefinedPrimaryKey(Collections.emptyList());
     expectedCatalog.getStreams().get(1).setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
     addCdcMetadataColumns(expectedCatalog.getStreams().get(1));
 
-    database.query(ctx -> ctx.execute(String.format("ALTER TABLE %s DROP CONSTRAINT models_pkey", MODELS_STREAM_NAME)));
+    database.query(ctx -> ctx.execute(String.format("ALTER TABLE %s.%s DROP CONSTRAINT models_pkey", MODELS_SCHEMA, MODELS_STREAM_NAME)));
 
     final AirbyteCatalog actualCatalog = source.discover(getConfig(PSQL_DB, dbName));
 
