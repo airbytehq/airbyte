@@ -10,7 +10,7 @@ and general data organisation.
 ## Syncing
 The Airbyte protocol supports namespaces and allows Sources to define namespaces, and Destinations to write to a various namespaces.
 
-A sync conducted with a Source and Destination that both support namespaces will have its data replicated into the source-defined namespace. For such syncs,
+A sync conducted with a Source and Destination that both support namespaces, the source-defined namespace will be the schema in the Destination into which the data is replicated. For such syncs,
 data is replicated into the Destination in a layout matching the Source.
 
 All of this is automatic, and requires no additional user configuration.
