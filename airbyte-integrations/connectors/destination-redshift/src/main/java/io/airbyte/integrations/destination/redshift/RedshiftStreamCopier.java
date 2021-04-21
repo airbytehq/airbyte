@@ -31,7 +31,6 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import java.io.IOException;
 import java.sql.SQLException;
 
 public class RedshiftStreamCopier extends S3StreamCopier {
@@ -44,8 +43,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                               JdbcDatabase db,
                               S3Config s3Config,
                               ExtendedNameTransformer nameTransformer,
-                              SqlOperations sqlOperations)
-      throws IOException {
+                              SqlOperations sqlOperations) {
     super(stagingFolder, destSyncMode, schema, streamName, client, db, s3Config, nameTransformer, sqlOperations);
   }
 

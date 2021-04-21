@@ -32,7 +32,6 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

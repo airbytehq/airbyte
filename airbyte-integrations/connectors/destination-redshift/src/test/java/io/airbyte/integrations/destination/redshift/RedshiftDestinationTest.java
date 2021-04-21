@@ -41,9 +41,7 @@ public class RedshiftDestinationTest {
 
   private static final ObjectMapper mapper = new ObjectMapper();
 
-
   // todo: test the splitdestination like this
-
 
   @Test
   @DisplayName("When given S3 credentials should use COPY")

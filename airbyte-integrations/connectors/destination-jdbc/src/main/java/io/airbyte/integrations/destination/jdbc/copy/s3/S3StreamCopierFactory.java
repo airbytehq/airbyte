@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
+import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -32,16 +33,12 @@ import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import java.io.IOException;
 
-public class S3CopierSupplier implements StreamCopierFactory<S3Config> {
+public abstract class S3StreamCopierFactory implements StreamCopierFactory<S3Config> {
 
-  private final S3CopierSupplierDelegate delegate;
-
-  public S3CopierSupplier(S3CopierSupplierDelegate delegate) {
-    this.delegate = delegate;
-  }
-
+  /**
+   * Used by the copy consumer.
+   */
   @Override
   public StreamCopier create(String configuredSchema,
                              S3Config s3Config,
@@ -56,11 +53,25 @@ public class S3CopierSupplier implements StreamCopierFactory<S3Config> {
       var schema = getSchema(stream, configuredSchema, nameTransformer);
       var s3Client = S3StreamCopier.getAmazonS3(s3Config);
 
-      return delegate.get(stagingFolder, syncMode, schema, pair.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
-    } catch (IOException e) {
+      return create(stagingFolder, syncMode, schema, pair.getName(), s3Client, db, s3Config, nameTransformer, sqlOperations);
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
+
+  /**
+   * For specific copier suppliers to implement.
+   */
+  public abstract StreamCopier create(String stagingFolder,
+                                      DestinationSyncMode syncMode,
+                                      String schema,
+                                      String streamName,
+                                      AmazonS3 s3Client,
+                                      JdbcDatabase db,
+                                      S3Config s3Config,
+                                      ExtendedNameTransformer nameTransformer,
+                                      SqlOperations sqlOperations)
+      throws Exception;
 
   private String getSchema(AirbyteStream stream, String configuredSchema, ExtendedNameTransformer nameTransformer) {
     if (stream.getNamespace() != null) {

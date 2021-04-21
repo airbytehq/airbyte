@@ -79,8 +79,7 @@ public abstract class S3StreamCopier implements StreamCopier {
                         JdbcDatabase db,
                         S3Config s3Config,
                         ExtendedNameTransformer nameTransformer,
-                        SqlOperations sqlOperations)
-      throws IOException {
+                        SqlOperations sqlOperations) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -110,7 +109,12 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
 
     var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
-    this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+
+    try {
+      this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

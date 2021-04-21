@@ -123,8 +123,9 @@ public class RedshiftStreamCopierTest {
   @Test
   @DisplayName("When OVERWRITE should wipe table before appending new data")
   public void destSyncModeOverwriteTest() throws Exception {
-    var copier = new RedshiftStreamCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-        S3_KEY, S3_REGION);
+    var copier =
+        new RedshiftStreamCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+            S3_KEY, S3_REGION);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
 
@@ -151,8 +152,9 @@ public class RedshiftStreamCopierTest {
     sqlOp.createTableIfNotExists(redshiftDb, SCHEMA_NAME, RAW_TABLE_NAME);
     sqlOp.insertRecords(redshiftDb, List.of(getAirbyteRecordMessage()).stream(), SCHEMA_NAME, RAW_TABLE_NAME);
 
-    var copier = new RedshiftStreamCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.APPEND, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-        S3_KEY, S3_REGION);
+    var copier =
+        new RedshiftStreamCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.APPEND, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+            S3_KEY, S3_REGION);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
 
@@ -203,8 +205,9 @@ public class RedshiftStreamCopierTest {
   @Test
   public void send100KTest() throws Exception {
     var now = System.currentTimeMillis();
-    var copier = new RedshiftStreamCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-        S3_KEY, S3_REGION);
+    var copier =
+        new RedshiftStreamCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+            S3_KEY, S3_REGION);
 
     for (int i = 0; i < 100_000; i++) {
       var msg = getAirbyteRecordMessage();
@@ -228,8 +231,9 @@ public class RedshiftStreamCopierTest {
   @Test
   public void send1MTest() throws Exception {
     var now = System.currentTimeMillis();
-    var copier = new RedshiftStreamCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-        S3_KEY, S3_REGION);
+    var copier =
+        new RedshiftStreamCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
+            S3_KEY, S3_REGION);
 
     for (int i = 0; i < 1_000_000; i++) {
       var msg = getAirbyteRecordMessage();

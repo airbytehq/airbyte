@@ -30,15 +30,11 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopierSupplier;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.DestinationSyncMode;
 
 /**
  * A more efficient Redshift Destination than the sql-based {@link RedshiftDestination}. Instead of
@@ -54,7 +50,8 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 public class RedshiftCopyS3Destination extends CopyDestination {
 
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    return new CopyConsumer<>(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), this::getCopier, getSqlOperations(),
+    return new CopyConsumer<>(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), new RedshiftStreamCopierFactory(),
+        getSqlOperations(),
         getNameTransformer());
   }
 
@@ -93,19 +90,6 @@ public class RedshiftCopyS3Destination extends CopyDestination {
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
         config.get("s3_bucket_region").asText());
-  }
-
-  private StreamCopier getCopier(String configuredSchema,
-                                 S3Config s3Config,
-                                 String stagingFolder,
-                                 DestinationSyncMode destinationSyncMode,
-                                 AirbyteStream airbyteStream,
-                                 ExtendedNameTransformer nameTransformer,
-                                 JdbcDatabase jdbcDatabase,
-                                 SqlOperations sqlOperations) {
-    return new S3CopierSupplier(RedshiftStreamCopier::new).create(configuredSchema, s3Config, stagingFolder, destinationSyncMode, airbyteStream,
-        nameTransformer,
-        jdbcDatabase, sqlOperations);
   }
 
   public static boolean isPresent(JsonNode config) {
