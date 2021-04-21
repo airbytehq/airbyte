@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import SourceDefinitionResource from "../../../core/resources/SourceDefinition";
 import DestinationDefinitionResource from "../../../core/resources/DestinationDefinition";
 
-type NotificationService = {
+type ConnectorService = {
   hasNewVersions: boolean;
   hasNewSourceVersion: boolean;
   hasNewDestinationVersion: boolean;
@@ -13,7 +13,7 @@ type NotificationService = {
   updateAllDestinationVersions: () => void;
 };
 
-const useNotification = (): NotificationService => {
+const useConnector = (): ConnectorService => {
   const { sourceDefinitions } = useResource(
     SourceDefinitionResource.listShape(),
     {
@@ -103,4 +103,4 @@ const useNotification = (): NotificationService => {
   };
 };
 
-export default useNotification;
+export default useConnector;
