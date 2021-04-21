@@ -121,6 +121,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     if (isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(PostgresSource::removeIncrementalWithoutPk)
+          .map(PostgresSource::setIncrementalToSourceDefined)
           .map(PostgresSource::addCdcMetadataColumns)
           .collect(toList());
 
@@ -283,6 +284,8 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
    * information (like an oid) when using logical replication. By limiting to Full Refresh when we
    * don't have a primary key we dodge the problem for now. As a work around a CDC and non-CDC source
    * could be configured if there's a need to replicate a large non-PK table.
+   *
+   * Note: in place mutation.
    */
   private static AirbyteStream removeIncrementalWithoutPk(AirbyteStream stream) {
     if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
@@ -292,6 +295,21 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     return stream;
   }
 
+  /*
+   * Set all streams that do have incremental to sourceDefined, so that the user cannot set or
+   * override a cursor field.
+   *
+   * Note: in place mutation.
+   */
+  private static AirbyteStream setIncrementalToSourceDefined(AirbyteStream stream) {
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setSourceDefinedCursor(true);
+    }
+
+    return stream;
+  }
+
+  // Note: in place mutation.
   private static AirbyteStream addCdcMetadataColumns(AirbyteStream stream) {
     ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
