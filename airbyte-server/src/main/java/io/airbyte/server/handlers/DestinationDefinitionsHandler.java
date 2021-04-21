@@ -84,7 +84,7 @@ public class DestinationDefinitionsHandler {
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
-          .icon(LoadIcon(standardDestinationDefinition.getIcon()));
+          .icon(loadIcon(standardDestinationDefinition.getIcon()));
     } catch (URISyntaxException | NullPointerException | IOException e) {
       throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
     }
@@ -161,7 +161,7 @@ public class DestinationDefinitionsHandler {
     return buildDestinationDefinitionRead(newDestination);
   }
 
-  private static String LoadIcon(String name) throws IOException {
+  public static String loadIcon(String name) throws IOException {
     return name == null ? null : MoreResources.readResource("icons/" + name);
   }
 
