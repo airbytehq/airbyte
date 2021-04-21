@@ -71,14 +71,28 @@ class SourceHttpRequest(Source):
             raise Exception(f"Request failed. {r.text}")
 
         # need to eagerly fetch the json.
-        message = AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(
-                stream=SourceHttpRequest.STREAM_NAME, data=r.json(), emitted_at=int(datetime.now().timestamp()) * 1000
-            ),
-        )
+        data = r.json()
+        if isinstance(data, dict):
+            message = AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    stream=SourceHttpRequest.STREAM_NAME, data=data), emitted_at=int(datetime.now().timestamp()) * 1000
+                ),
+            )
 
-        return (m for m in [message])
+            return (m for m in [message])
+        else:
+            messages = (
+                AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(
+                        stream=SourceHttpRequest.STREAM_NAME,
+                        data=obj,
+                        emitted_at=int(datetime.now().timestamp()) * 1000
+                    )
+                ) for obj in data
+            )
+            return messages
 
     def _make_request(self, config):
         parsed_config = self._parse_config(config)
