@@ -3,5 +3,6 @@
   "name": "HTTP Request",
   "dockerRepository": "airbyte/source-http-request",
   "dockerImageTag": "0.2.2",
-  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-http-request"
+  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-http-request",
+  "icon": "http.svg"
 }

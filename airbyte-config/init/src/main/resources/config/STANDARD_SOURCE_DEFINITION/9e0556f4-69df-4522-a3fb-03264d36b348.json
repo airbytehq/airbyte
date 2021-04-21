@@ -3,5 +3,6 @@
   "name": "Marketo",
   "dockerRepository": "airbyte/source-marketo-singer",
   "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-marketo-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-marketo-singer",
+  "icon": "marketo.svg"
 }
