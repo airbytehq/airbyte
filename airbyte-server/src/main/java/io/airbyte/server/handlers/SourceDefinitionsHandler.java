@@ -85,7 +85,7 @@ public class SourceDefinitionsHandler {
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
-          .icon(LoadIcon(standardSourceDefinition.getIcon()));
+          .icon(loadIcon(standardSourceDefinition.getIcon()));
     } catch (URISyntaxException | NullPointerException | IOException e) {
       throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
     }
@@ -158,7 +158,7 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(newSource);
   }
 
-  private static String LoadIcon(String name) throws IOException {
+  public static String loadIcon(String name) throws IOException {
     return name == null ? null : MoreResources.readResource("icons/" + name);
   }
 
