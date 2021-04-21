@@ -65,11 +65,6 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
         DestinationType.COPY_S3, copyS3Destination);
   }
 
-  @Override
-  public ConnectorSpecification spec() throws Exception {
-    return AbstractJdbcDestination.getSpec();
-  }
-
   public static void main(String[] args) throws Exception {
     final Destination destination = new SnowflakeDestination();
     LOGGER.info("starting destination: {}", SnowflakeDestination.class);

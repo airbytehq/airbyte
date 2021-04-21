@@ -26,6 +26,7 @@ package io.airbyte.integrations.destination.jdbc.copy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -35,7 +36,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class CopyDestination implements Destination {
+public abstract class CopyDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyDestination.class);
 
@@ -46,11 +47,6 @@ public abstract class CopyDestination implements Destination {
   public abstract JdbcDatabase getDatabase(JsonNode config) throws Exception;
 
   public abstract SqlOperations getSqlOperations();
-
-  @Override
-  public ConnectorSpecification spec() throws Exception {
-    return AbstractJdbcDestination.getSpec();
-  }
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {

@@ -26,6 +26,7 @@ package io.airbyte.integrations.destination.jdbc.copy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -38,7 +39,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SwitchingDestination<T extends Enum<T>> implements Destination {
+public abstract class SwitchingDestination<T extends Enum<T>> extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SwitchingDestination.class);
 

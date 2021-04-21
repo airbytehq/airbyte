@@ -31,7 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.integrations.destination.redshift.RedshiftCopyS3Destination.RedshiftCopyDestinationConsumer;
+import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,11 +41,15 @@ public class RedshiftDestinationTest {
 
   private static final ObjectMapper mapper = new ObjectMapper();
 
+
+  // todo: test the splitdestination like this
+
+
   @Test
   @DisplayName("When given S3 credentials should use COPY")
   public void useCopyStrategyTest() throws Exception {
     var copyMock = mock(RedshiftCopyS3Destination.class);
-    when(copyMock.getConsumer(any(), any())).thenReturn(mock(RedshiftCopyDestinationConsumer.class));
+    when(copyMock.getConsumer(any(), any())).thenReturn(mock(CopyConsumer.class));
     var insertMock = mock(RedshiftInsertDestination.class);
     var redshiftDest = new RedshiftDestination(copyMock, insertMock);
 
