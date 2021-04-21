@@ -162,19 +162,6 @@ public class AcceptanceTests {
 
     // seed database.
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-
-    // TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version
-    // is released. The namespace change requires source, destination and normalization to all use the
-    // namespace field.
-    final var updateSrc = new SourceDefinitionUpdate()
-        .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")) // Postgres
-        .dockerImageTag("dev");
-    apiClient.getSourceDefinitionApi().updateSourceDefinition(updateSrc);
-
-    final var updateDst = new DestinationDefinitionUpdate()
-        .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")) // Postgres
-        .dockerImageTag("dev");
-    apiClient.getDestinationDefinitionApi().updateDestinationDefinition(updateDst);
   }
 
   @AfterEach
