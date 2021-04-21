@@ -24,10 +24,33 @@ SOFTWARE.
 
 from typing import Any, Mapping
 
+import requests
+
 from base_python.sdk.streams.auth.core import HttpAuthenticator
 
 
 class Oauth2Authenticator(HttpAuthenticator):
+    def __init__(self, client_id: str, client_secret: str, refresh_token: str, access_token: str = None, ):
+        # set expires at timestamp to something in the past.
+        raise NotImplementedError
+
     def get_auth_header(self) -> Mapping[str, Any]:
+
         # TODO
         raise NotImplementedError
+
+    def get_access_token(self):
+        if self.token_has_expired():
+            self.refresh_access_token()
+
+    def token_has_expired(self, response: requests.Response = None) -> bool:
+        # time-based? Does it require a request?
+        raise NotImplementedError
+
+    def refresh_access_token(self) -> None:
+        # how do we know where to refresh the access token?
+        raise NotImplementedError
+
+
+
+
