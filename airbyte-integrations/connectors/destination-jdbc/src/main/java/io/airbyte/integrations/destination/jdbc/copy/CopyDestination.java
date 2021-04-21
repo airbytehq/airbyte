@@ -60,7 +60,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.debug("Exception while checking connection: ", e);
+      LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
