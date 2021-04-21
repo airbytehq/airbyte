@@ -55,6 +55,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | Yes |  |
 | SSL connection | Yes |  |
+| Namespaces | No |  |
 
 ## Getting started
 

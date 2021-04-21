@@ -43,6 +43,7 @@ This source connector only supports Full Refresh Sync. Since Smartsheets only al
 | :--- | :--- |
 | Full Refresh Sync | <center>Yes</center> |
 | Incremental Sync | <center>No</center> |
+| Namespaces | <center>No</center> |
 
 </center>
 

@@ -30,8 +30,8 @@ take feedback on preferred mappings.
 
 ### Features
 
-| Feature | Supported |
-| :--- | :--- |
+| Feature | Supported | Notes |
+| :--- | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental - Append Sync | Yes |
 | Replicate Incremental Deletes | Coming soon |
@@ -40,6 +40,7 @@ take feedback on preferred mappings.
 | SSH Tunnel Connection | Coming soon |
 | LogMiner | Coming soon |
 | Flashback | Coming soon |
+| Namespaces | Yes | Enabled by default |
 
 ## Getting started
 

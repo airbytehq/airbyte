@@ -21,6 +21,7 @@ For each property found, connector selects 10k documents from the collection whe
 | Full Refresh Sync | Yes |
 | Incremental - Append Sync | Yes |
 | Replicate Incremental Deletes | No |
+| Namespaces | No |
 
 ### Full Refresh sync
 
