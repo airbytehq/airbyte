@@ -3,5 +3,6 @@
   "name": "Slack",
   "dockerRepository": "airbyte/source-slack-singer",
   "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-slack-singer"
+  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-slack-singer",
+  "icon": "slack.svg"
 }

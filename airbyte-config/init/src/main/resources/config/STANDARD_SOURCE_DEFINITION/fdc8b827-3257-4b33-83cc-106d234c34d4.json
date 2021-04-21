@@ -3,5 +3,6 @@
   "name": "Google Adwords",
   "dockerRepository": "airbyte/source-google-adwords-singer",
   "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-google-adwords"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-google-adwords",
+  "icon": "google-adwords.svg"
 }

@@ -4,4 +4,5 @@
   "dockerRepository": "airbyte/destination-redshift",
   "dockerImageTag": "0.3.0",
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift"
+  "icon": "redshift.svg"
 }

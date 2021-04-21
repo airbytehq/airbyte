@@ -24,9 +24,7 @@
 
 package io.airbyte.server.handlers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -38,6 +36,7 @@ import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -88,7 +87,8 @@ class SourceDefinitionsHandlerTest {
         .withName("presto")
         .withDocumentationUrl("https://netflix.com")
         .withDockerRepository("dockerstuff")
-        .withDockerImageTag("12.3");
+        .withDockerImageTag("12.3")
+        .withIcon("http.svg");
   }
 
   @Test
@@ -103,14 +103,16 @@ class SourceDefinitionsHandlerTest {
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()));
+        .documentationUrl(new URI(source.getDocumentationUrl()))
+        .icon(LoadIcon(source.getIcon()));
 
     SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
         .sourceDefinitionId(source2.getSourceDefinitionId())
         .name(source2.getName())
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()));
+        .documentationUrl(new URI(source.getDocumentationUrl()))
+        .icon(LoadIcon(source.getIcon()));
 
     final SourceDefinitionReadList actualSourceDefinitionReadList = sourceHandler.listSourceDefinitions();
 
@@ -129,7 +131,8 @@ class SourceDefinitionsHandlerTest {
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()));
+        .documentationUrl(new URI(source.getDocumentationUrl()))
+        .icon(LoadIcon(source.getIcon()));
 
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId());
@@ -148,14 +151,16 @@ class SourceDefinitionsHandlerTest {
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
-        .documentationUrl(new URI(source.getDocumentationUrl()));
+        .documentationUrl(new URI(source.getDocumentationUrl()))
+        .icon(source.getIcon());
 
     final SourceDefinitionRead expectedRead = new SourceDefinitionRead()
         .name(source.getName())
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
-        .sourceDefinitionId(source.getSourceDefinitionId());
+        .sourceDefinitionId(source.getSourceDefinitionId())
+        .icon(LoadIcon(source.getIcon()));
 
     final SourceDefinitionRead actualRead = sourceHandler.createSourceDefinition(create);
 
@@ -228,6 +233,23 @@ class SourceDefinitionsHandlerTest {
       assertThrows(KnownException.class, () -> sourceHandler.listLatestSourceDefinitions());
     }
 
+    @Test
+    @DisplayName("Icon should contain data")
+    void testIconHoldsData() {
+      final String icon = LoadIcon(source.getIcon());
+      assertNotNull(icon);
+      assert (icon.length() > 3000);
+      assert (icon.length() < 6000);
+    }
+
+  }
+
+  private static String LoadIcon(String name) {
+    try {
+      return name == null ? null : MoreResources.readResource("icons/" + name);
+    } catch (IOException e) {
+      return "Error";
+    }
   }
 
 }
