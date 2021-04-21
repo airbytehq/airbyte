@@ -38,7 +38,6 @@ import io.airbyte.api.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.SourceDefinitionRead;
 import io.airbyte.api.model.SourceDefinitionReadList;
 import io.airbyte.api.model.SourceDefinitionUpdate;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -106,7 +105,7 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(LoadIcon(source.getIcon()));
+        .icon(loadIcon(source.getIcon()));
 
     SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
         .sourceDefinitionId(source2.getSourceDefinitionId())
@@ -114,7 +113,7 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(LoadIcon(source.getIcon()));
+        .icon(loadIcon(source.getIcon()));
 
     final SourceDefinitionReadList actualSourceDefinitionReadList = sourceHandler.listSourceDefinitions();
 
@@ -134,7 +133,7 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(LoadIcon(source.getIcon()));
+        .icon(loadIcon(source.getIcon()));
 
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId());
@@ -162,7 +161,7 @@ class SourceDefinitionsHandlerTest {
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
         .sourceDefinitionId(source.getSourceDefinitionId())
-        .icon(LoadIcon(source.getIcon()));
+        .icon(loadIcon(source.getIcon()));
 
     final SourceDefinitionRead actualRead = sourceHandler.createSourceDefinition(create);
 
@@ -216,7 +215,7 @@ class SourceDefinitionsHandlerTest {
     @Test
     @DisplayName("Icon should contain data")
     void testIconHoldsData() {
-      final String icon = LoadIcon(source.getIcon());
+      final String icon = loadIcon(source.getIcon());
       assertNotNull(icon);
       assert (icon.length() > 3000);
       assert (icon.length() < 6000);
@@ -224,9 +223,9 @@ class SourceDefinitionsHandlerTest {
 
   }
 
-  private static String LoadIcon(String name) {
+  private static String loadIcon(String name) {
     try {
-      return name == null ? null : MoreResources.readResource("icons/" + name);
+      return SourceDefinitionsHandler.loadIcon(name);
     } catch (IOException e) {
       return "Error";
     }
