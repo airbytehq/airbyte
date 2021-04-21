@@ -22,6 +22,7 @@ Several output streams are available from this source \(accounts, campaigns, ads
 | Incremental Sync | Coming soon |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 

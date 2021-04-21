@@ -24,6 +24,7 @@ Each stream will be output into its own file. Each file will contain 3 columns:
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental - Append Sync | Yes |
+| Namespaces | No |  |
 
 #### Performance considerations
 

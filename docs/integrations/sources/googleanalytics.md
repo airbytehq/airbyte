@@ -30,6 +30,7 @@ Please reach out to us on Slack or [create an issue](https://github.com/airbyteh
 | Incremental Sync | Coming soon |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 
