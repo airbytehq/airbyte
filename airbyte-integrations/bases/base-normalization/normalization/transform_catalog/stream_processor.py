@@ -627,6 +627,10 @@ from {{ from_table }}
         if schema in tables_registry and new_table_name in tables_registry[schema]:
             # Check if new_table_name already exists. If yes, then add hash of the stream name to it
             new_table_name = self.name_transformer.normalize_table_name(f"{new_table_name}_{hash_name(self.stream_name)}", False, False)
+            if new_table_name in tables_registry[schema]:
+                raise ValueError(
+                    f"Conflict: Table name {new_table_name} in schema {schema} already exists! (is there a hashing collision or duplicate streams?)"
+                )
 
         if not is_intermediate:
             self.final_table_name = new_table_name
