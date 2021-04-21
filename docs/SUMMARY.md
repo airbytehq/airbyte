@@ -123,8 +123,6 @@
     * [Pipelinewise vs Airbyte](faq/differences-with/pipelinewise-vs-airbyte.md)
     * [Meltano vs Airbyte](faq/differences-with/meltano-vs-airbyte.md)
 * [Career & Open Positions](career-and-open-positions/README.md)
-  * [Founding Developer Advocate](career-and-open-positions/founding-developer-advocate.md)
   * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
-  * [Operations Manager](career-and-open-positions/operations-manager.md)
 * [License](license.md)
 
