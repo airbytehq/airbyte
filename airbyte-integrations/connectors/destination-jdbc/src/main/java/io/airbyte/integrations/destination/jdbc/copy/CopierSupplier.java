@@ -31,10 +31,10 @@ import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 
-public interface CopierSupplier {
+public interface CopierSupplier<T> {
 
   Copier get(String configuredSchema,
-             S3Config s3Config,
+             T config,
              String stagingFolder,
              DestinationSyncMode syncMode,
              AirbyteStream stream,

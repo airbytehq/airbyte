@@ -41,26 +41,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class CopyConsumer extends FailureTrackingAirbyteMessageConsumer {
+public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
 
   private final String configuredSchema;
-  private final S3Config s3Config;
+  private final T config;
   private final ConfiguredAirbyteCatalog catalog;
   private final JdbcDatabase db;
-  private final CopierSupplier copierSupplier;
+  private final CopierSupplier<T> copierSupplier;
   private final SqlOperations sqlOperations;
   private final ExtendedNameTransformer nameTransformer;
   private final Map<AirbyteStreamNameNamespacePair, Copier> pairToCopier;
 
   public CopyConsumer(String configuredSchema,
-                      S3Config s3Config,
+                      T config,
                       ConfiguredAirbyteCatalog catalog,
                       JdbcDatabase db,
-                      CopierSupplier copierSupplier,
+                      CopierSupplier<T> copierSupplier,
                       SqlOperations sqlOperations,
                       ExtendedNameTransformer nameTransformer) {
     this.configuredSchema = configuredSchema;
-    this.s3Config = s3Config;
+    this.config = config;
     this.catalog = catalog;
     this.db = db;
     this.copierSupplier = copierSupplier;
@@ -79,7 +79,7 @@ public class CopyConsumer extends FailureTrackingAirbyteMessageConsumer {
       var stream = configuredStream.getStream();
       var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
       var syncMode = configuredStream.getDestinationSyncMode();
-      var copier = copierSupplier.get(configuredSchema, s3Config, stagingFolder, syncMode, stream, nameTransformer, db, sqlOperations);
+      var copier = copierSupplier.get(configuredSchema, config, stagingFolder, syncMode, stream, nameTransformer, db, sqlOperations);
 
       pairToCopier.put(pair, copier);
     }

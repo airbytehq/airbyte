@@ -43,7 +43,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
-    return new CopyConsumer(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), this::getCopier, getSqlOperations(),
+    return new CopyConsumer<>(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), this::getCopier, getSqlOperations(),
         getNameTransformer());
   }
 

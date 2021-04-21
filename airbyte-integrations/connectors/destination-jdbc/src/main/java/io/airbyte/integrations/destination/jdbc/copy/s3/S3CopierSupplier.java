@@ -34,7 +34,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 
-public class S3CopierSupplier implements CopierSupplier {
+public class S3CopierSupplier implements CopierSupplier<S3Config> {
 
   private final S3CopierSupplierDelegate delegate;
 
