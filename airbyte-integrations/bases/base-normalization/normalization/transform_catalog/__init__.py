@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from normalization.transform_catalog.transform import TransformCatalog
 
 __all__ = ["TransformCatalog"]

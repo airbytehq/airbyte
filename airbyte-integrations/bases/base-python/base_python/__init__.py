@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from base_python.catalog_helpers import CatalogHelper
 from base_python.client import BaseClient
 from base_python.integration import AirbyteSpec, Destination, Integration, Source

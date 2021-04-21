@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from source_salesforce_singer import SourceSalesforceSinger
 
 CONNECTOR = SourceSalesforceSinger()
