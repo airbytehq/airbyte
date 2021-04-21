@@ -76,7 +76,7 @@ class SourceHttpRequest(Source):
             message = AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
-                    stream=SourceHttpRequest.STREAM_NAME, data=data), emitted_at=int(datetime.now().timestamp()) * 1000
+                    stream=SourceHttpRequest.STREAM_NAME, data=data, emitted_at=int(datetime.now().timestamp()) * 1000
                 ),
             )
 
