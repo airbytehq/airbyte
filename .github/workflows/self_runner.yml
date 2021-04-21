@@ -24,7 +24,7 @@ jobs:
           ec2-instance-type: c5.2xlarge
           subnet-id: subnet-01d35f948346c05bd
           security-group-id: sg-04399aaf4d51a35f9
-  build:
+  do-the-job:
     name: Build Airbyte
     needs: start-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
