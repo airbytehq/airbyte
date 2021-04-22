@@ -47,6 +47,13 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
+  private static final long CHECK_HEARTBEAT_TIME_MAGNITUDE = 1;
+  private static final TimeUnit CHECK_HEARTBEAT_TIME_UNIT = TimeUnit.SECONDS;
+  private static final long GRACEFUL_SHUTDOWN_TIME_MAGNITUDE = 10;
+  private static final TimeUnit GRACEFUL_SHUTDOWN_TIME_UNIT = TimeUnit.MINUTES;
+  private static final long FORCED_SHUTDOWN_TIME_MAGNITUDE = 1;
+  private static final TimeUnit FORCED_SHUTDOWN_TIME_UNIT = TimeUnit.MINUTES;
+
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
   private final HeartbeatMonitor heartbeatMonitor;
@@ -111,7 +118,16 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
 
     LOGGER.debug("Closing tap process");
-    WorkerUtils.gentleCloseWithHeartbeat(tapProcess, heartbeatMonitor, 10, TimeUnit.MINUTES);
+    WorkerUtils.gentleCloseWithHeartbeat(
+        tapProcess,
+        heartbeatMonitor,
+        GRACEFUL_SHUTDOWN_TIME_MAGNITUDE,
+        GRACEFUL_SHUTDOWN_TIME_UNIT,
+        CHECK_HEARTBEAT_TIME_MAGNITUDE,
+        CHECK_HEARTBEAT_TIME_UNIT,
+        FORCED_SHUTDOWN_TIME_MAGNITUDE,
+        FORCED_SHUTDOWN_TIME_UNIT);
+
     if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
       throw new WorkerException("Tap process wasn't successful");
     }

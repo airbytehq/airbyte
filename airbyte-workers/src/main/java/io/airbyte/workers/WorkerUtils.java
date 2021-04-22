@@ -65,20 +65,41 @@ public class WorkerUtils {
    * This method checks the heartbeat once every minute. Once there is no heartbeat detected, if the
    * process has ended, then the method returns. If the process is still running it is given a grace
    * period of the timeout arguments passed into the method. Once those expire the process is killed
-   * forcibly.
+   * forcibly. If the process cannot be killed, this method will log that this is the case, but then
+   * returns.
    *
    * @param process - process to monitor.
    * @param heartbeatMonitor - tracks if the heart is still beating for the given process.
-   * @param gracePeriodMagnitude - grace period to give the process to die after its heart stops
+   * @param gracefulShutdownMagnitude - grace period to give the process to die after its heart stops
    *        beating.
-   * @param gracePeriodTimeUnit - grace period to give the process to die after its heart stops
+   * @param gracefulShutdownTimeUnit - grace period to give the process to die after its heart stops
    *        beating.
+   * @param checkHeartbeatMagnitude - frequency with which the heartbeat of the process is checked.
+   * @param checkHeartbeatTimeUnit - frequency with which the heartbeat of the process is checked.
+   * @param forcedShutdownMagnitude - amount of time to wait if a process needs to be destroyed
+   *        forcibly.
+   * @param forcedShutdownTimeUnit - amount of time to wait if a process needs to be destroyed
+   *        forcibly.
+   * @param forceShutdown
    */
   public static void gentleCloseWithHeartbeat(final Process process,
                                               final HeartbeatMonitor heartbeatMonitor,
-                                              final long gracePeriodMagnitude,
-                                              final TimeUnit gracePeriodTimeUnit) {
-
+                                              final long gracefulShutdownMagnitude,
+                                              final TimeUnit gracefulShutdownTimeUnit,
+                                              final long checkHeartbeatMagnitude,
+                                              final TimeUnit checkHeartbeatTimeUnit,
+                                              final long forcedShutdownMagnitude,
+                                              final TimeUnit forcedShutdownTimeUnit) {
+    gentleCloseWithHeartbeat(
+        process,
+        heartbeatMonitor,
+        gracefulShutdownMagnitude,
+        gracefulShutdownTimeUnit,
+        checkHeartbeatMagnitude,
+        checkHeartbeatTimeUnit,
+        forcedShutdownMagnitude,
+        forcedShutdownTimeUnit,
+        WorkerUtils::forceShutdown);
   }
 
   @VisibleForTesting
@@ -91,6 +112,7 @@ public class WorkerUtils {
                                        final long forcedShutdownMagnitude,
                                        final TimeUnit forcedShutdownTimeUnit,
                                        final TriConsumer<Process, Long, TimeUnit> forceShutdown) {
+
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
         process.waitFor(checkHeartbeatMagnitude, checkHeartbeatTimeUnit);
