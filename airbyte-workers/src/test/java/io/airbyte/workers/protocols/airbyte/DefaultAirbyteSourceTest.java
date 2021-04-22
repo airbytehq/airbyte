@@ -88,6 +88,7 @@ class DefaultAirbyteSourceTest {
   private IntegrationLauncher integrationLauncher;
   private Process process;
   private AirbyteStreamFactory streamFactory;
+  private HeartbeatMonitor heartbeatMonitor;
 
   @BeforeEach
   public void setup() throws IOException, WorkerException {
@@ -95,6 +96,7 @@ class DefaultAirbyteSourceTest {
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class, RETURNS_DEEP_STUBS);
+    heartbeatMonitor = mock(HeartbeatMonitor.class);
     final InputStream inputStream = mock(InputStream.class);
     when(integrationLauncher.read(
         jobRoot,
@@ -112,7 +114,7 @@ class DefaultAirbyteSourceTest {
   @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
     tap.start(TAP_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -151,7 +153,7 @@ class DefaultAirbyteSourceTest {
 
   @Test
   public void testProcessFail() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
     tap.start(TAP_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);

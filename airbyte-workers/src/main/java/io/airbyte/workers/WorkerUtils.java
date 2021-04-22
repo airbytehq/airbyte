@@ -24,6 +24,7 @@
 
 package io.airbyte.workers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
@@ -35,6 +36,7 @@ import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -54,16 +56,7 @@ public class WorkerUtils {
       LOGGER.error("Exception while while waiting for process to finish", e);
     }
     if (process.isAlive()) {
-      LOGGER.warn("Process is taking too long to finish. Killing it");
-      process.destroy();
-      try {
-        process.waitFor(1, TimeUnit.MINUTES);
-      } catch (InterruptedException e) {
-        LOGGER.error("Exception while while killing the process", e);
-      }
-      if (process.isAlive()) {
-        LOGGER.warn("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
-      }
+      forceShutdown(process, 1, TimeUnit.MINUTES);
     }
   }
 
@@ -76,16 +69,31 @@ public class WorkerUtils {
    *
    * @param process - process to monitor.
    * @param heartbeatMonitor - tracks if the heart is still beating for the given process.
-   * @param timeout - grace period to give the process to die after its heart stops beating.
-   * @param timeUnit - grace period to give the process to die after its heart stops beating.
+   * @param gracePeriodMagnitude - grace period to give the process to die after its heart stops
+   *        beating.
+   * @param gracePeriodTimeUnit - grace period to give the process to die after its heart stops
+   *        beating.
    */
   public static void gentleCloseWithHeartbeat(final Process process,
                                               final HeartbeatMonitor heartbeatMonitor,
-                                              final long timeout,
-                                              final TimeUnit timeUnit) {
+                                              final long gracePeriodMagnitude,
+                                              final TimeUnit gracePeriodTimeUnit) {
+
+  }
+
+  @VisibleForTesting
+  static void gentleCloseWithHeartbeat(final Process process,
+                                       final HeartbeatMonitor heartbeatMonitor,
+                                       final long gracefulShutdownMagnitude,
+                                       final TimeUnit gracefulShutdownTimeUnit,
+                                       final long checkHeartbeatMagnitude,
+                                       final TimeUnit checkHeartbeatTimeUnit,
+                                       final long forcedShutdownMagnitude,
+                                       final TimeUnit forcedShutdownTimeUnit,
+                                       final TriConsumer<Process, Long, TimeUnit> forceShutdown) {
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
-        process.waitFor(1, TimeUnit.MINUTES);
+        process.waitFor(checkHeartbeatMagnitude, checkHeartbeatTimeUnit);
       } catch (InterruptedException e) {
         LOGGER.error("Exception while while waiting for process to finish", e);
       }
@@ -93,20 +101,32 @@ public class WorkerUtils {
 
     if (process.isAlive()) {
       try {
-        process.waitFor(timeout, timeUnit);
+        process.waitFor(gracefulShutdownMagnitude, gracefulShutdownTimeUnit);
       } catch (InterruptedException e) {
-        LOGGER.error("Exception while while waiting for process to finish", e);
+        LOGGER.error("Exception during grace period for process to finish", e);
       }
-      LOGGER.warn("Process is taking too long to finish. Killing it");
-      process.destroy();
-      try {
-        process.waitFor(1, TimeUnit.MINUTES);
-      } catch (InterruptedException e) {
-        LOGGER.error("Exception while while killing the process", e);
-      }
-      if (process.isAlive()) {
-        LOGGER.warn("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
-      }
+    }
+
+    // if we have closed gracefully exit...
+    if (!process.isAlive()) {
+      return;
+    }
+
+    forceShutdown.accept(process, forcedShutdownMagnitude, forcedShutdownTimeUnit);
+  }
+
+  @VisibleForTesting
+  static void forceShutdown(Process process, long lastChanceMagnitude, TimeUnit lastChanceTimeUnit) {
+    // otherwise we forcibly kill the process.
+    LOGGER.warn("Process is taking too long to finish. Killing it");
+    process.destroy();
+    try {
+      process.waitFor(lastChanceMagnitude, lastChanceTimeUnit);
+    } catch (InterruptedException e) {
+      LOGGER.error("Exception while while killing the process", e);
+    }
+    if (process.isAlive()) {
+      LOGGER.warn("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
     }
   }
 
