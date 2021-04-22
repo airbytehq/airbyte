@@ -5,20 +5,20 @@ import { H5 } from "components/Titles";
 
 type IProps = {
   title: string | React.ReactNode;
-  text: string | React.ReactNode;
+  text?: string | React.ReactNode;
 };
 
 const Singleton = styled.div`
   position: fixed;
-  bottom: 0px;
+  bottom: 49px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, 0);
 
   padding: 25px 25px 22px;
 
   background: ${({ theme }) => theme.lightPrimaryColor};
   border: 1px solid ${({ theme }) => theme.greyColor20};
-  box-shadow: 0px 1px 2px ${({ theme }) => theme.shadowColor};
+  box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: 8px;
 `;
 

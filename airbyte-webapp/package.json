@@ -41,6 +41,7 @@
     "rest-hooks": "^5.0.3",
     "sanitize-html": "^2.1.2",
     "styled-components": "^5.1.1",
+    "typesafe-actions": "^5.1.0",
     "yup": "^0.28.1"
   },
   "devDependencies": {

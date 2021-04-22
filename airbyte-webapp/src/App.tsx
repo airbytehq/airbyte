@@ -10,6 +10,7 @@ import { theme } from "./theme";
 import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
 import NetworkErrorBoundary from "./components/NetworkErrorBoundary";
+import NotificationService from "components/hooks/services/Notification";
 
 const App: React.FC = () => {
   return (
@@ -20,7 +21,9 @@ const App: React.FC = () => {
           <CacheProvider>
             <Suspense fallback={<LoadingPage />}>
               <NetworkErrorBoundary>
-                <Routing />
+                <NotificationService>
+                  <Routing />
+                </NotificationService>
               </NetworkErrorBoundary>
             </Suspense>
           </CacheProvider>
