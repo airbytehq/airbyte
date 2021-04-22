@@ -30,17 +30,12 @@ from base_python.sdk.streams.auth.core import HttpAuthenticator
 
 
 class Oauth2Authenticator(HttpAuthenticator):
-    def __init__(
-            self,
-            token_refresh_endpoint: str,
-            client_id: str,
-            client_secret: str,
-            refresh_token: str
-    ):
+    def __init__(self, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str, scopes: [str] = None):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
         self.client_id = client_id
         self.refresh_token = refresh_token
+        self.scopes = scopes
 
         self._token_expiry_date = pendulum.now().subtract(days=1)
         self._access_token = None
@@ -60,21 +55,28 @@ class Oauth2Authenticator(HttpAuthenticator):
     def token_has_expired(self) -> bool:
         return pendulum.now() > self._token_expiry_date
 
-    def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
-        data = {
+    def get_refresh_request_body(self) -> Mapping[str, any]:
+        """ Override to define additional parameters """
+        payload = {
             'grant_type': 'refresh_token',
             'client_id': self.client_id,
             'client_secret': self.client_secret,
             'refresh_token': self.refresh_token
         }
+
+        if self.scopes:
+            payload['scopes'] = self.scopes
+
+        return payload
+
+    def refresh_access_token(self) -> Tuple[str, int]:
+        """
+        returns a tuple of (access_token, token_lifespan_in_seconds)
+        """
         try:
-            response = requests.request(method='POST', url=self.token_refresh_endpoint, data=data)
+            response = requests.request(method='POST', url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()
             response_json = response.json()
             return response_json['access_token'], response_json['expires_in']
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
-
