@@ -40,9 +40,6 @@ setuptools.setup(
         "requests==2.25.1",
         "backoff==1.10.0",
         "pytest",
-        "google-api-python-client",
-        "google-auth-httplib2",
-        "google-auth-oauthlib",
         "pendulum"
     ],
     entry_points={
