@@ -9,11 +9,12 @@ from sdk.streams.auth.oauth import Oauth2Authenticator
 from sdk.abstract_source import AbstractSource
 from sdk.streams.http import HttpStream
 
+# Fill in from Lastpass Airbyte Gmail API Token shared note.
 google_authenticator = Oauth2Authenticator(
-    client_id='708867486045-aab3e9rtms70jr8be4rg19ckoqjrvil0.apps.googleusercontent.com',
-    client_secret='9T6EkdO5g0-19R0SgboeFH6i',
-    refresh_token='1//0gJ7K-A4VJie5CgYIARAAGBASNwF-L9IroEo5hjabu_w69DLQpryPCd6-ROFQmvM5dSkq1lOrmfYFt6sNkX-IJktT3gHGpHo5oZ8',
-    token_refresh_endpoint='https://oauth2.googleapis.com/token'
+    client_id='',
+    client_secret='',
+    refresh_token='',
+    token_refresh_endpoint=''
 )
 
 class GmailUser(HttpStream):
