@@ -14,5 +14,5 @@ ENV AIRBYTE_READ_CMD "base-python read"
 
 ENTRYPOINT ["/airbyte/base.sh"]
 
-LABEL io.airbyte.version=0.1.5
+LABEL io.airbyte.version=0.1.4
 LABEL io.airbyte.name=airbyte/integration-base-python
