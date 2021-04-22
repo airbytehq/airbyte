@@ -27,6 +27,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    ```
 
 3. Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a gzipped tarball of all of your Airbyte configuration data and sync history. _Note: Any secrets that you have entered into Airbyte will be in this archive, so you should treat it as secret._
+
 4. Migrate the archive to the new version using the Migration App \(packaged in a docker container\).
 
    ```bash
@@ -44,9 +45,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    --output /config/airbyte_archive_migrated.tar.gz
    ```
 
-   {% hint style="info" %}
    It may seem confusing that you need to specify the target version twice. The version passed as `--target-version` specifies the version to which the data will be migrated. Specifying the target version in the docker container tag makes sure that you are pulling an image that at least has the migration for the version you want. Technically the version used in the docker tag can be equal to or greater than the version you are upgrading to. For the simplicity of this tutorial we have them match.
-   {% endhint %}
 
 5. Turn off Airbyte fully.
 
