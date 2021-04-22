@@ -24,8 +24,6 @@
 
 package io.airbyte.workers;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -55,28 +53,33 @@ class WorkerUtilsTest {
 
     private Process process;
     private HeartbeatMonitor heartbeatMonitor;
-    private AtomicBoolean hasCompleted;
-    private AtomicBoolean threwException;
-    private Thread gentleCloseThread;
     private TriConsumer<Process, Long, TimeUnit> forceShutdown;
 
     @SuppressWarnings("unchecked")
     @BeforeEach
-    void setup() throws InterruptedException {
+    void setup() {
       process = mock(Process.class);
       heartbeatMonitor = mock(HeartbeatMonitor.class);
       forceShutdown = mock(TriConsumer.class);
-      threwException = new AtomicBoolean(false);
-      hasCompleted = new AtomicBoolean(false);
-      gentleCloseThread = start(process, heartbeatMonitor, hasCompleted, forceShutdown);
+    }
+
+    private void runShutdown() {
+      WorkerUtils.gentleCloseWithHeartbeat(
+          process,
+          heartbeatMonitor,
+          SHUTDOWN_TIME_MAGNITUDE,
+          SHUTDOWN_TIME_UNIT,
+          CHECK_HEARTBEAT_TIME_MAGNITUDE,
+          CHECK_HEARTBEAT_TIME_UNIT,
+          SHUTDOWN_TIME_MAGNITUDE,
+          SHUTDOWN_TIME_UNIT,
+          forceShutdown);
     }
 
     @SuppressWarnings("BusyWait")
-    private Thread start(final Process process,
-                         final HeartbeatMonitor heartbeatMonitor,
-                         final AtomicBoolean hasCompleted,
-                         final TriConsumer<Process, Long, TimeUnit> forceShutdown)
-        throws InterruptedException {
+    @DisplayName("Verify that shutdown waits indefinitely when heartbeat and process are healthy.")
+    @Test
+    void testStartsWait() throws InterruptedException {
       when(process.isAlive()).thenReturn(true);
       final AtomicInteger recordedBeats = new AtomicInteger(0);
       doAnswer((ignored) -> {
@@ -84,74 +87,45 @@ class WorkerUtilsTest {
         return true;
       }).when(heartbeatMonitor).isBeating();
 
-      final Thread thread = new Thread(() -> {
-        try {
-
-          WorkerUtils.gentleCloseWithHeartbeat(
-              process,
-              heartbeatMonitor,
-              SHUTDOWN_TIME_MAGNITUDE * 10,
-              SHUTDOWN_TIME_UNIT,
-              CHECK_HEARTBEAT_TIME_MAGNITUDE,
-              CHECK_HEARTBEAT_TIME_UNIT,
-              SHUTDOWN_TIME_MAGNITUDE,
-              SHUTDOWN_TIME_UNIT,
-              forceShutdown);
-
-          hasCompleted.set(true);
-        } catch (Throwable e) {
-          threwException.set(true);
-        }
-      });
+      final Thread thread = new Thread(this::runShutdown);
 
       thread.start();
 
       // block until the loop is running.
-      while (recordedBeats.get() == 0) {
+      while (recordedBeats.get() < 3) {
         Thread.sleep(10);
       }
-
-      return thread;
     }
 
     @Test
     @DisplayName("Test heartbeat ends and graceful shutdown.")
-    void testGracefulShutdown() throws InterruptedException {
+    void testGracefulShutdown() {
       when(heartbeatMonitor.isBeating()).thenReturn(false);
       when(process.isAlive()).thenReturn(false);
 
-      gentleCloseThread.join(0);
+      runShutdown();
 
-      assertFalse(threwException.get());
-      assertTrue(hasCompleted.get());
-      assertFalse(gentleCloseThread.isAlive());
       verifyNoInteractions(forceShutdown);
     }
 
     @Test
     @DisplayName("Test heartbeat ends and shutdown is forced.")
-    void testForcedShutdown() throws InterruptedException {
+    void testForcedShutdown() {
       when(heartbeatMonitor.isBeating()).thenReturn(false);
       when(process.isAlive()).thenReturn(true);
 
-      gentleCloseThread.join(0);
+      runShutdown();
 
-      assertFalse(threwException.get());
-      assertTrue(hasCompleted.get());
-      assertFalse(gentleCloseThread.isAlive());
       verify(forceShutdown).accept(process, SHUTDOWN_TIME_MAGNITUDE, SHUTDOWN_TIME_UNIT);
     }
 
     @Test
     @DisplayName("Test process dies.")
-    void testProcessDies() throws InterruptedException {
+    void testProcessDies() {
+      when(heartbeatMonitor.isBeating()).thenReturn(true);
       when(process.isAlive()).thenReturn(false);
+      runShutdown();
 
-      gentleCloseThread.join(0);
-
-      assertFalse(threwException.get());
-      assertTrue(hasCompleted.get());
-      assertFalse(gentleCloseThread.isAlive());
       verifyNoInteractions(forceShutdown);
     }
 
