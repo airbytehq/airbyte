@@ -1,6 +1,6 @@
 # Testing Connectors
 
-## Airbyte's Standard Tests
+## Airbyte's Standard Tests (v1)
 
 To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../architecture/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
@@ -35,35 +35,13 @@ This is setup by default inside the `build.gradle` file on all connectors genera
 For reference, to configure the file-based standard test suite the only requirement is to add the following block in your connectors `build.gradle` file:
 
 ```text
-apply plugin: 'airbyte-standard-test'
-```
-and create `standard_test_config.yml` in the root folder of your connector:
-```yaml
-connector_image: airbyte/source-hubspot:dev
-tests:
-  spec:
-    - spec_path: "source_hubspot/spec.json"
-  connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "sample_files/invalid_config.json"
-      status: "exception"
-  discovery:
-    - config_path: "secrets/config.json"
-  basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/configured_catalog.json"
-      validate_output_from_all_streams: yes
-  incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/configured_catalog.json"
-      state_path: "sample_files/abnormal_state.json"
-      cursor_paths:
-        subscription_changes: ["timestamp"]
-        email_events: ["timestamp"]
-  full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/configured_catalog.json"
+apply plugin: 'airbyte-standard-source-test-file'
+airbyteStandardSourceTestFile { 
+  // all these paths must be inside your connector's directory
+  configPath = "/path/to/config"
+  specPath = "/path/to/spec"
+  configuredCatalogPath = "/path/to/catalog"
+}
 ```
 
 These inputs are all described in the [Airbyte Specification](../../architecture/airbyte-specification.md) and will be used as follows:
@@ -75,6 +53,24 @@ These inputs are all described in the [Airbyte Specification](../../architecture
 ### Dynamically managing inputs & resources used in standard tests
 
 Since the inputs to standard tests are often static, the file-based runner is sufficient for most connectors. However, in some cases, you may need to run pre or post hooks to dynamically create or destroy resources for use in standard tests. For example, if we need to spin up a Redshift cluster to use in the test then tear it down afterwards, we need the ability to run code before and after the tests, as well as customize the Redshift cluster URL we pass to the standard tests. If you have need for this use case, please reach out to us via [Github](https://github.com/airbytehq/airbyte) or [Slack](https://slack.airbyte.io). We currently support it for Java & Python, and other languages can be made available upon request.
+
+## Airbyte's Standard Tests (v2) - Source Acceptance Tests
+
+Unfortunately Standard Tests (v1) has some problems: 
+* Its tests are opaque to a contributor, difficult to debug when something goes wrong
+* It tries to encompass testing all features/edge cases in one test case which has made it difficult to configure and its behavior hard to understand
+
+Source Acceptance Tests tries to address these issues. These are the differences from v1:
+* configured with YAML file, forget about Gradle
+* individual tests can be disabled in the config file
+* individual tests can have different inputs and run multiple time with different sets of inputs
+* each test has a timeout
+* each test has stores all inputs and outputs 
+* use pytest as a test runner
+* can be run manually, with interactive debugger, custom plugins, last failed tests, etc - thanks to pytest
+* the output is easy to read, good bye Java stacktrace - thanks to pytest
+
+See all the test cases, their description and inputs in [Source Acceptance Tests](source-acceptance-tests.md).
 
 ## Running Integration tests
 

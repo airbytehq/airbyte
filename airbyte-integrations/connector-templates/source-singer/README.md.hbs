@@ -101,13 +101,13 @@ pytest integration_tests
 ```
 
 ### Acceptance Tests
-1. Update `acceptance-test-config.yml` file to configure tests. See (acceptance tests)[] for more information.
-2. From the connector root, run `./acceptance-test.sh` 
+1. Update `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](source-acceptance-tests.md) for more information.
+2. From the connector root, run `./acceptance-test.sh`
 
 ## Dependency Management
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development. 
+All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
 We split dependencies between two groups, dependencies that are:
-* required for your connector to work need to go to `MAIN_REQUIREMENTS` list. 
+* required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
 * required for the testing need to go to `TEST_REQUIREMENTS` list
 
 ### Publishing a new version of the connector
