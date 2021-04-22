@@ -253,7 +253,7 @@
 - sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   name: Zendesk Talk
   dockerRepository: airbyte/source-zendesk-talk
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-talk
 - sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
   name: Quickbooks
