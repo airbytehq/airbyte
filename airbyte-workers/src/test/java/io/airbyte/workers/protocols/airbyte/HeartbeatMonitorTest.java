@@ -31,15 +31,19 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class HeartbeatMonitorTest {
 
+  private static final long HEART_BEAT_FRESH_MAGNITUDE = 30;
+  private static final TimeUnit HEART_BEAT_FRESH_TIME_UNIT = TimeUnit.SECONDS;
+
   private static final Instant NOW = Instant.now();
   private static final Instant FIVE_SECONDS_BEFORE = NOW.minus(5, ChronoUnit.SECONDS);
-  private static final Instant THIRTY_ONE_SECONDS_BEFORE = NOW.minus(30, ChronoUnit.SECONDS);
+  private static final Instant THIRTY_SECONDS_BEFORE = NOW.minus(30, ChronoUnit.SECONDS);
 
   private Supplier<Instant> instantSupplier;
   private HeartbeatMonitor heartbeatMonitor;
@@ -48,7 +52,7 @@ class HeartbeatMonitorTest {
   @BeforeEach
   void setup() {
     instantSupplier = mock(Supplier.class);
-    heartbeatMonitor = new HeartbeatMonitor(instantSupplier);
+    heartbeatMonitor = new HeartbeatMonitor(HEART_BEAT_FRESH_MAGNITUDE, HEART_BEAT_FRESH_TIME_UNIT, instantSupplier);
   }
 
   @Test
@@ -57,14 +61,16 @@ class HeartbeatMonitorTest {
   }
 
   @Test
-  void testRecentBeat() {
+  void testFreshBeat() {
     when(instantSupplier.get()).thenReturn(FIVE_SECONDS_BEFORE).thenReturn(NOW);
+    heartbeatMonitor.beat();
     assertTrue(heartbeatMonitor.isBeating());
   }
 
   @Test
   void testStaleBeat() {
-    when(instantSupplier.get()).thenReturn(THIRTY_ONE_SECONDS_BEFORE).thenReturn(NOW);
+    when(instantSupplier.get()).thenReturn(THIRTY_SECONDS_BEFORE).thenReturn(NOW);
+    heartbeatMonitor.beat();
     assertFalse(heartbeatMonitor.isBeating());
   }
 

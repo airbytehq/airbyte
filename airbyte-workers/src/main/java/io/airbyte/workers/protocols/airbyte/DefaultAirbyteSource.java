@@ -47,6 +47,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
+  private static final long HEART_BEAT_FRESH_TIME_MAGNITUDE = 1;
+  private static final TimeUnit HEART_BEAT_FRESH_TIME_UNIT = TimeUnit.SECONDS;
   private static final long CHECK_HEARTBEAT_TIME_MAGNITUDE = 1;
   private static final TimeUnit CHECK_HEARTBEAT_TIME_UNIT = TimeUnit.SECONDS;
   private static final long GRACEFUL_SHUTDOWN_TIME_MAGNITUDE = 10;
@@ -62,7 +64,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor());
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor(HEART_BEAT_FRESH_TIME_MAGNITUDE, HEART_BEAT_FRESH_TIME_UNIT));
   }
 
   @VisibleForTesting

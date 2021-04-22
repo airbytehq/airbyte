@@ -27,24 +27,25 @@ package io.airbyte.workers.protocols.airbyte;
 import com.google.common.annotations.VisibleForTesting;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 public class HeartbeatMonitor {
 
-  public static final int TIME_MAGNITUDE = 30;
-  public static final TemporalUnit TIME_UNIT = ChronoUnit.SECONDS;
-
+  private final long heartBeatFreshMagnitude;
+  private final TimeUnit heartBeatFreshTimeUnit;
   private final Supplier<Instant> instantSupplier;
   private final AtomicReference<Instant> lastBeat;
 
-  public HeartbeatMonitor() {
-    this(Instant::now);
+  public HeartbeatMonitor(long heartBeatFreshMagnitude, TimeUnit heartBeatFreshTimeUnit) {
+    this(heartBeatFreshMagnitude, heartBeatFreshTimeUnit, Instant::now);
   }
 
   @VisibleForTesting
-  public HeartbeatMonitor(Supplier<Instant> instantSupplier) {
+  public HeartbeatMonitor(long heartBeatFreshMagnitude, TimeUnit heartBeatFreshTimeUnit, Supplier<Instant> instantSupplier) {
+    this.heartBeatFreshMagnitude = heartBeatFreshMagnitude;
+    this.heartBeatFreshTimeUnit = heartBeatFreshTimeUnit;
     this.instantSupplier = instantSupplier;
     this.lastBeat = new AtomicReference<>(null);
   }
@@ -56,7 +57,8 @@ public class HeartbeatMonitor {
   public boolean isBeating() {
     final Instant instantFetched = lastBeat.get();
     final Instant now = instantSupplier.get();
-    return instantFetched != null && instantFetched.plus(TIME_MAGNITUDE, TIME_UNIT).isAfter(now);
+    final long differenceMillis = heartBeatFreshTimeUnit.toMillis(heartBeatFreshMagnitude);
+    return instantFetched != null && instantFetched.plus(differenceMillis, ChronoUnit.MILLIS).isAfter(now);
   }
 
 }
