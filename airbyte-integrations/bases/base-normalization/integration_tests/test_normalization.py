@@ -74,8 +74,9 @@ def test_normalization(integration_type: str, test_resource_name: str, setup_tes
 def before_all_tests(request):
     change_current_test_dir()
     setup_postgres_db()
+    os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" +  os.environ["PATH"]
     print("Installing dbt dependencies packages\nExecuting: cd ../dbt-project-template/\nExecuting: dbt deps")
-    subprocess.call(["dbt", "deps"], cwd="../dbt-project-template/")
+    subprocess.call(["dbt", "deps"], cwd="../dbt-project-template/", env=os.environ)
     yield
     tear_down_postgres_db()
 
@@ -87,7 +88,6 @@ def setup_postgres_db():
         "host": "localhost",
         "username": "integration-tests",
         "password": "integration-tests",
-        # TODO Find better port?7Z
         "port": port,
         "database": "postgres",
         "schema": target_schema,
@@ -136,6 +136,7 @@ def tear_down_postgres_db():
 def setup_test_path():
     change_current_test_dir()
     print(f"Running from: {pathlib.Path().absolute()}")
+    print(f"Current PATH is: {os.environ['PATH']}")
 
 
 def change_current_test_dir():
@@ -271,7 +272,7 @@ def run_check_command(cwd: str, commands: List[str]) -> bool:
     error_count = 0
     print("Executing: ", " ".join(commands))
     with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
-        process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
         for line in iter(process.stdout.readline, b""):
             f.write(line)
             str_line = line.decode("utf-8")
