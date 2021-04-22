@@ -18,7 +18,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
   # In case of self-hosted EC2 errors, remove the `start-build-runner` block.
   start-build-runner:
-    name: Start self-hosted EC2 runner
+    name: Start build EC2 runner
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -45,6 +45,7 @@ jobs:
     needs: start-build-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-build-runner.outputs.label }} # run the job on the newly created runner
     # runs-on: ubuntu-latest
+    name: Build Airbyte
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -157,7 +158,7 @@ jobs:
           SLACK_FOOTER: ""
   # In case of self-hosted EC2 errors, remove the `stop-build-runner` block.
   stop-build-runner:
-    name: Stop self-hosted EC2 runner
+    name: Stop build EC2 runner
     needs:
       - start-build-runner # required to get output from the start-runner job
       - build # required to wait when the main job is done
