@@ -24,13 +24,12 @@
 
 package io.airbyte.workers.protocols.airbyte;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -114,6 +113,8 @@ class DefaultAirbyteSourceTest {
   @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
   public void testSuccessfulLifecycle() throws Exception {
+    when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
+
     final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
     tap.start(TAP_CONFIG, jobRoot);
 
@@ -127,6 +128,7 @@ class DefaultAirbyteSourceTest {
 
     when(process.isAlive()).thenReturn(false);
     assertTrue(tap.isFinished());
+    verify(heartbeatMonitor, times(2)).beat();
 
     tap.close();
 
@@ -148,7 +150,7 @@ class DefaultAirbyteSourceTest {
       }
     });
 
-    verify(process).waitFor(anyLong(), any());
+    verify(process).exitValue();
   }
 
   @Test

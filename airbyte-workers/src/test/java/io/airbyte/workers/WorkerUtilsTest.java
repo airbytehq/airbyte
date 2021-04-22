@@ -32,7 +32,6 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.jupiter.api.BeforeEach;

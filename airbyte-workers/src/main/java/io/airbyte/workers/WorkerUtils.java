@@ -108,11 +108,9 @@ public class WorkerUtils {
     }
 
     // if we have closed gracefully exit...
-    if (!process.isAlive()) {
-      return;
+    if (process.isAlive()) {
+      forceShutdown.accept(process, forcedShutdownMagnitude, forcedShutdownTimeUnit);
     }
-
-    forceShutdown.accept(process, forcedShutdownMagnitude, forcedShutdownTimeUnit);
   }
 
   @VisibleForTesting
