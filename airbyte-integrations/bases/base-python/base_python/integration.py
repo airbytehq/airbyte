@@ -166,5 +166,7 @@ class Destination(Integration, ABC):
             self._run_check(config_path=parsed_args.config)
         elif cmd == 'write':
             self._run_write(config_path=parsed_args.config, configured_catalog_path=parsed_args.catalog)
+        elif cmd is None:
+            raise Exception(f"No command entered. ")
         else:
             raise Exception(f"Unrecognized command: {cmd}")
