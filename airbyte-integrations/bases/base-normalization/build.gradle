@@ -19,6 +19,11 @@ integrationTest.dependsOn(build)
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs){
     module = "pytest"
     command = "-s integration_tests"
+
+    dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
 }
 
 integrationTest.dependsOn("customIntegrationTestPython")
