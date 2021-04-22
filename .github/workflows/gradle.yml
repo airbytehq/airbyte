@@ -261,34 +261,8 @@ jobs:
           ec2-instance-id: ${{ needs.start-acceptance-test-runner.outputs.ec2-instance-id }}
 
   ## Frontend Test
-  start-frontend-test-runner:
-    name: Start Frontend Test EC2 Runner
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.1.0
-        with:
-          mode: start
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-0b39c2b1b65f75ca8
-          ec2-instance-type: c5.2xlarge
-          subnet-id: subnet-01d35f948346c05bd
-          security-group-id: sg-04399aaf4d51a35f9
   frontend-test:
-    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
-    needs: start-frontend-test-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-frontend-test-runner.outputs.label }} # run the job on the newly created runner
-    # runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     name: Run Frontend Test
     steps:
       - name: Checkout Airbyte
@@ -311,28 +285,6 @@ jobs:
 
       - name: Run End-to-End Frontend Tests
         run: ./tools/bin/e2e_test.sh
-    # In case of self-hosted EC2 errors, remove the `stop-build-runner` block.
-  stop-frontend-test-runner:
-    name: Stop Frontend Test EC2 Runner
-    needs:
-      - start-frontend-test-runner # required to get output from the start-runner job
-      - frontend-test # required to wait when the main job is done
-    runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-      - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.1.0
-        with:
-          mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          label: ${{ needs.start-frontend-test-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-frontend-test-runner.outputs.ec2-instance-id }}
 
 # DISABLED UNTIL WE HAVE TEMPORAL ON KUBE
 #  test_kube:
