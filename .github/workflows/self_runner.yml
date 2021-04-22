@@ -1,162 +1,162 @@
-name: do-the-job
-on: pull_request
-jobs:
-  start-runner:
-    name: Start self-hosted EC2 runner
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.1.0
-        with:
-          mode: start
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-0b39c2b1b65f75ca8
-          ec2-instance-type: c5.4xlarge
-          subnet-id: subnet-01d35f948346c05bd
-          security-group-id: sg-04399aaf4d51a35f9
-  do-the-job:
-    name: Build Airbyte
-    needs: start-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh
-
-      - name: Pip Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/pip
-          key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
-
-      - name: Npm Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.npm
-          key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
-
-      # this intentionally does not use restore-keys so we don't mess with gradle caching
-      - name: Gradle and Python Caching
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            **/.venv
-          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
-
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '14'
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
-
-      - name: Generate Template scaffold
-        run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
-
-      - name: Format
-        run: ./gradlew --no-daemon format --scan
-
-      - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
-
-      - name: Build
-        run: CORE_ONLY=true ./gradlew --no-daemon build --scan
-
-      - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
-
-      - name: Check documentation
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/site/link_checker.sh check_docs
-
-      - name: Get Docker Space
-        run: docker run --rm busybox df -h
-
-      - name: Build Core Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./gradlew --no-daemon composeBuild --scan
-        env:
-          GIT_REVISION: ${{ github.sha }}
-
-      - name: Image Cleanup
-        run: ./tools/bin/clean_images.sh
-
-      # make sure these always run before pushing core docker images
-      - name: Run End-to-End Acceptance Tests
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/bin/acceptance_test.sh
-
-      - name: Push Core Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: |
-          docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          VERSION=dev docker-compose -f docker-compose.build.yaml push
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Slack Notification - Failure
-        if: failure() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: "Build failure"
-          SLACK_FOOTER: ""
-
-      - name: Slack Notification - Success
-        if: success() && github.ref == 'refs/heads/master'
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildbot
-          SLACK_TITLE: "Build Success"
-          SLACK_FOOTER: ""
-
-  stop-runner:
-    name: Stop self-hosted EC2 runner
-    needs:
-      - start-runner # required to get output from the start-runner job
-      - do-the-job # required to wait when the main job is done
-    runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-      - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2.1.0
-        with:
-          mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          label: ${{ needs.start-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
+#name: do-the-job
+#on: pull_request
+#jobs:
+#  start-runner:
+#    name: Start self-hosted EC2 runner
+#    runs-on: ubuntu-latest
+#    outputs:
+#      label: ${{ steps.start-ec2-runner.outputs.label }}
+#      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+#    steps:
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+#          aws-region: us-west-2
+#      - name: Start EC2 runner
+#        id: start-ec2-runner
+#        uses: machulav/ec2-github-runner@v2.1.0
+#        with:
+#          mode: start
+#          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+#          ec2-image-id: ami-0b39c2b1b65f75ca8
+#          ec2-instance-type: c5.4xlarge
+#          subnet-id: subnet-01d35f948346c05bd
+#          security-group-id: sg-04399aaf4d51a35f9
+#  do-the-job:
+#    name: Build Airbyte
+#    needs: start-runner # required to start the main job when the runner is ready
+#    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
+#    steps:
+#      - name: Checkout Airbyte
+#        uses: actions/checkout@v2
+#
+#      - name: Check images exist
+#        run: ./tools/bin/check_images_exist.sh
+#
+#      - name: Pip Caching
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.cache/pip
+#          key: ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+#          restore-keys: |
+#            ${{ secrets.CACHE_VERSION }}-pip-${{ runner.os }}-
+#
+#      - name: Npm Caching
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.npm
+#          key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+#          restore-keys: |
+#            ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
+#
+#      # this intentionally does not use restore-keys so we don't mess with gradle caching
+#      - name: Gradle and Python Caching
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.gradle/caches
+#            ~/.gradle/wrapper
+#            **/.venv
+#          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+#
+#      - uses: actions/setup-java@v1
+#        with:
+#          java-version: '14'
+#
+#      - uses: actions/setup-node@v1
+#        with:
+#          node-version: '14.7'
+#
+#      - uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.7'
+#
+#      - name: Generate Template scaffold
+#        run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
+#
+#      - name: Format
+#        run: ./gradlew --no-daemon format --scan
+#
+#      - name: Ensure no file change
+#        run: git status --porcelain && test -z "$(git status --porcelain)"
+#
+#      - name: Build
+#        run: CORE_ONLY=true ./gradlew --no-daemon build --scan
+#
+#      - name: Ensure no file change
+#        run: git status --porcelain && test -z "$(git status --porcelain)"
+#
+#      - name: Check documentation
+#        if: success() && github.ref == 'refs/heads/master'
+#        run: ./tools/site/link_checker.sh check_docs
+#
+#      - name: Get Docker Space
+#        run: docker run --rm busybox df -h
+#
+#      - name: Build Core Docker Images
+#        if: success() && github.ref == 'refs/heads/master'
+#        run: ./gradlew --no-daemon composeBuild --scan
+#        env:
+#          GIT_REVISION: ${{ github.sha }}
+#
+#      - name: Image Cleanup
+#        run: ./tools/bin/clean_images.sh
+#
+#      # make sure these always run before pushing core docker images
+#      - name: Run End-to-End Acceptance Tests
+#        if: success() && github.ref == 'refs/heads/master'
+#        run: ./tools/bin/acceptance_test.sh
+#
+#      - name: Push Core Docker Images
+#        if: success() && github.ref == 'refs/heads/master'
+#        run: |
+#          docker login -u airbytebot -p ${DOCKER_PASSWORD}
+#          VERSION=dev docker-compose -f docker-compose.build.yaml push
+#        env:
+#          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+#
+#      - name: Slack Notification - Failure
+#        if: failure() && github.ref == 'refs/heads/master'
+#        uses: rtCamp/action-slack-notify@master
+#        env:
+#          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+#          SLACK_USERNAME: Buildozer
+#          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+#          SLACK_COLOR: DC143C
+#          SLACK_TITLE: "Build failure"
+#          SLACK_FOOTER: ""
+#
+#      - name: Slack Notification - Success
+#        if: success() && github.ref == 'refs/heads/master'
+#        uses: rtCamp/action-slack-notify@master
+#        env:
+#          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
+#          SLACK_USERNAME: Buildbot
+#          SLACK_TITLE: "Build Success"
+#          SLACK_FOOTER: ""
+#
+#  stop-runner:
+#    name: Stop self-hosted EC2 runner
+#    needs:
+#      - start-runner # required to get output from the start-runner job
+#      - do-the-job # required to wait when the main job is done
+#    runs-on: ubuntu-latest
+#    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+#    steps:
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+#          aws-region: us-west-2
+#      - name: Stop EC2 runner
+#        uses: machulav/ec2-github-runner@v2.1.0
+#        with:
+#          mode: stop
+#          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+#          label: ${{ needs.start-runner.outputs.label }}
+#          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}

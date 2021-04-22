@@ -16,7 +16,7 @@ jobs:
         run: ./tools/bin/ci_integration_workflow_launcher.sh
         env:
           GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
-  # remove this block in case of errors
+  # In case of self-hosted EC2 errors, remove the `start-build-runner` block.
   start-build-runner:
     name: Start self-hosted EC2 runner
     runs-on: ubuntu-latest
@@ -41,9 +41,10 @@ jobs:
           subnet-id: subnet-01d35f948346c05bd
           security-group-id: sg-04399aaf4d51a35f9
   build:
-    # replace this with this block in case of errors
+    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
+    # runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -154,6 +155,7 @@ jobs:
           SLACK_USERNAME: Buildbot
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
+  # In case of self-hosted EC2 errors, remove the `stop-build-runner` block.
   stop-build-runner:
     name: Stop self-hosted EC2 runner
     needs:
