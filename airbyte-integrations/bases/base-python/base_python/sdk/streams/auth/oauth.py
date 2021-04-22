@@ -77,12 +77,3 @@ class Oauth2Authenticator(HttpAuthenticator):
             return response_json['access_token'], response_json['expires_in']
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
-
-
-authenticator = Oauth2Authenticator(
-    token_refresh_endpoint=f'https://{okta_domain}/oauth2/default/v1/token',
-    client_id=client_id,
-    client_secret=client_secret,
-    refresh_token=refresh_token
-)
-
