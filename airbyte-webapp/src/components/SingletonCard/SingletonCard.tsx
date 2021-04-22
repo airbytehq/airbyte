@@ -1,14 +1,27 @@
 import React from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 import { H5 } from "components/Titles";
+import ErrorSign from "./components/ErrorSign";
 
-type IProps = {
+type SingletonCardProps = {
   title: string | React.ReactNode;
   text?: string | React.ReactNode;
+  hasError?: boolean;
 };
 
-const Singleton = styled.div`
+export const SlideUpAnimation = keyframes`
+  0% {
+    translate(-50%, -100%);
+    bottom: 0;
+  }
+  100% {
+    translate(-50%, 0);
+    bottom: 49px;
+  }
+`;
+
+const Singleton = styled.div<{ hasError?: boolean }>`
   position: fixed;
   bottom: 49px;
   left: 50%;
@@ -16,16 +29,22 @@ const Singleton = styled.div`
 
   padding: 25px 25px 22px;
 
-  background: ${({ theme }) => theme.lightPrimaryColor};
+  background: ${({ theme, hasError }) =>
+    hasError ? theme.lightDangerColor : theme.lightPrimaryColor};
   border: 1px solid ${({ theme }) => theme.greyColor20};
   box-shadow: 0 1px 2px ${({ theme }) => theme.shadowColor};
   border-radius: 8px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  animation: ${SlideUpAnimation} 0.25s linear;
 `;
 
-const Title = styled(H5)`
-  margin-bottom: 5px;
-
-  color: ${({ theme }) => theme.primaryColor};
+const Title = styled(H5)<{ hasError?: boolean }>`
+  color: ${({ theme, hasError }) =>
+    hasError ? theme.dangerColor : theme.primaryColor};
 
   font-style: normal;
   font-weight: bold;
@@ -40,12 +59,16 @@ const Text = styled.div`
   font-weight: normal;
   font-size: 14px;
   line-height: 17px;
+  margin-top: 5px;
 `;
 
-const SingletonCard: React.FC<IProps> = (props) => (
-  <Singleton>
-    <Title>{props.title}</Title>
-    <Text>{props.text}</Text>
+const SingletonCard: React.FC<SingletonCardProps> = (props) => (
+  <Singleton hasError={props.hasError}>
+    {props.hasError && <ErrorSign />}
+    <div>
+      <Title hasError={props.hasError}>{props.title}</Title>
+      {props.text && <Text>{props.text}</Text>}
+    </div>
   </Singleton>
 );
 

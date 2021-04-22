@@ -24,10 +24,7 @@ function findNotification(
 }
 
 export const initialState: NotificationServiceState = {
-  notifications: [
-    { id: "1", title: "123", isError: true },
-    { id: "3", title: "Text text" },
-  ],
+  notifications: [],
 };
 
 export const notificationServiceReducer = createReducer<

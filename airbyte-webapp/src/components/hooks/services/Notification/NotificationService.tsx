@@ -39,6 +39,7 @@ function NotificationService({ children }: { children: React.ReactNode }) {
         <SingletonCard
           title={state.notifications[0].title}
           text={state.notifications[0].text}
+          hasError={state.notifications[0].isError}
         />
       )}
     </>
