@@ -19,7 +19,7 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github-singer
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-github-singer
   icon: github.svg
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
@@ -31,7 +31,7 @@
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-postgres
   icon: postgresql.svg
 - sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
@@ -239,12 +239,11 @@
   dockerRepository: airbyte/source-tempo
   dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-tempo
-# bring this back once https://github.com/airbytehq/airbyte/issues/2902 is done
-#- sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
-#  name: Smartsheets
-#  dockerRepository: airbyte/source-smartsheets
-#  dockerImageTag: 0.1.1
-#  documentationUrl: https://hub.docker.com/r/airbyte/source-smartsheets
+- sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
+  name: Smartsheets
+  dockerRepository: airbyte/source-smartsheets
+  dockerImageTag: 0.1.1
+  documentationUrl: https://hub.docker.com/r/airbyte/source-smartsheets
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   name: Oracle DB
   dockerRepository: airbyte/source-oracle
@@ -253,7 +252,7 @@
 - sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   name: Zendesk Talk
   dockerRepository: airbyte/source-zendesk-talk
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-talk
 - sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
   name: Quickbooks
