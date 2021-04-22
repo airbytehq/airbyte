@@ -1,19 +1,23 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import { H5 } from "components/Titles";
 import ErrorSign from "./components/ErrorSign";
+import Button from "components/Button";
 
 type SingletonCardProps = {
   title: string | React.ReactNode;
   text?: string | React.ReactNode;
   hasError?: boolean;
+  onClose?: () => void;
 };
 
 export const SlideUpAnimation = keyframes`
   0% {
     translate(-50%, -100%);
-    bottom: 0;
+    bottom: -49px;
   }
   100% {
     translate(-50%, 0);
@@ -62,6 +66,10 @@ const Text = styled.div`
   margin-top: 5px;
 `;
 
+const CloseButton = styled(Button)`
+  margin-left: 10px;
+`;
+
 const SingletonCard: React.FC<SingletonCardProps> = (props) => (
   <Singleton hasError={props.hasError}>
     {props.hasError && <ErrorSign />}
@@ -69,6 +77,11 @@ const SingletonCard: React.FC<SingletonCardProps> = (props) => (
       <Title hasError={props.hasError}>{props.title}</Title>
       {props.text && <Text>{props.text}</Text>}
     </div>
+    {props.onClose && (
+      <CloseButton iconOnly onClick={props.onClose}>
+        <FontAwesomeIcon icon={faTimes} />
+      </CloseButton>
+    )}
   </Singleton>
 );
 

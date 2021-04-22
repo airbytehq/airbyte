@@ -3,6 +3,7 @@ export type Notification = {
   title: string;
   text?: string;
   isError?: boolean;
+  onClose: () => void;
 };
 
 export type NotificationServiceApi = {

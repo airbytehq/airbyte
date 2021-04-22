@@ -34,14 +34,15 @@ function NotificationService({ children }: { children: React.ReactNode }) {
       <notificationServiceContext.Provider value={notificationService}>
         {children}
       </notificationServiceContext.Provider>
-      {state.notifications && state.notifications.length && (
+      {state.notifications && state.notifications.length ? (
         // Show only first notification
         <SingletonCard
           title={state.notifications[0].title}
           text={state.notifications[0].text}
           hasError={state.notifications[0].isError}
+          onClose={state.notifications[0].onClose}
         />
-      )}
+      ) : null}
     </>
   );
 }
