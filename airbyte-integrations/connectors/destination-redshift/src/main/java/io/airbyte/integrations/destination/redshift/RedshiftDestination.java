@@ -56,7 +56,7 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   public static DestinationType getTypeFromConfig(JsonNode config) {
-    if (RedshiftCopyS3Destination.isPresent(config)) {
+    if (isCopy(config)) {
       return DestinationType.COPY_S3;
     } else {
       return DestinationType.INSERT;
@@ -70,6 +70,26 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     return ImmutableMap.of(
         DestinationType.INSERT, insertDestination,
         DestinationType.COPY_S3, copyS3Destination);
+  }
+
+  public static boolean isCopy(JsonNode config) {
+    var bucketNode = config.get("s3_bucket_name");
+    var regionNode = config.get("s3_bucket_region");
+    var accessKeyIdNode = config.get("access_key_id");
+    var secretAccessKeyNode = config.get("secret_access_key");
+
+    // Since region is a Json schema enum with an empty string default, we consider the empty string an
+    // unset field.
+    var emptyRegion = regionNode == null || regionNode.asText().equals("");
+
+    if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
+      return false;
+    }
+
+    if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null) {
+      throw new RuntimeException("Error: Partially missing S3 Configuration.");
+    }
+    return true;
   }
 
   public static void main(String[] args) throws Exception {

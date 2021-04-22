@@ -92,24 +92,4 @@ public class RedshiftCopyS3Destination extends CopyDestination {
         config.get("s3_bucket_region").asText());
   }
 
-  public static boolean isPresent(JsonNode config) {
-    var bucketNode = config.get("s3_bucket_name");
-    var regionNode = config.get("s3_bucket_region");
-    var accessKeyIdNode = config.get("access_key_id");
-    var secretAccessKeyNode = config.get("secret_access_key");
-
-    // Since region is a Json schema enum with an empty string default, we consider the empty string an
-    // unset field.
-    var emptyRegion = regionNode == null || regionNode.asText().equals("");
-
-    if (bucketNode == null && emptyRegion && accessKeyIdNode == null && secretAccessKeyNode == null) {
-      return false;
-    }
-
-    if (bucketNode == null || regionNode == null || accessKeyIdNode == null || secretAccessKeyNode == null) {
-      throw new RuntimeException("Error: Partially missing S3 Configuration.");
-    }
-    return true;
-  }
-
 }

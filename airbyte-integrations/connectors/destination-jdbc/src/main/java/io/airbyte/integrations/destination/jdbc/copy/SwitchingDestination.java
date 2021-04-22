@@ -39,7 +39,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SwitchingDestination<T extends Enum<T>> extends BaseConnector implements Destination {
+public class SwitchingDestination<T extends Enum<T>> extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SwitchingDestination.class);
 
