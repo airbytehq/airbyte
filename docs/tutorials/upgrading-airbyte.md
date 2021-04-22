@@ -36,13 +36,13 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    --target-version <version you are migrating to or empty for latest>
    ```
 
-Here's an example of what might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
+   Here's an example of what might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
-```bash
-docker run --rm -v /tmp:/config airbyte/migration:0.21.0-alpha --\
-  --input /config/airbyte_archive.tar.gz\
-  --output /config/airbyte_archive_migrated.tar.gz
-```
+   ```bash
+   docker run --rm -v /tmp:/config airbyte/migration:0.21.0-alpha --\
+   --input /config/airbyte_archive.tar.gz\
+   --output /config/airbyte_archive_migrated.tar.gz
+   ```
 
 {% hint style="info" %}
 It may seem confusing that you need to specify the target version twice. The version passed as `--target-version` specifies the version to which the data will be migrated. Specifying the target version in the docker container tag makes sure that you are pulling an image that at least has the migration for the version you want. Technically the version used in the docker tag can be equal to or greater than the version you are upgrading to. For the simplicity of this tutorial we have them match.
