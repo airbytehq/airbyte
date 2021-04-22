@@ -1,0 +1,18 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-json",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Local JSONL Spec",
+    "type": "object",
+    "required": ["output_directory"],
+    "additionalProperties": false,
+    "properties": {
+      "output_directory": {
+        "title": "Output Directory",
+        "description": "Path to the directory where json files will be written. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/local-json\">docs</a>",
+        "type": "string",
+        "examples": ["/json_data"]
+      }
+    }
+  }
+}
