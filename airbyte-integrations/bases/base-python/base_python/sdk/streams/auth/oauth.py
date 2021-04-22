@@ -77,3 +77,4 @@ class Oauth2Authenticator(HttpAuthenticator):
             return response_json['access_token'], response_json['expires_in']
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
+
