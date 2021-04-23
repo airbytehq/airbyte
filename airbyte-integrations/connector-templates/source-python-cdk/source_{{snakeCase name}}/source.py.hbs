@@ -29,6 +29,7 @@ import requests
 
 from base_python import AbstractSource, HttpStream, Stream
 
+## Basic Stream
 class {{properCase name}}Stream(HttpStream, ABC):
     # TODO: Fill in the url base. Required.
     url_base = 'fill-in-this-base'
@@ -61,6 +62,9 @@ class MassPotatoGun({{properCase name}}Stream):
         """
         yield {}
 
+
+## Incremental Stream
+
 class Source{{properCase name}}(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -74,6 +78,6 @@ class Source{{properCase name}}(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         TODO: Replace the MassPotatoGun stream when your own streams. The config parameter here exists to allow one to access user-given configuration
-        when constructing streams. This method should also contain Required.
+        when constructing streams. Required.
         """
         return [MassPotatoGun()]
