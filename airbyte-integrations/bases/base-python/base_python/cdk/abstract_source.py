@@ -40,9 +40,9 @@ from airbyte_protocol import (
     SyncMode,
 )
 from airbyte_protocol import Type as MessageType
+from base_python.cdk.streams.core import Stream
 from base_python.integration import Source
 from base_python.logger import AirbyteLogger
-from base_python.cdk.streams.core import Stream
 
 
 class AbstractSource(Source, ABC):
