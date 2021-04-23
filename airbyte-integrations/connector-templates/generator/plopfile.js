@@ -86,7 +86,7 @@ module.exports = function (plop) {
   });
 
   plop.setGenerator('source-python-singer', {
-    description: 'Generate a Singer Tap Airbyte Source.',
+    description: 'Generate a Singer-Tap-based Airbyte Source.',
     prompts: [
       {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"', filter: function (name) {
         return name.endsWith('-singer') ? name.replace(/-singer$/, '') : name;
