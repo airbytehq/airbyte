@@ -48,7 +48,6 @@ class AbstractSource(Source, ABC):
     """
     Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
     in this class to create an Airbyte Specification compliant Source. 
-    User should implement this alongside a `HTTPStream` class.
     """
 
     @abstractmethod
