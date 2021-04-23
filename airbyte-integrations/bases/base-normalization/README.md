@@ -5,11 +5,11 @@ Related documentation on normalization is available here:
 - [architecture / Basic Normalization](../../../docs/architecture/basic-normalization.md)
 * [tutorials / custom DBT normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
 
-## Testing normalization
+# Testing normalization
 
 Below are short descriptions of the kind of tests that may be affected by changes to the normalization code.
 
-### Unit Tests
+## Unit Tests
 
 Unit tests are automatically included when building the normalization project.
 But you could invoke them explicitly by running the following commands for example:
@@ -63,7 +63,7 @@ Deciding on how to truncate (in the middle) are being verified in these tests.
 In this instance, both strings ends up as:`Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
 and can potentially cause a collision in table names. Note that dealing with such collisions is not part of `destination_name_transformer` but of the `stream_processor`.
 
-### Integration Tests
+## Integration Tests
 
 With Gradle:
 
@@ -83,7 +83,7 @@ Some test suites can be selected to be versioned control in Airbyte git reposito
 This is useful to see direct impacts of code changes on downstream files generated or compiled
 by normalization and dbt (directly in PR too).
 
-We would typically chose small and meaningful test suites to include in git while others more complex tests
+We would typically choose small and meaningful test suites to include in git while others more complex tests
 can be left out. They would still be run in a temporary directory and thrown away at the end of the tests.
 
 They are defined, each one of them, in a separate directory in the resource folder.
@@ -105,21 +105,46 @@ For example, below, we would have 2 different tests "suites" with this hierarchy
           ├── catalog.json
           └── messages.txt
 
-#### catalog.json
+### Integration Test Input:
+
+#### catalog.json:
 
 The catalog.json is the main input for normalization from which the dbt models files are being
 generated from as it describes in JSON Schema format what the data structure is.
 
-#### messages.txt
+#### messages.txt:
+
+The `messages.txt` are serialized Airbyte JSON records that should be sent to the destination as if they were
+transmitted by a source. In this integration test, the files is read and "cat" through to the docker image of 
+each destination connectors to populate `_airbyte_raw_tables`. These tables are finally used as input
+data for dbt to run from.
+
+### Integration Test Execution Flow:
+
+1. Preparing test execution workspace folder from dbt project template
+2. Generate dbt profiles.yml to connect to destination
+3. Populate raw tables by running destination connectors 
+4. Normalization generating dbt models files
+5. dbt run
+6. dbt tests
+7. optional checks
+
+### Integration Test Checks:
+
+#### schema tests:
+
+https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests
+https://docs.getdbt.com/docs/guides/writing-custom-schema-tests
+
+#### data tests:
+
+https://docs.getdbt.com/docs/building-a-dbt-project/tests#data-tests
+
+### Integration Test Outputs:
 
 
-#### data tests
 
-
-#### schema tests
-
-
-### Standard Destination Tests
+## Standard Destination Tests
 
 Generally, to invoke standard destination tests, you run with gradle using:
 
@@ -127,7 +152,7 @@ Generally, to invoke standard destination tests, you run with gradle using:
 
 For more details and options, you can also refer to the [testing connectors docs](../../../docs/contributing-to-airbyte/building-new-connector/testing-connectors.md).
 
-### Acceptance Tests
+## Acceptance Tests
 
 Please refer to the [developing docs](../../../docs/contributing-to-airbyte/developing-locally.md) on how to run Acceptance Tests.
 
