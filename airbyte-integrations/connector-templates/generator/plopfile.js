@@ -25,42 +25,20 @@ module.exports = function (plop) {
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
-  const pythonCdkSourceInputRoot = '../source-python-cdk';
+  const httpApiInputRoot = '../source-python-cdk';
 
   const outputDir = '../../connectors';
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
   const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
-  const pythonCdkSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
+  const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
 
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
 
-  plop.setGenerator('source-python-cdk', {
-    description: 'Generate a Python CDK Airbyte source.',
-    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
-    actions: [
-      {
-        abortOnFail: true,
-        type:'addMany',
-        destination: pythonCdkSourceOutputRoot,
-        base: pythonCdkSourceInputRoot,
-        templateFiles: `${pythonCdkSourceInputRoot}/**/**`,
-      },
-      // plop doesn't add dotfiles by default so we manually add them
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${pythonCdkSourceInputRoot}/.dockerignore.hbs`,
-        path: `${pythonCdkSourceOutputRoot}/.dockerignore`
-      },
-      {type: 'emitSuccess', outputPath: pythonCdkSourceOutputRoot}
-    ]
-  });
-
-  plop.setGenerator('source-python', {
-    description: 'Generate a Python Airbyte Source',
+  plop.setGenerator('Python Source', {
+    description: 'Generate a minimal Python Airbyte Source Connector that works with any kind of data source',
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
     actions: [
          {
@@ -85,7 +63,29 @@ module.exports = function (plop) {
       {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
   });
 
-  plop.setGenerator('source-python-singer', {
+  plop.setGenerator('Python HTTP API Source', {
+    description: 'Generate a source that pulls data from a synchronous HTTP API.',
+    prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
+    actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: httpApiOutputRoot,
+        base: httpApiInputRoot,
+        templateFiles: `${httpApiInputRoot}/**/**`,
+      },
+      // plop doesn't add dotfiles by default so we manually add them
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${httpApiInputRoot}/.dockerignore.hbs`,
+        path: `${httpApiOutputRoot}/.dockerignore`
+      },
+      {type: 'emitSuccess', outputPath: httpApiOutputRoot}
+    ]
+  });
+
+  plop.setGenerator('Python Singer Source', {
     description: 'Generate a Singer Tap Airbyte Source.',
     prompts: [
       {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"', filter: function (name) {
