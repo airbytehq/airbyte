@@ -41,6 +41,7 @@ setuptools.setup(
         "requests==2.25.1",
         "backoff==1.10.0",
         "pytest",
+        "pendulum",
     ],
     entry_points={
         "console_scripts": ["base-python=base_python.entrypoint:main"],

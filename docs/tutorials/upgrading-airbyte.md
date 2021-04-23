@@ -27,6 +27,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    ```
 
 3. Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a gzipped tarball of all of your Airbyte configuration data and sync history. _Note: Any secrets that you have entered into Airbyte will be in this archive, so you should treat it as secret._
+
 4. Migrate the archive to the new version using the Migration App \(packaged in a docker container\).
 
    ```bash
@@ -36,43 +37,41 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    --target-version <version you are migrating to or empty for latest>
    ```
 
-Here's an example of what might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
+   Here's an example of what might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
-```bash
-docker run --rm -v /tmp:/config airbyte/migration:0.21.0-alpha --\
-  --input /config/airbyte_archive.tar.gz\
-  --output /config/airbyte_archive_migrated.tar.gz
-```
+   ```bash
+   docker run --rm -v /tmp:/config airbyte/migration:0.21.1-alpha --\
+   --input /config/airbyte_archive.tar.gz\
+   --output /config/airbyte_archive_migrated.tar.gz
+   ```
 
-{% hint style="info" %}
-It may seem confusing that you need to specify the target version twice. The version passed as `--target-version` specifies the version to which the data will be migrated. Specifying the target version in the docker container tag makes sure that you are pulling an image that at least has the migration for the version you want. Technically the version used in the docker tag can be equal to or greater than the version you are upgrading to. For the simplicity of this tutorial we have them match.
-{% endhint %}
+   It may seem confusing that you need to specify the target version twice. The version passed as `--target-version` specifies the version to which the data will be migrated. Specifying the target version in the docker container tag makes sure that you are pulling an image that at least has the migration for the version you want. Technically the version used in the docker tag can be equal to or greater than the version you are upgrading to. For the simplicity of this tutorial we have them match.
 
-1. Turn off Airbyte fully.
+5. Turn off Airbyte fully.
 
    ```text
    docker-compose down
    ```
 
-2. Delete the existing Airbyte docker volumes. _Note: Make sure you have already exported your data \(step 3\). This command is going to delete your data in Docker!_
+6. Delete the existing Airbyte docker volumes. _Note: Make sure you have already exported your data \(step 3\). This command is going to delete your data in Docker!_
 
    ```bash
    docker volume rm $(docker volume ls -q | grep airbyte)
    ```
 
-3. Upgrade the docker instance to new version.
+7. Upgrade the docker instance to new version.
 
    i. If you are running Airbyte from a cloned version of the Airbyte repo and want to use the current most recent stable version, just `git pull`.
 
    ii. If you are running Airbyte from a `.env`, edit the `VERSION` field in that file to be the desired version.
 
-4. Bring Airbyte back online.
+8. Bring Airbyte back online.
 
    ```text
    docker-compose up
    ```
 
-5. Complete Preferences section. In the subsequent setup page click "Skip Onboarding". Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Import. This will prompt you to upload the migrated archive to Airbyte. After this completes, your upgraded Airbyte instance will now be running with all of your original configuration.
+9. Complete Preferences section. In the subsequent setup page click "Skip Onboarding". Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Import. This will prompt you to upload the migrated archive to Airbyte. After this completes, your upgraded Airbyte instance will now be running with all of your original configuration.
 
 This step will throw an exception if the data you are trying to upload does not match the version of Airbyte that is running.
 

@@ -26,7 +26,6 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -38,18 +37,17 @@ import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionRead;
 import io.airbyte.api.model.DestinationDefinitionReadList;
 import io.airbyte.api.model.DestinationDefinitionUpdate;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
-import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,7 +91,7 @@ class DestinationDefinitionsHandlerTest {
 
   @Test
   @DisplayName("listDestinationDefinition should return the right list")
-  void testListDestinations() throws JsonValidationException, IOException, ConfigNotFoundException, URISyntaxException {
+  void testListDestinations() throws JsonValidationException, IOException, URISyntaxException {
     final StandardDestinationDefinition destination2 = generateDestination();
 
     when(configRepository.listStandardDestinationDefinitions()).thenReturn(Lists.newArrayList(destination, destination2));
@@ -104,7 +102,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .icon(LoadIcon(destination.getIcon()));
+        .icon(loadIcon(destination.getIcon()));
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
         .destinationDefinitionId(destination2.getDestinationDefinitionId())
@@ -112,7 +110,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerRepository(destination2.getDockerRepository())
         .dockerImageTag(destination2.getDockerImageTag())
         .documentationUrl(new URI(destination2.getDocumentationUrl()))
-        .icon(LoadIcon(destination2.getIcon()));
+        .icon(loadIcon(destination2.getIcon()));
 
     final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationHandler.listDestinationDefinitions();
 
@@ -133,7 +131,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .icon(LoadIcon(destination.getIcon()));
+        .icon(loadIcon(destination.getIcon()));
 
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
         .destinationDefinitionId(destination.getDestinationDefinitionId());
@@ -145,7 +143,7 @@ class DestinationDefinitionsHandlerTest {
 
   @Test
   @DisplayName("createDestinationDefinition should correctly create a destinationDefinition")
-  void testCreateDestinationDefinition() throws URISyntaxException, ConfigNotFoundException, IOException, JsonValidationException {
+  void testCreateDestinationDefinition() throws URISyntaxException, IOException, JsonValidationException {
     final StandardDestinationDefinition destination = generateDestination();
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     final DestinationDefinitionCreate create = new DestinationDefinitionCreate()
@@ -161,7 +159,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
         .destinationDefinitionId(destination.getDestinationDefinitionId())
-        .icon(LoadIcon(destination.getIcon()));
+        .icon(loadIcon(destination.getIcon()));
 
     final DestinationDefinitionRead actualRead = destinationHandler.createDestinationDefinition(create);
 
@@ -194,52 +192,29 @@ class DestinationDefinitionsHandlerTest {
 
     @Test
     @DisplayName("should return the latest list")
-    void testCorrect() throws JsonValidationException, IOException, ConfigNotFoundException, InterruptedException {
-      final var goodYamlString = "- destinationDefinitionId: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImageTag: 0.1.4\n"
-          + "  documentationUrl: https://docs.airbyte.io/integrations/destinations/local-json";
-      when(githubStore.getLatestDestinations()).thenReturn(goodYamlString);
+    void testCorrect() throws IOException, InterruptedException {
+      final StandardDestinationDefinition destinationDefinition = generateDestination();
+      when(githubStore.getLatestDestinations()).thenReturn(Collections.singletonList(destinationDefinition));
 
       final var destinationDefinitionReadList = destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions();
       assertEquals(1, destinationDefinitionReadList.size());
 
-      final var localJsonDefinition = destinationDefinitionReadList.get(0);
-      assertEquals("Local JSON", localJsonDefinition.getName());
+      final var destinationDefinitionRead = destinationDefinitionReadList.get(0);
+      assertEquals(DestinationDefinitionsHandler.buildDestinationDefinitionRead(destinationDefinition), destinationDefinitionRead);
     }
 
     @Test
-    @DisplayName("should fail if http method times out")
-    void testHttpTimeout() throws JsonValidationException, IOException, ConfigNotFoundException, InterruptedException {
+    @DisplayName("returns empty collection if cannot find latest definitions")
+    void testHttpTimeout() throws IOException, InterruptedException {
       when(githubStore.getLatestDestinations()).thenThrow(new IOException());
-      assertThrows(KnownException.class, () -> destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions());
-    }
-
-    @Test
-    @DisplayName("should fail if no data is received")
-    void testEmptyFileReceived() throws JsonValidationException, IOException, ConfigNotFoundException, InterruptedException {
-      when(githubStore.getLatestDestinations()).thenReturn("");
-      assertThrows(KnownException.class, () -> destinationHandler.listLatestDestinationDefinitions());
-    }
-
-    @Test
-    @DisplayName("should fail if bad data is received")
-    void testBadFileReceived() throws JsonValidationException, IOException, ConfigNotFoundException, InterruptedException {
-      final var badYamlString = "- sourceDefinitionid: a625d593-bba5-4a1c-a53d-2d246268a816\n"
-          + "  name: Local JSON\n"
-          + "  dockerRepository: airbyte/destination-local-json\n"
-          + "  dockerImage";
-      when(githubStore.getLatestDestinations()).thenReturn(badYamlString);
-
-      assertThrows(KnownException.class, () -> destinationHandler.listLatestDestinationDefinitions());
+      assertEquals(0, destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions().size());
     }
 
   }
 
-  private static String LoadIcon(String name) {
+  private static String loadIcon(String name) {
     try {
-      return name == null ? null : MoreResources.readResource("icons/" + name);
+      return DestinationDefinitionsHandler.loadIcon(name);
     } catch (IOException e) {
       return "Error";
     }

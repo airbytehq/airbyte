@@ -614,18 +614,25 @@ from {{ from_table }}
         """
         tables_registry = union_registries(self.tables_registry, self.local_registry)
         new_table_name = self.normalized_stream_name()
+        schema = self.get_schema(is_intermediate)
         if not is_intermediate and self.parent is None:
             if suffix:
                 norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
                 new_table_name = new_table_name + norm_suffix
-            # Top-level stream has priority on table_names
-            if self.schema in tables_registry and new_table_name in tables_registry[self.schema]:
-                raise ValueError(f"Conflict: Table name {new_table_name} in schema {self.schema} already exists!")
         elif not self.parent:
             new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
         else:
             new_table_name = get_table_name(self.name_transformer, "_".join(self.json_path[:-1]), new_table_name, suffix, self.json_path)
         new_table_name = self.name_transformer.normalize_table_name(new_table_name, False, False)
+
+        if schema in tables_registry and new_table_name in tables_registry[schema]:
+            # Check if new_table_name already exists. If yes, then add hash of the stream name to it
+            new_table_name = self.name_transformer.normalize_table_name(f"{new_table_name}_{hash_name(self.stream_name)}", False, False)
+            if new_table_name in tables_registry[schema]:
+                raise ValueError(
+                    f"Conflict: Table name {new_table_name} in schema {schema} already exists! (is there a hashing collision or duplicate streams?)"
+                )
+
         if not is_intermediate:
             self.final_table_name = new_table_name
         return new_table_name
@@ -755,9 +762,12 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
 
 
 def hash_json_path(json_path: List[str]) -> str:
-    lineage = "&airbyte&".join(json_path)
+    return hash_name("&airbyte&".join(json_path))
+
+
+def hash_name(input: str) -> str:
     h = hashlib.sha1()
-    h.update(lineage.encode("utf-8"))
+    h.update(input.encode("utf-8"))
     return h.hexdigest()[:3]
 
 
