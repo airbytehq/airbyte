@@ -91,7 +91,7 @@ class AbstractSource(Source, ABC):
     def read(
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
-        """Implement the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
+        """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         connector_state = copy.deepcopy(state or {})
         logger.info(f"Starting syncing {self.name}")
         # TODO assert all streams exist in the connector
