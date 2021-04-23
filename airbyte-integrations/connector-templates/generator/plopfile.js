@@ -37,32 +37,6 @@ module.exports = function (plop) {
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
 
-  plop.setGenerator('Python Source', {
-    description: 'Generate a minimal Python Airbyte Source Connector that works with any kind of data source',
-    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
-    actions: [
-         {
-         abortOnFail: true,
-         type:'addMany',
-         destination: pythonSourceOutputRoot,
-         base: pythonSourceInputRoot,
-         templateFiles: `${pythonSourceInputRoot}/**/**`,
-       },
-       {
-         type:'add',
-         abortOnFail: true,
-         templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
-         path: `${pythonSourceOutputRoot}/.gitignore`
-       },
-       {
-         type:'add',
-         abortOnFail: true,
-         templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
-         path: `${pythonSourceOutputRoot}/.dockerignore`
-       },
-      {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
-  });
-
   plop.setGenerator('Python HTTP API Source', {
     description: 'Generate a source that pulls data from a synchronous HTTP API.',
     prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
@@ -86,7 +60,7 @@ module.exports = function (plop) {
   });
 
   plop.setGenerator('Python Singer Source', {
-    description: 'Generate a Singer Tap Airbyte Source.',
+    description: 'Generate a Singer-tap-based Airbyte Source.',
     prompts: [
       {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"', filter: function (name) {
         return name.endsWith('-singer') ? name.replace(/-singer$/, '') : name;
@@ -116,6 +90,32 @@ module.exports = function (plop) {
         {type: 'emitSuccess', outputPath: singerSourceOutputRoot},
     ]
   });
+
+    plop.setGenerator('Python Source', {
+        description: 'Generate a minimal Python Airbyte Source Connector that works with any kind of data source. Use this if none of the other Python templates serve your use case.',
+        prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+        actions: [
+            {
+                abortOnFail: true,
+                type:'addMany',
+                destination: pythonSourceOutputRoot,
+                base: pythonSourceInputRoot,
+                templateFiles: `${pythonSourceInputRoot}/**/**`,
+            },
+            {
+                type:'add',
+                abortOnFail: true,
+                templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
+                path: `${pythonSourceOutputRoot}/.gitignore`
+            },
+            {
+                type:'add',
+                abortOnFail: true,
+                templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
+                path: `${pythonSourceOutputRoot}/.dockerignore`
+            },
+            {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
+    });
 
   plop.setGenerator('Generic Source', {
       description: 'Use if none of the other templates apply to your use case.',
