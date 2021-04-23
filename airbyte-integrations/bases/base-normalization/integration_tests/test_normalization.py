@@ -32,6 +32,7 @@ import socket
 import string
 import subprocess
 import sys
+import tempfile
 import threading
 from typing import Any, Dict, List
 
@@ -40,13 +41,24 @@ from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor
 from normalization.transform_config.transform import TransformConfig
 
+temporary_folders = set()
 target_schema = "test_normalization"
 container_name = "test_normalization_db_" + "".join(random.choice(string.ascii_lowercase) for i in range(3))
+
+# dbt models and final sql outputs from the following git versionned tests will be written in a folder included in
+# airbyte git repository.
+git_versionned_tests = [
+    # "exchange_rate"
+]
 
 
 @pytest.mark.parametrize(
     "test_resource_name",
-    ["exchange_rate"],
+    set(git_versionned_tests
+    + [
+        # Non-versionned tests outputs below will be written to /tmp folders instead
+        "exchange_rate"
+    ]),
 )
 @pytest.mark.parametrize(
     "integration_type",
@@ -58,14 +70,17 @@ container_name = "test_normalization_db_" + "".join(random.choice(string.ascii_l
     ],
 )
 def test_normalization(integration_type: str, test_resource_name: str, setup_test_path):
+    print("Testing normalization")
     destination_type = DestinationType.from_string(integration_type)
-
+    # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type, test_resource_name)
     destination_config = generate_profile_yaml_file(destination_type, test_root_dir)
+    # Use destination connector to create _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_resource_name, test_root_dir, destination_config)
-
+    # Normalization step
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
     dbt_run(test_root_dir)
+    # Run checks on Tests results
     dbt_test(test_root_dir)
     check_outputs(destination_type, test_resource_name, test_root_dir)
 
@@ -74,11 +89,14 @@ def test_normalization(integration_type: str, test_resource_name: str, setup_tes
 def before_all_tests(request):
     change_current_test_dir()
     setup_postgres_db()
-    os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" +  os.environ["PATH"]
+    os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     print("Installing dbt dependencies packages\nExecuting: cd ../dbt-project-template/\nExecuting: dbt deps")
     subprocess.call(["dbt", "deps"], cwd="../dbt-project-template/", env=os.environ)
     yield
     tear_down_postgres_db()
+    for folder in temporary_folders:
+        print(f"Deleting temporary test folder {folder}")
+        shutil.rmtree(folder, ignore_errors=True)
 
 
 def setup_postgres_db():
@@ -116,6 +134,9 @@ def setup_postgres_db():
 
 
 def find_free_port():
+    """
+    Find an unused port to create a database listening on localhost to run destination-postgres
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(("", 0))
     addr = s.getsockname()
@@ -140,27 +161,36 @@ def setup_test_path():
 
 
 def change_current_test_dir():
-    # This makes the test pass no matter if it is executed from Tests folder (with pytest) or from base-normalization folder (through pycharm)
+    # This makes the test pass no matter if it is executed from Tests folder (with pytest/gradle) or from base-normalization folder (through pycharm)
     if os.path.exists(os.path.join(os.curdir, "integration_tests")):
         os.chdir("integration_tests")
 
 
 def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     """
-    We prepare a clean folder to run the test from.
+    We prepare a clean folder to run the tests from.
 
-    Note that this test directory is actually versionned into the Airbyte git repository.
-    The purpose is to keep track of changes on downstream on selected integration tests cases.
-     - generated dbt models by normalization
-     - final output sql files by dbt CLI
+    if the test_resource_name is part of git_versionned_tests, then dbt models and final sql outputs
+    will be written to a folder included in airbyte git repository.
+
+    Non-versionned tests will be written in /tmp folders instead.
+
+    The purpose is to keep track of a small set of downstream changes on selected integration tests cases.
+     - generated dbt models created by normalization script from an input destination_catalog.json
+     - final output sql files created by dbt CLI from the generated dbt models (dbt models are sql files with jinja templating,
+     these are interpreted and compiled into the native SQL dialect of the final destination engine)
     """
-    test_root_dir = f"normalization_test_output/{integration_type.lower()}"
+    if test_resource_name in git_versionned_tests:
+        test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
+    else:
+        test_root_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_", suffix=f"_{integration_type.lower()}")
+        temporary_folders.add(test_root_dir)
     shutil.rmtree(test_root_dir, ignore_errors=True)
     os.makedirs(test_root_dir)
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
     print(f"Setting up test folder {test_root_dir}")
     shutil.copytree("../dbt-project-template", test_root_dir)
-    # Prefer 'view' to 'ephemeral' for tests so it's easier to debug
+    # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
     copy_replace(
         "../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"), pattern="ephemeral", replace_value="view"
     )
@@ -202,7 +232,7 @@ def setup_input_raw_data(integration_type: str, test_resource_name: str, test_ro
         "--rm",
         "--init",
         "-v",
-        f"{pathlib.Path().absolute()}/{test_root_dir}:/data",
+        f"{test_root_dir}:/data",
         "--network",
         "host",
         "-i",
@@ -248,7 +278,9 @@ def dbt_run(test_root_dir: str):
     """
     Run the dbt CLI to perform transformations on the test raw data in the destination
     """
+    # Perform sanity check on dbt project settings
     assert run_check_command(test_root_dir, ["dbt", "debug", "--profiles-dir=.", "--project-dir=."])
+    # Compile dbt models files into destination sql dialect, then run the transformation queries
     assert run_check_command(test_root_dir, ["dbt", "run", "--profiles-dir=.", "--project-dir=."])
     # Copy final SQL files to persist them in git
     final_sql_files = os.path.join(test_root_dir, "final")
@@ -278,6 +310,7 @@ def run_check_command(cwd: str, commands: List[str]) -> bool:
             str_line = line.decode("utf-8")
             sys.stdout.write(str_line)
             if "ERROR" in str_line and "Done." not in str_line and "PASS=" not in str_line:
+                # count lines mentionning ERROR (but ignore the one from dbt run summary)
                 error_count += 1
     process.wait()
     print(f"{' '.join(commands)}\n\tterminated with return code {process.returncode} with {error_count} 'ERROR' mention(s).")
@@ -287,7 +320,10 @@ def run_check_command(cwd: str, commands: List[str]) -> bool:
 
 
 def check_outputs(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
-    print("TODO: Check")  # TODO: Check
+    """
+    Implement other types of checks on the output directory
+    """
+    print("Checking test outputs")  # TODO: Check
 
 
 def copy_replace(src, dst, pattern=None, replace_value=None):
