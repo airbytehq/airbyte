@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.transform import TransformCatalog
 from normalization.transform_config.transform import TransformConfig
