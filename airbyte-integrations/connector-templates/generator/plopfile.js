@@ -25,18 +25,20 @@ module.exports = function (plop) {
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
+  const pythonCdkSourceInputRoot = '../source-python-cdk';
 
   const outputDir = '../../connectors';
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
   const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
+  const pythonCdkSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-cdk`;
 
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
 
   plop.setGenerator('source-python', {
-    description: 'Generate an Airbyte Source written in Python',
+    description: 'Generate a Python Airbyte Source',
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
     actions: [
          {
@@ -63,7 +65,7 @@ module.exports = function (plop) {
   });
 
   plop.setGenerator('source-python-singer', {
-    description: 'Generate an Airbyte Source written on top of a Singer Tap.',
+    description: 'Generate a Singer Tap Airbyte Source.',
     prompts: [
       {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"', filter: function (name) {
         return name.endsWith('-singer') ? name.replace(/-singer$/, '') : name;
@@ -114,4 +116,25 @@ module.exports = function (plop) {
           {type: 'emitSuccess', outputPath: genericSourceOutputRoot}
       ]
     });
+
+  plop.setGenerator('source-python-cdk', {
+    description: 'Generate a Python CDK Airbyte source.',
+    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+    actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: genericSourceOutputRoot,
+        base: genericSourceInputRoot,
+        templateFiles: `${pythonCdkSourceInputRoot}/**/**`,
+      },
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${pythonCdkSourceInputRoot}/.gitignore.hbs`,
+        path: `${pythonCdkSourceOutputRoot}/.gitignore`
+      },
+      {type: 'emitSuccess', outputPath: pythonCdkSourceOutputRoot}
+    ]
+  });
 };
