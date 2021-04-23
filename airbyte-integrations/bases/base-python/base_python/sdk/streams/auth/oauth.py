@@ -41,7 +41,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         self._access_token = None
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        return {'Authorization': f'Bearer {self.get_access_token()}'}
+        return {"Authorization": f"Bearer {self.get_access_token()}"}
 
     def get_access_token(self):
         if self.token_has_expired():
@@ -58,14 +58,14 @@ class Oauth2Authenticator(HttpAuthenticator):
     def get_refresh_request_body(self) -> Mapping[str, any]:
         """ Override to define additional parameters """
         payload = {
-            'grant_type': 'refresh_token',
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-            'refresh_token': self.refresh_token
+            "grant_type": "refresh_token",
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "refresh_token": self.refresh_token,
         }
 
         if self.scopes:
-            payload['scopes'] = self.scopes
+            payload["scopes"] = self.scopes
 
         return payload
 
@@ -74,9 +74,9 @@ class Oauth2Authenticator(HttpAuthenticator):
         returns a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method='POST', url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
+            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()
             response_json = response.json()
-            return response_json['access_token'], response_json['expires_in']
+            return response_json["access_token"], response_json["expires_in"]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
