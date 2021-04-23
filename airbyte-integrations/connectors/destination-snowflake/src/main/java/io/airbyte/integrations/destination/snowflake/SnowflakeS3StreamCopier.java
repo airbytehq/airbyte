@@ -31,6 +31,12 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
+
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.SQLException;
 
 public class SnowflakeS3StreamCopier extends S3StreamCopier {
@@ -52,8 +58,8 @@ public class SnowflakeS3StreamCopier extends S3StreamCopier {
       throws SQLException {
     final var copyQuery = String.format(
         "COPY INTO %s.%s FROM '%s' "
-            + "CREDENTIALS=(aws_access_key_id='%s';aws_secret_access_key='%s') "
-            + "file_format = (type = csv field_delimiter = ',' skip_header = 0);",
+            + "CREDENTIALS=(aws_key_id='%s' aws_secret_key='%s') "
+            + "file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"');",
         schema,
         tableName,
         s3FileLocation,

@@ -55,6 +55,10 @@ public class SnowflakeInsertIntegrationTest extends TestDestination {
 
   @Override
   protected JsonNode getConfig() {
+    return config;
+  }
+
+  public JsonNode getStaticConfig() {
     final JsonNode insertConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
     Preconditions.checkArgument(!SnowflakeDestination.isCopy(insertConfig));
     return insertConfig;
@@ -124,7 +128,7 @@ public class SnowflakeInsertIntegrationTest extends TestDestination {
     final String schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5));
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
 
-    baseConfig = getConfig();
+    baseConfig = getStaticConfig();
     SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
 
     final JsonNode configForSchema = Jsons.clone(baseConfig);

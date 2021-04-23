@@ -47,8 +47,7 @@ import org.jooq.JSONFormat.RecordFormat;
  * contain S3 credentials by default, we remove these credentials.
  */
 public class RedshiftInsertIntegrationTest extends RedshiftCopyIntegrationTest {
-  @Override
-  protected JsonNode getConfig() {
+  public JsonNode getStaticConfig() {
     return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
   }
 

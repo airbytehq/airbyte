@@ -78,7 +78,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
         loadingMethod.get("s3_bucket_name").asText(),
         loadingMethod.get("access_key_id").asText(),
         loadingMethod.get("secret_access_key").asText(),
-        null);
+        loadingMethod.get("s3_bucket_region").asText());
   }
 
 }

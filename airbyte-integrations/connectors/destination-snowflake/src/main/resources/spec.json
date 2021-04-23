@@ -97,19 +97,52 @@
                 "examples": ["airbyte.staging"],
                 "order": 0
               },
+              "s3_bucket_region": {
+                "title": "S3 Bucket Region",
+                "type": "string",
+                "default": "",
+                "description": "The region of the S3 staging bucket to use if utilising a copy strategy.",
+                "enum": [
+                  "",
+                  "us-east-1",
+                  "us-east-2",
+                  "us-west-1",
+                  "us-west-2",
+                  "af-south-1",
+                  "ap-east-1",
+                  "ap-south-1",
+                  "ap-northeast-1",
+                  "ap-northeast-2",
+                  "ap-northeast-3",
+                  "ap-southeast-1",
+                  "ap-southeast-2",
+                  "ap-northeast-1",
+                  "ca-central-1",
+                  "cn-north-1",
+                  "cn-northwest-1",
+                  "eu-west-1",
+                  "eu-west-2",
+                  "eu-west-3",
+                  "eu-south-1",
+                  "eu-north-1",
+                  "sa-east-1",
+                  "me-south-1"
+                ],
+                "order": 1
+              },
               "access_key_id": {
                 "type": "string",
                 "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
                 "title": "S3 Key Id",
                 "airbyte_secret": true,
-                "order": 1
+                "order": 2
               },
               "secret_access_key": {
                 "type": "string",
                 "description": "The corresponding secret to the above access key id.",
                 "title": "S3 Access Key",
                 "airbyte_secret": true,
-                "order": 2
+                "order": 3
               }
             }
           }

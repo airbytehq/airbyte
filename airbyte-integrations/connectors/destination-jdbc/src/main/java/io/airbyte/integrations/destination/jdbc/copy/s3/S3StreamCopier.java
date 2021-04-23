@@ -41,8 +41,11 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.UUID;
+import java.util.function.Function;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +112,6 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
 
     var writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
-
     try {
       this.csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
     } catch (IOException e) {
@@ -201,6 +203,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
     return AmazonS3ClientBuilder.standard()
         .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+        .withRegion(s3Config.getRegion())
         .build();
   }
 

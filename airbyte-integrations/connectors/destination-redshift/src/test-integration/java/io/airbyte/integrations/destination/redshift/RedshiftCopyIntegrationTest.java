@@ -64,7 +64,7 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
     return config;
   }
 
-  private static JsonNode getStaticConfig() {
+  public JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 

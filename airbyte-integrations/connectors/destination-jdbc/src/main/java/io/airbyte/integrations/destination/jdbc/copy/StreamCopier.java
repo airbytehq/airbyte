@@ -27,6 +27,9 @@ package io.airbyte.integrations.destination.jdbc.copy;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+/**
+ * StreamCopier is responsible for writing to a staging persistence and providing methods to remove the staged data.
+ */
 public interface StreamCopier {
 
   void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception;

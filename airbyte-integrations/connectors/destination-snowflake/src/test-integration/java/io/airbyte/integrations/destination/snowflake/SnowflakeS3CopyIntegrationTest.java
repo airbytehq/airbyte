@@ -9,8 +9,8 @@ import java.nio.file.Path;
 
 public class SnowflakeS3CopyIntegrationTest extends SnowflakeInsertIntegrationTest {
     @Override
-    protected JsonNode getConfig() {
-        final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_config.json")));
+    public JsonNode getStaticConfig() {
+        final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_s3_config.json")));
         Preconditions.checkArgument(SnowflakeDestination.isCopy(copyConfig));
         return copyConfig;
     }
