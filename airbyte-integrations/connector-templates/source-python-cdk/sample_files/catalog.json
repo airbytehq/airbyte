@@ -1,8 +1,11 @@
-// TODO: better comments
+// TODO: The streams here should match the streams implemented in the source.py. That is, there should be as many streams here as there are streams
+// implemented in source.py. Each stream's schema should match that API's corresponding output. The rest of the attributes should match the implemented
+// stream. e.g. supported_sync_modes should be full_refresh and/or incremental depending on the stream.
+// Note, the name field is derived from the implemented stream's name. Delete this comment after reading.
 {
   "streams": [
     {
-      "name": "TODO fix this file",
+      "name": "name should be the lower snake case of the stream e.g. multiple_shot_potato_gun",
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
       "default_cursor_field": "column1",
@@ -20,9 +23,9 @@
       }
     },
     {
-      "name": "table1",
+      "name": "name should be the lower snake case of the stream e.g. single_shot_potato_gun",
       "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": false,
+      "source_defined_cursor": true,
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
