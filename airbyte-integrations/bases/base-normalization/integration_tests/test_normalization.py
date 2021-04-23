@@ -71,9 +71,7 @@ container_name = "test_normalization_db_" + "".join(random.choice(string.ascii_l
 
 # dbt models and final sql outputs from the following git versionned tests will be written in a folder included in
 # airbyte git repository.
-git_versionned_tests = [
-    # "test_primary_key_streams"
-]
+git_versionned_tests = ["test_primary_key_streams"]
 
 
 @pytest.mark.parametrize(
@@ -82,7 +80,6 @@ git_versionned_tests = [
         git_versionned_tests
         + [
             # Non-versionned tests outputs below will be written to /tmp folders instead
-            "test_primary_key_streams"
         ]
     ),
 )
