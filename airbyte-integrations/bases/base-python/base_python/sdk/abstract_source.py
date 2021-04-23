@@ -46,7 +46,8 @@ from base_python.sdk.streams.core import Stream
 
 class AbstractSource(Source, ABC):
     """
-    Abstract base class for an Airbyte Source. Consumers of this class only need to implement the `check_connection` and `streams` methods to implement an Airbyte Specification compliant Source.
+    Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
+    in this class to create an Airbyte Specification compliant Source. 
     User should implement this alongside a `HTTPStream` class.
     """
 
