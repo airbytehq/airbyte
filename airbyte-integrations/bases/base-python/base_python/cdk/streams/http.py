@@ -28,10 +28,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_protocol import SyncMode
-from base_python.sdk.streams.auth.core import HttpAuthenticator, NoAuth
-from base_python.sdk.streams.core import Stream
-from base_python.sdk.streams.exceptions import DefaultBackoffException, UserDefinedBackoffException
-from base_python.sdk.streams.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from base_python.cdk.streams.auth.core import HttpAuthenticator, NoAuth
+from base_python.cdk.streams.core import Stream
+from base_python.cdk.streams.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from base_python.cdk.streams.rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 
 class HttpStream(Stream, ABC):
