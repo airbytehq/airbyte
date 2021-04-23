@@ -29,11 +29,11 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_protocol import SyncMode
-from base_python.logger import AirbyteLogger
 from base_python.cdk.abstract_source import AbstractSource
 from base_python.cdk.streams.auth.token import TokenAuthenticator
 from base_python.cdk.streams.core import Stream
 from base_python.cdk.streams.http import HttpStream
+from base_python.logger import AirbyteLogger
 from pendulum import DateTime
 from slack_sdk import WebClient
 

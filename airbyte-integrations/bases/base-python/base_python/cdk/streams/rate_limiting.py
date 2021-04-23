@@ -27,8 +27,8 @@ import sys
 import time
 
 import backoff
-from base_python.logger import AirbyteLogger
 from base_python.cdk.streams.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from base_python.logger import AirbyteLogger
 from requests import codes, exceptions
 
 TRANSIENT_EXCEPTIONS = (DefaultBackoffException, exceptions.ConnectTimeout, exceptions.ReadTimeout, exceptions.ConnectionError)
