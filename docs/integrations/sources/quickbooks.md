@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Mixpanel source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Quickbooks source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This source wraps the [Singer Quickbooks Tap](https://github.com/singer-io/tap-quickbooks).
 
@@ -55,6 +55,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | Yes |  |
 | SSL connection | Yes |  |
+| Namespaces | No |  |
 
 ## Getting started
 

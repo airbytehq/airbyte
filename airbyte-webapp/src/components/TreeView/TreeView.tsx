@@ -5,6 +5,7 @@ import {
   SyncSchema,
   AirbyteStreamConfiguration,
   DestinationSyncMode,
+  AirbyteStream,
 } from "core/domain/catalog";
 
 type IProps = {
@@ -37,10 +38,10 @@ const TreeView: React.FC<IProps> = ({
       : schema;
   }, [filter, schema]);
 
-  const onUpdateItem = useCallback(
-    (streamId: string, newStream: Partial<AirbyteStreamConfiguration>) => {
+  const onUpdateStream = useCallback(
+    (stream: AirbyteStream, newStream: Partial<AirbyteStreamConfiguration>) => {
       const newSchema = schema.streams.map((streamNode) => {
-        return streamNode.stream.name === streamId
+        return streamNode.stream === stream
           ? {
               ...streamNode,
               config: { ...streamNode.config, ...newStream },
@@ -67,10 +68,12 @@ const TreeView: React.FC<IProps> = ({
     <>
       {sortedSchema.streams.map((streamNode) => (
         <TreeViewSection
-          key={streamNode.stream.name}
+          key={`${
+            streamNode.stream.namespace ? streamNode.stream.namespace + "/" : ""
+          }${streamNode.stream.name}`}
           streamNode={streamNode}
           destinationSupportedSyncModes={destinationSupportedSyncModes}
-          updateItem={onUpdateItem}
+          updateStream={onUpdateStream}
         />
       ))}
     </>
