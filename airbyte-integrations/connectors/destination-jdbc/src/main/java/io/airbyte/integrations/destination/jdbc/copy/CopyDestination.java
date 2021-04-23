@@ -51,7 +51,14 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       attemptWriteToPersistence(config);
+    } catch (Exception e) {
+      LOGGER.error("Exception attempting to access the staging persistence: ", e);
+      return new AirbyteConnectionStatus()
+              .withStatus(AirbyteConnectionStatus.Status.FAILED)
+              .withMessage("Could not connect to the staging persistence with the provided configuration. \n" + e.getMessage());
+    }
 
+    try {
       var nameTransformer = getNameTransformer();
       var outputSchema = nameTransformer.convertStreamName(config.get("schema").asText());
       JdbcDatabase database = getDatabase(config);
@@ -59,10 +66,10 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
+      LOGGER.error("Exception attempting to connect to the warehouse: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+          .withMessage("Could not connect to the warehouse with the provided configuration. \n" + e.getMessage());
     }
   }
 

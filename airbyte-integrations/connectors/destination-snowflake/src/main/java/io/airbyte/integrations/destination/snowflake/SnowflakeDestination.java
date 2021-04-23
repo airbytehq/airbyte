@@ -55,7 +55,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   }
 
   public static boolean isCopy(JsonNode config) {
-    return config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name");
+    return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name");
   }
 
   public static Map<DestinationType, Destination> getTypeToDestination() {
