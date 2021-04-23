@@ -15,7 +15,7 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
-def createLicenseWith = { File license, String startComment, String endComment, String lineComment ->
+def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
@@ -26,16 +26,19 @@ def createLicenseWith = { File license, String startComment, String endComment, 
         }
         w.writeLine(endComment)
         w.writeLine("")
+        if(isPython) {
+            w.writeLine("")
+        }
     }
     return tmp
 }
 
 def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '"""', '"""', "")
+    return createLicenseWith(license, '"""', '"""', "", true)
 }
 
 def createJavaLicenseWith = { license ->
-    return createLicenseWith(license, '/*', ' */', " * ")
+    return createLicenseWith(license, '/*', ' */', " * ", false)
 }
 
 // We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a

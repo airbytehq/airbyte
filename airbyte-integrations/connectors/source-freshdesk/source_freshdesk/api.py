@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from abc import ABC, abstractmethod
 from functools import partial
 from typing import Any, Callable, Iterator, Mapping, MutableMapping, Optional, Sequence

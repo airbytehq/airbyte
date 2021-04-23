@@ -22,14 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import math
 from abc import ABC, abstractmethod
 from typing import Any, Tuple, Mapping, Iterable, Optional, MutableMapping, List
 
 import requests
+import stripe
 
 from airbyte_protocol import SyncMode
 from base_python import AbstractSource, HttpStream, Stream, TokenAuthenticator
+
 
 
 class StripeStream(HttpStream, ABC):

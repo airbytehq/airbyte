@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import pytest
 from airbyte_protocol import AirbyteStream
 from source_facebook_marketing.client import Client, FacebookAPIException

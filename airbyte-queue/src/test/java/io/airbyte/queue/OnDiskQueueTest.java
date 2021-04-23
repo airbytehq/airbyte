@@ -26,7 +26,9 @@ package io.airbyte.queue;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.base.Charsets;
 import io.airbyte.commons.lang.CloseableQueue;
@@ -38,14 +40,16 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class BigQueueTest {
+class OnDiskQueueTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private CloseableQueue<byte[]> queue;
+  private Path queueRoot;
 
   @BeforeEach
   void setup() throws IOException {
-    queue = new BigQueue(Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test"), "test");
+    queueRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
+    queue = new OnDiskQueue(queueRoot, "test");
   }
 
   @AfterEach
@@ -83,6 +87,27 @@ class BigQueueTest {
     assertThrows(IllegalStateException.class, () -> queue.offer(toBytes("hello")));
     assertThrows(IllegalStateException.class, () -> queue.poll());
     assertThrows(IllegalStateException.class, () -> queue.iterator());
+  }
+
+  @Test
+  void testCleanupOnEmpty() throws Exception {
+    assertTrue(Files.exists(queueRoot));
+
+    queue.offer(toBytes("hello"));
+    queue.poll();
+    queue.close();
+
+    assertFalse(Files.exists(queueRoot));
+  }
+
+  @Test
+  void testCleanupOnNotEmpty() throws Exception {
+    assertTrue(Files.exists(queueRoot));
+
+    queue.offer(toBytes("hello"));
+    queue.close();
+
+    assertFalse(Files.exists(queueRoot));
   }
 
   @SuppressWarnings("SameParameterValue")

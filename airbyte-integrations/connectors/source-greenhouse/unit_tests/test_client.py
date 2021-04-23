@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import pytest
 from grnhse.exceptions import EndpointNotFound, HTTPError
 from source_greenhouse.client import Client
