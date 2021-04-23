@@ -37,6 +37,28 @@ module.exports = function (plop) {
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
 
+  plop.setGenerator('source-python-cdk', {
+    description: 'Generate a Python CDK Airbyte source.',
+    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+    actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: genericSourceOutputRoot,
+        base: genericSourceInputRoot,
+        templateFiles: `${pythonCdkSourceInputRoot}/**/**`,
+      },
+      // plop doesn't add dotfiles by default so we manually add them
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${pythonCdkSourceInputRoot}/.dockerignore.hbs`,
+        path: `${pythonCdkSourceOutputRoot}/.dockerignore`
+      },
+      {type: 'emitSuccess', outputPath: pythonCdkSourceOutputRoot}
+    ]
+  });
+
   plop.setGenerator('source-python', {
     description: 'Generate a Python Airbyte Source',
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
@@ -48,7 +70,6 @@ module.exports = function (plop) {
          base: pythonSourceInputRoot,
          templateFiles: `${pythonSourceInputRoot}/**/**`,
        },
-         // plop doesn't add dotfiles by default so we manually add them
        {
          type:'add',
          abortOnFail: true,
@@ -116,25 +137,4 @@ module.exports = function (plop) {
           {type: 'emitSuccess', outputPath: genericSourceOutputRoot}
       ]
     });
-
-  plop.setGenerator('source-python-cdk', {
-    description: 'Generate a Python CDK Airbyte source.',
-    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
-    actions: [
-      {
-        abortOnFail: true,
-        type:'addMany',
-        destination: genericSourceOutputRoot,
-        base: genericSourceInputRoot,
-        templateFiles: `${pythonCdkSourceInputRoot}/**/**`,
-      },
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${pythonCdkSourceInputRoot}/.gitignore.hbs`,
-        path: `${pythonCdkSourceOutputRoot}/.gitignore`
-      },
-      {type: 'emitSuccess', outputPath: pythonCdkSourceOutputRoot}
-    ]
-  });
 };
