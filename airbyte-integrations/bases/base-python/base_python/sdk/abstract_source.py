@@ -73,7 +73,7 @@ class AbstractSource(Source, ABC):
         return self.__class__.__name__
 
     def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        """Implement the Discover operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
+        """Implements the Discover operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
         return AirbyteCatalog(streams=streams)
 
