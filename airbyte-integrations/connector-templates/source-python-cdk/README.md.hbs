@@ -28,7 +28,9 @@ If this is mumbo jumbo to you, don't worry about it, just put your deps in `setu
 should work as you expect.
 
 #### Building via Gradle
-From the Airbyte repository root, run:
+You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow. 
+
+To build using Gradle, from the Airbyte repository root, run:
 ```
 ./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:build
 ```
@@ -36,7 +38,7 @@ From the Airbyte repository root, run:
 #### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/{{dashCase name}})
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_{{snakeCase name}}/spec.json` file.
-Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source {{dashCase name}} test creds`

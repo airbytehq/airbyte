@@ -40,7 +40,7 @@ def package_name_from_class(cls: object) -> str:
 
 class Stream(ABC):
     """
-    Base abstract class for an Airbyte Stream. Contains helper functions. Makes no assumption of the Stream's underlying transport protocol.
+    Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
     # Use self.logger in subclasses to log any messages

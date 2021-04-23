@@ -46,14 +46,14 @@ from base_python.sdk.streams.core import Stream
 
 class AbstractSource(Source, ABC):
     """
-    Abstract base class for an Airbyte Source. Consumers of this class only need to implement the `check_connection` and `streams` methods to implement an Airbyte Specification compliant Source.
-    User should implement this alongside a `HTTPStream` class.
+    Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
+    in this class to create an Airbyte Specification compliant Source. 
     """
 
     @abstractmethod
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
-        :param config: The user-provided configuration as specified by the source's schema.json. This usually contains information required to check connection e.g. tokens, secrets and keys etc.
+        :param config: The user-provided configuration as specified by the source's spec. This usually contains information required to check connection e.g. tokens, secrets and keys etc.
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
         source using the provided configuration.
         Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
@@ -63,7 +63,7 @@ class AbstractSource(Source, ABC):
     @abstractmethod
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        :param config: The user-provided configuration as specified by the source's schema.json. Any stream construction related operation should happen here.
+        :param config: The user-provided configuration as specified by the source's spec. Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
 
@@ -73,12 +73,12 @@ class AbstractSource(Source, ABC):
         return self.__class__.__name__
 
     def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        """Implement the Discover operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
+        """Implements the Discover operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
         return AirbyteCatalog(streams=streams)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """Implement the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
+        """Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         try:
             check_succeeded, error = self.check_connection(logger, config)
             if not check_succeeded:
@@ -91,7 +91,7 @@ class AbstractSource(Source, ABC):
     def read(
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
-        """Implement the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
+        """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         connector_state = copy.deepcopy(state or {})
         logger.info(f"Starting syncing {self.name}")
         # TODO assert all streams exist in the connector

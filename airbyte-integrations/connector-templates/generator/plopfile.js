@@ -117,7 +117,7 @@ module.exports = function (plop) {
     ]
   });
 
-  plop.setGenerator('source-generic', {
+  plop.setGenerator('Generic Source', {
       description: 'Use if none of the other templates apply to your use case.',
       prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
       actions: [
