@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from base_python import AirbyteLogger
 from base_singer import BaseSingerSource
 from requests import HTTPError
