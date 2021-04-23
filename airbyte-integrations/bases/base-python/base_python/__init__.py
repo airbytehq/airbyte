@@ -27,13 +27,13 @@ from base_python.catalog_helpers import CatalogHelper
 from base_python.client import BaseClient
 from base_python.integration import AirbyteSpec, Destination, Integration, Source
 from base_python.logger import AirbyteLogger
-from base_python.sdk.abstract_source import AbstractSource
+from base_python.cdk.abstract_source import AbstractSource
 
 # Separate the SDK imports so they can be moved somewhere else more easily
-from base_python.sdk.streams.auth.core import HttpAuthenticator
-from base_python.sdk.streams.auth.token import TokenAuthenticator
-from base_python.sdk.streams.core import Stream
-from base_python.sdk.streams.http import HttpStream
+from base_python.cdk.streams.auth.core import HttpAuthenticator
+from base_python.cdk.streams.auth.token import TokenAuthenticator
+from base_python.cdk.streams.core import Stream
+from base_python.cdk.streams.http import HttpStream
 from base_python.source import BaseSource
 
 # Must be the last one because the way we load the connector module creates a circular

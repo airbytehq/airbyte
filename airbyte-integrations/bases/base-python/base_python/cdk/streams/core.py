@@ -27,7 +27,7 @@ import inspect
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import base_python.sdk.utils.casing as casing
+import base_python.cdk.utils.casing as casing
 from airbyte_protocol import AirbyteStream, SyncMode
 from base_python.logger import AirbyteLogger
 from base_python.schema_helpers import ResourceSchemaLoader
