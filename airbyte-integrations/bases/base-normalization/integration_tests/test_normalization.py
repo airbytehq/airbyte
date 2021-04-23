@@ -54,11 +54,13 @@ git_versionned_tests = [
 
 @pytest.mark.parametrize(
     "test_resource_name",
-    set(git_versionned_tests
-    + [
-        # Non-versionned tests outputs below will be written to /tmp folders instead
-        "exchange_rate"
-    ]),
+    set(
+        git_versionned_tests
+        + [
+            # Non-versionned tests outputs below will be written to /tmp folders instead
+            "exchange_rate"
+        ]
+    ),
 )
 @pytest.mark.parametrize(
     "integration_type",
