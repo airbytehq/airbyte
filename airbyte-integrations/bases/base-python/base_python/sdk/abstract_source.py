@@ -63,7 +63,7 @@ class AbstractSource(Source, ABC):
     @abstractmethod
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        :param config: The user-provided configuration as specified by the source's schema.json. Any stream construction related operation should happen here.
+        :param config: The user-provided configuration as specified by the source's spec. Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
 
