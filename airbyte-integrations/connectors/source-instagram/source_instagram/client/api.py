@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterator, List, Optional, Sequence
