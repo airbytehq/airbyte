@@ -1,0 +1,22 @@
+// TODO: The streams here should mirror the streams in the catalog.json. Delete after reading.
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "TODO: fix this.",
+        "json_schema": {
+          "properties": {
+            "column_name": {
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["TODO: whatever sync mode the source supported e.g. full_refresh or incremental"]
+      },
+      "sync_mode": "TODO: whatever sync mode the test should run with e.g. full_refresh or incremental",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
