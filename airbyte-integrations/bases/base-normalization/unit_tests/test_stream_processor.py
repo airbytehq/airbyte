@@ -34,11 +34,16 @@ from normalization.transform_catalog.destination_name_transformer import Destina
 from normalization.transform_catalog.stream_processor import StreamProcessor, get_table_name
 
 
-@pytest.fixture
-def setup_test_path():
-    # This makes the test pass no matter if it is executed from Tests folder (with pytest) or from base-normalization folder (through pycharm)
-    if os.path.exists(os.path.join(os.curdir, "unit_tests")):
-        os.chdir("unit_tests")
+@pytest.fixture(scope="function", autouse=True)
+def before_tests(request):
+    # This makes the test pass no matter if it is executed from Tests folder (with pytest/gradle) or from base-normalization folder (through pycharm)
+    unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
+    if os.path.exists(unit_tests_dir):
+        os.chdir(unit_tests_dir)
+    else:
+        os.chdir(request.fspath.dirname)
+    yield
+    os.chdir(request.config.invocation_dir)
 
 
 @pytest.mark.parametrize(
@@ -58,7 +63,28 @@ def setup_test_path():
         "Redshift",
     ],
 )
-def test_stream_processor_tables_naming(integration_type: str, catalog_file: str, setup_test_path):
+def test_stream_processor_tables_naming(integration_type: str, catalog_file: str):
+    """
+    For a given catalog.json and destination, multiple cases can occur where naming becomes tricky.
+    (especially since some destination like postgres have a very low limit to identifiers length of 64 characters)
+
+    In case of nested objects/arrays in a stream, names can drag on to very long names.
+    Tests are built here using resources files as follow:
+    - `<name of source or test types>_catalog.json`:
+        input catalog.json, typically as what source would provide.
+        For example Stripe and Facebook catalog.json contains some level of nesting.
+    - `<name of source or test types>_expected_top_level.json`:
+        list of expected table names for the top level stream names
+    - `<name of source or test types>_expected_nested.json`:
+        list of expected table names for nested objects, extracted to their own and separate table names
+
+    For the expected json files, it is possible to specialize the file to a certain destination.
+    So if for example, the resources folder contains these two expected files:
+        - edge_cases_catalog_expected_top_level.json
+        - edge_cases_catalog_expected_top_level_postgres.json
+    Then the test will be using the first edge_cases_catalog_expected_top_level.json except for
+    Postgres destination where the expected table names will come from edge_cases_catalog_expected_top_level_postgres.json
+    """
     destination_type = DestinationType.from_string(integration_type)
     tables_registry = {}
 
@@ -151,6 +177,19 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
     ],
 )
 def test_get_table_name(root_table: str, base_table_name: str, suffix: str, expected: str):
+    """
+    - parent table: referred to as root table
+    - child table: referred to as base table.
+    - extra suffix: normalization steps used as suffix to decompose pipeline into multi steps.
+    - json path: in terms of parent and nested field names in order to reach the table currently being built
+
+    See documentation of get_table_name method for more details.
+
+    But this test check the strategies of combining all those fields into a single table name for the user to (somehow) identify and
+    recognize what data is available in there.
+    A set of complicated rules are done in order to choose what parts to truncate or what to leave and handle
+    name collisions.
+    """
     name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
     name = get_table_name(name_transformer, root_table, base_table_name, suffix, ["json", "path"])
     assert name == expected

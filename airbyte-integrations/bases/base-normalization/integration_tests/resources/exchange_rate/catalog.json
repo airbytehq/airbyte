@@ -32,7 +32,7 @@
       },
       "sync_mode": "incremental",
       "cursor_field": [],
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -67,7 +67,7 @@
       "sync_mode": "incremental",
       "cursor_field": ["date"],
       "destination_sync_mode": "append_dedup",
-      "primary_key": [["id"], ["currency"], ["date"], ["NZD"]]
+      "primary_key": [["id"], ["currency"], ["NZD"]]
     }
   ]
 }

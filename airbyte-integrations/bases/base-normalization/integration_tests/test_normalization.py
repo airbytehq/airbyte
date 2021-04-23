@@ -83,13 +83,13 @@ def test_normalization(integration_type: str, test_resource_name: str, setup_tes
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
     dbt_run(test_root_dir)
     # Run checks on Tests results
-    dbt_test(test_root_dir)
+    dbt_test(destination_type, test_resource_name, test_root_dir)
     check_outputs(destination_type, test_resource_name, test_root_dir)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="package", autouse=True)
 def before_all_tests(request):
-    change_current_test_dir()
+    change_current_test_dir(request)
     setup_postgres_db()
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     print("Installing dbt dependencies packages\nExecuting: cd ../dbt-project-template/\nExecuting: dbt deps")
@@ -156,16 +156,21 @@ def tear_down_postgres_db():
 
 
 @pytest.fixture
-def setup_test_path():
-    change_current_test_dir()
+def setup_test_path(request):
+    change_current_test_dir(request)
     print(f"Running from: {pathlib.Path().absolute()}")
     print(f"Current PATH is: {os.environ['PATH']}")
+    yield
+    os.chdir(request.config.invocation_dir)
 
 
-def change_current_test_dir():
+def change_current_test_dir(request):
     # This makes the test pass no matter if it is executed from Tests folder (with pytest/gradle) or from base-normalization folder (through pycharm)
-    if os.path.exists(os.path.join(os.curdir, "integration_tests")):
-        os.chdir("integration_tests")
+    integration_tests_dir = os.path.join(request.fspath.dirname, "integration_tests")
+    if os.path.exists(integration_tests_dir):
+        os.chdir(integration_tests_dir)
+    else:
+        os.chdir(request.fspath.dirname)
 
 
 def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
@@ -224,6 +229,12 @@ def setup_input_raw_data(integration_type: str, test_resource_name: str, test_ro
     """
     catalog_file = os.path.join("resources", test_resource_name, "catalog.json")
     message_file = os.path.join("resources", test_resource_name, "messages.txt")
+    copy_replace(
+        catalog_file,
+        os.path.join(test_root_dir, "reset_catalog.json"),
+        pattern='"destination_sync_mode": ".*"',
+        replace_value='"destination_sync_mode": "overwrite"',
+    )
     copy_replace(catalog_file, os.path.join(test_root_dir, "destination_catalog.json"))
     config_file = os.path.join(test_root_dir, "destination_config.json")
     with open(config_file, "w") as f:
@@ -243,19 +254,26 @@ def setup_input_raw_data(integration_type: str, test_resource_name: str, test_ro
         "--config",
         "/data/destination_config.json",
         "--catalog",
-        "/data/destination_catalog.json",
     ]
+    # Force a reset in destination raw tables
+    assert run_destination_process("", test_root_dir, commands + ["/data/reset_catalog.json"])
+    # Run a sync to create raw tables in destinations
+    return run_destination_process(message_file, test_root_dir, commands + ["/data/destination_catalog.json"])
+
+
+def run_destination_process(message_file: str, test_root_dir: str, commands: List[str]):
     print("Executing: ", " ".join(commands))
     with open(os.path.join(test_root_dir, "destination_output.log"), "ab") as f:
         process = subprocess.Popen(commands, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         def writer():
-            with open(message_file, "rb") as input_data:
-                while True:
-                    line = input_data.readline()
-                    if not line:
-                        break
-                    process.stdin.write(line)
+            if os.path.exists(message_file):
+                with open(message_file, "rb") as input_data:
+                    while True:
+                        line = input_data.readline()
+                        if not line:
+                            break
+                        process.stdin.write(line)
             process.stdin.close()
 
         thread = threading.Thread(target=writer)
@@ -281,27 +299,34 @@ def dbt_run(test_root_dir: str):
     Run the dbt CLI to perform transformations on the test raw data in the destination
     """
     # Perform sanity check on dbt project settings
-    assert run_check_command(test_root_dir, ["dbt", "debug", "--profiles-dir=.", "--project-dir=."])
+    assert run_check_command(["dbt", "debug", "--profiles-dir=.", "--project-dir=."], test_root_dir)
     # Compile dbt models files into destination sql dialect, then run the transformation queries
-    assert run_check_command(test_root_dir, ["dbt", "run", "--profiles-dir=.", "--project-dir=."])
+    assert run_check_command(["dbt", "run", "--profiles-dir=.", "--project-dir=."], test_root_dir)
     # Copy final SQL files to persist them in git
     final_sql_files = os.path.join(test_root_dir, "final")
     shutil.rmtree(final_sql_files, ignore_errors=True)
     shutil.copytree(os.path.join(test_root_dir, "..", "build", "run", "airbyte_utils", "models", "generated"), final_sql_files)
 
 
-def dbt_test(test_root_dir: str):
+def dbt_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
     """
     dbt provides a way to run dbt tests as described here: https://docs.getdbt.com/docs/building-a-dbt-project/tests
+    - Schema tests are added in .yml files from the schema_tests directory
+        - see additional macros for testing here: https://github.com/fishtown-analytics/dbt-utils#schema-tests
+    - Data tests are added in .sql files from the data_tests directory and should return 0 records to be successful
 
-    We can also use this mecanism to verify the output of our integration tests.
+    We use this mecanism to verify the output of our integration tests.
     """
-    assert run_check_command(test_root_dir, ["dbt", "test", "--profiles-dir=.", "--project-dir=."])
+    copy_test_files(
+        os.path.join("resources", test_resource_name, "schema_tests"), os.path.join(test_root_dir, "models/schema_tests"), destination_type
+    )
+    copy_test_files(os.path.join("resources", test_resource_name, "data_tests"), os.path.join(test_root_dir, "tests"), destination_type)
+    assert run_check_command(["dbt", "test", "--profiles-dir=.", "--project-dir=."], test_root_dir)
 
 
-def run_check_command(cwd: str, commands: List[str]) -> bool:
+def run_check_command(commands: List[str], cwd: str) -> bool:
     """
-    Run dbt subprocess while checking and counting for "ERROR" printed in its outputs
+    Run dbt subprocess while checking and counting for "ERROR" or "FAIL" printed in its outputs
     """
     error_count = 0
     print("Executing: ", " ".join(commands))
@@ -311,7 +336,7 @@ def run_check_command(cwd: str, commands: List[str]) -> bool:
             f.write(line)
             str_line = line.decode("utf-8")
             sys.stdout.write(str_line)
-            if "ERROR" in str_line and "Done." not in str_line and "PASS=" not in str_line:
+            if ("ERROR" in str_line or "FAIL" in str_line) and "Done." not in str_line and "PASS=" not in str_line:
                 # count lines mentionning ERROR (but ignore the one from dbt run summary)
                 error_count += 1
     process.wait()
@@ -323,9 +348,9 @@ def run_check_command(cwd: str, commands: List[str]) -> bool:
 
 def check_outputs(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
     """
-    Implement other types of checks on the output directory
+    Implement other types of checks on the output directory (grepping, diffing files etc?)
     """
-    print("Checking test outputs")  # TODO: Check
+    print("Checking test outputs")
 
 
 def copy_replace(src, dst, pattern=None, replace_value=None):
@@ -361,3 +386,42 @@ def copy_replace(src, dst, pattern=None, replace_value=None):
         file1.close()
     if isinstance(dst, str):
         file2.close()
+
+
+def copy_test_files(src: str, dst: str, destination_type: DestinationType):
+    """
+    Copy file while hacking snowflake identifiers that needs to be uppercased...
+    (so we can share these dbt tests files accross destinations)
+    """
+    if os.path.exists(src):
+        if destination_type.value == DestinationType.SNOWFLAKE.value:
+            shutil.copytree(src, dst, copy_function=copy_snowflake)
+        else:
+            shutil.copytree(src, dst)
+
+
+def copy_snowflake(src, dst):
+    print(src, "->", dst)
+    copy_replace(
+        src,
+        dst,
+        pattern=[
+            r"(- name:) *(.*)",
+            r"(ref\(')(.*)('\))",
+            r"(source\(')(.*)('\))",
+        ],
+        replace_value=[
+            to_snowflake_identifier,
+            to_snowflake_identifier,
+            to_snowflake_identifier,
+        ],
+    )
+
+
+def to_snowflake_identifier(input: re.Match) -> str:
+    if len(input.groups()) == 2:
+        return f"{input.group(1)} {input.group(2).upper()}"
+    elif len(input.groups()) == 3:
+        return f"{input.group(1)}{input.group(2).upper()}{input.group(3)}"
+    else:
+        raise Exception(f"Unexpected number of groups in {input}")

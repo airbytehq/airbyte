@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: test_normalization_exchange_rate
+    tests:
+      - dbt_utils.equality:
+          description:
+            In this integration test, we are sending the same records to both streams
+            exchange_rate and dedup_exchange_rate.
+            The SCD table of dedup_exchange_rate in append_dedup mode should therefore mirror
+            the final table with append or overwrite mode from exchange_rate.
+          compare_model: ref('test_normalization_dedup_exchange_rate_scd')
+          compare_columns:
+            - id
+            - currency
+            - date
+            - HKD
+            - NZD
+            - USD
+      - dbt_utils.equal_rowcount:
+          description:
+            Raw and normalized tables should be equal.
+          compare_model: source('test_normalization', '_airbyte_raw_exchange_rate')
+
+  - name: test_normalization_dedup_exchange_rate
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          description:
+            The final table for this stream should have unique composite primary key values.
+          combination_of_columns:
+            - id
+            - currency
+            - NZD

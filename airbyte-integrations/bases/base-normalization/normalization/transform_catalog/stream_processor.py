@@ -771,6 +771,17 @@ def hash_name(input: str) -> str:
 
 
 def get_table_name(name_transformer: DestinationNameTransformer, parent: str, child: str, suffix: str, json_path: List[str]) -> str:
+    """
+    In normalization code base, we often have to deal with naming for tables, combining informations from:
+    - parent table: to denote where a table is extracted from (in case of nesting)
+    - child table: in case of nesting, the field name or the original stream name
+    - extra suffix: normalization is done in multiple transformation steps, each may need to generate separate tables,
+    so we can add a suffix to distinguish the different transformation steps of a pipeline.
+    - json path: in terms of parent and nested field names in order to reach the table currently being built
+
+    All these informations should be included (if possible) in the table naming for the user to (somehow) identify and
+    recognize what data is available there.
+    """
     max_length = name_transformer.get_name_max_length() - 2  # less two for the underscores
     json_path_hash = hash_json_path(json_path)
     norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
