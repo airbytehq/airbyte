@@ -39,6 +39,10 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CopyDestination.class);
 
+  /**
+   * A self contained method for writing a file to the persistence for testing. This method should try
+   * to clean up after itself by deleting the file it creates.
+   */
   public abstract void attemptWriteToPersistence(JsonNode config) throws Exception;
 
   public abstract ExtendedNameTransformer getNameTransformer();
@@ -54,8 +58,8 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
     } catch (Exception e) {
       LOGGER.error("Exception attempting to access the staging persistence: ", e);
       return new AirbyteConnectionStatus()
-              .withStatus(AirbyteConnectionStatus.Status.FAILED)
-              .withMessage("Could not connect to the staging persistence with the provided configuration. \n" + e.getMessage());
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("Could not connect to the staging persistence with the provided configuration. \n" + e.getMessage());
     }
 
     try {

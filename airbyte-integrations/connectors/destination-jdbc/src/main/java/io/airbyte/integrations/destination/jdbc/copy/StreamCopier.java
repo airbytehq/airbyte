@@ -28,14 +28,28 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 /**
- * StreamCopier is responsible for writing to a staging persistence and providing methods to remove the staged data.
+ * StreamCopier is responsible for writing to a staging persistence and providing methods to remove
+ * the staged data.
  */
 public interface StreamCopier {
 
+  /**
+   * Writes a value to a staging file for the stream.
+   */
   void write(UUID id, String jsonDataString, Timestamp emittedAt) throws Exception;
 
+  /**
+   * Closes the writer for the stream and loads the data into a temporary table while generating the
+   * merge SQL statement.
+   *
+   * @return the SQL queries necessary to merge or the empty string if there was a failure
+   */
   String copyToTmpTableAndPrepMergeToFinalTable(boolean hasFailed) throws Exception;
 
+  /**
+   * Cleans up the copier by removing the staging file and dropping the temporary table after
+   * completion or failure.
+   */
   void removeFileAndDropTmpTable() throws Exception;
 
 }

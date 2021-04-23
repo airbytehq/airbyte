@@ -31,12 +31,6 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
-
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.SQLException;
 
 public class SnowflakeS3StreamCopier extends S3StreamCopier {

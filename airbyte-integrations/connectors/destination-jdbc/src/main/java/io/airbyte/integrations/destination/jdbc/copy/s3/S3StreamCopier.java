@@ -41,11 +41,8 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.UUID;
-import java.util.function.Function;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +127,7 @@ public abstract class S3StreamCopier implements StreamCopier {
       multipartUploadManager.abort();
       return "";
     }
-    closeS3WriteStreamAndUpload();
+    closeAndWaitForUpload();
     createTmpTableAndCopyS3FileInto();
     return mergeIntoDestTableIncrementalOrFullRefreshQuery();
   }
@@ -152,7 +149,10 @@ public abstract class S3StreamCopier implements StreamCopier {
     return String.join("/", "s3:/", s3BucketName, s3StagingFile);
   }
 
-  private void closeS3WriteStreamAndUpload() throws IOException {
+  /**
+   * Closes the printers/outputstreams and waits for any buffered uploads to complete.
+   */
+  private void closeAndWaitForUpload() throws IOException {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
     csvPrinter.close();
     outputStream.close();

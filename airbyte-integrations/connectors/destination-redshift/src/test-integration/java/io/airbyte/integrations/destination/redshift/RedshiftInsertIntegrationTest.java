@@ -28,25 +28,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.TestDestination;
 import java.nio.file.Path;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.JSONFormat;
-import org.jooq.JSONFormat.RecordFormat;
 
 /**
  * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
  * contain S3 credentials by default, we remove these credentials.
  */
 public class RedshiftInsertIntegrationTest extends RedshiftCopyIntegrationTest {
+
   public JsonNode getStaticConfig() {
     return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
   }
