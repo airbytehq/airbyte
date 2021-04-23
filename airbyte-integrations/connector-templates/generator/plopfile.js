@@ -44,8 +44,8 @@ module.exports = function (plop) {
       {
         abortOnFail: true,
         type:'addMany',
-        destination: genericSourceOutputRoot,
-        base: genericSourceInputRoot,
+        destination: pythonCdkSourceOutputRoot,
+        base: pythonCdkSourceInputRoot,
         templateFiles: `${pythonCdkSourceInputRoot}/**/**`,
       },
       // plop doesn't add dotfiles by default so we manually add them
