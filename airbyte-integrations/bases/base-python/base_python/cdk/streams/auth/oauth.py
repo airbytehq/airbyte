@@ -22,11 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from typing import Any, Mapping, Tuple
 
 import pendulum
 import requests
-from base_python.sdk.streams.auth.core import HttpAuthenticator
+from base_python.cdk.streams.auth.core import HttpAuthenticator
 
 
 class Oauth2Authenticator(HttpAuthenticator):

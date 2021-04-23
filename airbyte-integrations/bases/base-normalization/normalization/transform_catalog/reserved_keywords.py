@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from normalization import DestinationType
 
 # https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#reserved_keywords

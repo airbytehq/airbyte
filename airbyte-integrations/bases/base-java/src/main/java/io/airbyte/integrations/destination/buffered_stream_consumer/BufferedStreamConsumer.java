@@ -37,7 +37,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.queue.BigQueue;
+import io.airbyte.queue.OnDiskQueue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -121,7 +121,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     for (AirbyteStreamNameNamespacePair pair : pairs) {
       LOGGER.info("Buffer creation for stream {}.", pair);
       try {
-        final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(pair.getName()), pair.getName());
+        final OnDiskQueue writeBuffer = new OnDiskQueue(queueRoot.resolve(pair.getName()), pair.getName());
         pairToWriteBuffer.put(pair, writeBuffer);
       } catch (Exception e) {
         LOGGER.error("Error creating buffer: ", e);
@@ -143,7 +143,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
 
     // ignore other message types.
-    final String streamName = message.getStream();
     final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
     if (!pairs.contains(pair)) {
       throw new IllegalArgumentException(

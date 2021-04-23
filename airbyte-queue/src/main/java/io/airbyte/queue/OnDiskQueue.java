@@ -34,16 +34,23 @@ import java.nio.file.Path;
 import java.util.AbstractQueue;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.commons.io.FileUtils;
 
 /**
+ * This Queue should be used when it is possible for the contents of the queue to be greater than
+ * the size of memory. It is meant for use by a single process. Closing this queue deletes the data
+ * on disk. It is NOT meant to be a long-lived, persistent queue.
+ *
  * Wraps BigQueueImpl behind Airbyte persistent queue interface. BigQueueImpl is threadsafe.
  */
-public class BigQueue extends AbstractQueue<byte[]> implements CloseableQueue<byte[]> {
+public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue<byte[]> {
 
   private final IBigQueue queue;
   private final AtomicBoolean closed = new AtomicBoolean(false);
+  private final Path persistencePath;
 
-  public BigQueue(Path persistencePath, String queueName) throws IOException {
+  public OnDiskQueue(Path persistencePath, String queueName) throws IOException {
+    this.persistencePath = persistencePath;
     queue = new BigQueueImpl(persistencePath.toString(), queueName);
   }
 
@@ -105,10 +112,15 @@ public class BigQueue extends AbstractQueue<byte[]> implements CloseableQueue<by
   @Override
   public void close() throws Exception {
     closed.set(true);
-    // todo (cgardens) - this barfs out a huge warning. known issue with the lib:
-    // https://github.com/bulldog2011/bigqueue/issues/35.
-    queue.close();
-    queue.gc();
+    try {
+      // todo (cgardens) - this barfs out a huge warning. known issue with the lib:
+      // https://github.com/bulldog2011/bigqueue/issues/35.
+      // deallocates memory used by bigqueue
+      queue.close();
+    } finally {
+      // deletes all data files.
+      FileUtils.deleteQuietly(persistencePath.toFile());
+    }
   }
 
 }

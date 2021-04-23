@@ -22,23 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from abc import ABC, abstractmethod
-from typing import Any, Mapping
+
+import re
 
 
-class HttpAuthenticator(ABC):
-    """
-    Base abstract class for various HTTP Authentication strategies. Authentication strategies are generally
-    expected to provide security credentials via HTTP headers.
-    """
-
-    @abstractmethod
-    def get_auth_header(self) -> Mapping[str, Any]:
-        """
-        :return: A dictionary containing all the necessary headers to authenticate.
-        """
-
-
-class NoAuth(HttpAuthenticator):
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {}
+# https://stackoverflow.com/a/1176023
+def camel_to_snake(s):
+    s = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", s)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s).lower()

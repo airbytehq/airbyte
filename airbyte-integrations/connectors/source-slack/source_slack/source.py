@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -29,10 +30,10 @@ import pendulum
 import requests
 from airbyte_protocol import SyncMode
 from base_python.logger import AirbyteLogger
-from base_python.sdk.abstract_source import AbstractSource
-from base_python.sdk.streams.auth.token import TokenAuthenticator
-from base_python.sdk.streams.core import Stream
-from base_python.sdk.streams.http import HttpStream
+from base_python.cdk.abstract_source import AbstractSource
+from base_python.cdk.streams.auth.token import TokenAuthenticator
+from base_python.cdk.streams.core import Stream
+from base_python.cdk.streams.http import HttpStream
 from pendulum import DateTime
 from slack_sdk import WebClient
 
