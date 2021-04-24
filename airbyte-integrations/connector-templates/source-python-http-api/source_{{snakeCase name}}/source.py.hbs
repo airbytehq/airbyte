@@ -23,11 +23,12 @@ SOFTWARE.
 """
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 
 from base_python import AbstractSource, HttpStream, Stream
+from base_python.cdk.streams.auth.core import TokenAuthenticator
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -101,10 +102,10 @@ class {{properCase name}}Stream(HttpStream, ABC):
 
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-    """
-    TODO: Override this method to define how a response is parsed.
-    :return an iterable containing each record in the response
-    """
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
         yield {}
 
 

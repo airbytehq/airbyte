@@ -48,7 +48,7 @@ from base_python.logger import AirbyteLogger
 class AbstractSource(Source, ABC):
     """
     Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
-    in this class to create an Airbyte Specification compliant Source. 
+    in this class to create an Airbyte Specification compliant Source.
     """
 
     @abstractmethod

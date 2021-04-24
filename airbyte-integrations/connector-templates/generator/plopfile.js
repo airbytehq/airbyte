@@ -25,7 +25,7 @@ module.exports = function (plop) {
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
-  const httpApiInputRoot = '../source-python-cdk';
+  const httpApiInputRoot = '../source-python-http-api';
 
   const outputDir = '../../connectors';
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
