@@ -162,6 +162,27 @@ class Employees(Incremental{{properCase name}}Stream):
         """
         return "employees"
 
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        """
+        TODO: Override this method to define slices in which the stream will be read. This is useful if the api offers reads by groups or filters,
+        and can be paired with the state object to make reads efficient. The function is called when a stream is first created and returns an Iterable
+        of Optional slices. Each returned Optional contains the necessary data to craft a request for that slice. The stream state is usually
+        referenced to determine what slices need to be created. This means that data in a slice is usually closely related to a stream's cursor_field
+        and stream_state.
+
+        A request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
+        craft that specific request.
+
+        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
+        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
+        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
+        the date query param.
+
+        This function is generated on the incremental stream as slices are usually used by incremental streams. However, full-refresh streams can also
+        make use of slices.
+        """
+        return []
+
 
 # Source
 class Source{{properCase name}}(AbstractSource):
