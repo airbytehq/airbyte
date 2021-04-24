@@ -125,6 +125,7 @@ class Customers(ScaffoldCdkStream):
         return "customers"
 
 
+# Basic incremental stream
 class IncrementalScaffoldCdkStream(ScaffoldCdkStream, ABC):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
