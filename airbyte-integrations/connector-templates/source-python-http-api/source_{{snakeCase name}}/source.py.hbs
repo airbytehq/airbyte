@@ -69,11 +69,11 @@ class {{properCase name}}Stream(HttpStream, ABC):
     `class Incremental{{properCase name}}Stream(({{properCase name}}Stream), ABC)` then have concrete stream implementations extend it. An example
     is provided below.
 
-    See the reference docs for the full list of configurable options. 
+    See the reference docs for the full list of configurable options.
     """
 
     # TODO: Fill in the url base. Required.
-    url_base = 'https://myapi.com/v1/'
+    url_base = 'https://example-api.com/v1/'
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -108,23 +108,23 @@ class {{properCase name}}Stream(HttpStream, ABC):
         yield {}
 
 
-class MultipleShotPotatoGun({{properCase name}}Stream):
+class Customers({{properCase name}}Stream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
 
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://potatogun.com/v1/multiple then this should
-        return "multiple". Required.
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
         """
-        return 'fill_in_this_stream_specific_path'
+        return 'customers'
 
 class Incremental{{properCase name}}Stream({{properCase name}}Stream, ABC):
     """
         TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
+              if you do not need to implement incremental sync for any streams, remove this class.
     """
-    # TODO if you do not need to implement incremental sync for any streams, remove this class.
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
@@ -146,20 +146,21 @@ class Incremental{{properCase name}}Stream({{properCase name}}Stream, ABC):
         """
         return {}
 
-class SingleShotPotatoGun(Incremental{{properCase name}}Stream):
+
+class Employees(Incremental{{properCase name}}Stream):
     """
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
 
     # TODO: Fill in the cursor_field. Required.
-    cursor_field = 'fill_in_this_stream_cursor_field'
+    cursor_field = 'start_date'
 
     def path(self, **kwargs) -> str:
         """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://potatogun.com/v1/single then this should
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
         return "single". Required.
         """
-        return "customers"
+        return "employees"
 
 
 # Source
@@ -174,16 +175,16 @@ class Source{{properCase name}}(AbstractSource):
 
         :param config:  the user-input config object conforming the connector's spec.json
         :param logger:  logger object
-        :return Tuple[bool, any]:
+        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the MassPotatoGun stream when your own streams.
+        TODO: Replace the streams below with your own streams.
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token=config['api_key']) # Oauth2Authenticator is also available if you need oauth support
-        return [MultipleShotPotatoGun(authenticator=auth), SingleShotPotatoGun(authenticator=auth)]
+        auth = TokenAuthenticator(token='api_key') # Oauth2Authenticator is also available if you need oauth support
+        return [Customers(authenticator=auth), Employees(authenticator=auth)]
