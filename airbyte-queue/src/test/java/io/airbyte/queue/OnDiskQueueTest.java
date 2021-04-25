@@ -31,16 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import io.airbyte.commons.lang.CloseableQueue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.concurrent.Executors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +89,6 @@ class OnDiskQueueTest {
     assertDoesNotThrow(() -> queue.close());
     assertThrows(IllegalStateException.class, () -> queue.offer(toBytes("hello")));
     assertThrows(IllegalStateException.class, () -> queue.poll());
-    assertThrows(IllegalStateException.class, () -> queue.iterator());
   }
 
   @Test

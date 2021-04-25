@@ -31,9 +31,7 @@ import io.airbyte.commons.lang.CloseableQueue;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.AbstractQueue;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.io.FileUtils;
 
@@ -59,73 +57,47 @@ public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue
   @Override
   public boolean offer(byte[] bytes) {
     Preconditions.checkState(!closed.get());
-    return BlockingOp.execute(lock, () -> {
-      try {
-        queue.enqueue(bytes);
-        return true;
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    try {
+      queue.enqueue(bytes);
+      return true;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public byte[] poll() {
     Preconditions.checkState(!closed.get());
-    return NonBlockingOp.execute(lock, () -> {
-      try {
-        return queue.dequeue();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    try {
+      return queue.dequeue();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public byte[] peek() {
     Preconditions.checkState(!closed.get());
-    return NonBlockingOp.execute(lock, () -> {
-      try {
-        return queue.peek();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    try {
+      return queue.peek();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public int size() {
     Preconditions.checkState(!closed.get());
-    return NonBlockingOp.execute(lock, () -> Math.toIntExact(queue.size()));
+    return Math.toIntExact(queue.size());
   }
 
   /**
-   * Logging frameworks call this method when printing out this class. Copy existing elements and
-   * reinsert them back into the queue so as not to empty this queue while printing it.
-   *
-   * When constructing an iterator, no other method is allowed to function to preserve order.
-   *
-   * Since this reads a disk-based queue into memory, care must be taken when retrieving this queue's
-   * iterator. Attempting to return the iterator of a queue that is too big will result in an
-   * {@link OutOfMemoryError}.
+   * Logging frameworks call this method when printing out this class. Throw an disable this for now
+   * since iterating the contents of a queue is tricky and we want to avoid this for now.
    */
   @Override
   public Iterator<byte[]> iterator() {
-    Preconditions.checkState(!closed.get());
-    return BlockingOp.execute(lock, () -> {
-      try {
-        List<byte[]> elements = new ArrayList<>();
-        while (!queue.isEmpty()) {
-          elements.add(queue.dequeue());
-        }
-        for (byte[] e : elements) {
-          queue.enqueue(e);
-        }
-        return elements.iterator();
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    throw new UnsupportedOperationException("This queue does not support iteration");
   }
 
   @Override
