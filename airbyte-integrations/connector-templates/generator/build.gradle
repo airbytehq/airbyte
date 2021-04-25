@@ -12,7 +12,7 @@ assemble.dependsOn(npmInstall)
 
 task testScaffoldTemplates
 
-def addScaffoldTemplateTask(name, scaffoldParams=[]) {
+def addScaffoldTemplateTask(name, packageName,scaffoldParams=[]) {
     def taskName = "testScaffoldTemplate_${name}"
     def outputDir = "airbyte-integrations/connectors/source-scaffold-${name}"
 
@@ -26,7 +26,7 @@ def addScaffoldTemplateTask(name, scaffoldParams=[]) {
             }
             exec {
                 workingDir rootDir
-                def cmd = ['./tools/integrations/manage.sh', 'scaffold', name, "scaffold-${name}"]
+                def cmd = ['./tools/integrations/manage.sh', 'scaffold', name, packageName]
                 cmd.addAll(scaffoldParams)
                 commandLine cmd
             }
@@ -38,6 +38,7 @@ def addScaffoldTemplateTask(name, scaffoldParams=[]) {
     testScaffoldTemplates.dependsOn task
 }
 
-addScaffoldTemplateTask('source-python')
+addScaffoldTemplateTask('Python Source', 'scaffold-source-python')
+addScaffoldTemplateTask('Python HTTP CDK Source', 'scaffold-source-http')
 // TODO: enable Singer template testing
 //addScaffoldTask('source-python-singer', ['tap-exchangeratesapi'])
