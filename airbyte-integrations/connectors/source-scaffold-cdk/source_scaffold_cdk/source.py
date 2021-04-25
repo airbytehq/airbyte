@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from base_python import AbstractSource, HttpStream, Stream
 from base_python.cdk.streams.auth.core import TokenAuthenticator
 
@@ -74,7 +74,7 @@ class ScaffoldCdkStream(HttpStream, ABC):
     """
 
     # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = 'https://example-api.com/v1/'
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -93,14 +93,13 @@ class ScaffoldCdkStream(HttpStream, ABC):
         """
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         """
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
         return {}
+
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -115,23 +114,19 @@ class Customers(ScaffoldCdkStream):
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        return "customers"
-
+        return 'customers'
 
 # Basic incremental stream
 class IncrementalScaffoldCdkStream(ScaffoldCdkStream, ABC):
     """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-          if you do not need to implement incremental sync for any streams, remove this class.
+        TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
+              if you do not need to implement incremental sync for any streams, remove this class.
     """
-
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
@@ -160,7 +155,7 @@ class Employees(IncrementalScaffoldCdkStream):
     """
 
     # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
+    cursor_field = 'start_date'
 
     def path(self, **kwargs) -> str:
         """
@@ -171,28 +166,30 @@ class Employees(IncrementalScaffoldCdkStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         """
-        TODO: Override this method to define slices in which the stream will be read. This is useful if the api offers reads by groups or filters,
-        and can be paired with the state object to make reads efficient. The function is called when a stream is first created and returns an Iterable
-        of Optional slices. Each returned Optional contains the necessary data to craft a request for that slice. The stream state is usually
-        referenced to determine what slices need to be created. This means that data in a slice is usually closely related to a stream's cursor_field
-        and stream_state.
+        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
 
-        A request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
+        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
+        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
+        section of the docs for more information.
+
+        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
+        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
+        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
+
+        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
         craft that specific request.
 
         For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
         this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
         till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
         the date query param.
-
-        This function is generated on the incremental stream as slices are usually used by incremental streams. However, full-refresh streams can also
-        make use of slices.
         """
-        return []
+        raise NotImplementedError
 
 
 # Source
 class SourceScaffoldCdk(AbstractSource):
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -213,5 +210,5 @@ class SourceScaffoldCdk(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
+        auth = TokenAuthenticator(token='api_key') # Oauth2Authenticator is also available if you need oauth support
         return [Customers(authenticator=auth), Employees(authenticator=auth)]
