@@ -311,6 +311,9 @@ Check connection
 class HttpAuthenticator(ABC)
 ```
 
+Base abstract class for various HTTP Authentication strategies. Authentication strategies are generally
+expected to provide security credentials via HTTP headers.
+
 <a name="cdk.streams.auth.core.HttpAuthenticator.get_auth_header"></a>
 #### get\_auth\_header
 
@@ -332,6 +335,9 @@ A dictionary containing all the necessary headers to authenticate.
 ```python
 class Oauth2Authenticator(HttpAuthenticator)
 ```
+
+Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
+The generated access token is attached to each request via the Authorization header.
 
 <a name="cdk.streams.auth.oauth.Oauth2Authenticator.get_refresh_request_body"></a>
 #### get\_refresh\_request\_body
@@ -372,6 +378,8 @@ Find the package name given a class name
 ```python
 class Stream(ABC)
 ```
+
+Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
 
 <a name="cdk.streams.core.Stream.name"></a>
 #### name
@@ -511,6 +519,8 @@ An updated state object
 ```python
 class HttpStream(Stream,  ABC)
 ```
+
+Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
 
 <a name="cdk.streams.http.HttpStream.url_base"></a>
 #### url\_base
@@ -680,6 +690,9 @@ An exception that exposes how long it attempted to backoff
 class AbstractSource(Source,  ABC)
 ```
 
+Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
+in this class to create an Airbyte Specification compliant Source.
+
 <a name="cdk.abstract_source.AbstractSource.check_connection"></a>
 #### check\_connection
 
@@ -687,6 +700,10 @@ class AbstractSource(Source,  ABC)
  | @abstractmethod
  | check_connection(logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]
 ```
+
+**Arguments**:
+
+- `config`: The user-provided configuration as specified by the source's spec. This usually contains information required to check connection e.g. tokens, secrets and keys etc.
 
 **Returns**:
 
@@ -703,9 +720,13 @@ The error object will be cast to string to display the problem to the user.
  | streams(config: Mapping[str, Any]) -> List[Stream]
 ```
 
+**Arguments**:
+
+- `config`: The user-provided configuration as specified by the source's spec. Any stream construction related operation should happen here.
+
 **Returns**:
 
-A list of the streams in this source connector
+A list of the streams in this source connector.
 
 <a name="cdk.abstract_source.AbstractSource.name"></a>
 #### name
@@ -724,7 +745,7 @@ Source name
  | discover(logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog
 ```
 
-Discover streams
+Implements the Discover operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification.
 
 <a name="cdk.abstract_source.AbstractSource.check"></a>
 #### check
@@ -733,5 +754,14 @@ Discover streams
  | check(logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus
 ```
 
-Check connection
+Implements the Check Connection operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification.
+
+<a name="cdk.abstract_source.AbstractSource.read"></a>
+#### read
+
+```python
+ | read(logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None) -> Iterator[AirbyteMessage]
+```
+
+Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification.
 
