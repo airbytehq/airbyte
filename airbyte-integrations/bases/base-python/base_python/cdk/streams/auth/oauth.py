@@ -29,6 +29,11 @@ from base_python.cdk.streams.auth.core import HttpAuthenticator
 
 
 class Oauth2Authenticator(HttpAuthenticator):
+    """
+    Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
+    The generated access token is attached to each request via the Authorization header.
+    """
+
     def __init__(self, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str, scopes: [str] = None):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
