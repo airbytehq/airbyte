@@ -34,7 +34,7 @@ def createLicenseWith = { File license, String startComment, String endComment, 
 }
 
 def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '####', '####', "# ", true)
+    return createLicenseWith(license, '"""', '"""', "", true)
 }
 
 def createJavaLicenseWith = { license ->
@@ -87,7 +87,7 @@ spotless {
     python {
         target createSpotlessTarget('**/*.py')
 
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
+        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|#)'
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
