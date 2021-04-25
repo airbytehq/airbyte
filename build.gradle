@@ -26,7 +26,7 @@ def createLicenseWith = { File license, String startComment, String endComment, 
         }
         w.writeLine(endComment)
         w.writeLine("")
-        if(isPython) {
+        if (isPython) {
             w.writeLine("")
         }
     }
@@ -34,7 +34,7 @@ def createLicenseWith = { File license, String startComment, String endComment, 
 }
 
 def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '"""', '"""', "", true)
+    return createLicenseWith(license, '', '', "# ", true)
 }
 
 def createJavaLicenseWith = { license ->
@@ -45,23 +45,23 @@ def createJavaLicenseWith = { license ->
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
     def excludes = [
-        '.gradle',
-        'node_modules',
-        '.eggs',
-        '.mypy_cache',
-        '.venv',
-        '*.egg-info',
-        'build',
-        'dbt-project-template',
-        'tools',
-        'secrets'
+            '.gradle',
+            'node_modules',
+            '.eggs',
+            '.mypy_cache',
+            '.venv',
+            '*.egg-info',
+            'build',
+            'dbt-project-template',
+            'tools',
+            'secrets'
     ]
 
     if (System.getenv().containsKey("CORE_ONLY")) {
         excludes.add("airbyte-integrations/connectors")
     }
 
-    return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect {"**/${it}"})
+    return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect { "**/${it}" })
 }
 
 spotless {
@@ -87,7 +87,10 @@ spotless {
     python {
         target createSpotlessTarget('**/*.py')
 
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|#)'
+        // Many __init__.py files are blank which makes it hard to write a regex to know where to add a license
+        targetExclude createSpotlessTarget('**/__init__.py')
+
+        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
