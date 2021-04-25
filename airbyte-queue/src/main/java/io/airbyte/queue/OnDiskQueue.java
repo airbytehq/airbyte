@@ -97,7 +97,7 @@ public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue
    */
   @Override
   public Iterator<byte[]> iterator() {
-    //TODO(davin): Implement this properly.
+    // TODO(davin): Implement this properly.
     throw new UnsupportedOperationException("This queue does not support iteration");
   }
 
