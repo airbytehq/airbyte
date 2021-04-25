@@ -169,7 +169,8 @@ class Employees(Incremental{{properCase name}}Stream):
         TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
 
         Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient.
+        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
+        section of the docs for more information.
 
         The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
         necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.

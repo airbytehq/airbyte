@@ -2,7 +2,7 @@
 ## Stream Slicing 
 A Stream Slice is a subset of the records in a stream. 
 
-When a stream is being read incrementally, Slices can be used to control when state is checkpointed (see the state management section [TODO]()). 
+When a stream is being read incrementally, Slices can be used to control when state is saved (see the state management section [TODO]()). 
 When slicing is enabled, a state message will be output by the connector after reading every slice. Slicing is completely optional and is provided as a way for connectors to checkpoint state in a more granular way than basic interval-based state checkpointing. Slicing is typically used when reading a large amount of data or when the underlying data source imposes strict rate limits that make it difficult to re-read the same data over and over again. This being said, interval-based checkpointing is compatible with slicing with one difference: intervals are counted within a slice rather than across all records. In other words, the counter used to determine if the interval has been reached (e.g: every 10k records) resets at the beginning of every slice.     
 
 The relationship between records in a slice is up to the developer, but slices are typically used to implement date-based checkpointing,
