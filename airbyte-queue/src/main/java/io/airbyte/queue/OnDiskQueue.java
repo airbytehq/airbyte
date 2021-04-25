@@ -25,7 +25,6 @@
 package io.airbyte.queue;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.AbstractIterator;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 import io.airbyte.commons.lang.CloseableQueue;
@@ -42,6 +41,7 @@ import org.apache.commons.io.FileUtils;
  * on disk. It is NOT meant to be a long-lived, persistent queue.
  *
  * Wraps BigQueueImpl behind Airbyte persistent queue interface. BigQueueImpl is threadsafe.
+ *
  */
 public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue<byte[]> {
 
@@ -59,10 +59,10 @@ public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue
     Preconditions.checkState(!closed.get());
     try {
       queue.enqueue(bytes);
+      return true;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return true;
   }
 
   @Override
@@ -91,22 +91,14 @@ public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue
     return Math.toIntExact(queue.size());
   }
 
+  /**
+   * Logging frameworks call this method when printing out this class. Throw an disable this for now
+   * since iterating the contents of a queue is tricky and we want to avoid this for now.
+   */
   @Override
   public Iterator<byte[]> iterator() {
-    Preconditions.checkState(!closed.get());
-
-    return new AbstractIterator<>() {
-
-      @Override
-      protected byte[] computeNext() {
-        final byte[] poll = poll();
-        if (poll == null) {
-          return endOfData();
-        }
-        return poll;
-      }
-
-    };
+    //TODO(davin): Implement this properly.
+    throw new UnsupportedOperationException("This queue does not support iteration");
   }
 
   @Override
@@ -121,6 +113,19 @@ public class OnDiskQueue extends AbstractQueue<byte[]> implements CloseableQueue
       // deletes all data files.
       FileUtils.deleteQuietly(persistencePath.toFile());
     }
+  }
+
+  /**
+   * Print size instead of queue contents to avoid any sort of logging complication. Note this does
+   * not hold any read locks for simplicity, and queue size cannot be used as a source of truth.
+   */
+  @Override
+  public String toString() {
+    return "OnDiskQueue{" +
+        "queue=" + queue.hashCode() +
+        ", size=" + queue.size() +
+        ", closed=" + closed +
+        '}';
   }
 
 }
