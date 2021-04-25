@@ -1,22 +1,82 @@
-// TODO: The streams here should mirror the streams in the catalog.json. Delete after reading.
+// TODO: Construct a configured catalog that can be used for testing. Each stream's `json_schema` field should match the corresponding json schema file.
 {
   "streams": [
     {
       "stream": {
-        "name": "TODO: fix this.",
+        "name": "customers",
         "json_schema": {
-          "properties": {
-            "column_name": {
-              "type": "string"
-            }
-          },
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "additionalProperties": false
+          "properties": {
+            "id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "signup_date": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            }
+          }
         },
-        "supported_sync_modes": ["TODO: whatever sync mode the source supported e.g. full_refresh or incremental"]
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
       },
-      "sync_mode": "TODO: whatever sync mode the test should run with e.g. full_refresh or incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "employees",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "years_of_service": {
+              "type": [
+                "null",
+                "integer"
+              ]
+            },
+            "start_date": {
+              "type": [
+                "null",
+                "string"
+              ],
+              "format": "date-time"
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     }
   ]
 }

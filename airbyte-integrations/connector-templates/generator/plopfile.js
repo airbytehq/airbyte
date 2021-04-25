@@ -25,7 +25,7 @@ module.exports = function (plop) {
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
-  const httpApiInputRoot = '../source-python-cdk';
+  const httpApiInputRoot = '../source-python-http-api';
 
   const outputDir = '../../connectors';
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
@@ -38,7 +38,7 @@ module.exports = function (plop) {
   });
 
   plop.setGenerator('Python HTTP API Source', {
-    description: 'Generate a source that pulls data from a synchronous HTTP API.',
+    description: 'Generate a Source that pulls data from a synchronous HTTP API.',
     prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
     actions: [
       {
