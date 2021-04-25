@@ -39,6 +39,6 @@ def addScaffoldTemplateTask(name, packageName,scaffoldParams=[]) {
 }
 
 addScaffoldTemplateTask('Python Source', 'scaffold-source-python')
-addScaffoldTemplateTask('Python HTTP API Source', 'scaffold-source-http')
+addScaffoldTemplateTask('Python HTTP CDK Source', 'scaffold-source-http')
 // TODO: enable Singer template testing
 //addScaffoldTask('source-python-singer', ['tap-exchangeratesapi'])
