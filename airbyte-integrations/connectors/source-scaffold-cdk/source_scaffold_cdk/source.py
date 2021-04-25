@@ -184,7 +184,7 @@ class Employees(IncrementalScaffoldCdkStream):
         till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
         the date query param.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Implement stream slices or delete this method!")
 
 
 # Source
