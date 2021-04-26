@@ -122,14 +122,52 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public String copyToTmpTableAndPrepMergeToFinalTable(boolean hasFailed) throws Exception {
+  public void closeStagingUploader(boolean hasFailed) throws Exception {
     if (hasFailed) {
       multipartUploadManager.abort();
-      return "";
     }
     closeAndWaitForUpload();
-    createTmpTableAndCopyS3FileInto();
-    return mergeIntoDestTableIncrementalOrFullRefreshQuery();
+  }
+
+  @Override
+  public void createDestinationSchema() throws Exception {
+    LOGGER.info("Creating schema in destination if it doesn't exist: {}", schemaName);
+    sqlOperations.createSchemaIfNotExists(db, schemaName);
+  }
+
+  @Override
+  public void createTemporaryTable() throws Exception {
+    LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
+    sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName);
+  }
+
+  @Override
+  public void copyStagingFileToTemporaryTable() throws Exception {
+    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
+    copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
+    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
+  }
+
+  @Override
+  public String createDestinationTable() throws Exception {
+    var destTableName = nameTransformer.getRawTableName(streamName);
+    LOGGER.info("Preparing table {} in destination.", destTableName);
+    sqlOperations.createTableIfNotExists(db, schemaName, destTableName);
+    LOGGER.info("Table {} in destination prepared.", tmpTableName);
+
+    return destTableName;
+  }
+
+  @Override
+  public String generateMergeStatement(String destTableName) throws Exception {
+    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
+    var queries = new StringBuilder();
+    if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
+      queries.append(sqlOperations.truncateTableQuery(schemaName, destTableName));
+      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
+    }
+    queries.append(sqlOperations.copyTableQuery(schemaName, tmpTableName, destTableName));
+    return queries.toString();
   }
 
   @Override
@@ -158,31 +196,6 @@ public abstract class S3StreamCopier implements StreamCopier {
     outputStream.close();
     multipartUploadManager.complete();
     LOGGER.info("All data for {} stream uploaded.", streamName);
-  }
-
-  private void createTmpTableAndCopyS3FileInto() throws Exception {
-    sqlOperations.createSchemaIfNotExists(db, schemaName);
-    LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
-    sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName);
-    LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
-    copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
-    LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
-  }
-
-  private String mergeIntoDestTableIncrementalOrFullRefreshQuery() throws Exception {
-    LOGGER.info("Preparing tmp table {} in destination.", tmpTableName);
-    var destTableName = nameTransformer.getRawTableName(streamName);
-    sqlOperations.createTableIfNotExists(db, schemaName, destTableName);
-    LOGGER.info("Tmp table {} in destination prepared.", tmpTableName);
-
-    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
-    var queries = new StringBuilder();
-    if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
-      queries.append(sqlOperations.truncateTableQuery(schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
-    }
-    queries.append(sqlOperations.copyTableQuery(schemaName, tmpTableName, destTableName));
-    return queries.toString();
   }
 
   public static void attemptWriteToPersistence(S3Config s3Config) {

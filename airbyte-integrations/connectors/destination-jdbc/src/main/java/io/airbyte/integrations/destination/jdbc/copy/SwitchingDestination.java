@@ -39,6 +39,16 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Multiple configs may allow you to sync data to the destination in multiple ways.
+ *
+ * One primary example is that the default behavior for some DB-based destinations may use
+ * INSERT-based destinations while (given additional credentials) it may be able to sync data using
+ * a file copied to a staging location.
+ *
+ * This class exists to make it easy to define a destination in terms of multiple other destination
+ * implementations, switching between them based on the config provided.
+ */
 public class SwitchingDestination<T extends Enum<T>> extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SwitchingDestination.class);

@@ -41,7 +41,8 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
     return new CopyConsumer<>(
         getConfiguredSchema(config),
-        getS3Config(config), catalog,
+        getS3Config(config),
+        catalog,
         getDatabase(config),
         new SnowflakeS3StreamCopierFactory(),
         getSqlOperations(),
@@ -49,7 +50,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
   }
 
   @Override
-  public void attemptWriteToPersistence(JsonNode config) {
+  public void checkPersistence(JsonNode config) {
     S3StreamCopier.attemptWriteToPersistence(getS3Config(config));
   }
 
