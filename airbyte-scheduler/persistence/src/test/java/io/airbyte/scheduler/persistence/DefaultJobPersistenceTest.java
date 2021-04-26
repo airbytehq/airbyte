@@ -290,20 +290,18 @@ class DefaultJobPersistenceTest {
 
     final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
 
-    if (!actualList.isEmpty()) {
-      final Job actual = actualList.get(0);
-      final Job expected = createJob(
-          jobId,
-          SPEC_JOB_CONFIG,
-          JobStatus.SUCCEEDED,
-          Lists.newArrayList(
-              createAttempt(0L, jobId, AttemptStatus.FAILED, LOG_PATH),
-              createAttempt(1L, jobId, AttemptStatus.SUCCEEDED, secondAttemptLogPath)),
-          NOW.getEpochSecond());
+    final Job actual = actualList.get(0);
+    final Job expected = createJob(
+        jobId,
+        SPEC_JOB_CONFIG,
+        JobStatus.SUCCEEDED,
+        Lists.newArrayList(
+            createAttempt(0L, jobId, AttemptStatus.FAILED, LOG_PATH),
+            createAttempt(1L, jobId, AttemptStatus.SUCCEEDED, secondAttemptLogPath)),
+        NOW.getEpochSecond());
 
-      assertEquals(1, actualList.size());
-      assertEquals(expected, actual);
-    }
+    assertEquals(1, actualList.size());
+    assertEquals(expected, actual);
   }
 
   @Test

@@ -24,7 +24,9 @@
 
 package io.airbyte.server.converters;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -34,7 +36,8 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,7 +76,7 @@ public class DatabaseArchiverTest {
   }
 
   @Test
-  void testUnknownTableExport() throws SQLException, IOException {
+  void testUnknownTableExport() throws Exception {
     // Create a table that is not declared in DatabaseSchema
     database.query(ctx -> {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), updated_at DATE);");
@@ -83,11 +86,15 @@ public class DatabaseArchiverTest {
     });
     final Path tempFolder = Files.createTempDirectory(TEMP_PREFIX);
 
-    try {
-      databaseArchiver.exportDatabaseToArchive(tempFolder);
-    } catch (Exception e) {
-      System.out.println(e);
-    }
+    databaseArchiver.exportDatabaseToArchive(tempFolder);
+
+    final Set<String> exportedFiles = Files.walk(tempFolder)
+        .map(Path::toString)
+        .map(String::toLowerCase)
+        .collect(Collectors.toSet());
+
+    assertTrue(exportedFiles.stream().anyMatch(x -> x.contains("jobs")));
+    assertFalse(exportedFiles.stream().anyMatch(x -> x.contains("id_and_name")));
   }
 
   @Test

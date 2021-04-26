@@ -473,7 +473,7 @@ public class DefaultJobPersistence implements JobPersistence {
       return database.query(context -> context.meta().getSchemas(schema).stream()
           .flatMap(s -> context.meta(s).getTables().stream())
           .map(Named::getName)
-          .filter(table -> DatabaseSchema.getTableNames().contains(table))
+          .filter(table -> DatabaseSchema.getLowerCaseTableNames().contains(table.toLowerCase()))
           .collect(Collectors.toList()));
     } else {
       return List.of();
