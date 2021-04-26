@@ -2,13 +2,13 @@
 *Last Updated: 26/4/21*
 
 The Airbyte Python CDK is a low-code framework for fast development of Airbyte Specification-compliant connectors.
-The CDK is currently only available for HTTP Sources, and is built on top the [Airbyte Specification's](https://docs.airbyte.io/architecture/airbyte-specification)
+The CDK is currently only available for HTTP Sources, and is built on top the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification).
 It provides an improved developer experience by providing basic implementation structure and abstracting away
 low-level glue boilerplate. The CDK aims to make implementing a Source as simple as possible -
-reading the Source's API, and filling in a few Python function is all that is needed.
+reading the Source's API, and filling in a few Python function should be all that is needed.
 
 This document is a general introduction to the CDK. Readers should be familiar with the above linked Airbyte
-Specification between proceeding.
+Specification before proceeding.
 
 ### The Airbyte Specification
 As a quick recap, the Airbyte Specification requires an Airbyte Source to support 4 distinct operations:
@@ -22,7 +22,7 @@ As a quick recap, the Airbyte Specification requires an Airbyte Source to suppor
    and sent to the Airbyte Destination. Depending on how the Source is implemented, this sync can be incremental
    or a full-refresh.
    
-Careful reader will realise one of the core concepts discussed here is the __Source__.
+Careful reader will realize one of the core concepts discussed here is the __Source__.
 
 The Source contains one or more __Streams__ (or __Airbyte Streams__). A __Stream__ is the other concept key to
 understanding how Airbyte models the data syncing process. A __Stream__ models the logical data groups that make
@@ -30,18 +30,18 @@ up the larger __Source__. If the __Source__ is a RDMS, each __Stream__ is a tabl
 to one resource within the API. e.g. a __Stripe Source__ would have have one __Stream__ for `Transactions`, one
 for `Charges` and so on.
 
-### The AbstractSource Object
+### The `AbstractSource` Object
 This brings us to the CDK's `AbstractSource` object. This represents the just discussed `Source` concept and is
-the top-level entrypoint for the 4 methods __Source__'s need to implement.
+the top-level entrypoint for the 4 methods __Source__s need to implement.
 
 `Spec` and `Check` are the `AbstractSource`'s simplest operations.
 
-`Spec` returns a checked in json schema file encoding the required configuration. The `AbstractSource` looks for
-a file named `spec.json` by default in the module's root. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/spec.json).
+`Spec` returns a checked in json schema file specifying the required configuration. The `AbstractSource` looks for
+a file named `spec.json` in the module's root by default. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/spec.json).
 
-`Check` delegates to the `AbstractSource`'s `check_connection` function. The function `config` parameter
-the user-provided configuration, as specified in the `spec.json` returned by `Spec`, and is used to validate
-authentication and authorization. Here is the [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py#L90) from the same Exchange Rates API.
+`Check` delegates to the `AbstractSource`'s `check_connection` function. The function's `config` parameter contains
+the user-provided configuration, specified in the `spec.json` returned by `Spec`. `check_connection` uses this configuration to validate
+access and permissioning. Here is an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py#L90) from the same Exchange Rates API.
 
 #### The Streams Interface
 In parallel with the above concepts, an `AbstractSource` owns a set of `Stream`s. This is populated via
