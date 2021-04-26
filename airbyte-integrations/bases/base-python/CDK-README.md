@@ -66,13 +66,13 @@ A summary of what we've covered so far on how to use the Airbyte CDK:
 ### The HTTPStream Object
 
 We've covered how the `AbstractSource` works with the `Stream` interface in order to fulfill the Airbyte
-Specification. Although developers are welcome to implement their own, the CDK saves developers the hassle
+Specification. Although developers are welcome to implement their own object, the CDK saves developers the hassle
 of doing so with the `HTTPStream` object. Similar to the `AbstractSource`, creating a `Stream` is a matter
 of extending `HTTPStream`, filling in the right functions, and placing a single json file in the right place.
 
 #### The Basic Full-Refresh Stream
 
-Just like any basic HTTP request, the basic `HTTPStream` requires a url to perform the request, and instructions
+Just like any general HTTP request, the basic `HTTPStream` requires a url to perform the request, and instructions
 on how to parse the resulting response.
 
 The full request path is broken up into two parts, the base url and the path. This makes it easy for developers
