@@ -85,7 +85,7 @@ class SourceNmbgmrGwl(Source):
             "type": "object",
             "properties": {"PointID": {"type": "string"},
                            "DateMeasured": {"type": "string"},
-                           "DepthToWaterBGS": {"type": "float"}}}
+                           "DepthToWaterBGS": {"type": "FLOAT64"}}}
 
         streams = [AirbyteStream(name='Acoustic',
                                  supported_sync_modes=["full_refresh", "incremental"],
