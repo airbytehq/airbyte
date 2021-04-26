@@ -200,7 +200,12 @@ public class RedshiftCopyDestination {
       this.region = config.get("s3_bucket_region").asText();
       this.accessKeyId = config.get("access_key_id").asText();
       this.secretAccessKey = config.get("secret_access_key").asText();
-      this.partSize = config.get("part_size").asInt(RedshiftCopier.DEFAULT_PART_SIZE_MB);;
+
+      var partSize = RedshiftCopier.DEFAULT_PART_SIZE_MB;
+      if (config.get("part_size") != null) {
+        partSize = config.get("part_size").asInt();
+      }
+      this.partSize = partSize;
     }
 
     public static boolean isPresent(JsonNode config) {
