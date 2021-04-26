@@ -22,31 +22,34 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.redshift;
+package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import java.nio.file.Path;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
- * contain S3 credentials by default, we remove these credentials.
- */
-public class RedshiftInsertIntegrationTest extends RedshiftCopyIntegrationTest {
+public class SnowflakeInsertDestination extends AbstractJdbcDestination implements Destination {
 
-  public JsonNode getStaticConfig() {
-    return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestination.class);
+
+  public SnowflakeInsertDestination() {
+    // the driver class is a no op because we override getDatabase.
+    super("", new SnowflakeSQLNameTransformer(), new SnowflakeSqlOperations());
   }
 
-  public static JsonNode purge(JsonNode config) {
-    var original = (ObjectNode) Jsons.clone(config);
-    original.remove("s3_bucket_name");
-    original.remove("s3_bucket_region");
-    original.remove("access_key_id");
-    original.remove("secret_access_key");
-    return original;
+  @Override
+  protected JdbcDatabase getDatabase(JsonNode config) {
+    return SnowflakeDatabase.getDatabase(config);
+  }
+
+  // this is a no op since we override getDatabase.
+  @Override
+  public JsonNode toJdbcConfig(JsonNode config) {
+    return Jsons.emptyObject();
   }
 
 }

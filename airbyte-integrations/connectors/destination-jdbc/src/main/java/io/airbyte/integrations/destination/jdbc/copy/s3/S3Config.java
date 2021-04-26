@@ -22,31 +22,36 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.redshift;
+package io.airbyte.integrations.destination.jdbc.copy.s3;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.Jsons;
-import java.nio.file.Path;
+public class S3Config {
 
-/**
- * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
- * contain S3 credentials by default, we remove these credentials.
- */
-public class RedshiftInsertIntegrationTest extends RedshiftCopyIntegrationTest {
+  private final String bucketName;
+  private final String accessKeyId;
+  private final String secretAccessKey;
+  private final String region;
 
-  public JsonNode getStaticConfig() {
-    return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
+  public S3Config(String bucketName, String accessKeyId, String secretAccessKey, String region) {
+    this.bucketName = bucketName;
+    this.accessKeyId = accessKeyId;
+    this.secretAccessKey = secretAccessKey;
+    this.region = region;
   }
 
-  public static JsonNode purge(JsonNode config) {
-    var original = (ObjectNode) Jsons.clone(config);
-    original.remove("s3_bucket_name");
-    original.remove("s3_bucket_region");
-    original.remove("access_key_id");
-    original.remove("secret_access_key");
-    return original;
+  public String getBucketName() {
+    return bucketName;
+  }
+
+  public String getAccessKeyId() {
+    return accessKeyId;
+  }
+
+  public String getSecretAccessKey() {
+    return secretAccessKey;
+  }
+
+  public String getRegion() {
+    return region;
   }
 
 }
