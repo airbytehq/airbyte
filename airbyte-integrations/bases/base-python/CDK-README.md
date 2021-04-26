@@ -41,11 +41,11 @@ a file named `spec.json` in the module's root by default. Here is an [example](h
 
 `Check` delegates to the `AbstractSource`'s `check_connection` function. The function's `config` parameter contains
 the user-provided configuration, specified in the `spec.json` returned by `Spec`. `check_connection` uses this configuration to validate
-access and permissioning. Here is an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py#L90) from the same Exchange Rates API.
+access and permissioning. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py#L90) from the same Exchange Rates API.
 
 #### The Streams Interface
-In parallel with the above concepts, an `AbstractSource` owns a set of `Stream`s. This is populated via
-the `AbstractSource`'s `streams` [function](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L63). `Discover` and `Read` rely on this populated set.
+An `AbstractSource` also owns a set of `Stream`s. This is populated via the `AbstractSource`'s `streams` [function](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L63).
+`Discover` and `Read` rely on this populated set.
 
 `Discover` returns an `AirbyteCatalog` representing all the distinct resources the underlying API supports.
 Here is the [entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L74) for those interested in reading the code.
