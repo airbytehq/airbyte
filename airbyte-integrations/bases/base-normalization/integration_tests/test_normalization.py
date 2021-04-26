@@ -49,7 +49,7 @@ container_name = "test_normalization_db_" + "".join(random.choice(string.ascii_l
 # dbt models and final sql outputs from the following git versionned tests will be written in a folder included in
 # airbyte git repository.
 git_versionned_tests = [
-    # "exchange_rate"
+    #"test_primary_key_streams"
 ]
 
 
@@ -59,7 +59,7 @@ git_versionned_tests = [
         git_versionned_tests
         + [
             # Non-versionned tests outputs below will be written to /tmp folders instead
-            "exchange_rate"
+            "test_primary_key_streams"
         ]
     ),
 )
@@ -228,8 +228,8 @@ def setup_input_raw_data(integration_type: str, test_resource_name: str, test_ro
     We run docker images of destinations to upload test data stored in the messages.txt file for each test case.
     This should populate the associated "raw" tables from which normalization is reading from when running dbt CLI.
     """
-    catalog_file = os.path.join("resources", test_resource_name, "catalog.json")
-    message_file = os.path.join("resources", test_resource_name, "messages.txt")
+    catalog_file = os.path.join("resources", test_resource_name, "data_input", "catalog.json")
+    message_file = os.path.join("resources", test_resource_name, "data_input", "messages.txt")
     copy_replace(
         catalog_file,
         os.path.join(test_root_dir, "reset_catalog.json"),
@@ -292,7 +292,7 @@ def generate_dbt_models(destination_type: DestinationType, test_resource_name: s
     This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
     """
     catalog_processor = CatalogProcessor(os.path.join(test_root_dir, "models", "generated"), destination_type)
-    catalog_processor.process(os.path.join("resources", test_resource_name, "catalog.json"), "_airbyte_data", target_schema)
+    catalog_processor.process(os.path.join("resources", test_resource_name, "data_input",  "catalog.json"), "_airbyte_data", target_schema)
 
 
 def dbt_run(test_root_dir: str):
@@ -319,9 +319,9 @@ def dbt_test(destination_type: DestinationType, test_resource_name: str, test_ro
     We use this mecanism to verify the output of our integration tests.
     """
     copy_test_files(
-        os.path.join("resources", test_resource_name, "schema_tests"), os.path.join(test_root_dir, "models/schema_tests"), destination_type
+        os.path.join("resources", test_resource_name, "dbt_schema_tests"), os.path.join(test_root_dir, "models/dbt_schema_tests"), destination_type
     )
-    copy_test_files(os.path.join("resources", test_resource_name, "data_tests"), os.path.join(test_root_dir, "tests"), destination_type)
+    copy_test_files(os.path.join("resources", test_resource_name, "dbt_data_tests"), os.path.join(test_root_dir, "tests"), destination_type)
     assert run_check_command(["dbt", "test", "--profiles-dir=.", "--project-dir=."], test_root_dir)
 
 

@@ -60,8 +60,17 @@ Rules about truncations, for example for both of these strings which are too lon
 - `Aaaa_Bbbb_Cccc_Dddd_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
 
 Deciding on how to truncate (in the middle) are being verified in these tests.
-In this instance, both strings ends up as:`Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
-and can potentially cause a collision in table names. Note that dealing with such collisions is not part of `destination_name_transformer` but of the `stream_processor`.
+In this instance, both strings ends up as:
+
+- `Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
+
+The truncate operation gets rid of characters in the middle of the string to preserve the start
+and end characters as it may contain more useful information in table naming. However the final
+truncated name can still potentially cause collisions in table names...
+
+Note that dealing with such collisions is not part of `destination_name_transformer` but of the
+`stream_processor` since one is focused on destination conventions and the other on putting together
+identifier names from streams and catalogs.
 
 ## Integration Tests
 
@@ -77,11 +86,12 @@ or can also be invoked on github, thanks to the slash commands posted as comment
 
     /test connector=bases/base-normalization
 
-These tests are run against all destinations that dbt can be executed on.
+### Integration Tests Definitions:
 
 Some test suites can be selected to be versioned control in Airbyte git repository (or not).
 This is useful to see direct impacts of code changes on downstream files generated or compiled
-by normalization and dbt (directly in PR too).
+by normalization and dbt (directly in PR too). (_Simply refer to your test suite name in the
+`git_versionned_tests` variable in the `base-normalization/integration_tests/test_normalization.py` file_)
 
 We would typically choose small and meaningful test suites to include in git while others more complex tests
 can be left out. They would still be run in a temporary directory and thrown away at the end of the tests.
@@ -91,58 +101,94 @@ For example, below, we would have 2 different tests "suites" with this hierarchy
 
       base-normalization/integration_tests/resources/
       ├── test_suite1/
-      │   ├── data_tests/
+      │   ├── data_input/
+      │   │   ├── catalog.json
+      │   │   └── messages.txt
+      │   ├── dbt_data_tests/
       │   │   ├── file1.sql
       │   │   └── file2.sql
-      │   ├── schema_tests/
+      │   ├── dbt_schema_tests/
       │   │   ├── file1.yml
       │   │   └── file2.yml
-      │   ├── catalog.json
-      │   └── messages.txt
+      │   └── README.md
       └── test_suite2/
-          ├── data_tests/
-          ├── schema_tests/
-          ├── catalog.json
-          └── messages.txt
+          ├── data_input/
+          │   ├── catalog.json
+          │   └── messages.txt
+          ├── dbt_data_tests/
+          ├── dbt_schema_tests/
+          └── README.md
 
-### Integration Test Input:
+#### README.md:
 
-#### catalog.json:
+Each test suite should have an optional `README.md` to include further details and descriptions of what the test is trying to verify and
+how it is specifically built.
+
+### Integration Test Data Input:
+
+#### data_input/catalog.json:
 
 The catalog.json is the main input for normalization from which the dbt models files are being
 generated from as it describes in JSON Schema format what the data structure is.
 
-#### messages.txt:
+#### data_input/messages.txt:
 
 The `messages.txt` are serialized Airbyte JSON records that should be sent to the destination as if they were
-transmitted by a source. In this integration test, the files is read and "cat" through to the docker image of 
+transmitted by a source. In this integration test, the files is read and "cat" through to the docker image of
 each destination connectors to populate `_airbyte_raw_tables`. These tables are finally used as input
 data for dbt to run from.
 
 ### Integration Test Execution Flow:
 
-1. Preparing test execution workspace folder from dbt project template
-2. Generate dbt profiles.yml to connect to destination
-3. Populate raw tables by running destination connectors 
-4. Normalization generating dbt models files
-5. dbt run
-6. dbt tests
-7. optional checks
+These integration tests are run against all destinations that dbt can be executed on.
+So, for each target destination, the steps run by the tests are:
+
+1. Prepare the test execution workspace folder (copy skeleton from `dbt-project-template/`)
+2. Generate a dbt `profiles.yml` file to connect to the target destination
+3. Populate raw tables by running the target destination connectors, reading and uploading the
+   `messages.txt` file as data input.
+4. Run Normalization step to generate dbt models files from `catalog.json` input file.
+5. Execute dbt cli command: `dbt run` from the test workspace folder to compile generated models files
+   - from `models/generated/` folder
+   - into `../build/(compiled|run)/airbyte_utils/models/generated/` folder
+   - The final "run" SQL files are also copied (for archiving) to `final/` folder by the test script.
+6. Deploy the `schema_tests` and `data_tests` files into the test workspace folder.
+7. Execute dbt cli command: `dbt tests` from the test workspace folder to run verifications and checks with dbt.
+8. Optional checks (nothing for the moment)
 
 ### Integration Test Checks:
 
-#### schema tests:
+#### dbt schema tests:
 
-https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests
-https://docs.getdbt.com/docs/guides/writing-custom-schema-tests
+dbt allows out of the box to configure some tests as properties for an existing model (or source, seed, or snapshot).
+This can be done in yaml format as described in the following documentation pages:
 
-#### data tests:
+- [dbt schema-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests)
+- [custom schema test](https://docs.getdbt.com/docs/guides/writing-custom-schema-tests)
 
-https://docs.getdbt.com/docs/building-a-dbt-project/tests#data-tests
+We are leveraging these capabilities in these integration tests to verify some relationships in our
+generated tables on the destinations.
 
-### Integration Test Outputs:
+#### dbt data tests:
 
+Additionally, dbt also supports "data tests" which are specified as SQL queries.
+A data test is a select statement that returns 0 records when the test is successful.
 
+- [dbt data-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#data-tests)
+
+#### Notes using dbt seeds:
+
+Because some functionalities are not stable enough on dbt side, it is difficult to properly use
+`dbt seed` commands to populate a set of expected data tables at the moment. Hopefully, this can be
+more easily be done in the future...
+
+Related issues to watch on dbt progress to improve this aspects:
+- https://github.com/fishtown-analytics/dbt/issues/2959#issuecomment-747509782
+- https://medium.com/hashmapinc/unit-testing-on-dbt-models-using-a-static-test-dataset-in-snowflake-dfd35549b5e2
+
+A nice improvement would be to add csv/json seed files as expected output data from tables.
+The integration tests would verify that the content of such tables in the destination would match
+these seed files or fail.
 
 ## Standard Destination Tests
 
