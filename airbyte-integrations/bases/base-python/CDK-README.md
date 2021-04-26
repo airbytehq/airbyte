@@ -63,7 +63,7 @@ A summary of what we've covered so far on how to use the Airbyte CDK:
   2. implementing the `streams` function.
   3. placing the above mentioned `spec.json` file in the right place.
 
-### The HTTPStream Object
+### The `HTTPStream` Object
 
 We've covered how the `AbstractSource` works with the `Stream` interface in order to fulfill the Airbyte
 Specification. Although developers are welcome to implement their own object, the CDK saves developers the hassle
@@ -108,7 +108,7 @@ query parameters and/or has an ordered field in the response. Some common exampl
 enumerated types. Although the implementation is slightly more complex (not that much as we will soon see) - the resulting
 Stream only reads what is necessary, and is thus far more efficient.
 
-Several new pieces are essential to understand how the incrementality works with the CDK.
+Several new pieces are essential to understand how incrementality works with the CDK.
 
 First is the `AirbyteStateMessage` and the `HttpStream`'s `cursor_field`. As mentioned, the `AirbyteStateMessage`
 persists state between syncs, and allows a new sync to pick up from where the previous sync last finished.
@@ -144,7 +144,7 @@ The CDK offers other features that make writing HTTP APIs a breeze.
 
 ##### Authentication
 
-The CDK support token and OAuth2.0 authentication via the `TokenAuthenticator` and `Oauth2Authenticator` classes
+The CDK supports token and OAuth2.0 authentication via the `TokenAuthenticator` and `Oauth2Authenticator` classes
 respectively. Both authentication strategies are identical in that they place the api token in the `Authorization`
 header. The `OAuth2Authenticator` goes an additional step further and has mechanisms to, given a refresh token,
 refresh the current access token. Note that the `OAuth2Authenticator` currently only supports refresh tokens
@@ -173,8 +173,8 @@ Note that Airbyte will always attempt to make as many requests as possible and o
 errors. It is not currently possible to specify a rate limit Airbyte should adhere to when making requests.
 
 ### Practical Tips
-* Airbyte recommends using the CDK template generator to develop with the CDK. The generated template
-  created all the required scaffolding, with convenient TODOs, to allow developers to truly focus on
+* Airbyte recommends using the CDK template generator to develop with the CDK. The template generates
+  created all the required scaffolding, with convenient TODOs, allowing developers to truly focus on
   implementing the API.
 
 ### Examples
