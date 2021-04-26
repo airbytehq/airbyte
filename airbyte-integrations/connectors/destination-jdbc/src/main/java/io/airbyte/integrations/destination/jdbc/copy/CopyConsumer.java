@@ -70,8 +70,10 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
     this.nameTransformer = nameTransformer;
     this.pairToCopier = new HashMap<>();
 
-    Preconditions.checkState(catalog.getStreams().stream().map(ConfiguredAirbyteStream::getDestinationSyncMode).anyMatch(Objects::isNull),
-        "Undefined destination sync mode.");
+    var definedSyncModes = catalog.getStreams().stream()
+        .map(ConfiguredAirbyteStream::getDestinationSyncMode)
+        .noneMatch(Objects::isNull);
+    Preconditions.checkState(definedSyncModes, "Undefined destination sync mode.");
   }
 
   @Override
