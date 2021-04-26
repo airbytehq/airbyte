@@ -5,6 +5,6 @@ sources:
     identifier: false
     schema: false
   tables:
-  - name: _AIRBYTE_RAW_EXCHANGE_RATE
   - name: _AIRBYTE_RAW_DEDUP_EXCHANGE_RATE
+  - name: _AIRBYTE_RAW_EXCHANGE_RATE
 version: 2
