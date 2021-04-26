@@ -22,31 +22,23 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.redshift;
+package io.airbyte.integrations.destination.jdbc.copy;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.Jsons;
-import java.nio.file.Path;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
 
-/**
- * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
- * contain S3 credentials by default, we remove these credentials.
- */
-public class RedshiftInsertIntegrationTest extends RedshiftCopyIntegrationTest {
+public interface StreamCopierFactory<T> {
 
-  public JsonNode getStaticConfig() {
-    return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
-  }
-
-  public static JsonNode purge(JsonNode config) {
-    var original = (ObjectNode) Jsons.clone(config);
-    original.remove("s3_bucket_name");
-    original.remove("s3_bucket_region");
-    original.remove("access_key_id");
-    original.remove("secret_access_key");
-    return original;
-  }
+  StreamCopier create(String configuredSchema,
+                      T config,
+                      String stagingFolder,
+                      DestinationSyncMode syncMode,
+                      AirbyteStream stream,
+                      ExtendedNameTransformer nameTransformer,
+                      JdbcDatabase db,
+                      SqlOperations sqlOperations);
 
 }

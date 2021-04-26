@@ -22,21 +22,21 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.redshift;
+package io.airbyte.integrations.destination.snowflake;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
+import java.nio.file.Path;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+public class SnowflakeS3CopyIntegrationTest extends SnowflakeInsertIntegrationTest {
 
-@DisplayName("Redshift Destination Efficient Upload")
-public class RedshiftCopyDestinationTest {
-
-  @Test
-  @DisplayName("Should correctly extract region from Redshift url")
-  void extractRegionFromRedshiftUrlTest() {
-    var region = RedshiftCopyDestination.extractRegionFromRedshiftUrl("redshift-cluster-1.c5lzdndklo9c.us-east-2.redshift.amazonaws.com");
-    assertEquals("us-east-2", region);
+  @Override
+  public JsonNode getStaticConfig() {
+    final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_s3_config.json")));
+    Preconditions.checkArgument(SnowflakeDestination.isCopy(copyConfig));
+    return copyConfig;
   }
 
 }

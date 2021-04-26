@@ -34,7 +34,7 @@ package io.airbyte.integrations.destination;
 public class ExtendedNameTransformer extends StandardNameTransformer {
 
   @Override
-  protected String convertStreamName(String input) {
+  public String convertStreamName(String input) {
     return super.convertStreamName(input);
   }
 
