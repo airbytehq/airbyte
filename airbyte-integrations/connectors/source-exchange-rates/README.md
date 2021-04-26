@@ -36,21 +36,14 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/exchange-rates)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_exchange_rates/spec.json` file.
-Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
-
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source exchange-rates test creds`
-and place them into `secrets/config.json`.
-
+The exchangerates API does not require authentication. 
 
 ### Locally running the connector
 ```
 python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main_dev.py check --config sample_files/config.json
+python main_dev.py discover --config sample_files/config.json
+python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Unit Tests
@@ -78,9 +71,9 @@ the Dockerfile.
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-exchange-rates:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-exchange-rates:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-exchange-rates:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-exchange-rates:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-exchange-rates:dev check --config /sample_files/config.json
+docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-exchange-rates:dev discover --config /sample_files/config.json
+docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-exchange-rates:dev read --config /sample_files/config.json --catalog /sample_files/configured_catalog.json
 ```
 
 ### Integration Tests
