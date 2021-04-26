@@ -26,6 +26,7 @@ package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -39,7 +40,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 
-public class SnowflakeIntegrationTest extends TestDestination {
+public class SnowflakeInsertIntegrationTest extends TestDestination {
 
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
@@ -57,8 +58,10 @@ public class SnowflakeIntegrationTest extends TestDestination {
     return config;
   }
 
-  private static JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+  public JsonNode getStaticConfig() {
+    final JsonNode insertConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
+    Preconditions.checkArgument(!SnowflakeDestination.isCopy(insertConfig));
+    return insertConfig;
   }
 
   @Override
