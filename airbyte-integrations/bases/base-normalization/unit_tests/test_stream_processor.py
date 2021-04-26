@@ -1,26 +1,25 @@
-"""
-MIT License
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import os
 import re
@@ -44,6 +43,7 @@ def setup_test_path():
 @pytest.mark.parametrize(
     "catalog_file",
     [
+        "edge_cases_catalog",
         "hubspot_catalog",
         "facebook_catalog",
         "stripe_catalog",
@@ -179,7 +179,43 @@ def test_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix
         primary_key=[],
         json_column_name="json_column_name",
         properties=[],
-        tables_registry=set(),
+        tables_registry=dict(),
+        from_table="",
+    )
+    assert stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
+    assert stream_processor.final_table_name == expected_final_name
+
+
+@pytest.mark.parametrize(
+    "stream_name, is_intermediate, suffix, expected, expected_final_name",
+    [
+        ("stream_name", False, "", "stream_name_485", "stream_name_485"),
+        ("stream_name", False, "suffix", "stream_name_suffix_485", "stream_name_suffix_485"),
+        ("stream_name", False, "_suffix", "stream_name_suffix_485", "stream_name_suffix_485"),
+        ("stream_name", True, "suffix", "stream_name_suffix_485", ""),
+        ("stream_name", True, "_suffix", "stream_name_suffix_485", ""),
+    ],
+)
+def test_collisions_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix: str, expected: str, expected_final_name: str):
+    # fill test_registry with the same stream names as if it was already used so there would be collisions...
+    test_registry = dict()
+    test_registry["schema_name"] = set()
+    test_registry["schema_name"].add("stream_name")
+    test_registry["schema_name"].add("stream_name_suffix")
+    test_registry["raw_schema"] = set()
+    test_registry["raw_schema"].add("stream_name_suffix")
+    stream_processor = StreamProcessor.create(
+        stream_name=stream_name,
+        destination_type=DestinationType.POSTGRES,
+        raw_schema="raw_schema",
+        schema="schema_name",
+        source_sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.append_dedup,
+        cursor_field=[],
+        primary_key=[],
+        json_column_name="json_column_name",
+        properties=[],
+        tables_registry=test_registry,
         from_table="",
     )
     assert stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
@@ -208,7 +244,7 @@ def test_nested_generate_new_table_name(stream_name: str, is_intermediate: bool,
         primary_key=[],
         json_column_name="json_column_name",
         properties=[],
-        tables_registry=set(),
+        tables_registry=dict(),
         from_table="",
     )
     nested_stream_processor = StreamProcessor.create_from_parent(

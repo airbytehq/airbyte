@@ -25,12 +25,16 @@
 package io.airbyte.server.services;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.helpers.YamlListToStandardDefinitions;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.List;
 
 /**
  * Convenience class for retrieving files checked into the Airbyte Github repo.
@@ -59,12 +63,12 @@ public class AirbyteGithubStore {
     this.baseUrl = baseUrl;
   }
 
-  public String getLatestDestinations() throws IOException, InterruptedException {
-    return getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH);
+  public List<StandardDestinationDefinition> getLatestDestinations() throws IOException, InterruptedException {
+    return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
   }
 
-  public String getLatestSources() throws IOException, InterruptedException {
-    return getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH);
+  public List<StandardSourceDefinition> getLatestSources() throws IOException, InterruptedException {
+    return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
   }
 
   @VisibleForTesting

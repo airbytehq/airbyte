@@ -16,13 +16,13 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
 
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
-   ```text
+   ```bash
    docker-compose down
    ```
 
 2. Turn back on the Airbyte web app, server, and db (using the "old" working version from which you are upgrading from).
 
-   ```text
+   ```bash
    docker-compose up -d db server webapp
    ```
 
@@ -44,9 +44,9 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
    
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.21.0-alpha --\
-     --input /config/airbyte_archive.tar.gz\
-     --output /config/airbyte_archive_migrated.tar.gz
+   docker run --rm -v /tmp:/config airbyte/migration:0.21.1-alpha --\
+   --input /config/airbyte_archive.tar.gz\
+   --output /config/airbyte_archive_migrated.tar.gz
    ```
 
 5. Turn off Airbyte fully and **(see warning)** delete the existing Airbyte docker volumes.
@@ -56,7 +56,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    This is where all airbyte configurations are saved.
    Those configuration files need to be upgraded and restored with the proper version in the following steps.
    
-   ```text
+   ```bash
    # Careful, this is deleting data!
    docker-compose down -v
    ```
@@ -78,7 +78,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
 
 7. Bring Airbyte back online.
 
-   ```text
+   ```bash
    docker-compose up
    ```
 

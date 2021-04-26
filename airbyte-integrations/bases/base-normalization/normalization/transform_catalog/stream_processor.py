@@ -1,26 +1,25 @@
-"""
-MIT License
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import hashlib
 import os
@@ -613,18 +612,25 @@ from {{ from_table }}
         """
         tables_registry = union_registries(self.tables_registry, self.local_registry)
         new_table_name = self.normalized_stream_name()
+        schema = self.get_schema(is_intermediate)
         if not is_intermediate and self.parent is None:
             if suffix:
                 norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
                 new_table_name = new_table_name + norm_suffix
-            # Top-level stream has priority on table_names
-            if self.schema in tables_registry and new_table_name in tables_registry[self.schema]:
-                raise ValueError(f"Conflict: Table name {new_table_name} in schema {self.schema} already exists!")
         elif not self.parent:
             new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
         else:
             new_table_name = get_table_name(self.name_transformer, "_".join(self.json_path[:-1]), new_table_name, suffix, self.json_path)
         new_table_name = self.name_transformer.normalize_table_name(new_table_name, False, False)
+
+        if schema in tables_registry and new_table_name in tables_registry[schema]:
+            # Check if new_table_name already exists. If yes, then add hash of the stream name to it
+            new_table_name = self.name_transformer.normalize_table_name(f"{new_table_name}_{hash_name(self.stream_name)}", False, False)
+            if new_table_name in tables_registry[schema]:
+                raise ValueError(
+                    f"Conflict: Table name {new_table_name} in schema {schema} already exists! (is there a hashing collision or duplicate streams?)"
+                )
+
         if not is_intermediate:
             self.final_table_name = new_table_name
         return new_table_name
@@ -754,9 +760,12 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
 
 
 def hash_json_path(json_path: List[str]) -> str:
-    lineage = "&airbyte&".join(json_path)
+    return hash_name("&airbyte&".join(json_path))
+
+
+def hash_name(input: str) -> str:
     h = hashlib.sha1()
-    h.update(lineage.encode("utf-8"))
+    h.update(input.encode("utf-8"))
     return h.hexdigest()[:3]
 
 
