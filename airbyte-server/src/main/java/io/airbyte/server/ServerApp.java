@@ -74,6 +74,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
@@ -208,12 +213,34 @@ public class ServerApp {
     if (airbyteDatabaseVersion.isEmpty()) {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
       jobPersistence.setVersion(airbyteVersion);
-    } else {
-      AirbyteVersion.assertIsCompatible(airbyteVersion, airbyteDatabaseVersion.get());
     }
 
-    LOGGER.info("Starting server...");
-    new ServerApp(configRepository, jobPersistence, configs).start();
+    if(airbyteDatabaseVersion.isEmpty() || AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+      LOGGER.info("Starting server...");
+      new ServerApp(configRepository, jobPersistence, configs).start();
+    } else {
+      LOGGER.error(AirbyteVersion.getErrorMessage(airbyteVersion, airbyteDatabaseVersion.get()));
+      Server server = new Server(8001);
+
+      // todo: add actual versions to the error message
+      // todo: refactor so this looks cleaner
+
+      ServletContextHandler handler = new ServletContextHandler();
+      handler.addServlet(BlockingServlet.class, "/*");
+      server.setHandler(handler);
+      server.start();
+      server.join();
+    }
+  }
+
+  public static class BlockingServlet extends HttpServlet {
+    protected void doGet(
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+      response.setContentType("application/json");
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.getWriter().println("{ \"error\": \"Version mismatch. You need to upgrade\"}");
+    }
   }
 
 }
