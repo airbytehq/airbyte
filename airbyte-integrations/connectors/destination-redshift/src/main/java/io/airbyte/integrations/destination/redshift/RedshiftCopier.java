@@ -63,7 +63,7 @@ public class RedshiftCopier {
   // The smallest part size is 5MB. An S3 upload can be maximally formed of 10,000 parts. This gives
   // us an upper limit of 10,000 * 10 / 1000 = 100 GB per table with a 10MB part size limit.
   // WARNING: Too large a part size can cause potential OOM errors.
-  private static final int PART_SIZE_MB = 10;
+  public static final int DEFAULT_PART_SIZE_MB = 10;
 
   private final String s3BucketName;
   private final String s3StagingFile;
@@ -91,7 +91,8 @@ public class RedshiftCopier {
                         JdbcDatabase redshiftDb,
                         String s3KeyId,
                         String s3key,
-                        String s3Region)
+                        String s3Region,
+                        long partSize )
       throws IOException {
     this.s3BucketName = s3BucketName;
     this.destSyncMode = destSyncMode;
@@ -105,6 +106,7 @@ public class RedshiftCopier {
 
     this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
     this.tmpTableName = NAMING_RESOLVER.getTmpTableName(streamName);
+    LOGGER.info("S3 upload part size: {} MB", partSize);
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
     // The alternative is first writing the entire output to disk before loading into S3. This is not
@@ -116,7 +118,7 @@ public class RedshiftCopier {
         new StreamTransferManager(s3BucketName, s3StagingFile, client)
             .numUploadThreads(DEFAULT_UPLOAD_THREADS)
             .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-            .partSize(PART_SIZE_MB);
+            .partSize(partSize);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     // See the above comment.
     this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);

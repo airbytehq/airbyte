@@ -124,7 +124,7 @@ public class RedshiftCopierTest {
   @DisplayName("When OVERWRITE should wipe table before appending new data")
   public void destSyncModeOverwriteTest() throws Exception {
     var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-        S3_KEY, S3_REGION);
+        S3_KEY, S3_REGION, RedshiftCopier.DEFAULT_PART_SIZE_MB);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
 
@@ -152,7 +152,7 @@ public class RedshiftCopierTest {
     sqlOp.insertRecords(redshiftDb, List.of(getAirbyteRecordMessage()).stream(), SCHEMA_NAME, RAW_TABLE_NAME);
 
     var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.APPEND, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-        S3_KEY, S3_REGION);
+        S3_KEY, S3_REGION, RedshiftCopier.DEFAULT_PART_SIZE_MB);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
 
@@ -181,7 +181,7 @@ public class RedshiftCopierTest {
 
     var copier =
         new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.APPEND_DEDUP, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-            S3_KEY, S3_REGION);
+            S3_KEY, S3_REGION, RedshiftCopier.DEFAULT_PART_SIZE_MB);
 
     AirbyteRecordMessage msg = getAirbyteRecordMessage();
 
@@ -204,7 +204,7 @@ public class RedshiftCopierTest {
   public void send100KTest() throws Exception {
     var now = System.currentTimeMillis();
     var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-        S3_KEY, S3_REGION);
+        S3_KEY, S3_REGION, RedshiftCopier.DEFAULT_PART_SIZE_MB);
 
     for (int i = 0; i < 100_000; i++) {
       var msg = getAirbyteRecordMessage();
@@ -229,7 +229,7 @@ public class RedshiftCopierTest {
   public void send1MTest() throws Exception {
     var now = System.currentTimeMillis();
     var copier = new RedshiftCopier(TEST_BUCKET, RUN_FOLDER, DestinationSyncMode.OVERWRITE, SCHEMA_NAME, STREAM_NAME, s3Client, redshiftDb, S3_KEY_ID,
-        S3_KEY, S3_REGION);
+        S3_KEY, S3_REGION, RedshiftCopier.DEFAULT_PART_SIZE_MB);
 
     for (int i = 0; i < 1_000_000; i++) {
       var msg = getAirbyteRecordMessage();

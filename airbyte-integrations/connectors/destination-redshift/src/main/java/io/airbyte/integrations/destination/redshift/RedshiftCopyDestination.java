@@ -157,7 +157,7 @@ public class RedshiftCopyDestination {
             stream.getNamespace() != null ? namingResolver.convertStreamName(stream.getNamespace()) : namingResolver.convertStreamName(defaultSchema);
         var copier =
             new RedshiftCopier(s3Config.bucketName, stagingFolder, syncMode, schema, pair.getName(), s3Client, redshiftDb, s3Config.accessKeyId,
-                s3Config.secretAccessKey, s3Config.region);
+                s3Config.secretAccessKey, s3Config.region, s3Config.partSize);
         pairToCopier.put(pair, copier);
       }
     }
@@ -193,12 +193,14 @@ public class RedshiftCopyDestination {
     public final String region;
     public final String accessKeyId;
     public final String secretAccessKey;
+    public final int partSize;
 
     public S3Config(JsonNode config) {
       this.bucketName = config.get("s3_bucket_name").asText();
       this.region = config.get("s3_bucket_region").asText();
       this.accessKeyId = config.get("access_key_id").asText();
       this.secretAccessKey = config.get("secret_access_key").asText();
+      this.partSize = config.get("part_size").asInt(RedshiftCopier.DEFAULT_PART_SIZE_MB);;
     }
 
     public static boolean isPresent(JsonNode config) {
