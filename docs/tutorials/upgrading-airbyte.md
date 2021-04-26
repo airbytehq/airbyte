@@ -14,60 +14,71 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
 
 ## Upgrading \(Docker\)
 
-1. Turn off Airbyte
+1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
-   ```text
+   ```bash
    docker-compose down
    ```
 
-2. Turn on the Airbyte web app, server, and db.
+2. Turn back on the Airbyte web app, server, and db (using the "old" working version from which you are upgrading from).
 
-   ```text
-   docker-compose up db server webapp
+   ```bash
+   docker-compose up -d db server webapp
    ```
 
-3. Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a gzipped tarball of all of your Airbyte configuration data and sync history. _Note: Any secrets that you have entered into Airbyte will be in this archive, so you should treat it as secret._
+   _Note: the `-d` flag in the previous command is optional and is meant to run the docker services in the background. This would let you free to keep interacting with the terminal and type the next commands in the tutorial._
+   
+3. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive (gzipped tarball) of all of your Airbyte configuration data and sync history locally. 
 
-4. Migrate the archive to the new version using the Migration App \(packaged in a docker container\).
+   _Note: Any secrets that you have entered into Airbyte will be in this archive, so you should treat it as secret._
+
+4. Back to the terminal, migrate the local archive to the new version using the Migration App \(packaged in a docker container\).
 
    ```bash
    docker run --rm -v <path to directory containing downloaded airbyte_archive.tar.gz>:/config airbyte/migration:<version you are upgrading to> --\
-   --input /config/airbyte_archive.tar.gz\
-   --output <path to where migrated archive will be written (should end in .tar.gz)>\
-   --target-version <version you are migrating to or empty for latest>
+     --input /config/airbyte_archive.tar.gz\
+     --output <path to where migrated archive will be written (should end in .tar.gz)>\
+     [ --target-version <version you are migrating to or empty for latest> ]
    ```
 
-   Here's an example of what might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
-
+   Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
+   
    ```bash
    docker run --rm -v /tmp:/config airbyte/migration:0.21.1-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```
 
-   It may seem confusing that you need to specify the target version twice. The version passed as `--target-version` specifies the version to which the data will be migrated. Specifying the target version in the docker container tag makes sure that you are pulling an image that at least has the migration for the version you want. Technically the version used in the docker tag can be equal to or greater than the version you are upgrading to. For the simplicity of this tutorial we have them match.
+5. Turn off Airbyte fully and **(see warning)** delete the existing Airbyte docker volumes.
 
-5. Turn off Airbyte fully.
-
-   ```text
-   docker-compose down
+   _WARNING: Make sure you have already exported your data \(step 3\). This command is going to delete your data in Docker, you may lose your airbyte configurations!_
+   
+   This is where all airbyte configurations are saved.
+   Those configuration files need to be upgraded and restored with the proper version in the following steps.
+   
+   ```bash
+   # Careful, this is deleting data!
+   docker-compose down -v
    ```
-
-6. Delete the existing Airbyte docker volumes. _Note: Make sure you have already exported your data \(step 3\). This command is going to delete your data in Docker!_
+   
+   The `-v` flag is equivalent to running the following two steps in a single command:
 
    ```bash
+   # Turn off Airbyte fully
+   docker-compose down
+   # Delete the existing Airbyte docker volumes where all airbyte configurations are saved. 
    docker volume rm $(docker volume ls -q | grep airbyte)
    ```
 
-7. Upgrade the docker instance to new version.
+6. Upgrade the docker instance to new version.
 
    i. If you are running Airbyte from a cloned version of the Airbyte repo and want to use the current most recent stable version, just `git pull`.
 
-   ii. If you are running Airbyte from a `.env`, edit the `VERSION` field in that file to be the desired version.
+   ii. If you are running Airbyte from a `.env`, edit the `VERSION` field in that file to be the desired version (make sure your docker-compose.yaml is mirroring the [latest version](../../docker-compose.yaml) if you encounter any problems).
 
-8. Bring Airbyte back online.
+7. Bring Airbyte back online.
 
-   ```text
+   ```bash
    docker-compose up
    ```
 
