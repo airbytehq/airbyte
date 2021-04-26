@@ -37,9 +37,10 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,14 +48,12 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
-  private static final long HEART_BEAT_FRESH_TIME_MAGNITUDE = 1;
-  private static final TimeUnit HEART_BEAT_FRESH_TIME_UNIT = TimeUnit.SECONDS;
-  private static final long CHECK_HEARTBEAT_TIME_MAGNITUDE = 1;
-  private static final TimeUnit CHECK_HEARTBEAT_TIME_UNIT = TimeUnit.SECONDS;
-  private static final long GRACEFUL_SHUTDOWN_TIME_MAGNITUDE = 10;
-  private static final TimeUnit GRACEFUL_SHUTDOWN_TIME_UNIT = TimeUnit.MINUTES;
-  private static final long FORCED_SHUTDOWN_TIME_MAGNITUDE = 1;
-  private static final TimeUnit FORCED_SHUTDOWN_TIME_UNIT = TimeUnit.MINUTES;
+  private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+  private static final Duration CHECK_HEARTBEAT_DURATION = Duration.of(10, ChronoUnit.SECONDS);
+  // todo (cgardens) - keep the graceful shutdown consistent with current behavior for release. make
+  // sure everything is working well before we reduce this to something more reasonable.
+  private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(10, ChronoUnit.HOURS);
+  private static final Duration FORCED_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
@@ -64,7 +63,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor(HEART_BEAT_FRESH_TIME_MAGNITUDE, HEART_BEAT_FRESH_TIME_UNIT));
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
   @VisibleForTesting
@@ -123,12 +122,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
     WorkerUtils.gentleCloseWithHeartbeat(
         tapProcess,
         heartbeatMonitor,
-        GRACEFUL_SHUTDOWN_TIME_MAGNITUDE,
-        GRACEFUL_SHUTDOWN_TIME_UNIT,
-        CHECK_HEARTBEAT_TIME_MAGNITUDE,
-        CHECK_HEARTBEAT_TIME_UNIT,
-        FORCED_SHUTDOWN_TIME_MAGNITUDE,
-        FORCED_SHUTDOWN_TIME_UNIT);
+        GRACEFUL_SHUTDOWN_DURATION,
+        CHECK_HEARTBEAT_DURATION,
+        FORCED_SHUTDOWN_DURATION);
 
     if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
       throw new WorkerException("Tap process wasn't successful");

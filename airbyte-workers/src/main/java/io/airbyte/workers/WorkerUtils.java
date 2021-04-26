@@ -35,8 +35,10 @@ import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
-import org.apache.logging.log4j.util.TriConsumer;
+import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -55,8 +57,9 @@ public class WorkerUtils {
     } catch (InterruptedException e) {
       LOGGER.error("Exception while while waiting for process to finish", e);
     }
+
     if (process.isAlive()) {
-      forceShutdown(process, 1, TimeUnit.MINUTES);
+      forceShutdown(process, Duration.of(1, ChronoUnit.MINUTES));
     }
   }
 
@@ -70,83 +73,67 @@ public class WorkerUtils {
    *
    * @param process - process to monitor.
    * @param heartbeatMonitor - tracks if the heart is still beating for the given process.
-   * @param gracefulShutdownMagnitude - grace period to give the process to die after its heart stops
+   * @param checkHeartbeatDuration - grace period to give the process to die after its heart stops
    *        beating.
-   * @param gracefulShutdownTimeUnit - grace period to give the process to die after its heart stops
-   *        beating.
-   * @param checkHeartbeatMagnitude - frequency with which the heartbeat of the process is checked.
-   * @param checkHeartbeatTimeUnit - frequency with which the heartbeat of the process is checked.
-   * @param forcedShutdownMagnitude - amount of time to wait if a process needs to be destroyed
+   * @param checkHeartbeatDuration - frequency with which the heartbeat of the process is checked.
+   * @param forcedShutdownDuration - amount of time to wait if a process needs to be destroyed
    *        forcibly.
-   * @param forcedShutdownTimeUnit - amount of time to wait if a process needs to be destroyed
-   *        forcibly.
-   * @param forceShutdown
    */
   public static void gentleCloseWithHeartbeat(final Process process,
                                               final HeartbeatMonitor heartbeatMonitor,
-                                              final long gracefulShutdownMagnitude,
-                                              final TimeUnit gracefulShutdownTimeUnit,
-                                              final long checkHeartbeatMagnitude,
-                                              final TimeUnit checkHeartbeatTimeUnit,
-                                              final long forcedShutdownMagnitude,
-                                              final TimeUnit forcedShutdownTimeUnit) {
+                                              Duration gracefulShutdownDuration,
+                                              Duration checkHeartbeatDuration,
+                                              Duration forcedShutdownDuration) {
     gentleCloseWithHeartbeat(
         process,
         heartbeatMonitor,
-        gracefulShutdownMagnitude,
-        gracefulShutdownTimeUnit,
-        checkHeartbeatMagnitude,
-        checkHeartbeatTimeUnit,
-        forcedShutdownMagnitude,
-        forcedShutdownTimeUnit,
+        gracefulShutdownDuration,
+        checkHeartbeatDuration,
+        forcedShutdownDuration,
         WorkerUtils::forceShutdown);
   }
 
   @VisibleForTesting
   static void gentleCloseWithHeartbeat(final Process process,
                                        final HeartbeatMonitor heartbeatMonitor,
-                                       final long gracefulShutdownMagnitude,
-                                       final TimeUnit gracefulShutdownTimeUnit,
-                                       final long checkHeartbeatMagnitude,
-                                       final TimeUnit checkHeartbeatTimeUnit,
-                                       final long forcedShutdownMagnitude,
-                                       final TimeUnit forcedShutdownTimeUnit,
-                                       final TriConsumer<Process, Long, TimeUnit> forceShutdown) {
+                                       final Duration gracefulShutdownDuration,
+                                       final Duration checkHeartbeatDuration,
+                                       final Duration forcedShutdownDuration,
+                                       final BiConsumer<Process, Duration> forceShutdown) {
 
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
-        process.waitFor(checkHeartbeatMagnitude, checkHeartbeatTimeUnit);
+        process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
-        LOGGER.error("Exception while while waiting for process to finish", e);
+        LOGGER.error("Exception while waiting for process to finish", e);
       }
     }
 
     if (process.isAlive()) {
       try {
-        process.waitFor(gracefulShutdownMagnitude, gracefulShutdownTimeUnit);
+        process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         LOGGER.error("Exception during grace period for process to finish", e);
       }
     }
 
-    // if we have closed gracefully exit...
+    // if we were unable to exist gracefully, force shutdown...
     if (process.isAlive()) {
-      forceShutdown.accept(process, forcedShutdownMagnitude, forcedShutdownTimeUnit);
+      forceShutdown.accept(process, forcedShutdownDuration);
     }
   }
 
   @VisibleForTesting
-  static void forceShutdown(Process process, long lastChanceMagnitude, TimeUnit lastChanceTimeUnit) {
-    // otherwise we forcibly kill the process.
+  static void forceShutdown(Process process, Duration lastChanceDuration) {
     LOGGER.warn("Process is taking too long to finish. Killing it");
     process.destroy();
     try {
-      process.waitFor(lastChanceMagnitude, lastChanceTimeUnit);
+      process.waitFor(lastChanceDuration.toMillis(), TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
       LOGGER.error("Exception while while killing the process", e);
     }
     if (process.isAlive()) {
-      LOGGER.warn("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
+      LOGGER.error("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
     }
   }
 

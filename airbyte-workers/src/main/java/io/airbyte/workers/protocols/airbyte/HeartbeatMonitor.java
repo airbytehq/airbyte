@@ -25,40 +25,36 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 public class HeartbeatMonitor {
 
-  private final long heartBeatFreshMagnitude;
-  private final TimeUnit heartBeatFreshTimeUnit;
-  private final Supplier<Instant> instantSupplier;
+  private final Duration heartBeatFreshDuration;
+  private final Supplier<Instant> nowSupplier;
   private final AtomicReference<Instant> lastBeat;
 
-  public HeartbeatMonitor(long heartBeatFreshMagnitude, TimeUnit heartBeatFreshTimeUnit) {
-    this(heartBeatFreshMagnitude, heartBeatFreshTimeUnit, Instant::now);
+  public HeartbeatMonitor(Duration heartBeatFreshDuration) {
+    this(heartBeatFreshDuration, Instant::now);
   }
 
   @VisibleForTesting
-  public HeartbeatMonitor(long heartBeatFreshMagnitude, TimeUnit heartBeatFreshTimeUnit, Supplier<Instant> instantSupplier) {
-    this.heartBeatFreshMagnitude = heartBeatFreshMagnitude;
-    this.heartBeatFreshTimeUnit = heartBeatFreshTimeUnit;
-    this.instantSupplier = instantSupplier;
+  public HeartbeatMonitor(Duration heartBeatFreshDuration, Supplier<Instant> nowSupplier) {
+    this.heartBeatFreshDuration = heartBeatFreshDuration;
+    this.nowSupplier = nowSupplier;
     this.lastBeat = new AtomicReference<>(null);
   }
 
   public void beat() {
-    lastBeat.set(instantSupplier.get());
+    lastBeat.set(nowSupplier.get());
   }
 
   public boolean isBeating() {
     final Instant instantFetched = lastBeat.get();
-    final Instant now = instantSupplier.get();
-    final long differenceMillis = heartBeatFreshTimeUnit.toMillis(heartBeatFreshMagnitude);
-    return instantFetched != null && instantFetched.plus(differenceMillis, ChronoUnit.MILLIS).isAfter(now);
+    final Instant now = nowSupplier.get();
+    return instantFetched != null && instantFetched.plus(heartBeatFreshDuration).isAfter(now);
   }
 
 }

@@ -24,16 +24,17 @@
 
 package io.airbyte.workers;
 
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.logging.log4j.util.TriConsumer;
+import java.util.function.BiConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -44,34 +45,29 @@ class WorkerUtilsTest {
   @Nested
   class GentleCloseWithHeartbeat {
 
-    private final long CHECK_HEARTBEAT_TIME_MAGNITUDE = 10;
-    private final TimeUnit CHECK_HEARTBEAT_TIME_UNIT = TimeUnit.MILLISECONDS;
+    private final Duration CHECK_HEARTBEAT_DURATION = Duration.of(10, ChronoUnit.MILLIS);
 
-    private final long SHUTDOWN_TIME_MAGNITUDE = 100;
-    private final TimeUnit SHUTDOWN_TIME_UNIT = TimeUnit.MILLISECONDS;
+    private final Duration SHUTDOWN_TIME_DURATION = Duration.of(100, ChronoUnit.MILLIS);
 
     private Process process;
     private HeartbeatMonitor heartbeatMonitor;
-    private TriConsumer<Process, Long, TimeUnit> forceShutdown;
+    private BiConsumer<Process, Duration> forceShutdown;
 
     @SuppressWarnings("unchecked")
     @BeforeEach
     void setup() {
       process = mock(Process.class);
       heartbeatMonitor = mock(HeartbeatMonitor.class);
-      forceShutdown = mock(TriConsumer.class);
+      forceShutdown = mock(BiConsumer.class);
     }
 
     private void runShutdown() {
       WorkerUtils.gentleCloseWithHeartbeat(
           process,
           heartbeatMonitor,
-          SHUTDOWN_TIME_MAGNITUDE,
-          SHUTDOWN_TIME_UNIT,
-          CHECK_HEARTBEAT_TIME_MAGNITUDE,
-          CHECK_HEARTBEAT_TIME_UNIT,
-          SHUTDOWN_TIME_MAGNITUDE,
-          SHUTDOWN_TIME_UNIT,
+          SHUTDOWN_TIME_DURATION,
+          CHECK_HEARTBEAT_DURATION,
+          SHUTDOWN_TIME_DURATION,
           forceShutdown);
     }
 
@@ -115,7 +111,7 @@ class WorkerUtilsTest {
 
       runShutdown();
 
-      verify(forceShutdown).accept(process, SHUTDOWN_TIME_MAGNITUDE, SHUTDOWN_TIME_UNIT);
+      verify(forceShutdown).accept(process, SHUTDOWN_TIME_DURATION);
     }
 
     @Test
