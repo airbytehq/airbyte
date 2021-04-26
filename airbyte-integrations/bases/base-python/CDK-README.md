@@ -102,7 +102,7 @@ state and will always indiscriminately read all data from the underlying API res
 
 #### The Incremental Stream
 
-If possible, developers should try to implement an Incremental Stream. An Incremental Stream takes advantage of the
+If possible, developers should try to implement an incremental stream. An incremental stream takes advantage of the
 Airbyte Specification's `AirbyteStateMessage` to read only new data. This is suitable for any API that offers filter/group
 query parameters and/or has an ordered field in the response. Some common examples are resource-specific ids, timestamps, or
 enumerated types. Although the implementation is slightly more complex (not that much as we will soon see) - the resulting
@@ -112,15 +112,14 @@ Several new pieces are essential to understand how incrementality works with the
 
 First is the `AirbyteStateMessage` and the `HttpStream`'s `cursor_field`. As mentioned, the `AirbyteStateMessage`
 persists state between syncs, and allows a new sync to pick up from where the previous sync last finished.
-The `cursor_field` is the actual element in the HTTP request used to determine order. The `cursor_field`'s only
+The `cursor_field` refers to the actual element in the HTTP request used to determine order. The `cursor_field`'s only
 practical implication is it tells the CDK the stream supports incremental syncs. Otherwise, it serves as a signpost
 for what field is used as a cursor. This field is also commonly used as a direct index into the api response to
 create the `AirbyteStateMessage`.
 
-Next is the `get_updated_state` function. For every record processed (as returned by the `parse_response`
-function mentioned above), this function helps the CDK figure out the latest state. This allows any sync
-jobs to resume from where the sync last stopped, regardless of success or failure. This function typically
-compares the state object's and the latest record's cursor field, picking the latest one.
+Next is the `get_updated_state` function. This function helps the CDK figure out the latest state for every record processed
+(as returned by the `parse_response`function mentioned above). This allows sync to resume from where the previous sync last stopped,
+regardless of success or failure. This function typically compares the state object's and the latest record's cursor field, picking the latest one.
 
 This is paired with the `stream_slices` function. Conceptually, a Stream Slice is the smallest unit of data to be
 synced. In the HTTP case, each Slice is equivalent to a HTTP request; indeed the CDK will make one request
@@ -137,6 +136,12 @@ used when creating request.
 
 Lastly, the `request_params` and `path` functions allow the per-request information contained in a Slice
 to be injected into a request. 
+
+In summary, the incremental stream requires:
+* the `cursor_field` property
+* the `get_updated_state` function
+* the `stream_slices` function
+* updating the `request_params` and `path` function to incorporate slices
 
 #### Secondary Features
 
@@ -167,7 +172,7 @@ The CDK, by default, will conduct exponential backoff on the HTTP code 429 and u
 and fail after 5 tries.
 
 Retries are governed by the `should_retry` and the `backoff_time` methods. Override these methods to
-customise retry behavior.
+customise retry behavior. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py#L72) from the Slack API.
 
 Note that Airbyte will always attempt to make as many requests as possible and only slow down if there are
 errors. It is not currently possible to specify a rate limit Airbyte should adhere to when making requests.
