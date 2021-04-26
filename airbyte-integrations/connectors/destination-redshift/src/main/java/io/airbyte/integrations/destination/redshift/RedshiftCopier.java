@@ -92,7 +92,7 @@ public class RedshiftCopier {
                         String s3KeyId,
                         String s3key,
                         String s3Region,
-                        long partSize )
+                        long partSize)
       throws IOException {
     this.s3BucketName = s3BucketName;
     this.destSyncMode = destSyncMode;
