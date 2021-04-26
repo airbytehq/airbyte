@@ -85,7 +85,7 @@ The base url is set via the `url_base` property, while the path is set by implem
 The `parse_response` function instructs the stream how to parse the API response. This returns an `Iterable`, whose
 elements are each later transformed into an `AirbyteRecordMessage`. API routes that return a single response
 generally have a `parse_reponse` function that return a list of just that one response. Routes that return a list,
-usually have a `parse_response` function that return the received list with all elements. Putting out the data
+usually have a `parse_response` function that return the received list with all elements. Pulling the data out
 from the response is sufficient, any deserialization is handled by the CDK.
 
 Lastly, the `HTTPStream` requires a JsonSchema of the API's response in order to validate and deserialise the received
@@ -94,8 +94,8 @@ the Python module named `schemas` 2) must match the lower snake case name of the
 [examples](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-stripe/source_stripe/schemas)
 from the Stripe API.
 
-These four elements are the bare minimum required to implement the `HTTPStream`, and can be seen in the same [Stripe
-example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L38).
+These four elements - the `url_base` property, the `path` function, the `parse_response` function and the schema file -
+are the bare minimum required to implement the `HTTPStream`, and can be seen in the same [Stripe example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L38).
 
 This basic implementation gives us a Full-Refresh Airbyte Stream. We say Full-Refresh since the stream does not have
 state and will always indiscriminately read all data from the underlying API resource.
