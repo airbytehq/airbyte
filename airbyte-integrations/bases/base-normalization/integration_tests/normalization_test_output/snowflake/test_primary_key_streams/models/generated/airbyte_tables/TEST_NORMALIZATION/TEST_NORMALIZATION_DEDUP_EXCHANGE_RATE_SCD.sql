@@ -9,11 +9,11 @@ select
     USD,
     DATE as _airbyte_start_at,
     lag(DATE) over (
-        partition by ID, CURRENCY, cast({{ 'NZD' }} as {{ dbt_utils.type_string() }})
+        partition by ID, CURRENCY, cast(NZD as {{ dbt_utils.type_string() }})
         order by DATE desc, _airbyte_emitted_at desc
     ) as _airbyte_end_at,
     lag(DATE) over (
-        partition by ID, CURRENCY, cast({{ 'NZD' }} as {{ dbt_utils.type_string() }})
+        partition by ID, CURRENCY, cast(NZD as {{ dbt_utils.type_string() }})
         order by DATE desc, _airbyte_emitted_at desc
     ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
