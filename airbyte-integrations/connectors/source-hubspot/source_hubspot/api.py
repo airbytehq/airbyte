@@ -118,7 +118,7 @@ class API:
         self._credentials["access_token"] = auth["access_token"]
         self._credentials["refresh_token"] = auth["refresh_token"]
         self._credentials["token_expires"] = datetime.utcnow() + timedelta(seconds=auth["expires_in"] - 600)
-        logger.info("Token refreshed. Expires at %s", self._credentials["token_expires"])
+        logger.info(f"Token refreshed. Expires at {self._credentials['token_expires']}")
 
     @property
     def api_key(self) -> Optional[str]:
