@@ -523,9 +523,9 @@ from {{ from_table }}
                     property_type = self.properties[field]["type"]
                 else:
                     property_type = "object"
-                if is_number(property_type) or is_boolean(property_type) or is_array(property_type) or is_object(property_type):
-                    # some destinations don't handle float columns (or other types) as primary keys, turn everything to string
-                    return f"cast({jinja_call(self.safe_cast_to_string(self.properties[field], column_names[field][1]))} as {jinja_call('dbt_utils.type_string()')})"
+                if is_number(property_type) or is_object(property_type):
+                    # some destinations don't handle float columns (or complex types) as primary keys, turn them to string
+                    return f"cast({column_names[field][0]} as {jinja_call('dbt_utils.type_string()')})"
                 else:
                     return column_names[field][0]
             else:
@@ -770,6 +770,17 @@ def hash_name(input: str) -> str:
 
 
 def get_table_name(name_transformer: DestinationNameTransformer, parent: str, child: str, suffix: str, json_path: List[str]) -> str:
+    """
+    In normalization code base, we often have to deal with naming for tables, combining informations from:
+    - parent table: to denote where a table is extracted from (in case of nesting)
+    - child table: in case of nesting, the field name or the original stream name
+    - extra suffix: normalization is done in multiple transformation steps, each may need to generate separate tables,
+    so we can add a suffix to distinguish the different transformation steps of a pipeline.
+    - json path: in terms of parent and nested field names in order to reach the table currently being built
+
+    All these informations should be included (if possible) in the table naming for the user to (somehow) identify and
+    recognize what data is available there.
+    """
     max_length = name_transformer.get_name_max_length() - 2  # less two for the underscores
     json_path_hash = hash_json_path(json_path)
     norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
