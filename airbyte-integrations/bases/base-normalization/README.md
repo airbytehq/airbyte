@@ -3,7 +3,7 @@
 Related documentation on normalization is available here:
 
 - [architecture / Basic Normalization](../../../docs/architecture/basic-normalization.md)
-* [tutorials / custom DBT normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
+* [tutorials / Custom DBT normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
 
 # Testing normalization
 
@@ -33,7 +33,7 @@ see [related dbt docs on profiles.yml](https://docs.getdbt.com/reference/profile
 
 #### test_stream_processor.py:
 
-These Unit tests functions check how each stream is converted to dbt models files.
+These unit tests functions check how each stream is converted to dbt models files.
 For example, one big focus area is around how table names are chosen.
 (especially since some destination like postgres have a very low limit to identifiers length of 64 characters)
 In case of nested objects/arrays in a stream, names can be dragged on to even longer names...
@@ -91,7 +91,7 @@ or can also be invoked on github, thanks to the slash commands posted as comment
 Some test suites can be selected to be versioned control in Airbyte git repository (or not).
 This is useful to see direct impacts of code changes on downstream files generated or compiled
 by normalization and dbt (directly in PR too). (_Simply refer to your test suite name in the
-`git_versionned_tests` variable in the `base-normalization/integration_tests/test_normalization.py` file_)
+`git_versioned_tests` variable in the `base-normalization/integration_tests/test_normalization.py` file_)
 
 We would typically choose small and meaningful test suites to include in git while others more complex tests
 can be left out. They would still be run in a temporary directory and thrown away at the end of the tests.
@@ -201,4 +201,3 @@ For more details and options, you can also refer to the [testing connectors docs
 ## Acceptance Tests
 
 Please refer to the [developing docs](../../../docs/contributing-to-airbyte/developing-locally.md) on how to run Acceptance Tests.
-
