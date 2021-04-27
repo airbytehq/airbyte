@@ -17,7 +17,7 @@ class AirbyteStandardTestPlugin implements Plugin<Project> {
                         // mount the project dir. all provided input paths must be relative to that dir.
                         '-v', "${project.projectDir.absolutePath}:${targetMountDirectory}",
                         'airbyte/source-acceptance-test:dev',
-                        '--standard_test_config', "$targetMountDirectory",
+                        '--acceptance-test-config', "$targetMountDirectory",
                     ]
                     commandLine args
                 }
