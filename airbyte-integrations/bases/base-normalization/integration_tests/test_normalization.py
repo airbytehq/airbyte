@@ -69,17 +69,40 @@ temporary_folders = set()
 target_schema = "test_normalization"
 container_name = "test_normalization_db_" + "".join(random.choice(string.ascii_lowercase) for i in range(3))
 
-# dbt models and final sql outputs from the following git versionned tests will be written in a folder included in
+# dbt models and final sql outputs from the following git versioned tests will be written in a folder included in
 # airbyte git repository.
-git_versionned_tests = ["test_primary_key_streams"]
+git_versioned_tests = ["test_primary_key_streams"]
+
+
+@pytest.fixture(scope="package", autouse=True)
+def before_all_tests(request):
+    change_current_test_dir(request)
+    setup_postgres_db()
+    os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
+    print("Installing dbt dependencies packages\nExecuting: cd ../dbt-project-template/\nExecuting: dbt deps")
+    subprocess.call(["dbt", "deps"], cwd="../dbt-project-template/", env=os.environ)
+    yield
+    tear_down_postgres_db()
+    for folder in temporary_folders:
+        print(f"Deleting temporary test folder {folder}")
+        shutil.rmtree(folder, ignore_errors=True)
+
+
+@pytest.fixture
+def setup_test_path(request):
+    change_current_test_dir(request)
+    print(f"Running from: {pathlib.Path().absolute()}")
+    print(f"Current PATH is: {os.environ['PATH']}")
+    yield
+    os.chdir(request.config.invocation_dir)
 
 
 @pytest.mark.parametrize(
     "test_resource_name",
     set(
-        git_versionned_tests
+        git_versioned_tests
         + [
-            # Non-versionned tests outputs below will be written to /tmp folders instead
+            # Non-versioned tests outputs below will be written to /tmp folders instead
         ]
     ),
 )
@@ -106,20 +129,6 @@ def test_normalization(integration_type: str, test_resource_name: str, setup_tes
     # Run checks on Tests results
     dbt_test(destination_type, test_resource_name, test_root_dir)
     check_outputs(destination_type, test_resource_name, test_root_dir)
-
-
-@pytest.fixture(scope="package", autouse=True)
-def before_all_tests(request):
-    change_current_test_dir(request)
-    setup_postgres_db()
-    os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
-    print("Installing dbt dependencies packages\nExecuting: cd ../dbt-project-template/\nExecuting: dbt deps")
-    subprocess.call(["dbt", "deps"], cwd="../dbt-project-template/", env=os.environ)
-    yield
-    tear_down_postgres_db()
-    for folder in temporary_folders:
-        print(f"Deleting temporary test folder {folder}")
-        shutil.rmtree(folder, ignore_errors=True)
 
 
 def setup_postgres_db():
@@ -176,17 +185,8 @@ def tear_down_postgres_db():
         print(f"WARN: Exception while shutting down postgres db: {e}")
 
 
-@pytest.fixture
-def setup_test_path(request):
-    change_current_test_dir(request)
-    print(f"Running from: {pathlib.Path().absolute()}")
-    print(f"Current PATH is: {os.environ['PATH']}")
-    yield
-    os.chdir(request.config.invocation_dir)
-
-
 def change_current_test_dir(request):
-    # This makes the test pass no matter if it is executed from Tests folder (with pytest/gradle) or from base-normalization folder (through pycharm)
+    # This makes the test run whether it is executed from the tests folder (with pytest/gradle) or from the base-normalization folder (through pycharm)
     integration_tests_dir = os.path.join(request.fspath.dirname, "integration_tests")
     if os.path.exists(integration_tests_dir):
         os.chdir(integration_tests_dir)
@@ -198,17 +198,17 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     """
     We prepare a clean folder to run the tests from.
 
-    if the test_resource_name is part of git_versionned_tests, then dbt models and final sql outputs
+    if the test_resource_name is part of git_versioned_tests, then dbt models and final sql outputs
     will be written to a folder included in airbyte git repository.
 
-    Non-versionned tests will be written in /tmp folders instead.
+    Non-versioned tests will be written in /tmp folders instead.
 
     The purpose is to keep track of a small set of downstream changes on selected integration tests cases.
      - generated dbt models created by normalization script from an input destination_catalog.json
      - final output sql files created by dbt CLI from the generated dbt models (dbt models are sql files with jinja templating,
      these are interpreted and compiled into the native SQL dialect of the final destination engine)
     """
-    if test_resource_name in git_versionned_tests:
+    if test_resource_name in git_versioned_tests:
         test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
     else:
         test_root_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_", suffix=f"_{integration_type.lower()}")
@@ -336,7 +336,7 @@ def dbt_test(destination_type: DestinationType, test_resource_name: str, test_ro
         - see additional macros for testing here: https://github.com/fishtown-analytics/dbt-utils#schema-tests
     - Data tests are added in .sql files from the data_tests directory and should return 0 records to be successful
 
-    We use this mecanism to verify the output of our integration tests.
+    We use this mechanism to verify the output of our integration tests.
     """
     copy_test_files(
         os.path.join("resources", test_resource_name, "dbt_schema_tests"),

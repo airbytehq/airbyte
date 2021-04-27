@@ -178,11 +178,11 @@ class CatalogProcessor:
         Generate the sources.yaml file as described in https://docs.getdbt.com/docs/building-a-dbt-project/using-sources/
         """
         schemas = []
-        for entry in sorted(schema_to_source_tables.items(), key=lambda kv: kv[1]):
+        for entry in sorted(schema_to_source_tables.items(), key=lambda kv: kv[0]):
             schema = entry[0]
             quoted_schema = self.name_transformer.needs_quotes(schema)
             tables = []
-            for source in sorted(schema_to_source_tables[schema], key=lambda kv: kv[1]):
+            for source in sorted(schema_to_source_tables[schema]):
                 if quoted_schema:
                     tables.append({"name": source, "quoting": {"identifier": True}})
                 else:
@@ -201,7 +201,7 @@ class CatalogProcessor:
         source_config = {"version": 2, "sources": schemas}
         source_path = os.path.join(self.output_directory, "sources.yml")
         with open(source_path, "w") as fh:
-            fh.write(yaml.dump(source_config))
+            fh.write(yaml.dump(source_config, sort_keys=False))
 
 
 # Static Functions
