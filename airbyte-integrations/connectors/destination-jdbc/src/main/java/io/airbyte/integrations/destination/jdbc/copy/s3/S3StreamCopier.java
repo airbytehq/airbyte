@@ -79,6 +79,18 @@ public abstract class S3StreamCopier implements StreamCopier {
                         JdbcDatabase db,
                         S3Config s3Config,
                         ExtendedNameTransformer nameTransformer,
+                        SqlOperations sqlOperations) {
+    this(stagingFolder, destSyncMode, schema, streamName, client, db, s3Config, nameTransformer, sqlOperations, DEFAULT_PART_SIZE_MB);
+  }
+
+  public S3StreamCopier(String stagingFolder,
+                        DestinationSyncMode destSyncMode,
+                        String schema,
+                        String streamName,
+                        AmazonS3 client,
+                        JdbcDatabase db,
+                        S3Config s3Config,
+                        ExtendedNameTransformer nameTransformer,
                         SqlOperations sqlOperations,
                         long partSize) {
     this.destSyncMode = destSyncMode;
