@@ -85,11 +85,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
   }
 
   private S3Config getS3Config(JsonNode config) {
-    return new S3Config(
-        config.get("s3_bucket_name").asText(),
-        config.get("access_key_id").asText(),
-        config.get("secret_access_key").asText(),
-        config.get("s3_bucket_region").asText());
+    return S3Config.getS3Config(config);
   }
 
 }
