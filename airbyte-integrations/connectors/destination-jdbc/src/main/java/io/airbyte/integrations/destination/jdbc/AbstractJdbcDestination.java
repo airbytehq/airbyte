@@ -25,24 +25,21 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import java.io.IOException;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractJdbcDestination implements Destination {
+public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
@@ -59,13 +56,6 @@ public abstract class AbstractJdbcDestination implements Destination {
   }
 
   @Override
-  public ConnectorSpecification spec() throws IOException {
-    // return a JsonSchema representation of the spec for the integration.
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
-  }
-
-  @Override
   public AirbyteConnectionStatus check(JsonNode config) {
 
     try (final JdbcDatabase database = getDatabase(config)) {
@@ -73,7 +63,7 @@ public abstract class AbstractJdbcDestination implements Destination {
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.debug("Exception while checking connection: ", e);
+      LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());

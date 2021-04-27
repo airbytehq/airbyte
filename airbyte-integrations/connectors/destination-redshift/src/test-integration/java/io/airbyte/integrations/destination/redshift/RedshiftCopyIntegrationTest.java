@@ -42,7 +42,7 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 
 /**
- * Integration test testing {@link RedshiftCopyDestination}. The default Redshift integration test
+ * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
  * credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
 public class RedshiftCopyIntegrationTest extends TestDestination {
@@ -64,7 +64,7 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
     return config;
   }
 
-  private static JsonNode getStaticConfig() {
+  public JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 

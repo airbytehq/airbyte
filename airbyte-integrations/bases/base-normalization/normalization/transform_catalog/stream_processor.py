@@ -1,26 +1,25 @@
-"""
-MIT License
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import hashlib
 import os
@@ -424,10 +423,13 @@ from {{ from_table }}
         return sql
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-        return [StreamProcessor.safe_cast_to_string(field, self.properties[field], column_names[field][1]) for field in column_names]
+        return [StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1]) for field in column_names]
 
     @staticmethod
-    def safe_cast_to_string(property_name: str, definition: Dict, column_name: str) -> str:
+    def safe_cast_to_string(definition: Dict, column_name: str) -> str:
+        """
+        Note that the result from this static method should always be used within a jinja context (for example, from jinja macro surrogate_key call)
+        """
         if "type" not in definition:
             return column_name
         elif is_boolean(definition["type"]):
@@ -521,11 +523,11 @@ from {{ from_table }}
                     property_type = self.properties[field]["type"]
                 else:
                     property_type = "object"
-                if is_number(property_type) or is_boolean(property_type) or is_array(property_type) or is_object(property_type):
-                    # some destinations don't handle float columns (or other types) as primary keys, turn everything to string
-                    return f"cast({self.safe_cast_to_string(field, self.properties[field], column_names[field][1])} as {jinja_call('dbt_utils.type_string()')})"
+                if is_number(property_type) or is_object(property_type):
+                    # some destinations don't handle float columns (or complex types) as primary keys, turn them to string
+                    return f"cast({column_names[field][0]} as {jinja_call('dbt_utils.type_string()')})"
                 else:
-                    return field
+                    return column_names[field][0]
             else:
                 # using an airbyte generated column
                 return f"cast({field} as {jinja_call('dbt_utils.type_string()')})"
@@ -610,18 +612,25 @@ from {{ from_table }}
         """
         tables_registry = union_registries(self.tables_registry, self.local_registry)
         new_table_name = self.normalized_stream_name()
+        schema = self.get_schema(is_intermediate)
         if not is_intermediate and self.parent is None:
             if suffix:
                 norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
                 new_table_name = new_table_name + norm_suffix
-            # Top-level stream has priority on table_names
-            if self.schema in tables_registry and new_table_name in tables_registry[self.schema]:
-                raise ValueError(f"Conflict: Table name {new_table_name} in schema {self.schema} already exists!")
         elif not self.parent:
             new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
         else:
             new_table_name = get_table_name(self.name_transformer, "_".join(self.json_path[:-1]), new_table_name, suffix, self.json_path)
         new_table_name = self.name_transformer.normalize_table_name(new_table_name, False, False)
+
+        if schema in tables_registry and new_table_name in tables_registry[schema]:
+            # Check if new_table_name already exists. If yes, then add hash of the stream name to it
+            new_table_name = self.name_transformer.normalize_table_name(f"{new_table_name}_{hash_name(self.stream_name)}", False, False)
+            if new_table_name in tables_registry[schema]:
+                raise ValueError(
+                    f"Conflict: Table name {new_table_name} in schema {schema} already exists! (is there a hashing collision or duplicate streams?)"
+                )
+
         if not is_intermediate:
             self.final_table_name = new_table_name
         return new_table_name
@@ -751,13 +760,27 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
 
 
 def hash_json_path(json_path: List[str]) -> str:
-    lineage = "&airbyte&".join(json_path)
+    return hash_name("&airbyte&".join(json_path))
+
+
+def hash_name(input: str) -> str:
     h = hashlib.sha1()
-    h.update(lineage.encode("utf-8"))
+    h.update(input.encode("utf-8"))
     return h.hexdigest()[:3]
 
 
 def get_table_name(name_transformer: DestinationNameTransformer, parent: str, child: str, suffix: str, json_path: List[str]) -> str:
+    """
+    In normalization code base, we often have to deal with naming for tables, combining informations from:
+    - parent table: to denote where a table is extracted from (in case of nesting)
+    - child table: in case of nesting, the field name or the original stream name
+    - extra suffix: normalization is done in multiple transformation steps, each may need to generate separate tables,
+    so we can add a suffix to distinguish the different transformation steps of a pipeline.
+    - json path: in terms of parent and nested field names in order to reach the table currently being built
+
+    All these informations should be included (if possible) in the table naming for the user to (somehow) identify and
+    recognize what data is available there.
+    """
     max_length = name_transformer.get_name_max_length() - 2  # less two for the underscores
     json_path_hash = hash_json_path(json_path)
     norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"

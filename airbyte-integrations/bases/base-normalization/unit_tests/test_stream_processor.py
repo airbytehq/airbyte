@@ -1,26 +1,25 @@
-"""
-MIT License
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import os
 import re
@@ -34,17 +33,22 @@ from normalization.transform_catalog.destination_name_transformer import Destina
 from normalization.transform_catalog.stream_processor import StreamProcessor, get_table_name
 
 
-@pytest.fixture
-def setup_test_path():
-    # This makes the test pass no matter if it is executed from Tests folder (with pytest) or from base-normalization folder (through pycharm)
-    if os.path.exists(os.path.join(os.curdir, "unit_tests")):
-        os.chdir("unit_tests")
+@pytest.fixture(scope="function", autouse=True)
+def before_tests(request):
+    # This makes the test run whether it is executed from the tests folder (with pytest/gradle) or from the base-normalization folder (through pycharm)
+    unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
+    if os.path.exists(unit_tests_dir):
+        os.chdir(unit_tests_dir)
+    else:
+        os.chdir(request.fspath.dirname)
+    yield
+    os.chdir(request.config.invocation_dir)
 
 
 @pytest.mark.parametrize(
     "catalog_file",
     [
-        "hubspot_catalog",
+        "edge_cases_catalog",
         "facebook_catalog",
         "stripe_catalog",
     ],
@@ -58,7 +62,28 @@ def setup_test_path():
         "Redshift",
     ],
 )
-def test_stream_processor_tables_naming(integration_type: str, catalog_file: str, setup_test_path):
+def test_stream_processor_tables_naming(integration_type: str, catalog_file: str):
+    """
+    For a given catalog.json and destination, multiple cases can occur where naming becomes tricky.
+    (especially since some destination like postgres have a very low limit to identifiers length of 64 characters)
+
+    In case of nested objects/arrays in a stream, names can drag on to very long names.
+    Tests are built here using resources files as follow:
+    - `<name of source or test types>_catalog.json`:
+        input catalog.json, typically as what source would provide.
+        For example Stripe and Facebook catalog.json contains some level of nesting.
+    - `<name of source or test types>_expected_top_level.json`:
+        list of expected table names for the top level stream names
+    - `<name of source or test types>_expected_nested.json`:
+        list of expected table names for nested objects, extracted to their own and separate table names
+
+    For the expected json files, it is possible to specialize the file to a certain destination.
+    So if for example, the resources folder contains these two expected files:
+        - edge_cases_catalog_expected_top_level.json
+        - edge_cases_catalog_expected_top_level_postgres.json
+    Then the test will be using the first edge_cases_catalog_expected_top_level.json except for
+    Postgres destination where the expected table names will come from edge_cases_catalog_expected_top_level_postgres.json
+    """
     destination_type = DestinationType.from_string(integration_type)
     tables_registry = {}
 
@@ -151,6 +176,19 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
     ],
 )
 def test_get_table_name(root_table: str, base_table_name: str, suffix: str, expected: str):
+    """
+    - parent table: referred to as root table
+    - child table: referred to as base table.
+    - extra suffix: normalization steps used as suffix to decompose pipeline into multi steps.
+    - json path: in terms of parent and nested field names in order to reach the table currently being built
+
+    See documentation of get_table_name method for more details.
+
+    But this test check the strategies of combining all those fields into a single table name for the user to (somehow) identify and
+    recognize what data is available in there.
+    A set of complicated rules are done in order to choose what parts to truncate or what to leave and handle
+    name collisions.
+    """
     name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
     name = get_table_name(name_transformer, root_table, base_table_name, suffix, ["json", "path"])
     assert name == expected
@@ -179,7 +217,43 @@ def test_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix
         primary_key=[],
         json_column_name="json_column_name",
         properties=[],
-        tables_registry=set(),
+        tables_registry=dict(),
+        from_table="",
+    )
+    assert stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
+    assert stream_processor.final_table_name == expected_final_name
+
+
+@pytest.mark.parametrize(
+    "stream_name, is_intermediate, suffix, expected, expected_final_name",
+    [
+        ("stream_name", False, "", "stream_name_485", "stream_name_485"),
+        ("stream_name", False, "suffix", "stream_name_suffix_485", "stream_name_suffix_485"),
+        ("stream_name", False, "_suffix", "stream_name_suffix_485", "stream_name_suffix_485"),
+        ("stream_name", True, "suffix", "stream_name_suffix_485", ""),
+        ("stream_name", True, "_suffix", "stream_name_suffix_485", ""),
+    ],
+)
+def test_collisions_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix: str, expected: str, expected_final_name: str):
+    # fill test_registry with the same stream names as if it was already used so there would be collisions...
+    test_registry = dict()
+    test_registry["schema_name"] = set()
+    test_registry["schema_name"].add("stream_name")
+    test_registry["schema_name"].add("stream_name_suffix")
+    test_registry["raw_schema"] = set()
+    test_registry["raw_schema"].add("stream_name_suffix")
+    stream_processor = StreamProcessor.create(
+        stream_name=stream_name,
+        destination_type=DestinationType.POSTGRES,
+        raw_schema="raw_schema",
+        schema="schema_name",
+        source_sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.append_dedup,
+        cursor_field=[],
+        primary_key=[],
+        json_column_name="json_column_name",
+        properties=[],
+        tables_registry=test_registry,
         from_table="",
     )
     assert stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
@@ -208,7 +282,7 @@ def test_nested_generate_new_table_name(stream_name: str, is_intermediate: bool,
         primary_key=[],
         json_column_name="json_column_name",
         properties=[],
-        tables_registry=set(),
+        tables_registry=dict(),
         from_table="",
     )
     nested_stream_processor = StreamProcessor.create_from_parent(
@@ -260,9 +334,10 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
 @pytest.mark.parametrize(
     "primary_key, column_type, expecting_exception, expected_primary_keys, expected_final_primary_key_string",
     [
-        ([["id"]], "string", False, ["id"], "id"),
+        ([["id"]], "string", False, ["id"], "{{ adapter.quote('id') }}"),
+        ([["id"]], "number", False, ["id"], "cast({{ adapter.quote('id') }} as {{ dbt_utils.type_string() }})"),
         ([["first_name"], ["last_name"]], "string", False, ["first_name", "last_name"], "first_name, last_name"),
-        ([["float_id"]], "number", False, ["float_id"], "cast(adapter.quote('float_id') as {{ dbt_utils.type_string() }})"),
+        ([["float_id"]], "number", False, ["float_id"], "cast(float_id as {{ dbt_utils.type_string() }})"),
         ([["_airbyte_emitted_at"]], "string", False, [], "cast(_airbyte_emitted_at as {{ dbt_utils.type_string() }})"),
         (None, "string", True, [], ""),
         ([["parent", "nested_field"]], "string", True, [], ""),
@@ -290,10 +365,7 @@ def test_primary_key(
         from_table="",
     )
     try:
-        assert (
-            stream_processor.get_primary_key(column_names={key: (key, f"adapter.quote('{key}')") for key in expected_primary_keys})
-            == expected_final_primary_key_string
-        )
+        assert stream_processor.get_primary_key(column_names=stream_processor.extract_column_names()) == expected_final_primary_key_string
     except ValueError as e:
         if not expecting_exception:
             raise e

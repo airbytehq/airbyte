@@ -40,8 +40,9 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
+| Full Refresh Sync | Yes |
 | Incremental Sync | Yes | except AdCreatives |
+| Namespaces | No |
 
 ### Rate Limiting & Performance Considerations
 

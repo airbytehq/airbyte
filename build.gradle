@@ -15,7 +15,7 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
-def createLicenseWith = { File license, String startComment, String endComment, String lineComment ->
+def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
@@ -26,16 +26,19 @@ def createLicenseWith = { File license, String startComment, String endComment, 
         }
         w.writeLine(endComment)
         w.writeLine("")
+        if (isPython) {
+            w.writeLine("")
+        }
     }
     return tmp
 }
 
 def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '"""', '"""', "")
+    return createLicenseWith(license, '', '', "# ", true)
 }
 
 def createJavaLicenseWith = { license ->
-    return createLicenseWith(license, '/*', ' */', " * ")
+    return createLicenseWith(license, '/*', ' */', " * ", false)
 }
 
 // We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a
@@ -50,6 +53,9 @@ def createSpotlessTarget = { pattern ->
         '*.egg-info',
         'build',
         'dbt-project-template',
+        'dbt_data_tests',
+        'dbt_schema_tests',
+        'normalization_test_output',
         'tools',
         'secrets'
     ]
@@ -58,7 +64,7 @@ def createSpotlessTarget = { pattern ->
         excludes.add("airbyte-integrations/connectors")
     }
 
-    return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect {"**/${it}"})
+    return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect { "**/${it}" })
 }
 
 spotless {
@@ -84,7 +90,10 @@ spotless {
     python {
         target createSpotlessTarget('**/*.py')
 
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|#)'
+        // Many __init__.py files are blank which makes it hard to write a regex to know where to add a license
+        targetExclude createSpotlessTarget('**/__init__.py')
+
+        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])

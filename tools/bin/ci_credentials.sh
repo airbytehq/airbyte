@@ -12,14 +12,23 @@ function write_standard_creds() {
   [ -z "$connector_name" ] && error "Empty connector name"
   [ -z "$creds" ] && error "Creds not set for $connector_name"
 
-  local secrets_dir="airbyte-integrations/connectors/${connector_name}/secrets"
+  if [ "$connector_name" = "base-normalization" ]; then
+    local secrets_dir="airbyte-integrations/bases/${connector_name}/secrets"
+  else
+    local secrets_dir="airbyte-integrations/connectors/${connector_name}/secrets"
+  fi
   mkdir -p "$secrets_dir"
   echo "$creds" > "${secrets_dir}/${cred_filename}"
 }
 
 write_standard_creds destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
-write_standard_creds destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS"
+write_standard_creds destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "insert_config.json"
+write_standard_creds destination-snowflake "$SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS" "copy_s3_config.json"
 write_standard_creds destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
+
+write_standard_creds base-normalization "$BIGQUERY_INTEGRATION_TEST_CREDS" "bigquery.json"
+write_standard_creds base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "snowflake.json"
+write_standard_creds base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 
 write_standard_creds source-file "$GOOGLE_CLOUD_STORAGE_TEST_CREDS" "gcs.json"
 write_standard_creds source-braintree-singer "$BRAINTREE_TEST_CREDS"
@@ -39,6 +48,7 @@ write_standard_creds source-greenhouse "$GREENHOUSE_TEST_CREDS"
 write_standard_creds source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-instagram "$INSTAGRAM_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-intercom-singer "$INTERCOM_INTEGRATION_TEST_CREDS"
+write_standard_creds source-iterable "$ITERABLE_INTEGRATION_TEST_CREDS"
 write_standard_creds source-jira "$JIRA_INTEGRATION_TEST_CREDS"
 write_standard_creds source-looker "$LOOKER_INTEGRATION_TEST_CREDS"
 write_standard_creds source-mailchimp "$MAILCHIMP_TEST_CREDS"
@@ -52,6 +62,7 @@ write_standard_creds source-salesforce-singer "$SALESFORCE_INTEGRATION_TESTS_CRE
 write_standard_creds source-sendgrid "$SENDGRID_INTEGRATION_TEST_CREDS"
 write_standard_creds source-shopify-singer "$SHOPIFY_INTEGRATION_TEST_CREDS"
 write_standard_creds source-slack-singer "$SLACK_TEST_CREDS"
+write_standard_creds source-smartsheets "$SMARTSHEETS_TEST_CREDS"
 write_standard_creds source-stripe-singer "$STRIPE_INTEGRATION_TEST_CREDS"
 write_standard_creds source-tempo "$TEMPO_INTEGRATION_TEST_CREDS"
 write_standard_creds source-twilio-singer "$TWILIO_TEST_CREDS"

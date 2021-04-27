@@ -30,6 +30,7 @@ This Source is capable of syncing the following Streams:
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | No |  |
 | SSL connection | Yes |  |
+| Namespaces | No |  |
 
 ### Performance considerations
 

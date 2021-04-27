@@ -3,5 +3,6 @@
   "name": "Braintree",
   "dockerRepository": "airbyte/source-braintree-singer",
   "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-braintree-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-braintree-singer",
+  "icon": "braintree.svg"
 }
