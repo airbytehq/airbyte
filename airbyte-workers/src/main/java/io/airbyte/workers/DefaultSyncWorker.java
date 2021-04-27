@@ -90,6 +90,8 @@ public class DefaultSyncWorker implements SyncWorker {
     final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
     targetConfig.setCatalog(mapper.mapCatalog(targetConfig.getCatalog()));
 
+    // note: resources are closed in the opposite order in which they are declared. thus source will be
+    // closed first (which is what we want).
     try (destination; source) {
       destination.start(targetConfig, jobRoot);
       source.start(tapConfig, jobRoot);
