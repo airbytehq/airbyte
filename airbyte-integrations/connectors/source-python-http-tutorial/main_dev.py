@@ -45,14 +45,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="source_scaffold_source_http",
-    description="Source implementation for Scaffold Source Http.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2"],
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-)
+from base_python.entrypoint import launch
+from source_python_http_tutorial import SourcePythonHttpTutorial
+
+if __name__ == "__main__":
+    source = SourcePythonHttpTutorial()
+    launch(source, sys.argv[1:])
