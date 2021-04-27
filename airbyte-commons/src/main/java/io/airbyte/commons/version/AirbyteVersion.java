@@ -115,9 +115,9 @@ public class AirbyteVersion {
     final String cleanVersion1 = version1.replace("\n", "").strip();
     final String cleanVersion2 = version2.replace("\n", "").strip();
     return String.format(
-            "Version mismatch between %s and %s.\n" +
-                    "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte",
-            cleanVersion1, cleanVersion2);
+        "Version mismatch between %s and %s.\n" +
+            "Please upgrade or reset your Airbyte Database, see more at https://docs.airbyte.io/tutorials/upgrading-airbyte",
+        cleanVersion1, cleanVersion2);
   }
 
   public static boolean isCompatible(final String v1, final String v2) {

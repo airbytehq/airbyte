@@ -52,6 +52,7 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.server.version_mismatch.VersionMismatchServer;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
@@ -74,14 +75,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
+  private static final int PORT = 8001;
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
@@ -98,7 +95,7 @@ public class ServerApp {
   public void start() throws Exception {
     TrackingClientSingleton.get().identify();
 
-    Server server = new Server(8001);
+    Server server = new Server(PORT);
 
     ServletContextHandler handler = new ServletContextHandler();
 
@@ -215,31 +212,12 @@ public class ServerApp {
       jobPersistence.setVersion(airbyteVersion);
     }
 
-    if(airbyteDatabaseVersion.isEmpty() || AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+    if (airbyteDatabaseVersion.isEmpty() || AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
       new ServerApp(configRepository, jobPersistence, configs).start();
     } else {
-      LOGGER.error(AirbyteVersion.getErrorMessage(airbyteVersion, airbyteDatabaseVersion.get()));
-      Server server = new Server(8001);
-
-      // todo: add actual versions to the error message
-      // todo: refactor so this looks cleaner
-
-      ServletContextHandler handler = new ServletContextHandler();
-      handler.addServlet(BlockingServlet.class, "/*");
-      server.setHandler(handler);
-      server.start();
-      server.join();
-    }
-  }
-
-  public static class BlockingServlet extends HttpServlet {
-    protected void doGet(
-            HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
-      response.setContentType("application/json");
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      response.getWriter().println("{ \"error\": \"Version mismatch. You need to upgrade\"}");
+      LOGGER.info("Start serving version mismatch errors...");
+      new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
   }
 
