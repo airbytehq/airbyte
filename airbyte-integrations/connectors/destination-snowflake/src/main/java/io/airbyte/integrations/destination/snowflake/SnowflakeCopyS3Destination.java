@@ -75,11 +75,7 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
 
   private S3Config getS3Config(JsonNode config) {
     final JsonNode loadingMethod = config.get("loading_method");
-    return new S3Config(
-        loadingMethod.get("s3_bucket_name").asText(),
-        loadingMethod.get("access_key_id").asText(),
-        loadingMethod.get("secret_access_key").asText(),
-        loadingMethod.get("s3_bucket_region").asText());
+    return S3Config.getS3Config(loadingMethod);
   }
 
 }

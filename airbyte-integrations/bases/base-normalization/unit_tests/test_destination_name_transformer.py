@@ -21,6 +21,8 @@
 # SOFTWARE.
 
 
+import os
+
 import pytest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import (
@@ -28,6 +30,18 @@ from normalization.transform_catalog.destination_name_transformer import (
     strip_accents,
     transform_standard_naming,
 )
+
+
+@pytest.fixture(scope="function", autouse=True)
+def before_tests(request):
+    # This makes the test run whether it is executed from the tests folder (with pytest/gradle) or from the base-normalization folder (through pycharm)
+    unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
+    if os.path.exists(unit_tests_dir):
+        os.chdir(unit_tests_dir)
+    else:
+        os.chdir(request.fspath.dirname)
+    yield
+    os.chdir(request.config.invocation_dir)
 
 
 @pytest.mark.parametrize(
@@ -176,6 +190,17 @@ def test_normalize_column_name(input_str: str, destination_type: str, expected: 
     ],
 )
 def test_truncate_identifier(input_str: str, expected: str):
+    """
+    Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
+    - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
+    - `Aaaa_Bbbb_Cccc_Dddd_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
+
+    Deciding on how to truncate (in the middle) are being verified in these tests.
+    In this instance, both strings ends up as:`Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
+    and can potentially cause a collision in table names.
+
+    Note that dealing with such collisions is not part of `destination_name_transformer` but of the `stream_processor`.
+    """
     name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
     print(f"Truncating from #{len(input_str)} to #{len(expected)}")
     assert name_transformer.truncate_identifier_name(input_str) == expected

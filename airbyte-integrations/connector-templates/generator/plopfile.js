@@ -37,8 +37,8 @@ module.exports = function (plop) {
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
 
-  plop.setGenerator('Python HTTP CDK Source', {
-    description: 'Generate a Source that pulls data from a synchronous HTTP API built on the Airbyte CDK.',
+  plop.setGenerator('Python HTTP API Source', {
+    description: 'Generate a Source that pulls data from a synchronous HTTP API.',
     prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
     actions: [
       {

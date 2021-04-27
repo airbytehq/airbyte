@@ -24,11 +24,27 @@
 import json
 import os
 
+import pytest
 from normalization.transform_catalog.transform import extract_schema
 from normalization.transform_config.transform import DestinationType, TransformConfig
 
 
 class TestTransformConfig:
+    """
+    This class is testing the transform config functionality that converts a destination_config.json into the adequate profiles.yml file for dbt to use
+    """
+
+    @pytest.fixture(scope="class", autouse=True)
+    def before_all_tests(self, request):
+        # This makes the test run whether it is executed from the tests folder (with pytest/gradle) or from the base-normalization folder (through pycharm)
+        unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
+        if os.path.exists(unit_tests_dir):
+            os.chdir(unit_tests_dir)
+        else:
+            os.chdir(request.fspath.dirname)
+        yield
+        os.chdir(request.config.invocation_dir)
+
     def test_transform_bigquery(self):
         input = {"project_id": "my_project_id", "dataset_id": "my_dataset_id", "credentials_json": '{ "type": "service_account" }'}
 
