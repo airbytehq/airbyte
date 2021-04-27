@@ -54,5 +54,5 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2"],
-    package_data={"": ["*.json"]},
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
 )
