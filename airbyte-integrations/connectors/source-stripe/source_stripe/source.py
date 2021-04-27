@@ -90,7 +90,7 @@ class IncrementalStripeStream(StripeStream, ABC):
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params['created'] = stream_state.get(self.cursor_field)
+        params['created[gte]'] = stream_state.get(self.cursor_field)
         return params
 
 
