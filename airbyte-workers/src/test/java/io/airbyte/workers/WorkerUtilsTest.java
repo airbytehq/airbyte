@@ -90,6 +90,8 @@ class WorkerUtilsTest {
       while (recordedBeats.get() < 3) {
         Thread.sleep(10);
       }
+
+      thread.stop();
     }
 
     @Test
