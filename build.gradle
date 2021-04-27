@@ -45,16 +45,19 @@ def createJavaLicenseWith = { license ->
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
     def excludes = [
-            '.gradle',
-            'node_modules',
-            '.eggs',
-            '.mypy_cache',
-            '.venv',
-            '*.egg-info',
-            'build',
-            'dbt-project-template',
-            'tools',
-            'secrets'
+        '.gradle',
+        'node_modules',
+        '.eggs',
+        '.mypy_cache',
+        '.venv',
+        '*.egg-info',
+        'build',
+        'dbt-project-template',
+        'dbt_data_tests',
+        'dbt_schema_tests',
+        'normalization_test_output',
+        'tools',
+        'secrets'
     ]
 
     if (System.getenv().containsKey("CORE_ONLY")) {

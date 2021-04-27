@@ -1,4 +1,10 @@
 build/
 logs/
 dbt-project-template/models/generated/
+dbt-project-template/test_output.log
 dbt_modules/
+secrets/
+
+integration_tests/normalization_test_output/*
+!integration_tests/normalization_test_output/*/*/models/generated
+!integration_tests/normalization_test_output/*/*/final
