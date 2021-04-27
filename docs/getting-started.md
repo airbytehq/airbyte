@@ -87,7 +87,7 @@ And there you have it. You've pulled data from an API directly into a file and a
 
 ## That's it!
 
-This is just the beginning of using Airbyte. We support a large collection of sources and destination. You can even contribute your own.
+This is just the beginning of using Airbyte. We support a large collection of sources and destinations. You can even contribute your own.
 
 If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
 
