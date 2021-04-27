@@ -223,6 +223,31 @@ class Transfers(IncrementalStripeStream):
         return "transfers"
 
 
+class Refunds(IncrementalStripeStream):
+    cursor_field = 'created'
+
+    def path(self, **kwargs):
+        return "refunds"
+
+
+class BankAccounts(StripeStream):
+    name = 'bank_accounts'
+
+    def path(self, stream_slice: Mapping[str, any] = None, **kwargs):
+        customer_id = stream_slice['customer_id']
+        return f"customers/{customer_id}/sources"
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params['object'] = 'bank_account'
+        return params
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        customers_stream = Customers(authenticator=self.authenticator)
+        for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={'customer_id': customer['id']}, **kwargs)
+
+
 class SourceStripe(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
@@ -252,4 +277,6 @@ class SourceStripe(AbstractSource):
             Subscriptions(authenticator=authenticator),
             SubscriptionItems(authenticator=authenticator),
             Transfers(authenticator=authenticator),
+            Refunds(authenticator=authenticator),
+            BankAccounts(authenticator=authenticator),
         ]

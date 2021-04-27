@@ -3767,6 +3767,126 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["created"]
+    },
+    {
+      "streams": [
+        {
+          "stream": {
+            "name": "refunds",
+            "json_schema": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "object": {
+                  "type": ["null", "string"]
+                },
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "balance_transaction": {
+                  "type": ["null", "string"]
+                },
+                "charge": {
+                  "type": ["null", "string"]
+                },
+                "created": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                },
+                "metadata": {
+                  "type": ["null", "object"],
+                  "properties": {}
+                },
+                "payment_intent": {
+                  "type": ["null", "string"]
+                },
+                "reason": {
+                  "type": ["null", "string"]
+                },
+                "receipt_number": {
+                  "type": ["null", "string"]
+                },
+                "source_transfer_reversal": {
+                  "type": ["null", "string"]
+                },
+                "status": {
+                  "type": ["null", "string"]
+                },
+                "transfer_reversal": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "supported_sync_modes": ["full_refresh", "incremental"],
+            "source_defined_cursor": true,
+            "default_cursor_field": ["created"]
+          },
+          "sync_mode": "incremental",
+          "destination_sync_mode": "append"
+        }
+      ]
+    },
+    {
+      "streams": [
+        {
+          "stream": {
+            "name": "bank_accounts",
+            "json_schema": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "object": {
+                  "type": ["null", "string"]
+                },
+                "account_holder_name": {
+                  "type": ["null", "string"]
+                },
+                "account_holder_type": {
+                  "type": ["null", "string"]
+                },
+                "bank_name": {
+                  "type": ["null", "string"]
+                },
+                "country": {
+                  "type": ["null", "string"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                },
+                "customer": {
+                  "type": ["null", "string"]
+                },
+                "fingerprint": {
+                  "type": ["null", "integer"]
+                },
+                "last4": {
+                  "type": ["null", "string"]
+                },
+                "metadata": {
+                  "type": ["null", "object"],
+                  "properties": {}
+                },
+                "routing_number": {
+                  "type": ["null", "string"]
+                },
+                "status": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "supported_sync_modes": ["full_refresh"]
+          },
+          "sync_mode": "full_refresh",
+          "destination_sync_mode": "overwrite"
+        }
+      ]
     }
   ]
 }
