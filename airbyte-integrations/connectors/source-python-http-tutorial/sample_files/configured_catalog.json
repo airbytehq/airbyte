@@ -122,9 +122,7 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"

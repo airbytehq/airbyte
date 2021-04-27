@@ -1,17 +1,18 @@
+
 # MIT License
-#
+# 
 # Copyright (c) 2020 Airbyte
-#
+# 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-#
+# 
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-#
+# 
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 
 
 """
@@ -49,8 +51,9 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from base_python import AbstractSource, HttpStream, Stream
-from base_python.cdk.streams.auth.core import TokenAuthenticator
+from base_python.cdk.streams.auth.token import TokenAuthenticator
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -96,7 +99,7 @@ class ScaffoldSourceHttpStream(HttpStream, ABC):
     """
 
     # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = 'https://example-api.com/v1/'
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -115,14 +118,13 @@ class ScaffoldSourceHttpStream(HttpStream, ABC):
         """
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         """
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
         return {}
+
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -137,23 +139,19 @@ class Customers(ScaffoldSourceHttpStream):
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        return "customers"
-
+        return 'customers'
 
 # Basic incremental stream
 class IncrementalScaffoldSourceHttpStream(ScaffoldSourceHttpStream, ABC):
     """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-          if you do not need to implement incremental sync for any streams, remove this class.
+        TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
+              if you do not need to implement incremental sync for any streams, remove this class.
     """
-
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
@@ -182,7 +180,7 @@ class Employees(IncrementalScaffoldSourceHttpStream):
     """
 
     # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
+    cursor_field = 'start_date'
 
     def path(self, **kwargs) -> str:
         """
@@ -216,6 +214,7 @@ class Employees(IncrementalScaffoldSourceHttpStream):
 
 # Source
 class SourceScaffoldSourceHttp(AbstractSource):
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -223,7 +222,7 @@ class SourceScaffoldSourceHttp(AbstractSource):
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
-        :param config:  the user-input config object conforming the connector's spec.json
+        :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
@@ -236,5 +235,5 @@ class SourceScaffoldSourceHttp(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
+        auth = TokenAuthenticator(token='api_key') # Oauth2Authenticator is also available if you need oauth support
         return [Customers(authenticator=auth), Employees(authenticator=auth)]
