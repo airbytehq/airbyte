@@ -12,7 +12,11 @@ function write_standard_creds() {
   [ -z "$connector_name" ] && error "Empty connector name"
   [ -z "$creds" ] && error "Creds not set for $connector_name"
 
-  local secrets_dir="airbyte-integrations/connectors/${connector_name}/secrets"
+  if [ "$connector_name" = "base-normalization" ]; then
+    local secrets_dir="airbyte-integrations/bases/${connector_name}/secrets"
+  else
+    local secrets_dir="airbyte-integrations/connectors/${connector_name}/secrets"
+  fi
   mkdir -p "$secrets_dir"
   echo "$creds" > "${secrets_dir}/${cred_filename}"
 }
@@ -21,6 +25,10 @@ write_standard_creds destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "cr
 write_standard_creds destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "insert_config.json"
 write_standard_creds destination-snowflake "$SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS" "copy_s3_config.json"
 write_standard_creds destination-redshift "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS"
+
+write_standard_creds base-normalization "$BIGQUERY_INTEGRATION_TEST_CREDS" "bigquery.json"
+write_standard_creds base-normalization "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "snowflake.json"
+write_standard_creds base-normalization "$AWS_REDSHIFT_INTEGRATION_TEST_CREDS" "redshift.json"
 
 write_standard_creds source-file "$GOOGLE_CLOUD_STORAGE_TEST_CREDS" "gcs.json"
 write_standard_creds source-braintree-singer "$BRAINTREE_TEST_CREDS"
