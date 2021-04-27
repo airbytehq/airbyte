@@ -37,9 +37,10 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,21 +48,31 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
+  private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+  private static final Duration CHECK_HEARTBEAT_DURATION = Duration.of(10, ChronoUnit.SECONDS);
+  // todo (cgardens) - keep the graceful shutdown consistent with current behavior for release. make
+  // sure everything is working well before we reduce this to something more reasonable.
+  private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(10, ChronoUnit.HOURS);
+  private static final Duration FORCED_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
+
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
+  private final HeartbeatMonitor heartbeatMonitor;
 
   private Process tapProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory());
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory) {
+                       final AirbyteStreamFactory streamFactory,
+                       final HeartbeatMonitor heartbeatMonitor) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
+    this.heartbeatMonitor = heartbeatMonitor;
   }
 
   @Override
@@ -82,6 +93,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream()))
+        .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE)
         .iterator();
   }
@@ -107,7 +119,13 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
 
     LOGGER.debug("Closing tap process");
-    WorkerUtils.gentleClose(tapProcess, 10, TimeUnit.HOURS);
+    WorkerUtils.gentleCloseWithHeartbeat(
+        tapProcess,
+        heartbeatMonitor,
+        GRACEFUL_SHUTDOWN_DURATION,
+        CHECK_HEARTBEAT_DURATION,
+        FORCED_SHUTDOWN_DURATION);
+
     if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
       throw new WorkerException("Tap process wasn't successful");
     }
