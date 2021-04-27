@@ -2,52 +2,37 @@
 
 ## Summary
 
-This is a step-by-step guide for how to create an Airbyte source in Python to read data from an HTTP API.
+This is a step-by-step guide for how to create an Airbyte source in Python to read data from an HTTP API. We'll be using the 
+Exchangerates API as an example since it is both simple but demonstrates a lot of the capabilities of the CDK. 
 
 ## Requirements
 
 * Python >= 3.7 
 * Docker
-* NodeJS (used to generate the connector). We'll replace the NodeJS dependency soon.
+* NodeJS (only used to generate the connector). We'll remove the NodeJS dependency soon.
 
 All the commands below assume that `python` points to a version of python >=3.7.9. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
 
 ## Checklist
-
-### Creating a Source
-
 * Step 1: Create the source using the template
 * Step 2: Build the newly generated source 
-* Step 3: Set up your Airbyte development environment 
-* Step 4: Implement `spec` \(and define the specification for the source `airbyte-integrations/connectors/source-<source-name>/spec.json`\)
-* Step 5: Implement `check`
-* Step 6: Implement `discover`
-* Step 7: Implement `read`
-* Step 8: Set up Standard Tests
-* Step 9: Write unit tests or integration tests
+* Step 3: Define the inputs needed by your connector
+* Step 4: Implement connection checking
+* Step 5: Declare the schema of your streams
+* Step 6: Implement functionality for reading your streams
+* Step 7: Write unit tests or integration tests
+* Step 8: Use the connector in Airbyte
+
+If you want to submit this connector to become a default connector within Airbyte:
+* Step 9: Set up Standard Tests
 * Step 10: Update the `README.md` \(If API credentials are required to run the integration, please document how they can be obtained or link to a how-to guide.\)
-* Step 11: Add the connector to the API/UI \(by adding an entry in `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`\)
+* Step 11: Add the connector to the default list of connectors 
 * Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
-{% hint style="info" %}
+
 Each step of the Creating a Source checklist is explained in more detail below.
-{% endhint %}
 
-{% hint style="info" %}
-All `./gradlew` commands must be run from the root of the airbyte project.
-{% endhint %}
-
-### Submitting a Source to Airbyte
-
-* If you need help with any step of the process, feel free to submit a PR with your progress and any questions you have. 
-* Submit a PR.
-* To run integration tests, Airbyte needs access to a test account/environment. Coordinate with an Airbyte engineer \(via the PR\) to add test credentials so that we can run tests for the integration in the CI. \(We will create our own test account once you let us know what source we need to create it for.\)
-* Once the config is stored in Github Secrets, edit `.github/workflows/test-command.yml` and `.github/workflows/publish-command.yml` to inject the config into the build environment.
-* Edit the `airbyte/tools/bin/ci_credentials.sh` script to pull the script from the build environment and write it to `secrets/config.json` during the build.
-
-{% hint style="info" %}
-If you have a question about a step the Submitting a Source to Airbyte checklist include it in your PR or ask it on [slack](https://slack.airbyte.io).
-{% endhint %}
+**Note**: All `./gradlew` commands must be run from the root of the airbyte project.
 
 ## Explaining Each Step
 
@@ -62,14 +47,16 @@ $ npm install
 $ npm run generate
 ```
 
-Select the `python` template and then input the name of your connector. For this walk through we will refer to our source as `example-python`
+Select the `Python HTTP CDK Source` template and then input the name of your connector. For this walk through we will refer to our source as `python-http-example`. The finalized source code for this tutorial can be found [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-python-http-tutorial).
 
-### Step 2: Build the newly generated source
+The source we will build in this tutorial will pull data from the [Rates API](ratesapi.io), a free and open API which 
+documents historical exchange rates for fiat currencies.  
 
-Build the source by running:
+### Step 2: Install dependencies the newly generated source
+Now that you've generated the module, let's navigate to its directory and install dependencies:
 
 ```text
-cd airbyte-integrations/connectors/source-<name>
+cd ../../connectors/source-<name>
 python -m venv .venv # Create a virtual environment in the .venv directory
 source .venv/bin/activate # enable the venv
 pip install -r requirements.txt
@@ -77,41 +64,40 @@ pip install -r requirements.txt
 
 This step sets up the initial python environment. **All** subsequent `python` or `pip` commands assume you have activated your virtual environment.
 
-### Step 3: Set up your Airbyte development environment
+Let's verify everything is working as intended. Run: 
 
-The generator creates a file `source_<source_name>/source.py`. This will be where you implement the logic for your source. The templated `source.py` contains extensive comments explaining each method that needs to be implemented. Briefly here is an overview of each of these methods.
+```
+python main_dev.py spec
+```
 
-1. `spec`: declares the user-provided credentials or configuration needed to run the connector
-2. `check`: tests if with the user-provided configuration the connector can connect with the underlying data source.
-3. `discover`: declares the different streams of data that this connector can output
-4. `read`: reads data from the underlying data source \(The stock ticker API\)
+You should see some output:
+```
+{"type": "SPEC", "spec": {"documentationUrl": "https://docsurl.com", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "title": "Python Http Tutorial Spec", "type": "object", "required": ["TODO"], "additionalProperties": false, "properties": {"TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {"type": "string", "description": "describe me"}}}}}
+```
 
+We just ran the `spec` command of the Airbyte Protocol! We'll talk more about this later, but this is a simple sanity check to make sure everything is wired up correctly.
+
+Note that the `main_dev.py` file is a simple script that makes it easy to run your connector. Its invocation format is `python main_dev.py <command> [args]`. See the module's generated `README.md` for the commands it supports.  
+
+### Notes on iteration cycle
 #### Dependencies
 
 Python dependencies for your source should be declared in `airbyte-integrations/connectors/source-<source-name>/setup.py` in the `install_requires` field. You will notice that a couple of Airbyte dependencies are already declared there. Do not remove these; they give your source access to the helper interface that is provided by the generator.
 
-You may notice that there is a `requirements.txt` in your source's directory as well. Do not touch this. It is autogenerated and used to provide Airbyte dependencies. All your dependencies should be declared in `setup.py`.
+You may notice that there is a `requirements.txt` in your source's directory as well. Don't edit this. It is autogenerated and used to provide Airbyte dependencies. All your dependencies should be declared in `setup.py`.
 
 #### Development Environment
-
-The commands we ran above created a virtual environment for your source. If you want your IDE to auto complete and resolve dependencies properly, point it at the virtual env `airbyte-integrations/connectors/source-<source-name>/.venv`. Also anytime you change the dependencies in the `setup.py` make sure to re-run the build command. The build system will handle installing all dependencies in the `setup.py` into the virtual environment.
-
-Pretty much all it takes to create a source is to implement the `Source` interface. The template fills in a lot of information for you and has extensive docstrings describing what you need to do to implement each method. The next 4 steps are just implementing that interface.
-
-{% hint style="info" %}
-All logging should be done through the `logger` object passed into each method. Otherwise, logs will not be shown in the Airbyte UI.
-{% endhint %}
+The commands we ran above created a [Python virtual environment](https://docs.python.org/3/tutorial/venv.html) for your source. If you want your IDE to auto complete and resolve dependencies properly, point it at the virtual env `airbyte-integrations/connectors/source-<source-name>/.venv`. Also anytime you change the dependencies in the `setup.py` make sure to re-run `pip install -r requirements.txt`. 
 
 #### Iterating on your implementation
-
-Everyone develops differently but here are 3 ways that we recommend iterating on a source. Consider using whichever one matches your style.
+Everyone develops differently but here are 2 ways that we recommend iterating on a source. Consider using whichever one matches your style.
 
 **Run the source using python**
 
-You'll notice in your source's directory that there is a python file called `main_dev.py`. This file exists as convenience for development. You can call it from within the virtual environment mentioned above `. ./.venv/bin/activate` to test out that your source works.
+You'll notice in your source's directory that there is a python file called `main_dev.py`. This file exists as convenience for development. You run it to test that your source works:
 
 ```text
-# from airbyte-integrations/connectors/source-<source-name>
+# from airbyte-integrations/connectors/source-<name>
 python main_dev.py spec
 python main_dev.py check --config secrets/config.json
 python main_dev.py discover --config secrets/config.json
@@ -122,66 +108,251 @@ The nice thing about this approach is that you can iterate completely within in 
 
 **Run the source using docker**
 
-If you want to run your source exactly as it will be run by Airbyte \(i.e. within a docker container\), you can use the following commands from the connector module directory \(`airbyte-integrations/connectors/source-example-python`\):
+If you want to run your source exactly as it will be run by Airbyte \(i.e. within a docker container\), you can use the following commands from the connector module directory \(`airbyte-integrations/connectors/source-python-http-example`\):
 
 ```text
 # First build the container
-docker build . -t airbyte/source-example-python:dev
+docker build . -t airbyte/source-<name>:dev
 
 # Then use the following commands to run it
-docker run --rm airbyte/source-example-python:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-example-python:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-example-python:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-example-python:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm airbyte/source-python-http-example:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-python-http-example:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-python-http-example:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-example:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 
-Note: Each time you make a change to your implementation you need to re-build the connector image. `docker build . -t airbyte/source-example-python:dev`. This ensures the new python code is added into the docker container.
+Note: Each time you make a change to your implementation you need to re-build the connector image. `docker build . -t airbyte/source-<name>:dev`. This ensures the new python code is added into the docker container.
 
 The nice thing about this approach is that you are running your source exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
 
-**TDD using standard tests**
+### Step 3: Define the inputs required by your connector
 
-Airbyte provides a standard test suite that is run against every source. The objective of these tests is to provide some "free" tests that can sanity check that the basic functionality of the source works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
+Each connector contains declares the inputs it needs to read data from the underlying data source. In the Airbyte Protocol terminology, this is is the `spec` operation.  
 
-If you want to try out this approach, check out Step 8 which describes what you need to do to set up the standard tests for your source.
-
-The nice thing about this approach is that you are running your source exactly as Airbyte will run it in the CI. The downside is that the tests do not run very quickly.
-
-### Step 4: Implement `spec`
-
-Each source contains a specification that describes what inputs it needs in order for it to pull data. This file can be found in `airbyte-integrations/connectors/source-<source-name>/spec.json`. This is a good place to start when developing your source. Using JsonSchema define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres source.
+The simplest way to implement this is by creating a `.json` file in `source_<name>/spec.json` which describes your connector's inputs according to the [ConnectorSpecification](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml) schema. This is a good place to start when developing your source. Using JsonSchema, define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-freshdesk/source_freshdesk/spec.json) of what the `spec.json` looks like for the Freshdesk API source.
 
 For more details on what the spec is, you can read about the Airbyte Protocol [here](../architecture/airbyte-specification.md).
 
 The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.json` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.json` you should be done with this step.
 
-### Step 5: Implement `check`
+Given that we'll pulling currency data for our example source, we'll define the following `spec.json`:
 
-As described in the template code, this method takes in a json object called config that has the values described in the `spec.json` filled in. In other words if the `spec.json` said that the source requires a `username` and `password` the config object might be `{ "username": "airbyte", "password": "password123" }`. It returns a json object that reports, given the credentials in the config, whether we were able to connect to the source. For example, with the given credentials could the source connect to the database server.
+```
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Python Http Tutorial Spec",
+    "type": "object",
+    "required": ["start_date", "currency_base"],
+    "additionalProperties": false,
+    "properties": {
+      "start_date": {
+        "type": "string",
+        "description": "Start getting data from that date.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "examples": ["YYYY-MM-DD"]
+      },
+      "base": {
+        "type": "string",
+        "examples": ["USD", "EUR"]
+        "description": "ISO reference currency. See <a href=\"https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html\">here</a>."
+      }
+    }
+  }
+}
+```
+  
+In addition to metadata, we define two inputs: 
+* `start_date`: The beginning date to start tracking currency exchange rates from
+* `base`: The currency whose rates we're interested in tracking
+  
+### Step 4: Implement connection checking
+The second operation in the Airbyte Protocol that we'll implement is the `check` operation. 
 
-While developing, we recommend storing this object in `secrets/config.json`. The `secrets` directory is gitignored by default.
+This operation verifies that the input configuration supplied by the user can be used to connect to the underlying data source. Note that this user-supplied configuration has the values described in the `spec.json` filled in. In other words if the `spec.json` said that the source requires a `username` and `password` the config object might be `{ "username": "airbyte", "password": "password123" }`. You should then implement something It returns a json object that reports, given the credentials in the config, whether we were able to connect to the source. 
 
-### Step 6: Implement `discover`
 
-As described in the template code, this method takes in the same config object as `check`. It then returns a json object called a `catalog` that describes what data is available and metadata on what options are available for how to replicate it.
+In our case, this is a fairly trivial check since the API requires no credentials. Instead, let's verify that the user-input `base` currency is a legitimate currency. In `source.py` we'll find the following autogenerated source: 
+ 
+```python
+class SourcePythonHttpTutorial(AbstractSource):
 
-For a brief overview on the catalog check out [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md).
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        """
+        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
 
-### Step 7: Implement `read`
+        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
+        for an example.
 
-As described in the template code, this method takes in the same config object as the previous methods. It also takes in a "configured catalog". This object wraps the catalog emitted by the `discover` step and includes configuration on how the data should be replicated. For a brief overview on the configured catalog check out [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md). It then returns a generator which returns each record in the stream.
+        :param config:  the user-input config object conforming the connector's spec.json
+        :param logger:  logger object
+        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        """
+        return True, None
 
-### Step 8: Set up Standard Tests
+...
+```
 
-The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../contributing-to-airbyte/building-new-connector/testing-connectors.md) explains Standard Tests and how to run them.
+Following the docstring instructions, we'll change the implementation to verify that the input currency is a real currency: 
 
-You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
+```python
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        accepted_currencies = {"USD", "JPY", "BGN", "CZK", "DKK"}  # assume these are the only allowed currencies
+        input_currency = config['base']
+        if input_currency not in accepted_currencies:
+            return False, f"Input currency {input_currency} is invalid. Please input one of the following currencies: {accepted_currencies}"
+        else:
+            return True, None
+```
 
-{% hint style="info" %}
-In some rare cases we make exceptions and allow a source to not need to pass all the standard tests. If for some reason you think your source cannot reasonably pass one of the tests cases, reach out to us on github or slack, and we can determine whether there's a change we can make so that the test will pass or if we should skip that test for your source.
-{% endhint %}
+Let's test out this implementation by creating two objects: a valid and an invalid config and attempt to give them as input to the connector 
 
-### Step 9: Write unit tests and/or integration tests
+```
+echo '{"date": "2021-04-01T00:00:00Z", "base": "USD"}'  > sample_files/config.json
+echo '{"date": "2021-04-01T00:00:00Z", "base": "BTC"}'  > sample_files/invalid_config.json
+python main_dev.py check --config sample_files/config.json
+python main_dev.py check --config sample_files/invalid_config.json
+```
+
+You should see output like the following: 
+
+```
+> python main_dev.py check --config sample_files/config.json
+{"type": "CONNECTION_STATUS", "connectionStatus": {"status": "SUCCEEDED"}}
+
+> python main_dev.py check --config sample_files/invalid_config.json
+{"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "Input currency BTC is invalid. Please input one of the following currencies: {'DKK', 'USD', 'CZK', 'BGN', 'JPY'}"}}
+```
+
+While developing, we recommend storing configs which contain secrets in `secrets/config.json` because the `secrets` directory is gitignored by default.
+
+### Step 5: Declare the schema of your streams
+
+The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream (full refresh or incremental). See the [catalog tutorial](https://docs.airbyte.io/tutorials/beginners-guide-to-catalog) for more information.
+
+When using the Airbyte CDK, this is very simple to do. For each stream in our connector we'll need to:
+1. Create a python `class` in `source.py` which extends `HttpStream`
+2. Place a `<stream_name>.json` file in the `source_<name>/schemas/` directory. The name of the file should be the snake_case name of the stream whose schema it describes, and its contents should be the JsonSchema describing the output from that stream.
+
+Let's create a class in `source.py` which extends `HttpStream`. You'll notice there are classes with extensive comments describing what needs to be done to implement various connector features. Feel free to read these classes as needed. But for the purposes of this tutorial, let's assume that we are adding classes from scratch either by deleting those generated classes or editing them to match the implementation below. 
+
+We'll begin by creating a stream to represent the data that we're pulling from the Exchange Rates API: 
+```python
+class ExchangeRates(HttpStream):
+    url_base = "https://api.ratesapi.io/"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # The API does not offer pagination, so we return None to indicate there are no more pages in the response
+        return None
+
+    def path(
+        self, 
+        stream_state: Mapping[str, Any] = None, 
+        stream_slice: Mapping[str, Any] = None, 
+        next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return ""  # TODO
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        return None  # TODO 
+        
+```
+
+Note that this implementation is entirely empty -- we haven't actually done anything. We'll come back to this in the next step. But for now we just want to declare the schema of this stream. We'll declare this as a stream that the connector outputs by returning it from the `streams` method: 
+
+```python
+class SourcePythonHttpTutorial(AbstractSource):
+
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        ...
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        # NoAuth just means there is no authentication required for this API. It's only included for completeness
+        # of the example, but if you don't need authentication, you don't need to pass an authenticator at all. 
+        # Other authenticators are available for API token-based auth and Oauth2. 
+        auth = NoAuth()  
+        return [ExchangeRates(authenticator=auth)]
+
+```
+
+Having created this stream in code, we'll put a file `exchange_rates.json` in the `schemas/` folder. You can download the JSON file describing the output schema [here](http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`. 
+
+With `.json` schema file in place, let's see if the connector can now find this schema and produce a valid catalog: 
+
+```
+python main_dev.py discover --config sample_files/config.json
+```
+
+you should see some output like: 
+```
+{"type": "CATALOG", "catalog": {"streams": [{"name": "exchange_rates", "json_schema": {"$schema": "http://json-schema.org/draft-04/schema#", "type": "object", "properties": {"base": {"type": "string"}, "rates": {"type": "object", "properties": {"GBP": {"type": "number"}, "HKD": {"type": "number"}, "IDR": {"type": "number"}, "PHP": {"type": "number"}, "LVL": {"type": "number"}, "INR": {"type": "number"}, "CHF": {"type": "number"}, "MXN": {"type": "number"}, "SGD": {"type": "number"}, "CZK": {"type": "number"}, "THB": {"type": "number"}, "BGN": {"type": "number"}, "EUR": {"type": "number"}, "MYR": {"type": "number"}, "NOK": {"type": "number"}, "CNY": {"type": "number"}, "HRK": {"type": "number"}, "PLN": {"type": "number"}, "LTL": {"type": "number"}, "TRY": {"type": "number"}, "ZAR": {"type": "number"}, "CAD": {"type": "number"}, "BRL": {"type": "number"}, "RON": {"type": "number"}, "DKK": {"type": "number"}, "NZD": {"type": "number"}, "EEK": {"type": "number"}, "JPY": {"type": "number"}, "RUB": {"type": "number"}, "KRW": {"type": "number"}, "USD": {"type": "number"}, "AUD": {"type": "number"}, "HUF": {"type": "number"}, "SEK": {"type": "number"}}}, "date": {"type": "string"}}}, "supported_sync_modes": ["full_refresh"]}]}}
+```
+
+it's that simple! Now the connector knows how to declare the schema of the stream in your connector. Our source is simple so we're only declaring one stream, but the principle is exactly the same if you had many streams. 
+
+You can also dynamically define schemas, but that's beyond the scope of this tutorial. See the [schema docs](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/docs/schemas.md) for more information. 
+
+### Step 6: Read data from the API
+Describing schemas is good and all, but at some point we have to start reading data! So let's get to work. But before, let's describe what we're about to do: 
+
+1. The `HttpStream` superclass, like described in the [concepts documentation]() 
+
+We'll need to edit our class to look like the following: 
+
+```python
+class ExchangeRates(HttpStream):
+    def __init__(self, base: str, **kwargs):
+        super().__init__()
+        self.base = base
+
+    url_base = "https://api.ratesapi.io/"
+    
+    def path(
+        self, 
+        stream_state: Mapping[str, Any] = None, 
+        stream_slice: Mapping[str, Any] = None, 
+        next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        # The "/latest" path gives us the latest currency exchange rates
+        return "latest"  
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        # The api requires that we include the base currency as a query param so we do that in this method
+        return {'base': self.base}
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        # The response is a simple JSON whose schema matches our stream's schema exactly, 
+        # so we just return a list containing the response
+        return [response.json()]
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+            # The API does not offer pagination, 
+            # so we return None to indicate there are no more pages in the response
+            return None
+
+```
+
+
+
+### Step 8: Write unit tests and/or integration tests
 
 The Standard Tests are meant to cover the basic functionality of a source. Think of it as the bare minimum required for us to add a source to Airbyte. In case you need to test additional functionality of your source, write unit or integration tests.
 
@@ -196,6 +367,30 @@ You can run the tests using `python -m pytest -s unit_tests`
 Place any integration tests in the `integration_tests` directory such that they can be [discovered by pytest](https://docs.pytest.org/en/reorganize-docs/new-docs/user/naming_conventions.html).
 
 Run integration tests using `python -m pytest -s integration_tests`.
+
+### Step 9: Use the connector in Airbyte
+
+
+
+### Step 10: Set up Standard Tests
+
+The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../contributing-to-airbyte/building-new-connector/testing-connectors.md) explains Standard Tests and how to run them.
+
+You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
+
+{% hint style="info" %}
+In some rare cases we make exceptions and allow a source to not need to pass all the standard tests. If for some reason you think your source cannot reasonably pass one of the tests cases, reach out to us on github or slack, and we can determine whether there's a change we can make so that the test will pass or if we should skip that test for your source.
+{% endhint %}
+
+
+### Submitting a Source to Airbyte
+If you want to submit the connector to Airbyte so it ships with the product by default, follow the steps below. Some things to keep in mind: 
+* If you need help with any step of the process, feel free to submit a PR with your progress and any questions you have. 
+* To run integration tests, Airbyte needs access to a test account/environment. Coordinate with an Airbyte engineer \(via the PR\) to add test credentials so that we can run tests for the integration in the CI. \(We will create our own test account once you let us know what source we need to create it for.\)
+* Once the config is stored in Github Secrets, edit `.github/workflows/test-command.yml` and `.github/workflows/publish-command.yml` to inject the config into the build environment.
+* Edit the `airbyte/tools/bin/ci_credentials.sh` script to pull the script from the build environment and write it to `secrets/config.json` during the build.
+
+If you have a question about a step, mention it in your PR or ask it on [slack](https://slack.airbyte.io).
 
 #### Step 10: Update the `README.md`
 
