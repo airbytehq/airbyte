@@ -11,15 +11,15 @@ The Standard Test Suite runs its tests against the connector's Docker image. It 
 
 ![Standard test sequence diagram](../../.gitbook/assets/standard_tests_sequence_diagram.png)
 
-The Standard Test Suiteuse pytest as a test runner and was built as pytest plugin `source-acceptance-test`. This plugin adds a new configuration option `—acceptance-test-config` - it should points to the folder with `acceptance-tests-config.yml`.
+The Standard Test Suite use pytest as a test runner and was built as pytest plugin `source-acceptance-test`. This plugin adds a new configuration option `—acceptance-test-config` - it should points to the folder with `acceptance-tests-config.yml`.
 
-Each test suite has a timeout and will fail if the the limit exceeded.
+Each test suite has a timeout and will fail if the limit is exceeded.
 
-See all the test cases, their description and inputs in [Source Acceptance Tests](source-acceptance-tests.md).
+See all the test cases, their description, and inputs in [Source Acceptance Tests](source-acceptance-tests.md).
 
 ### Setting up standard tests for your connector
 
-Create `acceptance-test-config.yml`. In most cases your connector already has this file in its root folder.
+Create `acceptance-test-config.yml`. In most cases, your connector already has this file in its root folder.
 Here is an example of the minimal `acceptance-test-config.yml`:
 ```yaml
 connector_image: airbyte/source-some-connector:dev
@@ -40,7 +40,7 @@ You can also debug failed tests by adding `—pdb —last-failed`:
 ```
 ./acceptance-test-python.sh --pdb --last-failed
 ```
-See other usefull pytest options [here](https://docs.pytest.org/en/stable/usage.html)
+See other useful pytest options [here](https://docs.pytest.org/en/stable/usage.html)
 
 ### Dynamically managing inputs & resources used in standard tests
 

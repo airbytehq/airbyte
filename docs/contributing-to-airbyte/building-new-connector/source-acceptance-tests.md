@@ -17,7 +17,7 @@ tests:  # Tests configuration
   # discovery:  # skip this test
   incremental: []  # skip this test as well
 ```
-Ideally the connector should pass all acceptance tests. If test or its inputs omitted this test will be skipped. 
+Ideally, the connector should pass all acceptance tests. If the test or its inputs omitted this test will be skipped. 
  
 ## Test Spec
 Verify that a spec operation issued to the connector returns a valid spec.
@@ -26,7 +26,7 @@ Verify that a spec operation issued to the connector returns a valid spec.
 | `spec_path` | string | `secrets/spec.json` |Path to a JSON object representing the spec expected to be output by this connector |
 
 ## Test Connection
-Verify that a check operation issued to the connector with the input config file returns a success response.
+Verify that a check operation issued to the connector with the input config file returns a successful response.
 | Input |  Type| Default | Note |
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
@@ -34,7 +34,7 @@ Verify that a check operation issued to the connector with the input config file
 
 ## Test Discovery
 
-Verifies when a discover operation is run on the connector using the given config file, a valid catalog is output by the connector.
+Verifies when a discover operation is run on the connector using the given config file, a valid catalog is produced by the connector.
 | Input |  Type| Default | Note |
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
@@ -42,7 +42,7 @@ Verifies when a discover operation is run on the connector using the given confi
 
 ## Test Basic Read
 
-Configuring all streams in the input catalog to full refresh mode, verifies that a read operation produces some RECORD messages.
+Configuring all streams in the input catalog to full refresh mode verifies that a read operation produces some RECORD messages.
 | Input |  Type| Default | Note |
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
@@ -60,7 +60,7 @@ This test performs two read operations on all streams which support full refresh
 
 ## Test Incremental sync
 ### TestTwoSequentialReads
-This test verifies that all streams in the input catalog which support incremental sync can do so correctly. It does this by running two read operations: the first takes the configured catalog and config provided to this test as input. It then verifies that the sync produced a non-zero number of `RECORD` and `STATE` messages. The second read takes the same catalog and config used in the first test, plus the last `STATE` message output by the first read operation as the input state file. It verifies that either no records are produced \(since we read all records in the first sync\) or all records that produced have cursor value greather or equal to cursor value from `STATE` message. This test is performed only for streams which support incremental. Streams which do not support incremental sync are ignored. If no streams in the input catalog support incremental sync, this test is skipped.
+This test verifies that all streams in the input catalog which support incremental sync can do so correctly. It does this by running two read operations: the first takes the configured catalog and config provided to this test as input. It then verifies that the sync produced a non-zero number of `RECORD` and `STATE` messages. The second read takes the same catalog and config used in the first test, plus the last `STATE` message output by the first read operation as the input state file. It verifies that either no records are produced \(since we read all records in the first sync\) or all records that produced have cursor value greater or equal to cursor value from `STATE` message. This test is performed only for streams that support incremental. Streams that do not support incremental sync are ignored. If no streams in the input catalog support incremental sync, this test is skipped.
 | Input |  Type| Default | Note |
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
@@ -69,7 +69,7 @@ This test verifies that all streams in the input catalog which support increment
 
 ### TestStateWithAbnormallyLargeValues
 
-This tests verifies that sync produces no records when run with the STATE with abnormally large values
+This test verifies that sync produces no records when run with the STATE with abnormally large values
 | Input |  Type| Default | Note |
 |--|--|--|--|
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
