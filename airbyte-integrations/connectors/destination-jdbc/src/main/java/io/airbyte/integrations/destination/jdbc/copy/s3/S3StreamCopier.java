@@ -80,19 +80,6 @@ public abstract class S3StreamCopier implements StreamCopier {
                         S3Config s3Config,
                         ExtendedNameTransformer nameTransformer,
                         SqlOperations sqlOperations) {
-    this(stagingFolder, destSyncMode, schema, streamName, client, db, s3Config, nameTransformer, sqlOperations, DEFAULT_PART_SIZE_MB);
-  }
-
-  public S3StreamCopier(String stagingFolder,
-                        DestinationSyncMode destSyncMode,
-                        String schema,
-                        String streamName,
-                        AmazonS3 client,
-                        JdbcDatabase db,
-                        S3Config s3Config,
-                        ExtendedNameTransformer nameTransformer,
-                        SqlOperations sqlOperations,
-                        long partSize) {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
@@ -103,7 +90,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.sqlOperations = sqlOperations;
 
     this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
-    LOGGER.info("S3 upload part size: {} MB", partSize);
+    LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
     this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
@@ -116,7 +103,7 @@ public abstract class S3StreamCopier implements StreamCopier {
         new StreamTransferManager(s3Config.getBucketName(), s3StagingFile, client)
             .numUploadThreads(DEFAULT_UPLOAD_THREADS)
             .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-            .partSize(partSize);
+            .partSize(s3Config.getPartSize());
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     // See the above comment.
     this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
