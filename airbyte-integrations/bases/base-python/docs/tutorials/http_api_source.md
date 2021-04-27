@@ -20,19 +20,10 @@ All the commands below assume that `python` points to a version of python >=3.7.
 * Step 4: Implement connection checking
 * Step 5: Declare the schema of your streams
 * Step 6: Implement functionality for reading your streams
-* Step 7: Write unit tests or integration tests
-* Step 8: Use the connector in Airbyte
+* Step 7: Use the connector in Airbyte
+* Step 8: Write unit tests or integration tests
 
-If you want to submit this connector to become a default connector within Airbyte:
-* Step 9: Set up Standard Tests
-* Step 10: Update the `README.md` \(If API credentials are required to run the integration, please document how they can be obtained or link to a how-to guide.\)
-* Step 11: Add the connector to the default list of connectors 
-* Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
-
-
-Each step of the Creating a Source checklist is explained in more detail below.
-
-**Note**: All `./gradlew` commands must be run from the root of the airbyte project.
+Each step of the Creating a Source checklist is explained in more detail below. We also mention how you can submit the connector to ship by default with Airbyte at the end of the tutorial.   
 
 ## Explaining Each Step
 
@@ -151,7 +142,7 @@ Given that we'll pulling currency data for our example source, we'll define the 
         "type": "string",
         "description": "Start getting data from that date.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "examples": ["YYYY-MM-DD"]
+        "examples": ["%Y-%m-%d"]
       },
       "base": {
         "type": "string",
@@ -209,8 +200,8 @@ Following the docstring instructions, we'll change the implementation to verify 
 Let's test out this implementation by creating two objects: a valid and an invalid config and attempt to give them as input to the connector 
 
 ```
-echo '{"date": "2021-04-01T00:00:00Z", "base": "USD"}'  > sample_files/config.json
-echo '{"date": "2021-04-01T00:00:00Z", "base": "BTC"}'  > sample_files/invalid_config.json
+echo '{"start_date": "2021-04-01", "base": "USD"}'  > sample_files/config.json
+echo '{"start_date": "2021-04-01", "base": "BTC"}'  > sample_files/invalid_config.json
 python main_dev.py check --config sample_files/config.json
 python main_dev.py check --config sample_files/invalid_config.json
 ```
@@ -302,17 +293,36 @@ You can also dynamically define schemas, but that's beyond the scope of this tut
 ### Step 6: Read data from the API
 Describing schemas is good and all, but at some point we have to start reading data! So let's get to work. But before, let's describe what we're about to do: 
 
-1. The `HttpStream` superclass, like described in the [concepts documentation]() 
+The `HttpStream` superclass, like described in the [concepts documentation](../../CDK-README.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for: 
+* authentication
+* pagination
+* handling rate limiting or transient errors
+* and other useful functionality
 
-We'll need to edit our class to look like the following: 
+In order for it to be able to do this, we have to provide it with a few inputs:
+* the URL base and path of the endpoint we'd like to hit
+* how to parse the response from the API
+* how to perform pagination
+
+Optionally, we can provide additional inputs to customize requests:
+* request parameters and headers
+* how to recognize rate limit errors, and how long to wait (by default it retries 429 and 5XX errors using exponential backoff)
+* HTTP method and request body if applicable
+
+There are many other customizable options - you can find them in the [`base_python.cdk.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/streams/http.py) class. 
+
+So in order to read data from the exchange rates API, we'll fill out the necessary information for the stream to do its work. First, we'll implement a basic read that just reads the last day's exchange rates, then we'll implement incremental sync using stream slicing.
+
+Let's begin by pulling data for the last day's rates by using the `/latest` endpoint:  
 
 ```python
 class ExchangeRates(HttpStream):
+    url_base = "https://api.ratesapi.io/"
+    
     def __init__(self, base: str, **kwargs):
         super().__init__()
         self.base = base
 
-    url_base = "https://api.ratesapi.io/"
     
     def path(
         self, 
@@ -344,65 +354,173 @@ class ExchangeRates(HttpStream):
         return [response.json()]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-            # The API does not offer pagination, 
-            # so we return None to indicate there are no more pages in the response
-            return None
+        # The API does not offer pagination, 
+        # so we return None to indicate there are no more pages in the response
+        return None
 
 ```
 
+This may look big, but that's just because there are lots of (unused, for now) parameters in these methods (those can be hidden with Python's `**kwargs`, but don't worry about it for now). Really we just added a few lines of "significant" code: 
+0. Added a constructor `__init__` which stores the `base` currency to query for.
+1. `return {'base': self.base}` to add the `?base=<base-value>` query parameter to the request based on the `base` input by the user
+2. `return [response.json()]` to parse the response from the API to match the schema of our schema `.json` file
+3. `return "latest"` to indicate that we want to hit the `/latest` endpoint of the API to get the latest exchange rate data.
+
+Let's also pass the `base` parameter input by the user to the stream class:
+
+```python
+def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        auth = NoAuth()
+        return [ExchangeRates(authenticator=auth, base=config['base'])]
+```
+
+We're now ready to query the API! 
+
+To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.io/tutorials/beginners-guide-to-catalog). We've prepared one [here](http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run: 
+
+```
+ python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
+```
+
+you should see some output lines, one of which is a record from the API: 
+
+```
+{"type": "RECORD", "record": {"stream": "exchange_rates", "data": {"base": "USD", "rates": {"GBP": 0.7196938353, "HKD": 7.7597848573, "IDR": 14482.4824162185, "ILS": 3.2412081092, "DKK": 6.1532478279, "INR": 74.7852709971, "CHF": 0.915763343, "MXN": 19.8439387671, "CZK": 21.3545717832, "SGD": 1.3261894911, "THB": 31.4398014067, "HRK": 6.2599917253, "EUR": 0.8274720728, "MYR": 4.0979726934, "NOK": 8.3043442284, "CNY": 6.4856433595, "BGN": 1.61836988, "PHP": 48.3516756309, "PLN": 3.770872983, "ZAR": 14.2690111709, "CAD": 1.2436905254, "ISK": 124.9482829954, "BRL": 5.4526272238, "RON": 4.0738932561, "NZD": 1.3841125362, "TRY": 8.3101365329, "JPY": 108.0182043856, "RUB": 74.9555647497, "KRW": 1111.7583781547, "USD": 1.0, "AUD": 1.2840711626, "HUF": 300.6206040546, "SEK": 8.3829540753}, "date": "2021-04-26"}, "emitted_at": 1619498062000}}
+```
+
+There we have it - a stream which reads data in just a few lines of code! 
+
+We theoretically _could_ stop here and call it a connector. But let's add incremental sync before we do that.  
+
+#### Adding incremental sync
+To add incremental sync, we'll do a few things: 
+1. Pass the `start_date` param input by the user into the stream
+2. Declare the stream's `cursor_field`
+3. Implement the `get_updated_state` method
+4. Implement the `stream_slices` method 
+5. Update the `path` method to specify the date to pull exchange rates for 
+6. Update the configured catalog to use `incremental` sync when we're testing the stream
+
+We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](https://docs.airbyte.io/architecture/connections/incremental-append). 
+
+To keep things concise, we'll only show functions as we edit them one by one.   
+
+Let's get the easy parts out of the way and pass the `start_date`:
+
+```python
+def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        auth = NoAuth()
+        # Parse the date from a string into a datetime object
+        start_date = datetime.strptime(config['start_date'], '%Y-%m-%d') 
+        return [ExchangeRates(authenticator=auth, base=config['base'], start_date=start_date)]
+```
+
+let's also add this parameter to the constructor and declare the `cursor_field`: 
+
+```python
+from datetime import datetime, timedelta
 
 
-### Step 8: Write unit tests and/or integration tests
+class ExchangeRates(HttpStream):
+    url_base = "https://api.ratesapi.io/"
+    cursor_field = "date"
 
-The Standard Tests are meant to cover the basic functionality of a source. Think of it as the bare minimum required for us to add a source to Airbyte. In case you need to test additional functionality of your source, write unit or integration tests.
+    def __init__(self, base: str, start_date: datetime, **kwargs):
+        super().__init__()
+        self.base = base
+        self.start_date = start_date
+```
 
+declaring the `cursor_field` informs the framework that this stream now supports incremental sync. The next time you run `python main_dev.py discover --config sample_files/config.json` you'll find that the `supported_sync_modes` field now also contains `incremental`. 
+
+But we're not quite done with supporting incremental, we have to actually emit state! We'll structure our state object very simply: it will be a `dict` whose single key is `'date'` and value is the date of the last day we synced data from e.g: `{'date': '2021-04-26'}` indicates the connector previously read data up until April 26th and therefore shouldn't re-read anything before April 26th. 
+
+ Let's do this by implementing the `get_updated_state` method inside the `ExchangeRates` class. 
+
+```python
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
+        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
+        if current_stream_state is not None and 'date' in current_stream_state:
+            current_parsed_date = datetime.strptime(current_stream_state['date'], '%Y-%m-%d')
+            latest_record_date = datetime.strptime(latest_record['date'], '%Y-%m-%d')
+            return {'date': max(current_parsed_date, latest_record_date).strftime('%Y-%m-%d')}
+        else:
+            return {'date': self.start_date.strftime('%Y-%m-%d')}
+```  
+
+This implementation compares the date from the latest record with the date in the current state and takes the maximum as the "new" state object.
+
+We'll implement the `stream_slices` method to return a list of the dates for which we should pull data based on the stream state if it exists: 
+
+```python
+ def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
+        """
+        Returns a list of each day between the start date and now.
+        The return value is a list of dicts {'date': date_string}.
+        """
+        dates = []
+        while start_date < datetime.now():
+            dates.append({'date': start_date.strftime('%Y-%m-%d')})
+            start_date += timedelta(days=1)
+        return dates
+
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[
+        Optional[Mapping[str, any]]]:
+        start_date = datetime.strptime(stream_state['date'], '%Y-%m-%d') if stream_state and 'date' in stream_state else self.start_date
+        return self._chunk_date_range(start_date)
+``` 
+ 
+Each slice will cause an HTTP request to be made to the API. We can then use the information present in the `stream_slice` parameter (a single element from the list we constructed in `stream_slices` above) to set other configurations for the outgoing request like `path` or `request_params`. For more info about stream slicing, see [the slicing docs](../concepts/stream_slices.md). 
+
+In order to pull data for a specific date, the Exchange Rates API requires that we pass the date as the path component of the URL. Let's override the `path` method to achieve this: 
+```python
+def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
+    return stream_slice['date']
+```
+
+With these changes, your implementation should look like the file [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-python-http-tutorial/source_python_http_tutorial/source.py)
+
+Last thing we need to do is change the `sync_mode` field in the `sample_files/configured_catalog.json` to `incremental`:   
+```
+"sync_mode": "incremental",
+```
+
+We should now have a working implementation of incremental sync! Let's try it out: 
+
+```
+python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
+```
+
+You should a bunch of `RECORD` messages and `STATE` messages. To verify that incremental sync is working, pass the input state back to the connector and run it again: 
+```
+# Save the latest state to sample_files/state.json
+python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json | grep STATE | tail -n 1 | jq .state.data > sample_files/state.json
+
+# Run a read operation with the latest state message
+python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json --state sample_files/state.json
+```
+
+You should see that only the record from the last date is being synced! This is acceptable behavior, since Airbyte requires at-least-once delivery of records, so repeating the last record twice is OK.
+
+With that, we've implemented incremental sync for our connector! 
+
+### Step 7: Use the connector in Airbyte
+To use your connector in your own installation of Airbyte, build the docker image for your container by running `docker build . -t airbyte/source-python-http-example:dev`. Then, follow the instructions from the [building a toy source tutorial](https://docs.airbyte.io/tutorials/toy-connector#use-the-connector-in-the-airbyte-ui) for using the connector in the Airbyte UI, replacing the name as appropriate. 
+
+Note: your built docker image must be accessible to the `docker` daemon running on the Airbyte node. If you're doing this tutorial locally, then the instructions here are sufficient. Otherwise you may need to push your Docker image to Dockerhub.  
+
+### Step 8: Test your connector
 #### Unit Tests
-
 Add any relevant unit tests to the `unit_tests` directory. Unit tests should _not_ depend on any secrets.
 
 You can run the tests using `python -m pytest -s unit_tests`
 
 #### Integration Tests
-
 Place any integration tests in the `integration_tests` directory such that they can be [discovered by pytest](https://docs.pytest.org/en/reorganize-docs/new-docs/user/naming_conventions.html).
 
-Run integration tests using `python -m pytest -s integration_tests`.
+#### Standard Tests
+Standard tests are a fixed set of tests Airbyte provides that every Airbyte source connector must pass. While they're only required if you intend to submit your connector to Airbyte, you might find them helpful in any case. See [Testing your connectors](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/testing-connectors)
 
-### Step 9: Use the connector in Airbyte
-
-
-
-### Step 10: Set up Standard Tests
-
-The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../contributing-to-airbyte/building-new-connector/testing-connectors.md) explains Standard Tests and how to run them.
-
-You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
-
-{% hint style="info" %}
-In some rare cases we make exceptions and allow a source to not need to pass all the standard tests. If for some reason you think your source cannot reasonably pass one of the tests cases, reach out to us on github or slack, and we can determine whether there's a change we can make so that the test will pass or if we should skip that test for your source.
-{% endhint %}
-
-
-### Submitting a Source to Airbyte
-If you want to submit the connector to Airbyte so it ships with the product by default, follow the steps below. Some things to keep in mind: 
-* If you need help with any step of the process, feel free to submit a PR with your progress and any questions you have. 
-* To run integration tests, Airbyte needs access to a test account/environment. Coordinate with an Airbyte engineer \(via the PR\) to add test credentials so that we can run tests for the integration in the CI. \(We will create our own test account once you let us know what source we need to create it for.\)
-* Once the config is stored in Github Secrets, edit `.github/workflows/test-command.yml` and `.github/workflows/publish-command.yml` to inject the config into the build environment.
-* Edit the `airbyte/tools/bin/ci_credentials.sh` script to pull the script from the build environment and write it to `secrets/config.json` during the build.
-
-If you have a question about a step, mention it in your PR or ask it on [slack](https://slack.airbyte.io).
-
-#### Step 10: Update the `README.md`
-
-The template fills in most of the information for the readme for you. Unless there is a special case, the only piece of information you need to add is how one can get the credentials required to run the source. e.g. Where one can find the relevant API key, etc.
-
-#### Step 11: Add the connector to the API/UI
-
-Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/).
-
-Note that for simple and quick testing use cases, you can also do this step [using the UI](../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
-
-#### Step 12: Add docs
-
-Each connector has its own documentation page. By convention, that page should have the following path: in `docs/integrations/sources/<source-name>.md`. For the documentation to get packaged with the docs, make sure to add a link to it in `docs/SUMMARY.md`. You can pattern match doing that from existing connectors.
-
+If you want to submit this connector to become a default connector within Airbyte, follow 
+steps 8 onwards from the [Python source checklist](https://docs.airbyte.io/tutorials/building-a-python-source#step-8-set-up-standard-tests)
