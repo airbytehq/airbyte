@@ -45,14 +45,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+# format anchor
 
-setup(
-    name="source_scaffold_source_http",
-    description="Source implementation for Scaffold Source Http.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2"],
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-)
+
+def test_example_method():
+    assert True

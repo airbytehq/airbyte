@@ -22,14 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from setuptools import find_packages, setup
+from .source import SourcePythonHttpTutorial
 
-setup(
-    name="source_{{snakeCase name}}",
-    description="Source implementation for {{titleCase name}}.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2"],
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]}
-)
+__all__ = ["SourcePythonHttpTutorial"]

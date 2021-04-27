@@ -1,15 +1,13 @@
-// TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.
-// Delete this comment after reading.
 {
   "documentationUrl": "https://docsurl.com",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Scaffold Source Http Spec",
     "type": "object",
-    "required": ["fix-me"],
+    "required": ["TODO"],
     "additionalProperties": false,
     "properties": {
-      "fix-me": {
+      "TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {
         "type": "string",
         "description": "describe me"
       }
