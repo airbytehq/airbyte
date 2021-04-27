@@ -36,6 +36,12 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Serves an error for any call. This is only used if the server has a different version than the
+ * stored version in the database, which means that there is a "version mismatch". When a version
+ * mismatch occurs, a migration is required to upgrade the database. Until then, we show errors
+ * using this server in order to prevent getting into a bad state.
+ */
 public class VersionMismatchServer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VersionMismatchServer.class);
