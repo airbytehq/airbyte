@@ -1,7 +1,14 @@
 # Airbyte Python Connector Development Framework (CDK)
 
-TODO use text from Davin's PR
+The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors.
+The CDK currently offers helpers specific for creating Airbyte source connectors for: 
+* HTTP APIs (REST APIs, GraphQL, etc..)
+* Singer Taps
+* Generic Python sources (anything not covered by the above)
 
+The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate. 
+
+This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding. 
 
 ## Getting started
 Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
@@ -10,13 +17,15 @@ cd airbyte-integrations/connector-templates/generator
 npm run generate
 ```
 
-then follow the interactive prompt. 
+then follow the interactive prompt. Next, find all `TODO`s in the generated project directory -- they're accompanied by lots of comments explaining what you'll need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector. 
 
-You can follow the tutorial for creating an HTTP tutorial here
+Additionally, you can follow [this tutorial](docs/tutorials/http_api_source.md) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
+
+### Concepts & Documentation
+See the [overview docs](docs/concepts/overview.md) for a tour through what the API offers.  
 
 ### Airbyte Specification
 Find the reference docs for the Airbyte Specification (the interface for how sources and destinations interact) [here](https://docs.airbyte.io/architecture/airbyte-specification).
-
 
 ### Example Connectors
 
