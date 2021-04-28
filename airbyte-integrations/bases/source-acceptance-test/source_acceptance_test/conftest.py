@@ -35,17 +35,17 @@ from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_confi
 
 
 @pytest.fixture(name="base_path")
-def base_path_fixture(pytestconfig, standard_test_config) -> Path:
+def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
     """Fixture to define base path for every path-like fixture"""
-    if standard_test_config.base_path:
-        return Path(standard_test_config.base_path).absolute()
+    if acceptance_test_config.base_path:
+        return Path(acceptance_test_config.base_path).absolute()
     return Path(pytestconfig.getoption("--acceptance-test-config")).absolute()
 
 
-@pytest.fixture(name="standard_test_config", scope="session")
-def standard_test_config_fixture(pytestconfig) -> Config:
+@pytest.fixture(name="acceptance_test_config", scope="session")
+def acceptance_test_config_fixture(pytestconfig) -> Config:
     """Fixture with test's config"""
-    return load_config(pytestconfig.getoption("--acceptance-test-config"))
+    return load_config(pytestconfig.getoption("--acceptance-test-config", skip=True))
 
 
 @pytest.fixture(name="connector_config_path")
@@ -89,8 +89,8 @@ def catalog_fixture(configured_catalog: ConfiguredAirbyteCatalog) -> Optional[Ai
 
 
 @pytest.fixture(name="image_tag")
-def image_tag_fixture(standard_test_config) -> str:
-    return standard_test_config.connector_image
+def image_tag_fixture(acceptance_test_config) -> str:
+    return acceptance_test_config.connector_image
 
 
 @pytest.fixture(name="connector_config")
@@ -126,10 +126,10 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def pull_docker_image(standard_test_config) -> None:
+def pull_docker_image(acceptance_test_config) -> None:
     """Startup fixture to pull docker image"""
-    print("Pulling docker image", standard_test_config.connector_image)
-    ConnectorRunner(image_name=standard_test_config.connector_image, volume=Path("."))
+    print("Pulling docker image", acceptance_test_config.connector_image)
+    ConnectorRunner(image_name=acceptance_test_config.connector_image, volume=Path("."))
     print("Pulling completed")
 
 
