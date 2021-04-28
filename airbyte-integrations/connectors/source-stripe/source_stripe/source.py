@@ -45,10 +45,10 @@ class StripeStream(HttpStream, ABC):
             return {"starting_after": last_object_id}
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
         # Stripe default pagination is 10, max is 100
@@ -61,7 +61,7 @@ class StripeStream(HttpStream, ABC):
         return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {'Stripe-Account': self.account_id}
+        return {"Stripe-Account": self.account_id}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -266,7 +266,7 @@ class SourceStripe(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["client_secret"])
-        args = {'authenticator': authenticator, 'account_id': config["account_id"]}
+        args = {"authenticator": authenticator, "account_id": config["account_id"]}
         return [
             BalanceTransactions(**args),
             Charges(**args),
