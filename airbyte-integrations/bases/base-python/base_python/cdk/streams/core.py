@@ -64,6 +64,12 @@ class Stream(ABC):
         This method should be overridden by subclasses to read records based on the inputs
         """
 
+    @abstractmethod
+    def _get_source_defined_primary_keys(self, ) -> List[List[str]]:
+        """
+        :return: List of path to fields used as the Stream's primary key. Empty list by default.
+        """
+
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
@@ -81,6 +87,10 @@ class Stream(ABC):
             stream.source_defined_cursor = self.source_defined_cursor
             stream.supported_sync_modes.append(SyncMode.incremental)
             stream.default_cursor_field = self._wrapped_cursor_field()
+
+        keys = self._get_source_defined_primary_keys()
+        if len(keys) > 0:
+            stream.source_defined_primary_key = keys
 
         return stream
 

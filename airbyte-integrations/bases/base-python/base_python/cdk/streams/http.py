@@ -44,6 +44,19 @@ class HttpStream(Stream, ABC):
         self._session = requests.Session()
 
     @property
+    def source_defined_primary_keys(self) -> List[str]:
+        """
+        :return: Override to define the list of fields in the API response to use as the Stream's primary keys. Empty list by default.
+        """
+        return []
+
+    def _get_source_defined_primary_keys(self) -> List[List[str]]:
+        list = []
+        for key in self.source_defined_primary_keys:
+            list.append([key])
+        return list
+
+    @property
     @abstractmethod
     def url_base(self) -> str:
         """
