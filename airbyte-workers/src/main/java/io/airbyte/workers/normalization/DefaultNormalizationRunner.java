@@ -94,10 +94,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return;
     }
 
-    LOGGER.debug("Closing tap process");
+    LOGGER.debug("Closing source process");
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Tap process wasn't successful");
+      throw new WorkerException("Source process wasn't successful");
     }
   }
 
