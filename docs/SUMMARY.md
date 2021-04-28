@@ -14,7 +14,7 @@
   * [Transformations and Normalization](tutorials/transformation-and-normalization/README.md)
     * [Transformations with SQL \(Part 1/2\)](tutorials/transformation-and-normalization/transformations-with-sql.md)
     * [Transformations with DBT \(Part 2/2\)](tutorials/transformation-and-normalization/transformations-with-sql.md)
-* [Examples](examples/README.md)
+* [Examples Use Cases](examples/README.md)
   * [Build a Slack Activity Dashboard](examples/build-a-slack-activity-dashboard.md)
   * [Visualizing the Time Spent by Your Team in Zoom Calls](examples/zoom-activity-dashboard.md)
   * [Save and Search Through Your Slack History on a Free Slack Plan](examples/slack-history.md)
