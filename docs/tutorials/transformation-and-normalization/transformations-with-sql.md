@@ -1,10 +1,10 @@
-# Connecting EL with T using SQL \(part 1/2\)
+# Transformations with SQL \(part 1/2\)
 
 ## Overview
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using plain SQL queries.
 
-This is the first part of ELT tutorial. The second part goes deeper with [connecting EL with T using DBT](connecting-el-with-t-using-dbt.md).
+This is the first part of ELT tutorial. The second part goes deeper with [connecting EL with T using DBT](transformations-with-dbt.md).
 
 ## First transformation step: Normalization
 
@@ -12,13 +12,13 @@ At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT
 
 However, this is actually producing a table in the destination with a JSON blob column... For the typical analytics use case, you probably want this json blob normalized so that each field is its own column.
 
-So, after EL, comes the T \(transformation\) and the first T step that Airbyte actually applies on top of the extracted data is called "Normalization". You can find more information about it [here](../architecture/basic-normalization.md).
+So, after EL, comes the T \(transformation\) and the first T step that Airbyte actually applies on top of the extracted data is called "Normalization". You can find more information about it [here](../../reference/architecture/basic-normalization.md).
 
 Airbyte runs this step before handing the final data over to other tools that will manage further transformation down the line.
 
 To summarize, we can represent the ELT process in the diagram below. These are steps that happens between your "Source Database or API" and the final "Replicated Tables" with examples of implementation underneath:
 
-![](../.gitbook/assets/connecting-EL-with-T-4.png)
+![](../../.gitbook/assets/connecting-EL-with-T-4.png)
 
 Anyway, it is possible to short-circuit this process \(no vendor lock-in\) and handle it yourself by turning this option off in the destination settings page.
 
@@ -30,7 +30,7 @@ This could be useful if:
 
 In order to do so, we will now describe how you can leverage the basic normalization outputs that Airbyte generates to build your own transformations if you don't want to start from scratch.
 
-Note: We will rely on docker commands that we've gone over as part of another [Tutorial on Exploring Docker Volumes](exploring-workspace-folder.md).
+Note: We will rely on docker commands that we've gone over as part of another [Tutorial on Exploring Docker Volumes](../browsing-output-logs.md).
 
 ## \(Optional\) Configure some Covid \(data\) source and Postgres destinations
 
@@ -43,15 +43,15 @@ Here are some examples of public API CSV:
 https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv
 ```
 
-![](../.gitbook/assets/connecting-EL-with-T-1.png)
+![](../../.gitbook/assets/connecting-EL-with-T-1.png)
 
 And a local Postgres Database, making sure that "Basic normalization" is enabled:
 
-![](../.gitbook/assets/connecting-EL-with-T-2.png)
+![](../../.gitbook/assets/connecting-EL-with-T-2.png)
 
 After setting up the connectors, we can trigger the sync and study the logs:
 
-![](../.gitbook/assets/connecting-EL-with-T-3.png)
+![](../../.gitbook/assets/connecting-EL-with-T-3.png)
 
 Notice that the process ran in the `/tmp/workspace/5/0` folder.
 
@@ -278,5 +278,5 @@ create view "postgres"."public"."covid_epidemiology" as (
 
 Then you can run in your preferred SQL editor or tool!
 
-If you are familiar with DBT or want to learn more about it, you can continue with the following [tutorial using DBT](connecting-el-with-t-using-dbt.md)...
+If you are familiar with DBT or want to learn more about it, you can continue with the following [tutorial using DBT](transformations-with-dbt.md)...
 

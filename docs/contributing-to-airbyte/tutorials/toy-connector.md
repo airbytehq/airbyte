@@ -6,10 +6,10 @@ description: Building a toy source connector to illustrate Airbyte's main concep
 
 This tutorial walks you through building a simple Airbyte source to demonstrate the following concepts in Action:
 
-* [The Airbyte Specification](../architecture/airbyte-specification.md) and the interface implemented by a source connector
+* [The Airbyte Specification](../../reference/architecture/airbyte-specification.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](beginners-guide-to-catalog.md)
 * [Packaging your connector](../contributing-to-airbyte/building-new-connector/#1-implement--package-the-connector)
-* [Testing your connector](../contributing-to-airbyte/building-new-connector/testing-connectors.md)
+* [Testing your connector](../building-new-connector/testing-connectors.md)
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
 
@@ -21,7 +21,7 @@ This tutorial can be done entirely on your local workstation.
 
 To run this tutorial, you'll need:
 
-* Docker, Python, and Java with the versions listed in the [tech stack section](../architecture/tech-stack.md).
+* Docker, Python, and Java with the versions listed in the [tech stack section](../../reference/architecture/tech-stack.md).
 * The `requests` Python package installed via `pip install requests` \(or `pip3` if `pip` is linked to a Python2 installation on your system\)
 
 **A note on running Python**: all the commands below assume that `python` points to a version of python 3.7. Verify this by running
@@ -51,7 +51,7 @@ Here's the outline of what we'll do to build our connector:
 
 Once we've completed the above steps, we will have built a functioning connector. Then, we'll add some optional functionality:
 
-* Support [incremental sync](../architecture/connections/incremental-append.md)
+* Support [incremental sync](../../reference/architecture/connections/incremental-append.md)
 * Add custom integration tests
 
 ### 1. Bootstrap the connector package
@@ -81,7 +81,7 @@ $ npm run generate
 
 We'll select the `generic` template and call the connector `stock-ticker-api`:
 
-![](../.gitbook/assets/newsourcetutorial_plop.gif)
+![](../../.gitbook/assets/newsourcetutorial_plop.gif)
 
 Note: The generic template is very bare. If you are planning on developing a python source, we recommend using the `python` template. It provides some convenience code to help reduce boilerplate. This tutorial uses the bare-bones version because it makes it easier to see how all the pieces of a connector work together. You can find a walk through on how to build a python connector here \(**coming soon**\).
 
@@ -359,7 +359,7 @@ Our connector is able to detect valid and invalid configs correctly. Two methods
 
 #### Implementing Discover
 
-The `discover` command outputs a Catalog, a struct that declares the Streams and Fields \(Airbyte's equivalents of tables and columns\) output by the connector. It also includes metadata around which features a connector supports \(e.g. which sync modes\). In other words it describes what data is available in the source. If you'd like to read a bit more about this concept check out our [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) or for a more detailed treatment read the [Airbyte Specification](../architecture/airbyte-specification.md).
+The `discover` command outputs a Catalog, a struct that declares the Streams and Fields \(Airbyte's equivalents of tables and columns\) output by the connector. It also includes metadata around which features a connector supports \(e.g. which sync modes\). In other words it describes what data is available in the source. If you'd like to read a bit more about this concept check out our [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) or for a more detailed treatment read the [Airbyte Specification](../../reference/architecture/airbyte-specification.md).
 
 The data output by this connector will be structured in a very simple way. This connector outputs records belonging to exactly one Stream \(table\). Each record contains three Fields \(columns\): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.
 
@@ -887,7 +887,7 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608628424000}}
 ```
 
-and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Standard Test suite](../contributing-to-airbyte/building-new-connector/testing-connectors.md).
+and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Standard Test suite](../building-new-connector/testing-connectors.md).
 
 ### 4. Test the connector
 
@@ -994,31 +994,31 @@ If this is the first time using the Airbyte UI, then you will be prompted to go 
 
 In the UI, click the "Admin" button in the left side bar:
 
-![](../.gitbook/assets/newsourcetutorial_sidebar_admin.png)
+![](../../.gitbook/assets/newsourcetutorial_sidebar_admin.png)
 
 Then on the admin page, click "New Connector":
 
-![](../.gitbook/assets/newsourcetutorial_admin_page.png)
+![](../../.gitbook/assets/newsourcetutorial_admin_page.png)
 
 On the modal that pops up, enter the following information then click "Add"
 
-![](../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
+![](../../.gitbook/assets/newsourcetutorial_new_connector_modal.png)
 
 Now from the "Sources" page \(if not redirected, click "Sources" on the left panel\) , click the "New source" button. You'll be taken to the detail page for adding a new source. Choose the "Stock Ticker API" source and add the following information, then click "Set up source":
 
-![](../.gitbook/assets/newsourcetutorial_source_config.png)
+![](../../.gitbook/assets/newsourcetutorial_source_config.png)
 
 on the following page, click the "add destination" button then "add new destination":
 
-![](../.gitbook/assets/newsourcetutorial_add_destination.png)
+![](../../.gitbook/assets/newsourcetutorial_add_destination.png)
 
 Configure a local JSON destination as follows: Note that we setup the output directory to `/local/tutorial_json`. When we run syncs, we'll find the output on our local filesystem in `/tmp/airbyte_local/tutorial_json`.
 
-![](../.gitbook/assets/newsourcetutorial_destination_config.png)
+![](../../.gitbook/assets/newsourcetutorial_destination_config.png)
 
 Finally, setup the connection configuration:
 
-![](../.gitbook/assets/newsourcetutorial_schema_select.png)
+![](../../.gitbook/assets/newsourcetutorial_schema_select.png)
 
 We'll choose the "manual" frequency, meaning we need to launch each sync by hand.
 
@@ -1028,11 +1028,11 @@ We've setup our connection! Now let's move data.
 
 To launch the sync, click the "sync now" button:
 
-![](../.gitbook/assets/newsourcetutorial_launchsync.png)
+![](../../.gitbook/assets/newsourcetutorial_launchsync.png)
 
 If you click on the connector row, you should be taken to the sync detail page. After a few seconds \(refresh the page if the status doesn't change to "succeeded" in a few seconds\), the status of the sync should change to `succeeded` as below:
 
-![](../.gitbook/assets/newsourcetutorial_syncdetail.png)
+![](../../.gitbook/assets/newsourcetutorial_syncdetail.png)
 
 Let's verify the output. From your shell, run:
 

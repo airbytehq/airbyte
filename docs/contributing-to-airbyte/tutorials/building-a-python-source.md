@@ -6,7 +6,7 @@ This article provides a checklist for how to create a python source. Each step i
 
 ## Requirements
 
-Docker, Python, and Java with the versions listed in the [tech stack section](../architecture/tech-stack.md).
+Docker, Python, and Java with the versions listed in the [tech stack section](../../reference/architecture/tech-stack.md).
 
 {% hint style="info" %}
 All the commands below assume that `python` points to a version of python >3.7. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
@@ -151,7 +151,7 @@ The nice thing about this approach is that you are running your source exactly a
 
 Each source contains a specification that describes what inputs it needs in order for it to pull data. This file can be found in `airbyte-integrations/connectors/source-<source-name>/spec.json`. This is a good place to start when developing your source. Using JsonSchema define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres source.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](../architecture/airbyte-specification.md).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](../../reference/architecture/airbyte-specification.md).
 
 The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.json` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.json` you should be done with this step.
 
@@ -173,7 +173,7 @@ As described in the template code, this method takes in the same config object a
 
 ### Step 8: Set up Standard Tests
 
-The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../contributing-to-airbyte/building-new-connector/testing-connectors.md) explains Standard Tests and how to run them.
+The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../building-new-connector/testing-connectors.md) explains Standard Tests and how to run them.
 
 You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
 
@@ -205,7 +205,7 @@ The template fills in most of the information for the readme for you. Unless the
 
 Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/).
 
-Note that for simple and quick testing use cases, you can also do this step [using the UI](../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
+Note that for simple and quick testing use cases, you can also do this step [using the UI](../../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
 
 #### Step 12: Add docs
 

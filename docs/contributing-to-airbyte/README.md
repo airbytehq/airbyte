@@ -14,7 +14,7 @@ Please follow our [Code of conduct](code-of-conduct.md) in the context of any co
 
 ## Airbyte specification
 
-Before you can start contributing, you need to understand [Airbyte's data protocol specification](../architecture/airbyte-specification.md).
+Before you can start contributing, you need to understand [Airbyte's data protocol specification](../reference/architecture/airbyte-specification.md).
 
 ## First-time contributors, welcome!
 
@@ -29,7 +29,7 @@ Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/
 It's easy to add your own connector to Airbyte! **Since Airbyte connectors are encapsulated within Docker containers, you can use any language you like.** Here are some links on how to add sources and destinations. We haven't built the documentation for all languages yet, so don't hesitate to reach out to us if you'd like help developing connectors in other languages.
 
 * See [Building new connectors](building-new-connector/) to get started.
-* Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly: [Build Python Source Connectors](../tutorials/building-a-python-source.md) and [Build Java Connectors](building-new-connector/java-connectors.md)
+* Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly: [Build Python Source Connectors](tutorials/building-a-python-source.md) and [Build Java Connectors](building-new-connector/java-connectors.md)
 * Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways, as detailed [here](building-new-connector/testing-connectors.md)
 
 **Please note that, at no point in time, we will ask you to maintain your connector.** The goal is that the Airbyte team and the community helps maintain the connector.

@@ -14,7 +14,7 @@ The Smartsheet Source is written to pull data from a single Smartsheet spreadshe
 
 To replicate multiple spreadsheets, you can create multiple instances of the Smartsheet Source in Airbyte, reusing the API token for all your sheets that you need to sync.
 
-**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../architecture/airbyte-specification.md).
+**Note: Column headers must contain only alphanumeric characters or `_` , as specified in the** [**Airbyte Protocol**](../../reference/architecture/airbyte-specification.md).
 
 ### Column datatype mapping
 The data type mapping adopted by this connector is based on the Smartsheet [documentation](https://smartsheet.redoc.ly/tag/columnsRelated#section/Column-Types). 
