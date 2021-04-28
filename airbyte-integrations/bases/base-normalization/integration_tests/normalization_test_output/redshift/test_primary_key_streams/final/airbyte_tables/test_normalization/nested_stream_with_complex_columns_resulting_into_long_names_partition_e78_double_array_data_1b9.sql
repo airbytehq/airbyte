@@ -46,7 +46,7 @@ with numbers as (
 joined as (
     select
         _airbyte_partition_hashid as _airbyte_hashid,
-        json_extract_array_element_text(double_array_data, numbers.generated_number::int - 1, true) as _airbyte_data
+        json_extract_array_element_text(double_array_data, numbers.generated_number::int - 1, true) as _airbyte_nested_data
     from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_64a_partition"
     cross join numbers
     -- only generate the number of records in the cross join that corresponds
@@ -55,7 +55,7 @@ joined as (
 )
 select
     _airbyte_partition_hashid,
-    case when json_extract_path_text(_airbyte_data, 'id', true) != '' then json_extract_path_text(_airbyte_data, 'id', true) end as id,
+    case when json_extract_path_text(_airbyte_nested_data, 'id', true) != '' then json_extract_path_text(_airbyte_nested_data, 'id', true) end as id,
     _airbyte_emitted_at
 from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_64a_partition"
 left join joined on _airbyte_partition_hashid = joined._airbyte_hashid

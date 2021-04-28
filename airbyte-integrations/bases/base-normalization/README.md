@@ -169,6 +169,7 @@ This can be done in yaml format as described in the following documentation page
 
 - [dbt schema-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests)
 - [custom schema test](https://docs.getdbt.com/docs/guides/writing-custom-schema-tests)
+- [dbt expectations](https://github.com/calogica/dbt-expectations)
 
 We are leveraging these capabilities in these integration tests to verify some relationships in our
 generated tables on the destinations.
