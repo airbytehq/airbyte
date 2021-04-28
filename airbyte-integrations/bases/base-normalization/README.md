@@ -90,7 +90,7 @@ Note that these tests are connecting and processing data on top of real data war
 Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run.
 (this is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script)
 
-### Integration Tests Definitions:
+### Integration Tests Definitions for test_normalization.py:
 
 Some test suites can be selected to be versioned control in Airbyte git repository (or not).
 This is useful to see direct impacts of code changes on downstream files generated or compiled
