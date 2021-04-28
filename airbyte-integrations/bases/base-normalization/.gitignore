@@ -5,6 +5,10 @@ dbt-project-template/test_output.log
 dbt_modules/
 secrets/
 
-integration_tests/normalization_test_output/*
-!integration_tests/normalization_test_output/*/*/models/generated
-!integration_tests/normalization_test_output/*/*/final
+integration_tests/normalization_test_output/*/*/*.log
+integration_tests/normalization_test_output/*/*/*.yml
+integration_tests/normalization_test_output/*/*/*.json
+integration_tests/normalization_test_output/*/*/*.md
+integration_tests/normalization_test_output/*/*/macros/
+integration_tests/normalization_test_output/*/*/tests/
+integration_tests/normalization_test_output/*/*/models/dbt_schema_tests/

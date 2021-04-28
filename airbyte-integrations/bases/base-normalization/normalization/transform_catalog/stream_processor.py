@@ -570,13 +570,8 @@ from {{ from_table }}
         schema = self.get_schema(is_intermediate)
         table_name = self.generate_new_table_name(is_intermediate, suffix)
         self.add_table_to_local_registry(table_name, is_intermediate)
-        # TODO(davin): Check with Chris if there is a better way of doing this.
-        # File names need to match the ref() macro returned in the ref_table function.
-        # Dbt uses file names to generate internal model. Include schem in the name to
-        # dedup tables with the same name and different schema.
-        file_name = f"{schema}_{table_name}"
-        if len(file_name) > self.name_transformer.get_name_max_length():
-            file_name = self.name_transformer.truncate_identifier_name(input_name=file_name)
+
+        file_name = self.get_file_name(self.stream_name, schema, table_name)
 
         file = f"{file_name}.sql"
         if is_intermediate:
@@ -595,6 +590,18 @@ from {{ from_table }}
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
         return ref_table(file_name)
+
+    def get_file_name(self, stream_name: str, schema_name: str, table_name: str) -> str:
+        """
+            File names need to match the ref() macro returned in the ref_table function.
+            Note that dbt uses only the file names to generate internal model.
+
+            Use a hash of full schema + stream name (i.e. namespace + stream name) to dedup tables.
+            This hash avoids tables with the same name (possibly very long) and different schemas.
+        """
+        full_lower_name = schema_name + "_" + stream_name
+        full_lower_name = full_lower_name.lower()
+        return self.name_transformer.normalize_table_name(f"{table_name}_{hash_name(full_lower_name)}", False, False)
 
     def get_model_tags(self, is_intermediate: bool) -> str:
         tags = ""
@@ -695,10 +702,10 @@ from {{ from_table }}
 
     def unnesting_before_query(self) -> str:
         if self.parent and self.is_nested_array:
-            parent_table_name = f"'{self.parent.actual_table_name()}'"
+            parent_file_name = f"'{self.get_file_name(self.parent.stream_name, self.parent.get_schema(False), self.parent.actual_table_name())}'"
             parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
             quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
-            return jinja_call(f"unnest_cte({parent_table_name}, {parent_stream_name}, {quoted_field})")
+            return jinja_call(f"unnest_cte({parent_file_name}, {parent_stream_name}, {quoted_field})")
         return ""
 
     def unnesting_after_query(self) -> str:
