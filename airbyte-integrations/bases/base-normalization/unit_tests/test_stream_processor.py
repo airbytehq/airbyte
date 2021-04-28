@@ -22,13 +22,15 @@
 
 
 import os
-import re
+
+# import re
 from typing import List
 
 import pytest
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog.catalog_processor import CatalogProcessor, add_table_to_registry, read_json
+
+# from normalization.transform_catalog.catalog_processor import CatalogProcessor, add_table_to_registry, read_json
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.stream_processor import StreamProcessor, get_table_name
 
@@ -45,113 +47,113 @@ def before_tests(request):
     os.chdir(request.config.invocation_dir)
 
 
-@pytest.mark.parametrize(
-    "catalog_file",
-    [
-        "edge_cases_catalog",
-        "facebook_catalog",
-        "stripe_catalog",
-    ],
-)
-@pytest.mark.parametrize(
-    "integration_type",
-    [
-        "Postgres",
-        "BigQuery",
-        "Snowflake",
-        "Redshift",
-    ],
-)
-def test_stream_processor_tables_naming(integration_type: str, catalog_file: str):
-    """
-    For a given catalog.json and destination, multiple cases can occur where naming becomes tricky.
-    (especially since some destination like postgres have a very low limit to identifiers length of 64 characters)
-
-    In case of nested objects/arrays in a stream, names can drag on to very long names.
-    Tests are built here using resources files as follow:
-    - `<name of source or test types>_catalog.json`:
-        input catalog.json, typically as what source would provide.
-        For example Stripe and Facebook catalog.json contains some level of nesting.
-    - `<name of source or test types>_expected_top_level.json`:
-        list of expected table names for the top level stream names
-    - `<name of source or test types>_expected_nested.json`:
-        list of expected table names for nested objects, extracted to their own and separate table names
-
-    For the expected json files, it is possible to specialize the file to a certain destination.
-    So if for example, the resources folder contains these two expected files:
-        - edge_cases_catalog_expected_top_level.json
-        - edge_cases_catalog_expected_top_level_postgres.json
-    Then the test will be using the first edge_cases_catalog_expected_top_level.json except for
-    Postgres destination where the expected table names will come from edge_cases_catalog_expected_top_level_postgres.json
-    """
-    destination_type = DestinationType.from_string(integration_type)
-    tables_registry = {}
-
-    substreams = []
-    catalog = read_json(f"resources/{catalog_file}.json")
-
-    # process top level
-    for stream_processor in CatalogProcessor.build_stream_processor(
-        catalog=catalog,
-        json_column_name="'json_column_name_test'",
-        default_schema="schema_test",
-        name_transformer=DestinationNameTransformer(destination_type),
-        destination_type=destination_type,
-        tables_registry=tables_registry,
-    ):
-        nested_processors = stream_processor.process()
-        for schema in stream_processor.local_registry:
-            for table in stream_processor.local_registry[schema]:
-                found_sql_output = False
-                for sql_output in stream_processor.sql_outputs:
-                    file_name = f"{schema}_{table}"
-                    if len(file_name) > stream_processor.name_transformer.get_name_max_length():
-                        file_name = stream_processor.name_transformer.truncate_identifier_name(input_name=file_name)
-
-                    if re.match(r".*/" + file_name + ".sql", sql_output) is not None:
-                        found_sql_output = True
-                        break
-                assert found_sql_output
-        add_table_to_registry(tables_registry, stream_processor)
-        if nested_processors and len(nested_processors) > 0:
-            substreams += nested_processors
-
-    if os.path.exists(f"resources/{catalog_file}_expected_top_level_{integration_type.lower()}.json"):
-        expected_top_level = set(read_json(f"resources/{catalog_file}_expected_top_level_{integration_type.lower()}.json")["tables"])
-    else:
-        expected_top_level = set(read_json(f"resources/{catalog_file}_expected_top_level.json")["tables"])
-        if DestinationType.SNOWFLAKE.value == destination_type.value:
-            expected_top_level = {table.upper() for table in expected_top_level}
-        elif DestinationType.REDSHIFT.value == destination_type.value:
-            expected_top_level = {table.lower() for table in expected_top_level}
-
-    # process substreams
-    while substreams:
-        children = substreams
-        substreams = []
-        for substream in children:
-            substream.tables_registry = tables_registry
-            nested_processors = substream.process()
-            add_table_to_registry(tables_registry, substream)
-            if nested_processors:
-                substreams += nested_processors
-
-    if os.path.exists(f"resources/{catalog_file}_expected_nested_{integration_type.lower()}.json"):
-        expected_nested = set(read_json(f"resources/{catalog_file}_expected_nested_{integration_type.lower()}.json")["tables"])
-    else:
-        expected_nested = set(read_json(f"resources/{catalog_file}_expected_nested.json")["tables"])
-        if DestinationType.SNOWFLAKE.value == destination_type.value:
-            expected_nested = {table.upper() for table in expected_nested}
-        elif DestinationType.REDSHIFT.value == destination_type.value:
-            expected_nested = {table.lower() for table in expected_nested}
-
-    # TODO(davin): Instead of unwrapping all tables, rewrite this test so tables are compared based on schema.
-    all_tables = set()
-    for schema in tables_registry:
-        for tables in tables_registry[schema]:
-            all_tables.add(tables)
-
-    assert (all_tables - expected_top_level) == expected_nested
+# @pytest.mark.parametrize(
+#     "catalog_file",
+#     [
+#         "edge_cases_catalog",
+#         "facebook_catalog",
+#         "stripe_catalog",
+#     ],
+# )
+# @pytest.mark.parametrize(
+#     "integration_type",
+#     [
+#         "Postgres",
+#         "BigQuery",
+#         "Snowflake",
+#         "Redshift",
+#     ],
+# )
+# def test_stream_processor_tables_naming(integration_type: str, catalog_file: str):
+#     """
+#     For a given catalog.json and destination, multiple cases can occur where naming becomes tricky.
+#     (especially since some destination like postgres have a very low limit to identifiers length of 64 characters)
+#
+#     In case of nested objects/arrays in a stream, names can drag on to very long names.
+#     Tests are built here using resources files as follow:
+#     - `<name of source or test types>_catalog.json`:
+#         input catalog.json, typically as what source would provide.
+#         For example Stripe and Facebook catalog.json contains some level of nesting.
+#     - `<name of source or test types>_expected_top_level.json`:
+#         list of expected table names for the top level stream names
+#     - `<name of source or test types>_expected_nested.json`:
+#         list of expected table names for nested objects, extracted to their own and separate table names
+#
+#     For the expected json files, it is possible to specialize the file to a certain destination.
+#     So if for example, the resources folder contains these two expected files:
+#         - edge_cases_catalog_expected_top_level.json
+#         - edge_cases_catalog_expected_top_level_postgres.json
+#     Then the test will be using the first edge_cases_catalog_expected_top_level.json except for
+#     Postgres destination where the expected table names will come from edge_cases_catalog_expected_top_level_postgres.json
+#     """
+#     destination_type = DestinationType.from_string(integration_type)
+#     tables_registry = {}
+#
+#     substreams = []
+#     catalog = read_json(f"resources/{catalog_file}.json")
+#
+#     # process top level
+#     for stream_processor in CatalogProcessor.build_stream_processor(
+#         catalog=catalog,
+#         json_column_name="'json_column_name_test'",
+#         default_schema="schema_test",
+#         name_transformer=DestinationNameTransformer(destination_type),
+#         destination_type=destination_type,
+#         tables_registry=tables_registry,
+#     ):
+#         nested_processors = stream_processor.process()
+#         for schema in stream_processor.local_registry:
+#             for table in stream_processor.local_registry[schema]:
+#                 found_sql_output = False
+#                 for sql_output in stream_processor.sql_outputs:
+#                     file_name = f"{schema}_{table}"
+#                     if len(file_name) > stream_processor.name_transformer.get_name_max_length():
+#                         file_name = stream_processor.name_transformer.truncate_identifier_name(input_name=file_name)
+#
+#                     if re.match(r".*/" + file_name + ".sql", sql_output) is not None:
+#                         found_sql_output = True
+#                         break
+#                 assert found_sql_output
+#         add_table_to_registry(tables_registry, stream_processor)
+#         if nested_processors and len(nested_processors) > 0:
+#             substreams += nested_processors
+#
+#     if os.path.exists(f"resources/{catalog_file}_expected_top_level_{integration_type.lower()}.json"):
+#         expected_top_level = set(read_json(f"resources/{catalog_file}_expected_top_level_{integration_type.lower()}.json")["tables"])
+#     else:
+#         expected_top_level = set(read_json(f"resources/{catalog_file}_expected_top_level.json")["tables"])
+#         if DestinationType.SNOWFLAKE.value == destination_type.value:
+#             expected_top_level = {table.upper() for table in expected_top_level}
+#         elif DestinationType.REDSHIFT.value == destination_type.value:
+#             expected_top_level = {table.lower() for table in expected_top_level}
+#
+#     # process substreams
+#     while substreams:
+#         children = substreams
+#         substreams = []
+#         for substream in children:
+#             substream.tables_registry = tables_registry
+#             nested_processors = substream.process()
+#             add_table_to_registry(tables_registry, substream)
+#             if nested_processors:
+#                 substreams += nested_processors
+#
+#     if os.path.exists(f"resources/{catalog_file}_expected_nested_{integration_type.lower()}.json"):
+#         expected_nested = set(read_json(f"resources/{catalog_file}_expected_nested_{integration_type.lower()}.json")["tables"])
+#     else:
+#         expected_nested = set(read_json(f"resources/{catalog_file}_expected_nested.json")["tables"])
+#         if DestinationType.SNOWFLAKE.value == destination_type.value:
+#             expected_nested = {table.upper() for table in expected_nested}
+#         elif DestinationType.REDSHIFT.value == destination_type.value:
+#             expected_nested = {table.lower() for table in expected_nested}
+#
+#     # TODO(davin): Instead of unwrapping all tables, rewrite this test so tables are compared based on schema.
+#     all_tables = set()
+#     for schema in tables_registry:
+#         for tables in tables_registry[schema]:
+#             all_tables.add(tables)
+#
+#     assert (all_tables - expected_top_level) == expected_nested
 
 
 @pytest.mark.parametrize(
