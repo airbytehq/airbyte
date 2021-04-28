@@ -65,7 +65,9 @@ class Stream(ABC):
         """
 
     @abstractmethod
-    def _get_source_defined_primary_keys(self, ) -> List[List[str]]:
+    def _get_source_defined_primary_keys(
+        self,
+    ) -> List[List[str]]:
         """
         :return: List of path to fields used as the Stream's primary key. Empty list by default.
         """
@@ -91,7 +93,7 @@ class Stream(ABC):
         keys = self._get_source_defined_primary_keys()
         if len(keys) > 0:
             stream.source_defined_primary_key = keys
-            
+
         return stream
 
     @property
