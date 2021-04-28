@@ -59,4 +59,3 @@ When you apply for a token, you need to mention:
 * That you have full access to the server running the code \(because you're self-hosting Airbyte\)
 
 If for any reason the request gets denied, let us know and we will be able to unblock you.
-

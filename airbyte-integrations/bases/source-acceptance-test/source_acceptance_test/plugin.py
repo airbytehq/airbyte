@@ -1,17 +1,18 @@
+
 # MIT License
-#
+# 
 # Copyright (c) 2020 Airbyte
-#
+# 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-#
+# 
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-#
+# 
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,24 +22,13 @@
 # SOFTWARE.
 
 
-from pathlib import Path
-from typing import List
 
 import pytest
-from _pytest.config import Config
-from _pytest.config.argparsing import Parser
 from source_acceptance_test.utils import diff_dicts, load_config
-
-HERE = Path(__file__).parent.absolute()
-
-
-def pytest_load_initial_conftests(early_config: Config, parser: Parser, args: List[str]):
-    """Hook function to add acceptance tests to args"""
-    args.append(str(HERE / "tests"))
 
 
 def pytest_addoption(parser):
-    """Hook function to add CLI option `acceptance-test-config`"""
+    """Hook function to add CLI option `standard_test_config`"""
     parser.addoption(
         "--acceptance-test-config", action="store", default=".", help="Folder with standard test config - acceptance_test_config.yml"
     )

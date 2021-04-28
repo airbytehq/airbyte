@@ -36,7 +36,7 @@ This Source is capable of syncing the following core Streams:
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
-| Namespaces | No |  |
+| Namespaces | No | |
 
 ### Performance considerations
 

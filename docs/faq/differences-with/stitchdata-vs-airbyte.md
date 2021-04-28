@@ -14,7 +14,7 @@ We wrote an article, “[Open-source vs. Commercial Software: How to Solve the D
 
 ## Airbyte:
 
-* **Free, as open source, so no more pricing based on usage:** learn more about our [future business model]() \(connectors will always remain open-source\). 
+* **Free, as open source, so no more pricing based on usage:** learn more about our [future business model](../../company-handbook/business-model.md) \(connectors will always remain open-source\). 
 * **Supporting 50+ connectors by the end of 2020** \(so in only 5 months of existence\). Our goal is to reach 300+ connectors by the end of 2021.
 * **Building new connectors made trivial, in the language of your choice:** Airbyte makes it a lot easier to create your own connector, vs. building them yourself in-house \(with Airflow or other tools\). Scheduling, orchestration, and monitoring comes out of the box with Airbyte.
 * **Maintenance-free connectors you can use in minutes.** Just authenticate your sources and warehouse, and get connectors that adapt to schema and API changes for you.

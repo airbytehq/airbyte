@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Iterable supports full refresh and incremental sync.
+The Iterable supports full refresh and incremental sync. 
 
 This source can sync data for the [Iterable API](https://api.iterable.com/api/docs).
 
@@ -12,20 +12,20 @@ Several output streams are available from this source:
 
 * [Campaigns](https://api.iterable.com/api/docs#campaigns_campaigns)
 * [Channels](https://api.iterable.com/api/docs#channels_channels)
-* [Email Bounce](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental sync\)
-* [Email Click](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental sync\)
-* [Email Complaint](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental sync\)
-* [Email Open](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental sync\)
-* [Email Send](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental sync\)
-* [Email Send Skip](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental sync\)
-* [Email Subscribe](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental sync\)
-* [Email Unsubscribe](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental sync\)
+* [Email Bounce](https://api.iterable.com/api/docs#export_exportDataJson) (Incremental sync)
+* [Email Click](https://api.iterable.com/api/docs#export_exportDataJson) (Incremental sync)
+* [Email Complaint](https://api.iterable.com/api/docs#export_exportDataJson) (Incremental sync)
+* [Email Open](https://api.iterable.com/api/docs#export_exportDataJson) (Incremental sync)
+* [Email Send](https://api.iterable.com/api/docs#export_exportDataJson) (Incremental sync)
+* [Email Send Skip](https://api.iterable.com/api/docs#export_exportDataJson) (Incremental sync)
+* [Email Subscribe](https://api.iterable.com/api/docs#export_exportDataJson) (Incremental sync)
+* [Email Unsubscribe](https://api.iterable.com/api/docs#export_exportDataJson) (Incremental sync)
 * [Lists](https://api.iterable.com/api/docs#lists_getLists)
 * [List Users](https://api.iterable.com/api/docs#lists_getLists_0)
 * [Message Types](https://api.iterable.com/api/docs#messageTypes_messageTypes)
 * [Metadata](https://api.iterable.com/api/docs#metadata_list_tables)
-* [Templates](https://api.iterable.com/api/docs#templates_getTemplates) \(Incremental sync\)
-* [Users](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental sync\)
+* [Templates](https://api.iterable.com/api/docs#templates_getTemplates) (Incremental sync)
+* [Users](https://api.iterable.com/api/docs#export_exportDataJson) (Incremental sync)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 

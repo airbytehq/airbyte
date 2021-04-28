@@ -30,7 +30,7 @@ This Source is capable of syncing the following core Streams:
 * [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources)
 * [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources)
 * [Message media](https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources)
-* [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources)
+* [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources) 
 
   \(stream data can only be received for the last 400 days\)
 

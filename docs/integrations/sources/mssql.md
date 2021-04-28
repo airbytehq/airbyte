@@ -30,12 +30,12 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Feature | Supported | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync - Append | Yes |  |
-| Replicate Incremental Deletes | Coming soon |  |
-| Logical Replication \(WAL\) | Coming soon |  |
-| SSL Support | Yes |  |
-| SSH Tunnel Connection | Coming soon |  |
+| Full Refresh Sync | Yes |
+| Incremental Sync - Append | Yes |
+| Replicate Incremental Deletes | Coming soon |
+| Logical Replication \(WAL\) | Coming soon |
+| SSL Support | Yes |
+| SSH Tunnel Connection | Coming soon |
 | Namespaces | Yes | Enabled by default |
 
 ## Getting started

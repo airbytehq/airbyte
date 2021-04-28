@@ -49,7 +49,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private final IntegrationLauncher integrationLauncher;
 
-  private Process destinationProcess = null;
+  private Process targetProcess = null;
   private BufferedWriter writer = null;
   private boolean endOfStream = false;
 
@@ -58,26 +58,25 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void start(StandardTargetConfig destinationConfig, Path jobRoot) throws IOException, WorkerException {
-    Preconditions.checkState(destinationProcess == null);
-    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()));
-    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(destinationConfig.getCatalog()));
+  public void start(StandardTargetConfig targetConfig, Path jobRoot) throws IOException, WorkerException {
+    Preconditions.checkState(targetProcess == null);
+    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(targetConfig.getDestinationConnectionConfiguration()));
+    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(targetConfig.getCatalog()));
 
-    LOGGER.info("Running destination...");
-    destinationProcess = integrationLauncher.write(
+    LOGGER.info("Running target...");
+    targetProcess = integrationLauncher.write(
         jobRoot,
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME).start();
-    LineGobbler.gobble(destinationProcess.getInputStream(), LOGGER::info);
-    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error);
+    LineGobbler.gobble(targetProcess.getInputStream(), LOGGER::info);
+    LineGobbler.gobble(targetProcess.getErrorStream(), LOGGER::error);
 
-    writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
+    writer = new BufferedWriter(new OutputStreamWriter(targetProcess.getOutputStream(), Charsets.UTF_8));
   }
 
   @Override
   public void accept(AirbyteMessage message) throws IOException {
-    Preconditions.checkState(destinationProcess != null && !endOfStream);
+    Preconditions.checkState(targetProcess != null && !endOfStream);
 
     writer.write(Jsons.serialize(message));
     writer.newLine();
@@ -85,7 +84,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void notifyEndOfStream() throws IOException {
-    Preconditions.checkState(destinationProcess != null && !endOfStream);
+    Preconditions.checkState(targetProcess != null && !endOfStream);
 
     writer.flush();
     writer.close();
@@ -94,7 +93,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void close() throws WorkerException, IOException {
-    if (destinationProcess == null) {
+    if (targetProcess == null) {
       return;
     }
 
@@ -102,10 +101,10 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       notifyEndOfStream();
     }
 
-    LOGGER.debug("Closing destination process");
-    WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
-    if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
-      throw new WorkerException("destination process wasn't successful");
+    LOGGER.debug("Closing target process");
+    WorkerUtils.gentleClose(targetProcess, 10, TimeUnit.HOURS);
+    if (targetProcess.isAlive() || targetProcess.exitValue() != 0) {
+      throw new WorkerException("target process wasn't successful");
     }
   }
 
@@ -113,11 +112,11 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   public void cancel() throws Exception {
     LOGGER.info("Attempting to cancel destination process...");
 
-    if (destinationProcess == null) {
-      LOGGER.info("Destination process no longer exists, cancellation is a no-op.");
+    if (targetProcess == null) {
+      LOGGER.info("Target process no longer exists, cancellation is a no-op.");
     } else {
-      LOGGER.info("Destination process exists, cancelling...");
-      WorkerUtils.cancelProcess(destinationProcess);
+      LOGGER.info("Target process exists, cancelling...");
+      WorkerUtils.cancelProcess(targetProcess);
       LOGGER.info("Cancelled destination process!");
     }
   }

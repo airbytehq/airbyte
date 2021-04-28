@@ -437,7 +437,7 @@ public abstract class StandardSourceTest {
 
   // todo (cgardens) - assume no state since we are all full refresh right now.
   private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    final StandardTapConfig sourceConfig = new StandardTapConfig()
+    final StandardTapConfig tapConfig = new StandardTapConfig()
         .withSourceConnectionConfiguration(getConfig())
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);
@@ -445,7 +445,7 @@ public abstract class StandardSourceTest {
     final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
     final List<AirbyteMessage> messages = new ArrayList<>();
 
-    source.start(sourceConfig, jobRoot);
+    source.start(tapConfig, jobRoot);
     while (!source.isFinished()) {
       source.attemptRead().ifPresent(messages::add);
     }
