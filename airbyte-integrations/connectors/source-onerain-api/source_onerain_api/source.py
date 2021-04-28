@@ -25,6 +25,8 @@ SOFTWARE.
 import json
 from datetime import datetime
 from typing import Dict, Generator
+import xmltodict
+import requests
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -38,6 +40,9 @@ from airbyte_protocol import (
 )
 from base_python import AirbyteLogger, Source
 
+StreamSiteMetadata = "SiteMetaData"
+ConfigPropDataApiUrl = "data_api_url"
+ConfigPropSystemKey = "system_key"
 
 class SourceOnerainApi(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
@@ -54,7 +59,12 @@ class SourceOnerainApi(Source):
         """
         try:
             # Not Implemented
+            if ConfigPropDataApiUrl not in config:
+                raise ValueError("missing configuration property '%s'" % ConfigPropDataApiUrl)
+            if ConfigPropSystemKey not in config:
+                raise ValueError("missing configuration property '%s'" % ConfigPropSystemKey)
 
+            
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
@@ -71,18 +81,28 @@ class SourceOnerainApi(Source):
         the properties of the spec.json file
 
         :return: AirbyteCatalog is an object describing a list of all available streams in this source.
-            A stream is an AirbyteStream object that includes:
+            A stream is an AirbyteStream object that includes:q
             - its stream name (or table name in the case of Postgres)
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
         streams = []
 
-        stream_name = "TableName"  # Example
+        stream_name = StreamSiteMetadata  # Example
         json_schema = {  # Example
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": {"columnName": {"type": "string"}},
+            "properties": {
+                "or_site_id": {"description":"OneRain Contrail Site ID. These IDs are unique to the OneRain hosted Contrail Server or any Contrail Base Station","type": "number"},
+                "site_id": {"description":"Alias Site ID, how the Site is identified by the collecting sytem","type":"string"},
+                "location":{"desription":"descriptive site location","type":"string"},
+                "owner":{"desription":"site owner","type":"string"},
+                "system_id":{"description":"system id?", "type":"number"},
+                "client_id":{"description":"???","type":"string"},
+                "latitude_dec":{"description":"decimal latitude","type":"number"},
+                "longitude_dec":{"description":"decimal longitude","type":"number"},
+                "elevation":{"description":"site elevation (in units of ???)","type":"number"},
+            },
         }
 
         # Not Implemented
@@ -112,12 +132,50 @@ class SourceOnerainApi(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
+        stream_name = StreamSiteMetadata  # Example
 
-        # Not Implemented
+        data_api_url = config[ConfigPropDataApiUrl]
+        system_key = config[ConfigPropSystemKey]
 
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
-        )
+        req_url = "%s?method=GetSiteMetadata&system_key=%s" % (data_api_url,system_key)
+
+        # RETRIEVE SITE METADATA
+        try:
+            r = requests.get(req_url)
+        except Exception as e:
+            logger.error("OneRain request method 'GetSiteMetadata' failed: %s" % str(e))
+            return
+        # ITERATE SITE METADATA AND RETURN AS STREAM
+        try:
+            doc = xmltodict.parse(r.text)
+            for row in doc['onerain']['response']['general']['row']:
+                or_site_id = int(row['or_site_id'])
+                site_id = row['site_id']
+                location = row['location']
+                owner = row['owner']
+                system_id = int(row['system_id'])
+                client_id = row['client_id']  
+                latitude_dec = float(row['latitude_dec'])
+                longitude_dec = float(row['longitude_dec'])
+                elevation = int(row['elevation'])
+       
+                data = dict()
+                data['or_site_id'] = or_site_id
+                data['site_id'] = site_id
+                data['location'] = location
+                data['owner'] = owner
+                data['system_id'] = system_id
+                data['client_id'] = client_id
+                data['latitude_dec'] = latitude_dec
+                data['longitude_dec'] = longitude_dec
+                data['elevation'] = elevation
+
+                yield AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                )       
+
+        except Exception as e:
+            logger.error("failed to process 'GetSiteMetadata' response object: %s" % str(e))
+            return
+        

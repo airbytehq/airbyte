@@ -4,12 +4,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Onerain Api Spec",
     "type": "object",
-    "required": ["fix-me"],
+    "required": ["data_api_url","system_key"],
     "additionalProperties": false,
     "properties": {
-      "fix-me": {
+      "data_api_url": {
         "type": "string",
-        "description": "describe me"
+        "description": "OneRain Data API url (e.g. http://{HOST}[:PORT]/OneRain/DataAPI)"
+      },
+      "system_key": {
+        "type":"string",
+        "description":"String used to associate a group of sensors with a single globally unique identifier in Contrail"
       }
     }
   }
