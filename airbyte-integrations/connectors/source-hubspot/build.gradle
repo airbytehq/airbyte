@@ -8,19 +8,7 @@ airbytePython {
     moduleDirectory 'source_hubspot'
 }
 
-airbyteStandardSourceTestFile {
-    specPath = "source_hubspot/spec.json"
-    configPath = "secrets/config.json"
-    configuredCatalogPath = "sample_files/configured_catalog.json"
-}
-
 dependencies {
     implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
     implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
-
-task("pythonIntegrationTests", type: PythonTask, dependsOn: installTestReqs) {
-    module = "pytest"
-    command = "-s integration_tests"
-}
-integrationTest.dependsOn("pythonIntegrationTests")

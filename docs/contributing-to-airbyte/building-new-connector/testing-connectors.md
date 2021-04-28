@@ -44,7 +44,23 @@ See other useful pytest options [here](https://docs.pytest.org/en/stable/usage.h
 
 ### Dynamically managing inputs & resources used in standard tests
 
-Since the inputs to standard tests are often static, the file-based runner is sufficient for most connectors. However, in some cases, you may need to run pre or post hooks to dynamically create or destroy resources for use in standard tests. For example, if we need to spin up a Redshift cluster to use in the test then tear it down afterwards, we need the ability to run code before and after the tests, as well as customize the Redshift cluster URL we pass to the standard tests. If you have need for this use case, please reach out to us via [Github](https://github.com/airbytehq/airbyte) or [Slack](https://slack.airbyte.io). We currently support it for Java & Python, and other languages can be made available upon request.
+Since the inputs to standard tests are often static, the file-based runner is sufficient for most connectors. However, in some cases, you may need to run pre or post hooks to dynamically create or destroy resources for use in standard tests. 
+For example, if we need to spin up a Redshift cluster to use in the test then tear it down afterwards, we need the ability to run code before and after the tests, as well as customize the Redshift cluster URL we pass to the standard tests.
+If you have need for this use case, please reach out to us via [Github](https://github.com/airbytehq/airbyte) or [Slack](https://slack.airbyte.io).
+We currently support it for Java & Python, and other languages can be made available upon request.
+#### Python
+Create pytest yield-fixture with your custom setup/teardown code and place it in `integration_tests/acceptance.py`,
+Example of fixture that starts a docker container before tests and stops before exit:
+```python
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """ This fixture is a placeholder for external resources that acceptance test might require.
+    """
+    client = docker.from_env()
+    container = client.containers.run("your/docker-image", detach=True)
+    yield
+    container.stop()
+```
 
 ## Running Integration tests
 

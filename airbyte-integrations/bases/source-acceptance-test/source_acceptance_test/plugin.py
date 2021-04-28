@@ -21,13 +21,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from pathlib import Path
+from typing import List
 
 import pytest
+from _pytest.config import Config
+from _pytest.config.argparsing import Parser
 from source_acceptance_test.utils import diff_dicts, load_config
 
 
+HERE = Path(__file__).parent.absolute()
+
+
+def pytest_load_initial_conftests(_early_config: Config, _parser: Parser, args: List[str]):
+    """Hook function to add acceptance tests to args"""
+    args.append(str(HERE / "tests"))
+
+
 def pytest_addoption(parser):
-    """Hook function to add CLI option `standard_test_config`"""
+    """Hook function to add CLI option `acceptance-test-config`"""
     parser.addoption(
         "--acceptance-test-config", action="store", default=".", help="Folder with standard test config - acceptance_test_config.yml"
     )

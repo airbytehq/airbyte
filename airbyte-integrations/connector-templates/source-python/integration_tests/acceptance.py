@@ -23,29 +23,14 @@ SOFTWARE.
 """
 
 import pytest
-from source_hubspot.client import Client
-from source_hubspot.errors import HubspotInvalidAuth
+
+pytest_plugins = ("source_acceptance_test.plugin",)
 
 
-@pytest.fixture(name="wrong_credentials")
-def wrong_credentials_fixture():
-    return {"api_key": "wrongkey-key1-key2-key3-wrongkey1234"}
-
-
-def test__health_check_with_wrong_token(wrong_credentials):
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=wrong_credentials)
-    alive, error = client.health_check()
-
-    assert not alive
-    assert (
-        error
-        == "HubspotInvalidAuth('The API key provided is invalid. View or manage your API key here: https://app.hubspot.com/l/api-key/')"
-    )
-
-
-def test__stream_iterator_with_wrong_token(wrong_credentials):
-    client = Client(start_date="2021-02-01T00:00:00Z", credentials=wrong_credentials)
-    with pytest.raises(
-        HubspotInvalidAuth, match="The API key provided is invalid. View or manage your API key here: https://app.hubspot.com/l/api-key/"
-    ):
-        _ = list(client.streams)
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """ This fixture is a placeholder for external resources that acceptance test might require.
+    """
+    # TODO: setup test dependencies
+    yield
+    # TODO: clean up test dependencies
