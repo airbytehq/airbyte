@@ -81,7 +81,6 @@ class Stream(ABC):
             stream.source_defined_cursor = self.source_defined_cursor
             stream.supported_sync_modes.append(SyncMode.incremental)
             stream.default_cursor_field = self._wrapped_cursor_field()
-
         return stream
 
     @property
