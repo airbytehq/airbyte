@@ -86,6 +86,10 @@ or can also be invoked on github, thanks to the slash commands posted as comment
 
     /test connector=bases/base-normalization
 
+Note that these tests are connecting and processing data on top of real data warehouse destinations.
+Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run.
+(this is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script)
+
 ### Integration Tests Definitions:
 
 Some test suites can be selected to be versioned control in Airbyte git repository (or not).

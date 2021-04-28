@@ -593,11 +593,11 @@ from {{ from_table }}
 
     def get_file_name(self, stream_name: str, schema_name: str, table_name: str) -> str:
         """
-            File names need to match the ref() macro returned in the ref_table function.
-            Note that dbt uses only the file names to generate internal model.
+        File names need to match the ref() macro returned in the ref_table function.
+        Note that dbt uses only the file names to generate internal model.
 
-            Use a hash of full schema + stream name (i.e. namespace + stream name) to dedup tables.
-            This hash avoids tables with the same name (possibly very long) and different schemas.
+        Use a hash of full schema + stream name (i.e. namespace + stream name) to dedup tables.
+        This hash avoids tables with the same name (possibly very long) and different schemas.
         """
         full_lower_name = schema_name + "_" + stream_name
         full_lower_name = full_lower_name.lower()
@@ -702,7 +702,9 @@ from {{ from_table }}
 
     def unnesting_before_query(self) -> str:
         if self.parent and self.is_nested_array:
-            parent_file_name = f"'{self.get_file_name(self.parent.stream_name, self.parent.get_schema(False), self.parent.actual_table_name())}'"
+            parent_file_name = (
+                f"'{self.get_file_name(self.parent.stream_name, self.parent.get_schema(False), self.parent.actual_table_name())}'"
+            )
             parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
             quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
             return jinja_call(f"unnest_cte({parent_file_name}, {parent_stream_name}, {quoted_field})")

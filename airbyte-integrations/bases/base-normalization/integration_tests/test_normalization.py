@@ -193,10 +193,17 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
     print(f"Setting up test folder {test_root_dir}")
     shutil.copytree("../dbt-project-template", test_root_dir)
-    # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
-    copy_replace(
-        "../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"), pattern="ephemeral", replace_value="view"
-    )
+    if integration_type != "Redshift":
+        # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
+        copy_replace(
+            "../dbt-project-template/dbt_project.yml",
+            os.path.join(test_root_dir, "dbt_project.yml"),
+            pattern="ephemeral",
+            replace_value="view",
+        )
+    else:
+        # 'view' materializations on redshift are too slow, so keep it ephemeral there...
+        copy_replace("../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
 
