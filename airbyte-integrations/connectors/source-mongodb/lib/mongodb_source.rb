@@ -71,6 +71,11 @@ class MongodbSource
   def client
     @client ||= begin
                   uri = "mongodb://#{@config['user']}:#{@config['password']}@#{@config['host']}:#{@config['port']}/#{@config['database']}?authSource=#{@config['auth_source']}"
+                  if !@config.fetch(:"replica_set", "").strip.empty?
+                    uri += "&replicaSet=#{@config['replica_set']}&ssl=true"
+                  elsif ['true', true].include?(@config['ssl'])
+                    uri += "&ssl=true"
+                  end
                   @client = Mongo::Client.new(uri)
                   @client.logger.formatter = AirbyteLogger.logger_formatter
                   @client
