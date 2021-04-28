@@ -15,6 +15,8 @@ import { Routes } from "../../../routes";
 import CreateConnectionContent from "components/CreateConnectionContent";
 import SourceResource from "core/resources/Source";
 import DestinationResource from "core/resources/Destination";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
 
 type IProps = {
   type: "source" | "destination" | "connection";
@@ -42,11 +44,28 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         }
       : null
   );
+  const sourceDefinition = useResource(
+    SourceDefinitionResource.detailShape(),
+    source
+      ? {
+          sourceDefinitionId: source.sourceDefinitionId,
+        }
+      : null
+  );
+
   const destination = useResource(
     DestinationResource.detailShape(),
     location.state?.destinationId
       ? {
           destinationId: location.state.destinationId,
+        }
+      : null
+  );
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    destination
+      ? {
+          destinationDefinitionId: destination.destinationDefinitionId,
         }
       : null
   );
@@ -184,8 +203,19 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         {currentStep !== StepsTypes.CREATE_CONNECTION &&
           (!!source || !!destination) && (
             <ConnectionBlock
-              itemFrom={source ? { name: source.name } : undefined}
-              itemTo={destination ? { name: destination.name } : undefined}
+              itemFrom={
+                source
+                  ? { name: source.name, icon: sourceDefinition?.icon }
+                  : undefined
+              }
+              itemTo={
+                destination
+                  ? {
+                      name: destination.name,
+                      icon: destinationDefinition?.icon,
+                    }
+                  : undefined
+              }
             />
           )}
         {renderStep()}

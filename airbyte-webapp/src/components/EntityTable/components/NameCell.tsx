@@ -5,12 +5,14 @@ import { useIntl } from "react-intl";
 import StatusIcon from "components/StatusIcon";
 import ImageBlock from "components/ImageBlock";
 import { Status } from "../types";
+import { getIcon } from "../../../utils/imageUtils";
 
 type IProps = {
   value: string;
   enabled?: boolean;
   status?: string | null;
   icon?: boolean;
+  img?: React.ReactNode | string;
 };
 
 const Content = styled.div`
@@ -37,7 +39,7 @@ const Image = styled(ImageBlock)`
   margin-right: 6px;
 `;
 
-const NameCell: React.FC<IProps> = ({ value, enabled, status, icon }) => {
+const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
   const formatMessage = useIntl().formatMessage;
   const title =
     status === Status.EMPTY
@@ -68,7 +70,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon }) => {
       ) : (
         <Space />
       )}
-      {icon && <Image small />}
+      {icon && <Image small img={getIcon({ icon: img })} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

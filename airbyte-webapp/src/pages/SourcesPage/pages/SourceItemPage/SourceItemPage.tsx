@@ -22,6 +22,8 @@ import {
 import LoadingPage from "components/LoadingPage";
 import DestinationResource from "core/resources/Destination";
 import MainPageWithScroll from "components/MainPageWithScroll";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import { getIcon } from "../../../../utils/imageUtils";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -39,6 +41,10 @@ const SourceItemPage: React.FC = () => {
 
   const source = useResource(SourceResource.detailShape(), {
     sourceId: query.id,
+  });
+
+  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: source.sourceDefinitionId,
   });
 
   const { connections } = useResource(ConnectionResource.listShape(), {
@@ -101,6 +107,7 @@ const SourceItemPage: React.FC = () => {
           onSelect={onSelect}
           entity={source.sourceName}
           entityName={source.name}
+          entityIcon={sourceDefinition ? getIcon(sourceDefinition) : null}
         />
         {connectionsWithSource.length ? (
           <SourceConnectionTable connections={connectionsWithSource} />

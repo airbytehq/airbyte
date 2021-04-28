@@ -1,10 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 import ImageBlock from "components/ImageBlock";
+import { getIcon } from "utils/imageUtils";
 
 type IProps = {
   name: string;
-  img?: string;
+  icon?: string;
 };
 
 const Content = styled.div`
@@ -27,11 +28,13 @@ const Name = styled.div`
   margin-left: 6px;
 `;
 
-const ConnectionBlockItem: React.FC<IProps> = (props) => (
-  <Content>
-    <ImageBlock img={props.img} />
-    <Name>{props.name}</Name>
-  </Content>
-);
+const ConnectionBlockItem: React.FC<IProps> = (props) => {
+  return (
+    <Content>
+      <ImageBlock img={getIcon(props)} />
+      <Name>{props.name}</Name>
+    </Content>
+  );
+};
 
 export { ConnectionBlockItem };

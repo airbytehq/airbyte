@@ -8,6 +8,7 @@ export interface DestinationDefinition {
   dockerImageTag: string;
   latestDockerImageTag: string;
   documentationUrl: string;
+  icon: string;
 }
 
 export default class DestinationDefinitionResource
@@ -19,6 +20,7 @@ export default class DestinationDefinitionResource
   readonly dockerImageTag: string = "";
   readonly latestDockerImageTag: string = "";
   readonly documentationUrl: string = "";
+  readonly icon: string = "";
 
   pk(): string {
     return this.destinationDefinitionId?.toString();

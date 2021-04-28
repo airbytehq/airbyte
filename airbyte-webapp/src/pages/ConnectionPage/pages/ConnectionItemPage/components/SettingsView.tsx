@@ -18,12 +18,16 @@ import { ModalTypes } from "components/ResetDataModal/types";
 import Button from "components/Button";
 import LoadingSchema from "components/LoadingSchema";
 import EnabledControl from "./EnabledControl";
-import { useDestinationDefinitionSpecificationLoad } from "../../../../../components/hooks/services/useDestinationHook";
+import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { SourceDefinition } from "core/resources/SourceDefinition";
 
 type IProps = {
   onAfterSaveSchema: () => void;
   connectionId: string;
   frequencyText?: string;
+  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinition;
 };
 
 const Content = styled.div`

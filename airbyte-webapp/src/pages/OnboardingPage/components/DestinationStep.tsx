@@ -80,7 +80,9 @@ const DestinationStep: React.FC<IProps> = ({
 
   return (
     <>
-      <ConnectionBlock itemFrom={{ name: currentSource.name }} />
+      <ConnectionBlock
+        itemFrom={{ name: currentSource.name, icon: currentSource.icon }}
+      />
       <ContentCard
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
       >

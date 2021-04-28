@@ -23,6 +23,10 @@ import { SyncSchema } from "core/domain/catalog";
 import useConnection from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
 import { useDestinationDefinitionSpecificationLoad } from "../hooks/services/useDestinationHook";
+import { useResource } from "@rest-hooks/core/lib/react-integration/hooks";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { getIcon } from "utils/imageUtils";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -60,11 +64,21 @@ const CreateConnectionContent: React.FC<IProps> = ({
     onDiscoverSchema,
   } = useDiscoverSchema(source?.sourceId);
 
+  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: source.sourceDefinitionId,
+  });
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    {
+      destinationDefinitionId: destination.destinationDefinitionId,
+    }
+  );
+
   const {
     destinationDefinitionSpecification,
     isLoading: loadingDestination,
   } = useDestinationDefinitionSpecificationLoad(
-    destination.destinationDefinitionId
+    destination?.destinationDefinitionId
   );
 
   if (isLoading || loadingDestination) {
@@ -154,6 +168,8 @@ const CreateConnectionContent: React.FC<IProps> = ({
           source={source}
           destination={destination}
           destinationDefinition={destinationDefinitionSpecification}
+          sourceIcon={getIcon(sourceDefinition)}
+          destinationIcon={getIcon(destinationDefinition)}
         />
       </Suspense>
     </ContentCard>

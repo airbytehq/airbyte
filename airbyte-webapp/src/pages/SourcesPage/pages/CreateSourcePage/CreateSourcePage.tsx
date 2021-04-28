@@ -12,6 +12,7 @@ import useSource from "components/hooks/services/useSourceHook";
 import { FormPageContent } from "components/SourceAndDestinationsBlocks";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { getIcon } from "utils/imageUtils";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
@@ -34,7 +35,7 @@ const CreateSourcePage: React.FC = () => {
       sourceDefinitions.map((item) => ({
         text: item.name,
         value: item.sourceDefinitionId,
-        img: "/default-logo-catalog.svg",
+        img: getIcon(item),
       })),
     [sourceDefinitions]
   );

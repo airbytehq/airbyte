@@ -22,6 +22,8 @@ import DestinationSettings from "./components/DestinationSettings";
 import LoadingPage from "components/LoadingPage";
 import SourceResource from "core/resources/Source";
 import MainPageWithScroll from "components/MainPageWithScroll";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { getIcon } from "../../../../utils/imageUtils";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -40,6 +42,13 @@ const DestinationItemPage: React.FC = () => {
   const destination = useResource(DestinationResource.detailShape(), {
     destinationId: query.id,
   });
+
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    {
+      destinationDefinitionId: destination.destinationDefinitionId,
+    }
+  );
 
   const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: config.ui.workspaceId,
@@ -105,6 +114,9 @@ const DestinationItemPage: React.FC = () => {
           onSelect={onSelect}
           entityName={destination.name}
           entity={destination.destinationName}
+          entityIcon={
+            destinationDefinition.icon ? getIcon(destinationDefinition) : null
+          }
         />
         {connectionsWithDestination.length ? (
           <DestinationConnectionTable

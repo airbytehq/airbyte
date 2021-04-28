@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import Indicator from "../../../components/Indicator";
+import { getIcon } from "../../../utils/imageUtils";
 
 type IProps = {
   connectorName: string;
@@ -15,8 +16,9 @@ const Content = styled.div<{ enabled?: boolean }>`
   position: relative;
 `;
 
-const Image = styled.img`
+const Image = styled.div`
   height: 17px;
+  width: 17px;
   margin-right: 9px;
 `;
 
@@ -29,7 +31,7 @@ const ConnectorCell: React.FC<IProps> = ({ connectorName, img, hasUpdate }) => {
   return (
     <Content>
       {hasUpdate && <Notification />}
-      <Image src={img || "/default-logo-catalog.svg"} alt={"logo"} />
+      <Image>{getIcon({ icon: img })}</Image>
       {connectorName}
     </Content>
   );

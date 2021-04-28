@@ -1,6 +1,7 @@
 export * from "./base";
 
 export * from "./Button";
+export * from "./Button";
 export * from "./Input";
 export * from "./Spinner";
 export * from "./DropDown";
@@ -22,4 +23,5 @@ export * from "./RadioButton";
 export * from "./ArrayOfObjectsEditor";
 export * from "./ContentCard";
 export * from "./PreferencesForm";
+export * from "./DefaultLogoCatalog";
 export * from "./ContentCard";
