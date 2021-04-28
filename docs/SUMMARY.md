@@ -96,7 +96,7 @@
   * [High-level View](architecture/high-level-view.md)
   * [Workers & Jobs](architecture/jobs.md)
   * [Technical Stack](architecture/tech-stack.md)
-  * [Change Data Capture (CDC)](architecture/cdc.md)
+  * [Change Data Capture \(CDC\)](architecture/cdc.md)
   * [Namespaces](architecture/namespaces.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)

@@ -15,26 +15,28 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 ## 04/20/2021
 
 3 new source connectors!
-* **[Zendesk Talk](https://docs.airbyte.io/integrations/sources/zendesk-talk)**
-* **[Iterable](https://docs.airbyte.io/integrations/sources/iterable)** 
-* **Quickbooks** (docs coming shortly)
+
+* [**Zendesk Talk**](https://docs.airbyte.io/integrations/sources/zendesk-talk)
+* [**Iterable**](https://docs.airbyte.io/integrations/sources/iterable) 
+* **Quickbooks** \(docs coming shortly\)
 
 Other progress on connectors:
-* **Postgres source/destination**: add SSL option, thanks to [Marcos Marx](https://github.com/marcosmarxm) ([#2757](https://github.com/airbytehq/airbyte/pull/2757))
-* **Google sheets bugfix**: handle duplicate sheet headers, thanks to [Aneesh Makala](https://github.com/makalaaneesh) ([#2905](https://github.com/airbytehq/airbyte/pull/2905))
-* **Source Google Adwords**: support specifying the lookback window for conversions, thanks to [Harshith Mullapudi](https://github.com/harshithmullapudi) ([#2918](https://github.com/airbytehq/airbyte/pull/2918))
-* **MongoDB improvement**: speed up mongodb schema discovery, thanks to [Yury Koleda](https://github.com/FUT) ([#2851](https://github.com/airbytehq/airbyte/pull/2851))
-* **MySQL bugfix**: parsing Mysql jdbc params, thanks to [Vasily Safronov](https://github.com/gingeard) ([#2891](https://github.com/airbytehq/airbyte/pull/2891))
-* **CSV bugfix**: discovery takes too much memory ([#2089](https://github.com/airbytehq/airbyte/pull/2851))
+
+* **Postgres source/destination**: add SSL option, thanks to [Marcos Marx](https://github.com/marcosmarxm) \([\#2757](https://github.com/airbytehq/airbyte/pull/2757)\)
+* **Google sheets bugfix**: handle duplicate sheet headers, thanks to [Aneesh Makala](https://github.com/makalaaneesh) \([\#2905](https://github.com/airbytehq/airbyte/pull/2905)\)
+* **Source Google Adwords**: support specifying the lookback window for conversions, thanks to [Harshith Mullapudi](https://github.com/harshithmullapudi) \([\#2918](https://github.com/airbytehq/airbyte/pull/2918)\)
+* **MongoDB improvement**: speed up mongodb schema discovery, thanks to [Yury Koleda](https://github.com/FUT) \([\#2851](https://github.com/airbytehq/airbyte/pull/2851)\)
+* **MySQL bugfix**: parsing Mysql jdbc params, thanks to [Vasily Safronov](https://github.com/gingeard) \([\#2891](https://github.com/airbytehq/airbyte/pull/2891)\)
+* **CSV bugfix**: discovery takes too much memory \([\#2089](https://github.com/airbytehq/airbyte/pull/2851)\)
 * A lot of work was done on improving the standard tests for the connectors, for better standardization and maintenance!
 
 ## 04/13/2021
 
-* New connector: **[Oracle DB](https://docs.airbyte.io/integrations/sources/oracle)**
+* New connector: [**Oracle DB**](https://docs.airbyte.io/integrations/sources/oracle)
 
 ## 04/07/2021
 
-* New connector: **[Google Workspace Admin Reports](https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports)** (audit logs)
+* New connector: [**Google Workspace Admin Reports**](https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports) \(audit logs\)
 * Bugfix in the base python connector library that caused errors to be silently skipped rather than failing the sync
 * **Exchangeratesapi.io** bugfix: to point to the updated API URL
 * **Redshift destination** bugfix: quote keywords “DATETIME” and “TIME” when used as identifiers
