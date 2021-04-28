@@ -11,8 +11,8 @@ with __dbt__CTE__nested_stream_with_complex_columns_resulting_into_long_names_64
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 select
     _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid,
-    json_extract_path_text("partition", 'double_array_data') as double_array_data,
-    json_extract_path_text("partition", 'DATA') as data,
+    json_extract_path_text("partition", 'double_array_data', true) as double_array_data,
+    json_extract_path_text("partition", 'DATA', true) as data,
     _airbyte_emitted_at
 from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names"
 where "partition" is not null

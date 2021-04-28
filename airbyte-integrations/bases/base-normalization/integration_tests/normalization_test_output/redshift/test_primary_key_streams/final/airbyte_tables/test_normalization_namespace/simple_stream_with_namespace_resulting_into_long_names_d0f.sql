@@ -10,8 +10,8 @@ with __dbt__CTE__simple_stream_with_namespace_resulting_into_long_names_ab1_4fe 
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 select
-    case when json_extract_path_text(_airbyte_data, 'id') != '' then json_extract_path_text(_airbyte_data, 'id') end as id,
-    case when json_extract_path_text(_airbyte_data, 'date') != '' then json_extract_path_text(_airbyte_data, 'date') end as date,
+    case when json_extract_path_text(_airbyte_data, 'id', true) != '' then json_extract_path_text(_airbyte_data, 'id', true) end as id,
+    case when json_extract_path_text(_airbyte_data, 'date', true) != '' then json_extract_path_text(_airbyte_data, 'date', true) end as date,
     _airbyte_emitted_at
 from "integrationtests".test_normalization_namespace._airbyte_raw_simple_stream_with_namespace_resulting_into_long_names
 -- simple_stream_with_namespace_resulting_into_long_names
