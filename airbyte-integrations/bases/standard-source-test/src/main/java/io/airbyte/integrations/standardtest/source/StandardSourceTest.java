@@ -112,6 +112,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-braintree-singer",
       "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
+      "airbyte/source-stripe",
       "airbyte/source-github-singer",
       "airbyte/source-gitlab-singer",
       "airbyte/source-google-workspace-admin-reports",
