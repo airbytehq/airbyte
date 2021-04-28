@@ -145,6 +145,40 @@
                 "order": 3
               }
             }
+          },
+          {
+            "title": "GCS Staging",
+            "additionalProperties": false,
+            "description": "Writes large batches of records to a file, uploads the file to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "required": [
+              "project_id",
+              "bucket_name",
+              "credentials_json"
+            ],
+            "properties": {
+              "project_id": {
+                "title": "GCP Project ID",
+                "type": "string",
+                "description": "The name of the GCP project ID for your credentials.",
+                "examples": ["my-project"],
+                "order": 0
+              },
+              "bucket_name": {
+                "title": "GCS Bucket Name",
+                "type": "string",
+                "description": "The name of the staging GCS bucket. Airbyte will write files to this bucket and read them via <pre>COPY</pre> statements on Snowflake.",
+                "examples": ["airbyte-staging"],
+                "order": 1
+              },
+              "credentials_json": {
+                "title": "Google Application Credentials",
+                "type": "string",
+                "description": "The contents of the JSON key file that has read/write permissions to the staging GCS bucket.",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3
+              }
+            }
           }
         ]
       },
