@@ -72,27 +72,16 @@ class SourceHttpRequest(Source):
 
         # need to eagerly fetch the json.
         data = r.json()
-        if isinstance(data, dict):
-            message = AirbyteMessage(
+        if not isinstance(data, list):
+            data = [data]
+
+        for record in data:
+            yield AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
-                    stream=SourceHttpRequest.STREAM_NAME, data=data, emitted_at=int(datetime.now().timestamp()) * 1000
+                    stream=SourceHttpRequest.STREAM_NAME, data=record, emitted_at=int(datetime.now().timestamp()) * 1000
                 ),
             )
-
-            return (m for m in [message])
-        else:
-            messages = (
-                AirbyteMessage(
-                    type=Type.RECORD,
-                    record=AirbyteRecordMessage(
-                        stream=SourceHttpRequest.STREAM_NAME,
-                        data=obj,
-                        emitted_at=int(datetime.now().timestamp()) * 1000
-                    )
-                ) for obj in data
-            )
-            return messages
 
     def _make_request(self, config):
         parsed_config = self._parse_config(config)
