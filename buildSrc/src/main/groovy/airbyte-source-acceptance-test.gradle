@@ -1,7 +1,7 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-class AirbyteStandardTestPlugin implements Plugin<Project> {
+class AirbyteSourceAcceptanceTestPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.task('sourceAcceptanceTest') {
             doFirst {
