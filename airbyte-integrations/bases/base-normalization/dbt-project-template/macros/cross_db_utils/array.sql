@@ -25,7 +25,7 @@
         case jsonb_typeof({{ array_col }})
         when 'array' then {{ array_col }}
         else '[]' end
-    ) as {{ array_col }}
+    ) as _{{ array_col }}
 {%- endmacro %}
 
 {% macro redshift__cross_join_unnest(stream_name, array_col) -%}

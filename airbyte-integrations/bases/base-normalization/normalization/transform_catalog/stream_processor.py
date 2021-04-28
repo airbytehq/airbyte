@@ -268,10 +268,10 @@ class StreamProcessor(object):
                 is_nested_array = False
                 json_column_name = column_names[field][1]
             elif is_array(properties[field]["type"]) and "items" in properties[field]:
-                quoted_field = column_names[field][1]
+                unquoted_field = column_names[field][0]
                 children_properties = find_properties_object([], field, properties[field]["items"])
                 is_nested_array = True
-                json_column_name = f"unnested_column_value({quoted_field})"
+                json_column_name = f"unnested_column_value('_{unquoted_field}')"
             if children_properties:
                 for child_key in children_properties:
                     stream_processor = StreamProcessor.create_from_parent(

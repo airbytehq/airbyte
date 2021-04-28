@@ -21,7 +21,7 @@ models:
           description: check_raw_and_normalized_rowcounts
             Raw and normalized tables should be equal.
           compare_model: source('test_normalization', '_airbyte_raw_exchange_rate')
-
+          
   - name: test_normalization_dedup_exchange_rate
     tests:
       - dbt_utils.unique_combination_of_columns:
@@ -31,3 +31,12 @@ models:
             - id
             - currency
             - NZD
+
+  - name: test_normalization_e__urrenc_f41_currencies
+    columns:
+      - name: short_name
+        tests:
+          - not_null
+      - name: value
+        tests:
+          - not_null

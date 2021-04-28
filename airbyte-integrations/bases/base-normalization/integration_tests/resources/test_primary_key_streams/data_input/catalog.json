@@ -68,6 +68,39 @@
       "cursor_field": ["date"],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"], ["currency"], ["NZD"]]
+    },
+    {
+      "stream": {
+        "name": "exchange_rate_nested_currencies",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "currencies": { 
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "short_name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            "date": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      }
     }
   ]
 }
