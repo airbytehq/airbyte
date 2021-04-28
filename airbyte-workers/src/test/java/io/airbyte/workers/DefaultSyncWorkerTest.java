@@ -131,7 +131,8 @@ class DefaultSyncWorkerTest {
     when(messageTracker.getBytesCount()).thenReturn(100L);
     when(messageTracker.getOutputState()).thenReturn(Optional.of(expectedState));
 
-    final DefaultSyncWorker defaultSyncWorker = new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, source, mapper, target, messageTracker, normalizationRunner);
+    final DefaultSyncWorker defaultSyncWorker =
+        new DefaultSyncWorker(JOB_ID, JOB_ATTEMPT, source, mapper, target, messageTracker, normalizationRunner);
     final StandardSyncOutput actual = defaultSyncWorker.run(syncInput, jobRoot);
     final StandardSyncOutput expectedSyncOutput = new StandardSyncOutput()
         .withStandardSyncSummary(new StandardSyncSummary()

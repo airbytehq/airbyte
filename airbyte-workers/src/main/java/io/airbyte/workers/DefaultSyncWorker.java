@@ -114,7 +114,8 @@ public class DefaultSyncWorker implements SyncWorker {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
       final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, syncInput.getDestinationConfiguration(), destinationConfig.getCatalog())) {
+      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, syncInput.getDestinationConfiguration(),
+          destinationConfig.getCatalog())) {
         throw new WorkerException("Normalization Failed.");
       }
     } catch (Exception e) {
