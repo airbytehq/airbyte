@@ -52,6 +52,7 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
+import io.airbyte.server.version_mismatch.VersionMismatchServer;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalUtils;
@@ -77,6 +78,7 @@ import org.slf4j.MDC;
 public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
+  private static final int PORT = 8001;
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
@@ -93,7 +95,7 @@ public class ServerApp {
   public void start() throws Exception {
     TrackingClientSingleton.get().identify();
 
-    Server server = new Server(8001);
+    Server server = new Server(PORT);
 
     ServletContextHandler handler = new ServletContextHandler();
 
@@ -208,12 +210,15 @@ public class ServerApp {
     if (airbyteDatabaseVersion.isEmpty()) {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
       jobPersistence.setVersion(airbyteVersion);
-    } else {
-      AirbyteVersion.assertIsCompatible(airbyteVersion, airbyteDatabaseVersion.get());
     }
 
-    LOGGER.info("Starting server...");
-    new ServerApp(configRepository, jobPersistence, configs).start();
+    if (airbyteDatabaseVersion.isEmpty() || AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+      LOGGER.info("Starting server...");
+      new ServerApp(configRepository, jobPersistence, configs).start();
+    } else {
+      LOGGER.info("Start serving version mismatch errors...");
+      new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
+    }
   }
 
 }
