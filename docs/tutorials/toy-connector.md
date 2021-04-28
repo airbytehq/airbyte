@@ -253,7 +253,7 @@ Let's first add the configuration files:
 
 ```bash
 $ mkdir secrets
-$ echo '{"api_key": "<put_your_key_here>", "stock_ticker": "TSLA"}' > secrets/valid_config.json
+$ echo '{"api_key": "put_your_key_here", "stock_ticker": "TSLA"}' > secrets/valid_config.json
 $ echo '{"api_key": "not_a_real_key", "stock_ticker": "TSLA"}' > secrets/invalid_config.json
 ```
 
@@ -1037,7 +1037,7 @@ If you click on the connector row, you should be taken to the sync detail page. 
 Let's verify the output. From your shell, run:
 
 ```bash
-$ airbyte_local cat /tmp/airbyte_local/tutorial_json/stock_prices_raw.jsonl
+$ cat /tmp/airbyte_local/tutorial_json/_airbyte_raw_stock_prices.jsonl
   {"ab_id":"5fd36107-6a79-4d64-ab36-900184b3848c","emitted_at":1608877192000,"data":{"date":"2020-12-18","stock_ticker":"TSLA","price":695}}
   {"ab_id":"8109396a-e3b9-4ada-b527-2f539c9e016e","emitted_at":1608877192000,"data":{"date":"2020-12-21","stock_ticker":"TSLA","price":649.86}}
   {"ab_id":"203f5d55-260a-44c7-9b70-d4fb79b55aa5","emitted_at":1608877192000,"data":{"date":"2020-12-22","stock_ticker":"TSLA","price":640.34}}
