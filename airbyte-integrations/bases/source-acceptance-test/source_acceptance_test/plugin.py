@@ -33,7 +33,7 @@ from source_acceptance_test.utils import diff_dicts, load_config
 HERE = Path(__file__).parent.absolute()
 
 
-def pytest_load_initial_conftests(_early_config: Config, _parser: Parser, args: List[str]):
+def pytest_load_initial_conftests(early_config: Config, parser: Parser, args: List[str]):
     """Hook function to add acceptance tests to args"""
     args.append(str(HERE / "tests"))
 

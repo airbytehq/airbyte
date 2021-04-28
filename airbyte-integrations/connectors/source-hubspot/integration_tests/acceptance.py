@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import pytest
-import docker
 
 pytest_plugins = ("source_acceptance_test.plugin",)
 
@@ -32,7 +31,6 @@ pytest_plugins = ("source_acceptance_test.plugin",)
 def connector_setup():
     """ This fixture is a placeholder for external resources that acceptance test might require.
     """
-    client = docker.from_env()
-    container = client.containers.run("your/docker-image", detach=True)
+    # TODO: setup test dependencies
     yield
-    container.stop()
+    # TODO: clean up test dependencies
