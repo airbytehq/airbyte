@@ -91,7 +91,7 @@ class Stream(ABC):
         keys = self._get_source_defined_primary_keys()
         if len(keys) > 0:
             stream.source_defined_primary_key = keys
-
+            
         return stream
 
     @property
