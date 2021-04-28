@@ -62,7 +62,7 @@ class CatalogProcessor:
         @param default_schema is the final schema where to output the final transformed data to
         """
         # Registry of all tables in for each schema
-        tables_registry: Dict[str, Set[str]] = {}
+        tables_registry: Dict[str, Dict[str, str]] = {}
         # Registry of source tables in each schemas
         schema_to_source_tables: Dict[str, Set[str]] = {}
 
@@ -85,7 +85,7 @@ class CatalogProcessor:
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
             nested_processors = stream_processor.process()
-            add_table_to_registry(tables_registry, stream_processor)
+            tables_registry = add_table_to_registry(tables_registry, stream_processor)
             if nested_processors and len(nested_processors) > 0:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
@@ -100,7 +100,7 @@ class CatalogProcessor:
         default_schema: str,
         name_transformer: DestinationNameTransformer,
         destination_type: DestinationType,
-        tables_registry: Dict[str, Set[str]],
+        tables_registry: Dict[str, Dict[str, str]],
     ) -> List[StreamProcessor]:
         result = []
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
@@ -157,7 +157,7 @@ class CatalogProcessor:
             result.append(stream_processor)
         return result
 
-    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Dict[str, Set[str]]):
+    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Dict[str, Dict[str, str]]):
         """
         Handle nested stream/substream/children
         """
@@ -167,7 +167,7 @@ class CatalogProcessor:
             for substream in children:
                 substream.tables_registry = tables_registry
                 nested_processors = substream.process()
-                add_table_to_registry(tables_registry, substream)
+                tables_registry = add_table_to_registry(tables_registry, substream)
                 if nested_processors:
                     substreams += nested_processors
                 for file in substream.sql_outputs:
@@ -273,22 +273,25 @@ def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_na
         raise KeyError(f"Duplicate table {table_name} in {schema_name}")
 
 
-def add_table_to_registry(tables_registry: Dict[str, Set[str]], processor: StreamProcessor):
+def add_table_to_registry(tables_registry: Dict[str, Dict[str, str]], processor: StreamProcessor) -> Dict[str, Dict[str, str]]:
     """
     Keeps track of all table names created by this catalog, regardless of their destination schema
 
     @param tables_registry where all table names are recorded
     @param processor the processor that created tables as part of its process
     """
-    for schema in processor.local_registry:
-        if schema not in tables_registry:
-            tables_registry[schema] = processor.local_registry[schema]
-        else:
-            for table_name in processor.local_registry[schema]:
-                if table_name not in tables_registry[schema]:
-                    tables_registry[schema].add(table_name)
+    base_registry = tables_registry
+    new_registry = processor.local_registry
+    for schema in new_registry:
+        if len(new_registry[schema]) > 0:
+            if schema not in base_registry:
+                base_registry[schema] = {}
+            for table_name in new_registry[schema]:
+                if table_name not in base_registry[schema]:
+                    base_registry[schema][table_name] = new_registry[schema][table_name]
                 else:
                     raise KeyError(f"Duplicate table {table_name} in schema {schema}")
+    return base_registry
 
 
 def output_sql_file(file: str, sql: str):
