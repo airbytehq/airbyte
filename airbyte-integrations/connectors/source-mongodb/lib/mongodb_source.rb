@@ -73,7 +73,7 @@ class MongodbSource
                   uri = "mongodb://#{@config['user']}:#{@config['password']}@#{@config['host']}:#{@config['port']}/#{@config['database']}?authSource=#{@config['auth_source']}"
                   if !@config.fetch(:"replica_set", "").strip.empty?
                     uri += "&replicaSet=#{@config['replica_set']}&ssl=true"
-                  elsif ['true', true].include?(@config['ssl'])
+                  elsif ["true", true].include?(@config.fetch("ssl", false))
                     uri += "&ssl=true"
                   end
                   @client = Mongo::Client.new(uri)

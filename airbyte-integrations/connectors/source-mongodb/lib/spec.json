@@ -5,15 +5,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Mongodb Source Spec",
     "type": "object",
-    "required": [
-      "host",
-      "port",
-      "database",
-      "user",
-      "password",
-      "auth_source",
-      "ssl"
-    ],
+    "required": ["host", "port", "database", "user", "password", "auth_source"],
     "additionalProperties": false,
     "properties": {
       "host": {
