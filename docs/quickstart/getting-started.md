@@ -20,7 +20,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/
 
 You should see an onboarding page. Enter your email if you want updates about Airbyte and continue.
 
-![](.gitbook/assets/airbyte_get-started.png)
+![](../.gitbook/assets/airbyte_get-started.png)
 
 ## Set up your first connection
 
@@ -34,7 +34,7 @@ To set it up, just follow the instructions on the screenshot below.
 You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
 {% endhint %}
 
-![](.gitbook/assets/demo_source.png)
+![](../.gitbook/assets/demo_source.png)
 
 ### Create a destination
 
@@ -48,7 +48,7 @@ To set it up, just follow the instructions on the screenshot below.
 You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
 {% endhint %}
 
-![](.gitbook/assets/demo_destination.png)
+![](../.gitbook/assets/demo_destination.png)
 
 ### Create connection
 
@@ -56,7 +56,7 @@ When we create the connection, we can select which data stream we want to replic
 
 To set it up, just follow the instructions on the screenshot below.
 
-![](.gitbook/assets/demo_connection.png)
+![](../.gitbook/assets/demo_connection.png)
 
 ## Check the logs of your first sync
 
@@ -64,7 +64,7 @@ After you've completed the onboarding, you will be redirected to the source list
 
 From there, you can look at the logs, download them, force a sync and adjust the configuration of your connection.
 
-![](.gitbook/assets/demo_history.png)
+![](../.gitbook/assets/demo_history.png)
 
 ## Check the data of your first sync
 

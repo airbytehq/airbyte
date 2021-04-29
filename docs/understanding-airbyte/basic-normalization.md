@@ -245,6 +245,6 @@ As an example from the hubspot source, we could have the following tables with n
 
 Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. To do so, you can follow the following tutorial
 
-* to build a [custom SQL view](../tutorials/connecting-el-with-t-using-sql.md) with your own naming conventions
-* to export, edit and run [custom DBT normalization](../tutorials/connecting-el-with-t-using-dbt.md) yourself
+* to build a [custom SQL view](../tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
+* to export, edit and run [custom DBT normalization](../tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
 

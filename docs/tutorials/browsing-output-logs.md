@@ -1,4 +1,4 @@
-# Exploring Airbyte logs folder
+# Browsing Output Logs
 
 ## Overview
 
@@ -72,7 +72,7 @@ normalize                    target_config.json
 
 ### Reading the content of the catalog.json file
 
-For example, it is often useful to inspect the content of the [catalog](beginners-guide-to-catalog.md) file. You could do so by running a `cat` command:
+For example, it is often useful to inspect the content of the [catalog](../contributing-to-airbyte/tutorials/beginners-guide-to-catalog.md) file. You could do so by running a `cat` command:
 
 ```bash
 docker run -it --rm --volume airbyte_workspace:/data busybox cat /data/9/2/catalog.json
