@@ -32,13 +32,13 @@ Build your connector image if needed.
 docker build .
 ```
 Run one of the two scripts in the root of the connector:
-- `./acceptance-test-python.sh` - to run tests inside virtual environment
+- `python -m pytest -p integration_tests.acceptance` - to run tests inside virtual environment
 - `./acceptance-test-docker.sh` - to run tests from a docker container
 
 If the test fails you will see detail about the test and where to find its inputs and outputs to reproduce it.
 You can also debug failed tests by adding `—pdb —last-failed`:
 ```
-./acceptance-test-python.sh --pdb --last-failed
+python -m pytest -p integration_tests.acceptance --pdb --last-failed
 ```
 See other useful pytest options [here](https://docs.pytest.org/en/stable/usage.html)
 
