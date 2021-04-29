@@ -25,7 +25,7 @@
         case jsonb_typeof({{ array_col }})
         when 'array' then {{ array_col }}
         else '[]' end
-    ) as {{ array_col }}
+    ) as _airbyte_nested_data
 {%- endmacro %}
 
 {% macro redshift__cross_join_unnest(stream_name, array_col) -%}
@@ -46,12 +46,16 @@
     {{ column_col }}
 {%- endmacro %}
 
+{% macro postgres__unnested_column_value(column_col) -%}
+    _airbyte_nested_data
+{%- endmacro %}
+
 {% macro snowflake__unnested_column_value(column_col) -%}
     {{ column_col }}.value
 {%- endmacro %}
 
 {% macro redshift__unnested_column_value(column_col) -%}
-    _airbyte_data
+    _airbyte_nested_data
 {%- endmacro %}
 
 {# unnest_cte -------------------------------------------------     #}
@@ -85,7 +89,7 @@ with numbers as (
 joined as (
     select
         _airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
-        json_extract_array_element_text({{ column_col }}, numbers.generated_number::int - 1, true) as _airbyte_data
+        json_extract_array_element_text({{ column_col }}, numbers.generated_number::int - 1, true) as _airbyte_nested_data
     from {{ ref(table_name) }}
     cross join numbers
     -- only generate the number of records in the cross join that corresponds
