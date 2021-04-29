@@ -85,7 +85,7 @@ class SourceNmbgmrGwl(Source):
             "type": "object",
             "properties": {"PointID": {"type": "string"},
                            "DateMeasured": {"type": "string"},
-                           "DepthToWaterBGS": {"type": "float"}}}
+                           "DepthToWaterBGS": {"type": "number"}}}
 
         streams = [AirbyteStream(name='Acoustic',
                                  supported_sync_modes=["full_refresh", "incremental"],
@@ -154,7 +154,7 @@ def get_data(logger, stream, state, config):
     if stream.sync_mode == SyncMode.incremental and key in state:
         url = f'{url}?start_date={state.get(key)}'
     else:
-        url = f'{url}?count=10'
+        url = f'{url}?count=1'
 
     jobj = get_json(logger, url)
     if jobj:
