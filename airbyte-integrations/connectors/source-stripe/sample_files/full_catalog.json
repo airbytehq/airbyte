@@ -2,6 +2,116 @@
   "streams": [
     {
       "stream": {
+        "name": "customer_balance_transactions",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "object": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "integer"
+            },
+            "created": {
+              "type": "integer"
+            },
+            "credit_note": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "customer": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "ending_balance": {
+              "type": "integer"
+            },
+            "invoice": {
+              "type": "string"
+            },
+            "livemode": {
+              "type": "boolean"
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["created"]
+    },
+    {
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "stream": {
+        "name": "balance_transactions",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "object": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "integer"
+            },
+            "created": {
+              "type": "integer"
+            },
+            "credit_note": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "customer": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "ending_balance": {
+              "type": "integer"
+            },
+            "invoice": {
+              "type": "string"
+            },
+            "livemode": {
+              "type": "boolean"
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "stream": {
         "name": "charges",
         "json_schema": {
           "type": ["null", "object"],
@@ -3261,94 +3371,6 @@
         "default_cursor_field": ["created"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-
-      "cursor_field": ["created"]
-    },
-    {
-      "stream": {
-        "name": "balance_transactions",
-        "json_schema": {
-          "properties": {
-            "fee": {
-              "type": ["null", "integer"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "source": {
-              "type": ["null", "string"]
-            },
-            "fee_details": {
-              "type": ["null", "array"],
-              "items": {
-                "properties": {
-                  "application": {
-                    "type": ["null", "string"]
-                  },
-                  "type": {
-                    "type": ["null", "string"]
-                  },
-                  "description": {
-                    "type": ["null", "string"]
-                  },
-                  "amount": {
-                    "type": ["null", "integer"]
-                  },
-                  "currency": {
-                    "type": ["null", "string"]
-                  }
-                },
-                "type": ["null", "object"]
-              }
-            },
-            "available_on": {
-              "type": ["null", "integer"]
-            },
-            "status": {
-              "type": ["null", "string"]
-            },
-            "description": {
-              "type": ["null", "string"]
-            },
-            "net": {
-              "type": ["null", "integer"]
-            },
-            "exchange_rate": {
-              "type": ["null", "number"]
-            },
-            "type": {
-              "type": ["null", "string"]
-            },
-            "sourced_transfers": {
-              "items": {},
-              "type": ["null", "array"]
-            },
-            "id": {
-              "type": ["null", "string"]
-            },
-            "object": {
-              "type": ["null", "string"]
-            },
-            "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "amount": {
-              "type": ["null", "integer"]
-            },
-            "updated": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          },
-          "type": ["null", "object"]
-        },
-        "supported_sync_modes": ["incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"]
-      },
-      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["created"]
     },
