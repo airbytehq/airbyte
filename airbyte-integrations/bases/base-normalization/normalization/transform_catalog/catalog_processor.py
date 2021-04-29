@@ -61,9 +61,12 @@ class CatalogProcessor:
         @param json_column_name is the column name containing the JSON Blob with the raw data
         @param default_schema is the final schema where to output the final transformed data to
         """
-        # Registry of all tables in for each schema
+        # Registry of all tables produced in each schema. Those maps to the final sql file (dbt use that as
+        # internal model and thus filename should be unique accross schema/table names):
+        # { schema_name : [ { table_name : file_name } ] }
         tables_registry: Dict[str, Dict[str, str]] = {}
         # Registry of source tables in each schemas
+        # { schema_name : [ table_name ] }
         schema_to_source_tables: Dict[str, Set[str]] = {}
 
         catalog = read_json(catalog_file)
@@ -275,7 +278,11 @@ def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_na
 
 def add_table_to_registry(tables_registry: Dict[str, Dict[str, str]], processor: StreamProcessor) -> Dict[str, Dict[str, str]]:
     """
-    Keeps track of all table names created by this catalog, regardless of their destination schema
+    Keeps track of all schema/table names created by this catalog, regardless of their destination schema.
+
+    Each StreamProcessor has its own "local" registry for schema/tables produced by the stream they are currently
+    processing. Here, we aggregate all "local" registries into a "global" one accross all streams being
+    processed from this catalog.
 
     @param tables_registry where all table names are recorded
     @param processor the processor that created tables as part of its process

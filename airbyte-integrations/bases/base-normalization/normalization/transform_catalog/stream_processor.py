@@ -640,6 +640,13 @@ from {{ from_table }}
         return new_table_name
 
     def is_in_registry(self, schema: str, table_name: str) -> bool:
+        """
+        Check if schema . table_name already exists in:
+         - "global" tables_registry: recording all produced schema/table from previously processed streams.
+         - "local" local_registry: recording all produced schema/table from the current stream being processed.
+
+        Note, we avoid side-effets modifications to registries and perform only read operations here...
+        """
         return (schema in self.tables_registry and table_name in self.tables_registry[schema]) or (
             schema in self.local_registry and table_name in self.local_registry[schema]
         )

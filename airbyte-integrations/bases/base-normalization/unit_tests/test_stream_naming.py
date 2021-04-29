@@ -33,9 +33,9 @@ from normalization.transform_catalog.destination_name_transformer import Destina
 @pytest.fixture(scope="function", autouse=True)
 def before_tests(request):
     # This makes the test run whether it is executed from the tests folder (with pytest/gradle) or from the base-normalization folder (through pycharm)
-    integration_tests_dir = os.path.join(request.fspath.dirname, "integration_tests")
-    if os.path.exists(integration_tests_dir):
-        os.chdir(integration_tests_dir)
+    unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
+    if os.path.exists(unit_tests_dir):
+        os.chdir(unit_tests_dir)
     else:
         os.chdir(request.fspath.dirname)
     yield
@@ -46,8 +46,7 @@ def before_tests(request):
     "catalog_file",
     [
         "edge_cases_catalog",
-        "facebook_catalog",
-        "stripe_catalog",
+        "nested_catalog",
     ],
 )
 @pytest.mark.parametrize(
@@ -68,7 +67,8 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
     Tests are built here using resources files as follow:
     - `<name of source or test types>_catalog.json`:
         input catalog.json, typically as what source would provide.
-        For example Stripe and Facebook catalog.json contains some level of nesting.
+        For example Hubspot, Stripe and Facebook catalog.json contains some level of nesting.
+        (here, nested_catalog.json is an extracted smaller sample of stream/properties from the facebook catalog)
     - `<name of source or test types>_expected_top_level.json`:
         list of expected table names for the top level stream names
     - `<name of source or test types>_expected_nested.json`:
@@ -80,12 +80,15 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
         - edge_cases_catalog_expected_top_level_postgres.json
     Then the test will be using the first edge_cases_catalog_expected_top_level.json except for
     Postgres destination where the expected table names will come from edge_cases_catalog_expected_top_level_postgres.json
+
+    The content of the expected_*.json files are the serialization of the stream_processor.tables_registry
+    (mapping per schema to all tables in that schema, mapping to the final filename)
     """
     destination_type = DestinationType.from_string(integration_type)
     tables_registry = {}
 
     substreams = []
-    catalog = read_json(f"resources/naming/{catalog_file}.json")
+    catalog = read_json(f"resources/{catalog_file}.json")
 
     # process top level
     for stream_processor in CatalogProcessor.build_stream_processor(
@@ -106,12 +109,10 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
         apply_function = str.upper
     elif DestinationType.REDSHIFT.value == destination_type.value:
         apply_function = str.lower
-    if os.path.exists(f"resources/naming/{catalog_file}_expected_top_level_{integration_type.lower()}.json"):
-        expected_top_level = read_json(
-            f"resources/naming/{catalog_file}_expected_top_level_{integration_type.lower()}.json", apply_function
-        )
+    if os.path.exists(f"resources/{catalog_file}_expected_top_level_{integration_type.lower()}.json"):
+        expected_top_level = read_json(f"resources/{catalog_file}_expected_top_level_{integration_type.lower()}.json", apply_function)
     else:
-        expected_top_level = read_json(f"resources/naming/{catalog_file}_expected_top_level.json", apply_function)
+        expected_top_level = read_json(f"resources/{catalog_file}_expected_top_level.json", apply_function)
 
     assert tables_registry == expected_top_level
 
@@ -131,10 +132,10 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
         apply_function = str.upper
     elif DestinationType.REDSHIFT.value == destination_type.value:
         apply_function = str.lower
-    if os.path.exists(f"resources/naming/{catalog_file}_expected_nested_{integration_type.lower()}.json"):
-        expected_nested = read_json(f"resources/naming/{catalog_file}_expected_nested_{integration_type.lower()}.json", apply_function)
+    if os.path.exists(f"resources/{catalog_file}_expected_nested_{integration_type.lower()}.json"):
+        expected_nested = read_json(f"resources/{catalog_file}_expected_nested_{integration_type.lower()}.json", apply_function)
     else:
-        expected_nested = read_json(f"resources/naming/{catalog_file}_expected_nested.json", apply_function)
+        expected_nested = read_json(f"resources/{catalog_file}_expected_nested.json", apply_function)
 
     # remove expected top level tables from tables_registry
     for schema in expected_top_level:
