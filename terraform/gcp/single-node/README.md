@@ -1,29 +1,27 @@
 # Terraform
 
-todo: set of commands to run for terraform
+We offer the ability to spin up a single node instance on GCP using Terraform. A new compute instance is spun up in a new VPC which uses a NAT. This instance is Stackdriver monitoring enabled, which grants access to memory usage stats.
 
-todo: how to ssh into machine
+In the future we may offer this as a module on the Terraform Registry. For now, you can think of this more of a script that allows you to easily spin up an instance or as a template that allows you to integrate into your existing Terraform project.
 
-todo: how to port forward
+### Getting Started
+1. Update `providers.tf` to include the correct project, region, and zone. 
+1. `gcloud auth application-default login`
+2. `terraform init`
+3. `terraform apply`
 
-todo: how to access stackdriver metrics
-
-todo: how to link specific service user for access
-
-
-gcloud auth application-default login
-
-
-todo: add deletion protection
-todo: create own vpc and nat
-
-https://cloud.google.com/sdk/gcloud/reference/auth/activate-service-account
-
-// todo: make a partner one and a non-partner one, add instructions for adding a service acc roles/compute.instanceAdmin.v1 via https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_instance_iam 
-
-todo: create vpc and google_compute_router
-
-
+### SSH into instance
+```
 gcloud beta compute ssh airbyte-prod --zone=us-central1-c
+```
 
-logs in /var/log/daemon.log
+### Init script logs
+After SSH-ing into the node:
+```
+cat /var/log/daemon.log | grep startup
+```
+
+### Port forward
+```
+gcloud beta compute ssh airbyte-prod --zone=us-central1-c -- -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f
+```
