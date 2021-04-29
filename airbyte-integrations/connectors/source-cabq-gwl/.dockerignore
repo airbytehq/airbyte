@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!Dockerfile.test
+!source_cabq_gwl
+!setup.py
+!secrets
