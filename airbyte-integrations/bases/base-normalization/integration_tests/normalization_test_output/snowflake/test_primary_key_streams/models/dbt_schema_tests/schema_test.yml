@@ -14,13 +14,19 @@ models:
             - id
             - currency
             - date
-            - HKD
+            - '"HKD@spéçiäl & characters"'
             - NZD
             - USD
       - dbt_utils.equal_rowcount:
           description: check_raw_and_normalized_rowcounts
             Raw and normalized tables should be equal.
           compare_model: source('TEST_NORMALIZATION', '_AIRBYTE_RAW_EXCHANGE_RATE')
+    columns:
+      - name: '"HKD@spéçiäl & characters"'
+        description: check special charactesrs
+          Use special characters in column names and make sure they are correctly parsed in the JSON blob and populated
+        tests:
+          - not_null
 
   - name: DEDUP_EXCHANGE_RATE_81D
     tests:

@@ -12,7 +12,7 @@ select
     varchar
 ), '') || '-' || coalesce(cast(DATE as 
     varchar
-), '') || '-' || coalesce(cast(HKD as 
+), '') || '-' || coalesce(cast("HKD@spéçiäl & characters" as 
     varchar
 ), '') || '-' || coalesce(cast(NZD as 
     varchar

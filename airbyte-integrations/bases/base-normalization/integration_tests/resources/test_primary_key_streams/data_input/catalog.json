@@ -15,7 +15,7 @@
             "date": {
               "type": "string"
             },
-            "HKD": {
+            "HKD@spéçiäl & characters": {
               "type": "number"
             },
             "NZD": {
@@ -49,7 +49,7 @@
             "date": {
               "type": "string"
             },
-            "HKD": {
+            "HKD@spéçiäl & characters": {
               "type": "number"
             },
             "NZD": {

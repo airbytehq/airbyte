@@ -8,7 +8,7 @@ select
     "id",
     currency,
     "date",
-    hkd,
+    "HKD@spéçiäl & characters",
     nzd,
     usd,
     "date" as _airbyte_start_at,

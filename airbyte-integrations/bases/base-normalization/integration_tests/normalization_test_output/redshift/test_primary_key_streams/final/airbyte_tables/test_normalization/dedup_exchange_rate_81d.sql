@@ -11,7 +11,7 @@ select
     id,
     currency,
     date,
-    hkd,
+    "hkd@spéçiäl & characters",
     nzd,
     usd,
     _airbyte_emitted_at,

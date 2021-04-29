@@ -4,7 +4,7 @@ select
     cast({{ adapter.quote('id') }} as {{ dbt_utils.type_bigint() }}) as {{ adapter.quote('id') }},
     cast(currency as {{ dbt_utils.type_string() }}) as currency,
     cast({{ adapter.quote('date') }} as {{ dbt_utils.type_string() }}) as {{ adapter.quote('date') }},
-    cast(hkd as {{ dbt_utils.type_float() }}) as hkd,
+    cast({{ adapter.quote('HKD@spéçiäl & characters') }} as {{ dbt_utils.type_float() }}) as {{ adapter.quote('HKD@spéçiäl & characters') }},
     cast(nzd as {{ dbt_utils.type_float() }}) as nzd,
     cast(usd as {{ dbt_utils.type_float() }}) as usd,
     _airbyte_emitted_at

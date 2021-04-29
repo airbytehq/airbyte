@@ -4,7 +4,7 @@ select
     cast(id as {{ dbt_utils.type_bigint() }}) as id,
     cast(currency as {{ dbt_utils.type_string() }}) as currency,
     cast(date as {{ dbt_utils.type_string() }}) as date,
-    cast(HKD as {{ dbt_utils.type_float() }}) as HKD,
+    cast(HKD_special___characters as {{ dbt_utils.type_float() }}) as HKD_special___characters,
     cast(NZD as {{ dbt_utils.type_float() }}) as NZD,
     cast(USD as {{ dbt_utils.type_float() }}) as USD,
     _airbyte_emitted_at

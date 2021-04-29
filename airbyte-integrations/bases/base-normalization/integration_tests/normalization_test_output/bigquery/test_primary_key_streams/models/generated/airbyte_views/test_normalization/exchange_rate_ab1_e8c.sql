@@ -4,7 +4,7 @@ select
     {{ json_extract_scalar('_airbyte_data', ['id']) }} as id,
     {{ json_extract_scalar('_airbyte_data', ['currency']) }} as currency,
     {{ json_extract_scalar('_airbyte_data', ['date']) }} as date,
-    {{ json_extract_scalar('_airbyte_data', ['HKD']) }} as HKD,
+    {{ json_extract_scalar('_airbyte_data', ['HKD@spéçiäl & characters']) }} as HKD_special___characters,
     {{ json_extract_scalar('_airbyte_data', ['NZD']) }} as NZD,
     {{ json_extract_scalar('_airbyte_data', ['USD']) }} as USD,
     _airbyte_emitted_at

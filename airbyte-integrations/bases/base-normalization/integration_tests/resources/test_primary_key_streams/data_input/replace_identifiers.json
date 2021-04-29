@@ -1,19 +1,18 @@
 {
+  "bigquery": [
+    { "'\"HKD@spéçiäl & characters\"'":  "HKD_special___characters" }
+  ],
   "postgres": [
-    {
-      "nested_stream_with_complex_columns_resulting_into_long_names_d67": "nested_stream_with_c__lting_into_long_names_d67"
-    },
-    {
-      "nested_stream_with_complex_columns_resulting_into_long_names_64a_partition_44f": "nested_stream_with_complex_co_64a_partition_44f"
-    },
-    {
-      "nested_stream_with_complex_columns_resulting_into_long_names_partition_669_data_886": "nested_stream_with_complex_columns_669_data_886"
-    },
-    {
-      "nested_stream_with_complex_columns_resulting_into_long_names_partition_e78_double_array_data_1b9": "nested_stream_with_co_e78_double_array_data_1b9"
-    },
-    {
-      "#quote: true in postgres": "quote: true"
-    }
+    { "nested_stream_with_complex_columns_resulting_into_long_names_d67": "nested_stream_with_c__lting_into_long_names_d67" },
+    { "nested_stream_with_complex_columns_resulting_into_long_names_64a_partition_44f": "nested_stream_with_complex_co_64a_partition_44f" },
+    { "nested_stream_with_complex_columns_resulting_into_long_names_partition_669_data_886": "nested_stream_with_complex_columns_669_data_886" },
+    { "nested_stream_with_complex_columns_resulting_into_long_names_partition_e78_double_array_data_1b9": "nested_stream_with_co_e78_double_array_data_1b9" },
+    { "#quote: true in postgres": "quote: true" }
+  ],
+  "snowflake": [
+    { "HKD@SPÉÇIÄL & CHARACTERS": "HKD@spéçiäl & characters" }
+  ],
+  "redshift": [
+
   ]
 }

@@ -6,7 +6,7 @@ select
         adapter.quote('id'),
         'currency',
         adapter.quote('date'),
-        'hkd',
+        adapter.quote('HKD@spéçiäl & characters'),
         'nzd',
         'usd',
     ]) }} as _airbyte_dedup_exchange_rate_hashid

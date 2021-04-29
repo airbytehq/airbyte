@@ -4,7 +4,7 @@ select
     {{ adapter.quote('id') }},
     currency,
     {{ adapter.quote('date') }},
-    hkd,
+    {{ adapter.quote('HKD@spéçiäl & characters') }},
     nzd,
     usd,
     _airbyte_emitted_at,

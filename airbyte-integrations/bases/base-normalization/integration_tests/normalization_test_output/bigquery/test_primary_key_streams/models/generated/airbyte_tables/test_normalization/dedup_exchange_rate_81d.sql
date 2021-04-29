@@ -4,7 +4,7 @@ select
     id,
     currency,
     date,
-    HKD,
+    HKD_special___characters,
     NZD,
     USD,
     _airbyte_emitted_at,

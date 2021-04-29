@@ -7,7 +7,7 @@ select
     ID,
     CURRENCY,
     DATE,
-    HKD,
+    "HKD@spéçiäl & characters",
     NZD,
     USD,
     DATE as _airbyte_start_at,
