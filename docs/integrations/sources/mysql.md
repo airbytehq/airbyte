@@ -23,8 +23,8 @@ MySQL data types are mapped to the following data types when synchronizing data:
 | `smallint` | number | |
 | `mediumint` | number | |
 | `int` | number | |
-| `numeric` | number | |
 | `bigint` | number | |
+| `numeric` | number | |
 | `string` | string |  |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
