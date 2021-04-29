@@ -428,12 +428,15 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
                         pattern.append(k)
                         replace_value.append(entry[k])
             if pattern and replace_value:
+
                 def copy_replace_identifiers(src, dst):
                     copy_replace(src, dst, pattern, replace_value)
+
                 shutil.copytree(src, temp_dir + "/replace", copy_function=copy_replace_identifiers)
                 src = temp_dir + "/replace"
         # final copy
         shutil.copytree(src, dst)
+
 
 def copy_upper(src, dst):
     print(src, "->", dst)
