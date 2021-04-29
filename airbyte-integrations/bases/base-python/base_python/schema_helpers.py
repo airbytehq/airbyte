@@ -38,8 +38,7 @@ class JsonSchemaResolver:
 
     @staticmethod
     def _load_shared_schema_refs(shared_schemas_path: str):
-        shared_file_names = [f for f in os.scandir(shared_schemas_path) if f.isfile()]
-
+        shared_file_names = [f.name for f in os.scandir(shared_schemas_path) if f.is_file()]
         shared_schema_refs = {}
         for shared_file in shared_file_names:
             with open(os.path.join(shared_schemas_path, shared_file)) as data_file:
