@@ -28,6 +28,7 @@ import static java.util.stream.Collectors.toSet;
 
 import io.airbyte.workers.process.ProcessBuilderFactory;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
+import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivityImpl;
 import io.temporal.api.namespace.v1.NamespaceInfo;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.api.workflowservice.v1.ListNamespacesRequest;
@@ -72,9 +73,9 @@ public class TemporalPool implements Runnable {
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
     discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(pbf, workspaceRoot));
 
-    Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name());
+    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name());
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
-    syncWorker.registerActivitiesImplementations(new NormalizationActivityImpl(pbf, workspaceRoot));
+    syncWorker.registerActivitiesImplementations(new ReplicationActivityImpl(pbf, workspaceRoot), new NormalizationActivityImpl(pbf, workspaceRoot));
 
     factory.start();
   }

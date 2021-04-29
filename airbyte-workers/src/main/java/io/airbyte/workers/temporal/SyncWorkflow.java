@@ -68,13 +68,15 @@ public interface SyncWorkflow {
 
   class WorkflowImpl implements SyncWorkflow {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowImpl.class);
+
     private final ActivityOptions options = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofDays(3))
         .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
         .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
 
-    private final ReplicateActivity replicateActivity = Workflow.newActivityStub(ReplicateActivity.class, options);
+    private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, options);
     private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, options);
 
     @Override
@@ -82,12 +84,13 @@ public interface SyncWorkflow {
                                   IntegrationLauncherConfig sourceLauncherConfig,
                                   IntegrationLauncherConfig destinationLauncherConfig,
                                   StandardSyncInput syncInput) {
-      final StandardSyncOutput run = replicateActivity.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+      final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
       final NormalizationInput normalizationInput = new NormalizationInput()
           .withDestinationConfiguration(syncInput.getDestinationConfiguration())
           .withCatalog(run.getOutputCatalog());
-      normalizationActivity.run(jobRunConfig, destinationLauncherConfig, normalizationInput);
+
+      normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
 
       return run;
     }
@@ -95,32 +98,32 @@ public interface SyncWorkflow {
   }
 
   @ActivityInterface
-  interface ReplicateActivity {
+  interface ReplicationActivity {
 
     @ActivityMethod
-    StandardSyncOutput run(JobRunConfig jobRunConfig,
-                           IntegrationLauncherConfig sourceLauncherConfig,
-                           IntegrationLauncherConfig destinationLauncherConfig,
-                           StandardSyncInput syncInput);
+    StandardSyncOutput replicate(JobRunConfig jobRunConfig,
+                                 IntegrationLauncherConfig sourceLauncherConfig,
+                                 IntegrationLauncherConfig destinationLauncherConfig,
+                                 StandardSyncInput syncInput);
 
   }
 
-  class ReplicateActivityImpl implements ReplicateActivity {
+  class ReplicationActivityImpl implements ReplicationActivity {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationActivityImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
 
-    public ReplicateActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+    public ReplicationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
       this.pbf = pbf;
       this.workspaceRoot = workspaceRoot;
     }
 
-    public StandardSyncOutput run(JobRunConfig jobRunConfig,
-                                  IntegrationLauncherConfig sourceLauncherConfig,
-                                  IntegrationLauncherConfig destinationLauncherConfig,
-                                  StandardSyncInput syncInput) {
+    public StandardSyncOutput replicate(JobRunConfig jobRunConfig,
+                                        IntegrationLauncherConfig sourceLauncherConfig,
+                                        IntegrationLauncherConfig destinationLauncherConfig,
+                                        StandardSyncInput syncInput) {
 
       final Supplier<StandardSyncInput> inputSupplier = () -> syncInput;
 
@@ -172,9 +175,9 @@ public interface SyncWorkflow {
   interface NormalizationActivity {
 
     @ActivityMethod
-    Void run(JobRunConfig jobRunConfig,
-             IntegrationLauncherConfig destinationLauncherConfig,
-             NormalizationInput syncInput);
+    Void normalize(JobRunConfig jobRunConfig,
+                   IntegrationLauncherConfig destinationLauncherConfig,
+                   NormalizationInput input);
 
   }
 
@@ -190,9 +193,9 @@ public interface SyncWorkflow {
       this.workspaceRoot = workspaceRoot;
     }
 
-    public Void run(JobRunConfig jobRunConfig,
-                    IntegrationLauncherConfig destinationLauncherConfig,
-                    NormalizationInput input) {
+    public Void normalize(JobRunConfig jobRunConfig,
+                          IntegrationLauncherConfig destinationLauncherConfig,
+                          NormalizationInput input) {
 
       final Supplier<NormalizationInput> inputSupplier = () -> input;
 
