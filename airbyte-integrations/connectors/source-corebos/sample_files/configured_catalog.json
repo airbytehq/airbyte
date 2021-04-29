@@ -2,7 +2,6 @@
   "streams": [
     {
       "stream": {
-<<<<<<< HEAD
         "name": "retrieve",
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -71,22 +70,6 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
-=======
-        "name": "table_name",
-        "json_schema": {
-          "properties": {
-            "column_name": {
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["column_name"]
-      }
->>>>>>> master
     }
   ]
 }
