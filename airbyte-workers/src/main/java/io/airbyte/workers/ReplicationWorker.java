@@ -27,4 +27,4 @@ package io.airbyte.workers;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 
-public interface SyncWorker extends Worker<StandardSyncInput, StandardSyncOutput> {}
+public interface ReplicationWorker extends Worker<StandardSyncInput, StandardSyncOutput> {}

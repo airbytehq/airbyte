@@ -25,11 +25,13 @@
 package io.airbyte.workers.temporal;
 
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.DefaultSyncWorker;
+import io.airbyte.workers.DefaultNormalizationWorker;
+import io.airbyte.workers.DefaultReplicationWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
@@ -72,20 +74,28 @@ public interface SyncWorkflow {
         .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
 
-    private final SyncActivity activity = Workflow.newActivityStub(SyncActivity.class, options);
+    private final ReplicateActivity replicateActivity = Workflow.newActivityStub(ReplicateActivity.class, options);
+    private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, options);
 
     @Override
     public StandardSyncOutput run(JobRunConfig jobRunConfig,
                                   IntegrationLauncherConfig sourceLauncherConfig,
                                   IntegrationLauncherConfig destinationLauncherConfig,
                                   StandardSyncInput syncInput) {
-      return activity.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+      final StandardSyncOutput run = replicateActivity.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+
+      final NormalizationInput normalizationInput = new NormalizationInput()
+          .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+          .withCatalog(run.getOutputCatalog());
+      normalizationActivity.run(jobRunConfig, destinationLauncherConfig, normalizationInput);
+
+      return run;
     }
 
   }
 
   @ActivityInterface
-  interface SyncActivity {
+  interface ReplicateActivity {
 
     @ActivityMethod
     StandardSyncOutput run(JobRunConfig jobRunConfig,
@@ -95,14 +105,14 @@ public interface SyncWorkflow {
 
   }
 
-  class SyncActivityImpl implements SyncActivity {
+  class ReplicateActivityImpl implements ReplicateActivity {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SyncActivityImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationActivityImpl.class);
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
 
-    public SyncActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+    public ReplicateActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
       this.pbf = pbf;
       this.workspaceRoot = workspaceRoot;
     }
@@ -146,18 +156,66 @@ public interface SyncWorkflow {
             sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
                 : new DefaultAirbyteSource(sourceLauncher);
 
-        return new DefaultSyncWorker(
+        return new DefaultReplicationWorker(
             jobRunConfig.getJobId(),
             Math.toIntExact(jobRunConfig.getAttemptId()),
             airbyteSource,
             new NamespacingMapper(syncInput.getPrefix()),
             new DefaultAirbyteDestination(destinationLauncher),
-            new AirbyteMessageTracker(),
-            NormalizationRunnerFactory.create(
-                destinationLauncherConfig.getDockerImage(),
-                pbf,
-                syncInput.getDestinationConfiguration()));
+            new AirbyteMessageTracker());
       };
+    }
+
+  }
+
+  @ActivityInterface
+  interface NormalizationActivity {
+
+    @ActivityMethod
+    Void run(JobRunConfig jobRunConfig,
+             IntegrationLauncherConfig destinationLauncherConfig,
+             NormalizationInput syncInput);
+
+  }
+
+  class NormalizationActivityImpl implements NormalizationActivity {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationActivityImpl.class);
+
+    private final ProcessBuilderFactory pbf;
+    private final Path workspaceRoot;
+
+    public NormalizationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+      this.pbf = pbf;
+      this.workspaceRoot = workspaceRoot;
+    }
+
+    public Void run(JobRunConfig jobRunConfig,
+                    IntegrationLauncherConfig destinationLauncherConfig,
+                    NormalizationInput input) {
+
+      final Supplier<NormalizationInput> inputSupplier = () -> input;
+
+      final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
+          workspaceRoot,
+          jobRunConfig,
+          getWorkerFactory(destinationLauncherConfig, jobRunConfig, input),
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler());
+
+      return temporalAttemptExecution.get();
+    }
+
+    private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                          JobRunConfig jobRunConfig,
+                                                                                          NormalizationInput normalizationInput) {
+      return () -> new DefaultNormalizationWorker(
+          jobRunConfig.getJobId(),
+          Math.toIntExact(jobRunConfig.getAttemptId()),
+          NormalizationRunnerFactory.create(
+              destinationLauncherConfig.getDockerImage(),
+              pbf,
+              normalizationInput.getDestinationConfiguration()));
     }
 
   }

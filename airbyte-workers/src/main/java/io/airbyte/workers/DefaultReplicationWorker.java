@@ -32,12 +32,10 @@ import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.protocols.Destination;
 import io.airbyte.workers.protocols.Mapper;
 import io.airbyte.workers.protocols.MessageTracker;
 import io.airbyte.workers.protocols.Source;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,9 +43,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultSyncWorker implements SyncWorker {
+public class DefaultReplicationWorker implements ReplicationWorker {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSyncWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
 
   private final String jobId;
   private final int attempt;
@@ -55,31 +53,30 @@ public class DefaultSyncWorker implements SyncWorker {
   private final Mapper<AirbyteMessage> mapper;
   private final Destination<AirbyteMessage> destination;
   private final MessageTracker<AirbyteMessage> messageTracker;
-  private final NormalizationRunner normalizationRunner;
 
   private final AtomicBoolean cancelled;
 
-  public DefaultSyncWorker(
-                           final String jobId,
-                           final int attempt,
-                           final Source<AirbyteMessage> source,
-                           final Mapper<AirbyteMessage> mapper,
-                           final Destination<AirbyteMessage> destination,
-                           final MessageTracker<AirbyteMessage> messageTracker,
-                           final NormalizationRunner normalizationRunner) {
+  public DefaultReplicationWorker(
+                                  final String jobId,
+                                  final int attempt,
+                                  final Source<AirbyteMessage> source,
+                                  final Mapper<AirbyteMessage> mapper,
+                                  final Destination<AirbyteMessage> destination,
+                                  final MessageTracker<AirbyteMessage> messageTracker) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    this.normalizationRunner = normalizationRunner;
 
     this.cancelled = new AtomicBoolean(false);
   }
 
   @Override
   public StandardSyncOutput run(StandardSyncInput syncInput, Path jobRoot) throws WorkerException {
+    LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
+
     long startTime = System.currentTimeMillis();
 
     LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
@@ -110,18 +107,6 @@ public class DefaultSyncWorker implements SyncWorker {
       throw new WorkerException("Sync worker failed.", e);
     }
 
-    try (normalizationRunner) {
-      LOGGER.info("Running normalization.");
-      normalizationRunner.start();
-      final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, syncInput.getDestinationConfiguration(),
-          destinationConfig.getCatalog())) {
-        throw new WorkerException("Normalization Failed.");
-      }
-    } catch (Exception e) {
-      throw new WorkerException("Normalization Failed.", e);
-    }
-
     final StandardSyncSummary summary = new StandardSyncSummary()
         .withStatus(cancelled.get() ? Status.FAILED : Status.COMPLETED)
         .withRecordsSynced(messageTracker.getRecordCount())
@@ -135,7 +120,10 @@ public class DefaultSyncWorker implements SyncWorker {
       throw new WorkerException("Sync was cancelled.");
     }
 
-    final StandardSyncOutput output = new StandardSyncOutput().withStandardSyncSummary(summary);
+    final StandardSyncOutput output = new StandardSyncOutput()
+        .withStandardSyncSummary(summary)
+        .withOutputCatalog(destinationConfig.getCatalog());
+
     messageTracker.getOutputState().ifPresent(capturedState -> {
       final State state = new State()
           .withState(capturedState);
@@ -160,13 +148,6 @@ public class DefaultSyncWorker implements SyncWorker {
     LOGGER.info("Cancelling destination...");
     try {
       destination.cancel();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    LOGGER.info("Cancelling normalization runner...");
-    try {
-      normalizationRunner.close();
     } catch (Exception e) {
       e.printStackTrace();
     }
