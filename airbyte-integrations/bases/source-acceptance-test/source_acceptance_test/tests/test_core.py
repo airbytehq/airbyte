@@ -161,5 +161,5 @@ class TestBasicRead(BaseTest):
         return result
 
     @staticmethod
-    def serialize_record_for_comparison(record: AirbyteRecordMessage) -> str:
-        return json.dumps(record.dict(exclude={"emitted_at"}), sort_keys=True)
+    def serialize_record_for_comparison(record: Mapping) -> str:
+        return json.dumps(record, sort_keys=True)
