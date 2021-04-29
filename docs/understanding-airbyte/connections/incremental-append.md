@@ -138,5 +138,5 @@ Those concerns could be solved by using a different sync mode based on binary lo
 
 The current behavior of **Incremental** is not able to handle source schema changes yet, for example, when a column is added, renamed or deleted from an existing table etc. It is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to correctly replicate the data to the destination with the new schema changes.
 
-If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../tutorials/connecting-el-with-t-using-sql.md#simple-sql-query)
+If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../tutorials/transformation-and-normalization/transformations-with-sql.md#simple-sql-query)
 
