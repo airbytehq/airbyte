@@ -10,6 +10,14 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 * We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
+## [04-27-2021 - 0.22.0](https://github.com/airbytehq/airbyte/releases/tag/v0.22.0-alpha)
+
+* **Zendesk Talk**: fix normalization failure ([#3022](https://github.com/airbytehq/airbyte/pull/3022)), thanks to [yevhenii-ldv](https://github.com/yevhenii-ldv)
+* **Github**: pull_requests stream only incremental syncs ([#2886](https://github.com/airbytehq/airbyte/pull/2886)) ([#3009](https://github.com/airbytehq/airbyte/pull/3009)), thanks to [Zirochkaa](https://github.com/Zirochkaa)
+* Create streaming writes to a file and manage the issuance of copy commands for the destination ([#2921](https://github.com/airbytehq/airbyte/pull/2921))
+* **Redshift**: make Redshift part size configurable. ([#3053](https://github.com/airbytehq/airbyte/pull/23053))
+* **Hubspot**: fix argument error in log call (#3087) ([#3087](https://github.com/airbytehq/airbyte/pull/3087)) , thanks to [Nathan Yergler](https://github.com/nyergler)
+
 ## [04-20-2021 - 0.21.0](https://github.com/airbytehq/airbyte/releases/tag/v0.21.0-alpha)
 
 * **Namespace support**: supported source-destination pairs will now sync data into the same namespace as the source (#2862)
