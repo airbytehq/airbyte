@@ -25,45 +25,42 @@ module.exports = function (plop) {
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
+  const httpApiInputRoot = '../source-python-http-api';
 
   const outputDir = '../../connectors';
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
   const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
+  const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
 
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
       console.log(getSuccessMessage(answers.name, plopApi.renderString(config.outputPath, answers), config.message));
   });
 
-  plop.setGenerator('source-python', {
-    description: 'Generate an Airbyte Source written in Python',
-    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+  plop.setGenerator('Python HTTP API Source', {
+    description: 'Generate a Source that pulls data from a synchronous HTTP API.',
+    prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
     actions: [
-         {
-         abortOnFail: true,
-         type:'addMany',
-         destination: pythonSourceOutputRoot,
-         base: pythonSourceInputRoot,
-         templateFiles: `${pythonSourceInputRoot}/**/**`,
-       },
-         // plop doesn't add dotfiles by default so we manually add them
-       {
-         type:'add',
-         abortOnFail: true,
-         templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
-         path: `${pythonSourceOutputRoot}/.gitignore`
-       },
-       {
-         type:'add',
-         abortOnFail: true,
-         templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
-         path: `${pythonSourceOutputRoot}/.dockerignore`
-       },
-      {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: httpApiOutputRoot,
+        base: httpApiInputRoot,
+        templateFiles: `${httpApiInputRoot}/**/**`,
+      },
+      // plop doesn't add dotfiles by default so we manually add them
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${httpApiInputRoot}/.dockerignore.hbs`,
+        path: `${httpApiOutputRoot}/.dockerignore`
+      },
+      {type: 'emitSuccess', outputPath: httpApiOutputRoot}
+    ]
   });
 
-  plop.setGenerator('source-python-singer', {
-    description: 'Generate an Airbyte Source written on top of a Singer Tap.',
+  plop.setGenerator('Python Singer Source', {
+    description: 'Generate a Singer-tap-based Airbyte Source.',
     prompts: [
       {type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"', filter: function (name) {
         return name.endsWith('-singer') ? name.replace(/-singer$/, '') : name;
@@ -94,7 +91,33 @@ module.exports = function (plop) {
     ]
   });
 
-  plop.setGenerator('source-generic', {
+    plop.setGenerator('Python Source', {
+        description: 'Generate a minimal Python Airbyte Source Connector that works with any kind of data source. Use this if none of the other Python templates serve your use case.',
+        prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
+        actions: [
+            {
+                abortOnFail: true,
+                type:'addMany',
+                destination: pythonSourceOutputRoot,
+                base: pythonSourceInputRoot,
+                templateFiles: `${pythonSourceInputRoot}/**/**`,
+            },
+            {
+                type:'add',
+                abortOnFail: true,
+                templateFile: `${pythonSourceInputRoot}/.gitignore.hbs`,
+                path: `${pythonSourceOutputRoot}/.gitignore`
+            },
+            {
+                type:'add',
+                abortOnFail: true,
+                templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
+                path: `${pythonSourceOutputRoot}/.dockerignore`
+            },
+            {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
+    });
+
+  plop.setGenerator('Generic Source', {
       description: 'Use if none of the other templates apply to your use case.',
       prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "google-analytics"'}],
       actions: [

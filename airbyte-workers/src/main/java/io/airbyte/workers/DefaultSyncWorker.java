@@ -86,13 +86,15 @@ public class DefaultSyncWorker implements SyncWorker {
         .stream()
         .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
             s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
-    final StandardTapConfig tapConfig = WorkerUtils.syncToTapConfig(syncInput);
-    final StandardTargetConfig targetConfig = WorkerUtils.syncToTargetConfig(syncInput);
-    targetConfig.setCatalog(mapper.mapCatalog(targetConfig.getCatalog()));
+    final StandardTapConfig sourceConfig = WorkerUtils.syncToTapConfig(syncInput);
+    final StandardTargetConfig destinationConfig = WorkerUtils.syncToTargetConfig(syncInput);
+    destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
+    // note: resources are closed in the opposite order in which they are declared. thus source will be
+    // closed first (which is what we want).
     try (destination; source) {
-      destination.start(targetConfig, jobRoot);
-      source.start(tapConfig, jobRoot);
+      destination.start(destinationConfig, jobRoot);
+      source.start(sourceConfig, jobRoot);
 
       while (!cancelled.get() && !source.isFinished()) {
         final Optional<AirbyteMessage> maybeMessage = source.attemptRead();
@@ -112,7 +114,8 @@ public class DefaultSyncWorker implements SyncWorker {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
       final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, syncInput.getDestinationConfiguration(), targetConfig.getCatalog())) {
+      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, syncInput.getDestinationConfiguration(),
+          destinationConfig.getCatalog())) {
         throw new WorkerException("Normalization Failed.");
       }
     } catch (Exception e) {

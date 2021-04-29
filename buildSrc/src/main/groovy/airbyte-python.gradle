@@ -23,7 +23,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'mypy:0.790'
             pip 'isort:5.6.4'
             pip 'pytest:6.1.2'
-            pip 'pip:20.2'
+            pip 'pip:21.1'
         }
 
         project.task('isortFormat', type: PythonTask) {

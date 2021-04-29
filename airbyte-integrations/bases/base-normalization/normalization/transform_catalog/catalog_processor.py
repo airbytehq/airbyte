@@ -1,26 +1,25 @@
-"""
-MIT License
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import json
 import os
@@ -179,10 +178,11 @@ class CatalogProcessor:
         Generate the sources.yaml file as described in https://docs.getdbt.com/docs/building-a-dbt-project/using-sources/
         """
         schemas = []
-        for schema in schema_to_source_tables:
+        for entry in sorted(schema_to_source_tables.items(), key=lambda kv: kv[0]):
+            schema = entry[0]
             quoted_schema = self.name_transformer.needs_quotes(schema)
             tables = []
-            for source in schema_to_source_tables[schema]:
+            for source in sorted(schema_to_source_tables[schema]):
                 if quoted_schema:
                     tables.append({"name": source, "quoting": {"identifier": True}})
                 else:
@@ -201,7 +201,7 @@ class CatalogProcessor:
         source_config = {"version": 2, "sources": schemas}
         source_path = os.path.join(self.output_directory, "sources.yml")
         with open(source_path, "w") as fh:
-            fh.write(yaml.dump(source_config))
+            fh.write(yaml.dump(source_config, sort_keys=False))
 
 
 # Static Functions

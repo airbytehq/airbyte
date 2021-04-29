@@ -61,6 +61,7 @@
     * [Sendgrid](integrations/sources/sendgrid.md)
     * [Shopify](integrations/sources/shopify.md)
     * [Slack](integrations/sources/slack.md)
+    * [Smartsheets](integrations/sources/smartsheets.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Twilio](integrations/sources/twilio.md)
     * [Zendesk Chat](integrations/sources/zendesk-chat.md)

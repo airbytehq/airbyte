@@ -91,13 +91,13 @@
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
   icon: facebook.svg
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   name: Hubspot
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
 - sourceDefinitionId: b1892b11-788d-44bd-b9ec-3a436f7b54ce
@@ -239,12 +239,11 @@
   dockerRepository: airbyte/source-tempo
   dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-tempo
-# bring this back once https://github.com/airbytehq/airbyte/issues/2902 is done
-#- sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
-#  name: Smartsheets
-#  dockerRepository: airbyte/source-smartsheets
-#  dockerImageTag: 0.1.1
-#  documentationUrl: https://hub.docker.com/r/airbyte/source-smartsheets
+- sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
+  name: Smartsheets
+  dockerRepository: airbyte/source-smartsheets
+  dockerImageTag: 0.1.1
+  documentationUrl: https://hub.docker.com/r/airbyte/source-smartsheets
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   name: Oracle DB
   dockerRepository: airbyte/source-oracle
@@ -253,7 +252,7 @@
 - sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   name: Zendesk Talk
   dockerRepository: airbyte/source-zendesk-talk
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-talk
 - sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
   name: Quickbooks
