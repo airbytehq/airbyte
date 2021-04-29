@@ -14,6 +14,8 @@ select
     string
 ), ''), '-', coalesce(cast(HKD_special___characters as 
     string
+), ''), '-', coalesce(cast(HKD_special___characters_1 as 
+    string
 ), ''), '-', coalesce(cast(NZD as 
     string
 ), ''), '-', coalesce(cast(USD as 

@@ -7,6 +7,7 @@ select
         'currency',
         adapter.quote('date'),
         adapter.quote('HKD@spéçiäl & characters'),
+        'hkd_special___characters',
         'nzd',
         'usd',
     ]) }} as _airbyte_exchange_rate_hashid

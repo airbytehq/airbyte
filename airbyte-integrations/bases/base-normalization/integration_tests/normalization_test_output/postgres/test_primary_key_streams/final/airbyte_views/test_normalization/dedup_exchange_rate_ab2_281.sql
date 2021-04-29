@@ -15,6 +15,9 @@ select
     cast("HKD@spéçiäl & characters" as 
     float
 ) as "HKD@spéçiäl & characters",
+    cast(hkd_special___characters as 
+    varchar
+) as hkd_special___characters,
     cast(nzd as 
     float
 ) as nzd,

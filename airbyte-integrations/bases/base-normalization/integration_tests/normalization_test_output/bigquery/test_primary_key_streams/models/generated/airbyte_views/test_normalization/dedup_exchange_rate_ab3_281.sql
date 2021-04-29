@@ -7,6 +7,7 @@ select
         'currency',
         'date',
         'HKD_special___characters',
+        'HKD_special___characters_1',
         'NZD',
         'USD',
     ]) }} as _airbyte_dedup_exchange_rate_hashid

@@ -9,6 +9,7 @@ select
     currency,
     "date",
     "HKD@spéçiäl & characters",
+    hkd_special___characters,
     nzd,
     usd,
     _airbyte_emitted_at,

@@ -8,6 +8,7 @@ select
     CURRENCY,
     DATE,
     "HKD@spéçiäl & characters",
+    HKD_SPECIAL___CHARACTERS,
     NZD,
     USD,
     DATE as _airbyte_start_at,

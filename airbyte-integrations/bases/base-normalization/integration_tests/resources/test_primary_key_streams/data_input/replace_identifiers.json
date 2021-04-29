@@ -1,5 +1,6 @@
 {
   "bigquery": [
+    { "HKD_special___characters": "HKD_special___characters_1" },
     { "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" }
   ],
   "postgres": [

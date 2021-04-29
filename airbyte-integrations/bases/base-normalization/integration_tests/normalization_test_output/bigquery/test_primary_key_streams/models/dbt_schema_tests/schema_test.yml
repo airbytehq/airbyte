@@ -15,12 +15,17 @@ models:
             - currency
             - date
             - HKD_special___characters
+            - HKD_special___characters_1
             - NZD
             - USD
       - dbt_utils.equal_rowcount:
           description: check_raw_and_normalized_rowcounts
             Raw and normalized tables should be equal.
           compare_model: source('test_normalization', '_airbyte_raw_exchange_rate')
+      - dbt_utils.expression_is_true:
+          description: check no column collisions
+            Two columns having similar names especially after removing special characters should remain distincts
+          expression: cast("HKD@spéçiäl & characters" as {{ dbt_utils.type_string() }}) != HKD_special___characters_1
     columns:
       - name: HKD_special___characters
         description: check special charactesrs

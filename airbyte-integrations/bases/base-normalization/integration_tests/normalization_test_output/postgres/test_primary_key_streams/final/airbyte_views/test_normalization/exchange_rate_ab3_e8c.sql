@@ -14,6 +14,8 @@ select
     varchar
 ), '') || '-' || coalesce(cast("HKD@spéçiäl & characters" as 
     varchar
+), '') || '-' || coalesce(cast(hkd_special___characters as 
+    varchar
 ), '') || '-' || coalesce(cast(nzd as 
     varchar
 ), '') || '-' || coalesce(cast(usd as 

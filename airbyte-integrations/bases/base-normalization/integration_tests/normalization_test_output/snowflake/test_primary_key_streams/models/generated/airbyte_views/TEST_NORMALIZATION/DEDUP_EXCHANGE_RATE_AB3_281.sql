@@ -7,6 +7,7 @@ select
         'CURRENCY',
         'DATE',
         adapter.quote('HKD@spéçiäl & characters'),
+        'HKD_SPECIAL___CHARACTERS',
         'NZD',
         'USD',
     ]) }} as _AIRBYTE_DEDUP_EXCHANGE_RATE_HASHID

@@ -5,6 +5,7 @@ select
     currency,
     date,
     {{ adapter.quote('hkd@spéçiäl & characters') }},
+    hkd_special___characters,
     nzd,
     usd,
     date as _airbyte_start_at,

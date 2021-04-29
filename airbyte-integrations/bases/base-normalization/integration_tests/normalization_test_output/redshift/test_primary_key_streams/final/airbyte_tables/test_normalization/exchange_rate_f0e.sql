@@ -14,6 +14,7 @@ select
     case when json_extract_path_text(_airbyte_data, 'currency', true) != '' then json_extract_path_text(_airbyte_data, 'currency', true) end as currency,
     case when json_extract_path_text(_airbyte_data, 'date', true) != '' then json_extract_path_text(_airbyte_data, 'date', true) end as date,
     case when json_extract_path_text(_airbyte_data, 'HKD@spéçiäl & characters', true) != '' then json_extract_path_text(_airbyte_data, 'HKD@spéçiäl & characters', true) end as "hkd@spéçiäl & characters",
+    case when json_extract_path_text(_airbyte_data, 'HKD_special___characters', true) != '' then json_extract_path_text(_airbyte_data, 'HKD_special___characters', true) end as hkd_special___characters,
     case when json_extract_path_text(_airbyte_data, 'NZD', true) != '' then json_extract_path_text(_airbyte_data, 'NZD', true) end as nzd,
     case when json_extract_path_text(_airbyte_data, 'USD', true) != '' then json_extract_path_text(_airbyte_data, 'USD', true) end as usd,
     _airbyte_emitted_at
@@ -31,6 +32,7 @@ select
     cast("hkd@spéçiäl & characters" as 
     float
 ) as "hkd@spéçiäl & characters",
+    cast(hkd_special___characters as varchar) as hkd_special___characters,
     cast(nzd as 
     float
 ) as nzd,
@@ -47,7 +49,7 @@ select
     *,
     md5(cast(
     
-    coalesce(cast(id as varchar), '') || '-' || coalesce(cast(currency as varchar), '') || '-' || coalesce(cast(date as varchar), '') || '-' || coalesce(cast("hkd@spéçiäl & characters" as varchar), '') || '-' || coalesce(cast(nzd as varchar), '') || '-' || coalesce(cast(usd as varchar), '')
+    coalesce(cast(id as varchar), '') || '-' || coalesce(cast(currency as varchar), '') || '-' || coalesce(cast(date as varchar), '') || '-' || coalesce(cast("hkd@spéçiäl & characters" as varchar), '') || '-' || coalesce(cast(hkd_special___characters as varchar), '') || '-' || coalesce(cast(nzd as varchar), '') || '-' || coalesce(cast(usd as varchar), '')
 
  as varchar)) as _airbyte_exchange_rate_hashid
 from __dbt__CTE__exchange_rate_ab2_e8c
@@ -58,6 +60,7 @@ select
     currency,
     date,
     "hkd@spéçiäl & characters",
+    hkd_special___characters,
     nzd,
     usd,
     _airbyte_emitted_at,

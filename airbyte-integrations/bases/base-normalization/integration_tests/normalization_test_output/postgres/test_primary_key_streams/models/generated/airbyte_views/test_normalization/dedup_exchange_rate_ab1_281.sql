@@ -5,6 +5,7 @@ select
     {{ json_extract_scalar('_airbyte_data', ['currency']) }} as currency,
     {{ json_extract_scalar('_airbyte_data', ['date']) }} as {{ adapter.quote('date') }},
     {{ json_extract_scalar('_airbyte_data', ['HKD@spéçiäl & characters']) }} as {{ adapter.quote('HKD@spéçiäl & characters') }},
+    {{ json_extract_scalar('_airbyte_data', ['HKD_special___characters']) }} as hkd_special___characters,
     {{ json_extract_scalar('_airbyte_data', ['NZD']) }} as nzd,
     {{ json_extract_scalar('_airbyte_data', ['USD']) }} as usd,
     _airbyte_emitted_at

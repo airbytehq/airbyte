@@ -5,6 +5,7 @@ select
     currency,
     date,
     HKD_special___characters,
+    HKD_special___characters_1,
     NZD,
     USD,
     _airbyte_emitted_at,

@@ -18,6 +18,9 @@
             "HKD@spéçiäl & characters": {
               "type": "number"
             },
+            "HKD_special___characters": {
+              "type": "string"
+            },
             "NZD": {
               "type": "number"
             },
@@ -51,6 +54,9 @@
             },
             "HKD@spéçiäl & characters": {
               "type": "number"
+            },
+            "HKD_special___characters": {
+              "type": "string"
             },
             "NZD": {
               "type": "number"
