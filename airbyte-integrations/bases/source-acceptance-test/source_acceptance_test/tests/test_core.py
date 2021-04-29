@@ -23,10 +23,10 @@
 
 import json
 from collections import Counter, defaultdict
-from typing import List, MutableMapping, Mapping, Any
+from typing import Any, List, Mapping, MutableMapping
 
 import pytest
-from airbyte_protocol import ConnectorSpecification, Status, Type, AirbyteRecordMessage, AirbyteMessage
+from airbyte_protocol import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
@@ -84,8 +84,14 @@ class TestDiscovery(BaseTest):
 
 @pytest.mark.timeout(300)
 class TestBasicRead(BaseTest):
-    def test_read(self, connector_config, configured_catalog, inputs: BasicReadTestConfig, expected_records: List[AirbyteMessage],
-                  docker_runner: ConnectorRunner):
+    def test_read(
+        self,
+        connector_config,
+        configured_catalog,
+        inputs: BasicReadTestConfig,
+        expected_records: List[AirbyteMessage],
+        docker_runner: ConnectorRunner,
+    ):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
         counter = Counter(record.stream for record in records)
@@ -109,7 +115,8 @@ class TestBasicRead(BaseTest):
 
                 self.compare_records(
                     stream_name=stream_name,
-                    actual=actual, expected=expected,
+                    actual=actual,
+                    expected=expected,
                     extra_fields=inputs.expect_records.extra_fields,
                     exact_order=inputs.expect_records.exact_order,
                     extra_records=inputs.expect_records.extra_records,

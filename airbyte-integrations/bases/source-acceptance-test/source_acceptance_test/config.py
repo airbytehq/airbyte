@@ -21,8 +21,8 @@
 # SOFTWARE.
 
 
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
 from typing import List, Mapping, Optional
 
 from pydantic import BaseModel, Field, validator
@@ -67,21 +67,20 @@ class ExpectedRecordsConfig(BaseModel):
     extra_fields: bool = Field(False, description="Allow records to have other fields")
     exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
     extra_records: bool = Field(
-        True,
-        description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced"
+        True, description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced"
     )
 
-    @validator('exact_order', always=True)
+    @validator("exact_order", always=True)
     def validate_exact_order(cls, exact_order, values):
-        if 'extra_fields' in values:
-            if values['extra_fields'] and not exact_order:
+        if "extra_fields" in values:
+            if values["extra_fields"] and not exact_order:
                 raise ValueError("exact_order must by on if extra_fields enabled")
         return exact_order
 
-    @validator('extra_records', always=True)
+    @validator("extra_records", always=True)
     def validate_extra_records(cls, extra_records, values):
-        if 'extra_fields' in values:
-            if values['extra_fields'] and extra_records:
+        if "extra_fields" in values:
+            if values["extra_fields"] and extra_records:
                 raise ValueError("extra_records must by off if extra_fields enabled")
         return extra_records
 
