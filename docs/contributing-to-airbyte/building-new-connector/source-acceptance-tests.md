@@ -48,6 +48,20 @@ Configuring all streams in the input catalog to full refresh mode verifies that 
 | `config_path` | string | `secrets/config.json` |Path to a JSON object representing a valid connector configuration|
 | `configured_catalog_path` | string| `integration_tests/configured_catalog.json` |Path to configured catalog|
 | `validate_output_from_all_streams` | boolean | False | Verify that **all** streams have records|
+| `expect_records` | object |None| Compare produced records with expected records, see details below|
+| `expect_records.path` | string | | File with expected records|
+| `expect_records.extra_fields` | boolean | False | Allow records to have other fields|
+| `expect_records.exact_order` | boolean | False | Ensure  that records produced in exact same order|
+| `expect_records.extra_records` | boolean | True | Allow connector to produce extra records, but still enforce all records from the expected file to be produced|  
+
+`expect_records` is a nested configuration, if omitted - the part of the test responsible for record matching will be skipped. Due to the fact that we can't identify records without primary keys matching flags support only the following combinations:
+| extra_fields | exact_order| extra_records |
+|--|--|--|
+|x|x||
+||x|x|
+||x||
+|||x|
+||||
 
 ## Test Full Refresh sync
 ### TestSequentialReads
