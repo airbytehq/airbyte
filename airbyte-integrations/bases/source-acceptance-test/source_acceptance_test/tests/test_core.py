@@ -21,10 +21,12 @@
 # SOFTWARE.
 
 
-from collections import Counter
+import json
+from collections import Counter, defaultdict
+from typing import List, MutableMapping, Mapping, Any
 
 import pytest
-from airbyte_protocol import ConnectorSpecification, Status, Type
+from airbyte_protocol import ConnectorSpecification, Status, Type, AirbyteRecordMessage, AirbyteMessage
 from docker.errors import ContainerError
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
@@ -82,7 +84,8 @@ class TestDiscovery(BaseTest):
 
 @pytest.mark.timeout(300)
 class TestBasicRead(BaseTest):
-    def test_read(self, connector_config, configured_catalog, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
+    def test_read(self, connector_config, configured_catalog, inputs: BasicReadTestConfig, expected_records: List[AirbyteMessage],
+                  docker_runner: ConnectorRunner):
         output = docker_runner.call_read(connector_config, configured_catalog)
         records = [message.record for message in output if message.type == Type.RECORD]
         counter = Counter(record.stream for record in records)
@@ -97,3 +100,66 @@ class TestBasicRead(BaseTest):
             assert (
                 not streams_without_records
             ), f"All streams should return some records, streams without records: {streams_without_records}"
+
+        if expected_records:
+            actual_by_stream = self.group_by_stream(records)
+            expected_by_stream = self.group_by_stream(expected_records)
+            for stream_name, expected in expected_by_stream.items():
+                actual = actual_by_stream.get(stream_name, [])
+
+                self.compare_records(
+                    actual=actual, expected=expected,
+                    extra_fields=inputs.expect_records.extra_fields,
+                    exact_order=inputs.expect_records.exact_order,
+                    extra_records=inputs.expect_records.extra_records,
+                )
+
+    @staticmethod
+    def remove_extra_fields(record: Any, spec: Any) -> Any:
+        """Remove keys from record that spec doesn't have, works recursively"""
+        if not isinstance(spec, Mapping):
+            return record
+
+        assert isinstance(record, Mapping), "Record or part of it is not a dictionary, but expected record is."
+        result = {}
+
+        for k, v in spec.items():
+            assert k in record, "Record or part of it doesn't have attribute that has expected record."
+            result[k] = TestBasicRead.remove_extra_fields(record[k], v)
+
+        return result
+
+    @staticmethod
+    def compare_records(actual, expected, extra_fields, exact_order, extra_records):
+        """Compare records using combination of restrictions"""
+        if exact_order:
+            for r1, r2 in zip(expected, actual):
+                if r1 is None:
+                    assert extra_records, "There are more records than expected, but extra_records is off"
+                    break
+                if extra_fields:
+                    r2 = TestBasicRead.remove_extra_fields(r2, r1)
+                assert r1 == r2, "There mismatching in order of records or their values"
+        else:
+            expected = set(map(TestBasicRead.serialize_record_for_comparison, expected))
+            actual = set(map(TestBasicRead.serialize_record_for_comparison, actual))
+            missing_expected = set(expected) - set(actual)
+
+            assert not missing_expected, "All expected records must be produced"
+
+            if not extra_records:
+                extra_actual = set(actual) - set(expected)
+                assert not extra_actual, "There are more records than expected, but extra_records is off"
+
+    @staticmethod
+    def group_by_stream(records) -> MutableMapping[str, List[MutableMapping]]:
+        """Group records by a source stream"""
+        result = defaultdict(list)
+        for record in records:
+            result[record.stream].append(record.data)
+
+        return result
+
+    @staticmethod
+    def serialize_record_for_comparison(record: AirbyteRecordMessage) -> str:
+        return json.dumps(record.dict(exclude={"emitted_at"}), sort_keys=True)

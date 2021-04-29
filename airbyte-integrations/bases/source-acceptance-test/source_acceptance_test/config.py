@@ -21,10 +21,11 @@
 # SOFTWARE.
 
 
+from pathlib import Path
 from enum import Enum
 from typing import List, Mapping, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
@@ -58,10 +59,38 @@ class DiscoveryTestConfig(BaseConfig):
     configured_catalog_path: Optional[str] = configured_catalog_path
 
 
+class ExpectedRecordsConfig(BaseModel):
+    class Config:
+        extra = "forbid"
+
+    path: Path = Field(description="File with expected records")
+    extra_fields: bool = Field(False, description="Allow records to have other fields")
+    exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
+    extra_records: bool = Field(
+        True,
+        description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced"
+    )
+
+    @validator('exact_order')
+    def validate_exact_order(cls, exact_order, validated_values):
+        if 'extra_fields' in validated_values:
+            if validated_values['extra_fields'] and not exact_order:
+                raise ValueError("exact_order must by on if extra_fields enabled")
+        return exact_order
+
+    @validator('extra_records')
+    def validate_extra_records(cls, extra_records, validated_values):
+        if 'extra_fields' in validated_values:
+            if validated_values['extra_fields'] and extra_records:
+                raise ValueError("extra_records must by off if extra_fields enabled")
+        return extra_records
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
     validate_output_from_all_streams: bool = Field(False, description="Verify that all streams have records")
+    expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
 
 
 class FullRefreshConfig(BaseConfig):
