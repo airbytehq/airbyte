@@ -1,0 +1,18 @@
+name: integration-test
+on:
+  workflow_dispatch:
+    inputs:
+      connector:
+        description: 'Airbyte Connector'
+        required: true
+      comment-id:
+        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        required: false
+
+jobs:
+  name: Do the job on the runner
+  needs: start-runner # required to start the main job when the runner is ready
+  runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
+  steps:
+    - name: Hello World
+      run: echo 'Hello World!'
