@@ -42,8 +42,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CopyConsumer.class);
 
   private final String configuredSchema;
   private final T config;
@@ -122,9 +126,9 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
         copier.closeStagingUploader(hasFailed);
 
         if (!hasFailed) {
+          copier.createDestinationSchema();
           copier.createTemporaryTable();
           copier.copyStagingFileToTemporaryTable();
-          copier.createDestinationSchema();
           var destTableName = copier.createDestinationTable();
           var mergeQuery = copier.generateMergeStatement(destTableName);
           mergeCopiersToFinalTableQuery.append(mergeQuery);
@@ -134,6 +138,10 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
       if (!hasFailed) {
         sqlOperations.executeTransaction(db, mergeCopiersToFinalTableQuery.toString());
       }
+    } catch (Exception e) {
+      final String message = String.format("Failed to finalize copy to temp table due to: %s", e);
+      LOGGER.error(message);
+      throw e;
     } finally {
       for (var copier : streamCopiers) {
         copier.removeFileAndDropTmpTable();
