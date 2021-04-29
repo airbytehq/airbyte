@@ -52,8 +52,8 @@ __all__ = [
     "HttpAuthenticator",
     "HttpStream",
     "Integration",
+    "Oauth2Authenticator",
     "Source",
     "Stream",
-    "TokenAuthenticator",
-    "Oauth2Authenticator"
+    "TokenAuthenticator"
 ]
