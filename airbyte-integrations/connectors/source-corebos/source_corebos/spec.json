@@ -4,7 +4,11 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "CoreBOS Source Spec",
     "type": "object",
+<<<<<<< HEAD
     "required": ["url","http_method","access_token","username"],
+=======
+    "required": ["url","http_method","sessionName"],
+>>>>>>> master
     "additionalProperties": false,
     "properties": {
       "url": {
@@ -17,13 +21,19 @@
         "type": "string",
         "enum": ["GET", "POST"]
       },
+<<<<<<< HEAD
       "access_token":{
           "description":"The user access token.",
+=======
+      "sessionName":{
+          "description":"The session Id of the user",
+>>>>>>> master
           "type":"string"
       },
       "body": {
         "description": "json body to be included in the request",
         "type": "string"
+<<<<<<< HEAD
       },
       "username": {
         "description": "User name to be included in the request.",
@@ -32,3 +42,9 @@
     }
   }
 }
+=======
+      }
+    }
+  }
+}
+>>>>>>> master
