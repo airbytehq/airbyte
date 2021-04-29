@@ -20,16 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import pathlib
+from setuptools import setup, find_packages
 
-import setuptools
+# The directory containing this file
+HERE = pathlib.Path(__file__).parent
 
-setuptools.setup(
+# The text of the README file
+README = (HERE / "README.md").read_text()
+
+setup(
     name="base-python",
+    version="0.0.1",
     description="Contains machinery to make it easy to write an integration in python.",
+    long_description=README,
+    long_description_content_type="text/markdown",
     author="Airbyte",
     author_email="contact@airbyte.io",
+    license="MIT",
     url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
+    packages=find_packages(exclude=("tests",)),
     package_data={"": ["models/yaml/*.yaml"]},
     install_requires=[
         "PyYAML==5.4",
