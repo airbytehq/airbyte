@@ -108,6 +108,7 @@ class TestBasicRead(BaseTest):
                 actual = actual_by_stream.get(stream_name, [])
 
                 self.compare_records(
+                    stream_name=stream_name,
                     actual=actual, expected=expected,
                     extra_fields=inputs.expect_records.extra_fields,
                     exact_order=inputs.expect_records.exact_order,
@@ -130,26 +131,26 @@ class TestBasicRead(BaseTest):
         return result
 
     @staticmethod
-    def compare_records(actual, expected, extra_fields, exact_order, extra_records):
+    def compare_records(stream_name, actual, expected, extra_fields, exact_order, extra_records):
         """Compare records using combination of restrictions"""
         if exact_order:
             for r1, r2 in zip(expected, actual):
                 if r1 is None:
-                    assert extra_records, "There are more records than expected, but extra_records is off"
+                    assert extra_records, f"Stream {stream_name}: There are more records than expected, but extra_records is off"
                     break
                 if extra_fields:
                     r2 = TestBasicRead.remove_extra_fields(r2, r1)
-                assert r1 == r2, "There mismatching in order of records or their values"
+                assert r1 == r2, f"Stream {stream_name}: There mismatching in order of records or their values"
         else:
             expected = set(map(TestBasicRead.serialize_record_for_comparison, expected))
             actual = set(map(TestBasicRead.serialize_record_for_comparison, actual))
             missing_expected = set(expected) - set(actual)
 
-            assert not missing_expected, "All expected records must be produced"
+            assert not missing_expected, f"Stream {stream_name}: All expected records must be produced"
 
             if not extra_records:
                 extra_actual = set(actual) - set(expected)
-                assert not extra_actual, "There are more records than expected, but extra_records is off"
+                assert not extra_actual, f"Stream {stream_name}: There are more records than expected, but extra_records is off"
 
     @staticmethod
     def group_by_stream(records) -> MutableMapping[str, List[MutableMapping]]:

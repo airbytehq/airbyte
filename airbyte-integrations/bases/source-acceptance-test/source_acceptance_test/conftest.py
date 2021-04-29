@@ -133,9 +133,9 @@ def pull_docker_image(acceptance_test_config) -> None:
 
 @pytest.fixture(name="expected_records")
 def expected_records_fixture(inputs, base_path) -> List[AirbyteRecordMessage]:
-    path = getattr(inputs, "expected_records_path")
-    if not path:
+    expect_records = getattr(inputs, "expect_records")
+    if not expect_records:
         return []
 
-    with open(str(base_path / path)) as f:
+    with open(str(base_path / getattr(expect_records, "path"))) as f:
         return [AirbyteRecordMessage.parse_raw(line) for line in f]

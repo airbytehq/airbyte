@@ -71,14 +71,14 @@ class ExpectedRecordsConfig(BaseModel):
         description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced"
     )
 
-    @validator('exact_order')
+    @validator('exact_order', always=True)
     def validate_exact_order(cls, exact_order, values):
         if 'extra_fields' in values:
             if values['extra_fields'] and not exact_order:
                 raise ValueError("exact_order must by on if extra_fields enabled")
         return exact_order
 
-    @validator('extra_records')
+    @validator('extra_records', always=True)
     def validate_extra_records(cls, extra_records, values):
         if 'extra_fields' in values:
             if values['extra_fields'] and extra_records:
