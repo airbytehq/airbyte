@@ -64,14 +64,6 @@ class Stream(ABC):
         This method should be overridden by subclasses to read records based on the inputs
         """
 
-    @abstractmethod
-    def _get_source_defined_primary_keys(
-        self,
-    ) -> List[List[str]]:
-        """
-        :return: List of path to fields used as the Stream's primary key. Empty list by default.
-        """
-
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
@@ -86,11 +78,11 @@ class Stream(ABC):
         stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
 
         if self.supports_incremental:
-            stream.cursor = self.cursor
+            stream.source_defined_cursor = self.cursor
             stream.supported_sync_modes.append(SyncMode.incremental)
             stream.default_cursor_field = self._wrapped_cursor_field()
 
-        keys = self._get_source_defined_primary_keys()
+        keys = self._wrapped_primary_key()
         if len(keys) > 0:
             stream.source_defined_primary_key = keys
 
@@ -120,6 +112,32 @@ class Stream(ABC):
         Return False if the cursor can be configured by the user.
         """
         return True
+
+    @property
+    @abstractmethod
+    def primary_key(self) -> Union[str, List[str], List[List[str]]]:
+        """
+        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+        """
+
+    def _wrapped_primary_key(self) -> List[List[str]]:
+        """
+        :return: wrap the primary_key property in a list of list of strings required by the Airbyte Stream object.
+        """
+        keys = self.primary_key
+        if isinstance(keys, str):
+            return [[keys]]
+        elif isinstance(keys, list):
+            wrapped_key = []
+            for component in keys:
+                if isinstance(component, str):
+                    wrapped_key.append([component])
+                elif isinstance(component, list):
+                    wrapped_key.append(component)
+                else:
+                    raise ValueError("Element must be either list or str.")
+        else:
+            raise ValueError("Element must be either list or str.")
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

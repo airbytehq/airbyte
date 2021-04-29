@@ -38,23 +38,11 @@ class HttpStream(Stream, ABC):
     """
 
     cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
+    primary_key = "" # Change this to the field this stream should use as a primary key. Use a list if the key should be formed from multiple fields.
 
     def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
         self._authenticator = authenticator
         self._session = requests.Session()
-
-    @property
-    def source_defined_primary_keys(self) -> List[str]:
-        """
-        :return: Override to define the list of fields in the API response to use as the Stream's primary keys. Empty list by default.
-        """
-        return []
-
-    def _get_source_defined_primary_keys(self) -> List[List[str]]:
-        list = []
-        for key in self.source_defined_primary_keys:
-            list.append([key])
-        return list
 
     @property
     @abstractmethod
