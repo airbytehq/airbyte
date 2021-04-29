@@ -72,16 +72,16 @@ class ExpectedRecordsConfig(BaseModel):
     )
 
     @validator('exact_order')
-    def validate_exact_order(cls, exact_order, validated_values):
-        if 'extra_fields' in validated_values:
-            if validated_values['extra_fields'] and not exact_order:
+    def validate_exact_order(cls, exact_order, values):
+        if 'extra_fields' in values:
+            if values['extra_fields'] and not exact_order:
                 raise ValueError("exact_order must by on if extra_fields enabled")
         return exact_order
 
     @validator('extra_records')
-    def validate_extra_records(cls, extra_records, validated_values):
-        if 'extra_fields' in validated_values:
-            if validated_values['extra_fields'] and extra_records:
+    def validate_extra_records(cls, extra_records, values):
+        if 'extra_fields' in values:
+            if values['extra_fields'] and extra_records:
                 raise ValueError("extra_records must by off if extra_fields enabled")
         return extra_records
 
