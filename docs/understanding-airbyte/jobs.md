@@ -31,7 +31,7 @@ This section will depict the lifecycle of a worker. It will only show the 2 conn
 
 Note: When a source has passed all of its messages, the docker process should automatically exit. After a destination has received all records, it should automatically shutdown. The worker gives each a grace period to shutdown on their own. If that grace period expires, then the worker will force shutdown.
 
-![Worker Lifecycle](../../.gitbook/assets/worker-lifecycle.png)
+![Worker Lifecycle](../.gitbook/assets/worker-lifecycle.png)
 
 [Image Source](https://docs.google.com/drawings/d/1k4v_m2M5o2UUoNlYM7mwtZicRkQgoGLgb3eTOVH8QFo/edit)
 
@@ -41,7 +41,7 @@ See the [architecture overview](high-level-view.md) for more information about w
 
 Jobs in the worker follow the following state machine.
 
-![Job state machine](../../.gitbook/assets/job-state-machine.png)
+![Job state machine](../.gitbook/assets/job-state-machine.png)
 
 [Image Source](https://docs.google.com/drawings/d/1oMahOg1T8cssxiimV8u4lChbQP5D-wVrSjdMSgxdjiQ/edit)
 

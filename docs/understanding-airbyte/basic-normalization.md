@@ -36,10 +36,10 @@ Airbyte places the json blob version of your data in a table called `_airbyte_ra
 
 ## Destinations that Support Basic Normalization
 
-* [BigQuery](../../integrations/destinations/bigquery.md)
-* [Postgres](../../integrations/destinations/postgres.md)
-* [Snowflake](../../integrations/destinations/snowflake.md)
-* [Redshift](../../integrations/destinations/redshift.md)
+* [BigQuery](../integrations/destinations/bigquery.md)
+* [Postgres](../integrations/destinations/postgres.md)
+* [Snowflake](../integrations/destinations/snowflake.md)
+* [Redshift](../integrations/destinations/redshift.md)
 
 Basic Normalization can be used in each of these destinations by configuring the "basic normalization" field to true when configuring the destination in the UI.
 
@@ -245,6 +245,6 @@ As an example from the hubspot source, we could have the following tables with n
 
 Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. To do so, you can follow the following tutorial
 
-* to build a [custom SQL view](../../tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
-* to export, edit and run [custom DBT normalization](../../tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
+* to build a [custom SQL view](../tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
+* to export, edit and run [custom DBT normalization](../tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
 

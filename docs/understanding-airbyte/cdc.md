@@ -24,10 +24,10 @@ We add some metadata columns for CDC sources:
 * The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
 
 ## Current Support
-* [Postgres](../../integrations/sources/postgres.md)
+* [Postgres](../integrations/sources/postgres.md)
 
 ## Coming Soon
-* [MySQL](../../integrations/sources/mysql.md)
-* [SQL Server / MSSQL](../../integrations/sources/mssql.md)
+* [MySQL](../integrations/sources/mysql.md)
+* [SQL Server / MSSQL](../integrations/sources/mssql.md)
 * Oracle DB
 * Please [create a ticket](https://github.com/airbytehq/airbyte/issues/new/choose) if you need CDC support on another database!

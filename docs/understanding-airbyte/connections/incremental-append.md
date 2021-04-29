@@ -70,17 +70,17 @@ The output we expect to see in the warehouse is as follows:
 
 ## Source-Defined Cursor
 
-Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../../integrations/sources/exchangeratesapi.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
+Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../integrations/sources/exchangeratesapi.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
 
-![](../../../.gitbook/assets/incremental_source_defined.png)
+![](../../.gitbook/assets/incremental_source_defined.png)
 
 \(You can find a more technical details about the configuration data model [here](../catalog.md)\).
 
 ## User-Defined Cursor
 
-Some sources cannot define the cursor without user input. For example, in the [postgres source](../../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
+Some sources cannot define the cursor without user input. For example, in the [postgres source](../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
 
-![](../../../.gitbook/assets/incremental_user_defined.png)
+![](../../.gitbook/assets/incremental_user_defined.png)
 
 \(You can find a more technical details about the configuration data model [here](../catalog.md)\).
 
@@ -138,5 +138,5 @@ Those concerns could be solved by using a different sync mode based on binary lo
 
 The current behavior of **Incremental** is not able to handle source schema changes yet, for example, when a column is added, renamed or deleted from an existing table etc. It is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to correctly replicate the data to the destination with the new schema changes.
 
-If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../../tutorials/transformation-and-normalization/transformations-with-sql.md#simple-sql-query)
+If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../tutorials/transformation-and-normalization/transformations-with-sql.md#simple-sql-query)
 

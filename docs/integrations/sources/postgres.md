@@ -111,7 +111,7 @@ We use [logical replication](https://www.postgresql.org/docs/10/logical-replicat
 
 We do not require installing custom plugins like `wal2json` or `test_decoding`. We use `pgoutput`, which is included in Postgres 10+ by default.
 
-Please read the [CDC docs](../../reference/architecture/cdc.md) for an overview of how Airbyte approaches CDC.
+Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview of how Airbyte approaches CDC.
 
 ### Should I use CDC for Postgres?
 * If you need a record of deletions and can accept the limitations posted below, you should to use CDC for Postgres.
@@ -120,7 +120,7 @@ Please read the [CDC docs](../../reference/architecture/cdc.md) for an overview 
 * If your table has a primary key but doesn't have a reasonable cursor field for incremental syncing (i.e. `updated_at`), CDC allows you to sync your table incrementally.
 
 ### CDC Limitations
-* Make sure to read our [CDC docs](../../reference/architecture/cdc.md) to see limitations that impact all databases using CDC replication.
+* Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
 * CDC is only available for Postgres 10+.
 * Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot. Instructions on how to set up a replication slot can be found below.
 * Log-based replication only works for master instances of Postgres.

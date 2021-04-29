@@ -2,7 +2,7 @@
 
 ## Airbyte's Standard Tests
 
-To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../reference/architecture/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
+To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
 ### Architecture of standard tests
 
@@ -40,7 +40,7 @@ airbyteStandardSourceTestFile {
 }
 ```
 
-These inputs are all described in the [Airbyte Specification](../../reference/architecture/airbyte-specification.md) and will be used as follows:
+These inputs are all described in the [Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and will be used as follows:
 
 * **Spec file** will be compared to the spec file output by the connector when the `spec` command is called. 
 * **Config file** is expected to be a valid config file. It's expected that calling `check` with this config will succeed. 

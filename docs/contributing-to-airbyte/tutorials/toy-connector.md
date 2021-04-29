@@ -6,7 +6,7 @@ description: Building a toy source connector to illustrate Airbyte's main concep
 
 This tutorial walks you through building a simple Airbyte source to demonstrate the following concepts in Action:
 
-* [The Airbyte Specification](../../reference/architecture/airbyte-specification.md) and the interface implemented by a source connector
+* [The Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](beginners-guide-to-catalog.md)
 * [Packaging your connector](../contributing-to-airbyte/building-new-connector/#1-implement--package-the-connector)
 * [Testing your connector](../building-new-connector/testing-connectors.md)
@@ -21,7 +21,7 @@ This tutorial can be done entirely on your local workstation.
 
 To run this tutorial, you'll need:
 
-* Docker, Python, and Java with the versions listed in the [tech stack section](../../reference/architecture/tech-stack.md).
+* Docker, Python, and Java with the versions listed in the [tech stack section](../../understanding-airbyte/tech-stack.md).
 * The `requests` Python package installed via `pip install requests` \(or `pip3` if `pip` is linked to a Python2 installation on your system\)
 
 **A note on running Python**: all the commands below assume that `python` points to a version of python 3.7. Verify this by running
@@ -51,7 +51,7 @@ Here's the outline of what we'll do to build our connector:
 
 Once we've completed the above steps, we will have built a functioning connector. Then, we'll add some optional functionality:
 
-* Support [incremental sync](../../reference/architecture/connections/incremental-append.md)
+* Support [incremental sync](../../understanding-airbyte/connections/incremental-append.md)
 * Add custom integration tests
 
 ### 1. Bootstrap the connector package
@@ -359,7 +359,7 @@ Our connector is able to detect valid and invalid configs correctly. Two methods
 
 #### Implementing Discover
 
-The `discover` command outputs a Catalog, a struct that declares the Streams and Fields \(Airbyte's equivalents of tables and columns\) output by the connector. It also includes metadata around which features a connector supports \(e.g. which sync modes\). In other words it describes what data is available in the source. If you'd like to read a bit more about this concept check out our [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) or for a more detailed treatment read the [Airbyte Specification](../../reference/architecture/airbyte-specification.md).
+The `discover` command outputs a Catalog, a struct that declares the Streams and Fields \(Airbyte's equivalents of tables and columns\) output by the connector. It also includes metadata around which features a connector supports \(e.g. which sync modes\). In other words it describes what data is available in the source. If you'd like to read a bit more about this concept check out our [Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) or for a more detailed treatment read the [Airbyte Specification](../../understanding-airbyte/airbyte-specification.md).
 
 The data output by this connector will be structured in a very simple way. This connector outputs records belonging to exactly one Stream \(table\). Each record contains three Fields \(columns\): `date`, `price`, and `stock_ticker`, corresponding to the price of a stock on a given day.
 

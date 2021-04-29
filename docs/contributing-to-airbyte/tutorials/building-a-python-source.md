@@ -6,7 +6,7 @@ This article provides a checklist for how to create a python source. Each step i
 
 ## Requirements
 
-Docker, Python, and Java with the versions listed in the [tech stack section](../../reference/architecture/tech-stack.md).
+Docker, Python, and Java with the versions listed in the [tech stack section](../../understanding-airbyte/tech-stack.md).
 
 {% hint style="info" %}
 All the commands below assume that `python` points to a version of python >3.7. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
@@ -151,7 +151,7 @@ The nice thing about this approach is that you are running your source exactly a
 
 Each source contains a specification that describes what inputs it needs in order for it to pull data. This file can be found in `airbyte-integrations/connectors/source-<source-name>/spec.json`. This is a good place to start when developing your source. Using JsonSchema define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres source.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](../../reference/architecture/airbyte-specification.md).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-specification.md).
 
 The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.json` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.json` you should be done with this step.
 
