@@ -9,11 +9,12 @@ install_init() {
 
 install_docker() {
   sudo apt-get update
-  sudo apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
-  curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add --
-  sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian buster stable"
+  sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+  curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
   sudo apt-get update
-  sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+  # this reliably shows an error when launching the docker daemon but immediately succeeds afterwards
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io || true
 }
 
 install_docker_compose() {
@@ -32,6 +33,7 @@ install_airbyte() {
 install_stackdriver_agent() {
   curl -sSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
   sudo bash install-monitoring-agent.sh
+  sudo service stackdriver-agent start
 }
 
 main() {

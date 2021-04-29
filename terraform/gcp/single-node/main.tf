@@ -32,9 +32,14 @@ resource "google_compute_router_nat" "airbyte-nat" {
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 }
 
-resource "google_service_account" "airbyte_svc" {
+resource "google_service_account" "airbyte-svc" {
   account_id   = "airbyte-svc"
   display_name = "airbyte-svc"
+}
+
+resource "google_project_iam_member" "airbyte-stackdriver-member" {
+  role = "roles/monitoring.metricWriter"
+  member = "serviceAccount:${google_service_account.airbyte-svc.email}"
 }
 
 resource "google_compute_instance" "airbyte-instance" {
@@ -64,7 +69,7 @@ resource "google_compute_instance" "airbyte-instance" {
   metadata_startup_script = file("./init.sh")
 
   service_account {
-    email  = google_service_account.airbyte_svc.email
+    email  = google_service_account.airbyte-svc.email
     scopes = ["cloud-platform"]
   }
 
