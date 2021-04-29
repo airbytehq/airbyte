@@ -1,4 +1,4 @@
-# On Your Workstation
+# Local Deployment
 
 {% hint style="info" %}
 These instructions have been tested on MacOS
@@ -7,10 +7,9 @@ These instructions have been tested on MacOS
 ## Setup & launch Airbyte
 
 * Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). Note: There is a known issue with docker-compose 1.27.3. If you are using that version, please upgrade to 1.27.4.
-* Clone Airbyte's repository and run `docker compose`
+* After Docker is installed, you can immediately get started locally by running:
 
 ```bash
-# In your workstation terminal
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
 docker-compose up
