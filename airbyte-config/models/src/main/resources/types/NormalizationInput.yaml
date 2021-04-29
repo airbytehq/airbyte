@@ -7,7 +7,7 @@ type: object
 additionalProperties: false
 required:
   - destinationConfiguration
-  - configuredAirbyteCatalog
+  - catalog
 properties:
   destinationConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
