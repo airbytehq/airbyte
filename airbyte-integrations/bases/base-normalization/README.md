@@ -31,7 +31,7 @@ dbt files.
 This class is testing the transform config functionality that converts a destination_config.json into the adequate profiles.yml file for dbt to use
 see [related dbt docs on profiles.yml](https://docs.getdbt.com/reference/profiles.yml) for more context on what it actually is.
 
-#### test_stream_processor.py:
+#### test_stream_processor.py and test_stream_processor_naming.py:
 
 These unit tests functions check how each stream is converted to dbt models files.
 For example, one big focus area is around how table names are chosen.
@@ -86,7 +86,14 @@ or can also be invoked on github, thanks to the slash commands posted as comment
 
     /test connector=bases/base-normalization
 
-### Integration Tests Definitions:
+Note that these tests are connecting and processing data on top of real data warehouse destinations.
+Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run 
+(not included in git repository).
+
+This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can 
+re-use the `destination_config.json` passed to destination connectors.
+
+### Integration Tests Definitions for test_normalization.py:
 
 Some test suites can be selected to be versioned control in Airbyte git repository (or not).
 This is useful to see direct impacts of code changes on downstream files generated or compiled
@@ -165,6 +172,7 @@ This can be done in yaml format as described in the following documentation page
 
 - [dbt schema-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests)
 - [custom schema test](https://docs.getdbt.com/docs/guides/writing-custom-schema-tests)
+- [dbt expectations](https://github.com/calogica/dbt-expectations)
 
 We are leveraging these capabilities in these integration tests to verify some relationships in our
 generated tables on the destinations.

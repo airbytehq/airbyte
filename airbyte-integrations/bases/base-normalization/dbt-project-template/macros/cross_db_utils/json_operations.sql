@@ -50,7 +50,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract(json_column, json_path_list) -%}
-    case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}) end
+    case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
 {%- endmacro %}
 
 {% macro snowflake__json_extract(json_column, json_path_list) -%}
@@ -76,7 +76,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_scalar(json_column, json_path_list) -%}
-    case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}) end
+    case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
 {%- endmacro %}
 
 {% macro snowflake__json_extract_scalar(json_column, json_path_list) -%}
@@ -102,7 +102,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list) -%}
-    json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }})
+    json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true)
 {%- endmacro %}
 
 {% macro snowflake__json_extract_array(json_column, json_path_list) -%}
