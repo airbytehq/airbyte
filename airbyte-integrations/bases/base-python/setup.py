@@ -31,16 +31,40 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="base-python",
-    version="0.0.1",
-    description="Contains machinery to make it easy to write an integration in python.",
+    version="0.0.2",
+    description="Contains machinery to make it easy to write an Airbyte Connector in Python.",
     long_description=README,
     long_description_content_type="text/markdown",
     author="Airbyte",
     author_email="contact@airbyte.io",
     license="MIT",
     url="https://github.com/airbytehq/airbyte",
-    packages=find_packages(exclude=("tests",)),
-    package_data={"": ["models/yaml/*.yaml"]},
+    classifiers=[
+        # This information is used when browsing on PyPi.
+
+        # Dev Status
+        'Development Status :: 3 - Alpha',
+
+        # Project Audience
+        'Intended Audience :: Developers',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+
+        'License :: OSI Approved :: MIT License',
+
+        # Python Version Support
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+    ],
+    keywords='airbyte connectors-development-kit cdk',
+    project_urls={
+        'Documentation': 'https://docs.airbyte.io/',
+        'Source': 'https://github.com/airbytehq/airbyte',
+        'Tracker': 'https://github.com/airbytehq/airbyte/issues',
+    },
+    packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
         "PyYAML==5.4",
         "pydantic==1.6.1",
@@ -51,6 +75,7 @@ setup(
         "pytest",
         "pendulum",
     ],
+    python_requires='>=3.7.9',
     entry_points={
         "console_scripts": ["base-python=base_python.entrypoint:main"],
     },
