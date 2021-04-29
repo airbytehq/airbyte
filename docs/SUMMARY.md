@@ -17,7 +17,7 @@
     * [Building a Python Source](contributing-to-airbyte/tutorials/building-a-python-source.md)  
   * [Transformations and Normalization](tutorials/transformation-and-normalization/README.md)
     * [Transformations with SQL \(Part 1/2\)](tutorials/transformation-and-normalization/transformations-with-sql.md)
-    * [Transformations with DBT \(Part 2/2\)](tutorials/transformation-and-normalization/transformations-with-sql.md)
+    * [Transformations with DBT \(Part 2/2\)](tutorials/transformation-and-normalization/transformations-with-dbt.md)
 * [Example Use Cases](examples/README.md)
   * [Postgres Replication](examples/postgres-replication.md)
   * [Build a Slack Activity Dashboard](examples/build-a-slack-activity-dashboard.md)
