@@ -6,24 +6,16 @@
         "json_schema": {
           "properties": {
             "permission_level": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "site_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -35,60 +27,33 @@
         "json_schema": {
           "properties": {
             "site_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "path": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "last_submitted": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "is_pending": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "is_sitemaps_index": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "last_downloaded": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "warnings": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "errors": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "contents": {
               "anyOf": [
@@ -99,22 +64,13 @@
                     "additionalProperties": false,
                     "properties": {
                       "type": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "submitted": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": ["null", "integer"]
                       },
                       "indexed": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": ["null", "integer"]
                       }
                     }
                   }
@@ -128,9 +84,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false
       },
       "sync_mode": "full_refresh",
@@ -142,91 +96,51 @@
         "json_schema": {
           "properties": {
             "site_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "search_type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "dimensions_hash_key": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "device": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "page": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "query": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "ctr": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "position": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ]
+        "default_cursor_field": ["date"]
       },
       "sync_mode": "incremental",
       "cursor_field": ["date"],
@@ -238,61 +152,36 @@
         "json_schema": {
           "properties": {
             "site_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "search_type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "ctr": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "position": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ]
+        "default_cursor_field": ["date"]
       },
       "sync_mode": "incremental",
       "cursor_field": ["date"],
@@ -304,67 +193,39 @@
         "json_schema": {
           "properties": {
             "site_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "search_type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "country": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "ctr": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "position": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ]
+        "default_cursor_field": ["date"]
       },
       "sync_mode": "incremental",
       "cursor_field": ["date"],
@@ -376,67 +237,39 @@
         "json_schema": {
           "properties": {
             "site_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "search_type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "device": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "ctr": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "position": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ]
+        "default_cursor_field": ["date"]
       },
       "sync_mode": "incremental",
       "cursor_field": ["date"],
@@ -448,67 +281,39 @@
         "json_schema": {
           "properties": {
             "site_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "search_type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "page": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "ctr": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "position": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ]
+        "default_cursor_field": ["date"]
       },
       "sync_mode": "incremental",
       "cursor_field": ["date"],
@@ -520,67 +325,39 @@
         "json_schema": {
           "properties": {
             "site_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "search_type": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "date": {
               "format": "date-time",
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "query": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "clicks": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "impressions": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "ctr": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "position": {
               "multipleOf": 1e-25,
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             }
           },
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": [
-          "incremental"
-        ],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date"
-        ]
+        "default_cursor_field": ["date"]
       },
       "sync_mode": "incremental",
       "cursor_field": ["date"],

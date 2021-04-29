@@ -4,7 +4,13 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Google Search Console Singer Spec",
     "type": "object",
-    "required": ["credentials_json", "email", "site_urls", "start_date", "user_agent"],
+    "required": [
+      "credentials_json",
+      "email",
+      "site_urls",
+      "start_date",
+      "user_agent"
+    ],
     "additionalProperties": true,
     "properties": {
       "credentials_json": {
