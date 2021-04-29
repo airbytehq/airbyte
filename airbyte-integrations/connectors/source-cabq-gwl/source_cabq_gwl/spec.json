@@ -1,0 +1,28 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Cabq Gwl Spec",
+    "type": "object",
+    "required": ["email_address",
+                "email_password"],
+    "additionalProperties": false,
+    "properties": {
+      "email_address": {
+        "type": "string",
+        "description": "describe me",
+        "order": 1
+      },
+      "email_password": {
+        "type": "string",
+        "description": "Password for 'email_address'",
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "email_subject": {
+        "type": "string",
+        "description": "find emails with subject that match 'email_subject'"
+      }
+    }
+  }
+}
