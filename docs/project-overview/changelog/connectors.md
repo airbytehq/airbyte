@@ -12,6 +12,14 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
 
+## 04/27/2021
+
+* **Replace timeout for sources** ([#3031](https://github.com/airbytehq/airbyte/pull/2851))
+* Fix UI issue where tables with the same name are selected together ([#3032](https://github.com/airbytehq/airbyte/pull/2851))
+* Fix feed handling when feeds are unavailable ([#2964](https://github.com/airbytehq/airbyte/pull/2851))
+* Export whitelisted tables ([#3055](https://github.com/airbytehq/airbyte/pull/2851))
+* Create a contributor bootstrap script (#3028) ([#3054](https://github.com/airbytehq/airbyte/pull/2851)), thanks to [nclsbayona](https://github.com/nclsbayona)
+
 ## 04/20/2021
 
 3 new source connectors!
