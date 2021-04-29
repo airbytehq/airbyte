@@ -120,32 +120,40 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
   }
 
   public void closeAsOneTransaction(List<StreamCopier> streamCopiers, boolean hasFailed, JdbcDatabase db) throws Exception {
+    Exception firstException = null;
     try {
       StringBuilder mergeCopiersToFinalTableQuery = new StringBuilder();
       for (var copier : streamCopiers) {
-        copier.closeStagingUploader(hasFailed);
+        try {
+          copier.closeStagingUploader(hasFailed);
 
-        if (!hasFailed) {
-          copier.createDestinationSchema();
-          copier.createTemporaryTable();
-          copier.copyStagingFileToTemporaryTable();
-          var destTableName = copier.createDestinationTable();
-          var mergeQuery = copier.generateMergeStatement(destTableName);
-          mergeCopiersToFinalTableQuery.append(mergeQuery);
+          if (!hasFailed) {
+            copier.createDestinationSchema();
+            copier.createTemporaryTable();
+            copier.copyStagingFileToTemporaryTable();
+            var destTableName = copier.createDestinationTable();
+            var mergeQuery = copier.generateMergeStatement(destTableName);
+            mergeCopiersToFinalTableQuery.append(mergeQuery);
+          }
+        } catch (Exception e) {
+          final String message = String.format("Failed to finalize copy to temp table due to: %s", e);
+          LOGGER.error(message);
+          hasFailed = true;
+          if (firstException == null) {
+            firstException = e;
+          }
         }
       }
-
       if (!hasFailed) {
         sqlOperations.executeTransaction(db, mergeCopiersToFinalTableQuery.toString());
       }
-    } catch (Exception e) {
-      final String message = String.format("Failed to finalize copy to temp table due to: %s", e);
-      LOGGER.error(message);
-      throw e;
     } finally {
       for (var copier : streamCopiers) {
         copier.removeFileAndDropTmpTable();
       }
+    }
+    if (firstException != null) {
+      throw firstException;
     }
   }
 
