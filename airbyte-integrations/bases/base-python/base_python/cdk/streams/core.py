@@ -120,7 +120,7 @@ class Stream(ABC):
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
         """
 
-    def _wrapped_primary_key(self) -> List[List[str]]:
+    def _wrapped_primary_key(self) -> Optional[List[List[str]]]:
         """
         :return: wrap the primary_key property in a list of list of strings required by the Airbyte Stream object.
         """
