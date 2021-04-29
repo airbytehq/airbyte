@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-python:0.1.6
+FROM airbyte/integration-base-python:0.1.7
 
 # Bash is installed for more convenient debugging.
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
