@@ -37,7 +37,7 @@ class HttpStream(Stream, ABC):
     Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
     """
 
-    source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
+    cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
 
     def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
         self._authenticator = authenticator
