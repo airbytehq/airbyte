@@ -30,6 +30,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
@@ -49,7 +50,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 public class RedshiftCopyS3Destination extends CopyDestination {
 
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    return new RedshiftCopyConsumer<>(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config),
+    return new CopyConsumer<>(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config),
         new RedshiftStreamCopierFactory(),
         getSqlOperations(),
         getNameTransformer());

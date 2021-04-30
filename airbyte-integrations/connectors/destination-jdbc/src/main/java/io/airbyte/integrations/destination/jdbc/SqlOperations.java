@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.stream.Stream;
 
@@ -104,5 +105,10 @@ public interface SqlOperations {
    * @throws Exception exception
    */
   void executeTransaction(JdbcDatabase database, String queries) throws Exception;
+
+  /**
+   * Check if the data record is valid and ok to be written to destination
+   */
+  boolean isValidData(final AirbyteStreamNameNamespacePair streamName, final String data);
 
 }

@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.redshift;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
+  protected static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
 
   @Override
   public String createTableQuery(String schemaName, String tableName) {
@@ -71,6 +73,16 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
+  }
+
+  @Override
+  public boolean isValidData(final AirbyteStreamNameNamespacePair streamName, final String data) {
+    final int dataSize = data.getBytes().length;
+    if (dataSize > REDSHIFT_VARCHAR_MAX_BYTE_SIZE) {
+      LOGGER.warn("Data({}) from stream {} exceeds limit of VARCHAR(65535) on Redshift... Ignoring record", dataSize, streamName);
+      return false;
+    }
+    return true;
   }
 
 }

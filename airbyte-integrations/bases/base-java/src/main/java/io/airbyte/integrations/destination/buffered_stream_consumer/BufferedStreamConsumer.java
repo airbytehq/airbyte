@@ -29,6 +29,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedBiConsumer;
+import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
@@ -87,6 +88,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, CloseableQueue<byte[]>> pairToWriteBuffer;
   private final ScheduledExecutorService writerPool;
   private final ConfiguredAirbyteCatalog catalog;
+  private final CheckedBiFunction<AirbyteStreamNameNamespacePair, String, Boolean, Exception> isValidRecord;
 
   private boolean hasStarted;
 
@@ -94,13 +96,15 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 RecordWriter recordWriter,
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
-                                Set<AirbyteStreamNameNamespacePair> pairs) {
+                                Set<AirbyteStreamNameNamespacePair> pairs,
+                                CheckedBiFunction<AirbyteStreamNameNamespacePair, String, Boolean, Exception> isValidRecord) {
     this.hasStarted = false;
     this.onStart = onStart;
     this.recordWriter = recordWriter;
     this.onClose = onClose;
     this.catalog = catalog;
     this.pairs = pairs;
+    this.isValidRecord = isValidRecord;
 
     this.writerPool = Executors.newSingleThreadScheduledExecutor();
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofMinutes(GRACEFUL_SHUTDOWN_MINUTES), writerPool));
@@ -139,7 +143,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  protected void acceptTracked(AirbyteRecordMessage message) {
+  protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
 
     // ignore other message types.
@@ -149,7 +153,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
               Jsons.serialize(catalog), Jsons.serialize(message)));
     }
-    pairToWriteBuffer.get(pair).offer(Jsons.serialize(message).getBytes(Charsets.UTF_8));
+    var data = Jsons.serialize(message);
+    if (isValidRecord.apply(pair, data)) {
+      // TODO Truncate json data instead of throwing whole record away?
+      // or should we upload it into a special rejected record table instead?
+      pairToWriteBuffer.get(pair).offer(data.getBytes(Charsets.UTF_8));
+    }
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")

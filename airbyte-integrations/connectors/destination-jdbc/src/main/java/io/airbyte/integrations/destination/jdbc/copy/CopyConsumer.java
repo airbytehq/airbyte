@@ -104,7 +104,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
 
     var id = UUID.randomUUID();
     var data = Jsons.serialize(message.getData());
-    if (isValidData(pair, data)) {
+    if (sqlOperations.isValidData(pair, data)) {
       // TODO Truncate json data instead of throwing whole record away?
       // or should we upload it into a special rejected record folder in s3 instead?
       var emittedAt = Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt()));

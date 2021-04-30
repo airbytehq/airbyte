@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
@@ -107,6 +108,11 @@ public class DefaultSqlOperations implements SqlOperations {
 
   private String dropTableIfExistsQuery(String schemaName, String tableName) {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
+  }
+
+  @Override
+  public boolean isValidData(AirbyteStreamNameNamespacePair streamName, String data) {
+    return true;
   }
 
 }

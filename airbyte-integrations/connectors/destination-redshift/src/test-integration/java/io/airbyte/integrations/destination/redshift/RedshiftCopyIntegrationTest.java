@@ -162,7 +162,7 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
 
   @Override
   protected int getMaxRecordValueLimit() {
-    return RedshiftCopyConsumer.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+    return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 
 }
