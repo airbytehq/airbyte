@@ -95,3 +95,9 @@ Delimited identifiers \(also known as quoted identifiers\) begin and end with do
 
 Therefore, Airbyte Redshift destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
+## Data Size Limitations
+
+Redshift specifies a maximum limit of 65535 bytes to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
+
+See [docs](https://docs.aws.amazon.com/redshift/latest/dg/r_Character_types.html)
+
