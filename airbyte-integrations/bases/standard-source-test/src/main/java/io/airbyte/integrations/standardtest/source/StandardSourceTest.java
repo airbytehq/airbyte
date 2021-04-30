@@ -116,6 +116,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-github-singer",
       "airbyte/source-gitlab-singer",
       "airbyte/source-google-workspace-admin-reports",
+      "airbyte/source-zendesk-chat",
       "airbyte/source-zendesk-talk",
       "airbyte/source-quickbooks-singer");
 

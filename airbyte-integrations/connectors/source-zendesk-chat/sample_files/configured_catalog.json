@@ -70,10 +70,12 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -253,6 +255,9 @@
               },
               "type": ["null", "array"]
             },
+            "abandon_time": {
+              "type": ["null", "number"]
+            },
             "comment": {
               "type": ["null", "string"]
             },
@@ -314,14 +319,102 @@
               "type": ["null", "object"],
               "additionalProperties": false
             },
+            "deleted": {
+              "type": ["null", "boolean"]
+            },
             "department_id": {
               "type": ["null", "integer"]
             },
             "department_name": {
               "type": ["null", "string"]
             },
+            "dropped": {
+              "type": ["null", "boolean"]
+            },
             "duration": {
               "type": ["null", "integer"]
+            },
+            "end_timestamp": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            },
+            "engagements": {
+              "type": ["null", "object"],
+              "properties": {
+                "accepted": {
+                  "type": ["null", "boolean"]
+                },
+                "agent_full_name": {
+                  "type": ["null", "string"]
+                },
+                "agent_id": {
+                  "type": ["null", "integer", "string"]
+                },
+                "agent_name": {
+                  "type": ["null", "string"]
+                },
+                "assigned": {
+                  "type": ["null", "boolean"]
+                },
+                "comment": {
+                  "type": ["null", "string"]
+                },
+                "count": {
+                  "properties": {
+                    "total": {
+                      "type": ["null", "integer"]
+                    },
+                    "agent": {
+                      "type": ["null", "integer"]
+                    },
+                    "visitor": {
+                      "type": ["null", "integer"]
+                    }
+                  },
+                  "type": ["null", "object"],
+                  "additionalProperties": false
+                },
+                "department_id": {
+                  "type": ["null", "integer"]
+                },
+                "duration": {
+                  "type": ["null", "number"]
+                },
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "rating": {
+                  "type": ["null", "string"]
+                },
+                "response_time": {
+                  "properties": {
+                    "first": {
+                      "type": ["null", "integer"]
+                    },
+                    "max": {
+                      "type": ["null", "integer"]
+                    },
+                    "avg": {
+                      "type": ["null", "number", "integer"]
+                    }
+                  },
+                  "type": ["null", "object"],
+                  "additionalProperties": false
+                },
+                "skills_fulfilled": {
+                  "type": ["null", "boolean"]
+                },
+                "skills_requested": {
+                  "type": ["null", "array"]
+                },
+                "started_by": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                }
+              }
             },
             "history": {
               "items": {
@@ -427,7 +520,16 @@
             "missed": {
               "type": ["null", "boolean"]
             },
+            "proactive": {
+              "type": ["null", "boolean"]
+            },
             "rating": {
+              "type": ["null", "string"]
+            },
+            "referrer_search_engine": {
+              "type": ["null", "string"]
+            },
+            "referrer_search_terms": {
               "type": ["null", "string"]
             },
             "response_time": {
@@ -448,6 +550,12 @@
             "session": {
               "type": ["null", "object"],
               "additionalProperties": true
+            },
+            "skills_fulfilled": {
+              "type": ["null", "boolean"]
+            },
+            "skills_requested": {
+              "type": ["null", "array"]
             },
             "started_by": {
               "type": ["null", "string"]
@@ -473,6 +581,10 @@
             },
             "unread": {
               "type": ["null", "boolean", "integer"]
+            },
+            "update_timestamp": {
+              "format": "date-time",
+              "type": ["null", "string"]
             },
             "visitor": {
               "properties": {
@@ -525,10 +637,12 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["update_timestamp"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -645,10 +759,12 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {

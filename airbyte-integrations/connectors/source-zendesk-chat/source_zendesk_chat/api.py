@@ -21,20 +21,19 @@
 # SOFTWARE.
 
 
-from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from abc import ABC, abstractmethod
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
 from base_python import HttpStream
 
 
-class ZendeskChatStream(HttpStream, ABC):
+class ZendeskChatStream(HttpStream):
     url_base = "https://www.zopim.com/api/v2/"
 
     data_field = None
-    pagination_support = False
-    limit = 100
+    limit = 5
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")
@@ -45,13 +44,11 @@ class ZendeskChatStream(HttpStream, ABC):
         return self.name
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self.pagination_support:
-            stream_data = self.get_stream_data(response.json())
-            if len(stream_data) == self.limit:
-                last_object_id = stream_data[-1]["id"]
-                return {"since_id": last_object_id}
+        return {}
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         if next_page_token:
             params.update(next_page_token)
@@ -61,10 +58,6 @@ class ZendeskChatStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_data = response.json()
         stream_data = self.get_stream_data(response_data)
-
-        # Getting rid of duplicates
-        if self.pagination_support and response.url.find("since_id") > -1:
-            stream_data = stream_data[1:]
 
         yield from stream_data
 
@@ -80,12 +73,117 @@ class ZendeskChatStream(HttpStream, ABC):
             raise Exception(f"Unsupported type of response data for stream {self.name}")
 
 
-class Agents(ZendeskChatStream):
+class ZendeskChatBaseIncrementalStream(ZendeskChatStream, ABC):
+    @property
+    @abstractmethod
+    def cursor_field(self) -> str:
+        """
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
+        """
+
+    @abstractmethod
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+
+    @staticmethod
+    def _field_to_datetime(value: Union[int, str]) -> pendulum.datetime:
+        if isinstance(value, int):
+            value = pendulum.from_timestamp(value / 1000.0)
+        elif isinstance(value, str):
+            value = pendulum.parse(value)
+        else:
+            raise ValueError(f"Unsupported type of datetime field {type(value)}")
+        return value
+
+
+class ZendeskChatTimeIncrementalStream(ZendeskChatBaseIncrementalStream, ABC):
+    def __init__(self, start_date, **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = pendulum.parse(start_date)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response_data = response.json()
+        if response_data["count"] == self.limit:
+            return {"start_time": response_data["end_time"]}
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_benchmark = self._field_to_datetime(latest_record[self.cursor_field])
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: str(max(latest_benchmark, self._field_to_datetime(current_stream_state[self.cursor_field])))}
+        return {self.cursor_field: str(latest_benchmark)}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token)
+        if next_page_token:
+            params.update(next_page_token)
+        else:
+            start_datetime = self._start_date
+            if stream_state.get(self.cursor_field):
+                start_datetime = pendulum.parse(stream_state[self.cursor_field])
+
+            params.update({"start_time": int(start_datetime.timestamp())})
+
+        params.update({"fields": f"{self.name}(*)"})
+        return params
+
+    def path(self, **kwargs) -> str:
+        return f"incremental/{self.name}"
+
+
+class ZendeskChatIdIncrementalStream(ZendeskChatBaseIncrementalStream):
+    cursor_field = "id"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        stream_data = self.get_stream_data(response.json())
+        if len(stream_data) == self.limit:
+            last_object_id = stream_data[-1]["id"]
+            return {"since_id": last_object_id}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token)
+
+        if next_page_token:
+            params.update(next_page_token)
+        elif stream_state.get(self.cursor_field):
+            params.update({"since_id": stream_state[self.cursor_field]})
+
+        return params
+
+
+class Agents(ZendeskChatIdIncrementalStream):
     """
     Agents Stream: https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents
     """
 
-    pagination_support = True
+
+class AgentTimelines(ZendeskChatTimeIncrementalStream):
+    """
+    Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
+    """
+
+    cursor_field = "start_time"
+    data_field = "agent_timeline"
+    name = "agent_timeline"
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        if not kwargs.get("next_page_token"):
+            params["start_time"] = params["start_time"] * 1000000
+        return params
 
 
 class Accounts(ZendeskChatStream):
@@ -97,11 +195,12 @@ class Accounts(ZendeskChatStream):
         return "account"
 
 
-class Chats(ZendeskChatStream):
+class Chats(ZendeskChatTimeIncrementalStream):
     """
-    Chats Stream: https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats
+    Chats Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-chat-export
     """
 
+    cursor_field = "update_timestamp"
     data_field = "chats"
 
 
@@ -117,12 +216,10 @@ class Triggers(ZendeskChatStream):
     """
 
 
-class Bans(ZendeskChatStream):
+class Bans(ZendeskChatIdIncrementalStream):
     """
     Bans Stream: https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans
     """
-
-    pagination_support = True
 
     def get_stream_data(self, response_data) -> List[dict]:
         bans = response_data["ip_address"] + response_data["visitor"]

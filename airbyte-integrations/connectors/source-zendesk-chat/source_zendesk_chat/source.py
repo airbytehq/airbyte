@@ -26,7 +26,7 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_protocol import SyncMode
 from base_python import AbstractSource, Stream, TokenAuthenticator
 
-from .api import Accounts, Agents, Bans, Chats, Departments, Goals, Roles, RoutingSettings, Shortcuts, Skills, Triggers
+from .api import Accounts, Agents, AgentTimelines, Bans, Chats, Departments, Goals, Roles, RoutingSettings, Shortcuts, Skills, Triggers
 
 
 class SourceZendeskChat(AbstractSource):
@@ -42,8 +42,9 @@ class SourceZendeskChat(AbstractSource):
         authenticator = TokenAuthenticator(token=config["access_token"])
         return [
             Agents(authenticator=authenticator),
+            AgentTimelines(authenticator=authenticator, start_date=config["start_date"]),
             Accounts(authenticator=authenticator),
-            Chats(authenticator=authenticator),
+            Chats(authenticator=authenticator, start_date=config["start_date"]),
             Shortcuts(authenticator=authenticator),
             Triggers(authenticator=authenticator),
             Bans(authenticator=authenticator),
