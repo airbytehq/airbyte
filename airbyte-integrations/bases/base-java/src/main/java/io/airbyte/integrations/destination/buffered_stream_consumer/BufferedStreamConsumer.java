@@ -28,7 +28,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -219,22 +218,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         }
       }
     }
-  }
-
-  public interface OnStartFunction extends VoidCallable {}
-
-  public interface RecordWriter extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>, Exception> {
-
-    @Override
-    void accept(AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> recordStream) throws Exception;
-
-  }
-
-  public interface OnCloseFunction extends CheckedConsumer<Boolean, Exception> {
-
-    @Override
-    void accept(Boolean hasFailed) throws Exception;
-
   }
 
 }
