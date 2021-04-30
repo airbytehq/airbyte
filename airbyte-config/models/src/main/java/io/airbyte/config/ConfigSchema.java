@@ -46,6 +46,12 @@ public enum ConfigSchema {
   STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml"),
   STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.yaml"),
 
+  // worker
+  STANDARD_SYNC_INPUT("StandardSyncInput.yaml"),
+  NORMALIZATION_INPUT("NormalizationInput.yaml"),
+
+  STANDARD_SYNC_OUTPUT("StandardSyncOutput.yaml"),
+
   STATE("State.yaml");
 
   static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("types", ConfigSchema.class);
