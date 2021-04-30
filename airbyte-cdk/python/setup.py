@@ -21,26 +21,63 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import pathlib
+from setuptools import setup, find_packages
 
+# The directory containing this file
+HERE = pathlib.Path(__file__).parent
 
-import setuptools
+# The text of the README file
+README = (HERE / "README.md").read_text()
 
-setuptools.setup(
-    name="airbyte-cdk",
-    version="0.1.0",
-    description="The Airbyte Connector Development Kit",
+setup(
+    name="airbyte-base-python",
+    version="0.0.2",
+    description="Contains machinery to make it easy to write an Airbyte Connector in Python.",
+    long_description=README,
+    long_description_content_type="text/markdown",
     author="Airbyte",
     author_email="contact@airbyte.io",
+    license="MIT",
     url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
+    classifiers=[
+            # This information is used when browsing on PyPi.
+
+            # Dev Status
+            'Development Status :: 3 - Alpha',
+
+            # Project Audience
+            'Intended Audience :: Developers',
+            'Topic :: Scientific/Engineering',
+            'Topic :: Software Development :: Libraries :: Python Modules',
+
+            'License :: OSI Approved :: MIT License',
+
+            # Python Version Support
+            'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3.9',
+            'Programming Language :: Python :: 3.10',
+    ],
+    keywords='airbyte connectors-development-kit cdk',
+    project_urls={
+            'Documentation': 'https://docs.airbyte.io/',
+            'Source': 'https://github.com/airbytehq/airbyte',
+            'Tracker': 'https://github.com/airbytehq/airbyte/issues',
+    },
+    packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
-        "backoff",
-        "jsonschema==2.6.0",
-        "pendulum",
-        "pydantic==1.6.1",
-        "pytest",
-        "PyYAML==5.4",
-        "requests",
-    ]
+            "PyYAML==5.4",
+            "pydantic==1.6.1",
+            "airbyte-protocol",
+            "jsonschema==2.6.0",
+            "requests",
+            "backoff",
+            "pytest",
+            "pendulum",
+    ],
+    python_requires='>=3.7.9',
+    entry_points={
+            "console_scripts": ["base-python=base_python.entrypoint:main"],
+    },
 )
