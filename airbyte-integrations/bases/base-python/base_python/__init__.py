@@ -28,6 +28,7 @@ from base_python.cdk.abstract_source import AbstractSource
 
 # Separate the SDK imports so they can be moved somewhere else more easily
 from base_python.cdk.streams.auth.core import HttpAuthenticator
+from base_python.cdk.streams.auth.oauth import Oauth2Authenticator
 from base_python.cdk.streams.auth.token import TokenAuthenticator
 from base_python.cdk.streams.core import Stream
 from base_python.cdk.streams.http import HttpStream
@@ -51,6 +52,7 @@ __all__ = [
     "HttpAuthenticator",
     "HttpStream",
     "Integration",
+    "Oauth2Authenticator",
     "Source",
     "Stream",
     "TokenAuthenticator",

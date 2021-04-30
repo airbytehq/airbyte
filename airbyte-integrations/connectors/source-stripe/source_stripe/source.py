@@ -125,7 +125,7 @@ class CustomerBalanceTransactions(StripeStream):
         return f"customers/{customer_id}/balance_transactions"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        customers_stream = Customers(authenticator=self.authenticator)
+        customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"customer_id": customer["id"]}, **kwargs)
 
@@ -268,6 +268,7 @@ class SourceStripe(AbstractSource):
         authenticator = TokenAuthenticator(config["client_secret"])
         args = {"authenticator": authenticator, "account_id": config["account_id"]}
         return [
+            BankAccounts(**args),
             BalanceTransactions(**args),
             Charges(**args),
             Coupons(**args),
@@ -283,7 +284,6 @@ class SourceStripe(AbstractSource):
             Products(**args),
             Subscriptions(**args),
             SubscriptionItems(**args),
-            Transfers(**args),
             Refunds(**args),
-            BankAccounts(**args),
+            Transfers(**args),
         ]
