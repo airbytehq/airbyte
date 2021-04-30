@@ -34,7 +34,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.0.2",
+    version="0.0.1",
     description="Contains machinery to make it easy to write an Airbyte Connector in Python.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -69,14 +69,13 @@ setup(
     },
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
-            "PyYAML==5.4",
-            "pydantic==1.6.1",
-            "airbyte-protocol",
-            "jsonschema==2.6.0",
-            "requests",
             "backoff",
-            "pytest",
+            "jsonschema==2.6.0",
             "pendulum",
+            "pydantic==1.6.1",
+            "pytest",
+            "PyYAML==5.4",
+            "requests",
     ],
     python_requires='>=3.7.9',
     entry_points={
