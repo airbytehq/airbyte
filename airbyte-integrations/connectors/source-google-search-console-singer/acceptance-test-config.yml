@@ -1,9 +1,9 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
 # for more information about how to configure these tests
-connector_image: airbyte/google-search-console
+connector_image: airbyte/google-search-console-singer
 tests:
   spec:
-    - spec_path: "source_google_search_console/spec.json"
+    - spec_path: "source_google_search_console_singer/spec.json"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
