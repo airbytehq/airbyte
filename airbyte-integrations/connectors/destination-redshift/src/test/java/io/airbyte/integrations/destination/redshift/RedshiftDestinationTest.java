@@ -24,15 +24,10 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.integrations.destination.redshift.RedshiftCopyDestination.RedshiftCopyDestinationConsumer;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -43,37 +38,21 @@ public class RedshiftDestinationTest {
 
   @Test
   @DisplayName("When given S3 credentials should use COPY")
-  public void useCopyStrategyTest() throws Exception {
-    var copyMock = mock(RedshiftCopyDestination.class);
-    when(copyMock.getConsumer(any(), any())).thenReturn(mock(RedshiftCopyDestinationConsumer.class));
-    var insertMock = mock(RedshiftInsertDestination.class);
-    var redshiftDest = new RedshiftDestination(copyMock, insertMock);
-
+  public void useCopyStrategyTest() {
     var stubConfig = mapper.createObjectNode();
     stubConfig.put("s3_bucket_name", "fake-bucket");
     stubConfig.put("s3_bucket_region", "fake-region");
     stubConfig.put("access_key_id", "test");
     stubConfig.put("secret_access_key", "test key");
-    var catalogMock = mock(ConfiguredAirbyteCatalog.class);
 
-    redshiftDest.getConsumer(stubConfig, catalogMock);
-    verify(copyMock, times(1)).getConsumer(any(), any());
-
+    assertTrue(RedshiftDestination.isCopy(stubConfig));
   }
 
   @Test
   @DisplayName("When not given S3 credentials should use INSERT")
-  public void useInsertStrategyTest() throws Exception {
-    var copyMock = mock(RedshiftCopyDestination.class);
-    var insertMock = mock(RedshiftInsertDestination.class);
-    when(insertMock.getConsumer(any(), any())).thenReturn(mock(RedshiftCopyDestinationConsumer.class));
-    var redshiftDest = new RedshiftDestination(copyMock, insertMock);
-
+  public void useInsertStrategyTest() {
     var stubConfig = mapper.createObjectNode();
-    var catalogMock = mock(ConfiguredAirbyteCatalog.class);
-
-    redshiftDest.getConsumer(stubConfig, catalogMock);
-    verify(insertMock, times(1)).getConsumer(any(), any());
+    assertFalse(RedshiftDestination.isCopy(stubConfig));
   }
 
 }

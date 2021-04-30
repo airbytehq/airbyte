@@ -1,30 +1,29 @@
-"""
-MIT License
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import hashlib
 import os
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
@@ -80,7 +79,7 @@ class StreamProcessor(object):
         primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
-        tables_registry: Dict[str, Set[str]],
+        tables_registry: Dict[str, Dict[str, str]],
         from_table: str,
     ):
         """
@@ -96,14 +95,14 @@ class StreamProcessor(object):
         self.primary_key: List[List[str]] = primary_key
         self.json_column_name: str = json_column_name
         self.properties: Dict = properties
-        self.tables_registry: Dict[str, Set[str]] = tables_registry
+        self.tables_registry: Dict[str, Dict[str, str]] = tables_registry
         self.from_table: str = from_table
 
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.json_path: List[str] = [stream_name]
         self.final_table_name: str = ""
         self.sql_outputs: Dict[str, str] = {}
-        self.local_registry: Dict[str, Set[str]] = {}
+        self.local_registry: Dict[str, Dict[str, str]] = {}
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
 
@@ -155,7 +154,7 @@ class StreamProcessor(object):
         primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
-        tables_registry: Dict[str, Set[str]],
+        tables_registry: Dict[str, Dict[str, str]],
         from_table: str,
     ) -> "StreamProcessor":
         """
@@ -524,9 +523,9 @@ from {{ from_table }}
                     property_type = self.properties[field]["type"]
                 else:
                     property_type = "object"
-                if is_number(property_type) or is_boolean(property_type) or is_array(property_type) or is_object(property_type):
-                    # some destinations don't handle float columns (or other types) as primary keys, turn everything to string
-                    return f"cast({jinja_call(self.safe_cast_to_string(self.properties[field], column_names[field][1]))} as {jinja_call('dbt_utils.type_string()')})"
+                if is_number(property_type) or is_object(property_type):
+                    # some destinations don't handle float columns (or complex types) as primary keys, turn them to string
+                    return f"cast({column_names[field][0]} as {jinja_call('dbt_utils.type_string()')})"
                 else:
                     return column_names[field][0]
             else:
@@ -570,15 +569,8 @@ from {{ from_table }}
     def add_to_outputs(self, sql: str, is_intermediate: bool, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
         table_name = self.generate_new_table_name(is_intermediate, suffix)
-        self.add_table_to_local_registry(table_name, is_intermediate)
-        # TODO(davin): Check with Chris if there is a better way of doing this.
-        # File names need to match the ref() macro returned in the ref_table function.
-        # Dbt uses file names to generate internal model. Include schem in the name to
-        # dedup tables with the same name and different schema.
-        file_name = f"{schema}_{table_name}"
-        if len(file_name) > self.name_transformer.get_name_max_length():
-            file_name = self.name_transformer.truncate_identifier_name(input_name=file_name)
-
+        file_name = self.get_file_name(self.stream_name, schema, table_name)
+        self.add_table_to_local_registry(file_name, table_name, is_intermediate)
         file = f"{file_name}.sql"
         if is_intermediate:
             output = os.path.join("airbyte_views", self.schema, file)
@@ -597,6 +589,18 @@ from {{ from_table }}
         print(f"  Generating {output} from {json_path}")
         return ref_table(file_name)
 
+    def get_file_name(self, stream_name: str, schema_name: str, table_name: str) -> str:
+        """
+        File names need to match the ref() macro returned in the ref_table function.
+        Note that dbt uses only the file names to generate internal model.
+
+        Use a hash of full schema + stream name (i.e. namespace + stream name) to dedup tables.
+        This hash avoids tables with the same name (possibly very long) and different schemas.
+        """
+        full_lower_name = schema_name + "_" + stream_name
+        full_lower_name = full_lower_name.lower()
+        return self.name_transformer.normalize_table_name(f"{table_name}_{hash_name(full_lower_name)}", False, False)
+
     def get_model_tags(self, is_intermediate: bool) -> str:
         tags = ""
         if self.parent:
@@ -611,36 +615,49 @@ from {{ from_table }}
         """
         Generates a new table name that is not registered in the schema yet (based on normalized_stream_name())
         """
-        tables_registry = union_registries(self.tables_registry, self.local_registry)
         new_table_name = self.normalized_stream_name()
+        schema = self.get_schema(is_intermediate)
         if not is_intermediate and self.parent is None:
             if suffix:
                 norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
                 new_table_name = new_table_name + norm_suffix
-            # Top-level stream has priority on table_names
-            if self.schema in tables_registry and new_table_name in tables_registry[self.schema]:
-                raise ValueError(f"Conflict: Table name {new_table_name} in schema {self.schema} already exists!")
         elif not self.parent:
             new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
         else:
             new_table_name = get_table_name(self.name_transformer, "_".join(self.json_path[:-1]), new_table_name, suffix, self.json_path)
         new_table_name = self.name_transformer.normalize_table_name(new_table_name, False, False)
+
+        if self.is_in_registry(schema, new_table_name):
+            # Check if new_table_name already exists. If yes, then add hash of the stream name to it
+            new_table_name = self.name_transformer.normalize_table_name(f"{new_table_name}_{hash_name(self.stream_name)}", False, False)
+            if self.is_in_registry(schema, new_table_name):
+                raise ValueError(
+                    f"Conflict: Table name {new_table_name} in schema {schema} already exists! (is there a hashing collision or duplicate streams?)"
+                )
+
         if not is_intermediate:
             self.final_table_name = new_table_name
         return new_table_name
 
-    def add_table_to_local_registry(self, table_name: str, is_intermediate: bool):
-        tables_registry = union_registries(self.tables_registry, self.local_registry)
+    def is_in_registry(self, schema: str, table_name: str) -> bool:
+        """
+        Check if schema . table_name already exists in:
+         - "global" tables_registry: recording all produced schema/table from previously processed streams.
+         - "local" local_registry: recording all produced schema/table from the current stream being processed.
+
+        Note, we avoid side-effets modifications to registries and perform only read operations here...
+        """
+        return (schema in self.tables_registry and table_name in self.tables_registry[schema]) or (
+            schema in self.local_registry and table_name in self.local_registry[schema]
+        )
+
+    def add_table_to_local_registry(self, file_name: str, table_name: str, is_intermediate: bool):
         schema = self.get_schema(is_intermediate)
-        if schema not in tables_registry:
-            self.local_registry[schema] = {table_name}
-        else:
-            if table_name not in tables_registry[schema]:
-                if schema not in self.local_registry:
-                    self.local_registry[schema] = set()
-                self.local_registry[schema].add(table_name)
-            else:
-                raise KeyError(f"Duplicate table {table_name} in schema {schema}")
+        if self.is_in_registry(schema, table_name):
+            raise KeyError(f"Duplicate table {table_name} in schema {schema}")
+        if schema not in self.local_registry:
+            self.local_registry[schema] = {}
+        self.local_registry[schema][table_name] = file_name
 
     def get_schema(self, is_intermediate: bool) -> str:
         if is_intermediate:
@@ -689,10 +706,12 @@ from {{ from_table }}
 
     def unnesting_before_query(self) -> str:
         if self.parent and self.is_nested_array:
-            parent_table_name = f"'{self.parent.actual_table_name()}'"
+            parent_file_name = (
+                f"'{self.get_file_name(self.parent.stream_name, self.parent.get_schema(False), self.parent.actual_table_name())}'"
+            )
             parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
             quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
-            return jinja_call(f"unnest_cte({parent_table_name}, {parent_stream_name}, {quoted_field})")
+            return jinja_call(f"unnest_cte({parent_file_name}, {parent_stream_name}, {quoted_field})")
         return ""
 
     def unnesting_after_query(self) -> str:
@@ -754,13 +773,27 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
 
 
 def hash_json_path(json_path: List[str]) -> str:
-    lineage = "&airbyte&".join(json_path)
+    return hash_name("&airbyte&".join(json_path))
+
+
+def hash_name(input: str) -> str:
     h = hashlib.sha1()
-    h.update(lineage.encode("utf-8"))
+    h.update(input.encode("utf-8"))
     return h.hexdigest()[:3]
 
 
 def get_table_name(name_transformer: DestinationNameTransformer, parent: str, child: str, suffix: str, json_path: List[str]) -> str:
+    """
+    In normalization code base, we often have to deal with naming for tables, combining informations from:
+    - parent table: to denote where a table is extracted from (in case of nesting)
+    - child table: in case of nesting, the field name or the original stream name
+    - extra suffix: normalization is done in multiple transformation steps, each may need to generate separate tables,
+    so we can add a suffix to distinguish the different transformation steps of a pipeline.
+    - json path: in terms of parent and nested field names in order to reach the table currently being built
+
+    All these informations should be included (if possible) in the table naming for the user to (somehow) identify and
+    recognize what data is available there.
+    """
     max_length = name_transformer.get_name_max_length() - 2  # less two for the underscores
     json_path_hash = hash_json_path(json_path)
     norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
@@ -783,13 +816,3 @@ def get_table_name(name_transformer: DestinationNameTransformer, parent: str, ch
         norm_child_max_length = max_length - min_parent_length - len(json_path_hash) - len(norm_suffix)
         trunc_norm_child = name_transformer.truncate_identifier_name(norm_child, norm_child_max_length)
         return f"{norm_parent[:min_parent_length]}_{json_path_hash}_{trunc_norm_child}{norm_suffix}"
-
-
-def union_registries(table_registry: Dict[str, Set[str]], local_registry: Dict[str, Set[str]]) -> Dict[str, Set[str]]:
-    union = dict(table_registry)
-    for schema in local_registry:
-        if schema not in union:
-            union[schema] = local_registry[schema]
-        else:
-            union[schema] = union[schema].union(local_registry[schema])
-    return union

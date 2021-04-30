@@ -30,6 +30,7 @@ import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.lang.Queues;
@@ -37,7 +38,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.queue.BigQueue;
+import io.airbyte.queue.OnDiskQueue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -87,6 +88,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, CloseableQueue<byte[]>> pairToWriteBuffer;
   private final ScheduledExecutorService writerPool;
   private final ConfiguredAirbyteCatalog catalog;
+  private final CheckedFunction<String, Boolean, Exception> isValidRecord;
+  private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
 
   private boolean hasStarted;
 
@@ -94,18 +97,21 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 RecordWriter recordWriter,
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
-                                Set<AirbyteStreamNameNamespacePair> pairs) {
+                                Set<AirbyteStreamNameNamespacePair> pairs,
+                                CheckedFunction<String, Boolean, Exception> isValidRecord) {
     this.hasStarted = false;
     this.onStart = onStart;
     this.recordWriter = recordWriter;
     this.onClose = onClose;
     this.catalog = catalog;
     this.pairs = pairs;
+    this.isValidRecord = isValidRecord;
 
     this.writerPool = Executors.newSingleThreadScheduledExecutor();
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofMinutes(GRACEFUL_SHUTDOWN_MINUTES), writerPool));
 
     this.pairToWriteBuffer = new HashMap<>();
+    this.pairToIgnoredRecordCount = new HashMap<>();
   }
 
   @Override
@@ -114,6 +120,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
 
+    pairToIgnoredRecordCount.clear();
     LOGGER.info("{} started.", BufferedStreamConsumer.class);
 
     LOGGER.info("Buffer creation started for {} streams.", pairs.size());
@@ -121,7 +128,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     for (AirbyteStreamNameNamespacePair pair : pairs) {
       LOGGER.info("Buffer creation for stream {}.", pair);
       try {
-        final BigQueue writeBuffer = new BigQueue(queueRoot.resolve(pair.getName()), pair.getName());
+        final OnDiskQueue writeBuffer = new OnDiskQueue(queueRoot.resolve(pair.getName()), pair.getName());
         pairToWriteBuffer.put(pair, writeBuffer);
       } catch (Exception e) {
         LOGGER.error("Error creating buffer: ", e);
@@ -139,23 +146,31 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  protected void acceptTracked(AirbyteRecordMessage message) {
+  protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
 
     // ignore other message types.
-    final String streamName = message.getStream();
     final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
     if (!pairs.contains(pair)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
               Jsons.serialize(catalog), Jsons.serialize(message)));
     }
-    pairToWriteBuffer.get(pair).offer(Jsons.serialize(message).getBytes(Charsets.UTF_8));
+    var data = Jsons.serialize(message);
+    if (isValidRecord.apply(data)) {
+      // TODO Truncate json data instead of throwing whole record away?
+      // or should we upload it into a special rejected record table instead?
+      pairToWriteBuffer.get(pair).offer(data.getBytes(Charsets.UTF_8));
+    } else {
+      pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
+    }
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Override
   protected void close(boolean hasFailed) throws Exception {
+    pairToIgnoredRecordCount
+        .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
     if (hasFailed) {
       LOGGER.error("executing on failed close procedure.");
 

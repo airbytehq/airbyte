@@ -424,6 +424,34 @@
                 }
               }
             },
+            "base": {
+              "type": ["null", "object"],
+              "properties": {
+                "ref": {
+                  "type": ["null", "string"]
+                },
+                "label": {
+                  "type": ["null", "string"]
+                },
+                "repo": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "integer"]
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "url": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "sha": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
             "merged_at": {
               "type": ["null", "string"],
               "format": "date-time"
@@ -442,11 +470,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {

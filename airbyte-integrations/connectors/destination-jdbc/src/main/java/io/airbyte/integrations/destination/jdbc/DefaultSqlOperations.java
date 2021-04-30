@@ -109,4 +109,9 @@ public class DefaultSqlOperations implements SqlOperations {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
   }
 
+  @Override
+  public boolean isValidData(String data) {
+    return true;
+  }
+
 }
