@@ -22,7 +22,7 @@
 
 
 from functools import reduce
-from typing import List
+from typing import List, Set, Any
 
 import pendulum
 
@@ -45,11 +45,16 @@ class JsonSchemaHelper:
             node = node["properties"][segment]
         return node
 
-    def get_type_for_key_path(self, path: List[str]):
+    def get_type_for_key_path(self, path: List[str]) -> Set[str]:
+        type_ = []
         try:
-            return self.get_property(path)["type"]
+            field = self.get_property(path)
+            type_ = field.get("format", field["type"])
+            if not isinstance(type_, List):
+                type_ = [type_]
         except KeyError:
-            return None
+            pass
+        return set(type_)
 
     def get_cursor_value(self, record, cursor_path):
         type_ = self.get_type_for_key_path(path=cursor_path)
@@ -57,8 +62,10 @@ class JsonSchemaHelper:
         return self.parse_value(value, type_)
 
     @staticmethod
-    def parse_value(value, type_):
-        if type_ in ("datetime", "date-time"):
+    def parse_value(value: Any, type_: Set[str]):
+        if type_ & {"datetime", "date-time"}:
+            if value is None and "null" not in type_:
+                raise ValueError("Invalid field format")
             return pendulum.parse(value)
         return value
 
