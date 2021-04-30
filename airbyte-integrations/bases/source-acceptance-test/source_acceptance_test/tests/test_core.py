@@ -147,7 +147,7 @@ class TestBasicRead(BaseTest):
                     break
                 if extra_fields:
                     r2 = TestBasicRead.remove_extra_fields(r2, r1)
-                assert r1 == r2, f"Stream {stream_name}: There mismatching in order of records or their values"
+                assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
         else:
             expected = set(map(TestBasicRead.serialize_record_for_comparison, expected))
             actual = set(map(TestBasicRead.serialize_record_for_comparison, actual))
