@@ -118,6 +118,7 @@ class Stream(ABC):
     def primary_key(self) -> Union[str, List[str], List[List[str]]]:
         """
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+        If the stream has no primary keys, return None.
         """
 
     def _wrapped_primary_key(self) -> Optional[List[List[str]]]:
