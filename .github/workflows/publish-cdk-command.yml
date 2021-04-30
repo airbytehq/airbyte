@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       dry-run:
-        description: ''
+        description: 'Indicates whether this is a dry-run or not. A dry-run publishes to Test PyPi. A proper run publishes to actual PyPi servers.'
         required: false
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
@@ -20,12 +20,17 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Echo
-        run: echo ${{ github.event.inputs.dry-run }}
+      # Make use of env vars to dynamically set the PyPi url. Since the default is set to publish to production PyPi, only set the url if during
+      # a dry-run publish to the Test PyPi servers.
+      - name: Publish to test PyPi if dry-run.
+        if: github.event.inputs.dry-run != 'false'
+        run: |
+          echo ${{ github.event.inputs.dry-run }}
+          echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Publish Python Package
-        uses: mariamrf/py-package-publish-action@v1.0.0
+        uses: mariamrf/py-package-publish-action@v1.1.0
         with:
           python_version: '3.7.9'
           pip_version: '21.1'
@@ -33,7 +38,7 @@ jobs:
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_REPOSITORY_URL: 'https://test.pypi.org/legacy/'
+          TWINE_REPOSITORY_URL: ${{ env.pypi_url }}
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
