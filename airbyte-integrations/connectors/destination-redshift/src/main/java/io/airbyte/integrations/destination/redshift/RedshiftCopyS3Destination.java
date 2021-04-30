@@ -50,7 +50,8 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 public class RedshiftCopyS3Destination extends CopyDestination {
 
   public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
-    return new CopyConsumer<>(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config), new RedshiftStreamCopierFactory(),
+    return new CopyConsumer<>(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config),
+        new RedshiftStreamCopierFactory(),
         getSqlOperations(),
         getNameTransformer());
   }
