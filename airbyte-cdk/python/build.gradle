@@ -1,0 +1,20 @@
+plugins {
+    id 'airbyte-python'
+    id 'airbyte-docker'
+}
+
+airbytePython {
+    moduleDirectory 'airbyte_protocol'
+}
+
+task generateProtocolClassFilesWithoutLicense(type: Exec) {
+    environment 'ROOT_DIR', rootDir.absolutePath
+    commandLine 'bin/generate-protocol-files.sh'
+    dependsOn ':tools:code-generator:airbyteDocker'
+}
+
+// todo: figure out dependencies
+task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense, rootProject.spotlessPython])
+rootProject.spotlessPython.mustRunAfter(generateProtocolClassFilesWithoutLicense)
+rootProject.build.dependsOn generateProtocolClassFiles
+installReqs.dependsOn(generateProtocolClassFiles)
