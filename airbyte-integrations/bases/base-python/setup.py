@@ -21,48 +21,16 @@
 # SOFTWARE.
 
 
-import pathlib
+import setuptools
 
-from setuptools import find_packages, setup
-
-# The directory containing this file
-HERE = pathlib.Path(__file__).parent
-
-# The text of the README file
-README = (HERE / "README.md").read_text()
-
-setup(
-    name="airbyte-base-python",
-    version="0.0.2",
-    description="Contains machinery to make it easy to write an Airbyte Connector in Python.",
-    long_description=README,
-    long_description_content_type="text/markdown",
+setuptools.setup(
+    name="base-python",
+    description="Contains machinery to make it easy to write an integration in python.",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    license="MIT",
     url="https://github.com/airbytehq/airbyte",
-    classifiers=[
-        # This information is used when browsing on PyPi.
-        # Dev Status
-        "Development Status :: 3 - Alpha",
-        # Project Audience
-        "Intended Audience :: Developers",
-        "Topic :: Scientific/Engineering",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "License :: OSI Approved :: MIT License",
-        # Python Version Support
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-    ],
-    keywords="airbyte connectors-development-kit cdk",
-    project_urls={
-        "Documentation": "https://docs.airbyte.io/",
-        "Source": "https://github.com/airbytehq/airbyte",
-        "Tracker": "https://github.com/airbytehq/airbyte/issues",
-    },
-    packages=find_packages(exclude=("unit_tests",)),
+    packages=setuptools.find_packages(),
+    package_data={"": ["models/yaml/*.yaml"]},
     install_requires=[
         "PyYAML==5.4",
         "pydantic==1.6.1",
@@ -73,7 +41,6 @@ setup(
         "pytest",
         "pendulum",
     ],
-    python_requires=">=3.7.9",
     entry_points={
         "console_scripts": ["base-python=base_python.entrypoint:main"],
     },
