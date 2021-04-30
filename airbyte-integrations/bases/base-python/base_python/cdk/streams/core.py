@@ -78,7 +78,7 @@ class Stream(ABC):
         stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
 
         if self.supports_incremental:
-            stream.source_defined_cursor = self.cursor
+            stream.source_defined_cursor = self.source_defined_cursor
             stream.supported_sync_modes.append(SyncMode.incremental)
             stream.default_cursor_field = self._wrapped_cursor_field()
 
@@ -107,7 +107,7 @@ class Stream(ABC):
         return []
 
     @property
-    def cursor(self) -> bool:
+    def source_defined_cursor(self) -> bool:
         """
         Return False if the cursor can be configured by the user.
         """
