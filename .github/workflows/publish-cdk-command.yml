@@ -2,7 +2,7 @@ name: publish-cdk
 on:
   workflow_dispatch:
     inputs:
-      dry-run:
+      connector:
         description: 'dry-run'
         required: true
       comment-id:
