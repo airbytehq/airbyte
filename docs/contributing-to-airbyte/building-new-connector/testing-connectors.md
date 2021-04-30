@@ -2,7 +2,7 @@
 
 ## Source Acceptance Tests
 
-To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../architecture/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
+To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
 *Note: If you are looking for reference documentation for the deprecated first version of test suites, see [Standard Tests (Legacy)](legacy-standard-source-tests.md).*
 
@@ -32,13 +32,13 @@ Build your connector image if needed.
 docker build .
 ```
 Run one of the two scripts in the root of the connector:
-- `./acceptance-test-python.sh` - to run tests inside virtual environment
+- `python -m pytest -p integration_tests.acceptance` - to run tests inside virtual environment
 - `./acceptance-test-docker.sh` - to run tests from a docker container
 
 If the test fails you will see detail about the test and where to find its inputs and outputs to reproduce it.
 You can also debug failed tests by adding `—pdb —last-failed`:
 ```
-./acceptance-test-python.sh --pdb --last-failed
+python -m pytest -p integration_tests.acceptance --pdb --last-failed
 ```
 See other useful pytest options [here](https://docs.pytest.org/en/stable/usage.html)
 

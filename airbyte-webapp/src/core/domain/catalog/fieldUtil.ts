@@ -32,7 +32,8 @@ export const traverseSchemaToField = (
 const traverseJsonSchemaProperties = (
   jsonSchema: JSONSchema7Definition,
   key: string,
-  path: string = key
+  path: string = key,
+  depth = 0
 ): SyncSchemaField[] => {
   if (typeof jsonSchema === "boolean") {
     return [];
@@ -42,7 +43,12 @@ const traverseJsonSchemaProperties = (
   if (jsonSchema.properties) {
     fields = Object.entries(jsonSchema.properties)
       .flatMap(([k, schema]) =>
-        traverseJsonSchemaProperties(schema, k, `${path}.${k}`)
+        traverseJsonSchemaProperties(
+          schema,
+          k,
+          depth === 0 ? k : `${path}.${k}`,
+          depth + 1
+        )
       )
       .flat(2);
   }
@@ -50,7 +56,7 @@ const traverseJsonSchemaProperties = (
   return [
     {
       cleanedName: key,
-      name: path || key,
+      name: path,
       key,
       fields,
       type:
