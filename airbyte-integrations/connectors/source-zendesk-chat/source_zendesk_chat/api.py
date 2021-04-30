@@ -33,7 +33,7 @@ class ZendeskChatStream(HttpStream):
     url_base = "https://www.zopim.com/api/v2/"
 
     data_field = None
-    limit = 5
+    limit = 100
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")
