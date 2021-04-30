@@ -19,12 +19,16 @@ def createLicenseWith = { File license, String startComment, String endComment, 
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
-        w.writeLine(startComment)
+        if (startComment.length() > 0 && !isPython) {
+            w.writeLine(startComment)
+        }
         license.eachLine {
             w << lineComment
             w.writeLine(it)
         }
-        w.writeLine(endComment)
+        if (endComment.length() > 0 && !isPython) {
+            w.writeLine(endComment)
+        }
         w.writeLine("")
         if (isPython) {
             w.writeLine("")
@@ -57,7 +61,8 @@ def createSpotlessTarget = { pattern ->
         'dbt_schema_tests',
         'normalization_test_output',
         'tools',
-        'secrets'
+        'secrets',
+        "airbyte_protocol.py"
     ]
 
     if (System.getenv().containsKey("CORE_ONLY")) {
@@ -94,6 +99,7 @@ spotless {
         targetExclude createSpotlessTarget('**/__init__.py')
 
         licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
+        trimTrailingWhitespace()
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
