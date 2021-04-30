@@ -72,7 +72,7 @@ class DefaultAirbyteSourceTest {
       NAMESPACE,
       Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
 
-  private static final StandardTapConfig TAP_CONFIG = new StandardTapConfig()
+  private static final StandardTapConfig SOURCE_CONFIG = new StandardTapConfig()
       .withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", "the future."))))
       .withSourceConnectionConfiguration(Jsons.jsonNode(Map.of(
           "apiKey", "123",
@@ -116,7 +116,7 @@ class DefaultAirbyteSourceTest {
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
     final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
-    tap.start(TAP_CONFIG, jobRoot);
+    tap.start(SOURCE_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
 
@@ -133,10 +133,10 @@ class DefaultAirbyteSourceTest {
     tap.close();
 
     assertEquals(
-        Jsons.jsonNode(TAP_CONFIG.getSourceConnectionConfiguration()),
+        Jsons.jsonNode(SOURCE_CONFIG.getSourceConnectionConfiguration()),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)));
     assertEquals(
-        Jsons.jsonNode(TAP_CONFIG.getState().getState()),
+        Jsons.jsonNode(SOURCE_CONFIG.getState().getState()),
         Jsons.deserialize(IOs.readFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME)));
     assertEquals(
         Jsons.jsonNode(CATALOG),
@@ -156,7 +156,7 @@ class DefaultAirbyteSourceTest {
   @Test
   public void testProcessFail() throws Exception {
     final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
-    tap.start(TAP_CONFIG, jobRoot);
+    tap.start(SOURCE_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
 

@@ -105,4 +105,9 @@ public interface SqlOperations {
    */
   void executeTransaction(JdbcDatabase database, String queries) throws Exception;
 
+  /**
+   * Check if the data record is valid and ok to be written to destination
+   */
+  boolean isValidData(final String data);
+
 }

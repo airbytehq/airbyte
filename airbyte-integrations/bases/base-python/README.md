@@ -8,7 +8,7 @@ The CDK currently offers helpers specific for creating Airbyte source connectors
 
 The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate. 
 
-This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding. 
+This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/understanding-airbyte/airbyte-specification) (the interface for how sources and destinations interact) before proceeding. 
 
 ## Getting started
 Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
@@ -23,9 +23,6 @@ Additionally, you can follow [this tutorial](docs/tutorials/http_api_source.md) 
 
 ### Concepts & Documentation
 See the [overview docs](docs/concepts/overview.md) for a tour through what the API offers.  
-
-### Airbyte Specification
-Find the reference docs for the Airbyte Specification (the interface for how sources and destinations interact) [here](https://docs.airbyte.io/architecture/airbyte-specification).
 
 ### Example Connectors
 

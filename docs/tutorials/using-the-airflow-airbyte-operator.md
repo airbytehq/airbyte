@@ -16,7 +16,7 @@ First, make sure you have Docker installed. \(We'll be using the `docker-compose
 
 ### **Start Airbyte**
 
-If this is your first time using Airbyte, we suggest going through our [Basic Tutorial](../getting-started.md). This tutorial will use the Connection set up in the basic tutorial.
+If this is your first time using Airbyte, we suggest going through our [Basic Tutorial](../quickstart/getting-started.md). This tutorial will use the Connection set up in the basic tutorial.
 
 For the purposes of this tutorial, set your Connection's **sync frequency** to **manual**. Airflow will be responsible for manually triggering the Airbyte job.
 
