@@ -59,7 +59,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final AirbyteStreamFactory streamFactory;
   private final HeartbeatMonitor heartbeatMonitor;
 
-  private Process tapProcess = null;
+  private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
@@ -77,7 +77,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public void start(StandardTapConfig input, Path jobRoot) throws Exception {
-    Preconditions.checkState(tapProcess == null);
+    Preconditions.checkState(sourceProcess == null);
 
     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(input.getSourceConnectionConfiguration()));
     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, Jsons.serialize(input.getCatalog()));
@@ -85,14 +85,14 @@ public class DefaultAirbyteSource implements AirbyteSource {
       IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState().getState()));
     }
 
-    tapProcess = integrationLauncher.read(jobRoot,
+    sourceProcess = integrationLauncher.read(jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
         input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME).start();
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
+    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error);
 
-    messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream()))
+    messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE)
         .iterator();
@@ -100,34 +100,34 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   @Override
   public boolean isFinished() {
-    Preconditions.checkState(tapProcess != null);
+    Preconditions.checkState(sourceProcess != null);
 
-    return !tapProcess.isAlive() && !messageIterator.hasNext();
+    return !sourceProcess.isAlive() && !messageIterator.hasNext();
   }
 
   @Override
   public Optional<AirbyteMessage> attemptRead() {
-    Preconditions.checkState(tapProcess != null);
+    Preconditions.checkState(sourceProcess != null);
 
     return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
 
   @Override
   public void close() throws Exception {
-    if (tapProcess == null) {
+    if (sourceProcess == null) {
       return;
     }
 
-    LOGGER.debug("Closing tap process");
+    LOGGER.debug("Closing source process");
     WorkerUtils.gentleCloseWithHeartbeat(
-        tapProcess,
+        sourceProcess,
         heartbeatMonitor,
         GRACEFUL_SHUTDOWN_DURATION,
         CHECK_HEARTBEAT_DURATION,
         FORCED_SHUTDOWN_DURATION);
 
-    if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
-      throw new WorkerException("Tap process wasn't successful");
+    if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
+      throw new WorkerException("Source process wasn't successful");
     }
   }
 
@@ -135,11 +135,11 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public void cancel() throws Exception {
     LOGGER.info("Attempting to cancel source process...");
 
-    if (tapProcess == null) {
+    if (sourceProcess == null) {
       LOGGER.info("Source process no longer exists, cancellation is a no-op.");
     } else {
       LOGGER.info("Source process exists, cancelling...");
-      WorkerUtils.cancelProcess(tapProcess);
+      WorkerUtils.cancelProcess(sourceProcess);
       LOGGER.info("Cancelled source process!");
     }
   }

@@ -1,4 +1,4 @@
 *
 !Dockerfile
-!standard_test
+!source_acceptance_test
 !setup.py

@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: TEST_NORMALIZATION_EXCHANGE_RATE
+  - name: EXCHANGE_RATE_F0E
     tests:
       - dbt_utils.equality:
           description: check_streams_are_equal
@@ -9,7 +9,7 @@ models:
             exchange_rate and dedup_exchange_rate.
             The SCD table of dedup_exchange_rate in append_dedup mode should therefore mirror
             the final table with append or overwrite mode from exchange_rate.
-          compare_model: ref('TEST_NORMALIZATION_DEDUP_EXCHANGE_RATE_SCD')
+          compare_model: ref('DEDUP_EXCHANGE_RATE_SCD_81D')
           compare_columns:
             - id
             - currency
@@ -22,7 +22,7 @@ models:
             Raw and normalized tables should be equal.
           compare_model: source('TEST_NORMALIZATION', '_AIRBYTE_RAW_EXCHANGE_RATE')
 
-  - name: TEST_NORMALIZATION_DEDUP_EXCHANGE_RATE
+  - name: DEDUP_EXCHANGE_RATE_81D
     tests:
       - dbt_utils.unique_combination_of_columns:
           description: check_deduplication_by_primary_key
@@ -31,3 +31,23 @@ models:
             - id
             - currency
             - NZD
+
+  - name: NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_64A_PARTITION_44F
+    columns:
+      - name: DATA
+        tests:
+          - not_null
+        #quote: true in postgres
+      - name: DOUBLE_ARRAY_DATA
+        tests:
+          - not_null
+  - name: NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_669_DATA_886
+    columns:
+      - name: CURRENCY
+        tests:
+          - not_null
+  - name: NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_E78_DOUBLE_ARRAY_DATA_1B9
+    columns:
+      - name: ID
+        tests:
+          # - not_null # TODO Fix bug here
