@@ -30,6 +30,7 @@ from pendulum import DateTime
 
 
 class ExchangeRates(HttpStream):
+
     date_field_name = "date"
 
     # HttpStream related fields
