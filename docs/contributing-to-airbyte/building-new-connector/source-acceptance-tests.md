@@ -54,7 +54,7 @@ Configuring all streams in the input catalog to full refresh mode verifies that 
 | `expect_records.exact_order` | boolean | False | Ensure  that records produced in exact same order|
 | `expect_records.extra_records` | boolean | True | Allow connector to produce extra records, but still enforce all records from the expected file to be produced|  
 
-`expect_records` is a nested configuration, if omitted - the part of the test responsible for record matching will be skipped. Due to the fact that we can't identify records without primary keys matching flags support only the following combinations:
+`expect_records` is a nested configuration, if omitted - the part of the test responsible for record matching will be skipped. Due to the fact that we can't identify records without primary keys, only the following flag combinations are supported:
 | extra_fields | exact_order| extra_records |
 |--|--|--|
 |x|x||
