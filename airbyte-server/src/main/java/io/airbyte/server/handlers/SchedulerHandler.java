@@ -160,7 +160,7 @@ public class SchedulerHandler {
     final SourceConnection updatedSource = configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpecFromSourceDefinitionId(updatedSource.getSourceDefinitionId());
-    jsonSchemaValidator.validate(spec.getConnectionSpecification(), updatedSource.getConfiguration());
+    jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedSource.getConfiguration());
 
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
         .connectionConfiguration(updatedSource.getConfiguration())
@@ -195,7 +195,7 @@ public class SchedulerHandler {
         .destination(destinationUpdate.getDestinationId(), destinationUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpecFromDestinationDefinitionId(updatedDestination.getDestinationDefinitionId());
-    jsonSchemaValidator.validate(spec.getConnectionSpecification(), updatedDestination.getConfiguration());
+    jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedDestination.getConfiguration());
 
     final DestinationCoreConfig destinationCoreConfig = new DestinationCoreConfig()
         .connectionConfiguration(updatedDestination.getConfiguration())

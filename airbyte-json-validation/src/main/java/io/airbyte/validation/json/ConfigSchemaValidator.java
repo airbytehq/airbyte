@@ -22,27 +22,19 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.errors;
+package io.airbyte.validation.json;
 
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Set;
 
-public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundException> {
+public interface ConfigSchemaValidator<T extends Enum<T>> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(NotFoundExceptionMapper.class);
+  Set<String> validate(T configType, JsonNode objectJson);
 
-  @Override
-  public Response toResponse(NotFoundException e) {
-    LOGGER.error("Not found exception", e);
-    return Response.status(404)
-        .entity(Jsons.serialize(ImmutableMap.of("message", e.getMessage())))
-        .type("application/json")
-        .build();
-  }
+  boolean test(T configType, JsonNode objectJson);
+
+  void ensure(T configType, JsonNode objectJson) throws JsonValidationException;
+
+  void ensureAsRuntime(T configType, JsonNode objectJson);
 
 }
