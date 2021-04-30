@@ -23,24 +23,10 @@
 
 
 
-import setuptools
+import re
 
-setuptools.setup(
-    name="airbyte-cdk",
-    version="0.1.0",
-    description="The Airbyte Connector Development Kit",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=[
-        "backoff",
-        "jsonschema==2.6.0",
-        "pendulum",
-        "pydantic==1.6.1",
-        "pytest",
-        "PyYAML==5.4",
-        "requests",
-    ]
-)
+
+# https://stackoverflow.com/a/1176023
+def camel_to_snake(s):
+    s = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", s)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s).lower()
