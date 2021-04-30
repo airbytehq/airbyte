@@ -61,8 +61,7 @@ def createSpotlessTarget = { pattern ->
         'dbt_schema_tests',
         'normalization_test_output',
         'tools',
-        'secrets',
-        "airbyte_protocol.py"
+        'secrets'
     ]
 
     if (System.getenv().containsKey("CORE_ONLY")) {
