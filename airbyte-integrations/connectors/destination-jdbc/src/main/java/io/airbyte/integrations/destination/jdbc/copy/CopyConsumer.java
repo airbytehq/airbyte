@@ -57,6 +57,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
   private final SqlOperations sqlOperations;
   private final ExtendedNameTransformer nameTransformer;
   private final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier;
+  private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
 
   public CopyConsumer(String configuredSchema,
                       T config,
@@ -73,6 +74,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
     this.sqlOperations = sqlOperations;
     this.nameTransformer = nameTransformer;
     this.pairToCopier = new HashMap<>();
+    this.pairToIgnoredRecordCount = new HashMap<>();
 
     var definedSyncModes = catalog.getStreams().stream()
         .map(ConfiguredAirbyteStream::getDestinationSyncMode)
@@ -82,6 +84,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void startTracked() {
+    pairToIgnoredRecordCount.clear();
     var stagingFolder = UUID.randomUUID().toString();
     for (var configuredStream : catalog.getStreams()) {
       var stream = configuredStream.getStream();
@@ -104,16 +107,14 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
 
     var id = UUID.randomUUID();
     var data = Jsons.serialize(message.getData());
-    if (sqlOperations.isValidData(pair, data)) {
+    if (sqlOperations.isValidData(data)) {
       // TODO Truncate json data instead of throwing whole record away?
       // or should we upload it into a special rejected record folder in s3 instead?
       var emittedAt = Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt()));
       pairToCopier.get(pair).write(id, data, emittedAt);
+    } else {
+      pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
     }
-  }
-
-  protected boolean isValidData(final AirbyteStreamNameNamespacePair streamName, final String data) {
-    return true;
   }
 
   /**
@@ -123,6 +124,8 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
    * tables.
    */
   public void close(boolean hasFailed) throws Exception {
+    pairToIgnoredRecordCount
+        .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
     closeAsOneTransaction(new ArrayList<>(pairToCopier.values()), hasFailed, db);
   }
 

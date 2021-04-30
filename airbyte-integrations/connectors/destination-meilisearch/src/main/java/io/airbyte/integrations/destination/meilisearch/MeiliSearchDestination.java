@@ -111,7 +111,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),
         catalog,
         AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog),
-        (p, d) -> true);
+        (data) -> true);
   }
 
   private static Map<String, Index> createIndices(ConfiguredAirbyteCatalog catalog, Client client) throws Exception {

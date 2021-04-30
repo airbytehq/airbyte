@@ -29,8 +29,8 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedBiConsumer;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.lang.Queues;
@@ -88,7 +88,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final Map<AirbyteStreamNameNamespacePair, CloseableQueue<byte[]>> pairToWriteBuffer;
   private final ScheduledExecutorService writerPool;
   private final ConfiguredAirbyteCatalog catalog;
-  private final CheckedBiFunction<AirbyteStreamNameNamespacePair, String, Boolean, Exception> isValidRecord;
+  private final CheckedFunction<String, Boolean, Exception> isValidRecord;
+  private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
 
   private boolean hasStarted;
 
@@ -97,7 +98,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
                                 Set<AirbyteStreamNameNamespacePair> pairs,
-                                CheckedBiFunction<AirbyteStreamNameNamespacePair, String, Boolean, Exception> isValidRecord) {
+                                CheckedFunction<String, Boolean, Exception> isValidRecord) {
     this.hasStarted = false;
     this.onStart = onStart;
     this.recordWriter = recordWriter;
@@ -110,6 +111,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Runtime.getRuntime().addShutdownHook(new GracefulShutdownHandler(Duration.ofMinutes(GRACEFUL_SHUTDOWN_MINUTES), writerPool));
 
     this.pairToWriteBuffer = new HashMap<>();
+    this.pairToIgnoredRecordCount = new HashMap<>();
   }
 
   @Override
@@ -118,6 +120,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
 
+    pairToIgnoredRecordCount.clear();
     LOGGER.info("{} started.", BufferedStreamConsumer.class);
 
     LOGGER.info("Buffer creation started for {} streams.", pairs.size());
@@ -154,16 +157,20 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
               Jsons.serialize(catalog), Jsons.serialize(message)));
     }
     var data = Jsons.serialize(message);
-    if (isValidRecord.apply(pair, data)) {
+    if (isValidRecord.apply(data)) {
       // TODO Truncate json data instead of throwing whole record away?
       // or should we upload it into a special rejected record table instead?
       pairToWriteBuffer.get(pair).offer(data.getBytes(Charsets.UTF_8));
+    } else {
+      pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
     }
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   @Override
   protected void close(boolean hasFailed) throws Exception {
+    pairToIgnoredRecordCount
+        .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
     if (hasFailed) {
       LOGGER.error("executing on failed close procedure.");
 

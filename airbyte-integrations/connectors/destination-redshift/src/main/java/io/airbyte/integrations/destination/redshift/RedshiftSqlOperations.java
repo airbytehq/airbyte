@@ -25,7 +25,6 @@
 package io.airbyte.integrations.destination.redshift;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -76,13 +75,9 @@ public class RedshiftSqlOperations extends DefaultSqlOperations implements SqlOp
   }
 
   @Override
-  public boolean isValidData(final AirbyteStreamNameNamespacePair streamName, final String data) {
+  public boolean isValidData(final String data) {
     final int dataSize = data.getBytes().length;
-    if (dataSize > REDSHIFT_VARCHAR_MAX_BYTE_SIZE) {
-      LOGGER.warn("Data({}) from stream {} exceeds limit of VARCHAR(65535) on Redshift... Ignoring record", dataSize, streamName);
-      return false;
-    }
-    return true;
+    return dataSize <= REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 
 }

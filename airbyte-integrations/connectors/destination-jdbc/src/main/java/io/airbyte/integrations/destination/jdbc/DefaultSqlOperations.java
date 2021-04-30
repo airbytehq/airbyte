@@ -25,7 +25,6 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
@@ -111,7 +110,7 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public boolean isValidData(AirbyteStreamNameNamespacePair streamName, String data) {
+  public boolean isValidData(String data) {
     return true;
   }
 
