@@ -30,7 +30,7 @@ jobs:
 #        run: |
 #          echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Publish to test PyPi if dry-run.
-        if: github.event.inputs.dry-run != 'dry-run=false'
+        if: github.event.inputs.dry-run != 'false'
         run: |
           echo ${{ github.event.inputs.dry-run }}
           echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
