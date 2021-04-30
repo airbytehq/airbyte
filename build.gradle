@@ -19,14 +19,14 @@ def createLicenseWith = { File license, String startComment, String endComment, 
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
-        if (startComment.length() > 0 && !isPython) {
+        if (startComment.length() > 0 || !isPython) {
             w.writeLine(startComment)
         }
         license.eachLine {
             w << lineComment
             w.writeLine(it)
         }
-        if (endComment.length() > 0 && !isPython) {
+        if (endComment.length() > 0 || !isPython) {
             w.writeLine(endComment)
         }
         w.writeLine("")
