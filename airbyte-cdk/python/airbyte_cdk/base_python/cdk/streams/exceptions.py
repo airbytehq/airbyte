@@ -23,24 +23,29 @@
 
 
 
-import setuptools
+from typing import Union
 
-setuptools.setup(
-    name="airbyte-cdk",
-    version="0.1.0",
-    description="The Airbyte Connector Development Kit",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=[
-        "backoff",
-        "jsonschema==2.6.0",
-        "pendulum",
-        "pydantic==1.6.1",
-        "pytest",
-        "PyYAML==5.4",
-        "requests",
-    ]
-)
+import requests
+
+
+class BaseBackoffException(requests.exceptions.HTTPError):
+    pass
+
+
+class UserDefinedBackoffException(BaseBackoffException):
+    """
+    An exception that exposes how long it attempted to backoff
+    """
+
+    def __init__(self, backoff: Union[int, float], request: requests.PreparedRequest, response: requests.Response):
+        """
+        :param backoff: how long to backoff in seconds
+        :param request: the request that triggered this backoff exception
+        :param response: the response that triggered the backoff exception
+        """
+        self.backoff = backoff
+        super().__init__(request=request, response=response)
+
+
+class DefaultBackoffException(BaseBackoffException):
+    pass

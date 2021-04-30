@@ -23,24 +23,20 @@
 
 
 
-import setuptools
+from airbyte_cdk.models import AirbyteCatalog, SyncMode
 
-setuptools.setup(
-    name="airbyte-cdk",
-    version="0.1.0",
-    description="The Airbyte Connector Development Kit",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=[
-        "backoff",
-        "jsonschema==2.6.0",
-        "pendulum",
-        "pydantic==1.6.1",
-        "pytest",
-        "PyYAML==5.4",
-        "requests",
-    ]
-)
+
+class CatalogHelper:
+    @staticmethod
+    def coerce_catalog_as_full_refresh(catalog: AirbyteCatalog) -> AirbyteCatalog:
+        """
+        Updates the sync mode on all streams in this catalog to be full refresh
+        """
+        coerced_catalog = catalog.copy()
+        for stream in catalog.streams:
+            stream.source_defined_cursor = False
+            stream.supported_sync_modes = [SyncMode.full_refresh]
+            stream.default_cursor_field = None
+
+        # remove nulls
+        return AirbyteCatalog.parse_raw(coerced_catalog.json(exclude_unset=True, exclude_none=True))

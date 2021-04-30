@@ -23,24 +23,12 @@
 
 
 
-import setuptools
+from typing import Any, Mapping
 
-setuptools.setup(
-    name="airbyte-cdk",
-    version="0.1.0",
-    description="The Airbyte Connector Development Kit",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=[
-        "backoff",
-        "jsonschema==2.6.0",
-        "pendulum",
-        "pydantic==1.6.1",
-        "pytest",
-        "PyYAML==5.4",
-        "requests",
-    ]
-)
+from airbyte_cdk.base_python.cdk.streams.auth.core import HttpAuthenticator
+
+
+class JWTAuthenticator(HttpAuthenticator):
+    def get_auth_header(self) -> Mapping[str, Any]:
+        # TODO
+        raise NotImplementedError
