@@ -38,7 +38,6 @@ class HttpStream(Stream, ABC):
     """
 
     cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
-    primary_key = "" # Change this to the field this stream should use as a primary key. Use a list if the key should be formed from multiple fields.
 
     def __init__(self, authenticator: HttpAuthenticator = NoAuth()):
         self._authenticator = authenticator
