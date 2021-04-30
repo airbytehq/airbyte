@@ -4,7 +4,7 @@ on:
     inputs:
       dry-run:
         description: 'dry-run'
-        required: false
+        required: true
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
         required: false
@@ -14,8 +14,6 @@ jobs:
     name: Do the job on the runner
     runs-on: ubuntu-latest
     steps:
-      - name: Hello World
-        run: echo 'Hello World!'
       - name: Link comment to workflow run
         if: github.event.inputs.comment-id
         uses: peter-evans/create-or-update-comment@v1
@@ -23,3 +21,5 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Hello World
+        run: echo 'Hello World!'
