@@ -13,7 +13,7 @@ This Source is capable of syncing the following core Streams:
 * [Accounts](https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account)
 * [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents) (Incremental)
 * [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export) (Incremental)
-* [Chats](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-chat-export) (Incremental)
+* [Chats](https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats)
 * [Shortcuts](https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts)
 * [Triggers](https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers)
 * [Bans](https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans) (Incremental)

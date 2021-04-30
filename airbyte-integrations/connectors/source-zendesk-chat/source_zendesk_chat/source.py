@@ -44,7 +44,7 @@ class SourceZendeskChat(AbstractSource):
             Agents(authenticator=authenticator),
             AgentTimelines(authenticator=authenticator, start_date=config["start_date"]),
             Accounts(authenticator=authenticator),
-            Chats(authenticator=authenticator, start_date=config["start_date"]),
+            Chats(authenticator=authenticator),
             Shortcuts(authenticator=authenticator),
             Triggers(authenticator=authenticator),
             Bans(authenticator=authenticator),

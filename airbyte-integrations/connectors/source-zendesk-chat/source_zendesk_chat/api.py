@@ -195,12 +195,11 @@ class Accounts(ZendeskChatStream):
         return "account"
 
 
-class Chats(ZendeskChatTimeIncrementalStream):
+class Chats(ZendeskChatStream):
     """
-    Chats Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-chat-export
+    Chats Stream: https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats
     """
 
-    cursor_field = "update_timestamp"
     data_field = "chats"
 
 
