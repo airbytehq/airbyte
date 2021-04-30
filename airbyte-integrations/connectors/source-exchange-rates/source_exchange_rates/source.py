@@ -25,7 +25,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
-from base_python import AbstractSource, HttpStream, Stream
+from airbyte_cdk.base_python import AbstractSource, HttpStream, Stream
 from pendulum import DateTime
 
 
