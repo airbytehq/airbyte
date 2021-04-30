@@ -19,7 +19,12 @@ MySQL data types are mapped to the following data types when synchronizing data:
 | `date` | string |  |
 | `datetime` | string |  |
 | `enum` | string |  |
-| `numeric` | string | includes integer, etc |
+| `tinyint` | number | |
+| `smallint` | number | |
+| `mediumint` | number | |
+| `int` | number | |
+| `bigint` | number | |
+| `numeric` | number | |
 | `string` | string |  |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
