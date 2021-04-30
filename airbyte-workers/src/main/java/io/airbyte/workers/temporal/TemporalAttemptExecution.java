@@ -114,6 +114,9 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
       final Runnable cancellationChecker = getCancellationChecker(worker, workerThread, outputFuture);
 
+      // check once first that we are not already cancelled. if we are, don't start!
+      cancellationChecker.run();
+
       workerThread.start();
       scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 

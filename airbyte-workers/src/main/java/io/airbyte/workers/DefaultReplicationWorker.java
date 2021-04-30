@@ -77,34 +77,38 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   public StandardSyncOutput run(StandardSyncInput syncInput, Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
 
-    long startTime = System.currentTimeMillis();
-
-    LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
-        .stream()
-        .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
-            s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
-    final StandardTapConfig sourceConfig = WorkerUtils.syncToTapConfig(syncInput);
+    // todo (cgardens) - this should not be happening in the worker. this is configuration information
+    // that is independent of workflow executions.
     final StandardTargetConfig destinationConfig = WorkerUtils.syncToTargetConfig(syncInput);
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
-    // note: resources are closed in the opposite order in which they are declared. thus source will be
-    // closed first (which is what we want).
-    try (destination; source) {
-      destination.start(destinationConfig, jobRoot);
-      source.start(sourceConfig, jobRoot);
+    long startTime = System.currentTimeMillis();
+    try {
+      LOGGER.info("configured sync modes: {}", syncInput.getCatalog().getStreams()
+          .stream()
+          .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
+              s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
+      final StandardTapConfig sourceConfig = WorkerUtils.syncToTapConfig(syncInput);
 
-      while (!cancelled.get() && !source.isFinished()) {
-        final Optional<AirbyteMessage> maybeMessage = source.attemptRead();
-        if (maybeMessage.isPresent()) {
-          final AirbyteMessage message = mapper.mapMessage(maybeMessage.get());
+      // note: resources are closed in the opposite order in which they are declared. thus source will be
+      // closed first (which is what we want).
+      try (destination; source) {
+        destination.start(destinationConfig, jobRoot);
+        source.start(sourceConfig, jobRoot);
 
-          messageTracker.accept(message);
-          destination.accept(message);
+        while (!cancelled.get() && !source.isFinished()) {
+          final Optional<AirbyteMessage> maybeMessage = source.attemptRead();
+          if (maybeMessage.isPresent()) {
+            final AirbyteMessage message = mapper.mapMessage(maybeMessage.get());
+
+            messageTracker.accept(message);
+            destination.accept(message);
+          }
         }
       }
 
     } catch (Exception e) {
-      throw new WorkerException("Sync worker failed.", e);
+      LOGGER.error("Sync worker failed.", e);
     }
 
     final StandardSyncSummary summary = new StandardSyncSummary()
@@ -115,10 +119,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         .withEndTime(System.currentTimeMillis());
 
     LOGGER.info("sync summary: {}", summary);
-
-    if (cancelled.get()) {
-      throw new WorkerException("Sync was cancelled.");
-    }
 
     final StandardSyncOutput output = new StandardSyncOutput()
         .withStandardSyncSummary(summary)

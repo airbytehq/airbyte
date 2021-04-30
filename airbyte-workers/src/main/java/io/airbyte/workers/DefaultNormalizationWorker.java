@@ -70,11 +70,11 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     }
 
     if (cancelled.get()) {
-      throw new WorkerException("Sync was cancelled.");
+      LOGGER.info("Normalization was cancelled.");
     }
 
     final Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
-    LOGGER.info("Normalization executed in {}", duration.toMinutesPart());
+    LOGGER.info("Normalization executed in {}.", duration.toMinutesPart());
 
     return null;
   }
@@ -83,6 +83,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   public void cancel() {
     LOGGER.info("Cancelling normalization runner...");
     try {
+      cancelled.set(true);
       normalizationRunner.close();
     } catch (Exception e) {
       e.printStackTrace();
