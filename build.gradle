@@ -16,15 +16,27 @@ if (!env.containsKey('VERSION')) {
 }
 
 def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
+    /*
+    In java, we don't have a second linter/styling tool other than spotless so it doesn't really
+    matter if we write a newline or not for startComment/endComment.
+
+    However, in python, we are using black that double-checks and reformats the code.
+    Thus, writing an extra empty newline (not removed by trimTrailingWhitespace() is actually a
+    big deal and would be reformatted (removed) because of black's specs.
+    */
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
-        w.writeLine(startComment)
+        if (startComment.length() > 0 || !isPython) {
+            w.writeLine(startComment)
+        }
         license.eachLine {
             w << lineComment
             w.writeLine(it)
         }
-        w.writeLine(endComment)
+        if (endComment.length() > 0 || !isPython) {
+            w.writeLine(endComment)
+        }
         w.writeLine("")
         if (isPython) {
             w.writeLine("")
@@ -94,6 +106,7 @@ spotless {
         targetExclude createSpotlessTarget('**/__init__.py')
 
         licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
+        trimTrailingWhitespace()
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
