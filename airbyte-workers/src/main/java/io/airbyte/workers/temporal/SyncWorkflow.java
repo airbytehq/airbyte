@@ -27,7 +27,7 @@ package io.airbyte.workers.temporal;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfigsValidator;
+import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.StandardSyncInput;
@@ -118,14 +118,14 @@ public interface SyncWorkflow {
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
-    private final AirbyteConfigsValidator validator;
+    private final AirbyteConfigValidator validator;
 
     public ReplicationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
-      this(pbf, workspaceRoot, new AirbyteConfigsValidator());
+      this(pbf, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    ReplicationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigsValidator validator) {
+    ReplicationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigValidator validator) {
       this.pbf = pbf;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;
@@ -201,14 +201,14 @@ public interface SyncWorkflow {
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
-    private final AirbyteConfigsValidator validator;
+    private final AirbyteConfigValidator validator;
 
     public NormalizationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
-      this(pbf, workspaceRoot, new AirbyteConfigsValidator());
+      this(pbf, workspaceRoot, new AirbyteConfigValidator());
     }
 
     @VisibleForTesting
-    NormalizationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigsValidator validator) {
+    NormalizationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigValidator validator) {
       this.pbf = pbf;
       this.workspaceRoot = workspaceRoot;
       this.validator = validator;

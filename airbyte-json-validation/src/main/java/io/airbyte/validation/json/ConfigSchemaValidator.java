@@ -22,16 +22,19 @@
  * SOFTWARE.
  */
 
-package io.airbyte.config;
+package io.airbyte.validation.json;
 
-import io.airbyte.validation.json.AbstractSchemaValidator;
-import java.nio.file.Path;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Set;
 
-public class AirbyteConfigsValidator extends AbstractSchemaValidator<ConfigSchema> {
+public interface ConfigSchemaValidator<T extends Enum<T>> {
 
-  @Override
-  public Path getSchemaPath(ConfigSchema configType) {
-    return configType.getFile().toPath();
-  }
+  Set<String> validate(T configType, JsonNode objectJson);
+
+  boolean test(T configType, JsonNode objectJson);
+
+  void ensure(T configType, JsonNode objectJson) throws JsonValidationException;
+
+  void ensureAsRuntime(T configType, JsonNode objectJson);
 
 }

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.nio.file.Path;
 import java.util.Set;
 
-public abstract class AbstractSchemaValidator<T extends Enum<T>> implements ConfigJsonSchemaValidator<T> {
+public abstract class AbstractSchemaValidator<T extends Enum<T>> implements ConfigSchemaValidator<T> {
 
   private final JsonSchemaValidator jsonSchemaValidator;
 
@@ -47,22 +47,22 @@ public abstract class AbstractSchemaValidator<T extends Enum<T>> implements Conf
   }
 
   @Override
-  public Set<String> validate(T configType, JsonNode objectJson) {
+  public final Set<String> validate(T configType, JsonNode objectJson) {
     return jsonSchemaValidator.validate(getSchemaJson(configType), objectJson);
   }
 
   @Override
-  public boolean test(T configType, JsonNode objectJson) {
+  public final boolean test(T configType, JsonNode objectJson) {
     return jsonSchemaValidator.test(getSchemaJson(configType), objectJson);
   }
 
   @Override
-  public void ensure(T configType, JsonNode objectJson) throws JsonValidationException {
+  public final void ensure(T configType, JsonNode objectJson) throws JsonValidationException {
     jsonSchemaValidator.ensure(getSchemaJson(configType), objectJson);
   }
 
   @Override
-  public void ensureAsRuntime(T configType, JsonNode objectJson) {
+  public final void ensureAsRuntime(T configType, JsonNode objectJson) {
     jsonSchemaValidator.ensureAsRuntime(getSchemaJson(configType), objectJson);
   }
 

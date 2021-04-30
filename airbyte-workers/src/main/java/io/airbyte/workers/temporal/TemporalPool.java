@@ -75,7 +75,9 @@ public class TemporalPool implements Runnable {
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name());
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
-    syncWorker.registerActivitiesImplementations(new ReplicationActivityImpl(pbf, workspaceRoot), new NormalizationActivityImpl(pbf, workspaceRoot));
+    syncWorker.registerActivitiesImplementations(
+        new ReplicationActivityImpl(pbf, workspaceRoot),
+        new NormalizationActivityImpl(pbf, workspaceRoot));
 
     factory.start();
   }
