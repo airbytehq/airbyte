@@ -1,9 +1,9 @@
-name: integration-test
+name: publish-cdk
 on:
   workflow_dispatch:
     inputs:
       dry-run:
-        description: 'Airbyte Connector'
+        description: 'dry-run'
         required: false
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
