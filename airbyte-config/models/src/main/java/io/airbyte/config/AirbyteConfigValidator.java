@@ -22,27 +22,16 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.errors;
+package io.airbyte.config;
 
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.airbyte.validation.json.AbstractSchemaValidator;
+import java.nio.file.Path;
 
-public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundException> {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(NotFoundExceptionMapper.class);
+public class AirbyteConfigValidator extends AbstractSchemaValidator<ConfigSchema> {
 
   @Override
-  public Response toResponse(NotFoundException e) {
-    LOGGER.error("Not found exception", e);
-    return Response.status(404)
-        .entity(Jsons.serialize(ImmutableMap.of("message", e.getMessage())))
-        .type("application/json")
-        .build();
+  public Path getSchemaPath(ConfigSchema configType) {
+    return configType.getFile().toPath();
   }
 
 }
