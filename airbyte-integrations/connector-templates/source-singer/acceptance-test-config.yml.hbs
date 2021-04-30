@@ -1,6 +1,6 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
 # for more information about how to configure these tests
-connector_image: airbyte/{{dashCase name}}-singer
+connector_image: airbyte/source-{{dashCase name}}-singer
 tests:
   spec:
     - spec_path: "source_{{snakeCase name}}_singer/spec.json"
