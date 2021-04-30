@@ -1,4 +1,4 @@
-name: publish-cdk
+name: Publish CDK
 on:
   workflow_dispatch:
     inputs:
@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-      - name: Echo
-        run: ls
       - name: Publish Python Package
         uses: mariamrf/py-package-publish-action@v1.0.0
         with:
