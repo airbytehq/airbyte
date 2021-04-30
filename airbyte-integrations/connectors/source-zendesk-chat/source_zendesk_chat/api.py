@@ -29,7 +29,7 @@ import requests
 from base_python import HttpStream
 
 
-class ZendeskChatStream(HttpStream):
+class Stream(HttpStream):
     url_base = "https://www.zopim.com/api/v2/"
 
     data_field = None
@@ -73,7 +73,7 @@ class ZendeskChatStream(HttpStream):
             raise Exception(f"Unsupported type of response data for stream {self.name}")
 
 
-class ZendeskChatBaseIncrementalStream(ZendeskChatStream, ABC):
+class BaseIncrementalStream(Stream, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -100,7 +100,7 @@ class ZendeskChatBaseIncrementalStream(ZendeskChatStream, ABC):
         return value
 
 
-class ZendeskChatTimeIncrementalStream(ZendeskChatBaseIncrementalStream, ABC):
+class TimeIncrementalStream(BaseIncrementalStream, ABC):
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
@@ -136,7 +136,7 @@ class ZendeskChatTimeIncrementalStream(ZendeskChatBaseIncrementalStream, ABC):
         return f"incremental/{self.name}"
 
 
-class ZendeskChatIdIncrementalStream(ZendeskChatBaseIncrementalStream):
+class IdIncrementalStream(BaseIncrementalStream):
     cursor_field = "id"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -164,13 +164,13 @@ class ZendeskChatIdIncrementalStream(ZendeskChatBaseIncrementalStream):
         return params
 
 
-class Agents(ZendeskChatIdIncrementalStream):
+class Agents(IdIncrementalStream):
     """
     Agents Stream: https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents
     """
 
 
-class AgentTimelines(ZendeskChatTimeIncrementalStream):
+class AgentTimelines(TimeIncrementalStream):
     """
     Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
     """
@@ -186,7 +186,7 @@ class AgentTimelines(ZendeskChatTimeIncrementalStream):
         return params
 
 
-class Accounts(ZendeskChatStream):
+class Accounts(Stream):
     """
     Accounts Stream: https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account
     """
@@ -195,7 +195,7 @@ class Accounts(ZendeskChatStream):
         return "account"
 
 
-class Chats(ZendeskChatStream):
+class Chats(Stream):
     """
     Chats Stream: https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats
     """
@@ -203,19 +203,19 @@ class Chats(ZendeskChatStream):
     data_field = "chats"
 
 
-class Shortcuts(ZendeskChatStream):
+class Shortcuts(Stream):
     """
     Shortcuts Stream: https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts
     """
 
 
-class Triggers(ZendeskChatStream):
+class Triggers(Stream):
     """
     Triggers Stream: https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers
     """
 
 
-class Bans(ZendeskChatIdIncrementalStream):
+class Bans(IdIncrementalStream):
     """
     Bans Stream: https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans
     """
@@ -226,31 +226,31 @@ class Bans(ZendeskChatIdIncrementalStream):
         return bans
 
 
-class Departments(ZendeskChatStream):
+class Departments(Stream):
     """
     Departments Stream: https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments
     """
 
 
-class Goals(ZendeskChatStream):
+class Goals(Stream):
     """
     Goals Stream: https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals
     """
 
 
-class Skills(ZendeskChatStream):
+class Skills(Stream):
     """
     Skills Stream: https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills
     """
 
 
-class Roles(ZendeskChatStream):
+class Roles(Stream):
     """
     Roles Stream: https://developer.zendesk.com/rest_api/docs/chat/roles#list-roles
     """
 
 
-class RoutingSettings(ZendeskChatStream):
+class RoutingSettings(Stream):
     """
     Routing Settings Stream: https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings
     """
