@@ -13,4 +13,4 @@ RUN bundle install
 ENTRYPOINT ["ruby", "/airbyte/source.rb"]
 
 LABEL io.airbyte.name=airbyte/source-mongodb
-LABEL io.airbyte.version=0.3.0
+LABEL io.airbyte.version=0.3.1
