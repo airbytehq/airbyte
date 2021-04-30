@@ -2,17 +2,24 @@ name: integration-test
 on:
   workflow_dispatch:
     inputs:
-      connector:
+      dry-run:
         description: 'Airbyte Connector'
-        required: true
+        required: false
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
         required: false
 
 jobs:
-  name: Do the job on the runner
-  needs: start-runner # required to start the main job when the runner is ready
-  runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
-  steps:
-    - name: Hello World
-      run: echo 'Hello World!'
+  publish-cdk:
+    name: Do the job on the runner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hello World
+        run: echo 'Hello World!'
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
