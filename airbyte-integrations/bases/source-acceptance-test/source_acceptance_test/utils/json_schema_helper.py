@@ -22,7 +22,7 @@
 
 
 from functools import reduce
-from typing import List, Set, Any
+from typing import Any, List, Set
 
 import pendulum
 
