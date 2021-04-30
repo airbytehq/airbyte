@@ -155,4 +155,14 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
         "com.amazon.redshift.jdbc.Driver", null);
   }
 
+  @Override
+  protected boolean implementsRecordSizeLimitChecks() {
+    return true;
+  }
+
+  @Override
+  protected int getMaxRecordValueLimit() {
+    return RedshiftCopyConsumer.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
+  }
+
 }
