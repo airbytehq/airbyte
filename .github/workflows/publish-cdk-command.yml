@@ -32,6 +32,7 @@ jobs:
       - name: Publish to test PyPi if dry-run.
         if: github.event.inputs.dry-run != 'dry-run=false'
         run: |
+          echo ${{ github.event.inputs.dry-run }}
           echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Checkout Airbyte
         uses: actions/checkout@v2
