@@ -23,15 +23,16 @@ jobs:
       - name: Echo
         run: echo ${{ github.event.inputs.dry-run }}
         # Github does not provide a clean way of doing if-else branches. The alternative to having two conditions is injecting bash or using another
-        # custom action. This approach seemed the simplest.
-      - name: Publish to prod PyPi if dry-run is false.
-        if: github.event.inputs.dry-run == 'dry-run=false'
-        run: |
-          echo "Publishing to production PyPi."
+        # custom action. Having two separate steps, each representing conditionals, seemed the simplest. We make use of env vars to dynamically
+        # set the PyPi url.
+#      - name: Publish to prod PyPi if dry-run is false.
+#        if: github.event.inputs.dry-run == 'dry-run=false'
+#        run: |
+#          echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Publish to test PyPi if dry-run.
         if: github.event.inputs.dry-run != 'dry-run=false'
         run: |
-          echo "By default publishing to test PyPi. Run /publish-cdk dryrun=false to publish to prod PyPi."
+          echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Publish Python Package
@@ -43,7 +44,7 @@ jobs:
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_REPOSITORY_URL: 'https://test.pypi.org/legacy/'
+          TWINE_REPOSITORY_URL: ${{ env.pypi_url }}
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
