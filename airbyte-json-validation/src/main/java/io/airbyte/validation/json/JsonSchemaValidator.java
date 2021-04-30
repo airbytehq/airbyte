@@ -92,6 +92,14 @@ public class JsonSchemaValidator {
         objectJson.toPrettyString()));
   }
 
+  public void ensureAsRuntime(JsonNode schemaJson, JsonNode objectJson) {
+    try {
+      ensure(schemaJson, objectJson);
+    } catch (JsonValidationException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private static JsonReferenceProcessor getProcessor() {
     // JsonReferenceProcessor follows $ref in json objects. Jackson does not natively support
     // this.

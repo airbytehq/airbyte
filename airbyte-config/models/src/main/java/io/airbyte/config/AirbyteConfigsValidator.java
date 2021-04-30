@@ -24,46 +24,14 @@
 
 package io.airbyte.config;
 
-import io.airbyte.commons.json.JsonSchemas;
-import java.io.File;
+import io.airbyte.validation.json.AbstractSchemaValidator;
 import java.nio.file.Path;
 
-public enum ConfigSchema {
+public class AirbyteConfigsValidator extends AbstractSchemaValidator<ConfigSchema> {
 
-  // workspace
-  STANDARD_WORKSPACE("StandardWorkspace.yaml"),
-
-  // source
-  STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml"),
-  SOURCE_CONNECTION("SourceConnection.yaml"),
-
-  // destination
-  STANDARD_DESTINATION_DEFINITION("StandardDestinationDefinition.yaml"),
-  DESTINATION_CONNECTION("DestinationConnection.yaml"),
-
-  // sync
-  STANDARD_SYNC("StandardSync.yaml"),
-  STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml"),
-  STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.yaml"),
-
-  // worker
-  STANDARD_SYNC_INPUT("StandardSyncInput.yaml"),
-  NORMALIZATION_INPUT("NormalizationInput.yaml"),
-
-  STANDARD_SYNC_OUTPUT("StandardSyncOutput.yaml"),
-
-  STATE("State.yaml");
-
-  static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("types", ConfigSchema.class);
-
-  private final String schemaFilename;
-
-  ConfigSchema(final String schemaFilename) {
-    this.schemaFilename = schemaFilename;
-  }
-
-  public File getFile() {
-    return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
+  @Override
+  public Path getSchemaPath(ConfigSchema configType) {
+    return configType.getFile().toPath();
   }
 
 }
