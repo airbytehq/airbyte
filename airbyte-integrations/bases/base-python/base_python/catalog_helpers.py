@@ -32,7 +32,7 @@ class CatalogHelper:
         """
         coerced_catalog = catalog.copy()
         for stream in catalog.streams:
-            stream.cursor = False
+            stream.source_defined_cursor = False
             stream.supported_sync_modes = [SyncMode.full_refresh]
             stream.default_cursor_field = None
 
