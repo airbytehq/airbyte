@@ -22,6 +22,14 @@ jobs:
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Echo
         run: echo ${{ github.event.inputs.dry-run }}
+      - name: Publish to prod PyPi if dry-run is false.
+        if: github.event.inputs.dry-run == 'dry-run=false'
+        run: |
+          echo "Publishing to production PyPi."
+      - name: Publish to test PyPi if dry-run.
+        if: github.event.inputs.dry-run != 'dry-run=false'
+        run: |
+          echo "By default publishing to test PyPi. Run /publish-cdk dryrun=false to publish to prod PyPi."
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Publish Python Package
