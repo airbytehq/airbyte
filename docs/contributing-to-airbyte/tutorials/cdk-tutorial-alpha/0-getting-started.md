@@ -23,4 +23,4 @@ All the commands below assume that `python` points to a version of python >=3.7.
 * Step 7: Use the connector in Airbyte
 * Step 8: Write unit tests or integration tests
 
-Each step of the Creating a Source checklist is explained in more detail below. We also mention how you can submit the connector to be included with the general Airbyte release at the end of the tutorial.
+Each step of the Creating a Source checklist is explained in more detail in the following steps. We also mention how you can submit the connector to be included with the general Airbyte release at the end of the tutorial.
