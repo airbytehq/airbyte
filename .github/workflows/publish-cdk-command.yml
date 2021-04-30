@@ -22,6 +22,8 @@ jobs:
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Echo
         run: echo ${{ github.event.inputs.dry-run }}
+        # Github does not provide a clean way of doing if-else branches. The alternative to having two conditions is injecting bash or using another
+        # custom action. This approach seemed the simplest.
       - name: Publish to prod PyPi if dry-run is false.
         if: github.event.inputs.dry-run == 'dry-run=false'
         run: |
