@@ -154,6 +154,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
       // Tools like DBT do not apply. Therefore, we need to try to write data in the most usable format
       // possible that does not require alteration.
       final String json = Jsons.serialize(recordStream
+          .stream()
           .map(AirbyteRecordMessage::getData)
           .peek(o -> ((ObjectNode) o).put(AB_PK_COLUMN, Names.toAlphanumericAndUnderscore(UUID.randomUUID().toString())))
           .collect(Collectors.toList()));
