@@ -24,9 +24,12 @@
 
 package io.airbyte.workers;
 
+import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,16 +55,24 @@ import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class DefaultReplicationWorkerTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorkerTest.class);
 
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
@@ -103,8 +114,7 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void test() throws Exception {
-    final DefaultReplicationWorker worker =
-        new DefaultReplicationWorker(JOB_ID, JOB_ATTEMPT, source, mapper, destination, new AirbyteMessageTracker());
+    final ReplicationWorker worker = new DefaultReplicationWorker(JOB_ID, JOB_ATTEMPT, source, mapper, destination, new AirbyteMessageTracker());
 
     worker.run(syncInput, jobRoot);
 
@@ -116,16 +126,71 @@ class DefaultReplicationWorkerTest {
     verify(destination).close();
   }
 
+  @SuppressWarnings({"BusyWait", "unchecked"})
+  @Test
+  void testCancellation() throws InterruptedException {
+    final AtomicReference<StandardSyncOutput> output = new AtomicReference<>();
+    final MessageTracker<AirbyteMessage> messageTracker = mock(MessageTracker.class);
+    when(source.isFinished()).thenReturn(false);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(JOB_ID, JOB_ATTEMPT, source, mapper, destination, messageTracker);
+    final Thread workerThread = new Thread(() -> {
+      try {
+        output.set(worker.run(syncInput, jobRoot));
+      } catch (WorkerException e) {
+        throw new RuntimeException(e);
+      }
+    });
+
+    workerThread.start();
+
+    // verify the worker is actually running before we kill it.
+    while (Mockito.mockingDetails(messageTracker).getInvocations().size() < 5) {
+      LOGGER.info("waiting for worker to start running");
+      sleep(100);
+    }
+
+    worker.cancel();
+    Assertions.assertTimeout(Duration.ofSeconds(5), (Executable) workerThread::join);
+    assertNotNull(output);
+  }
+
+  @Test
+  void testPopulatesOutputOnSuccess() throws WorkerException {
+    testPopulatesOutput();
+  }
+
   @SuppressWarnings("unchecked")
   @Test
-  void testPopulatesSyncSummary() throws WorkerException, IOException {
+  void testPopulatesOutputOnFailure() throws Exception {
+    final MessageTracker<AirbyteMessage> messageTracker = mock(MessageTracker.class);
+    doThrow(new IllegalStateException("induced exception")).when(source).close();
+    testPopulatesOutput();
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(JOB_ID, JOB_ATTEMPT, source, mapper, destination, messageTracker);
+    assertThrows(IllegalStateException.class, () -> worker.run(syncInput, jobRoot));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testDoesNotPopulateOnIrrecoverableFailure() {
+    final MessageTracker<AirbyteMessage> messageTracker = mock(MessageTracker.class);
+    doThrow(new IllegalStateException("induced exception")).when(messageTracker).getRecordCount();
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(JOB_ID, JOB_ATTEMPT, source, mapper, destination, messageTracker);
+    assertThrows(IllegalStateException.class, () -> worker.run(syncInput, jobRoot));
+  }
+
+  @SuppressWarnings("unchecked")
+  private void testPopulatesOutput() throws WorkerException {
     final MessageTracker<AirbyteMessage> messageTracker = mock(MessageTracker.class);
     final JsonNode expectedState = Jsons.jsonNode(ImmutableMap.of("updated_at", 10L));
     when(messageTracker.getRecordCount()).thenReturn(12L);
     when(messageTracker.getBytesCount()).thenReturn(100L);
     when(messageTracker.getOutputState()).thenReturn(Optional.of(expectedState));
 
-    final DefaultReplicationWorker worker = new DefaultReplicationWorker(JOB_ID, JOB_ATTEMPT, source, mapper, destination, messageTracker);
+    final ReplicationWorker worker = new DefaultReplicationWorker(JOB_ID, JOB_ATTEMPT, source, mapper, destination, messageTracker);
+
     final StandardSyncOutput actual = worker.run(syncInput, jobRoot);
     final StandardSyncOutput expectedSyncOutput = new StandardSyncOutput()
         .withStandardSyncSummary(new StandardSyncSummary()

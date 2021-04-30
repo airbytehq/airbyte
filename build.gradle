@@ -200,10 +200,10 @@ subprojects {
         implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30' //JCL bridge
         implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.30' // log4j1.2 bridge
 
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
-        testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
+        testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.9.0'
     }
 }
 

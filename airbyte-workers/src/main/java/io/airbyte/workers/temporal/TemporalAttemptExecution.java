@@ -73,7 +73,14 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                                   CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                                   Supplier<INPUT> inputSupplier,
                                   CancellationHandler cancellationHandler) {
-    this(workspaceRoot, jobRunConfig, workerSupplier, inputSupplier, WorkerUtils::setJobMdc, Files::createDirectories, cancellationHandler,
+    this(
+        workspaceRoot,
+        jobRunConfig,
+        workerSupplier,
+        inputSupplier,
+        WorkerUtils::setJobMdc,
+        Files::createDirectories,
+        cancellationHandler,
         () -> Activity.getExecutionContext().getInfo().getWorkflowId());
   }
 

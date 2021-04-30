@@ -106,30 +106,30 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
 
+      final StandardSyncSummary summary = new StandardSyncSummary()
+          .withStatus(cancelled.get() ? Status.FAILED : Status.COMPLETED)
+          .withRecordsSynced(messageTracker.getRecordCount())
+          .withBytesSynced(messageTracker.getBytesCount())
+          .withStartTime(startTime)
+          .withEndTime(System.currentTimeMillis());
+
+      LOGGER.info("sync summary: {}", summary);
+
+      final StandardSyncOutput output = new StandardSyncOutput()
+          .withStandardSyncSummary(summary)
+          .withOutputCatalog(destinationConfig.getCatalog());
+
+      messageTracker.getOutputState().ifPresent(capturedState -> {
+        final State state = new State()
+            .withState(capturedState);
+        output.withState(state);
+      });
+
+      return output;
     } catch (Exception e) {
-      LOGGER.error("Sync worker failed.", e);
+      throw new WorkerException("Sync failed", e);
     }
 
-    final StandardSyncSummary summary = new StandardSyncSummary()
-        .withStatus(cancelled.get() ? Status.FAILED : Status.COMPLETED)
-        .withRecordsSynced(messageTracker.getRecordCount())
-        .withBytesSynced(messageTracker.getBytesCount())
-        .withStartTime(startTime)
-        .withEndTime(System.currentTimeMillis());
-
-    LOGGER.info("sync summary: {}", summary);
-
-    final StandardSyncOutput output = new StandardSyncOutput()
-        .withStandardSyncSummary(summary)
-        .withOutputCatalog(destinationConfig.getCatalog());
-
-    messageTracker.getOutputState().ifPresent(capturedState -> {
-      final State state = new State()
-          .withState(capturedState);
-      output.withState(state);
-    });
-
-    return output;
   }
 
   @Override

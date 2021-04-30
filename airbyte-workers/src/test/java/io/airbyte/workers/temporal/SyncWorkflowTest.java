@@ -26,6 +26,7 @@ package io.airbyte.workers.temporal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -43,6 +44,9 @@ import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivity;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivity;
 import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivityImpl;
+import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
+import io.temporal.api.workflowservice.v1.WorkflowServiceGrpc.WorkflowServiceBlockingStub;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowFailedException;
 import io.temporal.client.WorkflowOptions;
@@ -53,8 +57,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-// based of example in temporal samples:
-// https://github.com/temporalio/samples-java/blob/master/src/test/java/io/temporal/samples/hello/HelloActivityTest.java
 class SyncWorkflowTest {
 
   // TEMPORAL
@@ -163,6 +165,62 @@ class SyncWorkflowTest {
 
     verifyReplication(replicationActivity, syncInput);
     verifyNormalize(normalizationActivity, normalizationInput);
+  }
+
+  @Test
+  void testCancelDuringReplication() {
+    doAnswer(ignored -> {
+      cancelWorkflow();
+      return replicationSuccessOutput;
+    }).when(replicationActivity).replicate(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        syncInput);
+
+    assertThrows(WorkflowFailedException.class, this::execute);
+
+    verifyReplication(replicationActivity, syncInput);
+    verifyNoInteractions(normalizationActivity);
+  }
+
+  @Test
+  void testCancelDuringNormalization() {
+    doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
+        JOB_RUN_CONFIG,
+        SOURCE_LAUNCHER_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        syncInput);
+
+    doAnswer(ignored -> {
+      cancelWorkflow();
+      return replicationSuccessOutput;
+    }).when(normalizationActivity).normalize(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        normalizationInput);
+
+    assertThrows(WorkflowFailedException.class, this::execute);
+
+    verifyReplication(replicationActivity, syncInput);
+    verifyNormalize(normalizationActivity, normalizationInput);
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  private void cancelWorkflow() {
+    final WorkflowServiceBlockingStub temporalService = testEnv.getWorkflowService().blockingStub();
+    // there should only be one execution running.
+    final String workflowId = temporalService.listOpenWorkflowExecutions(null).getExecutionsList().get(0).getExecution().getWorkflowId();
+
+    final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
+        .setWorkflowId(workflowId)
+        .build();
+
+    final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
+        .setWorkflowExecution(workflowExecution)
+        .build();
+
+    testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
   }
 
   private static void verifyReplication(ReplicationActivity replicationActivity, StandardSyncInput syncInput) {
