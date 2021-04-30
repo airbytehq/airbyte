@@ -43,8 +43,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
   private final AtomicBoolean cancelled;
 
-  public DefaultNormalizationWorker(
-                                    final String jobId,
+  public DefaultNormalizationWorker(final String jobId,
                                     final int attempt,
                                     final NormalizationRunner normalizationRunner) {
     this.jobId = jobId;

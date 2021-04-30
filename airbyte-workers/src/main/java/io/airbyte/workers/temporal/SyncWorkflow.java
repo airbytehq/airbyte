@@ -24,7 +24,11 @@
 
 package io.airbyte.workers.temporal;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AirbyteConfigsValidator;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -114,10 +118,17 @@ public interface SyncWorkflow {
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
+    private final AirbyteConfigsValidator validator;
 
     public ReplicationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+      this(pbf, workspaceRoot, new AirbyteConfigsValidator());
+    }
+
+    @VisibleForTesting
+    ReplicationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigsValidator validator) {
       this.pbf = pbf;
       this.workspaceRoot = workspaceRoot;
+      this.validator = validator;
     }
 
     public StandardSyncOutput replicate(JobRunConfig jobRunConfig,
@@ -125,7 +136,10 @@ public interface SyncWorkflow {
                                         IntegrationLauncherConfig destinationLauncherConfig,
                                         StandardSyncInput syncInput) {
 
-      final Supplier<StandardSyncInput> inputSupplier = () -> syncInput;
+      final Supplier<StandardSyncInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(syncInput));
+        return syncInput;
+      };
 
       final TemporalAttemptExecution<StandardSyncInput, StandardSyncOutput> temporalAttemptExecution = new TemporalAttemptExecution<>(
           workspaceRoot,
@@ -187,17 +201,27 @@ public interface SyncWorkflow {
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
+    private final AirbyteConfigsValidator validator;
 
     public NormalizationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+      this(pbf, workspaceRoot, new AirbyteConfigsValidator());
+    }
+
+    @VisibleForTesting
+    NormalizationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigsValidator validator) {
       this.pbf = pbf;
       this.workspaceRoot = workspaceRoot;
+      this.validator = validator;
     }
 
     public Void normalize(JobRunConfig jobRunConfig,
                           IntegrationLauncherConfig destinationLauncherConfig,
                           NormalizationInput input) {
 
-      final Supplier<NormalizationInput> inputSupplier = () -> input;
+      final Supplier<NormalizationInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(input));
+        return input;
+      };
 
       final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
           workspaceRoot,

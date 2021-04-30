@@ -56,8 +56,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   private final AtomicBoolean cancelled;
 
-  public DefaultReplicationWorker(
-                                  final String jobId,
+  public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
                                   final Source<AirbyteMessage> source,
                                   final Mapper<AirbyteMessage> mapper,
