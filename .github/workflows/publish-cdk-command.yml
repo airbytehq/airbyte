@@ -1,4 +1,4 @@
-name: publish-cdk
+name: Publish CDK
 on:
   workflow_dispatch:
     inputs:
@@ -10,8 +10,25 @@ jobs:
   publish-cdk:
     runs-on: ubuntu-latest
     steps:
-      - name: Echo
-        run: echo 'Hello World!'
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Publish Python Package
+        uses: mariamrf/py-package-publish-action@v1.0.0
+        with:
+          python_version: '3.7.9'
+          pip_version: '21.1'
+          subdir: 'airbyte-cdk/python/'
+        env:
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_REPOSITORY_URL: 'https://test.pypi.org/legacy/'
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
