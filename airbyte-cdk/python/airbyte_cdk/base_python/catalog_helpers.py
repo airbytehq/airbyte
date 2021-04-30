@@ -1,17 +1,17 @@
 # MIT License
-# 
+#
 # Copyright (c) 2020 Airbyte
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,24 +21,20 @@
 # SOFTWARE.
 
 
-import setuptools
+from airbyte_cdk.models import AirbyteCatalog, SyncMode
 
-setuptools.setup(
-    name="airbyte-cdk",
-    version="0.1.0",
-    description="The Airbyte Connector Development Kit",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=[
-        "backoff",
-        "jsonschema==2.6.0",
-        "pendulum",
-        "pydantic==1.6.1",
-        "pytest",
-        "PyYAML==5.4",
-        "requests",
-    ]
-)
+
+class CatalogHelper:
+    @staticmethod
+    def coerce_catalog_as_full_refresh(catalog: AirbyteCatalog) -> AirbyteCatalog:
+        """
+        Updates the sync mode on all streams in this catalog to be full refresh
+        """
+        coerced_catalog = catalog.copy()
+        for stream in catalog.streams:
+            stream.source_defined_cursor = False
+            stream.supported_sync_modes = [SyncMode.full_refresh]
+            stream.default_cursor_field = None
+
+        # remove nulls
+        return AirbyteCatalog.parse_raw(coerced_catalog.json(exclude_unset=True, exclude_none=True))
