@@ -2,9 +2,6 @@ name: publish-cdk
 on:
   workflow_dispatch:
     inputs:
-      connector:
-        description: 'Airbyte Connector'
-        required: true
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
         required: false
