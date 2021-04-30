@@ -37,7 +37,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Publish Python Package
-        uses: mariamrf/py-package-publish-action@v1.0.0
+        uses: mariamrf/py-package-publish-action@v1.1.0
         with:
           python_version: '3.7.9'
           pip_version: '21.1'
