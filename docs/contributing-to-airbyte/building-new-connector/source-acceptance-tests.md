@@ -50,7 +50,7 @@ Configuring all streams in the input catalog to full refresh mode verifies that 
 | `validate_output_from_all_streams` | boolean | False | Verify that **all** streams have records|
 | `expect_records` | object |None| Compare produced records with expected records, see details below|
 | `expect_records.path` | string | | File with expected records|
-| `expect_records.extra_fields` | boolean | False | Allow records to have other fields|
+| `expect_records.extra_fields` | boolean | False | Allow output records to have other fields i.e: expected records are a subset |
 | `expect_records.exact_order` | boolean | False | Ensure  that records produced in exact same order|
 | `expect_records.extra_records` | boolean | True | Allow connector to produce extra records, but still enforce all records from the expected file to be produced|  
 
