@@ -12,6 +12,16 @@ jobs:
     steps:
       - name: Echo
         run: echo 'Hello World!'
+      - name: Publish Python Package
+        uses: mariamrf/py-package-publish-action@v1.0.0
+        with:
+          python_version: '3.7.9'
+          pip_version: '21.1'
+          subdir: 'airbyte-cdk/'
+        env:
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_REPOSITORY_URL: 'https://test.pypi.org/legacy/'
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
