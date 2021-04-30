@@ -23,24 +23,16 @@
 
 
 
-import setuptools
+from typing import Any, Mapping
 
-setuptools.setup(
-    name="airbyte-cdk",
-    version="0.1.0",
-    description="The Airbyte Connector Development Kit",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=[
-        "backoff",
-        "jsonschema==2.6.0",
-        "pendulum",
-        "pydantic==1.6.1",
-        "pytest",
-        "PyYAML==5.4",
-        "requests",
-    ]
-)
+from airbyte_cdk.base_python.cdk.streams.auth.core import HttpAuthenticator
+
+
+class TokenAuthenticator(HttpAuthenticator):
+    def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
+        self.auth_method = auth_method
+        self.auth_header = auth_header
+        self._token = token
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {self.auth_header: f"{self.auth_method} {self._token}"}

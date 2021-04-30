@@ -23,24 +23,23 @@
 
 
 
-import setuptools
+from abc import ABC, abstractmethod
+from typing import Any, Mapping
 
-setuptools.setup(
-    name="airbyte-cdk",
-    version="0.1.0",
-    description="The Airbyte Connector Development Kit",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    url="https://github.com/airbytehq/airbyte",
-    packages=setuptools.find_packages(),
-    package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=[
-        "backoff",
-        "jsonschema==2.6.0",
-        "pendulum",
-        "pydantic==1.6.1",
-        "pytest",
-        "PyYAML==5.4",
-        "requests",
-    ]
-)
+
+class HttpAuthenticator(ABC):
+    """
+    Base abstract class for various HTTP Authentication strategies. Authentication strategies are generally
+    expected to provide security credentials via HTTP headers.
+    """
+
+    @abstractmethod
+    def get_auth_header(self) -> Mapping[str, Any]:
+        """
+        :return: A dictionary containing all the necessary headers to authenticate.
+        """
+
+
+class NoAuth(HttpAuthenticator):
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {}
