@@ -165,10 +165,9 @@ class DefaultReplicationWorkerTest {
   void testPopulatesOutputOnFailure() throws Exception {
     final MessageTracker<AirbyteMessage> messageTracker = mock(MessageTracker.class);
     doThrow(new IllegalStateException("induced exception")).when(source).close();
-    testPopulatesOutput();
 
     final ReplicationWorker worker = new DefaultReplicationWorker(JOB_ID, JOB_ATTEMPT, source, mapper, destination, messageTracker);
-    assertThrows(IllegalStateException.class, () -> worker.run(syncInput, jobRoot));
+    assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 
   @SuppressWarnings("unchecked")
@@ -178,7 +177,7 @@ class DefaultReplicationWorkerTest {
     doThrow(new IllegalStateException("induced exception")).when(messageTracker).getRecordCount();
 
     final ReplicationWorker worker = new DefaultReplicationWorker(JOB_ID, JOB_ATTEMPT, source, mapper, destination, messageTracker);
-    assertThrows(IllegalStateException.class, () -> worker.run(syncInput, jobRoot));
+    assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 
   @SuppressWarnings("unchecked")
