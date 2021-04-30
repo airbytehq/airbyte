@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       dry-run:
-        description: ''
+        description: 'Indicates whether this is a dry-run or not. A dry-run publishes to Test PyPi. A proper run publishes to actual PyPi servers.'
         required: false
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
@@ -20,15 +20,8 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Echo
-        run: echo ${{ github.event.inputs.dry-run }}
-        # Github does not provide a clean way of doing if-else branches. The alternative to having two conditions is injecting bash or using another
-        # custom action. Having two separate steps, each representing conditionals, seemed the simplest. We make use of env vars to dynamically
-        # set the PyPi url.
-#      - name: Publish to prod PyPi if dry-run is false.
-#        if: github.event.inputs.dry-run == 'dry-run=false'
-#        run: |
-#          echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
+      # Make use of env vars to dynamically set the PyPi url. Since the default is set to publish to production PyPi, only set the url if during
+      # a dry-run publish to the Test PyPi servers.
       - name: Publish to test PyPi if dry-run.
         if: github.event.inputs.dry-run != 'false'
         run: |
