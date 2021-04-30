@@ -10,6 +10,8 @@ jobs:
   publish-cdk:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
       - name: Echo
         run: ls
       - name: Publish Python Package
