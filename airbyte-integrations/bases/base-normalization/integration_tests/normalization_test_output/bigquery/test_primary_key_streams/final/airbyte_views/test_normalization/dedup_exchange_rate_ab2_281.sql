@@ -14,9 +14,12 @@ select
     cast(date as 
     string
 ) as date,
-    cast(HKD as 
+    cast(HKD_special___characters as 
     float64
-) as HKD,
+) as HKD_special___characters,
+    cast(HKD_special___characters_1 as 
+    string
+) as HKD_special___characters_1,
     cast(NZD as 
     float64
 ) as NZD,

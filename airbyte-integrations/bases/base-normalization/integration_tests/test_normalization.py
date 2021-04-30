@@ -407,6 +407,15 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
     (so we can share these dbt tests files accross destinations)
     """
     if os.path.exists(src):
+        temp_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_")
+        temporary_folders.add(temp_dir)
+        # Copy and adapt capitalization
+        if destination_type.value == DestinationType.SNOWFLAKE.value:
+            shutil.copytree(src, temp_dir + "/upper", copy_function=copy_upper)
+            src = temp_dir + "/upper"
+        elif destination_type.value == DestinationType.REDSHIFT.value:
+            shutil.copytree(src, temp_dir + "/lower", copy_function=copy_lower)
+            src = temp_dir + "/lower"
         if os.path.exists(replace_identifiers):
             with open(replace_identifiers, "r") as file:
                 contents = file.read()
@@ -423,18 +432,10 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
                 def copy_replace_identifiers(src, dst):
                     copy_replace(src, dst, pattern, replace_value)
 
-                temp_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_")
-                temporary_folders.add(temp_dir)
-                shutil.copytree(src, temp_dir + "/test", copy_function=copy_replace_identifiers)
-                src = temp_dir + "/test"
-        if destination_type.value == DestinationType.POSTGRES.value:
-            shutil.copytree(src, dst)
-        elif destination_type.value == DestinationType.SNOWFLAKE.value:
-            shutil.copytree(src, dst, copy_function=copy_upper)
-        elif destination_type.value == DestinationType.REDSHIFT.value:
-            shutil.copytree(src, dst, copy_function=copy_lower)
-        else:
-            shutil.copytree(src, dst)
+                shutil.copytree(src, temp_dir + "/replace", copy_function=copy_replace_identifiers)
+                src = temp_dir + "/replace"
+        # final copy
+        shutil.copytree(src, dst)
 
 
 def copy_upper(src, dst):

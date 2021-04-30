@@ -12,9 +12,12 @@ select
     cast("date" as 
     varchar
 ) as "date",
-    cast(hkd as 
+    cast("HKD@spéçiäl & characters" as 
     float
-) as hkd,
+) as "HKD@spéçiäl & characters",
+    cast(hkd_special___characters as 
+    varchar
+) as hkd_special___characters,
     cast(nzd as 
     float
 ) as nzd,
