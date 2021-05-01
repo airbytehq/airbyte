@@ -109,7 +109,7 @@
 - sourceDefinitionId: 9845d17a-45f1-4070-8a60-50914b1c8e2b
   name: HTTP Request
   dockerRepository: airbyte/source-http-request
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-http-request
   icon: http.svg
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
@@ -175,7 +175,7 @@
 - sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
   name: Zoom
   dockerRepository: airbyte/source-zoom-singer
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-zoom-singer
   icon: zoom.svg
 - sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
