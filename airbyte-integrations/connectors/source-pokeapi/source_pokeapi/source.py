@@ -34,9 +34,9 @@ POKEMON_LIST = ['bulbasaur','ivysaur','venusaur','charmander','charmeleon','char
 class PokeapiStream(HttpStream):
     url_base = 'https://pokeapi.co/api/v2/'
 
-    def __init__(self, name: str, **kwargs):
-        super().__init__()
-        self._name = name
+    def __init__(self, pokemon_name: str, **kwargs):
+        super().__init__(**kwargs)
+        self.pokemon_name = pokemon_name
 
     def request_params(
             self,
@@ -44,8 +44,8 @@ class PokeapiStream(HttpStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        # The api requires that we include the base currency as a query param so we do that in this method
-        return {"name": self.name}
+        # The api requires that we include the Pokemon name as a query param so we do that in this method
+        return {"pokemon_name": self.pokemon_name}
 
     def parse_response(
             self,
@@ -66,7 +66,7 @@ class PokeapiStream(HttpStream):
 
 class Pokemon(PokeapiStream):
     def path(self, **kwargs) -> str:
-        pokemon_name = self._name
+        pokemon_name = self.pokemon_name
         return f'pokemon/{pokemon_name}'
 
 # Source
@@ -81,4 +81,4 @@ class SourcePokeapi(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = {"name": config["name"]}
-        return [Pokemon(**args)]
+        return [Pokemon(name=config["name"])]
