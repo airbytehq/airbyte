@@ -11,7 +11,7 @@
   * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
   * [Using the Airflow Airbyte Operator](tutorials/using-the-airflow-airbyte-operator.md)
   * [Contributing to Airbyte](contributing-to-airbyte/tutorials/README.md)
-    * [A Beginner's Guide to the AirbyteCatlog](contributing-to-airbyte/tutorials/beginners-guide-to-catalog.md)
+    * [A Beginner's Guide to the AirbyteCatalog](contributing-to-airbyte/tutorials/beginners-guide-to-catalog.md)
     * [Building a Toy Connector](contributing-to-airbyte/tutorials/toy-connector.md)
     * [Adding Incremental to a Source](contributing-to-airbyte/tutorials/adding-incremental-sync.md)
     * [Building a Python Source](contributing-to-airbyte/tutorials/building-a-python-source.md)  
