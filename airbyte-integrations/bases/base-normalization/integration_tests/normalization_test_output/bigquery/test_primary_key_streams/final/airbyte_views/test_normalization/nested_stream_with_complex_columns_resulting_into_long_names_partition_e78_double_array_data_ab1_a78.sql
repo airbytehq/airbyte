@@ -7,7 +7,7 @@
 
 select
     _airbyte_partition_hashid,
-    json_extract_scalar(double_array_data, "$.id") as id,
+    json_extract_scalar(double_array_data, "$['id']") as id,
     _airbyte_emitted_at
 from `dataline-integration-testing`.test_normalization.`nested_stream_with_complex_columns_resulting_into_long_names_64a_partition`
 cross join unnest(double_array_data) as double_array_data

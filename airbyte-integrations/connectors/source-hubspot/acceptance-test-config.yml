@@ -13,6 +13,11 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
       validate_output_from_all_streams: yes
+      expect_records:
+        path: "integration_tests/expected_records.txt"
+        extra_fields: yes
+        exact_order: yes
+        extra_records: no
 #  incremental: fixme (eugene): '<=' not supported between instances of 'int' and 'str'
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "sample_files/configured_catalog.json"

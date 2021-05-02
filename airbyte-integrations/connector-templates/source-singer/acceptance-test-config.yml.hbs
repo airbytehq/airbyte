@@ -1,9 +1,9 @@
 # See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
 # for more information about how to configure these tests
-connector_image: airbyte/{{dashCase name}}
+connector_image: airbyte/source-{{dashCase name}}-singer
 tests:
   spec:
-    - spec_path: "source_{{snakeCase name}}/spec.json"
+    - spec_path: "source_{{snakeCase name}}_singer/spec.json"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -15,6 +15,11 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       validate_output_from_all_streams: yes
+      expect_records:
+        path: "integration_tests/expected_records.txt"
+        extra_fields: no
+        exact_order: no
+        extra_records: yes
   incremental: # TODO if your connector does not implement incremental sync, remove this block
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

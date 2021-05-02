@@ -35,7 +35,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.OnStartFunction;
-import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.RecordWriter;
+import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -73,7 +73,8 @@ public class JdbcBufferedConsumerFactory {
         recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
-        writeConfigs.stream().map(JdbcBufferedConsumerFactory::toNameNamespacePair).collect(Collectors.toSet()));
+        writeConfigs.stream().map(JdbcBufferedConsumerFactory::toNameNamespacePair).collect(Collectors.toSet()),
+        sqlOperations::isValidData);
   }
 
   private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver, JsonNode config, ConfiguredAirbyteCatalog catalog) {
@@ -139,14 +140,14 @@ public class JdbcBufferedConsumerFactory {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = writeConfigs.stream()
         .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
 
-    return (pair, recordStream) -> {
+    return (pair, records) -> {
       if (!pairToWriteConfig.containsKey(pair)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
       }
 
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
-      sqlOperations.insertRecords(database, recordStream, writeConfig.getOutputSchemaName(), writeConfig.getTmpTableName());
+      sqlOperations.insertRecords(database, records, writeConfig.getOutputSchemaName(), writeConfig.getTmpTableName());
     };
   }
 
