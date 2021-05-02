@@ -30,5 +30,5 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     package_data={"": ["*.json"]},
-    install_requires=["airbyte-cdk==0.0.1", "pendulum>=2,<3"],
+    install_requires=["airbyte-protocol", "pendulum>=2,<3"],
 )
