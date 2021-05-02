@@ -29,6 +29,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "schemas/*.json"]},
     install_requires=["pendulum>=2,<3"],
 )
