@@ -123,7 +123,7 @@ public class AirbyteVersion {
   public static boolean isCompatible(final String v1, final String v2) {
     final AirbyteVersion version1 = new AirbyteVersion(v1);
     final AirbyteVersion version2 = new AirbyteVersion(v2);
-    return version1.compatibleVersionCompareTo(version2) != 0;
+    return version1.compatibleVersionCompareTo(version2) == 0;
   }
 
   @Override
