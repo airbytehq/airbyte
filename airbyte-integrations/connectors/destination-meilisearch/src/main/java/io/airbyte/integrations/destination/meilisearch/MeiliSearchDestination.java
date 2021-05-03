@@ -110,7 +110,8 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
         recordWriterFunction(indexNameToIndex),
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),
         catalog,
-        AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog));
+        AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog),
+        (data) -> true);
   }
 
   private static Map<String, Index> createIndices(ConfiguredAirbyteCatalog catalog, Client client) throws Exception {

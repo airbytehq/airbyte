@@ -18,6 +18,7 @@ jobs:
           commands: |
             test
             publish
+            publish-cdk
           static-args: |
             ref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}

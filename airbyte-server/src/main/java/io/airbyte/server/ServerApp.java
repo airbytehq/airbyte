@@ -206,13 +206,13 @@ public class ServerApp {
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
 
     final String airbyteVersion = configs.getAirbyteVersion();
-    final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    if (airbyteDatabaseVersion.isEmpty()) {
+    if (jobPersistence.getVersion().isEmpty()) {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
       jobPersistence.setVersion(airbyteVersion);
     }
+    final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
 
-    if (airbyteDatabaseVersion.isEmpty() || AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+    if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
       new ServerApp(configRepository, jobPersistence, configs).start();
     } else {
