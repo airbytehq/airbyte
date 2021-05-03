@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-The Zendesk Chat source supports Full Refresh syncs.
+The Zendesk Chat source supports Full Refresh and Incremental syncs.
 
 This source can sync data for the [Zendesk Chat API](https://developer.zendesk.com/rest_api/docs/chat/introduction).
 
@@ -11,11 +11,12 @@ This source can sync data for the [Zendesk Chat API](https://developer.zendesk.c
 This Source is capable of syncing the following core Streams:
 
 * [Accounts](https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account)
-* [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents)
+* [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents) (Incremental)
+* [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export) (Incremental)
 * [Chats](https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats)
 * [Shortcuts](https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts)
 * [Triggers](https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers)
-* [Bans](https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans)
+* [Bans](https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans) (Incremental)
 * [Departments](https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments)
 * [Goals](https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals)
 * [Skills](https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills)
@@ -36,7 +37,7 @@ This Source is capable of syncing the following core Streams:
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Incremental Sync | Yes |  |
 | SSL connection | Yes | |
 
 ### Performance considerations
@@ -50,7 +51,6 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 ### Requirements
 
 * Zendesk Chat Access Token
-* Zendesk Subdomain 
 
 ### Setup guide
 
