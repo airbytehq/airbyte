@@ -45,7 +45,7 @@ This step will create virtual machine and add user account named `byteuser`. ``-
 
 ![](../.gitbook/assets/azure_shell_create_vm.png)
 
-#### Open ports to access AirByte
+#### Open ports to access Airbyte
 
 {% hint style="danger" %}
 For security reasons, we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication.
@@ -132,4 +132,3 @@ echo "http://${fqdns}:8000" # example - skdhfvhsdofyo.westus2.cloudapp.azure.com
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../faq/technical-support.md) section in our docs for common problems.
-
