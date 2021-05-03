@@ -1,4 +1,4 @@
-# Transformations with DBT \(part 2/2\)
+# Transformations with DBT \(Part 2/2\)
 
 ## Overview
 
