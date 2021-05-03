@@ -37,7 +37,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
+import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -139,7 +139,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
   }
 
   private static RecordWriter recordWriterFunction(final Map<String, Index> indexNameToWriteConfig) {
-    return (namePair, records) -> {
+    return (namePair, recordStream) -> {
       final String resolvedIndexName = getIndexName(namePair.getName());
       if (!indexNameToWriteConfig.containsKey(resolvedIndexName)) {
         throw new IllegalArgumentException(
@@ -153,8 +153,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
       // destinations work. There is not really a viable way to "transform" data after it is MeiliSearch.
       // Tools like DBT do not apply. Therefore, we need to try to write data in the most usable format
       // possible that does not require alteration.
-      final String json = Jsons.serialize(records
-          .stream()
+      final String json = Jsons.serialize(recordStream
           .map(AirbyteRecordMessage::getData)
           .peek(o -> ((ObjectNode) o).put(AB_PK_COLUMN, Names.toAlphanumericAndUnderscore(UUID.randomUUID().toString())))
           .collect(Collectors.toList()));

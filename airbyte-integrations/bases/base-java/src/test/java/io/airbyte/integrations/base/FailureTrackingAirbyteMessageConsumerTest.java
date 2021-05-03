@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import org.junit.jupiter.api.Test;
 
 class FailureTrackingAirbyteMessageConsumerTest {
@@ -92,7 +93,7 @@ class FailureTrackingAirbyteMessageConsumerTest {
     }
 
     @Override
-    protected void acceptTracked(AirbyteMessage s) {
+    protected void acceptTracked(AirbyteRecordMessage s) {
 
     }
 
