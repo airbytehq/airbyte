@@ -38,7 +38,7 @@ Other progress on connectors:
 
 ## 04/13/2021
 
-* New connector: **[Oracle DB](https://docs.airbyte.io/integrations/sources/oracle)**
+* New connector: **[Oracle DB](https://docs.airbyte.io/integrations/sources/oracle)**, thanks to [Marcos Marx](https://github.com/marcosmarxm) 
 
 ## 04/07/2021
 
