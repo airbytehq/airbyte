@@ -204,23 +204,23 @@ class HttpStream(Stream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
         cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         args = {"stream_state": stream_state, "stream_slice": stream_slice}
         pagination_complete = False
         while not pagination_complete:
             request = self._create_prepared_request(
-                path=self.path(**args),
-                headers=dict(self.request_headers(**args), **self.authenticator.get_auth_header()),
-                params=self.request_params(**args),
-                json=self.request_body_json(**args),
+                path=self.path(args),
+                headers=dict(self.request_headers(args), **self.authenticator.get_auth_header()),
+                params=self.request_params(args),
+                json=self.request_body_json(args),
             )
 
             response = self._send_request(request)
-            yield from self.parse_response(response, **args)
+            yield from self.parse_response(response, args)
 
             next_page_token = self.next_page_token(response)
             if next_page_token:
