@@ -24,7 +24,7 @@
 import json
 import os
 from dataclasses import dataclass
-from typing import Dict, Iterator, List, Type
+from typing import Dict, Iterable, List, Type
 
 from airbyte_cdk.base_python import AirbyteLogger, CatalogHelper, Source
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
@@ -116,7 +116,7 @@ class SingerSource(Source):
 
     def read(
         self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
-    ) -> Iterator[AirbyteMessage, None, None]:
+    ) -> Iterable[AirbyteMessage, None, None]:
         """
         Implements the parent class read method.
         """

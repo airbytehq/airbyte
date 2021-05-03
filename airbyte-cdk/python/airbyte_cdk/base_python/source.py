@@ -23,7 +23,7 @@
 
 import copy
 from datetime import datetime
-from typing import Any, Iterator, Mapping, MutableMapping, Type
+from typing import Any, Iterable, Mapping, MutableMapping, Type
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -74,7 +74,7 @@ class BaseSource(Source):
 
     def read(
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
-    ) -> Iterator[AirbyteMessage]:
+    ) -> Iterable[AirbyteMessage]:
         state = state or {}
         client = self._get_client(config)
 
