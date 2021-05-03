@@ -20,11 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import sys
 
-from base_python.entrypoint import launch
-from source_{{snakeCase name}} import Source{{properCase name}}
+import pytest
 
-if __name__ == "__main__":
-    source = Source{{properCase name}}()
-    launch(source, sys.argv[1:])
+pytest_plugins = ("source_acceptance_test.plugin",)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """ This fixture is a placeholder for external resources that acceptance test might require."""
+    # TODO: setup test dependencies if needed. otherwise remove the TODO comments
+    yield
+    # TODO: clean up test dependencies
