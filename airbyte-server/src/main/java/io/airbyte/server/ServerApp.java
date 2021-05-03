@@ -206,8 +206,7 @@ public class ServerApp {
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
 
     final String airbyteVersion = configs.getAirbyteVersion();
-    final Optional<String> checkAirbyteInitDBVersion = jobPersistence.getVersion();
-    if (checkAirbyteInitDBVersion.isEmpty()) {
+    if (jobPersistence.getVersion().isEmpty()) {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
       jobPersistence.setVersion(airbyteVersion);
     }
