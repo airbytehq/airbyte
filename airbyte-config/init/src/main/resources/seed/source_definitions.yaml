@@ -109,7 +109,7 @@
 - sourceDefinitionId: 9845d17a-45f1-4070-8a60-50914b1c8e2b
   name: HTTP Request
   dockerRepository: airbyte/source-http-request
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-http-request
   icon: http.svg
 - sourceDefinitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
@@ -211,7 +211,7 @@
 - sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
   name: Mongo DB
   dockerRepository: airbyte/source-mongodb
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-mongodb
   icon: mongodb.svg
 - sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246

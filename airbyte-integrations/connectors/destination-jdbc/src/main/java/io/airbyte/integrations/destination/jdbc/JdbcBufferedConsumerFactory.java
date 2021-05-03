@@ -73,7 +73,8 @@ public class JdbcBufferedConsumerFactory {
         recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
-        writeConfigs.stream().map(JdbcBufferedConsumerFactory::toNameNamespacePair).collect(Collectors.toSet()));
+        writeConfigs.stream().map(JdbcBufferedConsumerFactory::toNameNamespacePair).collect(Collectors.toSet()),
+        sqlOperations::isValidData);
   }
 
   private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver, JsonNode config, ConfiguredAirbyteCatalog catalog) {

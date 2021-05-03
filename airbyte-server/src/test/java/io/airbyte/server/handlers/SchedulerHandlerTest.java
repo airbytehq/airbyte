@@ -228,7 +228,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate);
 
-    verify(jsonSchemaValidator).validate(CONNECTION_SPECIFICATION.getConnectionSpecification(), source.getConfiguration());
+    verify(jsonSchemaValidator).ensure(CONNECTION_SPECIFICATION.getConnectionSpecification(), source.getConfiguration());
     verify(synchronousSchedulerClient).createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE);
   }
 
@@ -349,7 +349,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate);
 
-    verify(jsonSchemaValidator).validate(CONNECTION_SPECIFICATION.getConnectionSpecification(), destination.getConfiguration());
+    verify(jsonSchemaValidator).ensure(CONNECTION_SPECIFICATION.getConnectionSpecification(), destination.getConfiguration());
     verify(synchronousSchedulerClient).createDestinationCheckConnectionJob(submittedDestination, DESTINATION_DOCKER_IMAGE);
   }
 
