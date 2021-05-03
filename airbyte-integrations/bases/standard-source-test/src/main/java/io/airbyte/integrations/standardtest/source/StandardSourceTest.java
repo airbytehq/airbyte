@@ -112,6 +112,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-braintree-singer",
       "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
+      "airbyte/source-exchange-rates",
       "airbyte/source-stripe",
       "airbyte/source-github-singer",
       "airbyte/source-gitlab-singer",
@@ -332,7 +333,6 @@ public abstract class StandardSourceTest {
         .filter(m -> m.getType() == Type.STATE)
         .map(AirbyteMessage::getState)
         .collect(Collectors.toList());
-
     assertFalse(recordMessages.isEmpty(), "Expected the first incremental sync to produce records");
     assertFalse(stateMessages.isEmpty(), "Expected incremental sync to produce STATE messages");
     // TODO validate exact records
@@ -444,7 +444,6 @@ public abstract class StandardSourceTest {
 
     final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
     final List<AirbyteMessage> messages = new ArrayList<>();
-
     source.start(sourceConfig, jobRoot);
     while (!source.isFinished()) {
       source.attemptRead().ifPresent(messages::add);
