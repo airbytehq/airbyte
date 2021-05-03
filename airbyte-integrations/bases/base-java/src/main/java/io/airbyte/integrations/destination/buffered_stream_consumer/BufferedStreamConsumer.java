@@ -36,6 +36,7 @@ import io.airbyte.commons.lang.Queues;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.queue.OnDiskQueue;
@@ -136,7 +137,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     LOGGER.info("Buffer creation completed.");
 
     onStart.call();
-    LOGGER.info("write buffers: {}", pairToWriteBuffer);
+    LOGGER.info("write buffers: {}", pairToWriteBuffer.keySet());
     writerPool.scheduleWithFixedDelay(
         () -> writeStreamsWithNRecords(MIN_RECORDS, pairToWriteBuffer, recordWriter),
         THREAD_DELAY_MILLIS,
@@ -207,7 +208,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         try {
           final List<AirbyteRecordMessage> records = Queues.toStream(writeBuffer)
               .limit(BufferedStreamConsumer.BATCH_SIZE)
-              .map(record -> Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class))
+              .map(record -> Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteMessage.class))
+              .filter(m -> m.getType() == Type.RECORD)
+              .map(AirbyteMessage::getRecord)
               .collect(Collectors.toList());
 
           LOGGER.info("Writing stream {}. Max batch size: {}, Actual batch size: {}, Remaining buffered records: {}",
