@@ -12,23 +12,23 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 ## [04-27-2021 - 0.22.0](https://github.com/airbytehq/airbyte/releases/tag/v0.22.0-alpha)
 
-* **Zendesk Talk**: fix normalization failure ([#3022](https://github.com/airbytehq/airbyte/pull/3022)), thanks to [yevhenii-ldv](https://github.com/yevhenii-ldv)
-* **Github**: pull_requests stream only incremental syncs ([#2886](https://github.com/airbytehq/airbyte/pull/2886)) ([#3009](https://github.com/airbytehq/airbyte/pull/3009)), thanks to [Zirochkaa](https://github.com/Zirochkaa)
-* Create streaming writes to a file and manage the issuance of copy commands for the destination ([#2921](https://github.com/airbytehq/airbyte/pull/2921))
-* **Redshift**: make Redshift part size configurable. ([#3053](https://github.com/airbytehq/airbyte/pull/23053))
-* **Hubspot**: fix argument error in log call (#3087) ([#3087](https://github.com/airbytehq/airbyte/pull/3087)) , thanks to [Nathan Yergler](https://github.com/nyergler)
+* **Zendesk Talk**: fix normalization failure \([\#3022](https://github.com/airbytehq/airbyte/pull/3022)\), thanks to [yevhenii-ldv](https://github.com/yevhenii-ldv)
+* **Github**: pull\_requests stream only incremental syncs \([\#2886](https://github.com/airbytehq/airbyte/pull/2886)\) \([\#3009](https://github.com/airbytehq/airbyte/pull/3009)\), thanks to [Zirochkaa](https://github.com/Zirochkaa)
+* Create streaming writes to a file and manage the issuance of copy commands for the destination \([\#2921](https://github.com/airbytehq/airbyte/pull/2921)\)
+* **Redshift**: make Redshift part size configurable. \([\#3053](https://github.com/airbytehq/airbyte/pull/23053)\)
+* **Hubspot**: fix argument error in log call \(\#3087\) \([\#3087](https://github.com/airbytehq/airbyte/pull/3087)\) , thanks to [Nathan Yergler](https://github.com/nyergler)
 
 ## [04-20-2021 - 0.21.0](https://github.com/airbytehq/airbyte/releases/tag/v0.21.0-alpha)
 
-* **Namespace support**: supported source-destination pairs will now sync data into the same namespace as the source (#2862)
-* Add **“Refresh Schema”** button ([#2943](https://github.com/airbytehq/airbyte/pull/2943))
+* **Namespace support**: supported source-destination pairs will now sync data into the same namespace as the source \(\#2862\)
+* Add **“Refresh Schema”** button \([\#2943](https://github.com/airbytehq/airbyte/pull/2943)\)
 * In the Settings, you can now **add a webhook to get notified when a sync fails**
 * Add destinationSyncModes to connection form
 * Add tooltips for connection status icons
 
 ## [04-12-2021 - 0.20.0](https://github.com/airbytehq/airbyte/releases/tag/v0.20.0-alpha)
 
-* **Change Data Capture (CDC)** is now supported for Postgres, thanks to [@jrhizor](https://github.com/jrhizor) and [@cgardens](https://github.com/cgardens). We will now expand it to MySQL and MSSQL in the coming weeks.
+* **Change Data Capture \(CDC\)** is now supported for Postgres, thanks to [@jrhizor](https://github.com/jrhizor) and [@cgardens](https://github.com/cgardens). We will now expand it to MySQL and MSSQL in the coming weeks.
 * When displaying the schema for a source, you can now search for table names, thanks to [@jamakase](https://github.com/jamakase)
 * Better feedback UX when manually triggering a sync with “Sync now”
 

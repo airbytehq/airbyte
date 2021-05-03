@@ -1,10 +1,10 @@
-# Transformations with SQL \(part 1/2\)
+# Transformations with SQL \(Part 1/2\)
 
 ## Overview
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using plain SQL queries.
 
-This is the first part of ELT tutorial. The second part goes deeper with [connecting EL with T using DBT](transformations-with-dbt.md).
+This is the first part of ELT tutorial. The second part goes deeper with [connecting EL with T using DBT](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-dbt.md).
 
 ## First transformation step: Normalization
 
@@ -278,5 +278,5 @@ create view "postgres"."public"."covid_epidemiology" as (
 
 Then you can run in your preferred SQL editor or tool!
 
-If you are familiar with DBT or want to learn more about it, you can continue with the following [tutorial using DBT](transformations-with-dbt.md)...
+If you are familiar with DBT or want to learn more about it, you can continue with the following [tutorial using DBT](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-dbt.md)...
 
