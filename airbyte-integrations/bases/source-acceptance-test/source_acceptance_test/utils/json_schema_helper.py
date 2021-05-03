@@ -45,31 +45,31 @@ class JsonSchemaHelper:
             node = node["properties"][segment]
         return node
 
-    def get_type_for_key_path(self, path: List[str]) -> Set[str]:
-        type_ = []
+    def get_format_for_key_path(self, path: List[str]) -> Set[str]:
+        format_ = []
         try:
             field = self.get_property(path)
-            type_ = field.get("format", field["type"])
-            if not isinstance(type_, List):
-                type_ = [type_]
+            format_ = field.get("format", field["type"])
+            if not isinstance(format_, List):
+                format_ = [format_]
         except KeyError:
             pass
-        return set(type_)
+        return set(format_)
 
     def get_cursor_value(self, record, cursor_path):
-        type_ = self.get_type_for_key_path(path=cursor_path)
+        type_ = self.get_format_for_key_path(path=cursor_path)
         value = reduce(lambda data, key: data[key], cursor_path, record)
         return self.parse_value(value, type_)
 
     @staticmethod
-    def parse_value(value: Any, type_: Set[str]):
-        if type_ & {"datetime", "date-time"}:
-            if value is None and "null" not in type_:
-                raise ValueError(f"Invalid field format. Value: {value}. Format: {type_}")
+    def parse_value(value: Any, format_: Set[str]):
+        if format_.intersection({"datetime", "date-time"}):
+            if value is None and "null" not in format_:
+                raise ValueError(f"Invalid field format. Value: {value}. Format: {format_}")
             return pendulum.parse(value)
         return value
 
     def get_state_value(self, state, cursor_path):
-        type_ = self.get_type_for_key_path(path=cursor_path)
+        format_ = self.get_format_for_key_path(path=cursor_path)
         value = state[cursor_path[-1]]
-        return self.parse_value(value, type_)
+        return self.parse_value(value, format_)
