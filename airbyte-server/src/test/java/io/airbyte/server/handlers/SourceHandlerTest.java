@@ -140,6 +140,39 @@ class SourceHandlerTest {
   }
 
   @Test
+  void testUpdateSourceName() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final String updatedSourceName = "my updated source name";
+    final JsonNode newConfiguration = sourceConnection.getConfiguration();
+
+    final SourceConnection expectedSourceConnection = Jsons.clone(sourceConnection)
+            .withName(updatedSourceName)
+            .withConfiguration(newConfiguration)
+            .withTombstone(false);
+
+    final SourceUpdate sourceUpdate = new SourceUpdate()
+            .name(updatedSourceName)
+            .sourceId(sourceConnection.getSourceId())
+            .connectionConfiguration(newConfiguration);
+
+    when(secretsProcessor
+            .copySecrets(sourceConnection.getConfiguration(), newConfiguration, sourceDefinitionSpecificationRead.getConnectionSpecification()))
+            .thenReturn(newConfiguration);
+    when(secretsProcessor.maskSecrets(newConfiguration, sourceDefinitionSpecificationRead.getConnectionSpecification())).thenReturn(newConfiguration);
+
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionSpecificationRead.getSourceDefinitionId()))
+            .thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceDefinitionFromSource(sourceConnection.getSourceId())).thenReturn(standardSourceDefinition);
+    when(configRepository.getSourceConnection(sourceConnection.getSourceId()))
+            .thenReturn(sourceConnection)
+            .thenReturn(expectedSourceConnection);
+    when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
+    when(configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getName(), newConfiguration)).thenReturn(expectedSourceConnection);
+
+    final SourceRead actualSourceRead = sourceHandler.updateSource(sourceUpdate);
+    assertEquals(updatedSourceName, actualSourceRead.getName());
+  }
+
+  @Test
   void testUpdateSource() throws JsonValidationException, ConfigNotFoundException, IOException {
     final JsonNode newConfiguration = sourceConnection.getConfiguration();
     ((ObjectNode) newConfiguration).put("apiKey", "987-xyz");
@@ -149,7 +182,7 @@ class SourceHandlerTest {
         .withTombstone(false);
 
     final SourceUpdate sourceUpdate = new SourceUpdate()
-        .name(sourceConnection.getName())
+            .name(sourceConnection.getName())
         .sourceId(sourceConnection.getSourceId())
         .connectionConfiguration(newConfiguration);
 
@@ -165,7 +198,7 @@ class SourceHandlerTest {
         .thenReturn(sourceConnection)
         .thenReturn(expectedSourceConnection);
     when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
-    when(configurationUpdate.source(sourceConnection.getSourceId(), newConfiguration)).thenReturn(expectedSourceConnection);
+    when(configurationUpdate.source(sourceConnection.getSourceId(), sourceConnection.getName(), newConfiguration)).thenReturn(expectedSourceConnection);
 
     final SourceRead actualSourceRead = sourceHandler.updateSource(sourceUpdate);
     final SourceRead expectedSourceRead =
