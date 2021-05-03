@@ -41,7 +41,7 @@ echo $fqdns
 
 This step will create virtual machine and add user account named `byteuser`. ``--generate-ssh-keys`` option will generate new ssh key and put it to default key location(~/.ssh)
 
-**_Note ``publicIpAddress`` from the output, you will need this addres to access airbyte_**
+**_Note ``publicIpAddress`` from the output, you will need this addres to access Airbyte_**
 
 ![](../.gitbook/assets/azure_shell_create_vm.png)
 
@@ -132,5 +132,4 @@ echo "http://${fqdns}:8000" # example - skdhfvhsdofyo.westus2.cloudapp.azure.com
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../faq/technical-support.md) section in our docs for common problems.
-
 
