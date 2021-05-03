@@ -271,7 +271,6 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
   @VisibleForTesting
   static boolean isCdc(JsonNode config) {
-    LOGGER.info("isCdc config: " + config);
     final boolean isCdc = config.hasNonNull("replication_method")
         && config.get("replication_method").hasNonNull("replication_slot")
         && config.get("replication_method").hasNonNull("publication");
