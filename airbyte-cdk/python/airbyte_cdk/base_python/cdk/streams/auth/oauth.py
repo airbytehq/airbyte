@@ -59,7 +59,7 @@ class Oauth2Authenticator(HttpAuthenticator):
     def token_has_expired(self) -> bool:
         return pendulum.now() > self._token_expiry_date
 
-    def get_refresh_request_body(self) -> Mapping[str, Union[str, Any]]:
+    def get_refresh_request_body(self) -> Mapping[str, Any]:
         """ Override to define additional parameters """
         payload: MutableMapping[str, Any] = {
             "grant_type": "refresh_token",
