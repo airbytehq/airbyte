@@ -113,7 +113,6 @@ logout
 
 #### Connect to Airbyte
 
-We opened port 8000 (the static web server) and port 8001 (the api server) ports to access airbyte over internet. 
 
 {% hint style="danger" %}
 For security reasons, we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication.
@@ -133,6 +132,5 @@ echo "http://${fqdns}:8000" # example - skdhfvhsdofyo.westus2.cloudapp.azure.com
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../faq/technical-support.md) section in our docs for common problems.
-
 
 
