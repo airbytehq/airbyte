@@ -20,15 +20,15 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    docker-compose down
    ```
 
-2. Turn back on the Airbyte web app, server, and db (using the "old" working version from which you are upgrading from).
+2. Turn back on the Airbyte web app, server, and db \(using the "old" working version from which you are upgrading from\).
 
    ```bash
    docker-compose up -d db server webapp
    ```
 
    _Note: the `-d` flag in the previous command is optional and is meant to run the docker services in the background. This would let you free to keep interacting with the terminal and type the next commands in the tutorial._
-   
-3. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive (gzipped tarball) of all of your Airbyte configuration data and sync history locally. 
+
+3. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive \(gzipped tarball\) of all of your Airbyte configuration data and sync history locally.
 
    _Note: Any secrets that you have entered into Airbyte will be in this archive, so you should treat it as secret._
 
@@ -42,25 +42,24 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    ```
 
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
-   
+
    ```bash
    docker run --rm -v /tmp:/config airbyte/migration:0.22.0-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```
 
-5. Turn off Airbyte fully and **(see warning)** delete the existing Airbyte docker volumes.
+5. Turn off Airbyte fully and **\(see warning\)** delete the existing Airbyte docker volumes.
 
    _WARNING: Make sure you have already exported your data \(step 3\). This command is going to delete your data in Docker, you may lose your airbyte configurations!_
-   
-   This is where all airbyte configurations are saved.
-   Those configuration files need to be upgraded and restored with the proper version in the following steps.
-   
+
+   This is where all airbyte configurations are saved. Those configuration files need to be upgraded and restored with the proper version in the following steps.
+
    ```bash
    # Careful, this is deleting data!
    docker-compose down -v
    ```
-   
+
    The `-v` flag is equivalent to running the following two steps in a single command:
 
    ```bash
@@ -74,7 +73,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
 
    i. If you are running Airbyte from a cloned version of the Airbyte repo and want to use the current most recent stable version, just `git pull`.
 
-   ii. If you are running Airbyte from a `.env`, edit the `VERSION` field in that file to be the desired version (make sure your docker-compose.yaml is mirroring the [latest version](../../docker-compose.yaml) if you encounter any problems).
+   ii. If you are running Airbyte from a `.env`, edit the `VERSION` field in that file to be the desired version \(make sure your docker-compose.yaml is mirroring the [latest version](https://github.com/airbytehq/airbyte/tree/4f03fc460350cbf1e8613853ab13fa6db14c0d06/docker-compose.yaml) if you encounter any problems\).
 
 7. Bring Airbyte back online.
 
@@ -82,7 +81,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    docker-compose up
    ```
 
-9. Complete Preferences section. In the subsequent setup page click "Skip Onboarding". Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Import. This will prompt you to upload the migrated archive to Airbyte. After this completes, your upgraded Airbyte instance will now be running with all of your original configuration.
+8. Complete Preferences section. In the subsequent setup page click "Skip Onboarding". Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Import. This will prompt you to upload the migrated archive to Airbyte. After this completes, your upgraded Airbyte instance will now be running with all of your original configuration.
 
 This step will throw an exception if the data you are trying to upload does not match the version of Airbyte that is running.
 
