@@ -148,6 +148,12 @@
   dockerImageTag: 0.2.2
   documentationUrl: https://https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
+- sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
+  name: Zendesk Chat
+  dockerRepository: airbyte/source-zendesk-chat
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-chat
+  icon: zendesk.svg
 - sourceDefinitionId: d29764f8-80d7-4dd7-acbe-1a42005ee5aa
   name: Zendesk Support
   dockerRepository: airbyte/source-zendesk-support-singer
