@@ -98,7 +98,6 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
       arguments.add("--state");
       arguments.add(stateFilename);
     }
-
     return pbf.create(
         jobId,
         attempt,
