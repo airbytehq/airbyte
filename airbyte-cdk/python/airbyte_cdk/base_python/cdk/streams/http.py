@@ -213,10 +213,10 @@ class HttpStream(Stream, ABC):
         pagination_complete = False
         while not pagination_complete:
             request = self._create_prepared_request(
-                path=self.path(args),
-                headers=dict(self.request_headers(args), **self.authenticator.get_auth_header()),
-                params=self.request_params(args),
-                json=self.request_body_json(args),
+                path=self.path(**args),
+                headers=dict(**args, **self.authenticator.get_auth_header()),
+                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice),
+                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice),
             )
 
             response = self._send_request(request)
