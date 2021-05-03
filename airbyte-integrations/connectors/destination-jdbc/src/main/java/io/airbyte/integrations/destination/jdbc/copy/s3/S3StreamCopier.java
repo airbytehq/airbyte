@@ -34,7 +34,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.AbstractStreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;

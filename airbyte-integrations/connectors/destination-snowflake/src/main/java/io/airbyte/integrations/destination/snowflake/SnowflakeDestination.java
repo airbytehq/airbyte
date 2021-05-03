@@ -50,7 +50,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   public static DestinationType getTypeFromConfig(JsonNode config) {
     if (isS3Copy(config)) {
       return DestinationType.COPY_S3;
-    } else if(isGcsCopy(config)) {
+    } else if (isGcsCopy(config)) {
       return DestinationType.COPY_GCS;
     } else {
       return DestinationType.INSERT;
@@ -73,8 +73,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     return ImmutableMap.of(
         DestinationType.INSERT, insertDestination,
         DestinationType.COPY_S3, copyS3Destination,
-        DestinationType.COPY_GCS, copyGcsDestination
-    );
+        DestinationType.COPY_GCS, copyGcsDestination);
   }
 
   public static void main(String[] args) throws Exception {
