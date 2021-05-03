@@ -106,7 +106,7 @@ public class AirbyteVersion {
   }
 
   public static void assertIsCompatible(final String version1, final String version2) throws IllegalStateException {
-    if (isCompatible(version1, version2)) {
+    if (!isCompatible(version1, version2)) {
       throw new IllegalStateException(getErrorMessage(version1, version2));
     }
   }
@@ -123,7 +123,7 @@ public class AirbyteVersion {
   public static boolean isCompatible(final String v1, final String v2) {
     final AirbyteVersion version1 = new AirbyteVersion(v1);
     final AirbyteVersion version2 = new AirbyteVersion(v2);
-    return version1.compatibleVersionCompareTo(version2) != 0;
+    return version1.compatibleVersionCompareTo(version2) == 0;
   }
 
   @Override
