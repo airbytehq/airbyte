@@ -4,17 +4,31 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Onerain Api Spec",
     "type": "object",
-    "required": ["data_api_url","system_key"],
+    "required": ["data_api_url","system_key","get_site_metadata"],
     "additionalProperties": false,
     "properties": {
       "data_api_url": {
         "type": "string",
-        "description": "OneRain Data API url (e.g. http://{HOST}[:PORT]/OneRain/DataAPI)"
+        "description": "OneRain Data API url (e.g. http://{HOST}[:PORT]/OneRain/DataAPI)",
+        "order":1
       },
       "system_key": {
         "type":"string",
-        "description":"String used to associate a group of sensors with a single globally unique identifier in Contrail"
+        "description":"String used to associate a group of sensors with a single globally unique identifier in Contrail",
+        "order":2
+      },
+      "get_site_metadata": { 
+
+            "type":"object",
+            "required":[""],
+            "properties": {
+                "or_site_id":{"type":"string"},
+                "site_id":{"type":"string"},
+                "class":{"type":"integer"},
+                "timezone":{"type":"string"}
+            }
       }
+
     }
   }
 }

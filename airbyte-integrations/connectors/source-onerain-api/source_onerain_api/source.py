@@ -58,13 +58,17 @@ class SourceOnerainApi(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # Not Implemented
-            if ConfigPropDataApiUrl not in config:
-                raise ValueError("missing configuration property '%s'" % ConfigPropDataApiUrl)
-            if ConfigPropSystemKey not in config:
-                raise ValueError("missing configuration property '%s'" % ConfigPropSystemKey)
-
-            
+            # try to get time (ping) from configured URL
+            url = config[ConfigPropDataApiUrl]
+            system_key = config[ConfigPropSystemKey]
+           
+            get_time_url = f'{url}?method=GetTime'
+         
+            # use GetTime method to validate well formed url and that it responds to this 
+            # basic time get request    
+            #r = requests.get(get_time_url)
+            #assert r.status_code == 200 
+ 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
