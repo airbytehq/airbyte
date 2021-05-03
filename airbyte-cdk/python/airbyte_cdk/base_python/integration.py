@@ -46,7 +46,7 @@ class AirbyteSpec(object):
 class Integration(object):
 
     # can be overridden to change an input config
-    def configure(self, config: object, temp_dir: str) -> object:
+    def configure(self, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
         """
         Persist config in temporary directory to run the Source job
         """
@@ -55,13 +55,13 @@ class Integration(object):
         return config
 
     @staticmethod
-    def read_config(config_path: str) -> object:
+    def read_config(config_path: str) -> Mapping[str, Any]:
         with open(config_path, "r") as file:
             contents = file.read()
         return json.loads(contents)
 
     @staticmethod
-    def write_config(config: object, config_path: str):
+    def write_config(config: Mapping[str, Any], config_path: str):
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
 
