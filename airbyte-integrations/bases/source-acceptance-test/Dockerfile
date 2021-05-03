@@ -5,6 +5,7 @@ ENV CODE_PATH="source_acceptance_test"
 WORKDIR /airbyte/source_acceptance_test
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
+COPY pytest.ini ./
 RUN pip install .
 
 LABEL io.airbyte.version=0.1.0
