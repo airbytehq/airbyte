@@ -74,6 +74,7 @@ setup(
             "pytest",
             "PyYAML==5.4",
             "requests",
+            "MyPy",
     ],
     python_requires='>=3.7.9',
     entry_points={
