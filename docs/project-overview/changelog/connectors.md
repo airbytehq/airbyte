@@ -25,7 +25,7 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 3 new source connectors!
 * **[Zendesk Talk](https://docs.airbyte.io/integrations/sources/zendesk-talk)**
 * **[Iterable](https://docs.airbyte.io/integrations/sources/iterable)** 
-* **Quickbooks** (docs coming shortly)
+* **[Quickbooks](https://docs.airbyte.io/integrations/sources/quickbooks)**
 
 Other progress on connectors:
 * **Postgres source/destination**: add SSL option, thanks to [Marcos Marx](https://github.com/marcosmarxm) ([#2757](https://github.com/airbytehq/airbyte/pull/2757))
