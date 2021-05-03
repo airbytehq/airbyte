@@ -29,6 +29,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +64,9 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tmpTableName)
+      throws SQLException {
+    final List<AirbyteRecordMessage> records = recordsStream.collect(Collectors.toList());
 
     // todo (cgardens) - move this into a postgres version of this. this syntax is VERY postgres
     // specific.
