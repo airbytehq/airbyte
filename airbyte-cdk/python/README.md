@@ -43,4 +43,15 @@ Find the reference docs for the Airbyte Specification (the interface for how sou
 * [Mailchimp](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
 
 ### Contributing to the CDK
-* `MyPy` is installed locally. Perform static type checking by running `mypy airbyte_cdk`. `MyPy` configuration is in the `.mypy.ini` file.
+#### First time setup
+Create a virtual env and install dependencies by running
+`` `
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+`` `
+
+#### Iteration
+* Iterate on the code locally
+* Run tests via `pytest -s unit_tests`
+* Perform static type checks using using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
