@@ -32,6 +32,7 @@ MAIN_REQUIREMENTS = [
     "pendulum==1.2.0",
     "pydantic==1.6.1",
     "pytest==6.1.2",
+    "pytest-sugar==0.9.4",
     "pytest-timeout==1.4.2",
     "pprintpp==0.4.0",
 ]
