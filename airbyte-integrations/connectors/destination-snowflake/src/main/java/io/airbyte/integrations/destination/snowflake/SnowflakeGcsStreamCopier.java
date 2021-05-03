@@ -55,7 +55,7 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
                                       GcsConfig gcsConfig)
       throws SQLException {
     final var copyQuery = String.format(
-        "COPY INTO %s.%s FROM '%s' file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"');",
+        "COPY INTO %s.%s FROM '%s' storage_integration = gcs_airbyte_integration file_format = (type = csv field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"');",
         schema,
         tableName,
         gcsFileLocation);
