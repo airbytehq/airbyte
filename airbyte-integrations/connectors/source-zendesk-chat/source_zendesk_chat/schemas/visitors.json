@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "banned": {
+      "type": ["boolean", "null"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "notes": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    }
+  }
+}
