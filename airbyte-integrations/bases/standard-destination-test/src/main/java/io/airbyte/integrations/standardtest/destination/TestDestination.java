@@ -419,6 +419,11 @@ public abstract class TestDestination {
       return;
     }
 
+    if (!implementsBasicNormalization()) {
+      LOGGER.info("Destination does not implement normalization");
+      return;
+    }
+
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);

@@ -41,6 +41,10 @@ public class Databases {
     return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
   }
 
+  public static Database createSqlServerDatabase(String username, String password, String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "com.microsoft.sqlserver.jdbc.SQLServerDriver", SQLDialect.DEFAULT);
+  }
+
   public static Database createDatabase(final String username,
                                         final String password,
                                         final String jdbcConnectionString,
