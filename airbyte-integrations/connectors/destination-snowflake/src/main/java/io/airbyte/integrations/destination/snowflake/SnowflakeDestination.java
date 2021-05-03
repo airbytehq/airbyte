@@ -39,7 +39,8 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
 
   enum DestinationType {
     INSERT,
-    COPY_S3
+    COPY_S3,
+    COPY_GCS
   }
 
   public SnowflakeDestination() {
@@ -47,24 +48,33 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   }
 
   public static DestinationType getTypeFromConfig(JsonNode config) {
-    if (isCopy(config)) {
+    if (isS3Copy(config)) {
       return DestinationType.COPY_S3;
+    } else if(isGcsCopy(config)) {
+      return DestinationType.COPY_GCS;
     } else {
       return DestinationType.INSERT;
     }
   }
 
-  public static boolean isCopy(JsonNode config) {
+  public static boolean isS3Copy(JsonNode config) {
     return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("s3_bucket_name");
+  }
+
+  public static boolean isGcsCopy(JsonNode config) {
+    return config.has("loading_method") && config.get("loading_method").isObject() && config.get("loading_method").has("project_id");
   }
 
   public static Map<DestinationType, Destination> getTypeToDestination() {
     final SnowflakeInsertDestination insertDestination = new SnowflakeInsertDestination();
     final SnowflakeCopyS3Destination copyS3Destination = new SnowflakeCopyS3Destination();
+    final SnowflakeCopyGcsDestination copyGcsDestination = new SnowflakeCopyGcsDestination();
 
     return ImmutableMap.of(
         DestinationType.INSERT, insertDestination,
-        DestinationType.COPY_S3, copyS3Destination);
+        DestinationType.COPY_S3, copyS3Destination,
+        DestinationType.COPY_GCS, copyGcsDestination
+    );
   }
 
   public static void main(String[] args) throws Exception {

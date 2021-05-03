@@ -33,6 +33,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.destination.jdbc.copy.AbstractStreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
@@ -46,7 +47,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class S3StreamCopier implements StreamCopier {
+public abstract class S3StreamCopier extends AbstractStreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopier.class);
 
@@ -58,14 +59,8 @@ public abstract class S3StreamCopier implements StreamCopier {
   public static final int DEFAULT_PART_SIZE_MB = 10;
 
   private final String s3StagingFile;
-  private final DestinationSyncMode destSyncMode;
-  private final String schemaName;
-  private final String streamName;
   private final AmazonS3 s3Client;
-  private final JdbcDatabase db;
   private final S3Config s3Config;
-  private final ExtendedNameTransformer nameTransformer;
-  private final SqlOperations sqlOperations;
   private final StreamTransferManager multipartUploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
@@ -80,14 +75,9 @@ public abstract class S3StreamCopier implements StreamCopier {
                         S3Config s3Config,
                         ExtendedNameTransformer nameTransformer,
                         SqlOperations sqlOperations) {
-    this.destSyncMode = destSyncMode;
-    this.schemaName = schema;
-    this.streamName = streamName;
+    super(destSyncMode, schema, streamName, db, nameTransformer, sqlOperations);
     this.s3Client = client;
-    this.db = db;
     this.s3Config = s3Config;
-    this.nameTransformer = nameTransformer;
-    this.sqlOperations = sqlOperations;
 
     this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
     LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
@@ -130,44 +120,10 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public void createDestinationSchema() throws Exception {
-    LOGGER.info("Creating schema in destination if it doesn't exist: {}", schemaName);
-    sqlOperations.createSchemaIfNotExists(db, schemaName);
-  }
-
-  @Override
-  public void createTemporaryTable() throws Exception {
-    LOGGER.info("Preparing tmp table in destination for stream: {}, schema: {}, tmp table name: {}.", streamName, schemaName, tmpTableName);
-    sqlOperations.createTableIfNotExists(db, schemaName, tmpTableName);
-  }
-
-  @Override
   public void copyStagingFileToTemporaryTable() throws Exception {
     LOGGER.info("Starting copy to tmp table: {} in destination for stream: {}, schema: {}, .", tmpTableName, streamName, schemaName);
     copyS3CsvFileIntoTable(db, getFullS3Path(s3Config.getBucketName(), s3StagingFile), schemaName, tmpTableName, s3Config);
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
-  }
-
-  @Override
-  public String createDestinationTable() throws Exception {
-    var destTableName = nameTransformer.getRawTableName(streamName);
-    LOGGER.info("Preparing table {} in destination.", destTableName);
-    sqlOperations.createTableIfNotExists(db, schemaName, destTableName);
-    LOGGER.info("Table {} in destination prepared.", tmpTableName);
-
-    return destTableName;
-  }
-
-  @Override
-  public String generateMergeStatement(String destTableName) throws Exception {
-    LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
-    var queries = new StringBuilder();
-    if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
-      queries.append(sqlOperations.truncateTableQuery(schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
-    }
-    queries.append(sqlOperations.copyTableQuery(schemaName, tmpTableName, destTableName));
-    return queries.toString();
   }
 
   @Override
