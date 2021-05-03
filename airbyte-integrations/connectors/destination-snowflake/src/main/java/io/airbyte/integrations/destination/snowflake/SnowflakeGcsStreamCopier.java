@@ -60,8 +60,6 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier {
         tableName,
         gcsFileLocation);
 
-    System.out.println("copyQuery = " + copyQuery);
-
     database.execute(copyQuery);
   }
 
