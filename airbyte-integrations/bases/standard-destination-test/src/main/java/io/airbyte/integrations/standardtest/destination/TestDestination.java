@@ -423,7 +423,7 @@ public abstract class TestDestination {
    */
   @Test
   public void testIncrementalDedupeSync() throws Exception {
-    if (!implementsAppendDedup()) {
+    if (!implementsBasicNormalization() || !implementsAppendDedup()) {
       LOGGER.info("Destination's spec.json does not include 'append_dedup' in its '\"supportedDestinationSyncModes\"'");
       return;
     }
