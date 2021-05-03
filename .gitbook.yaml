@@ -3,8 +3,8 @@ root: ./docs/
 structure:
   readme: ../README.md
   summary: SUMMARY.md
-  
-redirects: 
+
+redirects:
   architecture/cdc: ./understanding-airbyte/cdc.md
   architecture/catalog: ./understanding-airbyte/catalog.md
   architecture/airbyte-specification: ./understanding-airbyte/airbyte-specification.md
@@ -34,5 +34,3 @@ redirects:
   tutorials/building-a-python-source: ./tutorials/tutorials/building-a-python-source.md
   tutorials/transformations-with-sql: ./tutorials/transformation-and-normalization/transformations-with-sql.md
   tutorials/transformations-with-dbt: ./tutorials/transformation-and-normalization/transformations-with-dbt.md
-  
-  
