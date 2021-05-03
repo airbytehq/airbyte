@@ -10,7 +10,9 @@
 * Orchestration: [Temporal](https://temporal.io)
 
 ## Connectors
-Connectors can be written in any language. However the most common languages are: 
+
+Connectors can be written in any language. However the most common languages are:
+
 * Python 3.7.9
 * Java 14
 
@@ -26,3 +28,4 @@ Connectors can be written in any language. However the most common languages are
 * Containerization: [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/)
 * Linter \(Frontend\): [Prettier](https://prettier.io/)
 * Formatter \(Backend\): [Spotless](https://github.com/diffplug/spotless)
+
