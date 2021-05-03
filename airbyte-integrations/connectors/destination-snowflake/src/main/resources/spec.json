@@ -173,7 +173,7 @@
               "credentials_json": {
                 "title": "Google Application Credentials",
                 "type": "string",
-                "description": "The contents of the JSON key file that has read/write permissions to the staging GCS bucket.",
+                "description": "The contents of the JSON key file that has read/write permissions to the staging GCS bucket. You will separately need to grant bucket access to your Snowflake GCP service account.",
                 "airbyte_secret": true,
                 "multiline": true,
                 "order": 3
