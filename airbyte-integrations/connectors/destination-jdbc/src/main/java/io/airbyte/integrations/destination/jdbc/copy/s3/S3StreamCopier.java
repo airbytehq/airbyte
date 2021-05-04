@@ -58,18 +58,18 @@ public abstract class S3StreamCopier implements StreamCopier {
   public static final int DEFAULT_PART_SIZE_MB = 10;
 
   private final String s3StagingFile;
-  private final DestinationSyncMode destSyncMode;
-  private final String schemaName;
-  private final String streamName;
   private final AmazonS3 s3Client;
-  private final JdbcDatabase db;
   private final S3Config s3Config;
-  private final ExtendedNameTransformer nameTransformer;
-  private final SqlOperations sqlOperations;
   private final StreamTransferManager multipartUploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
   private final String tmpTableName;
+  private final DestinationSyncMode destSyncMode;
+  private final String schemaName;
+  private final String streamName;
+  private final JdbcDatabase db;
+  private final ExtendedNameTransformer nameTransformer;
+  private final SqlOperations sqlOperations;
 
   public S3StreamCopier(String stagingFolder,
                         DestinationSyncMode destSyncMode,
@@ -83,15 +83,15 @@ public abstract class S3StreamCopier implements StreamCopier {
     this.destSyncMode = destSyncMode;
     this.schemaName = schema;
     this.streamName = streamName;
-    this.s3Client = client;
     this.db = db;
-    this.s3Config = s3Config;
     this.nameTransformer = nameTransformer;
     this.sqlOperations = sqlOperations;
+    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
+    this.s3Client = client;
+    this.s3Config = s3Config;
 
     this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
     LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
-    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
     // The alternative is first writing the entire output to disk before loading into S3. This is not
