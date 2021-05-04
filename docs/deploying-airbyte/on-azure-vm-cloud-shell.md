@@ -113,7 +113,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-- Install and Start Airbyte
+## Install and Start Airbyte
 
 ```bash
 # Inside Azure cloud shell
