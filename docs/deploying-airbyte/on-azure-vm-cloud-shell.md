@@ -107,7 +107,6 @@ sudo usermod -a -G docker $USER
 ```bash
 # Inside Azure cloud shell
 
-# install docker-compose
 sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
