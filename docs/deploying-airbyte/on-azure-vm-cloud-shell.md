@@ -55,7 +55,7 @@ This step will create a virtual machine and add a user account named `byteuser`.
 download ~/.ssh/id_rsa
 ```
 Above command will generate download link and give you pop-up on right bottom side, click on `Click here to download your file.` to download private key. 
-Note: Save this file, you will need it to connect to your vm in [Connect to Airbyte](#connect-to-airbyte) step.
+Note: Save this file, you will need it to connect to your VM in [Connect to Airbyte](#connect-to-airbyte) step.
 
 ![](../.gitbook/assets/azure_shell_download_ssh_key.png)
 
