@@ -73,6 +73,7 @@
     * [Smartsheets](integrations/sources/smartsheets.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Twilio](integrations/sources/twilio.md)
+    * [Zendesk Chat](integrations/sources/zendesk-chat.md)
     * [Zendesk Support](integrations/sources/zendesk-support.md)
     * [Zendesk Talk](integrations/sources/zendesk-talk.md)
     * [Zoom](integrations/sources/zoom.md)

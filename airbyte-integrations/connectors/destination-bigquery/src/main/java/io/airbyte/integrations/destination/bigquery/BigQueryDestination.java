@@ -62,6 +62,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -325,23 +327,28 @@ public class BigQueryDestination implements Destination {
     }
 
     @Override
-    public void acceptTracked(AirbyteRecordMessage message) {
+    public void acceptTracked(AirbyteMessage message) {
+      if (message.getType() != Type.RECORD) {
+        return;
+      }
+      final AirbyteRecordMessage recordMessage = message.getRecord();
+
       // ignore other message types.
-      AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
+      AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
       if (!writeConfigs.containsKey(pair)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                Jsons.serialize(catalog), Jsons.serialize(message)));
+                Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
 
       // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
       // use BQ helpers to string-format correctly.
-      long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(message.getEmittedAt(), TimeUnit.MILLISECONDS);
+      long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
       final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
 
       final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
           JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-          JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(message.getData()),
+          JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(recordMessage.getData()),
           JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
       try {
         writeConfigs.get(pair).getWriter()
