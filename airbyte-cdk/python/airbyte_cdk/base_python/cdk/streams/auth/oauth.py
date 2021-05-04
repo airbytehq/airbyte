@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping, Tuple, List, Union, MutableMapping
 
 import pendulum
 import requests
@@ -34,7 +34,7 @@ class Oauth2Authenticator(HttpAuthenticator):
     The generated access token is attached to each request via the Authorization header.
     """
 
-    def __init__(self, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str, scopes: [str] = None):
+    def __init__(self, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str, scopes: List[str] = None):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
         self.client_id = client_id
@@ -59,9 +59,9 @@ class Oauth2Authenticator(HttpAuthenticator):
     def token_has_expired(self) -> bool:
         return pendulum.now() > self._token_expiry_date
 
-    def get_refresh_request_body(self) -> Mapping[str, any]:
+    def get_refresh_request_body(self) -> Mapping[str, Any]:
         """ Override to define additional parameters """
-        payload = {
+        payload: MutableMapping[str, Any] = {
             "grant_type": "refresh_token",
             "client_id": self.client_id,
             "client_secret": self.client_secret,

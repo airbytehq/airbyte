@@ -28,7 +28,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -36,6 +35,8 @@ import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.lang.Queues;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.queue.OnDiskQueue;
@@ -50,7 +51,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,7 +137,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     LOGGER.info("Buffer creation completed.");
 
     onStart.call();
-    LOGGER.info("write buffers: {}", pairToWriteBuffer);
+    LOGGER.info("write buffers: {}", pairToWriteBuffer.keySet());
     writerPool.scheduleWithFixedDelay(
         () -> writeStreamsWithNRecords(MIN_RECORDS, pairToWriteBuffer, recordWriter),
         THREAD_DELAY_MILLIS,
@@ -146,11 +146,15 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
+  protected void acceptTracked(AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
 
+    if (message.getType() != AirbyteMessage.Type.RECORD) {
+      return;
+    }
+
     // ignore other message types.
-    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
+    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
     if (!pairs.contains(pair)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
@@ -204,33 +208,19 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         try {
           final List<AirbyteRecordMessage> records = Queues.toStream(writeBuffer)
               .limit(BufferedStreamConsumer.BATCH_SIZE)
-              .map(record -> Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteRecordMessage.class))
+              .map(record -> Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteMessage.class))
+              .filter(m -> m.getType() == Type.RECORD)
+              .map(AirbyteMessage::getRecord)
               .collect(Collectors.toList());
 
           LOGGER.info("Writing stream {}. Max batch size: {}, Actual batch size: {}, Remaining buffered records: {}",
               pair, BufferedStreamConsumer.BATCH_SIZE, records.size(), writeBuffer.size());
-          recordWriter.accept(pair, records.stream());
+          recordWriter.accept(pair, records);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
       }
     }
-  }
-
-  public interface OnStartFunction extends VoidCallable {}
-
-  public interface RecordWriter extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, Stream<AirbyteRecordMessage>, Exception> {
-
-    @Override
-    void accept(AirbyteStreamNameNamespacePair pair, Stream<AirbyteRecordMessage> recordStream) throws Exception;
-
-  }
-
-  public interface OnCloseFunction extends CheckedConsumer<Boolean, Exception> {
-
-    @Override
-    void accept(Boolean hasFailed) throws Exception;
-
   }
 
 }

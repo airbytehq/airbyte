@@ -41,3 +41,20 @@ Find the reference docs for the Airbyte Specification (the interface for how sou
 **Simple Python connectors using the barebones `Source` abstraction**:
 * [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
 * [Mailchimp](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
+
+## Contributing
+
+### First time setup
+We assume `python` points to python >=3.7.
+
+Setup a virtual env:
+```
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]" # [dev] installs development-only dependencies
+```
+
+#### Iteration
+* Iterate on the code locally
+* Run tests via `pytest -s unit_tests`
+* Perform static type checks using using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
