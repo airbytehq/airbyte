@@ -32,7 +32,7 @@ from .schema_helpers import ResourceSchemaLoader
 
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
-    module = inspect.getmodule(cls)
+    module: Any = inspect.getmodule(cls)
     return module.__name__.split(".")[0]
 
 
@@ -60,7 +60,7 @@ class BaseClient(StreamStateMixin, ABC):
         self._schema_loader = self.schema_loader_class(package_name)
         self._stream_methods = self._enumerate_methods()
 
-    def _enumerate_methods(self) -> Mapping[str, callable]:
+    def _enumerate_methods(self) -> Mapping[str, Callable]:
         """Detect available streams and return mapping"""
         prefix = "stream__"
         mapping = {}

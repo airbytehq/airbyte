@@ -54,8 +54,6 @@ def before_all_tests(request):
     change_current_test_dir(request)
     setup_postgres_db()
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
-    print("Installing dbt dependencies packages\nExecuting: cd ../dbt-project-template/\nExecuting: dbt deps")
-    subprocess.call(["dbt", "deps"], cwd="../dbt-project-template/", env=os.environ)
     yield
     tear_down_postgres_db()
     for folder in temporary_folders:
@@ -302,13 +300,13 @@ def dbt_run(test_root_dir: str):
     Run the dbt CLI to perform transformations on the test raw data in the destination
     """
     # Perform sanity check on dbt project settings
-    assert run_check_command(["dbt", "debug", "--profiles-dir=.", "--project-dir=."], test_root_dir)
-    # Compile dbt models files into destination sql dialect, then run the transformation queries
-    dbt_run_succeeded = run_check_command(["dbt", "run", "--profiles-dir=.", "--project-dir=."], test_root_dir)
-    # Copy final SQL files to persist them in git
+    assert run_check_dbt_command("debug", test_root_dir)
     final_sql_files = os.path.join(test_root_dir, "final")
     shutil.rmtree(final_sql_files, ignore_errors=True)
-    shutil.copytree(os.path.join(test_root_dir, "..", "build", "run", "airbyte_utils", "models", "generated"), final_sql_files)
+    # Compile dbt models files into destination sql dialect, then run the transformation queries
+    dbt_run_succeeded = run_check_dbt_command("run", test_root_dir)
+    # Copy final SQL files to persist them in git
+    # shutil.copytree(os.path.join(test_root_dir, "..", "build", "run", "airbyte_utils", "models", "generated"), final_sql_files)
     assert dbt_run_succeeded
 
 
@@ -334,15 +332,39 @@ def dbt_test(destination_type: DestinationType, test_resource_name: str, test_ro
         destination_type,
         replace_identifiers,
     )
-    assert run_check_command(["dbt", "test", "--profiles-dir=.", "--project-dir=."], test_root_dir)
+    assert run_check_dbt_command("test", test_root_dir)
 
 
-def run_check_command(commands: List[str], cwd: str) -> bool:
+def run_check_dbt_command(command: str, cwd: str) -> bool:
     """
     Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
     """
     error_count = 0
+    commands = [
+        "docker",
+        "run",
+        "--rm",
+        "--init",
+        "-v",
+        f"{cwd}:/workspace",
+        "-v",
+        f"{cwd}/build:/build",
+        "-v",
+        f"{cwd}/final:/build/run/airbyte_utils/models/generated",
+        "-v",
+        "/tmp/bq_keyfile.json:/tmp/bq_keyfile.json",
+        "--network",
+        "host",
+        "--entrypoint",
+        "/usr/local/bin/dbt",
+        "-i",
+        "airbyte/normalization:dev",
+        command,
+        "--profiles-dir=/workspace",
+        "--project-dir=/workspace",
+    ]
     print("Executing: ", " ".join(commands))
+    print(f"Equivalent to: dbt {command} --profiles-dir={cwd} --project-dir={cwd}")
     with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
         process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
         for line in iter(process.stdout.readline, b""):
