@@ -70,7 +70,7 @@ Note: Save this file, you will need it to connect to your VM in [Connect to Airb
 ssh $userName@$publicIp
 ```
 
-#### Install environment
+## Install environment
 
 - Install `docker`
   
