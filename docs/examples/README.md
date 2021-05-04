@@ -1,1 +1,2 @@
-# Examples
+# Example Use Cases
+

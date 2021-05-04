@@ -42,14 +42,17 @@ Find the reference docs for the Airbyte Specification (the interface for how sou
 * [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
 * [Mailchimp](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
 
-### Contributing to the CDK
-#### First time setup
-Create a virtual env and install dependencies by running
-`` `
+## Contributing
+
+### First time setup
+We assume `python` points to python >=3.7.
+
+Setup a virtual env:
+```
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-`` `
+pip install -e ".[dev]" # [dev] installs development-only dependencies
+```
 
 #### Iteration
 * Iterate on the code locally
