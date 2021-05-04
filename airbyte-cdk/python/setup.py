@@ -22,7 +22,8 @@
 
 
 import pathlib
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -42,28 +43,23 @@ setup(
     url="https://github.com/airbytehq/airbyte",
     classifiers=[
         # This information is used when browsing on PyPi.
-
         # Dev Status
-        'Development Status :: 3 - Alpha',
-
+        "Development Status :: 3 - Alpha",
         # Project Audience
-        'Intended Audience :: Developers',
-        'Topic :: Scientific/Engineering',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-
-        'License :: OSI Approved :: MIT License',
-
+        "Intended Audience :: Developers",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "License :: OSI Approved :: MIT License",
         # Python Version Support
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9'
-
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
-    keywords='airbyte connectors-development-kit cdk',
+    keywords="airbyte connector-development-kit cdk",
     project_urls={
-        'Documentation': 'https://docs.airbyte.io/',
-        'Source': 'https://github.com/airbytehq/airbyte',
-        'Tracker': 'https://github.com/airbytehq/airbyte/issues',
+        "Documentation": "https://docs.airbyte.io/",
+        "Source": "https://github.com/airbytehq/airbyte",
+        "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
@@ -74,11 +70,12 @@ setup(
         "PyYAML==5.4",
         "requests",
     ],
-    python_requires='>=3.7.9',
-    extras={
+    python_requires=">=3.7.9",
+    extras_require={
         "dev": [
             "pytest",
             "MyPy",
+            "pytest-cov",
         ]
     },
     entry_points={

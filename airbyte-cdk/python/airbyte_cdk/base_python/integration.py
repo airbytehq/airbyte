@@ -25,7 +25,7 @@ import json
 import os
 import pkgutil
 from collections import defaultdict
-from typing import Dict, Iterable, Any, Optional, Mapping, MutableMapping
+from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 

@@ -58,3 +58,8 @@ pip install -e ".[dev]" # [dev] installs development-only dependencies
 * Iterate on the code locally
 * Run tests via `pytest -s unit_tests`
 * Perform static type checks using using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
+
+
+#### Testing
+All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_cdk unit_tests/` to run them.
+This also presents a test coverage report.
