@@ -42,7 +42,7 @@ echo $publicIp
 
 This step will create virtual machine and add user account named `byteuser`. ``--generate-ssh-keys`` option will generate new ssh key and put it to default key location(~/.ssh)
 
-**Note ``publicIpAddress`` from the output, you will need this addres in [connect-to-airbyte](#connect-to-airbyte) step.**
+**Note: Copy the ``publicIpAddress`` output, you will need this address later to connect from your workstation.**
 
 ![](../.gitbook/assets/azure_shell_create_vm.png)
 
