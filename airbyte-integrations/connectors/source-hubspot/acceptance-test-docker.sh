@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-docker run --rm -i \
+docker run --rm -it \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /tmp:/tmp \
     -v $(pwd):/test_input \
