@@ -28,23 +28,18 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.postgresql.copy.CopyManager;
@@ -91,7 +86,7 @@ public class DefaultSqlOperations implements SqlOperations {
     database.execute(connection -> {
       File tmpFile = null;
       try {
-        tmpFile = Files.createTempFile(tmpTableName+"-", ".tmp").toFile();
+        tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
 
         var copyManager = new CopyManager(connection.unwrap(BaseConnection.class));
@@ -101,13 +96,13 @@ public class DefaultSqlOperations implements SqlOperations {
       } catch (Exception e) {
         throw new RuntimeException(e);
       } finally {
-          try {
-            if(tmpFile != null) {
-              Files.delete(tmpFile.toPath());
-            }
-          } catch (IOException e) {
-            throw new RuntimeException(e);
+        try {
+          if (tmpFile != null) {
+            Files.delete(tmpFile.toPath());
           }
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
   }
@@ -125,7 +120,7 @@ public class DefaultSqlOperations implements SqlOperations {
         csvPrinter.printRecord(uuid, jsonData, emittedAt);
       }
     } finally {
-      if(writer != null) {
+      if (writer != null) {
         writer.close();
       }
     }
