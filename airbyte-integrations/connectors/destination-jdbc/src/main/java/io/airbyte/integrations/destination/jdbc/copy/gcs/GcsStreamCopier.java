@@ -66,7 +66,6 @@ public abstract class GcsStreamCopier implements StreamCopier {
   private final JdbcDatabase db;
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
-  private final String tmpTableName;
 
   public GcsStreamCopier(String stagingFolder,
                          DestinationSyncMode destSyncMode,

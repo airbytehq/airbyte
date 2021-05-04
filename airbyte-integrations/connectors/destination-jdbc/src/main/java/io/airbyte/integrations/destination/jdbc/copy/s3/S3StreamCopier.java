@@ -70,7 +70,6 @@ public abstract class S3StreamCopier implements StreamCopier {
   private final JdbcDatabase db;
   private final ExtendedNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
-  private final String tmpTableName;
 
   public S3StreamCopier(String stagingFolder,
                         DestinationSyncMode destSyncMode,
