@@ -41,42 +41,46 @@ setup(
     license="MIT",
     url="https://github.com/airbytehq/airbyte",
     classifiers=[
-            # This information is used when browsing on PyPi.
+        # This information is used when browsing on PyPi.
 
-            # Dev Status
-            'Development Status :: 3 - Alpha',
+        # Dev Status
+        'Development Status :: 3 - Alpha',
 
-            # Project Audience
-            'Intended Audience :: Developers',
-            'Topic :: Scientific/Engineering',
-            'Topic :: Software Development :: Libraries :: Python Modules',
+        # Project Audience
+        'Intended Audience :: Developers',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Software Development :: Libraries :: Python Modules',
 
-            'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: MIT License',
 
-            # Python Version Support
-            'Programming Language :: Python :: 3.7',
-            'Programming Language :: Python :: 3.8',
-            'Programming Language :: Python :: 3.9',
-            'Programming Language :: Python :: 3.10',
+        # Python Version Support
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
+
     ],
     keywords='airbyte connectors-development-kit cdk',
     project_urls={
-            'Documentation': 'https://docs.airbyte.io/',
-            'Source': 'https://github.com/airbytehq/airbyte',
-            'Tracker': 'https://github.com/airbytehq/airbyte/issues',
+        'Documentation': 'https://docs.airbyte.io/',
+        'Source': 'https://github.com/airbytehq/airbyte',
+        'Tracker': 'https://github.com/airbytehq/airbyte/issues',
     },
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
-            "backoff",
-            "jsonschema==2.6.0",
-            "pendulum",
-            "pydantic==1.6.1",
-            "pytest",
-            "PyYAML==5.4",
-            "requests",
+        "backoff",
+        "jsonschema==2.6.0",
+        "pendulum",
+        "pydantic==1.6.1",
+        "PyYAML==5.4",
+        "requests",
     ],
     python_requires='>=3.7.9',
+    extras={
+        "dev": [
+            "pytest",
+        ]
+    },
     entry_points={
-            "console_scripts": ["base-python=base_python.entrypoint:main"],
+        "console_scripts": ["base-python=base_python.entrypoint:main"],
     },
 )
