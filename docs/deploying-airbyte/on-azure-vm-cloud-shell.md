@@ -125,7 +125,7 @@ sudo docker-compose up -d
 logout
 ```
 
-#### Connect to Airbyte
+## Connect to Airbyte
 
 {% hint style="danger" %}
 For security reasons, we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication.
