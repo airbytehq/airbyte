@@ -102,7 +102,7 @@ docker --version
 
 sudo usermod -a -G docker $USER
 ```
-- Install docker-compose
+- Install `docker-compose`
 
 ```bash
 # Inside Azure cloud shell
