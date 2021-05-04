@@ -56,7 +56,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         String.format("jdbc:sqlserver://%s:%s",
             config.get("host").asText(),
             config.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        DRIVER_CLASS);
   }
 
   @Override
@@ -65,22 +65,29 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
 
     List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;user=%s;password=%s;?",
-        // final StringBuilder jdbcUrl = new
-        // StringBuilder(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;user=%s;password=%s;?",
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;;databaseName=%s;user=%s;password=%s;?",
         config.get("host").asText(),
         config.get("port").asText(),
-        // config.get("database").asText(),
+        config.get("database").asText(),
         config.get("username").asText(),
         config.get("password").asText()));
 
     if (config.has("ssl") && config.get("ssl").asBoolean()) {
-      additionalParameters.add("ssl=true");
-      additionalParameters.add("sslmode=require");
+      additionalParameters.add("encrypt=true");
+      if (config.has("trustServerCertificate") && config.get("trustServerCertificate").asBoolean()) {
+        additionalParameters.add("trustServerCertificate=true");
+      } else {
+        additionalParameters.add("trustServerCertificate=false");
+        additionalParameters.add("trustStore=" + config.get("trustStoreName").asText());
+        additionalParameters.add("trustStorePassword=" + config.get("trustStorePassword").asText());
+        if (config.has("hostNameInCertificate")) {
+          additionalParameters.add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
+        }
+      }
     }
 
     if (!additionalParameters.isEmpty()) {
-      additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
+      additionalParameters.forEach(x -> jdbcUrl.append(x).append(";"));
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

@@ -51,8 +51,8 @@ public class SqlServerOperations implements SqlOperations {
   @Override
   public String createTableQuery(String schemaName, String tableName) {
     return String.format(
-        "if not exists (select * from sys.tables t join sys.schemas s on t.schema_id = s.schema_id "
-            + "where s.name = '%s' and t.name = '%s') "
+        "IF NOT EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
+            + "WHERE s.name = '%s' AND t.name = '%s') "
             + "CREATE TABLE %s.%s ( \n"
             + "%s VARCHAR(64) PRIMARY KEY,\n"
             + "%s VARCHAR(MAX),\n"
@@ -65,8 +65,8 @@ public class SqlServerOperations implements SqlOperations {
   @Override
   public void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
     final String query = String.format(
-        "if exists (select * from sys.tables t join sys.schemas s on t.schema_id = s.schema_id "
-            + "where s.name = '%s' and t.name = '%s') "
+        "IF EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
+            + "WHERE s.name = '%s' AND t.name = '%s') "
             + "DROP TABLE %s.%s",
         schemaName, tableName, schemaName, tableName);
     database.execute(query);
@@ -74,7 +74,7 @@ public class SqlServerOperations implements SqlOperations {
 
   @Override
   public String truncateTableQuery(String schemaName, String tableName) {
-    return String.format("truncate table %s.%s\n", schemaName, tableName);
+    return String.format("TRUNCATE TABLE %s.%s\n", schemaName, tableName);
   }
 
   @Override
