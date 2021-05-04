@@ -26,9 +26,9 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.base_python.cdk.utils.casing as casing
-from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.base_python.logger import AirbyteLogger
 from airbyte_cdk.base_python.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.models import AirbyteStream, SyncMode
 
 
 def package_name_from_class(cls: object) -> str:
@@ -79,7 +79,7 @@ class Stream(ABC):
 
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
-            stream.supported_sync_modes.append(SyncMode.incremental) # type: ignore
+            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
             stream.default_cursor_field = self._wrapped_cursor_field()
         return stream
 

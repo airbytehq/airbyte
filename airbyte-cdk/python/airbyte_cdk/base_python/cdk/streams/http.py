@@ -25,11 +25,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.base_python.cdk.streams.auth.core import HttpAuthenticator, NoAuth
 from airbyte_cdk.base_python.cdk.streams.core import Stream
 from airbyte_cdk.base_python.cdk.streams.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.base_python.cdk.streams.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.models import SyncMode
 
 
 class HttpStream(Stream, ABC):

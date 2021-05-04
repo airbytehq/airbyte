@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-from typing import Any, Mapping, Tuple, List, Union, MutableMapping
+from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import pendulum
 import requests
