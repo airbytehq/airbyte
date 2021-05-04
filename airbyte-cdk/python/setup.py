@@ -55,7 +55,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
-    keywords="airbyte connectors-development-kit cdk",
+    keywords="airbyte connector-development-kit cdk",
     project_urls={
         "Documentation": "https://docs.airbyte.io/",
         "Source": "https://github.com/airbytehq/airbyte",
