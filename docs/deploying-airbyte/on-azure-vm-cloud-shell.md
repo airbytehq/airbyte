@@ -72,7 +72,7 @@ ssh $userName@$publicIp
 
 #### Install environment
 
-- Install docker
+- Install `docker`
   
 ```bash
 # Inside Azure cloud shell
