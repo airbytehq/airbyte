@@ -209,23 +209,22 @@ class HttpStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        args = {"stream_state": stream_state, "stream_slice": stream_slice}
         pagination_complete = False
         while not pagination_complete:
+            next_page_token = None
+            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             request = self._create_prepared_request(
-                path=self.path(**args),
-                headers=dict(**args, **self.authenticator.get_auth_header()),
-                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice),
-                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice),
+                path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             )
 
             response = self._send_request(request)
-            yield from self.parse_response(response, **args)
+            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
             next_page_token = self.next_page_token(response)
-            if next_page_token:
-                args["next_page_token"] = next_page_token
-            else:
+            if not next_page_token:
                 pagination_complete = True
 
         # Always return an empty generator just in case no records were ever yielded
