@@ -11,7 +11,7 @@
 - destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   name: Postgres
   dockerRepository: airbyte/destination-postgres
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://docs.airbyte.io/integrations/destinations/postgres
   icon: postgresql.svg
 - destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
