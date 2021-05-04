@@ -53,3 +53,8 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]" # [dev] installs development-only dependencies
 ```
+
+#### Iteration
+* Iterate on the code locally
+* Run tests via `pytest -s unit_tests`
+* Perform static type checks using using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.

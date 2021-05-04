@@ -78,6 +78,7 @@ setup(
     extras={
         "dev": [
             "pytest",
+            "MyPy",
         ]
     },
     entry_points={

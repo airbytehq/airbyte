@@ -23,7 +23,7 @@
 
 import copy
 from datetime import datetime
-from typing import Any, Iterator, Mapping, MutableMapping, Type
+from typing import Any, Iterable, Mapping, MutableMapping, Type
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -46,7 +46,7 @@ from .logger import AirbyteLogger
 class BaseSource(Source):
     """Base source that designed to work with clients derived from BaseClient"""
 
-    client_class: Type[BaseClient] = None
+    client_class: Type[BaseClient]
 
     @property
     def name(self) -> str:
@@ -55,9 +55,7 @@ class BaseSource(Source):
 
     def _get_client(self, config: Mapping):
         """Construct client"""
-        client = self.client_class(**config)
-
-        return client
+        return self.client_class(**config)
 
     def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Discover streams"""
@@ -76,7 +74,7 @@ class BaseSource(Source):
 
     def read(
         self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
-    ) -> Iterator[AirbyteMessage]:
+    ) -> Iterable[AirbyteMessage]:
         state = state or {}
         client = self._get_client(config)
 
