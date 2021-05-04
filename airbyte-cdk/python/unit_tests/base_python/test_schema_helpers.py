@@ -28,10 +28,6 @@ def create_schema(name: str, content: Mapping):
         f.write(json.dumps(content))
 
 
-class TestJsonSchemaResolver:
-    # TODO 
-    pass
-
 class TestResourceSchemaLoader:
     # Test that a simple schema is loaded correctly
     @staticmethod
