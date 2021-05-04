@@ -51,5 +51,5 @@ Setup a virtual env:
 ```
 python -m venv .venv
 source .venv/bin/activate
-pip install -e .[dev] # [dev] installs development-only dependencies
+pip install -e ".[dev]" # [dev] installs development-only dependencies
 ```
