@@ -33,7 +33,7 @@ import com.google.cloud.storage.StorageOptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.AbstractStreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -50,7 +50,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class GcsStreamCopier extends AbstractStreamCopier {
+public abstract class GcsStreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GcsStreamCopier.class);
 
@@ -59,6 +59,13 @@ public abstract class GcsStreamCopier extends AbstractStreamCopier {
   private final GcsConfig gcsConfig;
   private final WriteChannel channel;
   private final CSVPrinter csvPrinter;
+  private final String tmpTableName;
+  private final DestinationSyncMode destSyncMode;
+  private final String schemaName;
+  private final String streamName;
+  private final JdbcDatabase db;
+  private final ExtendedNameTransformer nameTransformer;
+  private final SqlOperations sqlOperations;
   private final String tmpTableName;
 
   public GcsStreamCopier(String stagingFolder,
@@ -70,13 +77,17 @@ public abstract class GcsStreamCopier extends AbstractStreamCopier {
                          GcsConfig gcsConfig,
                          ExtendedNameTransformer nameTransformer,
                          SqlOperations sqlOperations) {
-    super(destSyncMode, schema, streamName, db, nameTransformer, sqlOperations);
+    this.destSyncMode = destSyncMode;
+    this.schemaName = schema;
+    this.streamName = streamName;
+    this.db = db;
+    this.nameTransformer = nameTransformer;
+    this.sqlOperations = sqlOperations;
+    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.storageClient = storageClient;
     this.gcsConfig = gcsConfig;
 
     this.gcsStagingFile = String.join("/", stagingFolder, schemaName, streamName);
-
-    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
 
     var blobId = BlobId.of(gcsConfig.getBucketName(), gcsStagingFile);
     var blobInfo = BlobInfo.newBuilder(blobId).build();
@@ -154,7 +165,7 @@ public abstract class GcsStreamCopier extends AbstractStreamCopier {
     var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(sqlOperations.truncateTableQuery(schemaName, destTableName));
-      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
+      LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.", destTableName, schemaName);
     }
     queries.append(sqlOperations.copyTableQuery(schemaName, tmpTableName, destTableName));
     return queries.toString();

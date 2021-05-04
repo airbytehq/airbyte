@@ -33,7 +33,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.AbstractStreamCopier;
+import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -46,7 +46,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class S3StreamCopier extends AbstractStreamCopier {
+public abstract class S3StreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopier.class);
 
@@ -64,6 +64,13 @@ public abstract class S3StreamCopier extends AbstractStreamCopier {
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
   private final String tmpTableName;
+  private final DestinationSyncMode destSyncMode;
+  private final String schemaName;
+  private final String streamName;
+  private final JdbcDatabase db;
+  private final ExtendedNameTransformer nameTransformer;
+  private final SqlOperations sqlOperations;
+  private final String tmpTableName;
 
   public S3StreamCopier(String stagingFolder,
                         DestinationSyncMode destSyncMode,
@@ -74,13 +81,18 @@ public abstract class S3StreamCopier extends AbstractStreamCopier {
                         S3Config s3Config,
                         ExtendedNameTransformer nameTransformer,
                         SqlOperations sqlOperations) {
-    super(destSyncMode, schema, streamName, db, nameTransformer, sqlOperations);
+    this.destSyncMode = destSyncMode;
+    this.schemaName = schema;
+    this.streamName = streamName;
+    this.db = db;
+    this.nameTransformer = nameTransformer;
+    this.sqlOperations = sqlOperations;
+    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     this.s3Client = client;
     this.s3Config = s3Config;
 
     this.s3StagingFile = String.join("/", stagingFolder, schemaName, streamName);
     LOGGER.info("S3 upload part size: {} MB", s3Config.getPartSize());
-    this.tmpTableName = nameTransformer.getTmpTableName(streamName);
     // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
     // have support for streaming multipart uploads;
     // The alternative is first writing the entire output to disk before loading into S3. This is not
