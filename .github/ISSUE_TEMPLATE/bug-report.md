@@ -27,7 +27,7 @@ You can remove any comment block using these tags <-- info --/>
 - **Source Connector and version** (if applicable): <!-- Found in the admin page in the UI in the Source tab. -->
 - **Destination Connector and version** (if applicable): <!-- Found in the admin page in the UI in the Destination tab. -->
 - **Severity**: <!-- Very low / Low / Medium / High / Critical -->
-- **Step where error happened**: <!-- Sync / Setup new connectionr or destination / Update connector -->
+- **Step where error happened**: <!-- Sync / Setup new connection or destination / Update connector -->
 
 ## Current Behavior
 *Tell us what happens.*
@@ -39,6 +39,21 @@ You can remove any comment block using these tags <-- info --/>
 *If applicable, please upload the logs from the failing operation. 
 For sync jobs, you can download the full logs from the UI by going to the sync attempt page and 
 clicking the download logs button at the top right of the logs display window.*
+<!-- You can remove this block.
+
+If you share the complete log you can put them inside the details tag.
+This helps to keep the issue reading easier to read.
+e.g:
+<details><summary>LOG</summary> 
+```
+
+replace this by
+your long log
+output here
+
+```
+</details>
+-->
 
 ## Steps to Reproduce
 1.
