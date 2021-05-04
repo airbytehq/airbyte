@@ -40,7 +40,7 @@ publicIp=$(az vm create --resource-group $rgName \
 echo $publicIp
 ```
 
-This step will create virtual machine and add user account named `byteuser`. ``--generate-ssh-keys`` option will generate new ssh key and put it to default key location(~/.ssh)
+This step will create a virtual machine and add a user account named `byteuser`. The ``--generate-ssh-keys`` option will generate a new ssh key and put it to the default key location (~/.ssh)
 
 **Note: Copy the ``publicIpAddress`` output, you will need this address later to connect from your workstation.**
 
