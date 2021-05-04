@@ -220,7 +220,7 @@ class HttpStream(Stream, ABC):
             )
 
             response = self._send_request(request)
-            yield from self.parse_response(response, args)
+            yield from self.parse_response(response, **args)
 
             next_page_token = self.next_page_token(response)
             if next_page_token:
