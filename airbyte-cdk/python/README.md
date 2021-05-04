@@ -61,5 +61,5 @@ pip install -e ".[dev]" # [dev] installs development-only dependencies
 
 
 #### Testing
-All tests are located in the `unit_tests` directory. Run `pytest --cov unit_tests/` to run them.
+All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_cdk unit_tests/` to run them.
 This also presents a test coverage report.
