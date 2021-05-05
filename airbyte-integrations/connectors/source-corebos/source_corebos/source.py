@@ -86,14 +86,7 @@ class SourceCorebos(Source):
     ) -> Generator[AirbyteMessage, None, None]:
 
         retrieve_stream = "retrieve"
-        
-        if retrieve_stream is None:
-            logger.info("No selected stream")
-            return
-
         session = SourceCorebos.corebos_login(config)
-
-  
         end_point=config["url"]
         logger.info("Attempting to retrieve: "+end_point)
         if config["http_method"] == "GET":
