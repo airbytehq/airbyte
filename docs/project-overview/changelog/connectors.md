@@ -12,37 +12,53 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
 
+## 05/04/2021
+
+2 new sources: 
+* [**Smartsheets**](https://docs.airbyte.io/integrations/sources/smartsheets), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
+* [**Zendesk Chat**](https://docs.airbyte.io/integrations/sources/zendesk-chat)
+
+Progress on connectors:
+* **Appstore**: bugfix private key handling in the UI ([#3201](https://github.com/airbytehq/airbyte/pull/3201))
+* **Facebook marketing**: Wait longer (5 min) for async jobs to start ([#3116](https://github.com/airbytehq/airbyte/pull/3116)), thanks to [Max Krog](https://github.com/MaxKrog)
+* **Stripe**: support reading data from connected accounts (#3121), and 2 new streams with Refunds & Bank Accounts ([#3030](https://github.com/airbytehq/airbyte/pull/3030)) ([#3086](https://github.com/airbytehq/airbyte/pull/3086))
+* **Redshift destination**: Ignore records that are too big (instead of failing) ([#2988](https://github.com/airbytehq/airbyte/pull/2988))
+* **MongoDB**: add supporting TLS and Replica Sets ([#3111](https://github.com/airbytehq/airbyte/pull/3111))
+* **HTTP sources**: bugfix on handling array responses gracefully ([#3008](https://github.com/airbytehq/airbyte/pull/3008))
+
 ## 04/27/2021
 
-* **Replace timeout for sources** ([#3031](https://github.com/airbytehq/airbyte/pull/2851))
-* Fix UI issue where tables with the same name are selected together ([#3032](https://github.com/airbytehq/airbyte/pull/2851))
-* Fix feed handling when feeds are unavailable ([#2964](https://github.com/airbytehq/airbyte/pull/2851))
-* Export whitelisted tables ([#3055](https://github.com/airbytehq/airbyte/pull/2851))
-* Create a contributor bootstrap script (#3028) ([#3054](https://github.com/airbytehq/airbyte/pull/2851)), thanks to [nclsbayona](https://github.com/nclsbayona)
+* **Zendesk Talk**: fix normalization failure \([\#3022](https://github.com/airbytehq/airbyte/pull/3022)\), thanks to [yevhenii-ldv](https://github.com/yevhenii-ldv)
+* **Github**: pull\_requests stream only incremental syncs \([\#2886](https://github.com/airbytehq/airbyte/pull/2886)\) \([\#3009](https://github.com/airbytehq/airbyte/pull/3009)\), thanks to [Zirochkaa](https://github.com/Zirochkaa)
+* Create streaming writes to a file and manage the issuance of copy commands for the destination \([\#2921](https://github.com/airbytehq/airbyte/pull/2921)\)
+* **Redshift**: make Redshift part size configurable. \([\#3053](https://github.com/airbytehq/airbyte/pull/23053)\)
+* **Hubspot**: fix argument error in log call \(\#3087\) \([\#3087](https://github.com/airbytehq/airbyte/pull/3087)\) , thanks to [Nathan Yergler](https://github.com/nyergler)
 
 ## 04/20/2021
 
 3 new source connectors!
-* **[Zendesk Talk](https://docs.airbyte.io/integrations/sources/zendesk-talk)**
-* **[Iterable](https://docs.airbyte.io/integrations/sources/iterable)** 
-* **Quickbooks** (docs coming shortly)
+
+* [**Zendesk Talk**](https://docs.airbyte.io/integrations/sources/zendesk-talk)
+* [**Iterable**](https://docs.airbyte.io/integrations/sources/iterable) 
+* [**Quickbooks**](https://docs.airbyte.io/integrations/sources/quickbooks)
 
 Other progress on connectors:
-* **Postgres source/destination**: add SSL option, thanks to [Marcos Marx](https://github.com/marcosmarxm) ([#2757](https://github.com/airbytehq/airbyte/pull/2757))
-* **Google sheets bugfix**: handle duplicate sheet headers, thanks to [Aneesh Makala](https://github.com/makalaaneesh) ([#2905](https://github.com/airbytehq/airbyte/pull/2905))
-* **Source Google Adwords**: support specifying the lookback window for conversions, thanks to [Harshith Mullapudi](https://github.com/harshithmullapudi) ([#2918](https://github.com/airbytehq/airbyte/pull/2918))
-* **MongoDB improvement**: speed up mongodb schema discovery, thanks to [Yury Koleda](https://github.com/FUT) ([#2851](https://github.com/airbytehq/airbyte/pull/2851))
-* **MySQL bugfix**: parsing Mysql jdbc params, thanks to [Vasily Safronov](https://github.com/gingeard) ([#2891](https://github.com/airbytehq/airbyte/pull/2891))
-* **CSV bugfix**: discovery takes too much memory ([#2089](https://github.com/airbytehq/airbyte/pull/2851))
+
+* **Postgres source/destination**: add SSL option, thanks to [Marcos Marx](https://github.com/marcosmarxm) \([\#2757](https://github.com/airbytehq/airbyte/pull/2757)\)
+* **Google sheets bugfix**: handle duplicate sheet headers, thanks to [Aneesh Makala](https://github.com/makalaaneesh) \([\#2905](https://github.com/airbytehq/airbyte/pull/2905)\)
+* **Source Google Adwords**: support specifying the lookback window for conversions, thanks to [Harshith Mullapudi](https://github.com/harshithmullapudi) \([\#2918](https://github.com/airbytehq/airbyte/pull/2918)\)
+* **MongoDB improvement**: speed up mongodb schema discovery, thanks to [Yury Koleda](https://github.com/FUT) \([\#2851](https://github.com/airbytehq/airbyte/pull/2851)\)
+* **MySQL bugfix**: parsing Mysql jdbc params, thanks to [Vasily Safronov](https://github.com/gingeard) \([\#2891](https://github.com/airbytehq/airbyte/pull/2891)\)
+* **CSV bugfix**: discovery takes too much memory \([\#2089](https://github.com/airbytehq/airbyte/pull/2851)\)
 * A lot of work was done on improving the standard tests for the connectors, for better standardization and maintenance!
 
 ## 04/13/2021
 
-* New connector: **[Oracle DB](https://docs.airbyte.io/integrations/sources/oracle)**
+* New connector: [**Oracle DB**](https://docs.airbyte.io/integrations/sources/oracle), thanks to [Marcos Marx](https://github.com/marcosmarxm) 
 
 ## 04/07/2021
 
-* New connector: **[Google Workspace Admin Reports](https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports)** (audit logs)
+* New connector: [**Google Workspace Admin Reports**](https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports) \(audit logs\)
 * Bugfix in the base python connector library that caused errors to be silently skipped rather than failing the sync
 * **Exchangeratesapi.io** bugfix: to point to the updated API URL
 * **Redshift destination** bugfix: quote keywords “DATETIME” and “TIME” when used as identifiers

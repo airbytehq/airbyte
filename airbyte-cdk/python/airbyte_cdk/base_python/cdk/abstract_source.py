@@ -26,6 +26,9 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
+from airbyte_cdk.base_python.cdk.streams.core import Stream
+from airbyte_cdk.base_python.integration import Source
+from airbyte_cdk.base_python.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -38,9 +41,6 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.base_python.cdk.streams.core import Stream
-from airbyte_cdk.base_python.integration import Source
-from airbyte_cdk.base_python.logger import AirbyteLogger
 
 
 class AbstractSource(Source, ABC):
@@ -166,9 +166,12 @@ class AbstractSource(Source, ABC):
             yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
 
     def _read_full_refresh(self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream) -> Iterator[AirbyteMessage]:
-        args = {"sync_mode": SyncMode.full_refresh, "cursor_field": configured_stream.cursor_field}
-        for slices in stream_instance.stream_slices(**args):
-            for record in stream_instance.read_records(stream_slice=slices, **args):
+        slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
+        for slice in slices:
+            records = stream_instance.read_records(
+                stream_slice=slice, sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field
+            )
+            for record in records:
                 yield self._as_airbyte_record(configured_stream.stream.name, record)
 
     def _checkpoint_state(self, stream_name, stream_state, connector_state, logger):

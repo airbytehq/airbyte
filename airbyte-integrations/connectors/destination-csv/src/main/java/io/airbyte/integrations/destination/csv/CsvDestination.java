@@ -36,6 +36,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -165,18 +167,23 @@ public class CsvDestination implements Destination {
     }
 
     @Override
-    protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
+    protected void acceptTracked(AirbyteMessage message) throws Exception {
+      if (message.getType() != Type.RECORD) {
+        return;
+      }
+      final AirbyteRecordMessage recordMessage = message.getRecord();
+
       // ignore other message types.
-      if (!writeConfigs.containsKey(message.getStream())) {
+      if (!writeConfigs.containsKey(recordMessage.getStream())) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                Jsons.serialize(catalog), Jsons.serialize(message)));
+                Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
 
-      writeConfigs.get(message.getStream()).getWriter().printRecord(
+      writeConfigs.get(recordMessage.getStream()).getWriter().printRecord(
           UUID.randomUUID(),
-          message.getEmittedAt(),
-          Jsons.serialize(message.getData()));
+          recordMessage.getEmittedAt(),
+          Jsons.serialize(recordMessage.getData()));
     }
 
     @Override

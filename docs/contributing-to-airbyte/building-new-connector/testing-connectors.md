@@ -4,9 +4,10 @@
 
 To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
-*Note: If you are looking for reference documentation for the deprecated first version of test suites, see [Standard Tests (Legacy)](legacy-standard-source-tests.md).*
+_Note: If you are looking for reference documentation for the deprecated first version of test suites, see_ [_Standard Tests \(Legacy\)_](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/contributing-to-airbyte/building-new-connector/legacy-standard-source-tests.md)_._
 
 ### Architecture of standard tests
+
 The Standard Test Suite runs its tests against the connector's Docker image. It takes as input the configuration file `acceptance-tests-config.yml`.
 
 ![Standard test sequence diagram](../../.gitbook/assets/standard_tests_sequence_diagram.png)
@@ -15,42 +16,46 @@ The Standard Test Suite use pytest as a test runner and was built as pytest plug
 
 Each test suite has a timeout and will fail if the limit is exceeded.
 
-See all the test cases, their description, and inputs in [Source Acceptance Tests](source-acceptance-tests.md).
+See all the test cases, their description, and inputs in [Source Acceptance Tests](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md).
 
 ### Setting up standard tests for your connector
 
-Create `acceptance-test-config.yml`. In most cases, your connector already has this file in its root folder.
-Here is an example of the minimal `acceptance-test-config.yml`:
+Create `acceptance-test-config.yml`. In most cases, your connector already has this file in its root folder. Here is an example of the minimal `acceptance-test-config.yml`:
+
 ```yaml
 connector_image: airbyte/source-some-connector:dev
 tests:
   spec:
     - spec_path: "some_folder/spec.json"
 ```
+
 Build your connector image if needed.
-```
+
+```text
 docker build .
 ```
-Run one of the two scripts in the root of the connector:
-- `python -m pytest -p integration_tests.acceptance` - to run tests inside virtual environment
-- `./acceptance-test-docker.sh` - to run tests from a docker container
 
-If the test fails you will see detail about the test and where to find its inputs and outputs to reproduce it.
-You can also debug failed tests by adding `—pdb —last-failed`:
-```
+Run one of the two scripts in the root of the connector:
+
+* `python -m pytest -p integration_tests.acceptance` - to run tests inside virtual environment
+* `./acceptance-test-docker.sh` - to run tests from a docker container
+
+If the test fails you will see detail about the test and where to find its inputs and outputs to reproduce it. You can also debug failed tests by adding `—pdb —last-failed`:
+
+```text
 python -m pytest -p integration_tests.acceptance --pdb --last-failed
 ```
+
 See other useful pytest options [here](https://docs.pytest.org/en/stable/usage.html)
 
 ### Dynamically managing inputs & resources used in standard tests
 
-Since the inputs to standard tests are often static, the file-based runner is sufficient for most connectors. However, in some cases, you may need to run pre or post hooks to dynamically create or destroy resources for use in standard tests. 
-For example, if we need to spin up a Redshift cluster to use in the test then tear it down afterwards, we need the ability to run code before and after the tests, as well as customize the Redshift cluster URL we pass to the standard tests.
-If you have need for this use case, please reach out to us via [Github](https://github.com/airbytehq/airbyte) or [Slack](https://slack.airbyte.io).
-We currently support it for Java & Python, and other languages can be made available upon request.
+Since the inputs to standard tests are often static, the file-based runner is sufficient for most connectors. However, in some cases, you may need to run pre or post hooks to dynamically create or destroy resources for use in standard tests. For example, if we need to spin up a Redshift cluster to use in the test then tear it down afterwards, we need the ability to run code before and after the tests, as well as customize the Redshift cluster URL we pass to the standard tests. If you have need for this use case, please reach out to us via [Github](https://github.com/airbytehq/airbyte) or [Slack](https://slack.airbyte.io). We currently support it for Java & Python, and other languages can be made available upon request.
+
 #### Python
-Create pytest yield-fixture with your custom setup/teardown code and place it in `integration_tests/acceptance.py`,
-Example of fixture that starts a docker container before tests and stops before exit:
+
+Create pytest yield-fixture with your custom setup/teardown code and place it in `integration_tests/acceptance.py`, Example of fixture that starts a docker container before tests and stops before exit:
+
 ```python
 @pytest.fixture(scope="session", autouse=True)
 def connector_setup():
@@ -108,3 +113,4 @@ Note that integration tests can be triggered with a slightly different syntax fo
 Commits to `master` attempt to launch integration tests. Two workflows launch for each commit: one is a launcher for integration tests, the other is the core build \(the same as the default for PR and branch builds\).
 
 Since some of our connectors use rate-limited external resources, we don't want to overload from multiple commits to master. If a certain threshold of `master` integration tests are running, the integration test launcher passes but does not launch any tests. This can manually be re-run if necessary. The `master` build also runs every few hours automatically, and will launch the integration tests at that time.
+

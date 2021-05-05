@@ -26,14 +26,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.base_python.cdk.utils.casing as casing
-from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.base_python.logger import AirbyteLogger
 from airbyte_cdk.base_python.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.models import AirbyteStream, SyncMode
 
 
 def package_name_from_class(cls: object) -> str:
     """Find the package name given a class name"""
-    module = inspect.getmodule(cls)
+    module: Any = inspect.getmodule(cls)
     return module.__name__.split(".")[0]
 
 
@@ -57,7 +57,7 @@ class Stream(ABC):
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
-        stream_slice: Mapping[str, any] = None,
+        stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
@@ -79,7 +79,7 @@ class Stream(ABC):
 
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
-            stream.supported_sync_modes.append(SyncMode.incremental)
+            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
             stream.default_cursor_field = self._wrapped_cursor_field()
         return stream
 
@@ -110,7 +110,7 @@ class Stream(ABC):
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, any]]]:
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 

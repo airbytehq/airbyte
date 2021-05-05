@@ -31,7 +31,7 @@
 - sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   name: Postgres
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-postgres
   icon: postgresql.svg
 - sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
@@ -148,6 +148,12 @@
   dockerImageTag: 0.2.2
   documentationUrl: https://https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
+- sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
+  name: Zendesk Chat
+  dockerRepository: airbyte/source-zendesk-chat
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-chat
+  icon: zendesk.svg
 - sourceDefinitionId: d29764f8-80d7-4dd7-acbe-1a42005ee5aa
   name: Zendesk Support
   dockerRepository: airbyte/source-zendesk-support-singer
@@ -205,7 +211,7 @@
 - sourceDefinitionId: 2af123bf-0aaf-4e0d-9784-cb497f23741a
   name: Appstore
   dockerRepository: airbyte/source-appstore-singer
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-appstore-singer
   icon: appstore.svg
 - sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
@@ -264,6 +270,11 @@
   dockerRepository: airbyte/source-iterable
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-iterable
+- sourceDefinitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
+  name: PokeAPI
+  dockerRepository: airbyte/source-pokeapi
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-pokeapi
 - sourceDefinitionId: 5a1d14c2-d829-49cd-8437-1e87dc9f5368
   name: Google Search Console
   dockerRepository: airbyte/source-google-search-console-singer
