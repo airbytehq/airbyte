@@ -64,7 +64,7 @@ class PokeapiStream(HttpStream):
 
 class Pokemon(PokeapiStream):
     # Set this as a noop.
-    primary_key = ""
+    primary_key = None
 
     def path(self, **kwargs) -> str:
         pokemon_name = self.pokemon_name

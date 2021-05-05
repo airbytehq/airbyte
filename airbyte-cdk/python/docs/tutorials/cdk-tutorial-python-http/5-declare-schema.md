@@ -13,7 +13,7 @@ class ExchangeRates(HttpStream):
     url_base = "https://api.ratesapi.io/"
 
     # Set this as a noop.
-    primary_key = ""
+    primary_key = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # The API does not offer pagination, so we return None to indicate there are no more pages in the response
