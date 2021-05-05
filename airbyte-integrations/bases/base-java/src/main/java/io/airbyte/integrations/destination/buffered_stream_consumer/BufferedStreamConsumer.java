@@ -44,12 +44,32 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class consumes AirbyteMessages from the worker.
+ *
+ * <p>
+ * Record Messages: It adds record messages to a queue. Under 2 conditions, it will flush the
+ * records in the queue to a temporary table in the destination. Condition 1: The queue fills up
+ * (the queue is designed to be small enough as not to exceed the memory of the container).
+ * Condition 2: On close.
+ * </p>
+ *
+ * <p>
+ * State Messages: This consumer tracks the last state message it has accepted. It also tracks the
+ * last state message that was committed to the temporary table. For now, we only emit a message if
+ * everything is successful. Once checkpointing is turned on, we will emit the state message as long
+ * as the onClose successfully commits any messages to the raw table.
+ * </p>
+ *
+ * <p>
+ * All other message types are ignored.
+ * </p>
+ */
 public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
@@ -132,22 +152,19 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      if (lastRecordStream != null && !lastRecordStream.equals(stream)) {
+      if (queue.size() == BATCH_SIZE) {
         flushQueueToDestination();
-        // handle state.
       }
 
-      lastRecordStream = stream;
+      if (!queue.offer(message)) {
+        throw new IllegalStateException("Could not accept record despite waiting.");
+      }
     } else if (message.getType() == Type.STATE) {
       pendingState = message.getState();
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
 
-    // only put records in here.
-    if (!queue.offer(message, 5, TimeUnit.HOURS)) {
-      throw new IllegalStateException("Could not accept record despite waiting.");
-    }
   }
 
   private void flushQueueToDestination() throws Exception {
@@ -161,11 +178,17 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         .stream()
         .map(AirbyteMessage::getRecord)
         .collect(Collectors.toList());
-    recordWriter.accept(lastRecordStream, records);
+
+    final Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> recordsByStream = records.stream()
+        .collect(Collectors.groupingBy(AirbyteStreamNameNamespacePair::fromRecordMessage));
+
+    for (Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : recordsByStream.entrySet()) {
+      recordWriter.accept(entry.getKey(), entry.getValue());
+    }
+
     if (pendingState != null) {
       lastCommittedState = pendingState;
       pendingState = null;
-      checkpointConsumer.accept(lastCommittedState);
     }
   }
 
@@ -190,7 +213,17 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       flushQueueToDestination();
     }
 
-    onClose.accept(hasFailed);
+    try {
+      onClose.accept(hasFailed);
+      // todo (cgardens) - For now we are using this conditional to maintain existing behavior. When we
+      // enable checkpointing, we will need to get feedback from onClose on whether any data was persisted
+      // or not. If it was then, the state message will be emitted.
+      if (!hasFailed && lastCommittedState != null) {
+        checkpointConsumer.accept(lastCommittedState);
+      }
+    } catch (Exception e) {
+      LOGGER.error("on close failed.");
+    }
   }
 
 }

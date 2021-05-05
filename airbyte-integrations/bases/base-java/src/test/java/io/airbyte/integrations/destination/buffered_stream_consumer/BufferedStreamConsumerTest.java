@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base.buffered_stream_consumer;
+package io.airbyte.integrations.destination.buffered_stream_consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -37,8 +37,6 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -192,7 +190,7 @@ public class BufferedStreamConsumerTest {
     verifyStartAndClose();
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1);
-    // verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream2);
+    verifyRecords(STREAM_NAME2, SCHEMA_NAME, expectedRecordsStream2);
 
     verify(checkpointConsumer).accept(STATE_MESSAGE1.getState());
   }
@@ -218,7 +216,6 @@ public class BufferedStreamConsumerTest {
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1);
     verifyRecords(STREAM_NAME2, SCHEMA_NAME, expectedRecordsStream2);
 
-    verify(checkpointConsumer, times(1)).accept(STATE_MESSAGE1.getState());
     verify(checkpointConsumer, times(1)).accept(STATE_MESSAGE2.getState());
   }
 
