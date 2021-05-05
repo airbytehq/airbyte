@@ -17,11 +17,11 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 ## [04-27-2021 - 0.22.0](https://github.com/airbytehq/airbyte/releases/tag/v0.22.0-alpha)
 
-* **Zendesk Talk**: fix normalization failure \([\#3022](https://github.com/airbytehq/airbyte/pull/3022)\), thanks to [yevhenii-ldv](https://github.com/yevhenii-ldv)
-* **Github**: pull\_requests stream only incremental syncs \([\#2886](https://github.com/airbytehq/airbyte/pull/2886)\) \([\#3009](https://github.com/airbytehq/airbyte/pull/3009)\), thanks to [Zirochkaa](https://github.com/Zirochkaa)
-* Create streaming writes to a file and manage the issuance of copy commands for the destination \([\#2921](https://github.com/airbytehq/airbyte/pull/2921)\)
-* **Redshift**: make Redshift part size configurable. \([\#3053](https://github.com/airbytehq/airbyte/pull/23053)\)
-* **Hubspot**: fix argument error in log call \(\#3087\) \([\#3087](https://github.com/airbytehq/airbyte/pull/3087)\) , thanks to [Nathan Yergler](https://github.com/nyergler)
+* **Replace timeout for sources** \([\#3031](https://github.com/airbytehq/airbyte/pull/2851)\)
+* Fix UI issue where tables with the same name are selected together \([\#3032](https://github.com/airbytehq/airbyte/pull/2851)\)
+* Fix feed handling when feeds are unavailable \([\#2964](https://github.com/airbytehq/airbyte/pull/2851)\)
+* Export whitelisted tables \([\#3055](https://github.com/airbytehq/airbyte/pull/2851)\)
+* Create a contributor bootstrap script \(\#3028\) \([\#3054](https://github.com/airbytehq/airbyte/pull/2851)\), thanks to [nclsbayona](https://github.com/nclsbayona)
 
 ## [04-20-2021 - 0.21.0](https://github.com/airbytehq/airbyte/releases/tag/v0.21.0-alpha)
 
