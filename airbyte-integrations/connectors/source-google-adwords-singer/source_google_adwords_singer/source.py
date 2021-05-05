@@ -44,13 +44,16 @@ class SourceGoogleAdwordsSinger(SingerSource):
         # checking if REPORT syncing will be called for manager account
         # https://developers.google.com/adwords/api/docs/common-errors#ReportDefinitionError.CUSTOMER_SERVING_TYPE_REPORT_MISMATCH
         try:
-            customer_ids = config["customer_ids"].split(",")
+            customer_ids = config["customer_ids"]
             oauth2_client = oauth2.GoogleRefreshTokenClient(
                 config["oauth_client_id"], config["oauth_client_secret"], config["refresh_token"]
             )
             for customer_id in customer_ids:
                 sdk_client = adwords.AdWordsClient(
-                    config["developer_token"], oauth2_client, user_agent=config["user_agent"], client_customer_id=customer_id
+                    config["developer_token"],
+                    oauth2_client,
+                    user_agent=config["user_agent"],
+                    client_customer_id=customer_id
                 )
                 selector = {
                     "fields": ["Name", "CanManageClients", "CustomerId", "TestAccount", "DateTimeZone", "CurrencyCode"],
@@ -70,7 +73,9 @@ class SourceGoogleAdwordsSinger(SingerSource):
                     is_manager = account.canManageClients
                     for stream in streams:
                         if stream.endswith("REPORT") and is_manager:
-                            logger.log_by_prefix(f"Unable to sync {stream} with the manager account {customer_id}", "ERROR")
+                            logger.log_by_prefix(
+                                f"Unable to sync {stream} with the manager account {customer_id}", "ERROR"
+                            )
                             sys.exit(1)
                 else:
                     err = f"No accounts associated with customer id {customer_id}"
@@ -83,7 +88,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
         try:
-            customer_ids = config["customer_ids"].split(",")
+            customer_ids = config["customer_ids"]
             for customer_id in customer_ids:
                 oauth2_client = oauth2.GoogleRefreshTokenClient(
                     config["oauth_client_id"], config["oauth_client_secret"], config["refresh_token"]
