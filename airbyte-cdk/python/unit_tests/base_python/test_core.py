@@ -21,14 +21,50 @@
 # SOFTWARE.
 
 
-from typing import List, Mapping, Any, Iterable
+from typing import Any, Iterable, List, Mapping, Union
 
 from airbyte_cdk.base_python import Stream
+from airbyte_cdk.models import AirbyteStream, SyncMode
 
-class StreamStub(Stream):
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+class StreamStubFullRefresh(Stream):
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         pass
 
-def test_as_airbyte_stream_full_refresh():
-    assert True
+
+def test_as_airbyte_stream_full_refresh(mocker):
+    test_stream = StreamStubFullRefresh()
+
+    mocker.patch.object(StreamStubFullRefresh, "get_json_schema", return_value={})
+    airbyte_stream = test_stream.as_airbyte_stream()
+
+    exp = AirbyteStream(name="stream_stub_full_refresh", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
+    assert exp == airbyte_stream
+
+
+class StreamStubIncremental(StreamStubFullRefresh):
+    def cursor_field(self) -> Union[str, List[str]]:
+        return "test_cusor"
+
+
+def test_as_airbyte_stream_incremental(mocker):
+    test_stream = StreamStubIncremental()
+    test_stream.cursor_field = "test_cursor"
+
+    mocker.patch.object(StreamStubIncremental, "get_json_schema", return_value={})
+    airbyte_stream = test_stream.as_airbyte_stream()
+
+    exp = AirbyteStream(
+        name="stream_stub_incremental",
+        json_schema={},
+        supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+        default_cursor_field=["test_cursor"],
+        source_defined_cursor=True,
+    )
+    assert exp == airbyte_stream

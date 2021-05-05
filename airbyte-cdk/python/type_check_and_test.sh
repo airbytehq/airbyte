@@ -5,7 +5,7 @@
 
 # Static Type Checking
 echo "Running MyPy to static check base_python directory and test files."
-mypy airbyte_cdk/base_python unit_tests
+mypy airbyte_cdk/base_python unit_tests unit_tests/base_python
 
 printf "\n"
 
