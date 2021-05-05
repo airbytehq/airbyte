@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-from airbyte_cdk.base_python import TokenAuthenticator, Oauth2Authenticator
+from airbyte_cdk.base_python import Oauth2Authenticator, TokenAuthenticator
 
 
 def test_token_authenticator():
