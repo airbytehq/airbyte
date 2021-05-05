@@ -4,10 +4,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Pokeapi Spec",
     "type": "object",
-    "required": ["name"],
+    "required": ["pokemon_name"],
     "additionalProperties": false,
     "properties": {
-      "name": {
+      "pokemon_name": {
         "type": "string",
         "description": "Pokemon requested from the API.",
         "pattern": "^[a-z0-9_\\-]+$",

@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-import pokemon_list
+from . import pokemon_list
 
 # Store large list of all known Pokemon.
 POKEMON_LIST = [
