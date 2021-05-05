@@ -23,8 +23,10 @@
 
 import logging
 
+import requests
 from airbyte_cdk.base_python import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.base_python.cdk.streams.auth.core import NoAuth
+from requests import Response
 
 LOGGER = logging.getLogger(__name__)
 
@@ -116,3 +118,19 @@ class TestOauth2Authenticator:
             "scopes": scopes,
         }
         assert body == expected
+
+    def test_refresh_access_token(self, mocker):
+        oauth = Oauth2Authenticator(
+            TestOauth2Authenticator.refresh_endpoint,
+            TestOauth2Authenticator.client_id,
+            TestOauth2Authenticator.client_secret,
+            TestOauth2Authenticator.refresh_token,
+        )
+        resp = Response()
+        resp.status_code = 200
+
+        mocker.patch.object(requests, "request", return_value=resp)
+        mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": 1000})
+        token = oauth.refresh_access_token()
+
+        assert ("access_token", 1000) == token
