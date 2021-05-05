@@ -151,7 +151,7 @@ We recommend using a user specifically for Airbyte's replication so you can mini
 Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`:
 
 ```text
-SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');`
+SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
 This slot **must** use `pgoutput`.
