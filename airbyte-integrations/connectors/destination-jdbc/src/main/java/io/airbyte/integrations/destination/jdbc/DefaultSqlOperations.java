@@ -107,7 +107,7 @@ public class DefaultSqlOperations implements SqlOperations {
     });
   }
 
-  private void writeBatchToFile(File tmpFile, List<AirbyteRecordMessage> records) throws Exception {
+  protected void writeBatchToFile(File tmpFile, List<AirbyteRecordMessage> records) throws Exception {
     PrintWriter writer = null;
     try {
       writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
@@ -138,8 +138,14 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void executeTransaction(JdbcDatabase database, String queries) throws Exception {
-    database.execute("BEGIN;\n" + queries + "COMMIT;");
+  public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
+    final StringBuilder appendedQueries = new StringBuilder();
+    appendedQueries.append("BEGIN;\n");
+    for (String query : queries) {
+      appendedQueries.append(query);
+    }
+    appendedQueries.append("COMMIT;");
+    database.execute(appendedQueries.toString());
   }
 
   @Override
@@ -149,6 +155,11 @@ public class DefaultSqlOperations implements SqlOperations {
 
   private String dropTableIfExistsQuery(String schemaName, String tableName) {
     return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
+  }
+
+  @Override
+  public boolean isSchemaRequired() {
+    return true;
   }
 
   @Override
