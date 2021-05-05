@@ -32,7 +32,23 @@ def test_token_authenticator():
 
 
 class TestOauth2Authenticator:
+    # Test get_auth_header normal
 
-    def test_success(self):
+    # Test get_auth_header expired
 
-        assert True
+    # get_refresh_request_body
+    def test_refresh_request_body(self):
+        scopes = ["scope1", "scope2"]
+        oauth = Oauth2Authenticator("refresh_end", "client_id", "client_secret", "refresh_token", scopes)
+
+        body = oauth.get_refresh_request_body()
+
+        expected = {
+            "grant_type": "refresh_token",
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "refresh_token": "refresh_token",
+            "scopes": scopes,
+        }
+
+        assert body == expected
