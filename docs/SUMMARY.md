@@ -63,6 +63,7 @@
     * [MySQL](integrations/sources/mysql.md)
     * [Oracle DB](integrations/sources/oracle.md)
     * [Plaid](integrations/sources/plaid.md)
+    * [PokéAPI](integrations/sources/pokeapi.md) 
     * [Postgres](integrations/sources/postgres.md)
     * [Quickbooks](integrations/sources/quickbooks.md)
     * [Recurly](integrations/sources/recurly.md)
