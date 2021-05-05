@@ -28,6 +28,9 @@ from airbyte_cdk.models import AirbyteStream, SyncMode
 
 
 class StreamStubFullRefresh(Stream):
+    """
+    Stub full refresh class to assist with testing.
+    """
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -39,6 +42,10 @@ class StreamStubFullRefresh(Stream):
 
 
 def test_as_airbyte_stream_full_refresh(mocker):
+    """
+    Should return an full refresh AirbyteStream with information matching the
+    provided Stream interface.
+    """
     test_stream = StreamStubFullRefresh()
 
     mocker.patch.object(StreamStubFullRefresh, "get_json_schema", return_value={})
@@ -49,11 +56,18 @@ def test_as_airbyte_stream_full_refresh(mocker):
 
 
 class StreamStubIncremental(StreamStubFullRefresh):
+    """
+    Stub full incremental class to assist with testing.
+    """
     def cursor_field(self) -> Union[str, List[str]]:
         return "test_cusor"
 
 
 def test_as_airbyte_stream_incremental(mocker):
+    """
+    Should return an incremental refresh AirbyteStream with information matching
+    the provided Stream interface.
+    """
     test_stream = StreamStubIncremental()
     test_stream.cursor_field = "test_cursor"
 
