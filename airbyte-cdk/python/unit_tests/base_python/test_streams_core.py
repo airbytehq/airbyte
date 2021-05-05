@@ -31,6 +31,7 @@ class StreamStubFullRefresh(Stream):
     """
     Stub full refresh class to assist with testing.
     """
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -59,6 +60,7 @@ class StreamStubIncremental(StreamStubFullRefresh):
     """
     Stub full incremental class to assist with testing.
     """
+
     def cursor_field(self) -> Union[str, List[str]]:
         return "test_cusor"
 
