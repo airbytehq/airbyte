@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -44,6 +45,7 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +63,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<String, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
+  private final Consumer<AirbyteStateMessage> checkpointConsumer;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -70,18 +73,29 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private AirbyteStateMessage pendingState;
 
   public BufferedStreamConsumer(VoidCallable onStart,
-      RecordWriter recordWriter,
-      CheckedConsumer<Boolean, Exception> onClose,
-      ConfiguredAirbyteCatalog catalog,
-      Set<AirbyteStreamNameNamespacePair> pairs,
-      CheckedFunction<String, Boolean, Exception> isValidRecord) {
+                                RecordWriter recordWriter,
+                                CheckedConsumer<Boolean, Exception> onClose,
+                                ConfiguredAirbyteCatalog catalog,
+                                CheckedFunction<String, Boolean, Exception> isValidRecord) {
+    this(onStart, recordWriter, onClose, catalog, isValidRecord, (stateMessage) -> {});
+  }
+
+  // todo (cgardens) checkpointConsumer will become relevant once we start actually checkpointing.
+  @VisibleForTesting
+  BufferedStreamConsumer(VoidCallable onStart,
+                         RecordWriter recordWriter,
+                         CheckedConsumer<Boolean, Exception> onClose,
+                         ConfiguredAirbyteCatalog catalog,
+                         CheckedFunction<String, Boolean, Exception> isValidRecord,
+                         Consumer<AirbyteStateMessage> checkpointConsumer) {
+    this.checkpointConsumer = checkpointConsumer;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
     this.recordWriter = recordWriter;
     this.onClose = onClose;
     this.catalog = catalog;
-    this.pairs = pairs;
+    this.pairs = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
     this.queue = new ArrayBlockingQueue<>(BATCH_SIZE);
 
@@ -118,7 +132,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      if (lastRecordStream != null && lastRecordStream.equals(stream)) {
+      if (lastRecordStream != null && !lastRecordStream.equals(stream)) {
         flushQueueToDestination();
         // handle state.
       }
@@ -148,8 +162,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         .map(AirbyteMessage::getRecord)
         .collect(Collectors.toList());
     recordWriter.accept(lastRecordStream, records);
-    lastCommittedState = pendingState != null ? pendingState : lastCommittedState;
-    pendingState = null;
+    if (pendingState != null) {
+      lastCommittedState = pendingState;
+      pendingState = null;
+      checkpointConsumer.accept(lastCommittedState);
+    }
   }
 
   private void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
@@ -161,7 +178,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   @Override
   protected void close(boolean hasFailed) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot close; has not started.");
-    Preconditions.checkState(hasClosed, "Has already closed.");
+    Preconditions.checkState(!hasClosed, "Has already closed.");
+    hasClosed = true;
 
     pairToIgnoredRecordCount
         .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
@@ -174,4 +192,5 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
     onClose.accept(hasFailed);
   }
+
 }

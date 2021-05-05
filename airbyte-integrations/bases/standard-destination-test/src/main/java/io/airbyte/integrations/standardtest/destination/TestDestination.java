@@ -331,8 +331,10 @@ public abstract class TestDestination {
     runSync(config, firstSyncMessages, configuredCatalog);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+        .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getName())
+            .withEmittedAt(Instant.now().toEpochMilli())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
                 .put("id", 1)
                 .put("currency", "USD")
@@ -371,8 +373,10 @@ public abstract class TestDestination {
     runSync(config, firstSyncMessages, configuredCatalog);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+        .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getName())
+            .withEmittedAt(Instant.now().toEpochMilli())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
                 .put("id", 1)
                 .put("currency", "USD")
