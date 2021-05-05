@@ -54,7 +54,7 @@ class SourceCorebos(Source):
             else:
                 return AirbyteConnectionStatus(
                     status=Status.FAILED,
-                    message=f"An exception occurred: Status Code: {0}, content: {1}".format(response.status_code, response.content),
+                    message='An exception occurred: Status Code: {}, content: {}'.format(response.status_code, response.content),
                 )
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
