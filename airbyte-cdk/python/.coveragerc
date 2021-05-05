@@ -1,4 +1,7 @@
 [run]
 omit =
-    # omit the models package
+    # omit the models package as it's auto-generated
     airbyte_cdk/models/*
+
+    # omit as unimplemented
+    airbyte_cdk/base_python/cdk/streams/auth/jwt.py
