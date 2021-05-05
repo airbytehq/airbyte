@@ -10,6 +10,11 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 * We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
+## [05-04-2021 - 0.22.2](https://github.com/airbytehq/airbyte/releases/tag/v0.22.2-alpha)
+
+* Split replication and normalization into separate temporal activities \([\#3136](https://github.com/airbytehq/airbyte/pull/3136)\)
+* Fix normalization Nesting bug \([\#3110](https://github.com/airbytehq/airbyte/pull/3110)\)
+
 ## [04-27-2021 - 0.22.0](https://github.com/airbytehq/airbyte/releases/tag/v0.22.0-alpha)
 
 * **Zendesk Talk**: fix normalization failure \([\#3022](https://github.com/airbytehq/airbyte/pull/3022)\), thanks to [yevhenii-ldv](https://github.com/yevhenii-ldv)
