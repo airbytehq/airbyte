@@ -15,12 +15,6 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
 }
 
-// used to allow local iteration to work
-task('installSingerTap', type: PythonTask) {
-    module = "pip"
-    command = "install tap-adwords==1.12.0"
-}
-installReqs.dependsOn installSingerTap
 
 airbyteStandardSourceTestFile {
     // For more information on standard source tests, see https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/testing-connectors
