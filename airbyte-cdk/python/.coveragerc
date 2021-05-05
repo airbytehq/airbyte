@@ -1,0 +1,4 @@
+[run]
+omit =
+    # omit the models package
+    airbyte_cdk/models/*
