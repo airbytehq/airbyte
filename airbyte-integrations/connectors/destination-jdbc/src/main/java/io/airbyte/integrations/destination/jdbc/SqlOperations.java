@@ -103,11 +103,13 @@ public interface SqlOperations {
    * @param queries queries to execute
    * @throws Exception exception
    */
-  void executeTransaction(JdbcDatabase database, String queries) throws Exception;
+  void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception;
 
   /**
    * Check if the data record is valid and ok to be written to destination
    */
   boolean isValidData(final String data);
+
+  boolean isSchemaRequired();
 
 }

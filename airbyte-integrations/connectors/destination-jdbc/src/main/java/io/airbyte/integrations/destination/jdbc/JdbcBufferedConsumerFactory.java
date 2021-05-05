@@ -41,6 +41,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -66,7 +67,7 @@ public class JdbcBufferedConsumerFactory {
                                               NamingConventionTransformer namingResolver,
                                               JsonNode config,
                                               ConfiguredAirbyteCatalog catalog) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
 
     return new BufferedStreamConsumer(
         onStartFunction(database, sqlOperations, writeConfigs),
@@ -77,25 +78,37 @@ public class JdbcBufferedConsumerFactory {
         sqlOperations::isValidData);
   }
 
-  private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver, JsonNode config, ConfiguredAirbyteCatalog catalog) {
-    Preconditions.checkState(config.has("schema"), "jdbc destinations must specify a schema.");
+  private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver, JsonNode config, ConfiguredAirbyteCatalog catalog, boolean schemaRequired) {
+    if (schemaRequired) {
+      Preconditions.checkState(config.has("schema"), "jdbc destinations must specify a schema.");
+    }
     final Instant now = Instant.now();
-    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config, now)).collect(Collectors.toList());
+    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config, now, schemaRequired)).collect(Collectors.toList());
   }
 
-  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(NamingConventionTransformer namingResolver,
-                                                                              JsonNode config,
-                                                                              Instant now) {
+  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
+      NamingConventionTransformer namingResolver,
+      JsonNode config,
+      Instant now, boolean schemaRequired) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
 
-      final String defaultSchemaName = namingResolver.getIdentifier(config.get("schema").asText());
+      final String defaultSchemaName = schemaRequired ? namingResolver.getIdentifier(config.get("schema").asText()) : namingResolver.getIdentifier(config.get("database").asText());
       final String outputSchema = getOutputSchema(abStream, defaultSchemaName);
 
       final String streamName = abStream.getName();
       final String tableName = Names.concatQuotedNames("_airbyte_raw_", namingResolver.getIdentifier(streamName));
-      final String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
+      String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
+
+      //This is for MySQL destination, the table names cant have more than 64 characters.
+      if (tmpTableName.length() > 64) {
+        String prefix = tmpTableName.substring(0, 31); //31
+        String suffix = tmpTableName.substring(32, 63); //31
+        tmpTableName = prefix + "__" + suffix;
+        System.out.println(tmpTableName + " LENGTH IS " + tmpTableName.length());
+      }
+
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 
       return new WriteConfig(streamName, abStream.getNamespace(), outputSchema, tmpTableName, tableName, syncMode);
@@ -155,7 +168,7 @@ public class JdbcBufferedConsumerFactory {
     return (hasFailed) -> {
       // copy data
       if (!hasFailed) {
-        final StringBuilder queries = new StringBuilder();
+        List<String> queryList = new ArrayList<>();
         LOGGER.info("Finalizing tables in destination started for {} streams", writeConfigs.size());
         for (WriteConfig writeConfig : writeConfigs) {
           final String schemaName = writeConfig.getOutputSchemaName();
@@ -166,16 +179,16 @@ public class JdbcBufferedConsumerFactory {
 
           sqlOperations.createTableIfNotExists(database, schemaName, dstTableName);
           switch (writeConfig.getSyncMode()) {
-            case OVERWRITE -> queries.append(sqlOperations.truncateTableQuery(schemaName, dstTableName));
+            case OVERWRITE -> queryList.add(sqlOperations.truncateTableQuery(schemaName, dstTableName));
             case APPEND -> {}
             case APPEND_DEDUP -> {}
             default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
           }
-          queries.append(sqlOperations.copyTableQuery(schemaName, srcTableName, dstTableName));
+          queryList.add(sqlOperations.copyTableQuery(schemaName, srcTableName, dstTableName));
         }
 
         LOGGER.info("Executing finalization of tables.");
-        sqlOperations.executeTransaction(database, queries.toString());
+        sqlOperations.executeTransaction(database, queryList);
         LOGGER.info("Finalizing tables in destination completed.");
       }
       // clean up

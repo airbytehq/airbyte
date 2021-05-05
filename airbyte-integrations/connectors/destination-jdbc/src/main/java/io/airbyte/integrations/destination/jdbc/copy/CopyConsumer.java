@@ -39,6 +39,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +162,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
         }
       }
       if (!hasFailed) {
-        sqlOperations.executeTransaction(db, mergeCopiersToFinalTableQuery.toString());
+        sqlOperations.executeTransaction(db, Collections.singletonList(mergeCopiersToFinalTableQuery.toString()));
       }
     } finally {
       for (var copier : streamCopiers) {
