@@ -36,7 +36,7 @@ MODULE_NAME = MODULE.__name__.split(".")[0]
 SCHEMAS_ROOT = "/".join(os.path.abspath(MODULE.__file__).split("/")[:-1]) / Path("schemas")
 
 
-# TODO refactor ResourceSchemaLoader to completely separate the functionality for reading data from the package
+# TODO (sherif) refactor ResourceSchemaLoader to completely separate the functionality for reading data from the package. See https://github.com/airbytehq/airbyte/issues/3222
 #  and the functionality for resolving schemas
 @fixture(autouse=True, scope="session")
 def create_and_teardown_schemas_dir():
