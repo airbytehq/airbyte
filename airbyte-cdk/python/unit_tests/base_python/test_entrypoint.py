@@ -157,5 +157,4 @@ def test_invalid_command(entrypoint: AirbyteEntrypoint, mocker):
     with pytest.raises(Exception):
         mocker.patch.object(MockSource, "read_config", return_value={})
         mocker.patch.object(MockSource, "configure", return_value={})
-        x = entrypoint.run(Namespace(command="invalid", config="conf"))
-        list(x)
+        list(entrypoint.run(Namespace(command="invalid", config="conf")))
