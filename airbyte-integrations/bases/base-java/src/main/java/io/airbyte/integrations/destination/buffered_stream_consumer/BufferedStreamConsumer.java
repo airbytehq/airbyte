@@ -30,6 +30,7 @@ import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -42,8 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -53,9 +52,9 @@ import org.slf4j.LoggerFactory;
  * This class consumes AirbyteMessages from the worker.
  *
  * <p>
- * Record Messages: It adds record messages to a queue. Under 2 conditions, it will flush the
- * records in the queue to a temporary table in the destination. Condition 1: The queue fills up
- * (the queue is designed to be small enough as not to exceed the memory of the container).
+ * Record Messages: It adds record messages to a buffer. Under 2 conditions, it will flush the
+ * records in the buffer to a temporary table in the destination. Condition 1: The buffer fills up
+ * (the buffer is designed to be small enough as not to exceed the memory of the container).
  * Condition 2: On close.
  * </p>
  *
@@ -70,7 +69,7 @@ import org.slf4j.LoggerFactory;
  * All other message types are ignored.
  * </p>
  */
-public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer {
+public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
   private static final int BATCH_SIZE = 10000;
@@ -78,8 +77,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final VoidCallable onStart;
   private final RecordWriter recordWriter;
   private final CheckedConsumer<Boolean, Exception> onClose;
-  private final Set<AirbyteStreamNameNamespacePair> pairs;
-  private final BlockingQueue<AirbyteMessage> queue;
+  private final Set<AirbyteStreamNameNamespacePair> streamNames;
+  private final List<AirbyteMessage> buffer;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<String, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
@@ -88,7 +87,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private boolean hasStarted;
   private boolean hasClosed;
 
-  private AirbyteStreamNameNamespacePair lastRecordStream;
   private AirbyteStateMessage lastCommittedState;
   private AirbyteStateMessage pendingState;
 
@@ -115,9 +113,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.recordWriter = recordWriter;
     this.onClose = onClose;
     this.catalog = catalog;
-    this.pairs = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+    this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
-    this.queue = new ArrayBlockingQueue<>(BATCH_SIZE);
+    this.buffer = new ArrayList<>(BATCH_SIZE);
 
     this.pairToIgnoredRecordCount = new HashMap<>();
   }
@@ -143,7 +141,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
       final String data = Jsons.serialize(message);
 
-      if (!pairs.contains(stream)) {
+      if (!streamNames.contains(stream)) {
         throwUnrecognizedStream(catalog, message);
       }
 
@@ -152,12 +150,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      if (queue.size() == BATCH_SIZE) {
-        flushQueueToDestination();
-      }
+      buffer.add(message);
 
-      if (!queue.offer(message)) {
-        throw new IllegalStateException("Could not accept record despite waiting.");
+      if (buffer.size() == BATCH_SIZE) {
+        flushQueueToDestination();
       }
     } else if (message.getType() == Type.STATE) {
       pendingState = message.getState();
@@ -168,19 +164,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void flushQueueToDestination() throws Exception {
-    final List<AirbyteMessage> queueContents = new ArrayList<>();
-    queue.drainTo(queueContents);
-    final Map<Type, List<AirbyteMessage>> recordsByType = queueContents
-        .stream()
-        .collect(Collectors.groupingBy(AirbyteMessage::getType));
-
-    final List<AirbyteRecordMessage> records = recordsByType.getOrDefault(Type.RECORD, new ArrayList<>())
-        .stream()
+    final Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> recordsByStream = buffer.stream()
         .map(AirbyteMessage::getRecord)
-        .collect(Collectors.toList());
-
-    final Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> recordsByStream = records.stream()
         .collect(Collectors.groupingBy(AirbyteStreamNameNamespacePair::fromRecordMessage));
+
+    buffer.clear();
 
     for (Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : recordsByStream.entrySet()) {
       recordWriter.accept(entry.getKey(), entry.getValue());
