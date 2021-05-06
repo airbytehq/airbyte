@@ -224,15 +224,26 @@ class SourceNmbgmrGwl(Source):
 
         for stream in catalog.streams:
             name = stream.stream.name
-            data = get_data(logger, stream, state, config)
-            if data:
-                for di in data:
-                    yield AirbyteMessage(
-                        type=Type.RECORD,
-                        record=AirbyteRecordMessage(stream=name, data=di,
-                                                    emitted_at=int(datetime.now().timestamp()) * 1000))
+            key = stream.stream.name
+            logger.debug(f'****** mode {stream.sync_mode} state={state}')
+            is_incremental = stream.sync_mode == SyncMode.incremental and key in state
+            if key == 'SiteMetaData':
+                new =  get_sitemetadata(logger, stream, state, config, key, is_incremental, name)
             else:
+                new = get_waterlevels(logger, stream, state, config, key, is_incremental, name)
+
+            if not new:
                 logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
+
+            # data = get_data(logger, stream, state, config)
+            # if data:
+            #     for di in data:
+            #         yield AirbyteMessage(
+            #             type=Type.RECORD,
+            #             record=AirbyteRecordMessage(stream=name, data=di,
+            #                                         emitted_at=int(datetime.now().timestamp()) * 1000))
+            # else:
+            #     logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
 
 
 def public_url(config):
@@ -249,17 +260,15 @@ def sitemetadata_url(config):
     return f'{public_url(config)}/sitemetadata'
 
 
-def get_data(logger, stream, state, config):
-    key = stream.stream.name
-    logger.debug(f'****** mode {stream.sync_mode} state={state}')
-    is_incremental = stream.sync_mode == SyncMode.incremental and key in state
-    if key == 'SiteMetaData':
-        return get_sitemetadata(logger, stream, state, config, key, is_incremental)
-    else:
-        return get_waterlevels(logger, stream, state, config, key, is_incremental)
+def emit_data(name, data):
+    for di in data:
+        yield AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(stream=name, data=di,
+                                        emitted_at=int(datetime.now().timestamp()) * 1000))
 
 
-def get_sitemetadata(logger, stream, state, config, key, is_incremental):
+def get_sitemetadata(logger, stream, state, config, key, is_incremental, name):
     url = sitemetadata_url(config)
     if is_incremental:
         url = f'{url}?objectid={state[key]}'
@@ -270,7 +279,8 @@ def get_sitemetadata(logger, stream, state, config, key, is_incremental):
     if jobj:
         state[key] = jobj[-1]['OBJECTID']
         update_state(state)
-        return jobj
+        emit_data(name, jobj)
+        return True
     else:
         # need to emit the current state to make sure it cares forward
         update_state(state)
@@ -281,21 +291,33 @@ def update_state(state):
     print(json.dumps(output_message))
 
 
-def get_waterlevels(logger, stream, state, config, key, is_incremental):
+def get_waterlevels(logger, stream, state, config, key, is_incremental, name):
     url = records_url(config, key.lower())
     if is_incremental:
-        url = f'{url}?start_date={state[key]}&count=5000'
+        for i in range(10):
+            nurl = f'{url}?start_date={state[key]}&count=5000'
+            jobj = get_json(logger, nurl)
+            if jobj:
+                # update state
+                state[key] = jobj[-1]['DateMeasured']
+                update_state(state)
+                emit_data(name, jobj)
+            else:
+                break
+
+        update_state(state)
+
     else:
         url = f'{url}?count=10'
+        jobj = get_json(logger, url)
+        if jobj:
 
-    jobj = get_json(logger, url)
-    if jobj:
-        # update state
-        state[key] = jobj[-1]['DateMeasured']
-        update_state(state)
-        return jobj
-    else:
-        update_state(state)
+            # update state
+            state[key] = jobj[-1]['DateMeasured']
+            update_state(state)
+            return True
+        else:
+            update_state(state)
 
 
 def get_resp(logger, url):
