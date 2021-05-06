@@ -25,7 +25,7 @@ import json
 import os
 import shutil
 import sys
-from collections import Mapping
+from collections.abc import Mapping
 from pathlib import Path
 
 from airbyte_cdk.base_python.schema_helpers import ResourceSchemaLoader
