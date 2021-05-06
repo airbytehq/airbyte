@@ -21,9 +21,8 @@
 # SOFTWARE.
 
 
-from . import pokemon_list
+# startfile
 
-# Store large list of all known Pokemon.
 POKEMON_LIST = [
     "bulbasaur",
     "ivysaur",
@@ -924,6 +923,3 @@ POKEMON_LIST = [
     "spectrier",
     "calyrex",
 ]
-
-# Use the import so flakeCheck doesn't get mad at us.
-no_op_list = pokemon_list.POKEMON_LIST
