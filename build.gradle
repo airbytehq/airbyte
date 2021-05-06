@@ -105,7 +105,7 @@ spotless {
         // Many __init__.py files are blank which makes it hard to write a regex to know where to add a license
         targetExclude createSpotlessTarget('**/__init__.py')
 
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
+        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|^[a-z]+(?:_+[a-z]+)*$|""")'
         trimTrailingWhitespace()
     }
     format 'styling', {
