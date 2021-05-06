@@ -27,6 +27,8 @@ from datetime import datetime
 from typing import Dict, Generator
 import xmltodict
 import requests
+from jsonschema import validate 
+from datetime import datetime
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -40,7 +42,11 @@ from airbyte_protocol import (
 )
 from base_python import AirbyteLogger, Source
 
-StreamSiteMetadata = "SiteMetaData"
+# STREAM NAMES
+StreamGetSiteMetaData = "GetSiteMetaData"
+StreamGetSensorMetaData = "GetSensorMetaData"
+StreamGetSensorData = "GetSensorData"
+# PARAM_NAMES
 ConfigPropDataApiUrl = "data_api_url"
 ConfigPropSystemKey = "system_key"
 
@@ -58,16 +64,46 @@ class SourceOnerainApi(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
+            # VALIDATE CONFIG AGAINST JSON SCHEMA (spec.json)
+            validate( instance=config, schema=self.spec(logger).connectionSpecification) 
             # try to get time (ping) from configured URL
             url = config[ConfigPropDataApiUrl]
-            system_key = config[ConfigPropSystemKey]
-           
+
+            def assertAliasedParamsNotBothPresent(config,stream,paramName1,paramName2):
+                if paramName1 in config[stream] and paramName2 in config[stream]:
+                    raise AssertionError(f"{stream}: cannot specify both aliased parameters '{paramName1}' and '{paramName2}'. choose one.")
+
+            def assertOneRainDateFormat(config,stream,paramName):
+                try:
+                    if paramName in config[stream]:
+                        return datetime.strptime(config[stream][paramName],'%Y-%m-%d %H:%M:%S')
+                except ValueError as e:
+                    raise ValueError(stream,paramName,str(e))
+ 
+            # ADDITIONAL GetSiteMetadata STREAM CONFIG CHECKS
+            assertAliasedParamsNotBothPresent(config,StreamGetSiteMetaData,"or_site_id","site_id")
+
+
+
+            # ADDITIONAL GetSensorMetaData STREAM CONFIG CHECKS
+            assertAliasedParamsNotBothPresent(config,StreamGetSensorMetaData,"or_sensor_id","sensor_id")
+            assertAliasedParamsNotBothPresent(config,StreamGetSensorMetaData,"or_site_id","site_id")
+
+            # ADDITIONAL GetSensorData STREAM CONFIG CHECKS
+            assertAliasedParamsNotBothPresent(config,StreamGetSensorData,"or_site_id","site_id")
+            assertAliasedParamsNotBothPresent(config,StreamGetSensorData,"or_sensor_id","sensor_id")
+            assertOneRainDateFormat(config,StreamGetSensorData,"data_start")
+            assertOneRainDateFormat(config,StreamGetSensorData,"data_end")
+            assertOneRainDateFormat(config,StreamGetSensorData,"receive_start")
+            assertOneRainDateFormat(config,StreamGetSensorData,"receive_end")
+
+            # PING CONFIGURED ONERAIN URL WITH GetTime REQUEST TO MAKE SURE IT'S A VALID ENDPOINT
             get_time_url = f'{url}?method=GetTime'
          
             # use GetTime method to validate well formed url and that it responds to this 
             # basic time get request    
-            #r = requests.get(get_time_url)
-            #assert r.status_code == 200 
+            r = requests.get(get_time_url)
+            assert r.status_code == 200 
  
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
@@ -92,13 +128,27 @@ class SourceOnerainApi(Source):
         """
         streams = []
 
-        stream_name = StreamSiteMetadata  # Example
+        # GET SPEC TO GRAB DESCRIPTIONS OF FIELDS
+        spec = self.spec(logger).connectionSpecification
+        defs = spec['definitions']
+
+        def get_spec_def_obj(name):
+            return defs[name]
+        def get_spec_def_desc(name):
+            return defs[name]['description']
+        def get_spec_def_type(name):
+            return defs[name]['type']
+        def get_spec_def_prop(spec_def_name,def_prop_name):
+            return defs[spec_def_name][def_prop_name]
+
+        # ADD SCHEMA FOR StreamGetSiteMetaData
+        stream_name = StreamGetSiteMetaData 
         json_schema = {  # Example
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {
-                "or_site_id": {"description":"OneRain Contrail Site ID. These IDs are unique to the OneRain hosted Contrail Server or any Contrail Base Station","type": "number"},
-                "site_id": {"description":"Alias Site ID, how the Site is identified by the collecting sytem","type":"string"},
+                "or_site_id": get_spec_def_obj('or_site_id'),
+                "site_id": get_spec_def_obj('site_id'),
                 "location":{"desription":"descriptive site location","type":"string"},
                 "owner":{"desription":"site owner","type":"string"},
                 "system_id":{"description":"system id?", "type":"number"},
@@ -108,10 +158,90 @@ class SourceOnerainApi(Source):
                 "elevation":{"description":"site elevation (in units of ???)","type":"number"},
             },
         }
-
-        # Not Implemented
-
         streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
+
+        # ADD SCHEMA FOR StreamGetSensorMetaData
+        stream_name = StreamGetSensorMetaData
+        json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "site_id": get_spec_def_obj('site_id'),
+                "sensor_id": get_spec_def_obj('sensor_id'),
+                "or_site_id": get_spec_def_obj('or_site_id'),
+                "or_sensor_id":get_spec_def_obj('or_sensor_id'),
+                "location":{"description":"","type":"string"},
+                "description":{"description":"", "type":"string"},
+                "sensor_class":get_spec_def_obj('class'),
+                "sensor_type":{"description":"Sensor type","type":"string"},
+                "units":get_spec_def_obj('units'),
+                "translate":{"description":"", "type":"boolean"}, 
+                "precision":{"description":"", "type":"integer"},
+                "last_time":{"description":"","type":"string"},
+                "last_value":{"description":"", "type":"number"},
+                "last_time_received":{"description":"", "type":"string"},
+                "last_value_received":{"description":"", "type":"number"},
+                "last_raw_value":{"description":"", "type":"number"},
+                "last_raw_value_received":{"description":"","type":"number"},
+                "change_time":{"description":"","type":"string"},
+                "normal":{"description":"", "type":"integer"}, # boolean?
+                "active":{"description":"", "type":"integer"}, #boolean?
+                "valid":{"description":"", "type":"integer"}, #boolean?
+                "change_rate":{"description":"", "type":"number"},
+                "time_min_consec_zeros":{"description":"", "type":"integer"},
+                "validation":{"description":"", "type":"string"},
+                "value_max":{"description":"", "type":"number"},
+                "value_min":{"description":"", "type":"number"},
+                "delta_pos":{"description":"", "type":"number"},
+                "delta_neg":{"description":"", "type":"number"},
+                "rate_pos":{"description":"", "type":"number"},
+                "rate_neg":{"description":"", "type":"number"},
+                "time_max":{"description":"", "type":"integer"},
+                "time_min":{"description":"", "type":"integer"},
+                "slope":{"description":"", "type":"number"},
+                "offset":{"description":"", "type":"number"},
+                "reference":{"description":"", "type":"number"},
+                "utc_offset":{"description":"", "type":"integer"},
+                "using_dst":{"description":"", "type":"boolean"},
+                "conversion":{"description":"", "type":"string"},
+                "usage":{"description":"", "type":"string"},
+                "protocol":{"description":"", "type":"integer"}  
+
+            }
+        } 
+        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
+
+        # ADD STREAM FOR StreamGetSensorData
+        stream_name = StreamGetSensorData
+        json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "site_id":get_spec_def_obj('site_id'),
+                "sensor_id":get_spec_def_obj('sensor_id'),
+                "or_site_id":get_spec_def_obj('or_site_id'),
+                "or_sensor_id":get_spec_def_obj('or_sensor_id'),
+                "sensor_class":get_spec_def_obj('class'),
+                "data_time": {
+                    "type": get_spec_def_type('onerain_datetime'),
+                    "description":"date/time data was captured",
+                    "pattern":get_spec_def_prop('onerain_datetime','pattern')
+                },
+                "data_value": {
+                    "type":"number",
+                    "description":"data value",
+                 
+                },
+                "raw_value": {
+                    "type":"number",
+                    "description":"raw data value",
+                },
+                "units": get_spec_def_obj('units')
+    
+                
+            }
+        }
+
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -136,21 +266,19 @@ class SourceOnerainApi(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = StreamSiteMetadata  # Example
+        stream_name = StreamGetSiteMetaData  # Example
 
         data_api_url = config[ConfigPropDataApiUrl]
         system_key = config[ConfigPropSystemKey]
 
-        req_url = "%s?method=GetSiteMetadata&system_key=%s" % (data_api_url,system_key)
+        req_url = f"{data_api_url}?method={stream_name}&system_key={system_key}"
 
         # RETRIEVE SITE METADATA
         try:
             r = requests.get(req_url)
-        except Exception as e:
-            logger.error("OneRain request method 'GetSiteMetadata' failed: %s" % str(e))
-            return
-        # ITERATE SITE METADATA AND RETURN AS STREAM
-        try:
+            assert r.status_code == 200 
+
+            # ITERATE SITE METADATA AND RETURN AS STREAM
             doc = xmltodict.parse(r.text)
             for row in doc['onerain']['response']['general']['row']:
                 or_site_id = int(row['or_site_id'])
@@ -180,6 +308,107 @@ class SourceOnerainApi(Source):
                 )       
 
         except Exception as e:
-            logger.error("failed to process 'GetSiteMetadata' response object: %s" % str(e))
-            return
+            logger.error(f'failed to process stream {stream_name}: {str(e)}')
+
+        # RETRIEVE SENSOR METADATA AND RETURN AS STREAM
+        stream_name = StreamGetSensorMetaData
+
+        req_url = f'{data_api_url}?method={stream_name}&system_key={system_key}' 
+
+        try:
+            # submit request
+            r = requests.get(req_url)
+            assert r.status_code == 200
+            #logger.info(r.text)
+            doc = xmltodict.parse(r.text)
+            
+            for row in doc['onerain']['response']['general']['row']:
+
+                data=dict()
+                data['site_id'] = row['site_id']
+                data['sensor_id'] = int(row['sensor_id'])
+                data['or_site_id'] = int(row['or_site_id'])
+                data['or_sensor_id'] = int(row['or_sensor_id'])
+                data['location'] = row['location']
+                data['description'] = row['description']        
+                data['sensor_class'] = int(row['sensor_class'])
+                data['sensor_type'] =row['sensor_type']
+                data['units'] = row['units']
+                data['translate'] = str_to_bool(row['translate'])
+                data['precision'] = int(row['precision'])
+                data['last_time'] = row['last_time']
+                data['last_value'] = row['last_value']
+                data['last_time_received'] = row['last_time_received']
+                data['last_value_received'] = float(row['last_value_received'])
+                data['last_raw_value'] = float(row['last_raw_value'])
+                data['last_raw_value_received'] = float(row['last_raw_value_received'])
+                #data['change_time'] = row['change_time']
+                data['normal'] = int(row['normal'])
+                data['active'] = int(row['active'])
+                data['valid'] = int(row['valid'])
+                data['change_rate'] = float(row['change_rate'])
+                data['time_min_consec_zeros'] = int(row['time_min_consec_zeros'])
+                data['validation'] = row['validation']
+                data['value_max'] = float(row['value_max'])
+                data['value_min'] = float(row['value_min'])
+                data['delta_pos'] = float(row['delta_pos'])
+                data['delta_neg'] = float(row['delta_neg'])
+                data['time_max'] = int(row['time_max'])
+                data['time_min'] = int(row['time_min'])
+                data['slope'] = float(row['slope'])
+                data['offset'] = float(row['offset'])
+                data['reference'] = float(row['reference'])
+                data['utc_offset'] = int(row['utc_offset'])
+                data['using_dst'] = str_to_bool(row['using_dst']) 
+                data['conversion'] = row['conversion']
+                data['usage'] = row['usage']
+                data['protocol'] = int(row['protocol'])
+
+                yield AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                )       
+        except Exception as e:
+            logger.error(f'failed to process stream {stream_name}: {str(e)}') 
+
+        # RETRIEVE SENSOR DATA AND RETURN AS STREAM
+        stream_name = StreamGetSensorData
+
+        req_url = f"{data_api_url}?method={stream_name}&system_key={system_key}"
         
+        try:
+            # submit request
+            r = requests.get(req_url)
+            assert r.status_code == 200
+            doc = xmltodict.parse(r.text)
+
+            for row in doc['onerain']['response']['general']['row']:
+                data=dict()
+                data['site_id'] = row['site_id']
+                data['sensor_id'] = row['sensor_id']
+                data['or_site_id'] = int(row['or_site_id'])
+                data['or_sensor_id'] = int(row['or_sensor_id'])
+                data['sensor_class'] = int(row['sensor_class'])
+                data['data_time'] = row['data_time']
+                data['data_value'] = float(row['data_value'])
+                data['raw_value'] = float(row['raw_value'])
+                data['units'] = row['units']
+                 
+                yield AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                )       
+        except Exception as e:
+            logger.error(f'failed to process stream {stream_name}: {str(e)}') 
+
+def str_to_bool(s):
+    true_values = ['true','t','yes','y',1]
+    false_values = ['false','f','no','n',0]
+
+    if s.lower() in true_values:
+        return True
+    if s.lower() in false_values:
+        return False
+
+    raise ValueError(f"cannot convert '{s}' to boolean. expected {true_values} or {false_values}")
+

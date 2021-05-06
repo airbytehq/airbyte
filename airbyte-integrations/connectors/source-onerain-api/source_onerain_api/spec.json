@@ -4,29 +4,123 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Onerain Api Spec",
     "type": "object",
-    "required": ["data_api_url","system_key","get_site_metadata"],
+    "required": ["data_api_url","system_key"],
     "additionalProperties": false,
+    "definitions": {
+        "or_site_id": { 
+            "type":"integer",
+            "description":"OneRain Contrail Site ID."
+        },
+        "site_id": {
+            "type":"string",
+            "description":"descriptive alias to or_site_id."
+        },
+        "class": {
+            "type":"integer",
+            "description":"numeric Sensor class as defined in Contrail"
+        }, 
+        "timezone": {
+            "type":"string",
+            "description":"time zone  of returned timestamps express in Country/Region format (e.g. US/Mountain) or UTC offset (e.g. -7). Defaults to UTC if not specified"
+        },
+        "or_sensor_id": {
+            "type":"integer",
+            "description":"OneRain Contrail Sensor ID."
+        },
+        "sensor_id": {
+            "type":"string",
+            "description":"descriptive alias to or_sensor_id."
+        },
+        "translate": {
+            "type":"string",
+            "description":"return only Sensors that are configured as 'text' Sensors"
+        },
+        "onerain_datetime": {
+            "type":"string",
+            "description":"OneRain date/time formatted in YYY-MM-DD HH:MM:SS format",
+            "pattern": "^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2} [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}" 
+        },
+        "units": {
+            "type":"string",
+            "description":"unit type used in measurement"
+
+        }
+ 
+    },
     "properties": {
       "data_api_url": {
         "type": "string",
-        "description": "OneRain Data API url (e.g. http://{HOST}[:PORT]/OneRain/DataAPI)",
-        "order":1
+        "description": "OneRain Data API url (e.g. http://{HOST}[:PORT]/OneRain/DataAPI)"
       },
       "system_key": {
         "type":"string",
-        "description":"String used to associate a group of sensors with a single globally unique identifier in Contrail",
-        "order":2
+        "description":"GUID string used to associate a group of sensors with a single globally unique identifier in Contrail",
+        "pattern":"^[0-9,a-f,A-F]{8}(-[0-9,a-f,A-F]{4}){3}-[0-9,a-f,A-F]{12}$"
+            
       },
-      "get_site_metadata": { 
+      "GetSiteMetaData": {
+        "type":"object",
+        "title":"GetSiteMetaData Method",
+        "oneOf": [{
+            
+                "title":"Parameters",
+                "properties": {
+                    "or_site_id": {"$ref": "#/definitions/or_site_id"},
+                    "site_id": {"$ref": "#/definitions/site_id"},
+                    "class": {"$ref": "#/definitions/class"},
+                    "timezone": {"$ref": "#/definitions/timezone"}
+            
+                }
+        }]
+        
+      },
+      "GetSensorMetaData": {
+        "type":"object",
+        "title":"GetSensorMetaData Method",
+        "oneOf": [{
+            "title":"Parameters",
+            "properties": { 
+                "class": {"$ref":"#/definitions/class"},
+                "or_site_id": {"$ref":"#/definitions/or_site_id"},
+                "or_sensor_id": {"$ref":"#/definitions/or_sensor_id"},
+                "site_id": {"$ref":"#/definitions/site_id"},
+                "sensor_id": {"$ref":"#/definitions/sensor_id"},
+                "timezone": {"$ref":"#/definitions/timezone"},
+                "translate": {"$ref":"#/definitions/translate"}
 
-            "type":"object",
-            "required":[""],
-            "properties": {
-                "or_site_id":{"type":"string"},
-                "site_id":{"type":"string"},
-                "class":{"type":"integer"},
-                "timezone":{"type":"string"}
             }
+        }]
+      },
+      "GetSensorData": {
+        "type":"object",
+        "title":"GetSensorData Method",
+        "oneOf": [{
+            "title":"Parameters",
+            "properties": {
+                "or_site_id": {"$ref":"#/definitions/or_site_id"},
+                "or_sensor_id": {"$ref":"#/definitions/or_sensor_id"},
+                "site_id":{"$ref":"#/definitions/site_id"},
+                "sensor_id":{"$ref":"#/definitions/sensor_id"},
+                "data_start": {
+                    "type":"string",
+                    "description":"start of the device reading time period (yyyy-mm-dd hh:mm:ss)"
+                },
+                "data_end": {
+                    "type":"string",
+                    "description":"end of the device reading time period (yyyy-mm-dd hh:mm:ss)"
+                },
+                "receive_start": {
+                    "type":"string",
+                    "description":"start of the receiving period (yyyy-mm-dd hh:mm:ss)"
+                },
+                "receive_end": {
+                    "type":"string",
+                    "description":"start of the receiving period (yyyy-mm-dd hh:mm:ss)"
+                },
+                "timezone": {"$ref":"#/definitions/tmezone"},
+                "class": {"$ref": "#/definitions/class"}
+            }
+        }]
       }
 
     }
