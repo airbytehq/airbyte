@@ -99,7 +99,7 @@ def test_parse_missing_required_args(cmd: str, args: Mapping[str, Any], entrypoi
 
 def _wrap_message(
     submessage: Union[AirbyteConnectionStatus, ConnectorSpecification, AirbyteRecordMessage, AirbyteCatalog]
-) -> AirbyteMessage:
+) -> str:
     if isinstance(submessage, AirbyteConnectionStatus):
         message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=submessage)
     elif isinstance(submessage, ConnectorSpecification):
