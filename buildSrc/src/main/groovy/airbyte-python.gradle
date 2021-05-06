@@ -1,3 +1,4 @@
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import ru.vyarus.gradle.plugin.python.task.PythonTask;
@@ -58,10 +59,15 @@ class AirbytePythonPlugin implements Plugin<Project> {
                     dependsOn project.rootProject.getTasksByName("airbytePythonApply", true).findAll { it.project.getPath().startsWith(":airbyte-integrations:bases") }
                 }
             }
-        } else {
-            project.task("installLocalReqs") {
-                logger.info("Skipping installing local requirements because requirements.txt does not exist")
+        } else if(project.file('setup.py').exists()) {
+            // If requirements.txt does not exists, install from setup.py instead, assume a dev profile exists.
+            // In this case, there is no need to depend on the base python modules since everything should be contained in the setup.py.
+            project.task('installLocalReqs', type: PythonTask) {
+                module = "pip"
+                command = "install -e .[dev]"
             }
+        } else {
+            throw new GradleException('Error: Python module lacks requirement.txt and setup.py')
         }
 
         project.task('installReqs', type: PythonTask, dependsOn: project.installLocalReqs) {
