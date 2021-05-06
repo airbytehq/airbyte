@@ -52,13 +52,16 @@ public class MySQLIntegrationTest extends TestDestination {
   }
 
   @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
   protected JsonNode getConfig() {
-    // root user is required cause by default the server value for local_infile is OFF and we need to
-    // turn it ON for loading data and the normal user doesn't have permission to switch it on
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("username", "root")
-        .put("password", "test")
+        .put("username", db.getUsername())
+        .put("password", db.getPassword())
         .put("database", db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
         .build());
@@ -117,6 +120,39 @@ public class MySQLIntegrationTest extends TestDestination {
   protected void setup(TestDestinationEnv testEnv) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
+    setLocalInFileToTrue();
+    revokeAllPermissions();
+    grantCorrectPermissions();
+  }
+
+  private void setLocalInFileToTrue() {
+    executeQuery("set global local_infile=true");
+  }
+
+  private void revokeAllPermissions() {
+    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + db.getUsername() + "@'%';");
+  }
+
+  private void grantCorrectPermissions() {
+    executeQuery("GRANT CREATE, INSERT, SELECT, DROP ON *.* TO " + db.getUsername() + "@'%';");
+  }
+
+  private void executeQuery(String query) {
+    try {
+      Databases.createDatabase(
+          "root",
+          "test",
+          String.format("jdbc:mysql://%s:%s/%s",
+              db.getHost(),
+              db.getFirstMappedPort(),
+              db.getDatabaseName()),
+          "com.mysql.cj.jdbc.Driver",
+          SQLDialect.MYSQL).query(
+              ctx -> ctx
+                  .execute(query));
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
