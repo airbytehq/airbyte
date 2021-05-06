@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-from typing import Any, Iterable, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk.base_python import Stream
 from airbyte_cdk.models import AirbyteStream, SyncMode
@@ -56,13 +56,21 @@ def test_as_airbyte_stream_full_refresh(mocker):
     assert exp == airbyte_stream
 
 
-class StreamStubIncremental(StreamStubFullRefresh):
+class StreamStubIncremental(Stream):
     """
     Stub full incremental class to assist with testing.
     """
 
-    def cursor_field(self) -> Union[str, List[str]]:
-        return "test_cusor"
+    cursor_field = "test_cursor"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        pass
 
 
 def test_as_airbyte_stream_incremental(mocker):
@@ -71,7 +79,6 @@ def test_as_airbyte_stream_incremental(mocker):
     the provided Stream interface.
     """
     test_stream = StreamStubIncremental()
-    test_stream.cursor_field = "test_cursor"
 
     mocker.patch.object(StreamStubIncremental, "get_json_schema", return_value={})
     airbyte_stream = test_stream.as_airbyte_stream()
@@ -84,3 +91,22 @@ def test_as_airbyte_stream_incremental(mocker):
         source_defined_cursor=True,
     )
     assert exp == airbyte_stream
+
+
+def test_supports_incremental_cursor_set():
+    """
+    Should return true if cursor is set.
+    """
+    test_stream = StreamStubIncremental()
+    test_stream.cursor_field = "test_cursor"
+
+    assert test_stream.supports_incremental
+
+
+def test_supports_incremental_cursor_not_set():
+    """
+    Should return false if cursor is not.
+    """
+    test_stream = StreamStubFullRefresh()
+
+    assert not test_stream.supports_incremental
