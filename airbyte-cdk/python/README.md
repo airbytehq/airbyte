@@ -57,7 +57,8 @@ pip install -e ".[dev]" # [dev] installs development-only dependencies
 #### Iteration
 * Iterate on the code locally
 * Run tests via `pytest -s unit_tests`
-* Perform static type checks using using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
+* Perform static type checks using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
+* The `type_check_and_test.sh` script bundles both type checking and testing in one convenient command. Feel free to use it!
 
 
 #### Testing
