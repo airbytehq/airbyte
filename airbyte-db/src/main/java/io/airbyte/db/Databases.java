@@ -62,11 +62,12 @@ public class Databases {
   }
 
   public static JdbcDatabase createJdbcDatabase(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName,
-      final String connectionProperties) {
-    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName,Optional.of(connectionProperties));
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName,
+                                                final String connectionProperties) {
+    final BasicDataSource connectionPool =
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.of(connectionProperties));
 
     return new DefaultJdbcDatabase(connectionPool);
   }
@@ -83,18 +84,18 @@ public class Databases {
   }
 
   private static BasicDataSource createBasicDataSource(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName) {
+                                                       final String password,
+                                                       final String jdbcConnectionString,
+                                                       final String driverClassName) {
     return createBasicDataSource(username, password, jdbcConnectionString, driverClassName,
         Optional.empty());
   }
 
   private static BasicDataSource createBasicDataSource(final String username,
-      final String password,
-      final String jdbcConnectionString,
-      final String driverClassName,
-      final Optional<String> connectionProperties) {
+                                                       final String password,
+                                                       final String jdbcConnectionString,
+                                                       final String driverClassName,
+                                                       final Optional<String> connectionProperties) {
     final BasicDataSource connectionPool = new BasicDataSource();
     connectionPool.setDriverClassName(driverClassName);
     connectionPool.setUsername(username);

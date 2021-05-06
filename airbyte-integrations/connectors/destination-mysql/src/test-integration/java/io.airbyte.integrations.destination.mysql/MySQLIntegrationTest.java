@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,10 +40,12 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
 public class MySQLIntegrationTest extends TestDestination {
+
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private MySQLContainer<?> db;
   private ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
+
   @Override
   protected String getImageName() {
     return "airbyte/destination-mysql:dev";
@@ -27,7 +53,8 @@ public class MySQLIntegrationTest extends TestDestination {
 
   @Override
   protected JsonNode getConfig() {
-    //root user is required cause by default the server value for local_infile is OFF and we need to turn it ON for loading data and the normal user doesn't have permission to switch it on
+    // root user is required cause by default the server value for local_infile is OFF and we need to
+    // turn it ON for loading data and the normal user doesn't have permission to switch it on
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("username", "root")
@@ -57,8 +84,10 @@ public class MySQLIntegrationTest extends TestDestination {
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName,
-      String namespace) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
+                                           String streamName,
+                                           String namespace)
+      throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
@@ -75,15 +104,14 @@ public class MySQLIntegrationTest extends TestDestination {
             db.getDatabaseName()),
         "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL).query(
-        ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
-            .map(Jsons::deserialize)
-            .collect(Collectors.toList()));
+            ctx -> ctx
+                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .stream()
+                .map(r -> r.formatJSON(JSON_FORMAT))
+                .map(Jsons::deserialize)
+                .collect(Collectors.toList()));
   }
-
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
@@ -96,4 +124,5 @@ public class MySQLIntegrationTest extends TestDestination {
     db.stop();
     db.close();
   }
+
 }

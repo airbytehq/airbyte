@@ -78,7 +78,10 @@ public class JdbcBufferedConsumerFactory {
         sqlOperations::isValidData);
   }
 
-  private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver, JsonNode config, ConfiguredAirbyteCatalog catalog, boolean schemaRequired) {
+  private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver,
+                                                      JsonNode config,
+                                                      ConfiguredAirbyteCatalog catalog,
+                                                      boolean schemaRequired) {
     if (schemaRequired) {
       Preconditions.checkState(config.has("schema"), "jdbc destinations must specify a schema.");
     }
@@ -87,25 +90,26 @@ public class JdbcBufferedConsumerFactory {
   }
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
-      NamingConventionTransformer namingResolver,
-      JsonNode config,
-      Instant now,
-      boolean schemaRequired) {
+                                                                              NamingConventionTransformer namingResolver,
+                                                                              JsonNode config,
+                                                                              Instant now,
+                                                                              boolean schemaRequired) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
 
-      final String defaultSchemaName = schemaRequired ? namingResolver.getIdentifier(config.get("schema").asText()) : namingResolver.getIdentifier(config.get("database").asText());
+      final String defaultSchemaName = schemaRequired ? namingResolver.getIdentifier(config.get("schema").asText())
+          : namingResolver.getIdentifier(config.get("database").asText());
       final String outputSchema = getOutputSchema(abStream, defaultSchemaName);
 
       final String streamName = abStream.getName();
       final String tableName = Names.concatQuotedNames("_airbyte_raw_", namingResolver.getIdentifier(streamName));
       String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
 
-      //This is for MySQL destination, the table names cant have more than 64 characters.
+      // This is for MySQL destination, the table names cant have more than 64 characters.
       if (tmpTableName.length() > 64) {
-        String prefix = tmpTableName.substring(0, 31); //31
-        String suffix = tmpTableName.substring(32, 63); //31
+        String prefix = tmpTableName.substring(0, 31); // 31
+        String suffix = tmpTableName.substring(32, 63); // 31
         tmpTableName = prefix + "__" + suffix;
       }
 

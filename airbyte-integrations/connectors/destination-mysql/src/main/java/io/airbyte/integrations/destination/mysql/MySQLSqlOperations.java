@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.mysql;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -13,6 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MySQLSqlOperations extends DefaultSqlOperations {
+
   private boolean isLocalFileEnabled = false;
 
   @Override
@@ -21,23 +46,29 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records,
-      String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecords(JdbcDatabase database,
+                            List<AirbyteRecordMessage> records,
+                            String schemaName,
+                            String tmpTableName)
+      throws SQLException {
     if (records.isEmpty()) {
       return;
     }
 
     boolean localFileEnabled = isLocalFileEnabled || checkIfLocalFileIsEnabled(database);
 
-    if(!localFileEnabled) {
+    if (!localFileEnabled) {
       tryEnableLocalFile(database);
     }
     isLocalFileEnabled = true;
     loadDataIntoTable(database, records, schemaName, tmpTableName);
   }
 
-  private void loadDataIntoTable(JdbcDatabase database, List<AirbyteRecordMessage> records,
-      String schemaName, String tmpTableName) throws SQLException {
+  private void loadDataIntoTable(JdbcDatabase database,
+                                 List<AirbyteRecordMessage> records,
+                                 String schemaName,
+                                 String tmpTableName)
+      throws SQLException {
     database.execute(connection -> {
       File tmpFile = null;
       try {
@@ -78,15 +109,13 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
   }
 
   private double getVersion(JdbcDatabase database) throws SQLException {
-    List<String> value = database.resultSetQuery(connection ->
-            connection.createStatement().executeQuery("select version()"),
-        resultSet -> resultSet.getString("version()")
-    ).collect(Collectors.toList());
+    List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("select version()"),
+        resultSet -> resultSet.getString("version()")).collect(Collectors.toList());
     return Double.parseDouble(value.get(0).substring(0, 3));
   }
 
   boolean isCompatibleVersion(JdbcDatabase database) throws SQLException {
-      return (getVersion(database) >= 5.7);
+    return (getVersion(database) >= 5.7);
   }
 
   @Override
@@ -95,17 +124,16 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
   }
 
   boolean checkIfLocalFileIsEnabled(JdbcDatabase database) throws SQLException {
-    List<String> value = database.resultSetQuery(connection ->
-            connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
-        resultSet -> resultSet.getString("Value")
-    ).collect(Collectors.toList());
+    List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
+        resultSet -> resultSet.getString("Value")).collect(Collectors.toList());
 
     return value.get(0).equalsIgnoreCase("on");
   }
 
   @Override
   public String createTableQuery(String schemaName, String tableName) {
-    //MySQL requires byte information with VARCHAR. Since we are using uuid as value for the column, 256 is enough
+    // MySQL requires byte information with VARCHAR. Since we are using uuid as value for the column,
+    // 256 is enough
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR(256) PRIMARY KEY,\n"
@@ -114,4 +142,5 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
             + ");\n",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
+
 }

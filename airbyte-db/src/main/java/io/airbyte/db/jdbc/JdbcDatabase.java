@@ -52,14 +52,13 @@ public interface JdbcDatabase extends AutoCloseable {
 
   default void executeWithinTransaction(List<String> queries) throws SQLException {
     execute(connection -> {
-          connection.setAutoCommit(false);
-          for (String s : queries) {
-            connection.createStatement().execute(s);
-          }
-          connection.commit();
-          connection.setAutoCommit(true);
-        }
-    );
+      connection.setAutoCommit(false);
+      for (String s : queries) {
+        connection.createStatement().execute(s);
+      }
+      connection.commit();
+      connection.setAutoCommit(true);
+    });
   }
 
   /**
