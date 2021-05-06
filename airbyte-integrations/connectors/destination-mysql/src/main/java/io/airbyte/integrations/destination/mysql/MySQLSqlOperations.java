@@ -55,20 +55,26 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
       return;
     }
 
-    tryEnableLocalFile(database);
+    verifyLocalFileEnabled(database);
+    try {
+      File tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
 
-    loadDataIntoTable(database, records, schemaName, tmpTableName);
+      loadDataIntoTable(database, records, schemaName, tmpTableName, tmpFile);
+
+      Files.delete(tmpFile.toPath());
+    } catch (IOException e) {
+      throw new SQLException(e);
+    }
   }
 
   private void loadDataIntoTable(JdbcDatabase database,
                                  List<AirbyteRecordMessage> records,
                                  String schemaName,
-                                 String tmpTableName)
+                                 String tmpTableName,
+                                 File tmpFile)
       throws SQLException {
     database.execute(connection -> {
-      File tmpFile = null;
       try {
-        tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
 
         String absoluteFile = "'" + tmpFile.getAbsolutePath() + "'";
@@ -82,32 +88,28 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
         }
       } catch (Exception e) {
         throw new RuntimeException(e);
-      } finally {
-        try {
-          if (tmpFile != null) {
-            Files.delete(tmpFile.toPath());
-          }
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
       }
     });
   }
 
-  void tryEnableLocalFile(JdbcDatabase database) throws SQLException {
+  void verifyLocalFileEnabled(JdbcDatabase database) throws SQLException {
     boolean localFileEnabled = isLocalFileEnabled || checkIfLocalFileIsEnabled(database);
     if (!localFileEnabled) {
-      database.execute(connection -> {
-        try (Statement statement = connection.createStatement()) {
-          statement.execute("set global local_infile=true");
-        } catch (Exception e) {
-          throw new RuntimeException(
-              "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MySQL server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
-              e);
-        }
-      });
+      tryEnableLocalFile(database);
     }
     isLocalFileEnabled = true;
+  }
+
+  private void tryEnableLocalFile(JdbcDatabase database) throws SQLException {
+    database.execute(connection -> {
+      try (Statement statement = connection.createStatement()) {
+        statement.execute("set global local_infile=true");
+      } catch (Exception e) {
+        throw new RuntimeException(
+            "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MySQL server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
+            e);
+      }
+    });
   }
 
   private double getVersion(JdbcDatabase database) throws SQLException {

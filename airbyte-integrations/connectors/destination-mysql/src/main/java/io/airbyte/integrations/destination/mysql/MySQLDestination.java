@@ -47,13 +47,13 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try (final JdbcDatabase database = getDatabase(config)) {
-      MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) sqlOperations;
+      MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
-      String outputSchema = namingResolver.getIdentifier(config.get("database").asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver,
+      String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
+      attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
           mySQLSqlOperations);
 
-      mySQLSqlOperations.tryEnableLocalFile(database);
+      mySQLSqlOperations.verifyLocalFileEnabled(database);
 
       VersionCompatibility compatibility = mySQLSqlOperations.isCompatibleVersion(database);
       if (!compatibility.isCompatible()) {
@@ -83,7 +83,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
-        driverClass,
+        getDriverClass(),
         "allowLoadLocalInfile=true");
   }
 

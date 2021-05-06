@@ -110,6 +110,11 @@ public interface SqlOperations {
    */
   boolean isValidData(final String data);
 
+  /**
+   * Denotes whether the destination has the concept of schema or not
+   *
+   * @return true if the destination supports schema (ex: Postgres), false if it doesn't(MySQL)
+   */
   boolean isSchemaRequired();
 
 }

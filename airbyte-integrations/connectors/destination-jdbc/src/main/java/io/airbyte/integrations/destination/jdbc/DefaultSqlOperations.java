@@ -124,7 +124,6 @@ public class DefaultSqlOperations implements SqlOperations {
         writer.close();
       }
     }
-
   }
 
   @Override
