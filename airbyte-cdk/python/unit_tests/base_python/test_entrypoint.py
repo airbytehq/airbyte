@@ -98,7 +98,7 @@ def test_parse_missing_required_args(cmd: str, args: Mapping[str, Any], entrypoi
 
 
 def _wrap_message(
-        submessage: Union[AirbyteConnectionStatus, ConnectorSpecification, AirbyteRecordMessage, AirbyteCatalog]
+    submessage: Union[AirbyteConnectionStatus, ConnectorSpecification, AirbyteRecordMessage, AirbyteCatalog]
 ) -> AirbyteMessage:
     if isinstance(submessage, AirbyteConnectionStatus):
         message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=submessage)
@@ -157,5 +157,5 @@ def test_invalid_command(entrypoint: AirbyteEntrypoint, mocker):
     with pytest.raises(Exception):
         mocker.patch.object(MockSource, "read_config", return_value={})
         mocker.patch.object(MockSource, "configure", return_value={})
-        x = entrypoint.run(Namespace(command='invalid', config='conf'))
+        x = entrypoint.run(Namespace(command="invalid", config="conf"))
         list(x)
