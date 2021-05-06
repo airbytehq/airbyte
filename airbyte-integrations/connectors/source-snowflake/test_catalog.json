@@ -1,0 +1,50 @@
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "TEST_FAKE_USERS",
+                "supported_sync_modes": ["full_refresh"],
+                "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#",
+                                "type": "object",
+                                "properties": {"NAT": {"type": "string"},
+                                                "CELL": {"type": "string"},
+                                                "EMAIL": {"type": "string"},
+                                                "PHONE": {"type": "string"},
+                                                "GENDER": {"type": "string"}, 
+                                                "dob.age": {"type": "number"}, 
+                                                "id.name": {"type": "string"}, 
+                                                "dob.date": {"type": "string"}, 
+                                                "id.value": {"type": "string"}, 
+                                                "login.md5": {"type": "string"}, 
+                                                "name.last": {"type": "string"}, 
+                                                "login.salt": {"type": "string"}, 
+                                                "login.sha1": {"type": "string"}, 
+                                                "login.uuid": {"type": "string"}, 
+                                                "name.first": {"type": "string"}, 
+                                                "name.title": {"type": "string"}, 
+                                                "login.sha256": {"type": "string"}, 
+                                                "location.city": {"type": "string"}, 
+                                                "picture.large": {"type": "string"}, 
+                                                "location.state": {"type": "string"}, 
+                                                "login.password": {"type": "string"}, 
+                                                "login.username": {"type": "string"}, 
+                                                "picture.medium": {"type": "string"}, 
+                                                "registered.age": {"type": "number"}, 
+                                                "registered.date": {"type": "string"}, 
+                                                "location.country": {"type": "string"}, 
+                                                "location.postcode": {"type": "string"}, 
+                                                "picture.thumbnail": {"type": "string"}, 
+                                                "location.street.name": {"type": "string"}, 
+                                                "location.street.number": {"type": "number"}, 
+                                                "location.timezone.offset": {"type": "string"}, 
+                                                "location.coordinates.latitude": {"type": "string"}, 
+                                                "location.timezone.description": {"type": "string"}, 
+                                                "location.coordinates.longitude": {"type": "string"}, 
+                                                "_AIRBYTE_EMITTED_AT": {"type": "string"}, 
+                                                "_AIRBYTE_TEST_FAKE_USERS_HASHID": {"type": "string"}
+                                            }
+                                }
+            },
+            "sync_mode": "full_refresh"
+        }]
+}

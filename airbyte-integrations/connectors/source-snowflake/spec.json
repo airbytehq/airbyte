@@ -1,0 +1,42 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Snowflake Spec",
+    "type": "object",
+    "required": ["username", "password", "account", "warehouse", "database", "schema"],
+    "additionalProperties": false,
+    "properties": {
+      "username": {
+        "type": "string",
+        "description": "The Snowflake username.",
+        "airbyte_secret": true
+      },
+      "password": {
+        "type": "string",
+        "description": "The Snowflake password.",
+        "airbyte_secret": true
+      },
+      "account": {
+        "type": "string",
+        "description": "The Snowflake account. (e.g. xx11111.australia-east.azure).",
+        "airbyte_secret": true
+      },
+      "warehouse": {
+        "type": "string",
+        "description": "The Snowflake warehouse to be used.",
+        "airbyte_secret": true
+      },
+      "database": {
+        "type": "string",
+        "description": "The Snowflake database to be used.",
+        "airbyte_secret": true
+      },
+      "schema": {
+        "type": "string",
+        "description": "The Snowflake schema to be used.",
+        "airbyte_secret": true
+      }
+    }
+  }
+}
