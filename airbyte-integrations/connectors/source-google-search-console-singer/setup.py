@@ -24,7 +24,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "tap-google-search-console @ https://github.com/vitaliizazmic/tap-google-search-console/tarball/error_handling",
+    "tap-google-search-console @ https://github.com/vitaliizazmic/tap-google-search-console/tarball/disable_performance_report_date",
     "airbyte-protocol",
     "base-singer",
     "base-python",
