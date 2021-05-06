@@ -14,7 +14,6 @@ This Source is capable of syncing the following Streams:
 * [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
 * [Performance report country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 * [Performance report custom](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
-* [Performance report date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 * [Performance report device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 * [Performance report page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 * [Performance report query (keyword)](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
