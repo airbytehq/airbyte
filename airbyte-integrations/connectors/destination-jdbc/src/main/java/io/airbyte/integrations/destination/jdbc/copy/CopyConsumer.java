@@ -39,7 +39,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,7 +138,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
   public void closeAsOneTransaction(List<StreamCopier> streamCopiers, boolean hasFailed, JdbcDatabase db) throws Exception {
     Exception firstException = null;
     try {
-      StringBuilder mergeCopiersToFinalTableQuery = new StringBuilder();
+      List<String> queries = new ArrayList<>();
       for (var copier : streamCopiers) {
         try {
           copier.closeStagingUploader(hasFailed);
@@ -150,7 +149,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
             copier.copyStagingFileToTemporaryTable();
             var destTableName = copier.createDestinationTable();
             var mergeQuery = copier.generateMergeStatement(destTableName);
-            mergeCopiersToFinalTableQuery.append(mergeQuery);
+            queries.add(mergeQuery);
           }
         } catch (Exception e) {
           final String message = String.format("Failed to finalize copy to temp table due to: %s", e);
@@ -162,7 +161,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
         }
       }
       if (!hasFailed) {
-        sqlOperations.executeTransaction(db, Collections.singletonList(mergeCopiersToFinalTableQuery.toString()));
+        sqlOperations.executeTransaction(db, queries);
       }
     } finally {
       for (var copier : streamCopiers) {

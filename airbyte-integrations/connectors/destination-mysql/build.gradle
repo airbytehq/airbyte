@@ -14,8 +14,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
 
-    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
-    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.22'
+    implementation 'mysql:mysql-connector-java:8.0.22'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mysql')

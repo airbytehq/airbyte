@@ -79,7 +79,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   private static final long GRACEFUL_SHUTDOWN_MINUTES = 5L;
   private static final int MIN_RECORDS = 500;
-  private static final int BATCH_SIZE = 500_000;
+  private static final int BATCH_SIZE = 10000;
 
   private final VoidCallable onStart;
   private final RecordWriter recordWriter;

@@ -55,12 +55,8 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
       return;
     }
 
-    boolean localFileEnabled = isLocalFileEnabled || checkIfLocalFileIsEnabled(database);
+    tryEnableLocalFile(database);
 
-    if (!localFileEnabled) {
-      tryEnableLocalFile(database);
-    }
-    isLocalFileEnabled = true;
     loadDataIntoTable(database, records, schemaName, tmpTableName);
   }
 
@@ -99,13 +95,19 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
   }
 
   void tryEnableLocalFile(JdbcDatabase database) throws SQLException {
-    database.execute(connection -> {
-      try (Statement statement = connection.createStatement()) {
-        statement.execute("set global local_infile=true");
-      } catch (Exception e) {
-        throw new RuntimeException("local_infile attribute could not be enabled", e);
-      }
-    });
+    boolean localFileEnabled = isLocalFileEnabled || checkIfLocalFileIsEnabled(database);
+    if (!localFileEnabled) {
+      database.execute(connection -> {
+        try (Statement statement = connection.createStatement()) {
+          statement.execute("set global local_infile=true");
+        } catch (Exception e) {
+          throw new RuntimeException(
+              "The DB user provided to airbyte was unable to switch on the local_infile attribute on the MySQL server. As an admin user, you will need to run \"SET GLOBAL local_infile = true\" before syncing data with Airbyte.",
+              e);
+        }
+      });
+    }
+    isLocalFileEnabled = true;
   }
 
   private double getVersion(JdbcDatabase database) throws SQLException {
@@ -114,8 +116,9 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
     return Double.parseDouble(value.get(0).substring(0, 3));
   }
 
-  boolean isCompatibleVersion(JdbcDatabase database) throws SQLException {
-    return (getVersion(database) >= 5.7);
+  VersionCompatibility isCompatibleVersion(JdbcDatabase database) throws SQLException {
+    double version = getVersion(database);
+    return new VersionCompatibility(version, version >= 5.7);
   }
 
   @Override
@@ -123,7 +126,7 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
     return false;
   }
 
-  boolean checkIfLocalFileIsEnabled(JdbcDatabase database) throws SQLException {
+  private boolean checkIfLocalFileIsEnabled(JdbcDatabase database) throws SQLException {
     List<String> value = database.resultSetQuery(connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
         resultSet -> resultSet.getString("Value")).collect(Collectors.toList());
 
@@ -138,9 +141,29 @@ public class MySQLSqlOperations extends DefaultSqlOperations {
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR(256) PRIMARY KEY,\n"
             + "%s JSON,\n"
-            + "%s TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n"
+            + "%s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)\n"
             + ");\n",
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+  }
+
+  public static class VersionCompatibility {
+
+    private final double version;
+    private final boolean isCompatible;
+
+    public VersionCompatibility(double version, boolean isCompatible) {
+      this.version = version;
+      this.isCompatible = isCompatible;
+    }
+
+    public double getVersion() {
+      return version;
+    }
+
+    public boolean isCompatible() {
+      return isCompatible;
+    }
+
   }
 
 }

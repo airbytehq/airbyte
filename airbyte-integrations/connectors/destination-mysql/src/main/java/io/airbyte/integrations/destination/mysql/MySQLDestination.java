@@ -32,6 +32,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import org.slf4j.Logger;
@@ -46,15 +47,19 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try (final JdbcDatabase database = getDatabase(config)) {
+      MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) sqlOperations;
+
       String outputSchema = namingResolver.getIdentifier(config.get("database").asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
-      boolean localFileEnabled = ((MySQLSqlOperations) sqlOperations)
-          .checkIfLocalFileIsEnabled(database);
-      if (!localFileEnabled) {
-        ((MySQLSqlOperations) sqlOperations).tryEnableLocalFile(database);
-      }
-      if (!((MySQLSqlOperations) sqlOperations).isCompatibleVersion(database)) {
-        throw new RuntimeException("MySQL version not compatible with Airbyte");
+      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver,
+          mySQLSqlOperations);
+
+      mySQLSqlOperations.tryEnableLocalFile(database);
+
+      VersionCompatibility compatibility = mySQLSqlOperations.isCompatibleVersion(database);
+      if (!compatibility.isCompatible()) {
+        throw new RuntimeException(String
+            .format("Your MySQL version %s is not compatible with Airbyte",
+                compatibility.getVersion()));
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);

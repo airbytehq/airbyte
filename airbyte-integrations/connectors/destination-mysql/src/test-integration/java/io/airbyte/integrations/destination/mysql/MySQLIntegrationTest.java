@@ -85,8 +85,8 @@ public class MySQLIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace)
+      String streamName,
+      String namespace)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -104,13 +104,13 @@ public class MySQLIntegrationTest extends TestDestination {
             db.getDatabaseName()),
         "com.mysql.cj.jdbc.Driver",
         SQLDialect.MYSQL).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .map(r -> r.formatJSON(JSON_FORMAT))
+            .map(Jsons::deserialize)
+            .collect(Collectors.toList()));
   }
 
   @Override
