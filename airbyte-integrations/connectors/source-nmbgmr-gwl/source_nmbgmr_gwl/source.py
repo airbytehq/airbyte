@@ -240,7 +240,7 @@ def public_url(config):
 
 def records_url(config, tag):
     pu = public_url(config)
-    url = f'{pu}/records/{tag}'
+    url = f'{pu}/records_{tag}'
     return url
 
 
