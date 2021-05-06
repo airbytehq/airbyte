@@ -84,7 +84,8 @@ class SourceNmbgmrGwl(Source):
         gwl_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
                       'type': 'object',
                       'properties': {'PointID': {'type': 'string'},
-                                     'DateMeasured': {'type': 'string'},
+                                     'DateMeasured': {'type': 'string',
+                                                      'format': 'date-time'},
                                      'DepthToWaterBGS': {'type': 'number'}}}
         site_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
                        'type': 'object',
@@ -283,7 +284,7 @@ def update_state(state):
 def get_waterlevels(logger, stream, state, config, key, is_incremental):
     url = records_url(config, key.lower())
     if is_incremental:
-        url = f'{url}?start_date={state[key]}'
+        url = f'{url}?start_date={state[key]}&count=5000'
     else:
         url = f'{url}?count=10'
 
