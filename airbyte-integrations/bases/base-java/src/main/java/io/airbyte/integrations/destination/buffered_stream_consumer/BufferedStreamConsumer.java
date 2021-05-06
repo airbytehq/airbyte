@@ -160,11 +160,12 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
               Jsons.serialize(catalog), Jsons.serialize(message)));
     }
-    var data = Jsons.serialize(message);
+    var data = Jsons.serialize(message.getRecord().getData());
     if (isValidRecord.apply(data)) {
       // TODO Truncate json data instead of throwing whole record away?
       // or should we upload it into a special rejected record table instead?
-      pairToWriteBuffer.get(pair).offer(data.getBytes(Charsets.UTF_8));
+      var serialisedMsg = Jsons.serialize(message);
+      pairToWriteBuffer.get(pair).offer(serialisedMsg.getBytes(Charsets.UTF_8));
     } else {
       pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
     }
