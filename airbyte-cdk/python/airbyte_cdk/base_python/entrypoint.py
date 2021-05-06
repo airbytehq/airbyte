@@ -26,6 +26,7 @@ import importlib
 import os.path
 import sys
 import tempfile
+from typing import List
 
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 
@@ -39,7 +40,7 @@ class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         self.source = source
 
-    def start(self, args):
+    def parse_args(self, args: List[str]) -> argparse.Namespace:
         # set up parent parsers
         parent_parser = argparse.ArgumentParser(add_help=False)
         main_parser = argparse.ArgumentParser()
@@ -70,10 +71,9 @@ class AirbyteEntrypoint(object):
             "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
         )
 
-        # parse the args
-        parsed_args = main_parser.parse_args(args)
+        return main_parser.parse_args(args)
 
-        # execute
+    def run(self, parsed_args: argparse.Namespace):
         cmd = parsed_args.command
         if not cmd:
             raise Exception("No command passed")
@@ -114,9 +114,10 @@ class AirbyteEntrypoint(object):
                 raise Exception("Unexpected command " + cmd)
 
 
-def launch(source, args):
-
-    AirbyteEntrypoint(source).start(args)
+def launch(source: Source, args: List[str]):
+    source_entrypoint = AirbyteEntrypoint(source)
+    parsed_args = source_entrypoint.parse_args(args)
+    source_entrypoint.run(parsed_args)
 
 
 def main():
