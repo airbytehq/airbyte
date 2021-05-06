@@ -228,9 +228,9 @@ class SourceNmbgmrGwl(Source):
             logger.debug(f'****** mode {stream.sync_mode} state={state}')
             is_incremental = stream.sync_mode == SyncMode.incremental and key in state
             if key == 'SiteMetaData':
-                data = get_sitemetadata(logger, stream, state, config, key, is_incremental, name)
+                data = get_sitemetadata(logger, state, config, key, is_incremental)
             else:
-                data = get_waterlevels(logger, stream, state, config, key, is_incremental, name)
+                data = get_waterlevels(logger, state, config, key, is_incremental)
 
             if data:
                 for di in data:
@@ -248,12 +248,12 @@ class SourceNmbgmrGwl(Source):
             #     logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
 
 
-def get_sitemetadata(logger, stream, state, config, key, is_incremental, name):
+def get_sitemetadata(logger, state, config, key, is_incremental):
     url = sitemetadata_url(config)
     if is_incremental:
         url = f'{url}?objectid={state[key]}'
     else:
-        url = f'{url}?count=10'
+        url = f'{url}?objectid=0'
 
     jobj = get_json(logger, url)
     if jobj:
@@ -265,16 +265,18 @@ def get_sitemetadata(logger, stream, state, config, key, is_incremental, name):
         update_state(state)
 
 
-def get_waterlevels(logger, stream, state, config, key, is_incremental, name):
+def get_waterlevels(logger, state, config, key, is_incremental):
+    cursor_key = 'OBJECTID'
+
     url = records_url(config, key.lower())
     if is_incremental:
         ndata = []
         for i in range(10):
-            nurl = f'{url}?start_date={state[key]}&count=5000'
+            nurl = f'{url}?objectid={state[key]}&count=5000'
             jobj = get_json(logger, nurl)
             if jobj:
                 # update state
-                state[key] = jobj[-1]['DateMeasured']
+                state[key] = jobj[-1][cursor_key]
                 update_state(state)
                 ndata.extend(jobj)
             else:
@@ -282,11 +284,11 @@ def get_waterlevels(logger, stream, state, config, key, is_incremental, name):
         update_state(state)
         return ndata
     else:
-        url = f'{url}?count=10'
+        url = f'{url}?objectid=0'
         jobj = get_json(logger, url)
         if jobj:
             # update state
-            state[key] = jobj[-1]['DateMeasured']
+            state[key] = jobj[-1][cursor_key]
             update_state(state)
             return jobj
         else:
