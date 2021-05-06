@@ -81,6 +81,11 @@ class Stream(ABC):
             stream.source_defined_cursor = self.source_defined_cursor
             stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
             stream.default_cursor_field = self._wrapped_cursor_field()
+
+        keys = Stream._wrapped_primary_key(self.primary_key)
+        if keys and len(keys) > 0:
+            stream.source_defined_primary_key = keys
+
         return stream
 
     @property
@@ -107,6 +112,14 @@ class Stream(ABC):
         Return False if the cursor can be configured by the user.
         """
         return True
+
+    @property
+    @abstractmethod
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        """
+        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+        If the stream has no primary keys, return None.
+        """
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -147,3 +160,26 @@ class Stream(ABC):
         :return: An updated state object
         """
         return {}
+
+    @staticmethod
+    def _wrapped_primary_key(keys: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[List[List[str]]]:
+        """
+        :return: wrap the primary_key property in a list of list of strings required by the Airbyte Stream object.
+        """
+        if not keys:
+            return None
+
+        if isinstance(keys, str):
+            return [[keys]]
+        elif isinstance(keys, list):
+            wrapped_keys = []
+            for component in keys:
+                if isinstance(component, str):
+                    wrapped_keys.append([component])
+                elif isinstance(component, list):
+                    wrapped_keys.append(component)
+                else:
+                    raise ValueError("Element must be either list or str.")
+            return wrapped_keys
+        else:
+            raise ValueError("Element must be either list or str.")
