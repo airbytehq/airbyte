@@ -54,6 +54,7 @@ def test_parse_missing_required_args(cmd: str, args: Mapping[str, Any], entrypoi
         'discover': ['config'],
         'read': ['config', 'catalog']
     }
+    # Delete each required arg once and try to run the command. They should all fail.
     for required_arg in required_args[cmd]:
         argcopy = deepcopy(args)
         del argcopy[required_arg]
