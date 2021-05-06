@@ -283,9 +283,9 @@ def update_state(state):
 def get_waterlevels(logger, stream, state, config, key, is_incremental):
     url = records_url(config, key.lower())
     if is_incremental:
-        url = f'{url}?start_date={state.get(key)}'
+        url = f'{url}?start_date={state[key]}'
     else:
-        url = f'{url}?count=1'
+        url = f'{url}?count=10'
 
     jobj = get_json(logger, url)
     if jobj:
@@ -293,6 +293,8 @@ def get_waterlevels(logger, stream, state, config, key, is_incremental):
         state[key] = jobj[-1]['DateMeasured']
         update_state(state)
         return jobj
+    else:
+        update_state(state)
 
 
 def get_resp(logger, url):
