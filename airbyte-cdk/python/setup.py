@@ -73,9 +73,10 @@ setup(
     python_requires=">=3.7.9",
     extras_require={
         "dev": [
-            "pytest",
             "MyPy",
+            "pytest",
             "pytest-cov",
+            "pytest-mock",
         ]
     },
     entry_points={
