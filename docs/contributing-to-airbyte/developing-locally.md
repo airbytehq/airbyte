@@ -82,6 +82,18 @@ VERSION=dev docker-compose up
 ./gradlew :airbyte-tests:acceptanceTests
 ```
 
+## Run formatting automation/tests
+
+To run our formatting scripts, simply run `./gradlew format` at the base of the repo. 
+
+Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
+
+```python
+"""
+[FILENAME] includes [INSERT DESCRIPTION OF CONTENTS HERE]
+"""
+```
+
 ### Develop on `airbyte-webapp`
 
 * Spin up Airbyte locally so the UI can make requests against the local API.
