@@ -228,7 +228,7 @@ class SourceNmbgmrGwl(Source):
             logger.debug(f'****** mode {stream.sync_mode} state={state}')
             is_incremental = stream.sync_mode == SyncMode.incremental and key in state
             if key == 'SiteMetaData':
-                new =  get_sitemetadata(logger, stream, state, config, key, is_incremental, name)
+                new = get_sitemetadata(logger, stream, state, config, key, is_incremental, name)
             else:
                 new = get_waterlevels(logger, stream, state, config, key, is_incremental, name)
 
@@ -311,10 +311,10 @@ def get_waterlevels(logger, stream, state, config, key, is_incremental, name):
         url = f'{url}?count=10'
         jobj = get_json(logger, url)
         if jobj:
-
             # update state
             state[key] = jobj[-1]['DateMeasured']
             update_state(state)
+            emit_data(name, jobj)
             return True
         else:
             update_state(state)
