@@ -26,7 +26,7 @@ import importlib
 import os.path
 import sys
 import tempfile
-from typing import List, Iterable
+from typing import Iterable, List
 
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 
