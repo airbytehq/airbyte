@@ -270,6 +270,9 @@ def get_sitemetadata(logger, stream, state, config, key, is_incremental):
         state[key] = jobj[-1]['OBJECTID']
         update_state(state)
         return jobj
+    else:
+        # need to emit the current state to make sure it cares forward
+        update_state(state)
 
 
 def update_state(state):
