@@ -148,6 +148,47 @@
     },
     {
       "stream": {
+        "name": "performance_report_date",
+        "json_schema": {
+          "properties": {
+            "site_url": {
+              "type": ["null", "string"]
+            },
+            "search_type": {
+              "type": ["null", "string"]
+            },
+            "date": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            },
+            "clicks": {
+              "type": ["null", "integer"]
+            },
+            "impressions": {
+              "type": ["null", "integer"]
+            },
+            "ctr": {
+              "multipleOf": 1e-25,
+              "type": ["null", "number"]
+            },
+            "position": {
+              "multipleOf": 1e-25,
+              "type": ["null", "number"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "performance_report_country",
         "json_schema": {
           "properties": {
