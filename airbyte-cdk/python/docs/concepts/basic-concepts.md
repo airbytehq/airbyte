@@ -1,0 +1,62 @@
+# Basic Concepts
+
+### The Airbyte Specification
+As a quick recap, the Airbyte Specification requires an Airbyte Source to support 4 distinct operations:
+
+1. `Spec` - The required configuration in order to interact with the underlying technical system e.g. database
+   information, authentication information etc.
+2. `Check` - Validate that the provided configuration is valid with sufficient permissions for one to perform all
+   required operations on the Source.
+3. `Discover` - Discover the Source's schema. This let users select what a subset of the data to sync. Useful
+   if users require only a subset of the data.
+4. `Read` - Perform the actual syncing process. Data is read from the Source, parsed into `AirbyteRecordMessage`s
+   and sent to the Airbyte Destination. Depending on how the Source is implemented, this sync can be incremental
+   or a full-refresh.
+
+A core concept discussed here is the __Source__.
+
+The Source contains one or more __Streams__ (or __Airbyte Streams__). A __Stream__ is the other concept key to
+understanding how Airbyte models the data syncing process. A __Stream__ models the logical data groups that make
+up the larger __Source__. If the __Source__ is a RDMS, each __Stream__ is a table. In a REST API setting, each __Stream__ corresponds
+to one resource within the API. e.g. a __Stripe Source__ would have have one __Stream__ for `Transactions`, one
+for `Charges` and so on.
+
+### The `AbstractSource` Object
+This brings us to the CDK's `AbstractSource` object. This represents the just discussed `Source` concept and is
+the top-level entrypoint for the 4 methods __Source__s need to implement.
+
+`Spec` and `Check` are the `AbstractSource`'s simplest operations.
+
+`Spec` returns a checked in json schema file specifying the required configuration. The `AbstractSource` looks for
+a file named `spec.json` in the module's root by default. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/spec.json).
+
+`Check` delegates to the `AbstractSource`'s `check_connection` function. The function's `config` parameter contains
+the user-provided configuration, specified in the `spec.json` returned by `Spec`. `check_connection` uses this configuration to validate
+access and permissioning. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py#L90) from the same Exchange Rates API.
+
+#### The Streams Interface
+An `AbstractSource` also owns a set of `Stream`s. This is populated via the `AbstractSource`'s `streams` [function](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L63).
+`Discover` and `Read` rely on this populated set.
+
+`Discover` returns an `AirbyteCatalog` representing all the distinct resources the underlying API supports.
+Here is the [entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L74) for those interested in reading the code.
+
+`Read` creates an in-memory stream reading from each of the `AbstractSource`'s streams. Here is the
+[entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L90) for those interested.
+
+As the code examples show, the `AbstractSource` delegates to the set of `Stream`s it owns to fulfill both `Discover`
+and `Read`. Thus, implementing `AbstractSource`'s `streams` function is required when using the CDK.
+
+A summary of what we've covered so far on how to use the Airbyte CDK:
+* A concrete implementation of the `AbstractSource` object is required.
+* This involves,
+    1. implementing the `check_connection`function.
+    2. Creating the appropriate `Stream` classes and returning them in the `streams` function.
+    3. placing the above mentioned `spec.json` file in the right place.
+
+### The `HTTPStream` Object
+
+We've covered how the `AbstractSource` works with the `Stream` interface in order to fulfill the Airbyte
+Specification. Although developers are welcome to implement their own object, the CDK saves developers the hassle
+of doing so with the `HTTPStream` object. Similar to the `AbstractSource`, creating a `Stream` is a matter
+of extending `HTTPStream`, filling in the right functions, and placing a single json file in the right place.
