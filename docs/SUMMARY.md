@@ -97,7 +97,7 @@
       * [Overview](../airbyte-cdk/python/docs/concepts/overview.md)
       * [Stream Slices](../airbyte-cdk/python/docs/concepts/stream_slices.md)
     * [Tutorials](../airbyte-cdk/python/docs/tutorials/README.md)  
-      * [Python CDK Tutorial](../airbyte-cdk/python/docs/tutorials/cdk-tutorial-python-http/README.md)    
+      * [Creating an HTTP API Source](../airbyte-cdk/python/docs/tutorials/cdk-tutorial-python-http/README.md)    
         * [Getting Started](../airbyte-cdk/python/docs/tutorials/cdk-tutorial-python-http/0-getting-started.md)
         * [Step 1: Creating the Source](../airbyte-cdk/python/docs/tutorials/cdk-tutorial-python-http/1-creating-the-source.md)
         * [Step 2: Install Dependencies](../airbyte-cdk/python/docs/tutorials/cdk-tutorial-python-http/2-install-dependencies.md)
