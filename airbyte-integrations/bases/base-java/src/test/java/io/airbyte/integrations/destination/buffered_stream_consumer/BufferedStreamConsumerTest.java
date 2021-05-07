@@ -83,7 +83,7 @@ public class BufferedStreamConsumerTest {
   private RecordWriter recordWriter;
   private CheckedConsumer<Boolean, Exception> onClose;
   private CheckedFunction<String, Boolean, Exception> isValidRecord;
-  private Consumer<AirbyteStateMessage> checkpointConsumer;
+  private Consumer<AirbyteMessage> checkpointConsumer;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -94,12 +94,12 @@ public class BufferedStreamConsumerTest {
     isValidRecord = mock(CheckedFunction.class);
     checkpointConsumer = mock(Consumer.class);
     consumer = new BufferedStreamConsumer(
+        checkpointConsumer,
         onStart,
         recordWriter,
         onClose,
         CATALOG,
-        isValidRecord,
-        checkpointConsumer);
+        isValidRecord);
 
     when(isValidRecord.apply(any())).thenReturn(true);
   }
@@ -117,7 +117,7 @@ public class BufferedStreamConsumerTest {
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
 
-    verify(checkpointConsumer).accept(STATE_MESSAGE1.getState());
+    verify(checkpointConsumer).accept(STATE_MESSAGE1);
   }
 
   @Test
@@ -134,7 +134,7 @@ public class BufferedStreamConsumerTest {
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
 
-    verify(checkpointConsumer, times(1)).accept(STATE_MESSAGE2.getState());
+    verify(checkpointConsumer, times(1)).accept(STATE_MESSAGE2);
   }
 
   @Test
@@ -169,7 +169,7 @@ public class BufferedStreamConsumerTest {
         .collect(Collectors.toList());
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
 
-    verify(checkpointConsumer).accept(STATE_MESSAGE1.getState());
+    verify(checkpointConsumer).accept(STATE_MESSAGE1);
   }
 
   @Test
@@ -192,7 +192,7 @@ public class BufferedStreamConsumerTest {
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1);
     verifyRecords(STREAM_NAME2, SCHEMA_NAME, expectedRecordsStream2);
 
-    verify(checkpointConsumer).accept(STATE_MESSAGE1.getState());
+    verify(checkpointConsumer).accept(STATE_MESSAGE1);
   }
 
   @Test
@@ -216,7 +216,7 @@ public class BufferedStreamConsumerTest {
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1);
     verifyRecords(STREAM_NAME2, SCHEMA_NAME, expectedRecordsStream2);
 
-    verify(checkpointConsumer, times(1)).accept(STATE_MESSAGE2.getState());
+    verify(checkpointConsumer, times(1)).accept(STATE_MESSAGE2);
   }
 
   private void verifyStartAndClose() throws Exception {
