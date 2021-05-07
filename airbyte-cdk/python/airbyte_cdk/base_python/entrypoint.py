@@ -104,9 +104,9 @@ class AirbyteEntrypoint(object):
                 print(AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True))
                 sys.exit(0)
             elif cmd == "read":
-                catalog = self.source.read_catalog(parsed_args.catalog)
+                config_catalog = self.source.read_catalog(parsed_args.catalog)
                 state = self.source.read_state(parsed_args.state)
-                generator = self.source.read(logger, config, catalog, state)
+                generator = self.source.read(logger, config, config_catalog, state)
                 for message in generator:
                     print(message.json(exclude_unset=True))
                 sys.exit(0)
