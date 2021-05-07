@@ -1,4 +1,4 @@
-# Airbyte Python Connector Development Framework (CDK)
+# Connector Development Kit (Python CDK)
 
 The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors.
 The CDK currently offers helpers specific for creating Airbyte source connectors for:

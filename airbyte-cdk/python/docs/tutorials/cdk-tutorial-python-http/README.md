@@ -1,1 +1,1 @@
-# Creating a HTTP Source with the Airbyte Python CDK
+# Creating an HTTP API Source with the Airbyte Python CDK
