@@ -21,9 +21,10 @@
 # SOFTWARE.
 
 
-from . import pokemon_list
+"""
+pokemon_list.py includes a list of all known pokemon for config validation in source.py.
+"""
 
-# Store large list of all known Pokemon.
 POKEMON_LIST = [
     "bulbasaur",
     "ivysaur",
@@ -924,6 +925,3 @@ POKEMON_LIST = [
     "spectrier",
     "calyrex",
 ]
-
-# Use the import so flakeCheck doesn't get mad at us.
-no_op_list = pokemon_list.POKEMON_LIST

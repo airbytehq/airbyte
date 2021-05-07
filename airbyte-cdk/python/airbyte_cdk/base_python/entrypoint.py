@@ -26,7 +26,7 @@ import importlib
 import os.path
 import sys
 import tempfile
-from typing import List
+from typing import Iterable, List
 
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 
@@ -73,7 +73,7 @@ class AirbyteEntrypoint(object):
 
         return main_parser.parse_args(args)
 
-    def run(self, parsed_args: argparse.Namespace):
+    def run(self, parsed_args: argparse.Namespace) -> Iterable[str]:
         cmd = parsed_args.command
         if not cmd:
             raise Exception("No command passed")
@@ -83,41 +83,38 @@ class AirbyteEntrypoint(object):
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
                 message = AirbyteMessage(type=Type.SPEC, spec=self.source.spec(logger))
-                print(message.json(exclude_unset=True))
-                sys.exit(0)
-
-            raw_config = self.source.read_config(parsed_args.config)
-            config = self.source.configure(raw_config, temp_dir)
-
-            if cmd == "check":
-                check_result = self.source.check(logger, config)
-                if check_result.status == Status.SUCCEEDED:
-                    logger.info("Check succeeded")
-                else:
-                    logger.error("Check failed")
-
-                output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result).json(exclude_unset=True)
-                print(output_message)
-                sys.exit(0)
-            elif cmd == "discover":
-                catalog = self.source.discover(logger, config)
-                print(AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True))
-                sys.exit(0)
-            elif cmd == "read":
-                catalog = self.source.read_catalog(parsed_args.catalog)
-                state = self.source.read_state(parsed_args.state)
-                generator = self.source.read(logger, config, catalog, state)
-                for message in generator:
-                    print(message.json(exclude_unset=True))
-                sys.exit(0)
+                yield message.json(exclude_unset=True)
             else:
-                raise Exception("Unexpected command " + cmd)
+                raw_config = self.source.read_config(parsed_args.config)
+                config = self.source.configure(raw_config, temp_dir)
+
+                if cmd == "check":
+                    check_result = self.source.check(logger, config)
+                    if check_result.status == Status.SUCCEEDED:
+                        logger.info("Check succeeded")
+                    else:
+                        logger.error("Check failed")
+
+                    output_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result).json(exclude_unset=True)
+                    yield output_message
+                elif cmd == "discover":
+                    catalog = self.source.discover(logger, config)
+                    yield AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True)
+                elif cmd == "read":
+                    config_catalog = self.source.read_catalog(parsed_args.catalog)
+                    state = self.source.read_state(parsed_args.state)
+                    generator = self.source.read(logger, config, config_catalog, state)
+                    for message in generator:
+                        yield message.json(exclude_unset=True)
+                else:
+                    raise Exception("Unexpected command " + cmd)
 
 
 def launch(source: Source, args: List[str]):
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
-    source_entrypoint.run(parsed_args)
+    for message in source_entrypoint.run(parsed_args):
+        print(message)
 
 
 def main():
