@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -71,7 +72,7 @@ class AirbyteMessageTrackerTest {
     messageTracker.accept(newStateMessage);
 
     assertTrue(messageTracker.getOutputState().isPresent());
-    assertEquals(newStateValue, messageTracker.getOutputState().get());
+    assertEquals(new State().withState(newStateValue), messageTracker.getOutputState().get());
   }
 
   @Test
