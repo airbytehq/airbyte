@@ -25,6 +25,8 @@
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -191,21 +193,19 @@ class IntegrationRunnerTest {
     verify(stdoutConsumer).accept(Jsons.serialize(message2));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void testWrite() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG, Destination::defaultOutputRecordCollector)).thenReturn(airbyteMessageConsumerMock);
+    when(destination.getConsumer(eq(CONFIG), eq(CONFIGURED_CATALOG), any())).thenReturn(airbyteMessageConsumerMock);
 
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null));
     runner.run(ARGS);
 
-    verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG, Destination::defaultOutputRecordCollector);
+    verify(destination).getConsumer(eq(CONFIG), eq(CONFIGURED_CATALOG), any());
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void testDestinationConsumerLifecycleSuccess() throws Exception {
     final AirbyteMessage singerMessage1 = new AirbyteMessage()
@@ -231,7 +231,6 @@ class IntegrationRunnerTest {
     inOrder.verify(airbyteMessageConsumerMock).close();
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void testDestinationConsumerLifecycleFailure() throws Exception {
     final AirbyteMessage singerMessage1 = new AirbyteMessage()

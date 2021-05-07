@@ -44,7 +44,10 @@ public interface Destination extends Integration {
    *         or failure.
    * @throws Exception - any exception.
    */
-  AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) throws Exception;
+  AirbyteMessageConsumer getConsumer(JsonNode config,
+                                     ConfiguredAirbyteCatalog catalog,
+                                     Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception;
 
   static void defaultOutputRecordCollector(AirbyteMessage message) {
     System.out.println(Jsons.serialize(message));
