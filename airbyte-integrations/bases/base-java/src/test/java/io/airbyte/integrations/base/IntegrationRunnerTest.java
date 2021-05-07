@@ -56,6 +56,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
@@ -266,8 +267,12 @@ class IntegrationRunnerTest {
   void testPrintLsep() {
     Consumer<String> outputConsumer = System.out::println;
 
-    String original = "{\"key\":\"val\u2028ue\"}";
-    JsonNode deserialized = Jsons.deserialize(original);
+    Map<String, String> map = ImmutableMap.of(
+            "key", "val\u2028zue"
+    );
+    String serialized = Jsons.serialize(map);
+    System.out.println("serialized = " + serialized);
+    JsonNode deserialized = Jsons.deserialize(serialized);
 
     AirbyteRecordMessage messageRecord = new AirbyteRecordMessage()
             .withStream("stream")
@@ -288,7 +293,7 @@ class IntegrationRunnerTest {
         final String inputString = input.nextLine();
         final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
         if (messageOptional.isPresent()) {
-          System.out.println("success: " + messageOptional.get());
+          System.out.println("success: " + Jsons.serialize(messageOptional.get().getRecord().getData()));
         } else {
           System.out.println("error: " + inputString);
         }
