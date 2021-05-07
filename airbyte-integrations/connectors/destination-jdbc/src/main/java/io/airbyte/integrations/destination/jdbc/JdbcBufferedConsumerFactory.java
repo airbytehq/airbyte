@@ -36,6 +36,7 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStre
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -44,6 +45,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -62,7 +64,8 @@ public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
-  public static AirbyteMessageConsumer create(JdbcDatabase database,
+  public static AirbyteMessageConsumer create(Consumer<AirbyteMessage> outputRecordCollector,
+                                              JdbcDatabase database,
                                               SqlOperations sqlOperations,
                                               NamingConventionTransformer namingResolver,
                                               JsonNode config,
@@ -70,11 +73,11 @@ public class JdbcBufferedConsumerFactory {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
 
     return new BufferedStreamConsumer(
+        outputRecordCollector,
         onStartFunction(database, sqlOperations, writeConfigs),
         recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
-        writeConfigs.stream().map(JdbcBufferedConsumerFactory::toNameNamespacePair).collect(Collectors.toSet()),
         sqlOperations::isValidData);
   }
 

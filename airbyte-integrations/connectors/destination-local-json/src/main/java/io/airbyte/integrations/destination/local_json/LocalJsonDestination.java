@@ -54,6 +54,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +94,10 @@ public class LocalJsonDestination implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector)
+      throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
