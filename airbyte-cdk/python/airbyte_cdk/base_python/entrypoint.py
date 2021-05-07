@@ -101,9 +101,9 @@ class AirbyteEntrypoint(object):
                     catalog = self.source.discover(logger, config)
                     yield AirbyteMessage(type=Type.CATALOG, catalog=catalog).json(exclude_unset=True)
                 elif cmd == "read":
-                    catalog = self.source.read_catalog(parsed_args.catalog)
+                    config_catalog = self.source.read_catalog(parsed_args.catalog)
                     state = self.source.read_state(parsed_args.state)
-                    generator = self.source.read(logger, config, catalog, state)
+                    generator = self.source.read(logger, config, config_catalog, state)
                     for message in generator:
                         yield message.json(exclude_unset=True)
                 else:
