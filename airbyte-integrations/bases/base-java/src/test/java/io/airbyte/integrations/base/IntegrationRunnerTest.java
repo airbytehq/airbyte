@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.base;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -55,6 +56,8 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Optional;
+import java.util.Scanner;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -257,6 +260,39 @@ class IntegrationRunnerTest {
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
     inOrder.verify(airbyteMessageConsumerMock).close();
     inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  void testPrintLsep() {
+    Consumer<String> outputConsumer = System.out::println;
+
+    String original = "{\"key\":\"val\u2028ue\"}";
+    JsonNode deserialized = Jsons.deserialize(original);
+
+    AirbyteRecordMessage messageRecord = new AirbyteRecordMessage()
+            .withStream("stream")
+            .withEmittedAt(0L)
+            .withNamespace("ns")
+            .withData(deserialized);
+
+    AirbyteMessage message = new AirbyteMessage()
+            .withType(Type.RECORD)
+            .withRecord(messageRecord);
+
+    String writtenOutput = Jsons.serialize(message);
+    outputConsumer.accept(writtenOutput);
+
+    final Scanner input = new Scanner(writtenOutput);
+
+      while (input.hasNextLine()) {
+        final String inputString = input.nextLine();
+        final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+        if (messageOptional.isPresent()) {
+          System.out.println("success: " + messageOptional.get());
+        } else {
+          System.out.println("error: " + inputString);
+        }
+      }
   }
 
 }
