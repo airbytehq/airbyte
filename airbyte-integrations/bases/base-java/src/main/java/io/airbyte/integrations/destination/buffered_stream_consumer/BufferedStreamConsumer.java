@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.GracefulShutdownHandler;
 import io.airbyte.commons.concurrency.VoidCallable;
@@ -35,14 +34,17 @@ import io.airbyte.commons.lang.CloseableQueue;
 import io.airbyte.commons.lang.Queues;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.destination.RecordData;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.queue.OnDiskQueue;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,18 +156,20 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     }
 
     // ignore other message types.
-    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
+    AirbyteRecordMessage record = message.getRecord();
+    final AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
     if (!pairs.contains(pair)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
               Jsons.serialize(catalog), Jsons.serialize(message)));
     }
-    var data = Jsons.serialize(message.getRecord().getData());
+    var data = Jsons.serialize(record.getData());
     if (isValidRecord.apply(data)) {
       // TODO Truncate json data instead of throwing whole record away?
       // or should we upload it into a special rejected record table instead?
-      var serialisedMsg = Jsons.serialize(message);
-      pairToWriteBuffer.get(pair).offer(serialisedMsg.getBytes(Charsets.UTF_8));
+      Timestamp emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
+      RecordData recordData = new RecordData(data, emittedAt);
+      pairToWriteBuffer.get(pair).offer(Jsons.serialize(recordData).getBytes(StandardCharsets.UTF_8));
     } else {
       pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
     }
@@ -207,11 +211,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       final CloseableQueue<byte[]> writeBuffer = pairToWriteBuffers.get(pair);
       while (writeBuffer.size() > minRecords) {
         try {
-          final List<AirbyteRecordMessage> records = Queues.toStream(writeBuffer)
+          final List<RecordData> records = Queues.toStream(writeBuffer)
               .limit(BufferedStreamConsumer.BATCH_SIZE)
-              .map(record -> Jsons.deserialize(new String(record, Charsets.UTF_8), AirbyteMessage.class))
-              .filter(m -> m.getType() == Type.RECORD)
-              .map(AirbyteMessage::getRecord)
+              .map(record -> Jsons.deserialize(new String(record, StandardCharsets.UTF_8), RecordData.class))
               .collect(Collectors.toList());
 
           LOGGER.info("Writing stream {}. Max batch size: {}, Actual batch size: {}, Remaining buffered records: {}",

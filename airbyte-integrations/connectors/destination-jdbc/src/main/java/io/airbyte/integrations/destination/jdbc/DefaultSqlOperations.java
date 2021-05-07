@@ -24,10 +24,9 @@
 
 package io.airbyte.integrations.destination.jdbc;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.integrations.destination.RecordData;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -36,8 +35,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
@@ -77,7 +74,7 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tmpTableName) throws SQLException {
+  public void insertRecords(JdbcDatabase database, List<RecordData> records, String schemaName, String tmpTableName) throws SQLException {
     if (records.isEmpty()) {
       return;
     }
@@ -107,17 +104,15 @@ public class DefaultSqlOperations implements SqlOperations {
     });
   }
 
-  private void writeBatchToFile(File tmpFile, List<AirbyteRecordMessage> records) throws Exception {
+  private void writeBatchToFile(File tmpFile, List<RecordData> records) throws Exception {
     PrintWriter writer = null;
     try {
       writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
       var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT);
 
-      for (AirbyteRecordMessage record : records) {
+      for (RecordData record : records) {
         var uuid = UUID.randomUUID().toString();
-        var jsonData = Jsons.serialize(record.getData());
-        var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
-        csvPrinter.printRecord(uuid, jsonData, emittedAt);
+        csvPrinter.printRecord(uuid, "", record.getEmittedAt());
       }
     } finally {
       if (writer != null) {

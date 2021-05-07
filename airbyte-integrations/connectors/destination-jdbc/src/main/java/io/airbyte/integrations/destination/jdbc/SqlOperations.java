@@ -25,7 +25,7 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.integrations.destination.RecordData;
 import java.util.List;
 
 // todo (cgardens) - is it necessary to expose so much configurability in this interface. review if
@@ -79,12 +79,12 @@ public interface SqlOperations {
   /**
    * Insert records into table. Assumes the table exists.
    *
-   * @param records records to insert.
+   * @param records each entry in this list is a serialised record from the source.
    * @param schemaName name of schema
    * @param tableName name of table
    * @throws Exception exception
    */
-  void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
+  void insertRecords(JdbcDatabase database, List<RecordData> records, String schemaName, String tableName) throws Exception;
 
   /**
    * Query to copy all records from source table to destination table. Both tables must be in the

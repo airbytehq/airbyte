@@ -26,10 +26,10 @@ package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.RecordData;
 import io.airbyte.integrations.destination.jdbc.DefaultSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws SQLException {
+  public void insertRecords(JdbcDatabase database, List<RecordData> records, String schemaName, String tableName) throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
     // snowflake query syntax:

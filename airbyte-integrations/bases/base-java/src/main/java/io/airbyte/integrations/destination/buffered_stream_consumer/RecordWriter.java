@@ -26,12 +26,12 @@ package io.airbyte.integrations.destination.buffered_stream_consumer;
 
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.integrations.destination.RecordData;
 import java.util.List;
 
-public interface RecordWriter extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>, Exception> {
+public interface RecordWriter extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, List<RecordData>, Exception> {
 
   @Override
-  void accept(AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> recordStream) throws Exception;
+  void accept(AirbyteStreamNameNamespacePair pair, List<RecordData> recordStream) throws Exception;
 
 }

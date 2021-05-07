@@ -33,9 +33,11 @@ import org.slf4j.LoggerFactory;
  * the {@link AirbyteMessageConsumer} interface. The original interface methods are wrapped in
  * generic exception handlers - any exception is caught and logged.
  *
- * Two methods are intended for extension: - startTracked: Wraps set up of necessary
- * infrastructure/configuration before message consumption. - acceptTracked: Wraps actual processing
- * of each {@link io.airbyte.protocol.models.AirbyteMessage}.
+ * Two methods are intended for extension:
+ * <li>- startTracked: Wraps set up of necessary infrastructure/configuration before message
+ * consumption.</li>
+ * <li>- acceptTracked: Wraps actual processing of each
+ * {@link io.airbyte.protocol.models.AirbyteMessage}.</li>
  *
  * Though not necessary, we highly encourage using this class when implementing destinations. See
  * child classes for examples.
@@ -58,6 +60,12 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     }
   }
 
+  /**
+   * This function's general pattern is to 1) Check the data can be written to the destination (e.g.
+   * some records might be too big) 2) Unwrap the
+   * {@link io.airbyte.protocol.models.AirbyteRecordMessage} and extracting and passing the data and
+   * emittedAt fields to other secondary functions to be written.
+   */
   protected abstract void acceptTracked(AirbyteMessage msg) throws Exception;
 
   @Override
