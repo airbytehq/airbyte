@@ -33,6 +33,7 @@ from base_python import AbstractSource, HttpStream, Stream, TokenAuthenticator
 
 class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
+    primary_key = "id"
 
     def __init__(self, account_id: str, **kwargs):
         super().__init__(**kwargs)
@@ -61,7 +62,10 @@ class StripeStream(HttpStream, ABC):
         return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {"Stripe-Account": self.account_id}
+        if self.account_id:
+            return {"Stripe-Account": self.account_id}
+
+        return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
