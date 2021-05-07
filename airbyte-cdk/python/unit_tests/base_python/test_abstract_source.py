@@ -86,7 +86,7 @@ class MockStream(Stream):
     def name(self):
         return self._name
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]: # type: ignore
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:  # type: ignore
         # Remove None values
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         if self._inputs_and_mocked_outputs:
