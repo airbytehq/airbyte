@@ -328,7 +328,6 @@ def test_valid_incremental_read_with_slices_and_interval(mocker, logger):
     mocker.patch.object(MockStream, "stream_slices", return_value=slices)
     mocker.patch.object(MockStream, "state_checkpoint_interval", new_callable=mocker.PropertyMock, return_value=2)
 
-
     src = MockSource(streams=[s1, s2])
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)])
 
