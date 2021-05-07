@@ -6,7 +6,6 @@ out
 .DS_Store
 data
 .dockerversions
-airbyte-config/
 
 # Secrets
 secrets
