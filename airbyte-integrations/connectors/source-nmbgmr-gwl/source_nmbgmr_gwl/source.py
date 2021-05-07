@@ -56,9 +56,10 @@ class SourceNmbgmrGwl(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            resp = get_resp(logger, public_url(config))
+            url = f'{sitemetadata_url(config)}?count=1'
+            resp = get_resp(logger, url)
             if not resp.status_code == 200:
-                raise BaseException
+                raise Exception
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
@@ -80,25 +81,122 @@ class SourceNmbgmrGwl(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
-        json_schema = {  # Example
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {"PointID": {"type": "string"},
-                           "DateMeasured": {"type": "string"},
-                           "DepthToWaterBGS": {"type": "FLOAT64"}}}
+        gwl_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
+                      'type': 'object',
+                      'properties': {'PointID': {'type': 'string'},
+                                     'DateMeasured': {'type': 'string',
+                                                      'format': 'date-time'},
+                                     'DepthToWaterBGS': {'type': 'number'}}}
+        site_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
+                       'type': 'object',
+                       'properties': {'OBJECTID': {'type': 'number'},
+                                      'PointID': {'type': 'string'},
+                                      'OSEWellID': {'type': 'string'},
+                                      'OSEWelltagID': {'type': 'string'},
+                                      'HoleDepth': {'type': 'number'},
+                                      'WellDepth': {'type': 'number'},
+                                      'DepthSource': {'type': 'string'},
+                                      'CompletionDate': {'type': 'string'},
+                                      'CompletionSource': {'type': 'string'},
+                                      'MeasuringPoint': {'type': 'string'},
+                                      'MPHeight': {'type': 'number'},
+                                      'CasingDiameter': {'type': 'number'},
+                                      'CasingDepth': {'type': 'number'},
+                                      'CasingDescription': {'type': 'string'},
+                                      'DrillerName': {'type': 'string'},
+                                      'ConstructionMethod': {'type': 'string'},
+                                      'ConstructionNotes': {'type': 'string'},
+                                      'AquiferType': {'type': 'string'},
+                                      'AqClass': {'type': 'string'},
+                                      'FormationZone': {'type': 'string'},
+                                      'StaticWater': {'type': 'number'},
+                                      'WaterNotes': {'type': 'string'},
+                                      'Status': {'type': 'string'},
+                                      'CurrentUse': {'type': 'string'},
+                                      'StatusUserNotes': {'type': 'string'},
+                                      'MonitoringStatus': {'type': 'string'},
+                                      'OpenWellLoggerOK': {'type': 'string'},
+                                      'MonitorOK': {'type': 'string'},
+                                      'SampleOK': {'type': 'string'},
+                                      'DataSource': {'type': 'string'},
+                                      'Notes': {'type': 'string'},
+                                      'MonitorGroup': {'type': 'number'},
+                                      'WellPdf': {'type': 'string'},
+                                      'MonitorStatusReason': {'type': 'string'},
+                                      'HydrographInterp': {'type': 'string'},
+                                      'PrimaryUseSite_USGS': {'type': 'string'},
+                                      'PrimaryUseWater_USGS': {'type': 'string'},
+                                      'DateCreated': {'type': 'string'},
+                                      'SiteNames': {'type': 'string'},
+                                      'SiteID': {'type': 'string'},
+                                      'AlternateSiteID': {'type': 'string'},
+                                      'AlternateSiteID2': {'type': 'string'},
+                                      'SiteDate': {'type': 'string'},
+                                      'DataReliability': {'type': 'string'},
+                                      'Confidential': {'type': 'boolean'},
+                                      'SiteType': {'type': 'string'},
+                                      'WL_Continuous': {'type': 'boolean'},
+                                      'WL_Intermittent': {'type': 'boolean'},
+                                      'WaterQuality': {'type': 'boolean'},
+                                      'WaterFlow': {'type': 'boolean'},
+                                      'Hydraulic': {'type': 'boolean'},
+                                      'Subsurface': {'type': 'boolean'},
+                                      'WellorSpgNoData': {'type': 'boolean'},
+                                      'SubsurfaceType': {'type': 'string'},
+                                      'Easting': {'type': 'number'},
+                                      'Northing': {'type': 'number'},
+                                      'UTMDatum': {'type': 'string'},
+                                      'CoordinateNotes': {'type': 'string'},
+                                      'Altitude': {'type': 'number'},
+                                      'AltitudeAccuracy': {'type': 'string'},
+                                      'AltitudeMethod': {'type': 'string'},
+                                      'AltDatum': {'type': 'string'},
+                                      'Latitude': {'type': 'number'},
+                                      'Longitude': {'type': 'number'},
+                                      'LatLonDatum': {'type': 'string'},
+                                      'CoordinateAccuracy': {'type': 'string'},
+                                      'CoordinateMethod': {'type': 'string'},
+                                      'Township': {'type': 'number'},
+                                      'TownshipDirection': {'type': 'string'},
+                                      'Range': {'type': 'string'},
+                                      'RangeDirection': {'type': 'string'},
+                                      'SectionQuarters': {'type': 'number'},
+                                      'SPX': {'type': 'string'},
+                                      'SPY': {'type': 'string'},
+                                      'QuadName': {'type': 'string'},
+                                      'County': {'type': 'string'},
+                                      'State': {'type': 'string'},
+                                      'LocationNotes': {'type': 'string'},
+                                      'WLReportDeliver': {'type': 'string'},
+                                      'ChemistryReportDeliver': {'type': 'string'},
+                                      'WLReportNote': {'type': 'string'},
+                                      'ChemistryReportNote': {'type': 'string'},
+                                      'X_NAD83_Zone12': {'type': 'number'},
+                                      'Y_NAD83_Zone12': {'type': 'number'},
+                                      'projectname': {'type': 'string'},
+                                      'USGSProjectID': {'type': 'string'},
+                                      'LatitudeDD': {'type': 'string'},
+                                      'LongitudeDD': {'type': 'string'},
+                                      'PublicRelease': {'type': 'boolean'},
+                                      }}
 
         streams = [AirbyteStream(name='Acoustic',
                                  supported_sync_modes=["full_refresh", "incremental"],
                                  source_defined_cursor=True,
-                                 json_schema=json_schema),
+                                 json_schema=gwl_schema),
                    AirbyteStream(name='Manual',
                                  supported_sync_modes=["full_refresh", "incremental"],
                                  source_defined_cursor=True,
-                                 json_schema=json_schema),
+                                 json_schema=gwl_schema),
                    AirbyteStream(name='Pressure',
                                  supported_sync_modes=["full_refresh", "incremental"],
                                  source_defined_cursor=True,
-                                 json_schema=json_schema)]
+                                 json_schema=gwl_schema),
+                   AirbyteStream(name='SiteMetaData',
+                                 supported_sync_modes=['full_refresh', 'incremental'],
+                                 source_defined_cursor=True,
+                                 json_schema=site_schema)]
+
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -126,7 +224,14 @@ class SourceNmbgmrGwl(Source):
 
         for stream in catalog.streams:
             name = stream.stream.name
-            data = get_data(logger, stream, state, config)
+            key = stream.stream.name
+            logger.debug(f'****** mode {stream.sync_mode} state={state}')
+            is_incremental = stream.sync_mode == SyncMode.incremental and key in state
+            if key == 'SiteMetaData':
+                data = get_sitemetadata(logger, state, config, key, is_incremental)
+            else:
+                data = get_waterlevels(logger, state, config, key, is_incremental)
+
             if data:
                 for di in data:
                     yield AirbyteMessage(
@@ -136,6 +241,64 @@ class SourceNmbgmrGwl(Source):
             else:
                 logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
 
+            # data = get_data(logger, stream, state, config)
+            # if data:
+            #
+            # else:
+            #     logger.debug('no new data for {}. state={}'.format(name, state.get(name)))
+
+
+def get_sitemetadata(logger, state, config, key, is_incremental):
+    url = sitemetadata_url(config)
+    if is_incremental:
+        url = f'{url}?objectid={state[key]}'
+    else:
+        url = f'{url}?objectid=0'
+
+    jobj = get_json(logger, url)
+    if jobj:
+        state[key] = jobj[-1]['OBJECTID']
+        update_state(state)
+        return jobj
+    else:
+        # need to emit the current state to make sure it cares forward
+        update_state(state)
+
+
+def get_waterlevels(logger, state, config, key, is_incremental):
+    cursor_key = 'OBJECTID'
+
+    url = records_url(config, key.lower())
+    if is_incremental:
+        ndata = []
+        for i in range(10):
+            nurl = f'{url}?objectid={state[key]}&count=5000'
+            jobj = get_json(logger, nurl)
+            if jobj:
+                # update state
+                state[key] = jobj[-1][cursor_key]
+                update_state(state)
+                ndata.extend(jobj)
+            else:
+                break
+        update_state(state)
+        return ndata
+    else:
+        url = f'{url}?objectid=0'
+        jobj = get_json(logger, url)
+        if jobj:
+            # update state
+            state[key] = jobj[-1][cursor_key]
+            update_state(state)
+            return jobj
+        else:
+            update_state(state)
+
+
+def update_state(state):
+    output_message = {"type": "STATE", "state": {"data": state}}
+    print(json.dumps(output_message))
+
 
 def public_url(config):
     return f'{config["url"]}/maps/data/waterlevels'
@@ -143,26 +306,12 @@ def public_url(config):
 
 def records_url(config, tag):
     pu = public_url(config)
-    url = f'{pu}/records/{tag}'
+    url = f'{pu}/records_{tag}'
     return url
 
 
-def get_data(logger, stream, state, config):
-    key = stream.stream.name
-    url = records_url(config, key.lower())
-    logger.debug(f'****** mode {stream.sync_mode} state={state}')
-    if stream.sync_mode == SyncMode.incremental and key in state:
-        url = f'{url}?start_date={state.get(key)}'
-    else:
-        url = f'{url}?count=10'
-
-    jobj = get_json(logger, url)
-    if jobj:
-        # update state
-        state[key] = jobj[-1]['DateMeasured']
-        output_message = {"type": "STATE", "state": {"data": state}}
-        print(json.dumps(output_message))
-        return jobj
+def sitemetadata_url(config):
+    return f'{public_url(config)}/sitemetadata'
 
 
 def get_resp(logger, url):
