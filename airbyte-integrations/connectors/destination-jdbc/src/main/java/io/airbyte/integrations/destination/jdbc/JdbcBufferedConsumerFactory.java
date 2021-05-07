@@ -74,7 +74,6 @@ public class JdbcBufferedConsumerFactory {
         recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
-        writeConfigs.stream().map(JdbcBufferedConsumerFactory::toNameNamespacePair).collect(Collectors.toSet()),
         sqlOperations::isValidData);
   }
 
