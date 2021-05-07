@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
@@ -60,6 +61,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Consumer;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -263,6 +265,16 @@ class IntegrationRunnerTest {
     inOrder.verifyNoMoreInteractions();
   }
 
+  public String escapeNonAscii(String input) {
+    final StringBuilder output = new StringBuilder();
+    for (int i = 0; i < input.length(); i++) {
+      final char ch = input.charAt(i);
+      if (ch <= 127) output.append(ch);
+      else output.append("\\u").append(String.format("%04x", (int)ch));
+    }
+    return output.toString();
+  }
+
   @Test
   void testPrintLsep() {
     Consumer<String> outputConsumer = System.out::println;
@@ -284,7 +296,7 @@ class IntegrationRunnerTest {
             .withType(Type.RECORD)
             .withRecord(messageRecord);
 
-    String writtenOutput = Jsons.serialize(message);
+    String writtenOutput = escapeNonAscii(Jsons.serialize(message));
     outputConsumer.accept(writtenOutput);
 
     final Scanner input = new Scanner(writtenOutput);
@@ -294,6 +306,7 @@ class IntegrationRunnerTest {
         final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
         if (messageOptional.isPresent()) {
           System.out.println("success: " + Jsons.serialize(messageOptional.get().getRecord().getData()));
+          assertEquals(messageOptional.get().getRecord().getData(), deserialized);
         } else {
           System.out.println("error: " + inputString);
         }
