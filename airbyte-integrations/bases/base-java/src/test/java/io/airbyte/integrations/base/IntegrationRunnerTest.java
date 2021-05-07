@@ -25,8 +25,6 @@
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -47,6 +45,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -82,7 +81,7 @@ class IntegrationRunnerTest {
   private static final JsonNode STATE = Jsons.jsonNode(ImmutableMap.of("checkpoint", "05/08/1945"));
 
   private IntegrationCliParser cliParser;
-  private Consumer<String> stdoutConsumer;
+  private Consumer<AirbyteMessage> stdoutConsumer;
   private Destination destination;
   private Source source;
   private Path configPath;
@@ -114,7 +113,7 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
 
     verify(source).spec();
-    verify(stdoutConsumer).accept(Jsons.serialize(new AirbyteMessage().withType(Type.SPEC).withSpec(output)));
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.SPEC).withSpec(output));
   }
 
   @Test
@@ -128,7 +127,7 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, destination, null).run(ARGS);
 
     verify(destination).spec();
-    verify(stdoutConsumer).accept(Jsons.serialize(new AirbyteMessage().withType(Type.SPEC).withSpec(output)));
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.SPEC).withSpec(output));
   }
 
   @Test
@@ -142,7 +141,7 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
 
     verify(source).check(CONFIG);
-    verify(stdoutConsumer).accept(Jsons.serialize(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output)));
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
   }
 
   @Test
@@ -156,7 +155,7 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, destination, null).run(ARGS);
 
     verify(destination).check(CONFIG);
-    verify(stdoutConsumer).accept(Jsons.serialize(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output)));
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
   }
 
   @Test
@@ -170,7 +169,7 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
 
     verify(source).discover(CONFIG);
-    verify(stdoutConsumer).accept(Jsons.serialize(new AirbyteMessage().withType(Type.CATALOG).withCatalog(output)));
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(output));
   }
 
   @Test
@@ -189,8 +188,8 @@ class IntegrationRunnerTest {
     new IntegrationRunner(cliParser, stdoutConsumer, null, source).run(ARGS);
 
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
-    verify(stdoutConsumer).accept(Jsons.serialize(message1));
-    verify(stdoutConsumer).accept(Jsons.serialize(message2));
+    verify(stdoutConsumer).accept(message1);
+    verify(stdoutConsumer).accept(message2);
   }
 
   @Test
@@ -198,12 +197,12 @@ class IntegrationRunnerTest {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getConsumer(eq(CONFIG), eq(CONFIGURED_CATALOG), any())).thenReturn(airbyteMessageConsumerMock);
+    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
 
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null));
     runner.run(ARGS);
 
-    verify(destination).getConsumer(eq(CONFIG), eq(CONFIGURED_CATALOG), any());
+    verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
   }
 
   @Test
@@ -220,7 +219,13 @@ class IntegrationRunnerTest {
             .withData(Jsons.deserialize("{ \"color\": \"yellow\" }"))
             .withStream(STREAM_NAME)
             .withEmittedAt(EMITTED_AT));
-    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n" + Jsons.serialize(singerMessage2)).getBytes()));
+    final AirbyteMessage stateMessage = new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withData(Jsons.deserialize("{ \"checkpoint\": \"1\" }")));
+    System.setIn(new ByteArrayInputStream((Jsons.serialize(singerMessage1) + "\n"
+        + Jsons.serialize(singerMessage2) + "\n"
+        + Jsons.serialize(stateMessage)).getBytes()));
 
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
     IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
@@ -228,6 +233,7 @@ class IntegrationRunnerTest {
     InOrder inOrder = inOrder(airbyteMessageConsumerMock);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage1);
     inOrder.verify(airbyteMessageConsumerMock).accept(singerMessage2);
+    inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
     inOrder.verify(airbyteMessageConsumerMock).close();
   }
 
