@@ -123,9 +123,17 @@ def test_discover(mocker):
     assert expected == src.discover(logger, {})
 
 
-# TODO not implemented yet
-# def test_read_nonexistent_stream_raises_exception():
-#     pass
+def test_read_nonexistent_stream_raises_exception(mocker, logger):
+    s1 = MockStream(name="s1")
+    s2 = MockStream(name="this_stream_doesnt_exist_in_the_source")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1])
+    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
+    with pytest.raises(KeyError):
+        list(src.read(logger, {}, catalog))
+
 
 GLOBAL_EMITTED_AT = 1
 
