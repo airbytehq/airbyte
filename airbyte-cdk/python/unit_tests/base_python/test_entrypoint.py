@@ -23,7 +23,7 @@
 
 from argparse import Namespace
 from copy import deepcopy
-from typing import Any, List, Mapping, Union, MutableMapping
+from typing import Any, List, Mapping, MutableMapping, Union
 
 import pytest
 from airbyte_cdk import (
