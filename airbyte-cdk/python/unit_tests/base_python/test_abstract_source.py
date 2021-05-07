@@ -63,16 +63,19 @@ def logger() -> AirbyteLogger:
 
 
 def test_successful_check():
+    """ Tests that if a source returns TRUE for the connection check the appropriate connectionStatus success message is returned """
     expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert expected == MockSource(check_lambda=lambda: (True, None)).check(logger, {})
 
 
 def test_failed_check():
+    """ Tests that if a source returns FALSE for the connection check the appropriate connectionStatus failure message is returned """
     expected = AirbyteConnectionStatus(status=Status.FAILED, message="womp womp")
     assert expected == MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {})
 
 
 def test_raising_check():
+    """ Tests that if a source raises an unexpected exception the connection check the appropriate connectionStatus failure message is returned """
     expected = AirbyteConnectionStatus(status=Status.FAILED, message=f"{Exception('this should fail')}")
     assert expected == MockSource(check_lambda=lambda: exec('raise Exception("this should fail")')).check(logger, {})
 
@@ -102,6 +105,7 @@ class MockStream(Stream):
 
 
 def test_discover(mocker):
+    """ Tests that the appropriate AirbyteCatalog is returned from the discover method """
     airbyte_stream1 = AirbyteStream(
         name="1",
         json_schema={},
@@ -124,6 +128,7 @@ def test_discover(mocker):
 
 
 def test_read_nonexistent_stream_raises_exception(mocker, logger):
+    """Tests that attempting to sync a stream which the source does not return from the `streams` method raises an exception """
     s1 = MockStream(name="s1")
     s2 = MockStream(name="this_stream_doesnt_exist_in_the_source")
 
