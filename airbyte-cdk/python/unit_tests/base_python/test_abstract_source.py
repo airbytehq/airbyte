@@ -151,7 +151,7 @@ def _fix_emitted_at(messages: List[AirbyteMessage]) -> List[AirbyteMessage]:
     return messages
 
 
-def test_valid_fullrefresh_read_no_slices(logger, mocker):
+def test_valid_full_refresh_read_no_slices(logger, mocker):
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
     s2 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s2")
@@ -202,7 +202,7 @@ def test_valid_incremental_read_with_checkpoint_interval(mocker, logger):
     mocker.patch.object(MockStream, "supports_incremental", return_value=True)
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     # Tell the source to output one state message per record
-    mocker.patch.object(MockStream, "state_checkpoint_interval", return_value=1)
+    mocker.patch.object(MockStream, "state_checkpoint_interval", new_callable=mocker.PropertyMock, return_value=1)
 
     src = MockSource(streams=[s1, s2])
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)])
@@ -212,9 +212,11 @@ def test_valid_incremental_read_with_checkpoint_interval(mocker, logger):
         _state({"s1": state}),
         _as_record("s1", stream_output[1]),
         _state({"s1": state}),
+        _state({"s1": state}),
         _as_record("s2", stream_output[0]),
         _state({"s1": state, "s2": state}),
         _as_record("s2", stream_output[1]),
+        _state({"s1": state, "s2": state}),
         _state({"s1": state, "s2": state}),
     ]
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
