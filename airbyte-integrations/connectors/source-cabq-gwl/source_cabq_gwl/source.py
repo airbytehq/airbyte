@@ -154,10 +154,7 @@ class SourceCabqGwl(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        logger.debug('readadfasfasdfasdf')
 
-        # stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
         for stream in catalog.streams:
             key = stream.stream.name
             prid = None
@@ -168,7 +165,6 @@ class SourceCabqGwl(Source):
             if ret is not None:
                 rid, records = ret
                 if records:
-
                     for data in records:
                         for k, v in data.items():
                             if v.isdigit():
@@ -178,8 +174,7 @@ class SourceCabqGwl(Source):
                                 data[k] = float(v)
                             except ValueError:
                                 pass
-                        # print(data)
-                        # print(json.dumps(data))
+
                         record = AirbyteRecordMessage(stream=key, data=data,
                                                       emitted_at=int(datetime.now().timestamp()) * 1000)
                         yield AirbyteMessage(type=Type.RECORD,
