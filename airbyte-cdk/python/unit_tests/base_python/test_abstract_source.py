@@ -304,3 +304,61 @@ def test_valid_incremental_read_with_slices(mocker, logger):
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
 
     assert expected == messages
+
+
+def test_valid_incremental_read_with_slices_and_interval(mocker, logger):
+    """
+    Tests that an incremental read which uses slices and a checkpoint interval:
+        1. outputs all records
+        2. outputs a state message every N records (N=checkpoint_interval)
+        3. outputs a state message after reading the entire slice
+    """
+    slices = [{"1": "1"}, {"2": "2"}]
+    stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
+    s1 = MockStream(
+        [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s1"
+    )
+    s2 = MockStream(
+        [({"sync_mode": SyncMode.incremental, "stream_slice": s, "stream_state": mocker.ANY}, stream_output) for s in slices], name="s2"
+    )
+    state = {"cursor": "value"}
+    mocker.patch.object(MockStream, "get_updated_state", return_value=state)
+    mocker.patch.object(MockStream, "supports_incremental", return_value=True)
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+    mocker.patch.object(MockStream, "state_checkpoint_interval", new_callable=mocker.PropertyMock, return_value=2)
+
+
+    src = MockSource(streams=[s1, s2])
+    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s1, SyncMode.incremental), _configured_stream(s2, SyncMode.incremental)])
+
+    expected = [
+        # stream 1 slice 1
+        _as_record("s1", stream_output[0]),
+        _as_record("s1", stream_output[1]),
+        _state({"s1": state}),
+        _as_record("s1", stream_output[2]),
+        _state({"s1": state}),
+        # stream 1 slice 2
+        _as_record("s1", stream_output[0]),
+        _as_record("s1", stream_output[1]),
+        _state({"s1": state}),
+        _as_record("s1", stream_output[2]),
+        _state({"s1": state}),
+        # stream 2 slice 1
+        _as_record("s2", stream_output[0]),
+        _as_record("s2", stream_output[1]),
+        _state({"s1": state, "s2": state}),
+        _as_record("s2", stream_output[2]),
+        _state({"s1": state, "s2": state}),
+        # stream 2 slice 2
+        _as_record("s2", stream_output[0]),
+        _as_record("s2", stream_output[1]),
+        _state({"s1": state, "s2": state}),
+        _as_record("s2", stream_output[2]),
+        _state({"s1": state, "s2": state}),
+    ]
+
+    messages = _fix_emitted_at(list(src.read(logger, {}, catalog, state=defaultdict(dict))))
+
+    assert expected == messages
