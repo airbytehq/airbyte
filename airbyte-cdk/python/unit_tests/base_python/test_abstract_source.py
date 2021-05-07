@@ -22,7 +22,6 @@
 
 
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
-from unittest.mock import MagicMock, Mock
 
 import pytest
 from airbyte_cdk import AirbyteCatalog, AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
