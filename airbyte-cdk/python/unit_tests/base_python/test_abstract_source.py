@@ -1,10 +1,32 @@
-from typing import Mapping, Any, List, Tuple, Optional, Callable, Union, Iterable
-from unittest.mock import Mock, MagicMock
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
+from unittest.mock import MagicMock, Mock
 
 import pytest
-
-from airbyte_cdk import AirbyteConnectionStatus, Status, SyncMode, AirbyteStream, AirbyteCatalog
-from airbyte_cdk.base_python import AbstractSource, Stream, AirbyteLogger
+from airbyte_cdk import AirbyteCatalog, AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
+from airbyte_cdk.base_python import AbstractSource, AirbyteLogger, Stream
 
 
 class MockSource(AbstractSource):
@@ -40,9 +62,13 @@ def test_raising_check():
 
 
 class MockStream(Stream):
-
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None,
-                     stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         pass
 
     @property
@@ -63,8 +89,8 @@ def test_discover(mocker):
 
     stream1 = MockStream()
     stream2 = MockStream()
-    mocker.patch.object(stream1, 'as_airbyte_stream', return_value=airbyte_stream1)
-    mocker.patch.object(stream2, 'as_airbyte_stream', return_value=airbyte_stream2)
+    mocker.patch.object(stream1, "as_airbyte_stream", return_value=airbyte_stream1)
+    mocker.patch.object(stream2, "as_airbyte_stream", return_value=airbyte_stream2)
 
     expected = AirbyteCatalog(streams=[airbyte_stream1, airbyte_stream2])
     src = MockSource(check_lambda=lambda: (True, None), streams=[stream1, stream2])
