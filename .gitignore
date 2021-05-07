@@ -1,0 +1,30 @@
+.gradle
+.idea
+*.iml
+build
+out
+.DS_Store
+data
+.dockerversions
+
+# Secrets
+secrets
+!airbyte-integrations/connector-templates/**/secrets
+
+# Python
+*.egg-info
+__pycache__
+.eggs
+.venv
+.mypy_cache
+.ipynb_checkpoints
+
+# dbt
+profiles.yml
+
+# Terraform
+.terraform/
+crash.log
+*.tfstate
+*.tfstate.backup
+*.lock.hcl
