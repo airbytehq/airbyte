@@ -101,7 +101,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = mapper.mapMessage(maybeMessage.get());
 
             messageTracker.accept(message);
+            LOGGER.info("replication worker offer to destination: {}", message.getRecord().getData().get("column1").asText());
             destination.accept(message);
+            LOGGER.info("replication worker offered to destination: {}", message.getRecord().getData().get("column1").asText());
+            LOGGER.info("replication worker");
           }
         }
       }

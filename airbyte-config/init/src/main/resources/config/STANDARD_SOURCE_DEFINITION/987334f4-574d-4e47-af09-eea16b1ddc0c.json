@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "987334f4-574d-4e47-af09-eea16b1ddc0c",
+  "name": "Infinite Feed",
+  "dockerRepository": "airbyte/source-infinite-feed",
+  "dockerImageTag": "dev",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-pokeapi"
+}

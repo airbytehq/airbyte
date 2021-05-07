@@ -1,0 +1,7 @@
+{
+  "destinationDefinitionId": "94a8dc3f-17d0-4609-879d-c6ce22803441",
+  "name": "Throughput Throttled",
+  "dockerRepository": "airbyte/destination-throughput-throttle",
+  "dockerImageTag": "dev",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/meilisearch"
+}
