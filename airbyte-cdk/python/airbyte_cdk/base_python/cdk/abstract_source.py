@@ -97,8 +97,13 @@ class AbstractSource(Source, ABC):
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
         for configured_stream in catalog.streams:
+            stream_instance = stream_instances.get(configured_stream.stream.name)
+            if not stream_instance:
+                raise KeyError(
+                    f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
+                )
+
             try:
-                stream_instance = stream_instances[configured_stream.stream.name]
                 yield from self._read_stream(
                     logger=logger, stream_instance=stream_instance, configured_stream=configured_stream, connector_state=connector_state
                 )
