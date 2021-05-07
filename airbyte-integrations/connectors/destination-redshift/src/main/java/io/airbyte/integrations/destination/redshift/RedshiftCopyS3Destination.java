@@ -34,7 +34,9 @@ import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.function.Consumer;
 
 /**
  * A more efficient Redshift Destination than the sql-based {@link RedshiftDestination}. Instead of
@@ -49,7 +51,11 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
  */
 public class RedshiftCopyS3Destination extends CopyDestination {
 
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
     return new CopyConsumer<>(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config),
         new RedshiftStreamCopierFactory(),
         getSqlOperations(),

@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -62,10 +63,10 @@ class SwitchingDestinationTest {
   public void testInsert() throws Exception {
     var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.INSERT, destinationMap);
 
-    switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class));
+    switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
 
-    verify(insertDestination, times(1)).getConsumer(any(), any());
-    verify(copyDestination, times(0)).getConsumer(any(), any());
+    verify(insertDestination, times(1)).getConsumer(any(), any(), any());
+    verify(copyDestination, times(0)).getConsumer(any(), any(), any());
 
     switchingDestination.check(mock(JsonNode.class));
 
@@ -77,10 +78,10 @@ class SwitchingDestinationTest {
   public void testCopy() throws Exception {
     var switchingDestination = new SwitchingDestination<>(SwitchingEnum.class, c -> SwitchingEnum.COPY, destinationMap);
 
-    switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class));
+    switchingDestination.getConsumer(mock(JsonNode.class), mock(ConfiguredAirbyteCatalog.class), mock(Consumer.class));
 
-    verify(insertDestination, times(0)).getConsumer(any(), any());
-    verify(copyDestination, times(1)).getConsumer(any(), any());
+    verify(insertDestination, times(0)).getConsumer(any(), any(), any());
+    verify(copyDestination, times(1)).getConsumer(any(), any(), any());
 
     switchingDestination.check(mock(JsonNode.class));
 
