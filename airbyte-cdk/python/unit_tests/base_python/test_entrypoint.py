@@ -89,7 +89,6 @@ def test_parse_valid_args(cmd: str, args: Mapping[str, Any], entrypoint: Airbyte
 )
 def test_parse_missing_required_args(cmd: str, args: Mapping[str, Any], entrypoint: AirbyteEntrypoint):
     required_args = {"check": ["config"], "discover": ["config"], "read": ["config", "catalog"]}
-    # Delete each required arg once and try to run the command. They should all fail.
     for required_arg in required_args[cmd]:
         argcopy = deepcopy(args)
         del argcopy[required_arg]
@@ -97,9 +96,7 @@ def test_parse_missing_required_args(cmd: str, args: Mapping[str, Any], entrypoi
             entrypoint.parse_args(_as_arglist(cmd, argcopy))
 
 
-def _wrap_message(
-    submessage: Union[AirbyteConnectionStatus, ConnectorSpecification, AirbyteRecordMessage, AirbyteCatalog]
-) -> str:
+def _wrap_message(submessage: Union[AirbyteConnectionStatus, ConnectorSpecification, AirbyteRecordMessage, AirbyteCatalog]) -> str:
     if isinstance(submessage, AirbyteConnectionStatus):
         message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=submessage)
     elif isinstance(submessage, ConnectorSpecification):

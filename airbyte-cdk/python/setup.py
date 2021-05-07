@@ -71,7 +71,14 @@ setup(
         "requests",
     ],
     python_requires=">=3.7.9",
-    extras_require={"dev": ["pytest", "MyPy", "pytest-cov", "pytest-mock"]},
+    extras_require={
+        "dev": [
+            "MyPy",
+            "pytest",
+            "pytest-cov",
+            "pytest-mock",
+        ]
+    },
     entry_points={
         "console_scripts": ["base-python=base_python.entrypoint:main"],
     },
