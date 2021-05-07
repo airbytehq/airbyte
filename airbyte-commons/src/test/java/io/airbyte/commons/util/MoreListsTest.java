@@ -22,9 +22,27 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.commons.util;
 
-import io.airbyte.config.ReplicationOutput;
-import io.airbyte.config.StandardSyncInput;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public interface ReplicationWorker extends Worker<StandardSyncInput, ReplicationOutput> {}
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+
+class MoreListsTest {
+
+  @Test
+  void testLast() {
+    assertEquals(Optional.of(3), MoreLists.last(List.of(1, 2, 3)));
+    assertEquals(Optional.empty(), MoreLists.last(List.of()));
+
+    List<Integer> ints = new ArrayList<>();
+    ints.add(1);
+    ints.add(2);
+    ints.add(null);
+    assertEquals(Optional.empty(), MoreLists.last(ints));
+  }
+
+}

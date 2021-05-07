@@ -115,22 +115,22 @@ class DefaultAirbyteSourceTest {
   public void testSuccessfulLifecycle() throws Exception {
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
 
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
-    tap.start(SOURCE_CONFIG, jobRoot);
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    source.start(SOURCE_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
 
-    assertFalse(tap.isFinished());
-    messages.add(tap.attemptRead().get());
-    assertFalse(tap.isFinished());
-    messages.add(tap.attemptRead().get());
-    assertFalse(tap.isFinished());
+    assertFalse(source.isFinished());
+    messages.add(source.attemptRead().get());
+    assertFalse(source.isFinished());
+    messages.add(source.attemptRead().get());
+    assertFalse(source.isFinished());
 
     when(process.isAlive()).thenReturn(false);
-    assertTrue(tap.isFinished());
+    assertTrue(source.isFinished());
     verify(heartbeatMonitor, times(2)).beat();
 
-    tap.close();
+    source.close();
 
     assertEquals(
         Jsons.jsonNode(SOURCE_CONFIG.getSourceConnectionConfiguration()),

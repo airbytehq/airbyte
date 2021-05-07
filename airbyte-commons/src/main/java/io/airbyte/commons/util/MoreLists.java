@@ -22,9 +22,21 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.commons.util;
 
-import io.airbyte.config.ReplicationOutput;
-import io.airbyte.config.StandardSyncInput;
+import java.util.List;
+import java.util.Optional;
 
-public interface ReplicationWorker extends Worker<StandardSyncInput, ReplicationOutput> {}
+public class MoreLists {
+
+  /**
+   * @return returns empty optional if the list is empty or if the last element in the list is null.
+   */
+  public static <T> Optional<T> last(List<T> list) {
+    if (list.isEmpty()) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(list.get(list.size() - 1));
+  }
+
+}

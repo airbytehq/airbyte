@@ -590,11 +590,13 @@ public class AcceptanceTests {
     final Set<JsonNode> destinationRecords = new HashSet<>(retrieveRawDestinationRecords(pair));
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
-        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
+        String.format("destination contains: %s record. source contains: %s, \nsource records %s \ndestination records: %s",
+            destinationRecords.size(), sourceRecords.size(), sourceRecords, destinationRecords));
 
     for (JsonNode sourceStreamRecord : sourceRecords) {
       assertTrue(destinationRecords.contains(sourceStreamRecord),
-          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
+          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n",
+              sourceStreamRecord, destinationRecords));
     }
   }
 
