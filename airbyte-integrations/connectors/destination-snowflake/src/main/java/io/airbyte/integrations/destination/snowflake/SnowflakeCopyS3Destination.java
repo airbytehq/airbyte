@@ -33,12 +33,16 @@ import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.function.Consumer;
 
 public class SnowflakeCopyS3Destination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> recordEmitter) {
     return new CopyConsumer<>(
         getConfiguredSchema(config),
         getS3Config(config),

@@ -52,6 +52,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.io.FileUtils;
@@ -93,7 +94,10 @@ public class CsvDestination implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> recordEmitter)
+      throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());

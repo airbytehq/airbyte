@@ -33,12 +33,17 @@ import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopier;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.function.Consumer;
 
 public class SnowflakeCopyGcsDestination extends CopyDestination {
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> recordEmitter)
+      throws Exception {
     return new CopyConsumer<>(
         getConfiguredSchema(config),
         GcsConfig.getGcsConfig(config),

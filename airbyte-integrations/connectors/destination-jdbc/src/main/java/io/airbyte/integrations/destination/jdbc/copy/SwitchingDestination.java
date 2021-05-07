@@ -30,11 +30,13 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,10 +77,11 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> recordEmitter)
+      throws Exception {
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());
-    return typeToDestination.get(destinationType).getConsumer(config, catalog);
+    return typeToDestination.get(destinationType).getConsumer(config, catalog, recordEmitter);
   }
 
 }

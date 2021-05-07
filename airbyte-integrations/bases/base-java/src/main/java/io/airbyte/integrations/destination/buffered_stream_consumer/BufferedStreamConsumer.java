@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -90,23 +89,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private AirbyteStateMessage lastCommittedState;
   private AirbyteStateMessage pendingState;
 
-  public BufferedStreamConsumer(VoidCallable onStart,
+  public BufferedStreamConsumer(Consumer<AirbyteMessage> recordEmitter,
+                                VoidCallable onStart,
                                 RecordWriter recordWriter,
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
                                 CheckedFunction<String, Boolean, Exception> isValidRecord) {
-    this(onStart, recordWriter, onClose, catalog, isValidRecord, (stateMessage) -> {});
-  }
-
-  // todo (cgardens) checkpointConsumer will become relevant once we start actually checkpointing.
-  @VisibleForTesting
-  BufferedStreamConsumer(VoidCallable onStart,
-                         RecordWriter recordWriter,
-                         CheckedConsumer<Boolean, Exception> onClose,
-                         ConfiguredAirbyteCatalog catalog,
-                         CheckedFunction<String, Boolean, Exception> isValidRecord,
-                         Consumer<AirbyteStateMessage> checkpointConsumer) {
-    this.checkpointConsumer = checkpointConsumer;
+    this.checkpointConsumer = (message) -> recordEmitter.accept(new AirbyteMessage().withType(Type.STATE).withState(message));
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
