@@ -243,7 +243,7 @@ def test_valid_incremental_read_with_checkpoint_interval(mocker, logger):
 
 def test_valid_incremental_read_with_no_interval(mocker, logger):
     """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message only after fully reading the stream and does
-    not output any STATE messages during syncing the stream. """
+    not output any STATE messages during syncing the stream."""
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s1")
     s2 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s2")

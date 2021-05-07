@@ -88,7 +88,7 @@ class AbstractSource(Source, ABC):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-            self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.io/architecture/airbyte-specification."""
         connector_state = copy.deepcopy(state or {})
@@ -100,7 +100,7 @@ class AbstractSource(Source, ABC):
             stream_instance = stream_instances.get(configured_stream.stream.name)
             if not stream_instance:
                 raise KeyError(
-                    f'The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}'
+                    f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
                 )
 
             try:
@@ -114,11 +114,11 @@ class AbstractSource(Source, ABC):
         logger.info(f"Finished syncing {self.name}")
 
     def _read_stream(
-            self,
-            logger: AirbyteLogger,
-            stream_instance: Stream,
-            configured_stream: ConfiguredAirbyteStream,
-            connector_state: MutableMapping[str, Any],
+        self,
+        logger: AirbyteLogger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        connector_state: MutableMapping[str, Any],
     ) -> Iterator[AirbyteMessage]:
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
@@ -138,11 +138,11 @@ class AbstractSource(Source, ABC):
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
     def _read_incremental(
-            self,
-            logger: AirbyteLogger,
-            stream_instance: Stream,
-            configured_stream: ConfiguredAirbyteStream,
-            connector_state: MutableMapping[str, Any],
+        self,
+        logger: AirbyteLogger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        connector_state: MutableMapping[str, Any],
     ) -> Iterator[AirbyteMessage]:
         stream_name = configured_stream.stream.name
         stream_state = connector_state.get(stream_name, {})
