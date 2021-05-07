@@ -27,8 +27,6 @@ package io.airbyte.integrations.destination.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -49,28 +47,15 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  protected JdbcDatabase getDatabase(JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()),
-        DRIVER_CLASS);
-  }
-
-  @Override
   public JsonNode toJdbcConfig(JsonNode config) {
     final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
     List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;;databaseName=%s;user=%s;password=%s;?",
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText(),
-        config.get("username").asText(),
-        config.get("password").asText()));
+        config.get("database").asText()));
 
     if (config.has("ssl") && config.get("ssl").asBoolean()) {
       additionalParameters.add("encrypt=true");
@@ -87,11 +72,13 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     }
 
     if (!additionalParameters.isEmpty()) {
-      additionalParameters.forEach(x -> jdbcUrl.append(x).append(";"));
+      jdbcUrl.append(String.join(";", additionalParameters));
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("jdbc_url", jdbcUrl.toString())
+        .put("username", config.get("username").asText())
+        .put("password", config.get("password").asText())
         .put("schema", schema);
 
     return Jsons.jsonNode(configBuilder.build());

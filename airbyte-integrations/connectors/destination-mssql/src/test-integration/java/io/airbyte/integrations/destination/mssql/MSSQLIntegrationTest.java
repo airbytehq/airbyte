@@ -70,7 +70,7 @@ public class MSSQLIntegrationTest extends TestDestination {
 
   @Override
   protected JsonNode getConfig() {
-    return getConfig(db);
+    return config;
   }
 
   @Override
@@ -132,12 +132,15 @@ public class MSSQLIntegrationTest extends TestDestination {
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
-            ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList()));
+            ctx -> {
+              ctx.fetch(String.format("USE %s;", config.get("database")));
+              return ctx
+                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                  .stream()
+                  .map(r -> r.formatJSON(JSON_FORMAT))
+                  .map(Jsons::deserialize)
+                  .collect(Collectors.toList());
+            });
   }
 
   @BeforeAll

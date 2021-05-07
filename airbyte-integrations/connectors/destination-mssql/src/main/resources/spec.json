@@ -59,13 +59,31 @@
         "default": false,
         "order": 6
       },
-      "basic_normalization": {
-        "title": "Basic Normalization",
+      "trustServerCertificate": {
+        "title": "Trust Server Certificate",
         "type": "boolean",
         "default": false,
-        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
+        "description": "Whether or not to implicitly trust the server certificate without verification.  (Useful for local test databases.)",
         "examples": [true, false],
         "order": 7
+      },
+      "trustStoreName": {
+        "title": "Trust Store Name",
+        "type": "string",
+        "description": "The full path (including filename) to the certificate trustStore file, which contains the list of certificates that the client trusts.",
+        "order": 8
+      },
+      "trustStorePassword": {
+        "title": "Trust Store Password",
+        "type": "string",
+        "description": "The password used to check the integrity of the trustStore data.",
+        "order": 9
+      },
+      "hostNameInCertificate": {
+        "title": "Host Name In Certificate",
+        "type": "string",
+        "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
+        "order": 10
       }
     }
   }
