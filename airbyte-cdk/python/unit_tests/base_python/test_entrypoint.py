@@ -22,7 +22,7 @@
 
 
 from copy import deepcopy
-from typing import Any, List, Mapping, MutableMapping
+from typing import Any, List, Mapping
 
 import pytest
 from airbyte_cdk.base_python import AirbyteEntrypoint, Source
@@ -76,7 +76,7 @@ def test_parse_valid_args(cmd: str, args: Mapping[str, Any], entrypoint: Airbyte
         ("read", {"config": "config_path", "catalog": "catalog_path"}),
     ],
 )
-def test_parse_missing_required_args(cmd: str, args: MutableMapping[str, Any], entrypoint: AirbyteEntrypoint):
+def test_parse_missing_required_args(cmd: str, args: Mapping[str, Any], entrypoint: AirbyteEntrypoint):
     required_args = {"check": ["config"], "discover": ["config"], "read": ["config", "catalog"]}
     for required_arg in required_args[cmd]:
         argcopy = deepcopy(args)
