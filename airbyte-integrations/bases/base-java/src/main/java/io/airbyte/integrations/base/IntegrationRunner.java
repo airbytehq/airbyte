@@ -56,11 +56,11 @@ public class IntegrationRunner {
   private final Source source;
 
   public IntegrationRunner(Destination destination) {
-    this(new IntegrationCliParser(), message -> System.out.println(Jsons.serialize(message)), destination, null);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
   }
 
   public IntegrationRunner(Source source) {
-    this(new IntegrationCliParser(), message -> System.out.println(Jsons.serialize(message)), null, source);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
   }
 
   @VisibleForTesting
