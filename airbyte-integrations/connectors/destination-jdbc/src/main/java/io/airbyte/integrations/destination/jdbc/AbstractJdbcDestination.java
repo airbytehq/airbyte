@@ -113,8 +113,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> recordEmitter) {
-    return JdbcBufferedConsumerFactory.create(recordEmitter, getDatabase(config), sqlOperations, namingResolver, config, catalog);
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 
 }

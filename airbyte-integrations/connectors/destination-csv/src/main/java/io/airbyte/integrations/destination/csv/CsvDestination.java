@@ -96,7 +96,7 @@ public class CsvDestination implements Destination {
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> recordEmitter)
+                                            Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Path destinationDir = getDestinationPath(config);
 

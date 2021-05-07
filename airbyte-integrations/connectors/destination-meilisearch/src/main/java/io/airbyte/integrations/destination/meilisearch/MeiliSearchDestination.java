@@ -104,13 +104,13 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> recordEmitter)
+                                            Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final Client client = getClient(config);
     final Map<String, Index> indexNameToIndex = createIndices(catalog, client);
 
     return new BufferedStreamConsumer(
-        recordEmitter,
+        outputRecordCollector,
         () -> LOGGER.info("Starting write to MeiliSearch."),
         recordWriterFunction(indexNameToIndex),
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),

@@ -54,7 +54,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> recordEmitter)
+                                            Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return new CopyConsumer<>(getConfiguredSchema(config), getS3Config(config), catalog, getDatabase(config),
         new RedshiftStreamCopierFactory(),

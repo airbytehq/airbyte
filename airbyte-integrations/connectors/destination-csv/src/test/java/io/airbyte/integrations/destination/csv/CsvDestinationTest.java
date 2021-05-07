@@ -165,7 +165,7 @@ class CsvDestinationTest {
 
   @Test
   void testWriteSuccess() throws Exception {
-    final AirbyteMessageConsumer consumer = getDestination().getConsumer(config, CATALOG, Destination::defaultRecordEmitter);
+    final AirbyteMessageConsumer consumer = getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -210,7 +210,7 @@ class CsvDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final AirbyteMessageConsumer consumer = spy(getDestination().getConsumer(config, CATALOG, Destination::defaultRecordEmitter));
+    final AirbyteMessageConsumer consumer = spy(getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);

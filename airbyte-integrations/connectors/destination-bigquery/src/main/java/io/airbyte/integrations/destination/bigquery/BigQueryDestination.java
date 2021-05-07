@@ -212,7 +212,7 @@ public class BigQueryDestination implements Destination {
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> recordEmitter) {
+                                            Consumer<AirbyteMessage> outputRecordCollector) {
     final BigQuery bigquery = getBigQuery(config);
     Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs = new HashMap<>();
     Set<String> existingSchemas = new HashSet<>();

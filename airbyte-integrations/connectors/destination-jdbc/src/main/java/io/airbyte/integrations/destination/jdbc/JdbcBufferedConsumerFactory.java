@@ -64,7 +64,7 @@ public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
-  public static AirbyteMessageConsumer create(Consumer<AirbyteMessage> recordEmitter,
+  public static AirbyteMessageConsumer create(Consumer<AirbyteMessage> outputRecordCollector,
                                               JdbcDatabase database,
                                               SqlOperations sqlOperations,
                                               NamingConventionTransformer namingResolver,
@@ -73,7 +73,7 @@ public class JdbcBufferedConsumerFactory {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
 
     return new BufferedStreamConsumer(
-        recordEmitter,
+        outputRecordCollector,
         onStartFunction(database, sqlOperations, writeConfigs),
         recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
         onCloseFunction(database, sqlOperations, writeConfigs),

@@ -90,7 +90,7 @@ public class PostgresDestinationTest {
   @Test
   void sanityTest() throws Exception {
     final Destination destination = new PostgresDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, Destination::defaultRecordEmitter);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
     consumer.start();

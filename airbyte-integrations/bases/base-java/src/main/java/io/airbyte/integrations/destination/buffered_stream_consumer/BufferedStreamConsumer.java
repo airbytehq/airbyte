@@ -89,13 +89,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private AirbyteStateMessage lastCommittedState;
   private AirbyteStateMessage pendingState;
 
-  public BufferedStreamConsumer(Consumer<AirbyteMessage> recordEmitter,
+  public BufferedStreamConsumer(Consumer<AirbyteMessage> outputRecordCollector,
                                 VoidCallable onStart,
                                 RecordWriter recordWriter,
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
                                 CheckedFunction<String, Boolean, Exception> isValidRecord) {
-    this.checkpointConsumer = (message) -> recordEmitter.accept(new AirbyteMessage().withType(Type.STATE).withState(message));
+    this.checkpointConsumer = (message) -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.STATE).withState(message));
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;

@@ -77,11 +77,11 @@ public class SwitchingDestination<T extends Enum<T>> extends BaseConnector imple
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> recordEmitter)
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final T destinationType = configToType.apply(config);
     LOGGER.info("Using destination type: " + destinationType.name());
-    return typeToDestination.get(destinationType).getConsumer(config, catalog, recordEmitter);
+    return typeToDestination.get(destinationType).getConsumer(config, catalog, outputRecordCollector);
   }
 
 }

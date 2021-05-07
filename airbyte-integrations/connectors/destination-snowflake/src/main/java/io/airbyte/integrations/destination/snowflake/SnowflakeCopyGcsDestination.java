@@ -42,7 +42,7 @@ public class SnowflakeCopyGcsDestination extends CopyDestination {
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> recordEmitter)
+                                            Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     return new CopyConsumer<>(
         getConfiguredSchema(config),
