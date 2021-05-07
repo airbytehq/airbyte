@@ -160,6 +160,7 @@ def _fix_emitted_at(messages: List[AirbyteMessage]) -> List[AirbyteMessage]:
 
 
 def test_valid_full_refresh_read_no_slices(logger, mocker):
+    """Tests that running a full refresh sync on streams which don't specify slices produces the expected AirbyteMessages"""
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s1")
     s2 = MockStream([({"sync_mode": SyncMode.full_refresh}, stream_output)], name="s2")
@@ -178,10 +179,11 @@ def test_valid_full_refresh_read_no_slices(logger, mocker):
 
 
 def test_valid_full_refresh_read_with_slices(mocker, logger):
-    stream_output = [{"k1": "v1"}, {"k2": "v2"}]
+    """Tests that running a full refresh sync on streams which use slices produces the expected AirbyteMessages"""
     slices = [{"1": "1"}, {"2": "2"}]
-    s1 = MockStream([({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, stream_output) for s in slices], name="s1")
-    s2 = MockStream([({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, stream_output) for s in slices], name="s2")
+    # When attempting to sync a slice, just output that slice as a record
+    s1 = MockStream([({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices], name="s1")
+    s2 = MockStream([({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices], name="s2")
 
     mocker.patch.object(MockStream, "get_json_schema", return_value={})
     mocker.patch.object(MockStream, "stream_slices", return_value=slices)
@@ -191,7 +193,8 @@ def test_valid_full_refresh_read_with_slices(mocker, logger):
         streams=[_configured_stream(s1, SyncMode.full_refresh), _configured_stream(s2, SyncMode.full_refresh)]
     )
 
-    expected = _as_records("s1", stream_output) * 2 + _as_records("s2", stream_output) * 2
+    expected = [*_as_records("s1", slices), *_as_records("s2", slices)]
+
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
 
     assert expected == messages
@@ -202,6 +205,7 @@ def _state(state_data: Dict[str, Any]):
 
 
 def test_valid_incremental_read_with_checkpoint_interval(mocker, logger):
+    """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message after reading N records within a stream"""
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s1")
     s2 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s2")
@@ -233,6 +237,8 @@ def test_valid_incremental_read_with_checkpoint_interval(mocker, logger):
 
 
 def test_valid_incremental_read_with_no_interval(mocker, logger):
+    """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message only after fully reading the stream and does
+    not output any STATE messages during syncing the stream. """
     stream_output = [{"k1": "v1"}, {"k2": "v2"}]
     s1 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s1")
     s2 = MockStream([({"sync_mode": SyncMode.incremental, "stream_state": {}}, stream_output)], name="s2")
@@ -257,6 +263,7 @@ def test_valid_incremental_read_with_no_interval(mocker, logger):
 
 
 def test_valid_incremental_read_with_slices(mocker, logger):
+    """Tests that an incremental read which uses slices outputs each record in the slice followed by a STATE message, for each slice"""
     slices = [{"1": "1"}, {"2": "2"}]
     stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
     s1 = MockStream(
