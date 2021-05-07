@@ -47,9 +47,13 @@ class MockSource(AbstractSource):
         self.check_lambda = check_lambda
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        return self.check_lambda()
+        if self.check_lambda:
+            return self.check_lambda()
+        return (False, "Missing callable.")
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        if not self._streams:
+            raise Exception("Stream is not set")
         return self._streams
 
 
@@ -82,7 +86,7 @@ class MockStream(Stream):
     def name(self):
         return self._name
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]: # type: ignore
         # Remove None values
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         if self._inputs_and_mocked_outputs:
@@ -90,7 +94,7 @@ class MockStream(Stream):
                 if kwargs == _input:
                     return output
 
-            raise Exception(f"No mocked output supplied for input: {kwargs}. Mocked inputs/outputs: {self._inputs_and_mocked_outputs}")
+        raise Exception(f"No mocked output supplied for input: {kwargs}. Mocked inputs/outputs: {self._inputs_and_mocked_outputs}")
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -142,7 +146,7 @@ def _configured_stream(stream: Stream, sync_mode: SyncMode):
 
 def _fix_emitted_at(messages: List[AirbyteMessage]) -> List[AirbyteMessage]:
     for msg in messages:
-        if msg.type == Type.RECORD:
+        if msg.type == Type.RECORD and msg.record:
             msg.record.emitted_at = GLOBAL_EMITTED_AT
     return messages
 
