@@ -26,6 +26,7 @@ for `Charges` and so on.
 Airbyte provides abstract base classes which make it much easier to perform certain categories of tasks e.g: `HttpStream` makes it easy to create HTTP API-based streams. However, if those do not satisfy your use case (for example, if you're pulling data from a relational database), you can always directly implement the Airbyte Protocol by subclassing the CDK's `Source` class. 
 
 Note that while this is the most flexible way to implement a source connector, it is also the most toilsome as you will be required to manually manage state, input validation, correctly conforming to the Airbyte Protocol message formats, and more. We recommend using a subclass of `Source` unless you cannot fulfill your use case otherwise. 
+
 ### The `AbstractSource` Object
 `AbstractSource` is a more opinionated implementation of `Source`. It implements `Source`'s 4 methods as follows: 
 
@@ -38,7 +39,7 @@ a file named `spec.json` in the module's root by default. Here is an [example](h
 the user-provided configuration, specified in the `spec.json` returned by `Spec`. `check_connection` uses this configuration to validate
 access and permissioning. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py#L90) from the same Exchange Rates API.
 
-#### The Streams Interface
+#### The `Stream` Abstract Base Class
 An `AbstractSource` also owns a set of `Stream`s. This is populated via the `AbstractSource`'s `streams` [function](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L63).
 `Discover` and `Read` rely on this populated set.
 
@@ -58,9 +59,8 @@ A summary of what we've covered so far on how to use the Airbyte CDK:
     2. Creating the appropriate `Stream` classes and returning them in the `streams` function.
     3. placing the above mentioned `spec.json` file in the right place.
 
-### The `HTTPStream` Object
+### HTTP Streams
 
 We've covered how the `AbstractSource` works with the `Stream` interface in order to fulfill the Airbyte
 Specification. Although developers are welcome to implement their own object, the CDK saves developers the hassle
-of doing so with the `HTTPStream` object. Similar to the `AbstractSource`, creating a `Stream` is a matter
-of extending `HTTPStream`, filling in the right functions, and placing a single json file in the right place.
+of doing so in the case of HTTP APIs with the [`HTTPStream`](./http-streams.md) object. 
