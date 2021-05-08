@@ -10,7 +10,7 @@ The CDK provides an improved developer experience by providing basic implementat
 
 This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding.
 
-## Getting started
+## Getting Started
 Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
 ```
 cd airbyte-integrations/connector-templates/generator
@@ -22,10 +22,7 @@ then follow the interactive prompt. Next, find all `TODO`s in the generated proj
 Additionally, you can follow [this tutorial](docs/tutorials/http_api_source.md) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
 
 ### Concepts & Documentation
-See the [overview docs](docs/concepts/overview.md) for a tour through what the API offers.
-
-### Airbyte Specification
-Find the reference docs for the Airbyte Specification (the interface for how sources and destinations interact) [here](https://docs.airbyte.io/architecture/airbyte-specification).
+See the [concepts docs](docs/concepts/README.md) for a tour through what the API offers.
 
 ### Example Connectors
 
@@ -64,3 +61,11 @@ pip install -e ".[dev]" # [dev] installs development-only dependencies
 #### Testing
 All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_cdk unit_tests/` to run them.
 This also presents a test coverage report.
+
+## Coming Soon
+* Full OAuth 2.0 support
+* Airbyte Java HTTP CDK
+* CDK for Async HTTP endpoints (request-poll-wait style endpoints)
+* CDK for other protocols
+* General CDK for Destinations
+* Don't see a feature you need? [Create an issue and let us know how we can help!](github.com/airbytehq/airbyte/issues/new/choose)
