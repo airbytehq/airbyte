@@ -118,7 +118,7 @@ class SingerSource(Source):
 
     def read(
         self, logger: AirbyteLogger, config_container: ConfigContainer, catalog_path: str, state_path: str = None
-    ) -> Iterable[AirbyteMessage, None, None]:
+    ) -> Iterable[AirbyteMessage]:
         """
         Implements the parent class read method.
         """
