@@ -1,7 +1,5 @@
-from .connector import Connector, AirbyteSpec
+from .connector import AirbyteSpec, Connector
 from .entrypoint import AirbyteEntrypoint
 from .logger import AirbyteLogger
 
-__all__ = [
-    'AirbyteEntrypoint', 'AirbyteLogger', 'AirbyteSpec', 'Connector'
-]
+__all__ = ["AirbyteEntrypoint", "AirbyteLogger", "AirbyteSpec", "Connector"]

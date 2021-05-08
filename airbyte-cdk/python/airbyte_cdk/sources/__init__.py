@@ -1,7 +1,4 @@
-from .source import Source
 from .abstract_source import AbstractSource
+from .source import Source
 
-__all__ = [
-    "AbstractSource",
-    "Source"
-]
+__all__ = ["AbstractSource", "Source"]

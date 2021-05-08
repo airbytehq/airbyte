@@ -26,9 +26,9 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any, Dict, Iterable, Mapping, MutableMapping
 
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.connector import Connector
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog
 
 
 class Source(Connector, ABC):
