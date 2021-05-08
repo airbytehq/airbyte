@@ -71,5 +71,5 @@ you should see some output like:
 
 It's that simple! Now the connector knows how to declare your connector's stream's schema. We declare only one stream since our source is simple, but the principle is exactly the same if you had many streams.
 
-You can also dynamically define schemas, but that's beyond the scope of this tutorial. See the [schema docs](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/docs/schemas.md) for more information.
+You can also dynamically define schemas, but that's beyond the scope of this tutorial. See the [schema docs](../../concepts/full-refresh-stream.md#defining-the-streams-schema) for more information.
 

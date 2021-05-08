@@ -1,31 +1,41 @@
-# The Basic Full-Refresh Stream
+# The `Stream` class 
+As mentioned in the [Basic Concepts Overview](basic-concepts.md), a `Stream` is the atomic unit for reading data from a Source. A stream can read 
+data from anywhere: a relational database, an API, or even scrape a web page! (although that might be stretching the limits of what a connector should do).
 
-Just like any general HTTP request, the basic `HTTPStream` requires a url to perform the request, and instructions
-on how to parse the resulting response.
+To implement a stream, there are two minimum requirements: 
+1. Define the stream's schema
+2. Implement the logic for reading records from the underlying data source
 
-The full request path is broken up into two parts, the base url and the path. This makes it easy for developers
-to create a Source-specific base `HTTPStream` class, with the base url filled in, and individual streams for
-each available HTTP resource. The [Stripe CDK implementation](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py)
-is a reification of this pattern.
+## Defining the stream's schema
+Your connector must describe the schema of each stream it can output using [JSONSchema](https://json-schema.org). 
 
-The base url is set via the `url_base` property, while the path is set by implementing the abstract `path` function.
+The simplest way to do this is to describe the schema of your streams using one `.json` file per stream. You can also dynamically generate the schema of your stream in code, or you can combine both approaches: start with a `.json` file and dynamically add properties to it. 
+ 
+The schema of a stream is the return value of `Stream.get_json_schema`.
+ 
+### Static schemas
+By default, `Stream.get_json_schema` reads a `.json` file in the `schemas/` directory whose name is equal to the value of the `Stream.name` property. In turn `Stream.name` by default returns the name of the class in snake case. Therefore, if you have a class `class EmployeeBenefits(HttpStream)` the default behavior will look for a file called `schemas/employee_benefits.json`. You can override any of these behaviors as you need.
 
-The `parse_response` function instructs the stream how to parse the API response. This returns an `Iterable`, whose
-elements are each later transformed into an `AirbyteRecordMessage`. API routes whose response contains a single record
-generally have a `parse_reponse` function that return a list of just that one response. Routes that return a list,
-usually have a `parse_response` function that return the received list with all elements. Pulling the data out
-from the response is sufficient, any deserialization is handled by the CDK.
+Important note: any objects referenced via `$ref` should be placed in the `shared/` directory in their own `.json` files.
+ 
+### Dynamic schemas
+If you'd rather define your schema in code, override `Stream.get_json_schema` in your stream class to return a `dict` describing the schema using [JSONSchema](https://json-schema.org).
 
-Lastly, the `HTTPStream` must describe the schema of the records it outputs using JsonSchema.
-The simplest way to do this is by placing a `.json` file per stream in the `schemas` directory in the generated python module.
-The name of the `.json` file must match the lower snake case name of the corresponding Stream. Here are
-[examples](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-stripe/source_stripe/schemas)
-from the Stripe API.
+### Dynamically modifying static schemas    
+Place a `.json` file in the `schemas` folder containing the basic schema like described in the static schemas section. 
+Then, override `Stream.get_json_schema` to run the default behavior, edit the returned value, then return the edited value: 
+```
+def get_json_schema(self):
+    schema = super().get_json_schema()
+    schema['dynamically_determined_property'] = "property"
+    return schema
+```
 
-You can also dynamically set your schema. See the [schema docs](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/docs/schemas.md) for more information.
 
-These four elements - the `url_base` property, the `path` function, the `parse_response` function and the schema file -
-are the bare minimum required to implement the `HTTPStream`, and can be seen in the same [Stripe example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L38).
+## Reading records from the data source
+The only method required to implement a `Stream` is `Stream.read_records`. Given some information about how the stream should be read, this method
+should output an iterable object containing records from the data source. We recommend using generators as they are very efficient with regards to memory requirements. 
 
-This basic implementation gives us a Full-Refresh Airbyte Stream. We say Full-Refresh since the stream does not have
-state and will always indiscriminately read all data from the underlying API resource.
+
+## Incremental Streams
+We highly recommend implementing Incremental when feasible. See the [incremental streams page](./incremental-stream.md) for more information.    
