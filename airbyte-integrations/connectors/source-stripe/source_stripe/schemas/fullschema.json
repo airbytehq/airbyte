@@ -2066,7 +2066,7 @@
     "json_schema": {
       "type": ["null", "object"],
       "properties": {
-        "date": {
+        "created": {
           "type": ["null", "string"],
           "format": "date-time"
         },

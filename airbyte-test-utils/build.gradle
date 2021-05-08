@@ -3,5 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':airbyte-db')
+
     implementation 'org.testcontainers:postgresql:1.15.1'
 }

@@ -12,4 +12,4 @@ printf "\n"
 # Test with Coverage Report
 echo "Running tests.."
 # The -s flag instructs PyTest to capture stdout logging; simplifying debugging.
-pytest -s --cov=airbyte_cdk unit_tests/
+pytest -s -vv --cov=airbyte_cdk unit_tests/
