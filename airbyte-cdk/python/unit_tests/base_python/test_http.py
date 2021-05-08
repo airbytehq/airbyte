@@ -128,3 +128,5 @@ def test_stub_custom_backoff_http_stream(mocker):
         records = []
         for r in stream.read_records(SyncMode.full_refresh):
             records.append(r)
+
+    # TODO(davin): Figure out how to assert calls.
