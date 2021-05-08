@@ -318,7 +318,7 @@ class AdsInsightAPI(IncrementalStreamAPI):
         "dma",
     ]
 
-    MAX_WAIT_TO_START = pendulum.Interval(minutes=2)
+    MAX_WAIT_TO_START = pendulum.Interval(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.Interval(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.Interval(minutes=5)
 

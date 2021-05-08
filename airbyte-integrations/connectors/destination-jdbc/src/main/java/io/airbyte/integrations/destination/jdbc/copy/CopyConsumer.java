@@ -31,6 +31,8 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -42,8 +44,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CopyConsumer.class);
 
   private final String configuredSchema;
   private final T config;
@@ -53,6 +59,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
   private final SqlOperations sqlOperations;
   private final ExtendedNameTransformer nameTransformer;
   private final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier;
+  private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
 
   public CopyConsumer(String configuredSchema,
                       T config,
@@ -69,6 +76,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
     this.sqlOperations = sqlOperations;
     this.nameTransformer = nameTransformer;
     this.pairToCopier = new HashMap<>();
+    this.pairToIgnoredRecordCount = new HashMap<>();
 
     var definedSyncModes = catalog.getStreams().stream()
         .map(ConfiguredAirbyteStream::getDestinationSyncMode)
@@ -78,6 +86,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void startTracked() {
+    pairToIgnoredRecordCount.clear();
     var stagingFolder = UUID.randomUUID().toString();
     for (var configuredStream : catalog.getStreams()) {
       var stream = configuredStream.getStream();
@@ -90,19 +99,28 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
-    var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
+  protected void acceptTracked(AirbyteMessage message) throws Exception {
+    if (message.getType() != Type.RECORD) {
+      return;
+    }
+    final AirbyteRecordMessage recordMessage = message.getRecord();
+    var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
     if (!pairToCopier.containsKey(pair)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-              Jsons.serialize(catalog), Jsons.serialize(message)));
+              Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
     }
 
     var id = UUID.randomUUID();
-    var data = Jsons.serialize(message.getData());
-    var emittedAt = Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt()));
-
-    pairToCopier.get(pair).write(id, data, emittedAt);
+    var data = Jsons.serialize(recordMessage.getData());
+    if (sqlOperations.isValidData(data)) {
+      // TODO Truncate json data instead of throwing whole record away?
+      // or should we upload it into a special rejected record folder in s3 instead?
+      var emittedAt = Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt()));
+      pairToCopier.get(pair).write(id, data, emittedAt);
+    } else {
+      pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
+    }
   }
 
   /**
@@ -112,32 +130,46 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
    * tables.
    */
   public void close(boolean hasFailed) throws Exception {
+    pairToIgnoredRecordCount
+        .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
     closeAsOneTransaction(new ArrayList<>(pairToCopier.values()), hasFailed, db);
   }
 
   public void closeAsOneTransaction(List<StreamCopier> streamCopiers, boolean hasFailed, JdbcDatabase db) throws Exception {
+    Exception firstException = null;
     try {
-      StringBuilder mergeCopiersToFinalTableQuery = new StringBuilder();
+      List<String> queries = new ArrayList<>();
       for (var copier : streamCopiers) {
-        copier.closeStagingUploader(hasFailed);
+        try {
+          copier.closeStagingUploader(hasFailed);
 
-        if (!hasFailed) {
-          copier.createTemporaryTable();
-          copier.copyStagingFileToTemporaryTable();
-          copier.createDestinationSchema();
-          var destTableName = copier.createDestinationTable();
-          var mergeQuery = copier.generateMergeStatement(destTableName);
-          mergeCopiersToFinalTableQuery.append(mergeQuery);
+          if (!hasFailed) {
+            copier.createDestinationSchema();
+            copier.createTemporaryTable();
+            copier.copyStagingFileToTemporaryTable();
+            var destTableName = copier.createDestinationTable();
+            var mergeQuery = copier.generateMergeStatement(destTableName);
+            queries.add(mergeQuery);
+          }
+        } catch (Exception e) {
+          final String message = String.format("Failed to finalize copy to temp table due to: %s", e);
+          LOGGER.error(message);
+          hasFailed = true;
+          if (firstException == null) {
+            firstException = e;
+          }
         }
       }
-
       if (!hasFailed) {
-        sqlOperations.executeTransaction(db, mergeCopiersToFinalTableQuery.toString());
+        sqlOperations.executeTransaction(db, queries);
       }
     } finally {
       for (var copier : streamCopiers) {
         copier.removeFileAndDropTmpTable();
       }
+    }
+    if (firstException != null) {
+      throw firstException;
     }
   }
 

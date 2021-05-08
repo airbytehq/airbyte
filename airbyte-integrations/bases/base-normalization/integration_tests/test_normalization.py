@@ -21,31 +21,6 @@
 # SOFTWARE.
 
 
-"""
-MIT License
-
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
-
 import json
 import os
 import pathlib
@@ -79,8 +54,6 @@ def before_all_tests(request):
     change_current_test_dir(request)
     setup_postgres_db()
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
-    print("Installing dbt dependencies packages\nExecuting: cd ../dbt-project-template/\nExecuting: dbt deps")
-    subprocess.call(["dbt", "deps"], cwd="../dbt-project-template/", env=os.environ)
     yield
     tear_down_postgres_db()
     for folder in temporary_folders:
@@ -218,10 +191,17 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
     print(f"Setting up test folder {test_root_dir}")
     shutil.copytree("../dbt-project-template", test_root_dir)
-    # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
-    copy_replace(
-        "../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"), pattern="ephemeral", replace_value="view"
-    )
+    if integration_type != "Redshift":
+        # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
+        copy_replace(
+            "../dbt-project-template/dbt_project.yml",
+            os.path.join(test_root_dir, "dbt_project.yml"),
+            pattern="ephemeral",
+            replace_value="view",
+        )
+    else:
+        # 'view' materializations on redshift are too slow, so keep it ephemeral there...
+        copy_replace("../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
 
@@ -320,13 +300,14 @@ def dbt_run(test_root_dir: str):
     Run the dbt CLI to perform transformations on the test raw data in the destination
     """
     # Perform sanity check on dbt project settings
-    assert run_check_command(["dbt", "debug", "--profiles-dir=.", "--project-dir=."], test_root_dir)
-    # Compile dbt models files into destination sql dialect, then run the transformation queries
-    assert run_check_command(["dbt", "run", "--profiles-dir=.", "--project-dir=."], test_root_dir)
-    # Copy final SQL files to persist them in git
+    assert run_check_dbt_command("debug", test_root_dir)
     final_sql_files = os.path.join(test_root_dir, "final")
     shutil.rmtree(final_sql_files, ignore_errors=True)
-    shutil.copytree(os.path.join(test_root_dir, "..", "build", "run", "airbyte_utils", "models", "generated"), final_sql_files)
+    # Compile dbt models files into destination sql dialect, then run the transformation queries
+    dbt_run_succeeded = run_check_dbt_command("run", test_root_dir)
+    # Copy final SQL files to persist them in git
+    # shutil.copytree(os.path.join(test_root_dir, "..", "build", "run", "airbyte_utils", "models", "generated"), final_sql_files)
+    assert dbt_run_succeeded
 
 
 def dbt_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
@@ -338,28 +319,59 @@ def dbt_test(destination_type: DestinationType, test_resource_name: str, test_ro
 
     We use this mechanism to verify the output of our integration tests.
     """
+    replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
     copy_test_files(
         os.path.join("resources", test_resource_name, "dbt_schema_tests"),
         os.path.join(test_root_dir, "models/dbt_schema_tests"),
         destination_type,
+        replace_identifiers,
     )
-    copy_test_files(os.path.join("resources", test_resource_name, "dbt_data_tests"), os.path.join(test_root_dir, "tests"), destination_type)
-    assert run_check_command(["dbt", "test", "--profiles-dir=.", "--project-dir=."], test_root_dir)
+    copy_test_files(
+        os.path.join("resources", test_resource_name, "dbt_data_tests"),
+        os.path.join(test_root_dir, "tests"),
+        destination_type,
+        replace_identifiers,
+    )
+    assert run_check_dbt_command("test", test_root_dir)
 
 
-def run_check_command(commands: List[str], cwd: str) -> bool:
+def run_check_dbt_command(command: str, cwd: str) -> bool:
     """
-    Run dbt subprocess while checking and counting for "ERROR" or "FAIL" printed in its outputs
+    Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
     """
     error_count = 0
+    commands = [
+        "docker",
+        "run",
+        "--rm",
+        "--init",
+        "-v",
+        f"{cwd}:/workspace",
+        "-v",
+        f"{cwd}/build:/build",
+        "-v",
+        f"{cwd}/final:/build/run/airbyte_utils/models/generated",
+        "-v",
+        "/tmp/bq_keyfile.json:/tmp/bq_keyfile.json",
+        "--network",
+        "host",
+        "--entrypoint",
+        "/usr/local/bin/dbt",
+        "-i",
+        "airbyte/normalization:dev",
+        command,
+        "--profiles-dir=/workspace",
+        "--project-dir=/workspace",
+    ]
     print("Executing: ", " ".join(commands))
+    print(f"Equivalent to: dbt {command} --profiles-dir={cwd} --project-dir={cwd}")
     with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
         process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
         for line in iter(process.stdout.readline, b""):
             f.write(line)
             str_line = line.decode("utf-8")
             sys.stdout.write(str_line)
-            if ("ERROR" in str_line or "FAIL" in str_line) and "Done." not in str_line and "PASS=" not in str_line:
+            if ("ERROR" in str_line or "FAIL" in str_line or "WARNING" in str_line) and "Done." not in str_line and "PASS=" not in str_line:
                 # count lines mentionning ERROR (but ignore the one from dbt run summary)
                 error_count += 1
     process.wait()
@@ -411,19 +423,44 @@ def copy_replace(src, dst, pattern=None, replace_value=None):
         file2.close()
 
 
-def copy_test_files(src: str, dst: str, destination_type: DestinationType):
+def copy_test_files(src: str, dst: str, destination_type: DestinationType, replace_identifiers: str):
     """
     Copy file while hacking snowflake identifiers that needs to be uppercased...
     (so we can share these dbt tests files accross destinations)
     """
     if os.path.exists(src):
+        temp_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_")
+        temporary_folders.add(temp_dir)
+        # Copy and adapt capitalization
         if destination_type.value == DestinationType.SNOWFLAKE.value:
-            shutil.copytree(src, dst, copy_function=copy_snowflake)
-        else:
-            shutil.copytree(src, dst)
+            shutil.copytree(src, temp_dir + "/upper", copy_function=copy_upper)
+            src = temp_dir + "/upper"
+        elif destination_type.value == DestinationType.REDSHIFT.value:
+            shutil.copytree(src, temp_dir + "/lower", copy_function=copy_lower)
+            src = temp_dir + "/lower"
+        if os.path.exists(replace_identifiers):
+            with open(replace_identifiers, "r") as file:
+                contents = file.read()
+            identifiers_map = json.loads(contents)
+            pattern = []
+            replace_value = []
+            if destination_type.value in identifiers_map:
+                for entry in identifiers_map[destination_type.value]:
+                    for k in entry:
+                        pattern.append(k)
+                        replace_value.append(entry[k])
+            if pattern and replace_value:
+
+                def copy_replace_identifiers(src, dst):
+                    copy_replace(src, dst, pattern, replace_value)
+
+                shutil.copytree(src, temp_dir + "/replace", copy_function=copy_replace_identifiers)
+                src = temp_dir + "/replace"
+        # final copy
+        shutil.copytree(src, dst)
 
 
-def copy_snowflake(src, dst):
+def copy_upper(src, dst):
     print(src, "->", dst)
     copy_replace(
         src,
@@ -434,17 +471,44 @@ def copy_snowflake(src, dst):
             r"(source\(')(.*)('\))",
         ],
         replace_value=[
-            to_snowflake_identifier,
-            to_snowflake_identifier,
-            to_snowflake_identifier,
+            to_upper_identifier,
+            to_upper_identifier,
+            to_upper_identifier,
         ],
     )
 
 
-def to_snowflake_identifier(input: re.Match) -> str:
+def copy_lower(src, dst):
+    print(src, "->", dst)
+    copy_replace(
+        src,
+        dst,
+        pattern=[
+            r"(- name:) *(.*)",
+            r"(ref\(')(.*)('\))",
+            r"(source\(')(.*)('\))",
+        ],
+        replace_value=[
+            to_lower_identifier,
+            to_lower_identifier,
+            to_lower_identifier,
+        ],
+    )
+
+
+def to_upper_identifier(input: re.Match) -> str:
     if len(input.groups()) == 2:
         return f"{input.group(1)} {input.group(2).upper()}"
     elif len(input.groups()) == 3:
         return f"{input.group(1)}{input.group(2).upper()}{input.group(3)}"
+    else:
+        raise Exception(f"Unexpected number of groups in {input}")
+
+
+def to_lower_identifier(input: re.Match) -> str:
+    if len(input.groups()) == 2:
+        return f"{input.group(1)} {input.group(2).lower()}"
+    elif len(input.groups()) == 3:
+        return f"{input.group(1)}{input.group(2).lower()}{input.group(3)}"
     else:
         raise Exception(f"Unexpected number of groups in {input}")
