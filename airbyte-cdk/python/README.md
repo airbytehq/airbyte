@@ -64,3 +64,9 @@ pip install -e ".[dev]" # [dev] installs development-only dependencies
 #### Testing
 All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_cdk unit_tests/` to run them.
 This also presents a test coverage report.
+
+
+#### Publishing a new version to PyPi
+1. Bump the package version in `setup.py`
+2. Open a PR
+3. An Airbyte member must comment `/publish-cdk --dry-run` or `/publish-cdk`
