@@ -69,4 +69,4 @@ This also presents a test coverage report.
 #### Publishing a new version to PyPi
 1. Bump the package version in `setup.py`
 2. Open a PR
-3. An Airbyte member must comment `/publish-cdk --dry-run` or `/publish-cdk`
+3. An Airbyte member must comment `/publish-cdk --dry-run=<true or false>`. Dry runs publish to test.pypi.org.
