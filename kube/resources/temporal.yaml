@@ -46,7 +46,7 @@ spec:
               value: "5432"
             - name: POSTGRES_SEEDS
               value: "airbyte-db-svc"
-            
+
           ports:
             - containerPort: 7233
           volumeMounts:
