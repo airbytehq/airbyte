@@ -28,10 +28,10 @@ from typing import Dict, Iterable, List, Type
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
-
-from .singer_helpers import Catalogs, SingerHelper, SyncModeInfo
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.utils.catalog_helpers import CatalogHelper
+
+from .singer_helpers import Catalogs, SingerHelper, SyncModeInfo
 
 
 @dataclass

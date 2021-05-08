@@ -27,8 +27,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 
 def package_name_from_class(cls: object) -> str:
@@ -54,11 +54,11 @@ class Stream(ABC):
 
     @abstractmethod
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         This method should be overridden by subclasses to read records based on the inputs
@@ -122,7 +122,7 @@ class Stream(ABC):
         """
 
     def stream_slices(
-            self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.

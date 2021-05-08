@@ -25,9 +25,10 @@ import sys
 import time
 
 import backoff
-from .exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.logger import AirbyteLogger
 from requests import codes, exceptions
+
+from .exceptions import DefaultBackoffException, UserDefinedBackoffException
 
 TRANSIENT_EXCEPTIONS = (DefaultBackoffException, exceptions.ConnectTimeout, exceptions.ReadTimeout, exceptions.ConnectionError)
 

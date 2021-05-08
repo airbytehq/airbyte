@@ -26,8 +26,6 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.source import Source
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -41,6 +39,8 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.source import Source
+from airbyte_cdk.sources.streams.core import Stream
 
 
 class AbstractSource(Source, ABC):

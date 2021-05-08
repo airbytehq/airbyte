@@ -25,6 +25,7 @@ from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import pendulum
 import requests
+
 from .core import HttpAuthenticator
 
 

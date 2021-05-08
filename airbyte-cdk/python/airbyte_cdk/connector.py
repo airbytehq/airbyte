@@ -27,9 +27,8 @@ import pkgutil
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, Optional
 
-from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
-
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
 
 
 class AirbyteSpec(object):
@@ -81,4 +80,3 @@ class Connector(ABC):
         Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
         to the Stripe API.
         """
-

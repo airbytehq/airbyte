@@ -28,9 +28,8 @@ import sys
 from collections.abc import Mapping
 from pathlib import Path
 
-from pytest import fixture
-
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from pytest import fixture
 
 MODULE = sys.modules[__name__]
 MODULE_NAME = MODULE.__name__.split(".")[0]

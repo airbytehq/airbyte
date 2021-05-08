@@ -25,6 +25,7 @@ import copy
 from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Type
 
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -37,10 +38,9 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.source import Source
 
 from .client import BaseClient
-from airbyte_cdk.sources.source import Source
-from airbyte_cdk.logger import AirbyteLogger
 
 
 class BaseSource(Source):

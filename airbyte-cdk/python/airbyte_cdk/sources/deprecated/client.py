@@ -26,7 +26,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Generator, List, Mapping, Tuple
 
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
-
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 
