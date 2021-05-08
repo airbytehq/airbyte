@@ -8,24 +8,22 @@ Stream only reads what is necessary, and is thus far more efficient.
 
 Several new pieces are essential to understand how incrementality works with the CDK.
 
-First is the `AirbyteStateMessage` and the `HttpStream`'s `cursor_field`. As mentioned, the `AirbyteStateMessage`
+First is the `AirbyteStateMessage` and the `Stream`'s `cursor_field`. As mentioned, the `AirbyteStateMessage`
 persists state between syncs, and allows a new sync to pick up from where the previous sync last finished.
-The `cursor_field` refers to the actual element in the HTTP request used to determine order. The `cursor_field` informs the user which field is used to track cursors. This is useful information in general, but is especially important in scenarios where the user can select cursors as they can pass in the cursor value they'd like to use e.g: choose between `created_at` or `updated_at` fields in an API or DB table.
+The `cursor_field` refers to the field in the stream's output records used to determine order. This is useful information in general, but is especially important in scenarios where the user can select cursors as they can pass in the cursor value they'd like to use e.g: choose between `created_at` or `updated_at` fields in an API or DB table.
 Setting this cursor field to any value informs the framework that this stream is incremental.
-This field is also commonly used as a direct index into the api response to
-create the `AirbyteStateMessage`.
 
 Next is the `get_updated_state` function. This function helps the CDK figure out the latest state for every record processed
-(as returned by the `parse_response`function mentioned above). This allows sync to resume from where the previous sync last stopped,
+(as returned by the `Stream.read_records` method). This allows sync to resume from where the previous sync last stopped,
 regardless of success or failure. This function typically compares the state object's and the latest record's cursor field, picking the latest one.
 
 This can optionally be paired with the `stream_slices` function to granularly control exactly when state is saved. Conceptually, a Stream Slice is a subset of the records in a stream which represent the smallest unit of data which can be re-synced. Once a full slice is read, an `AirbyteStateMessage` will be output, causing state to be saved. If a connector fails while reading the Nth slice of a stream, then the next time it retries, it will begin reading at the beginning of the Nth slice again, rather than re-read slices `1...N-1`.
 synced.
 
-In the HTTP case, each Slice is equivalent to a HTTP request; the CDK will make one request
+In the [HTTP-based connector](./http-stream.md) case, each Slice is equivalent to a HTTP request; the CDK will make one request
 per element returned by the `stream_slices` function. A Slice object is not typed, and the developer
 is free to include any information necessary to make the request. This function is called when the
-`HTTPStream` is first created. Typically, the `stream_slices` function, via inspecting the state object,
+`Stream` is about to be read. Typically, the `stream_slices` function, via inspecting the state object,
 generates a Slice for every request to be made.
 
 As an example, suppose an API is able to dispense data hourly. If the last sync was exactly 24 hours ago,

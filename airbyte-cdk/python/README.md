@@ -68,3 +68,4 @@ This also presents a test coverage report.
 * CDK for Async HTTP endpoints (request-poll-wait style endpoints)
 * CDK for other protocols
 * General CDK for Destinations
+* Don't see a feature you need? [Create an issue and let us know how we can help!](github.com/airbytehq/airbyte/issues/new/choose)

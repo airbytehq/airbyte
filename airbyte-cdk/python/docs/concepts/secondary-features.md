@@ -1,6 +1,6 @@
 # Secondary Features
 
-The CDK offers other features that make writing HTTP APIs a breeze.
+The CDK offers other features that make writing connectors for HTTP APIs a breeze. All the features below can be combined with other stream features described in the [Full refresh streams](./full-refresh-stream.md) and [Incremental streams](incremental-stream.md) section
 
 ## Authentication
 

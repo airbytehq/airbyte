@@ -21,9 +21,13 @@ up the larger __Source__. If the __Source__ is a RDMS, each __Stream__ is a tabl
 to one resource within the API. e.g. a __Stripe Source__ would have have one __Stream__ for `Transactions`, one
 for `Charges` and so on.
 
+### The `Source` class
+
+Airbyte provides abstract base classes which make it much easier to perform certain categories of tasks e.g: `HttpStream` makes it easy to create HTTP API-based streams. However, if those do not satisfy your use case (for example, if you're pulling data from a relational database), you can always directly implement the Airbyte Protocol by subclassing the CDK's `Source` class. 
+
+Note that while this is the most flexible way to implement a source connector, it is also the most toilsome as you will be required to manually manage state, input validation, correctly conforming to the Airbyte Protocol message formats, and more. We recommend using a subclass of `Source` unless you cannot fulfill your use case otherwise. 
 ### The `AbstractSource` Object
-This brings us to the CDK's `AbstractSource` object. This represents the just discussed `Source` concept and is
-the top-level entrypoint for the 4 methods __Source__s need to implement.
+`AbstractSource` is a more opinionated implementation of `Source`. It implements `Source`'s 4 methods as follows: 
 
 `Spec` and `Check` are the `AbstractSource`'s simplest operations.
 
