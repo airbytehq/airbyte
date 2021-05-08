@@ -28,10 +28,14 @@ from airbyte_cdk import SyncMode
 from airbyte_cdk.base_python import HttpStream
 
 
-class StubFullRefreshHttpStream(HttpStream):
-    resp_counter = 1
+class StubBasicReadHttpStream(HttpStream):
+
     url_base = "https://test_base_url.com"
     primary_key = ""
+
+    def __init__(self):
+        super().__init__()
+        self.resp_counter = 1
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -48,24 +52,47 @@ class StubFullRefreshHttpStream(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        stubResp = {"data": StubFullRefreshHttpStream.resp_counter}
-        StubFullRefreshHttpStream.resp_counter += 1
+        stubResp = {"data": self.resp_counter}
+        self.resp_counter += 1
         yield stubResp
 
 
-def test_mock_full_refresh_http_stream_read_records(mocker):
+def test_stub_basic_read_http_stream_read_records(mocker):
 
-    stream = StubFullRefreshHttpStream()
+    stream = StubBasicReadHttpStream()
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
-    mocker.patch.object(StubFullRefreshHttpStream, "_send_request", return_value=blank_response)
+    mocker.patch.object(StubBasicReadHttpStream, "_send_request", return_value=blank_response)
 
     records = []
     for r in stream.read_records(SyncMode.full_refresh):
         records.append(r)
 
-    assert [ {"data": 1} ] == records
+    assert [{"data": 1}] == records
 
-# test_incremental_stream_read_records
+
+class StubNextPageTokenHttpStream(StubBasicReadHttpStream):
+
+    current_token = 0
+    max_token_number = 6
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        while self.current_token < 5:
+            self.current_token += 1
+            return {"token": "token"}
+        return None
+
+
+def test_stub_next_page_token_http_stream_read_records(mocker):
+
+    stream = StubNextPageTokenHttpStream()
+    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(StubNextPageTokenHttpStream, "_send_request", return_value=blank_response)
+
+    records = []
+    for r in stream.read_records(SyncMode.full_refresh):
+        records.append(r)
+
+    assert [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}, {"data": 5}, {"data": 6}] == records
 
 
 # test back_off_for_stream
