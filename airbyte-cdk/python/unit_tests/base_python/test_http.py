@@ -111,14 +111,14 @@ def test_stub_bad_url_http_stream_read_records(mocker):
             records.append(r)
 
 
-class StubShouldNotRetryHttpStream(StubBasicReadHttpStream):
+class StubCustomBackoffHttpStream(StubBasicReadHttpStream):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         return 0.5
 
 
-def test_1(mocker):
+def test_stub_custom_backoff_http_stream(mocker):
 
-    stream = StubShouldNotRetryHttpStream()
+    stream = StubCustomBackoffHttpStream()
     req = requests.Response()
     req.status_code = 429
 
