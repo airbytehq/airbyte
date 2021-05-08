@@ -33,7 +33,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk-test",
-    version="0.1.0-rc2",
+    version="0.1.0-rc3",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
