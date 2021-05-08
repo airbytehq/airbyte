@@ -34,7 +34,7 @@ README = (HERE / "README.md").read_text()
 setup(
     name="airbyte-cdk-test",
     version="0.1.0-rc1",
-    description="Contains machinery to make it easy to write an Airbyte Connector in Python.",
+    description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
     author="Airbyte",
