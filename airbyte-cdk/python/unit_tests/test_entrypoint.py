@@ -26,6 +26,7 @@ from copy import deepcopy
 from typing import Any, List, Mapping, MutableMapping, Union
 
 import pytest
+from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -36,7 +37,6 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
-from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk.sources import Source
 
 
