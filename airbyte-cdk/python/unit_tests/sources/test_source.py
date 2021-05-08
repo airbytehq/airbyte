@@ -26,9 +26,9 @@ import tempfile
 from typing import Any, Mapping, MutableMapping
 
 import pytest
-from airbyte_cdk import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.sources.source import Source
+from airbyte_cdk.sources import Source
 
 
 class MockSource(Source):

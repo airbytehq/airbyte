@@ -27,9 +27,9 @@ from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
-from airbyte_cdk import AirbyteConnectionStatus
-from airbyte_cdk.connector import AirbyteSpec, Connector
+from airbyte_cdk import AirbyteSpec, Connector
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteConnectionStatus
 
 
 class TestAirbyteSpec:

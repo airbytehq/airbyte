@@ -1,31 +1,7 @@
-from .models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteLogMessage,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    ConnectorSpecification,
-    Status,
-    SyncMode,
-    Type,
-)
+from .connector import Connector, AirbyteSpec
+from .entrypoint import AirbyteEntrypoint
+from .logger import AirbyteLogger
 
 __all__ = [
-    "AirbyteCatalog",
-    "AirbyteConnectionStatus",
-    "AirbyteLogMessage",
-    "AirbyteMessage",
-    "AirbyteRecordMessage",
-    "AirbyteStateMessage",
-    "AirbyteStream",
-    "ConfiguredAirbyteCatalog",
-    "ConfiguredAirbyteStream",
-    "ConnectorSpecification",
-    "Status",
-    "SyncMode",
-    "Type",
+    'AirbyteEntrypoint', 'AirbyteLogger', 'AirbyteSpec', 'Connector'
 ]

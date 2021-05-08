@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-from airbyte_cdk import AirbyteCatalog, AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteCatalog, AirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.catalog_helpers import CatalogHelper
 
 

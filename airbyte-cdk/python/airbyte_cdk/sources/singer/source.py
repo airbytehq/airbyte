@@ -145,7 +145,7 @@ class SingerSource(Source):
         """
         return {}
 
-    def get_excluded_streams(self) -> List:
+    def get_excluded_streams(self) -> List[str]:
         """
         This method provide ability to exclude some streams from catalog
 

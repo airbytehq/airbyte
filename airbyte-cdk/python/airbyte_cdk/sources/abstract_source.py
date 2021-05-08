@@ -39,8 +39,8 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import Stream
 
 
 class AbstractSource(Source, ABC):

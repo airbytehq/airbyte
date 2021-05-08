@@ -25,7 +25,7 @@ from typing import Any, Iterable, List, Mapping
 
 import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams import Stream
 
 
 class StreamStubFullRefresh(Stream):

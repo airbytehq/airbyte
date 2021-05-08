@@ -25,22 +25,23 @@ from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import pytest
-from airbyte_cdk import (
+from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
+    DestinationSyncMode,
     Status,
     SyncMode,
     Type,
 )
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteStateMessage, DestinationSyncMode
-from airbyte_cdk.sources.abstract_source import AbstractSource
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
 
 
 class MockSource(AbstractSource):

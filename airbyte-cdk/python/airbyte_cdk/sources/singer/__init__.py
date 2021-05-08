@@ -1,2 +1,4 @@
-from .singer_helpers import *  # noqa
-from .source import *  # noqa
+from .source import SingerSource
+from .singer_helpers import SyncModeInfo, SingerHelper
+
+__all__ = ['SingerSource', 'SyncModeInfo', 'SingerHelper']
