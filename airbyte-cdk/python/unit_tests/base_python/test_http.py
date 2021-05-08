@@ -23,9 +23,10 @@
 
 from typing import Any, Iterable, Mapping, Optional
 
+import pytest
 import requests
 from airbyte_cdk import SyncMode
-from airbyte_cdk.base_python import HttpStream
+from airbyte_cdk.base_python import HttpStream, UserDefinedBackoffException
 
 
 class StubBasicReadHttpStream(HttpStream):
@@ -95,4 +96,35 @@ def test_stub_next_page_token_http_stream_read_records(mocker):
     assert [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}, {"data": 5}, {"data": 6}] == records
 
 
-# test back_off_for_stream
+class StubBadUrlHttpStream(StubBasicReadHttpStream):
+
+    url_base = "bad_url"
+
+
+def test_stub_bad_url_http_stream_read_records(mocker):
+
+    stream = StubBadUrlHttpStream()
+
+    with pytest.raises(requests.exceptions.RequestException):
+        records = []
+        for r in stream.read_records(SyncMode.full_refresh):
+            records.append(r)
+
+
+class StubShouldNotRetryHttpStream(StubBasicReadHttpStream):
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        return 0.5
+
+
+def test_1(mocker):
+
+    stream = StubShouldNotRetryHttpStream()
+    req = requests.Response()
+    req.status_code = 429
+
+    mocker.patch.object(requests.Session, "send", return_value=req)
+
+    with pytest.raises(UserDefinedBackoffException):
+        records = []
+        for r in stream.read_records(SyncMode.full_refresh):
+            records.append(r)

@@ -31,6 +31,7 @@ from airbyte_cdk.base_python.cdk.streams.auth.core import HttpAuthenticator
 from airbyte_cdk.base_python.cdk.streams.auth.oauth import Oauth2Authenticator
 from airbyte_cdk.base_python.cdk.streams.auth.token import TokenAuthenticator
 from airbyte_cdk.base_python.cdk.streams.core import Stream
+from airbyte_cdk.base_python.cdk.streams.exceptions import UserDefinedBackoffException
 from airbyte_cdk.base_python.cdk.streams.http import HttpStream
 from airbyte_cdk.base_python.client import BaseClient
 from airbyte_cdk.base_python.integration import AirbyteSpec, Destination, Integration, Source
@@ -56,4 +57,5 @@ __all__ = [
     "Source",
     "Stream",
     "TokenAuthenticator",
+    "UserDefinedBackoffException",
 ]
