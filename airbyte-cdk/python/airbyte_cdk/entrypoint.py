@@ -30,7 +30,7 @@ from typing import Iterable, List
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, Status, Type
-from airbyte_cdk.sources.source import Source
+from airbyte_cdk.sources import Source
 
 logger = AirbyteLogger()
 

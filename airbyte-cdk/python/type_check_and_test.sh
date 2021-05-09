@@ -4,8 +4,9 @@
 # TODO(davin): This should not assume the user has already set up the venv folder.
 
 # Static Type Checking
-echo "Running MyPy to static check base_python directory and test files."
-mypy airbyte_cdk/ unit_tests unit_tests/
+echo "Running MyPy to static check and test files."
+# Exclude Singer for the time being.
+mypy --exclude airbyte_cdk/sources/singer airbyte_cdk/ unit_tests/
 
 printf "\n"
 
