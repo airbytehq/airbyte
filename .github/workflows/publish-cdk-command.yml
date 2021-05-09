@@ -35,7 +35,7 @@ jobs:
           echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-      - name: Format
+      - name: Build CDK Package
         run: ./gradlew --no-daemon :airbyte-cdk:python:build
       - name: Publish Python Package
         if: success()
