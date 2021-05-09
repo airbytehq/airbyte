@@ -64,9 +64,7 @@ def test_stub_basic_read_http_stream_read_records(mocker):
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
     mocker.patch.object(StubBasicReadHttpStream, "_send_request", return_value=blank_response)
 
-    records = []
-    for r in stream.read_records(SyncMode.full_refresh):
-        records.append(r)
+    records = list(stream.read_records(SyncMode.full_refresh))
 
     assert [{"data": 1}] == records
 
@@ -89,9 +87,7 @@ def test_stub_next_page_token_http_stream_read_records(mocker):
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
     mocker.patch.object(StubNextPageTokenHttpStream, "_send_request", return_value=blank_response)
 
-    records = []
-    for r in stream.read_records(SyncMode.full_refresh):
-        records.append(r)
+    records = list(stream.read_records(SyncMode.full_refresh))
 
     assert [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}, {"data": 5}, {"data": 6}] == records
 
@@ -106,9 +102,7 @@ def test_stub_bad_url_http_stream_read_records(mocker):
     stream = StubBadUrlHttpStream()
 
     with pytest.raises(requests.exceptions.RequestException):
-        records = []
-        for r in stream.read_records(SyncMode.full_refresh):
-            records.append(r)
+        list(stream.read_records(SyncMode.full_refresh))
 
 
 class StubCustomBackoffHttpStream(StubBasicReadHttpStream):
@@ -125,8 +119,6 @@ def test_stub_custom_backoff_http_stream(mocker):
     mocker.patch.object(requests.Session, "send", return_value=req)
 
     with pytest.raises(UserDefinedBackoffException):
-        records = []
-        for r in stream.read_records(SyncMode.full_refresh):
-            records.append(r)
+        list(stream.read_records(SyncMode.full_refresh))
 
     # TODO(davin): Figure out how to assert calls.
