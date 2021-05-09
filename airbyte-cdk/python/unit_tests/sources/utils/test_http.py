@@ -25,10 +25,9 @@ from typing import Any, Iterable, Mapping, Optional
 
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 
 
 class StubBasicReadHttpStream(HttpStream):
