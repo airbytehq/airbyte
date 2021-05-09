@@ -73,7 +73,7 @@ setup(
     python_requires=">=3.7.9",
     extras_require={
         "dev": [
-            "MyPy",
+            "MyPy==0.812",
             "pytest",
             "pytest-cov",
             "pytest-mock",
