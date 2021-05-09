@@ -30,12 +30,12 @@ from pydantic import AnyUrl, BaseModel, Extra, Field
 
 
 class Type(Enum):
-    RECORD = "RECORD"
-    STATE = "STATE"
-    LOG = "LOG"
-    SPEC = "SPEC"
-    CONNECTION_STATUS = "CONNECTION_STATUS"
-    CATALOG = "CATALOG"
+    RECORD = 'RECORD'
+    STATE = 'STATE'
+    LOG = 'LOG'
+    SPEC = 'SPEC'
+    CONNECTION_STATUS = 'CONNECTION_STATUS'
+    CATALOG = 'CATALOG'
 
 
 class AirbyteRecordMessage(BaseModel):
@@ -43,41 +43,43 @@ class AirbyteRecordMessage(BaseModel):
         extra = Extra.allow
 
     stream: str = Field(..., description="the name of this record's stream")
-    data: Dict[str, Any] = Field(..., description="the record data")
+    data: Dict[str, Any] = Field(..., description='the record data')
     emitted_at: int = Field(
         ...,
-        description="when the data was emitted from the source. epoch in millisecond.",
+        description='when the data was emitted from the source. epoch in millisecond.',
     )
-    namespace: Optional[str] = Field(None, description="the namespace of this record's stream")
+    namespace: Optional[str] = Field(
+        None, description="the namespace of this record's stream"
+    )
 
 
 class AirbyteStateMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    data: Dict[str, Any] = Field(..., description="the state data")
+    data: Dict[str, Any] = Field(..., description='the state data')
 
 
 class Level(Enum):
-    FATAL = "FATAL"
-    ERROR = "ERROR"
-    WARN = "WARN"
-    INFO = "INFO"
-    DEBUG = "DEBUG"
-    TRACE = "TRACE"
+    FATAL = 'FATAL'
+    ERROR = 'ERROR'
+    WARN = 'WARN'
+    INFO = 'INFO'
+    DEBUG = 'DEBUG'
+    TRACE = 'TRACE'
 
 
 class AirbyteLogMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    level: Level = Field(..., description="the type of logging")
-    message: str = Field(..., description="the log message")
+    level: Level = Field(..., description='the type of logging')
+    message: str = Field(..., description='the log message')
 
 
 class Status(Enum):
-    SUCCEEDED = "SUCCEEDED"
-    FAILED = "FAILED"
+    SUCCEEDED = 'SUCCEEDED'
+    FAILED = 'FAILED'
 
 
 class AirbyteConnectionStatus(BaseModel):
@@ -89,14 +91,14 @@ class AirbyteConnectionStatus(BaseModel):
 
 
 class SyncMode(Enum):
-    full_refresh = "full_refresh"
-    incremental = "incremental"
+    full_refresh = 'full_refresh'
+    incremental = 'incremental'
 
 
 class DestinationSyncMode(Enum):
-    append = "append"
-    overwrite = "overwrite"
-    append_dedup = "append_dedup"
+    append = 'append'
+    overwrite = 'overwrite'
+    append_dedup = 'append_dedup'
 
 
 class ConnectorSpecification(BaseModel):
@@ -107,11 +109,13 @@ class ConnectorSpecification(BaseModel):
     changelogUrl: Optional[AnyUrl] = None
     connectionSpecification: Dict[str, Any] = Field(
         ...,
-        description="ConnectorDefinition specific blob. Must be a valid JSON string.",
+        description='ConnectorDefinition specific blob. Must be a valid JSON string.',
     )
-    supportsIncremental: Optional[bool] = Field(None, description="If the connector supports incremental mode or not.")
+    supportsIncremental: Optional[bool] = Field(
+        None, description='If the connector supports incremental mode or not.'
+    )
     supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
-        None, description="List of destination sync modes supported by the connector"
+        None, description='List of destination sync modes supported by the connector'
     )
 
 
@@ -120,23 +124,25 @@ class AirbyteStream(BaseModel):
         extra = Extra.allow
 
     name: str = Field(..., description="Stream's name.")
-    json_schema: Dict[str, Any] = Field(..., description="Stream schema using Json Schema specs.")
+    json_schema: Dict[str, Any] = Field(
+        ..., description='Stream schema using Json Schema specs.'
+    )
     supported_sync_modes: Optional[List[SyncMode]] = None
     source_defined_cursor: Optional[bool] = Field(
         None,
-        description="If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.",
+        description='If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.',
     )
     default_cursor_field: Optional[List[str]] = Field(
         None,
-        description="Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.",
+        description='Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.',
     )
     source_defined_primary_key: Optional[List[List[str]]] = Field(
         None,
-        description="If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.",
+        description='If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.',
     )
     namespace: Optional[str] = Field(
         None,
-        description="Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.",
+        description='Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.',
     )
 
 
@@ -148,12 +154,12 @@ class ConfiguredAirbyteStream(BaseModel):
     sync_mode: SyncMode
     cursor_field: Optional[List[str]] = Field(
         None,
-        description="Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.",
+        description='Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.',
     )
     destination_sync_mode: DestinationSyncMode
     primary_key: Optional[List[List[str]]] = Field(
         None,
-        description="Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.",
+        description='Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.',
     )
 
 
@@ -175,21 +181,23 @@ class AirbyteMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    type: Type = Field(..., description="Message type")
+    type: Type = Field(..., description='Message type')
     log: Optional[AirbyteLogMessage] = Field(
         None,
-        description="log message: any kind of logging you want the platform to know about.",
+        description='log message: any kind of logging you want the platform to know about.',
     )
     spec: Optional[ConnectorSpecification] = None
     connectionStatus: Optional[AirbyteConnectionStatus] = None
     catalog: Optional[AirbyteCatalog] = Field(
         None,
-        description="log message: any kind of logging you want the platform to know about.",
+        description='log message: any kind of logging you want the platform to know about.',
     )
-    record: Optional[AirbyteRecordMessage] = Field(None, description="record message: the record")
+    record: Optional[AirbyteRecordMessage] = Field(
+        None, description='record message: the record'
+    )
     state: Optional[AirbyteStateMessage] = Field(
         None,
-        description="schema message: the state. Must be the last message produced. The platform uses this information",
+        description='schema message: the state. Must be the last message produced. The platform uses this information',
     )
 
 
