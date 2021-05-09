@@ -33,8 +33,8 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.0.1",
-    description="Contains machinery to make it easy to write an Airbyte Connector in Python.",
+    version="0.1.0rc5",
+    description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
     author="Airbyte",
@@ -73,7 +73,7 @@ setup(
     python_requires=">=3.7.9",
     extras_require={
         "dev": [
-            "MyPy",
+            "MyPy==0.812",
             "pytest",
             "pytest-cov",
             "pytest-mock",
