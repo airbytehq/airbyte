@@ -189,6 +189,7 @@ class HttpStream(Stream, ABC):
         """
         response: requests.Response = self._session.send(request)
         if self.should_retry(response):
+
             custom_backoff_time = self.backoff_time(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
@@ -210,6 +211,7 @@ class HttpStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         pagination_complete = False
+
         while not pagination_complete:
             next_page_token = None
             request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
