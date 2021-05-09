@@ -32,7 +32,7 @@ HERE = pathlib.Path(__file__).parent
 README = (HERE / "README.md").read_text()
 
 setup(
-    name="airbyte-cdk-test",
+    name="airbyte-cdk",
     version="0.1.0-rc3",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
