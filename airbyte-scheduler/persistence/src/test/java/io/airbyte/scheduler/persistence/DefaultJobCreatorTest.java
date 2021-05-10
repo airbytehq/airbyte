@@ -41,10 +41,10 @@ import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.OperatorNormalization;
-import io.airbyte.config.OperatorType;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOperation.Status;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -209,7 +209,7 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
-        .withOperationsConfiguration(Jsons.jsonNode(List.of(STANDARD_SYNC_OPERATION)));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -237,7 +237,7 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
-        .withOperationsConfiguration(Jsons.jsonNode(List.of(STANDARD_SYNC_OPERATION)));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(JobConfig.ConfigType.SYNC)
@@ -269,7 +269,7 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog)
-        .withOperationsConfiguration(Jsons.jsonNode(List.of(STANDARD_SYNC_OPERATION)));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -300,7 +300,7 @@ public class DefaultJobCreatorTest {
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withConfiguredAirbyteCatalog(expectedCatalog)
-        .withOperationsConfiguration(Jsons.jsonNode(List.of(STANDARD_SYNC_OPERATION)));
+        .withOperationSequence(List.of(STANDARD_SYNC_OPERATION));
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)

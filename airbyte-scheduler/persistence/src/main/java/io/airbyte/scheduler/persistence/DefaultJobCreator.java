@@ -24,7 +24,6 @@
 
 package io.airbyte.scheduler.persistence;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
@@ -117,7 +116,7 @@ public class DefaultJobCreator implements JobCreator {
         .withSourceConfiguration(source.getConfiguration())
         .withDestinationDockerImage(destinationDockerImageName)
         .withDestinationConfiguration(destination.getConfiguration())
-        .withOperationsConfiguration(Jsons.jsonNode(standardSyncOperations))
+        .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
         .withState(null);
 
@@ -152,7 +151,7 @@ public class DefaultJobCreator implements JobCreator {
         .withPrefix(standardSync.getPrefix())
         .withDestinationDockerImage(destinationDockerImage)
         .withDestinationConfiguration(destination.getConfiguration())
-        .withOperationsConfiguration(Jsons.jsonNode(standardSyncOperations))
+        .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog);
 
     final JobConfig jobConfig = new JobConfig()

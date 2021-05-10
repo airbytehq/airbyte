@@ -113,7 +113,7 @@ public class TemporalClient {
         .withPrefix(config.getPrefix())
         .withSourceConfiguration(config.getSourceConfiguration())
         .withDestinationConfiguration(config.getDestinationConfiguration())
-        .withOperationsConfiguration(config.getOperationsConfiguration())
+        .withOperationSequence(config.getOperationSequence())
         .withCatalog(config.getConfiguredAirbyteCatalog())
         .withState(config.getState());
 

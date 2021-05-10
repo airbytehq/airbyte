@@ -75,7 +75,7 @@ class OperationsHandlerTest {
     standardSyncOperation = new StandardSyncOperation()
         .withOperationId(UUID.randomUUID())
         .withName("presto to hudi")
-        .withOperatorType(io.airbyte.config.OperatorType.NORMALIZATION)
+        .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.NORMALIZATION)
         .withOperatorNormalization(new io.airbyte.config.OperatorNormalization()
             .withEnabled(true))
         .withOperatorDbt(null)
@@ -128,7 +128,7 @@ class OperationsHandlerTest {
     final StandardSyncOperation updatedStandardSyncOperation = new StandardSyncOperation()
         .withOperationId(standardSyncOperation.getOperationId())
         .withName(standardSyncOperation.getName())
-        .withOperatorType(io.airbyte.config.OperatorType.DBT)
+        .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.DBT)
         .withOperatorDbt(new io.airbyte.config.OperatorDbt()
             .withGitRepoUrl("git_repo")
             .withDockerImage("docker")
@@ -227,7 +227,7 @@ class OperationsHandlerTest {
 
   @Test
   void testEnumConversion() {
-    assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorType.class, io.airbyte.config.OperatorType.class));
+    assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorType.class, io.airbyte.config.StandardSyncOperation.OperatorType.class));
     assertTrue(Enums.isCompatible(io.airbyte.api.model.OperationStatus.class, io.airbyte.config.StandardSyncOperation.Status.class));
   }
 
