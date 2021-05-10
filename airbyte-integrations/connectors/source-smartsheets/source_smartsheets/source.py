@@ -133,7 +133,7 @@ class SourceSmartsheets(Source):
                 logger.info(f"Row count: {sheet['totalRowCount']}")
 
                 for row in sheet["rows"]:
-                    values = tuple(i["value"] for i in row["cells"])
+                    values = tuple(i["value"] if "value" in i else "" for i in row["cells"])
                     try:
                         data = dict(zip(columns, values))
 
