@@ -219,6 +219,7 @@ public class ConnectionsHandler {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
+        .operationIds(connectionRead.getOperationIds())
         .syncCatalog(connectionRead.getSyncCatalog())
         .schedule(connectionRead.getSchedule())
         .status(ConnectionStatus.DEPRECATED);

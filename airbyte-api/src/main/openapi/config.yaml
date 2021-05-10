@@ -777,7 +777,7 @@ paths:
     post:
       tags:
         - connection
-      summary: Updated a connection status
+      summary: Update a connection
       operationId: updateConnection
       requestBody:
         content:
@@ -904,6 +904,114 @@ paths:
                 $ref: "#/components/schemas/JobInfoRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/create:
+    post:
+      tags:
+        - operation
+      summary: Create an operation to be applied as part of a connection pipeline
+      operationId: createOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/update:
+    post:
+      tags:
+        - operation
+      summary: Update an operation
+      operationId: updateOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/list:
+    post:
+      tags:
+        - operation
+      summary: Returns all operations for a connection.
+      description: List operations for connection.
+      operationId: listOperationsForConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationReadList"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/get:
+    post:
+      tags:
+        - operation
+      summary: Returns an operation
+      operationId: getOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+        "404":
+          description: Operation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/delete:
+    post:
+      tags:
+        - operation
+      summary: Delete an operation
+      operationId: deleteOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          description: Operation not found
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/scheduler/sources/check_connection:
@@ -1806,6 +1914,10 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -1824,6 +1936,10 @@ components:
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -1858,6 +1974,10 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -1898,6 +2018,117 @@ components:
             - days
             - weeks
             - months
+    # Operations
+    OperationId:
+      type: string
+      format: uuid
+    OperationIdRequestBody:
+      type: object
+      required:
+        - OperationId
+      properties:
+        OperationId:
+          $ref: "#/components/schemas/OperationId"
+    OperationCreate:
+      type: object
+      required:
+        - name
+        - operatorConfiguration
+        - status
+      properties:
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+        status:
+          $ref: "#/components/schemas/OperationStatus"
+    OperationUpdate:
+      type: object
+      required:
+        - operationId
+        - name
+        - operatorConfiguration
+        - status
+      properties:
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+        status:
+          $ref: "#/components/schemas/OperationStatus"
+    OperationRead:
+      type: object
+      required:
+        - operationId
+        - name
+        - operatorConfiguration
+        - status
+      properties:
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+        status:
+          $ref: "#/components/schemas/OperationStatus"
+    OperationReadList:
+      type: object
+      required:
+        - operations
+      properties:
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationRead"
+    OperationStatus:
+      type: string
+      description: Active means that data is flowing through the operator. Inactive means it is not. Deprecated means the operator is off and cannot be re-activated.
+      enum:
+        - active
+        - inactive
+        - deprecated
+    OperatorConfiguration:
+      type: object
+      required:
+        - OperatorType
+      properties:
+        # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
+        # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
+        operatorType:
+          $ref: "#/components/schemas/OperatorType"
+        normalization:
+          $ref: "#/components/schemas/OperatorNormalization"
+        dbt:
+          $ref: "#/components/schemas/OperatorDbt"
+    OperatorType:
+      type: string
+      enum:
+        # - destination
+        - normalization
+        - dbt
+      # - docker
+      # - webhook
+    OperatorNormalization:
+      type: object
+      required:
+        - enabled
+      properties:
+        enabled:
+          type: boolean
+    OperatorDbt:
+      type: object
+      required:
+        - gitRepoUrl
+      properties:
+        gitRepoUrl:
+          type: string
+        dockerImage:
+          type: string
+        dbtArguments:
+          type: string
     # LOGS
     LogType:
       type: string
@@ -2238,10 +2469,16 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
         source:
           $ref: "#/components/schemas/SourceRead"
         destination:
           $ref: "#/components/schemas/DestinationRead"
+        operations:
+          $ref: "#/components/schemas/OperationReadList"
         latestSyncJobCreatedAt:
           description: epoch time of the latest sync job. null if no sync job has taken place.
           type: integer
