@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Iterable, List, Mapping, Optional
 
 import docker
-from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from pydantic import ValidationError
 
 
