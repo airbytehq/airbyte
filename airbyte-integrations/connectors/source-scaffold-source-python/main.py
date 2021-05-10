@@ -20,12 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 import sys
 
-from base_python.entrypoint import launch
-
-from source_{{snakeCase name}}_singer import Source{{properCase name}}Singer
+from airbyte_cdk.entrypoint import launch
+from source_scaffold_source_python import SourceScaffoldSourcePython
 
 if __name__ == "__main__":
-    source = Source{{properCase name}}Singer()
+    source = SourceScaffoldSourcePython()
     launch(source, sys.argv[1:])
