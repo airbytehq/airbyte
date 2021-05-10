@@ -2093,7 +2093,7 @@ components:
     OperatorConfiguration:
       type: object
       required:
-        - OperatorType
+        - operatorType
       properties:
         # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
         # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
