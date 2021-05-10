@@ -20,8 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# format anchor
+import sys
 
+from airbyte_cdk.entrypoint import launch
+from source_scaffold_source_http import SourceScaffoldSourceHttp
 
-def test_example_method():
-    assert True
+if __name__ == "__main__":
+    source = SourceScaffoldSourceHttp()
+    launch(source, sys.argv[1:])
