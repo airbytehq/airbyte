@@ -25,17 +25,18 @@ import json
 from datetime import datetime
 from typing import Dict, Generator
 
-from airbyte_protocol import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    Status,
-    Type,
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import (
+AirbyteCatalog,
+AirbyteConnectionStatus,
+AirbyteMessage,
+AirbyteRecordMessage,
+AirbyteStream,
+ConfiguredAirbyteCatalog,
+Status,
+Type,
 )
-from base_python import AirbyteLogger, Source
+from airbyte_cdk.sources import Source
 
 
 class Source{{properCase name}}(Source):
