@@ -27,14 +27,14 @@ from typing import Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
-AirbyteCatalog,
-AirbyteConnectionStatus,
-AirbyteMessage,
-AirbyteRecordMessage,
-AirbyteStream,
-ConfiguredAirbyteCatalog,
-Status,
-Type,
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
 )
 from airbyte_cdk.sources import Source
 
