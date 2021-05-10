@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-python:0.1.4
+FROM python:3.7-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 ENV CODE_PATH="source_acceptance_test"
 

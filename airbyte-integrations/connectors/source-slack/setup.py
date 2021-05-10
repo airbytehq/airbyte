@@ -29,6 +29,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2", "slack_sdk==3.4.2", "pendulum>=2,<3"],
+    install_requires=["airbyte-cdk-test", "pytest==6.1.2", "slack_sdk==3.4.2", "pendulum>=2,<3"],
     package_data={"": ["*.json"]},
 )

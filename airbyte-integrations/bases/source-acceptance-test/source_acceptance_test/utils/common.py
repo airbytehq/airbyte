@@ -33,7 +33,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
 from source_acceptance_test.config import Config
 
 

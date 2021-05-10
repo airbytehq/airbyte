@@ -1,4 +1,4 @@
-# Standard tests
+# Source Acceptance Tests
 This package uses pytest to discover, configure and execute the tests.
 It implemented as a pytest plugin.
 

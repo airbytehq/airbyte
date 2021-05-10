@@ -87,7 +87,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
         if (project.file('unit_tests').exists()) {
             project.task('unitTest', type: PythonTask, dependsOn: project.installTestReqs) {
                 module = "pytest"
-                command = "unit_tests"
+                command = "-s unit_tests"
             }
         } else {
             project.task('unitTest') {
