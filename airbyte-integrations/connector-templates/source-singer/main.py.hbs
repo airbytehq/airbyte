@@ -22,9 +22,10 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from source_{{snakeCase name}} import Source{{properCase name}}
+from airbyte_cdk.entrypoint import launch
+
+from source_{{snakeCase name}}_singer import Source{{properCase name}}Singer
 
 if __name__ == "__main__":
-    source = Source{{properCase name}}()
+    source = Source{{properCase name}}Singer()
     launch(source, sys.argv[1:])
