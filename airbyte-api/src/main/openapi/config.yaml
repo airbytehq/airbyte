@@ -2034,21 +2034,17 @@ components:
       required:
         - name
         - operatorConfiguration
-        - status
       properties:
         name:
           type: string
         operatorConfiguration:
           $ref: "#/components/schemas/OperatorConfiguration"
-        status:
-          $ref: "#/components/schemas/OperationStatus"
     OperationUpdate:
       type: object
       required:
         - operationId
         - name
         - operatorConfiguration
-        - status
       properties:
         operationId:
           $ref: "#/components/schemas/OperationId"
@@ -2056,15 +2052,12 @@ components:
           type: string
         operatorConfiguration:
           $ref: "#/components/schemas/OperatorConfiguration"
-        status:
-          $ref: "#/components/schemas/OperationStatus"
     OperationRead:
       type: object
       required:
         - operationId
         - name
         - operatorConfiguration
-        - status
       properties:
         operationId:
           $ref: "#/components/schemas/OperationId"
@@ -2072,8 +2065,6 @@ components:
           type: string
         operatorConfiguration:
           $ref: "#/components/schemas/OperatorConfiguration"
-        status:
-          $ref: "#/components/schemas/OperationStatus"
     OperationReadList:
       type: object
       required:
@@ -2083,17 +2074,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OperationRead"
-    OperationStatus:
-      type: string
-      description: Active means that data is flowing through the operator. Inactive means it is not. Deprecated means the operator is off and cannot be re-activated.
-      enum:
-        - active
-        - inactive
-        - deprecated
     OperatorConfiguration:
       type: object
       required:
-        - OperatorType
+        - operatorType
       properties:
         # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
         # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
@@ -2113,11 +2097,6 @@ components:
       # - webhook
     OperatorNormalization:
       type: object
-      required:
-        - enabled
-      properties:
-        enabled:
-          type: boolean
     OperatorDbt:
       type: object
       required:
