@@ -48,7 +48,7 @@ _Note: this will assume that docker image for connector is already built_
 
 Using Gradle
 ```bash
-./gradlew :airbyte-integrations:connectors:source-<name>:standardTest
+./gradlew :airbyte-integrations:connectors:source-<name>:sourceAcceptanceTest
 ```
 _Note: this way will also build docker image for the connector_
 
