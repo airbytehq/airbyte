@@ -31,7 +31,6 @@ import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
-import io.airbyte.api.model.OperationStatus;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -88,12 +87,7 @@ public class OperationsHandler {
   }
 
   public void deleteOperation(OperationRead operationRead) throws ConfigNotFoundException, IOException, JsonValidationException {
-    final OperationUpdate operationUpdate = new OperationUpdate()
-        .operationId(operationRead.getOperationId())
-        .name(operationRead.getName())
-        .operatorConfiguration(operationRead.getOperatorConfiguration())
-        .status(OperationStatus.DEPRECATED);
-    updateOperation(operationUpdate);
+    // TODO chris: to implement in next PR on custom-dbt-config
   }
 
   private OperationRead buildOperationRead(UUID operationId)
