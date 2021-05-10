@@ -29,6 +29,6 @@ setup(
     author="Nate Nowack",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2", "smartsheet-python-sdk"],
+    install_requires=["airbyte-cdk-test", "pytest==6.1.2", "smartsheet-python-sdk"],
     package_data={"": ["*.json"]},
 )

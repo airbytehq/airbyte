@@ -23,9 +23,9 @@
 
 import sys
 
-from base_python.entrypoint import launch
-from source_slack import SourceSlack
+from airbyte_cdk.entrypoint import launch
+from source_exchange_rates import SourceExchangeRates
 
 if __name__ == "__main__":
-    source = SourceSlack()
+    source = SourceExchangeRates()
     launch(source, sys.argv[1:])

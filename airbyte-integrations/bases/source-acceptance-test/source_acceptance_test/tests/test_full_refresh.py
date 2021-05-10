@@ -25,7 +25,7 @@ import json
 from functools import partial
 
 import pytest
-from airbyte_protocol import Type
+from airbyte_cdk.models import Type
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.utils import ConnectorRunner, full_refresh_only_catalog
 

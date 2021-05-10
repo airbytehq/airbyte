@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Tuple
 
 import pytest
-from airbyte_protocol import ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_acceptance_test import BaseTest
 from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, filter_output, incremental_only_catalog
 
