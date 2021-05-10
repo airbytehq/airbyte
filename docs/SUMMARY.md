@@ -44,6 +44,7 @@
     * [Google Adwords](integrations/sources/google-adwords.md)
     * [Google Analytics](integrations/sources/googleanalytics.md)
     * [Google Directory](integrations/sources/google-directory.md)
+    * [Google Search Console](integrations/sources/google-search-console.md)
     * [Google Sheets](integrations/sources/google-sheets.md)
     * [Google Workspace Admin Reports](integrations/sources/google-workspace-admin-reports.md)
     * [Greenhouse](integrations/sources/greenhouse.md)
