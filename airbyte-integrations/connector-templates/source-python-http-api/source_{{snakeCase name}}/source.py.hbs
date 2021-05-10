@@ -116,6 +116,9 @@ class Customers({{properCase name}}Stream):
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
 
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key =
+
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
@@ -159,7 +162,10 @@ class Employees(Incremental{{properCase name}}Stream):
     # TODO: Fill in the cursor_field. Required.
     cursor_field = 'start_date'
 
-    def path(self, **kwargs) -> str:
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key =
+
+def path(self, **kwargs) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
         return "single". Required.
