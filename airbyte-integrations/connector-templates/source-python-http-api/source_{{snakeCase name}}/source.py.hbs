@@ -115,7 +115,7 @@ class Customers({{properCase name}}Stream):
     """
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key =
+    primary_key = 'customer_id'
 
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         """
@@ -161,7 +161,7 @@ class Employees(Incremental{{properCase name}}Stream):
     cursor_field = 'start_date'
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key =
+    primary_key = 'employee_id'
 
     def path(self, **kwargs) -> str:
         """
