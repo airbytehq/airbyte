@@ -78,7 +78,7 @@ services:
     image: airbyte/webapp:${VERSION}
     container_name: airbyte-webapp
     ports:
-      - 8005:80
+      - 8000:80
     environment:
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - AIRBYTE_VERSION=${VERSION}
