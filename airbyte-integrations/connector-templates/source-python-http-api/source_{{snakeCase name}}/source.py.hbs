@@ -74,7 +74,7 @@ class {{properCase name}}Stream(HttpStream, ABC):
     """
 
     # TODO: Fill in the url base. Required.
-    url_base = 'https://example-api.com/v1/'
+    url_base = "https://example-api.com/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -93,7 +93,9 @@ class {{properCase name}}Stream(HttpStream, ABC):
         """
         return None
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         """
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
@@ -115,20 +117,20 @@ class Customers({{properCase name}}Stream):
     """
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = 'customer_id'
+    primary_key = "customer_id"
 
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
-        return 'customers'
+        return "customers"
 
 # Basic incremental stream
 class Incremental{{properCase name}}Stream({{properCase name}}Stream, ABC):
     """
-        TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-              if you do not need to implement incremental sync for any streams, remove this class.
+    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
+         if you do not need to implement incremental sync for any streams, remove this class.
     """
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
@@ -158,10 +160,10 @@ class Employees(Incremental{{properCase name}}Stream):
     """
 
     # TODO: Fill in the cursor_field. Required.
-    cursor_field = 'start_date'
+    cursor_field = "start_date"
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = 'employee_id'
+    primary_key = "employee_id"
 
     def path(self, **kwargs) -> str:
         """
@@ -216,5 +218,5 @@ class Source{{properCase name}}(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token='api_key') # Oauth2Authenticator is also available if you need oauth support
+        auth = TokenAuthenticator(token="api_key") # Oauth2Authenticator is also available if you need oauth support
         return [Customers(authenticator=auth), Employees(authenticator=auth)]
