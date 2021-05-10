@@ -178,11 +178,13 @@ class TemporalClientTest {
           .withSourceDockerImage(IMAGE_NAME2)
           .withSourceConfiguration(Jsons.emptyObject())
           .withDestinationConfiguration(Jsons.emptyObject())
+          .withOperationsConfiguration(Jsons.emptyObject())
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
       final StandardSyncInput input = new StandardSyncInput()
           .withPrefix(syncConfig.getPrefix())
           .withSourceConfiguration(syncConfig.getSourceConfiguration())
           .withDestinationConfiguration(syncConfig.getDestinationConfiguration())
+          .withOperationsConfiguration(syncConfig.getOperationsConfiguration())
           .withCatalog(syncConfig.getConfiguredAirbyteCatalog())
           .withState(syncConfig.getState());
 

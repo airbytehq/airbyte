@@ -21,6 +21,10 @@ properties:
     description: Integration specific blob. Must be a valid JSON string.
     type: object
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  operationsConfiguration:
+    description: Operation specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   catalog:
     description: the configured airbyte catalog
     type: object

@@ -33,6 +33,10 @@ properties:
   destinationDockerImage:
     description: Image name of the destination with tag.
     type: string
+  operationsConfiguration:
+    description: Operation specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   state:
     description: optional state of the previous run. this object is defined per integration.
     "$ref": State.yaml

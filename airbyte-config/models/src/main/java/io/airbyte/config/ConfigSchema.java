@@ -43,8 +43,9 @@ public enum ConfigSchema {
 
   // sync
   STANDARD_SYNC("StandardSync.yaml"),
-  STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml"),
+  STANDARD_SYNC_OPERATION("StandardSyncOperation.yaml"),
   STANDARD_SYNC_SCHEDULE("StandardSyncSchedule.yaml"),
+  STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml"),
 
   // worker
   STANDARD_SYNC_INPUT("StandardSyncInput.yaml"),

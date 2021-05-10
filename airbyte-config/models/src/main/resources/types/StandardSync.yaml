@@ -20,6 +20,11 @@ properties:
   destinationId:
     type: string
     format: uuid
+  operationIds:
+    type: array
+    items:
+      type: string
+      format: uuid
   connectionId:
     type: string
     format: uuid

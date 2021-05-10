@@ -70,7 +70,8 @@ public class TemporalWorkerRunFactory {
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
             .withSourceConfiguration(Jsons.emptyObject())
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
-            .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog());
+            .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
+            .withOperationsConfiguration(resetConnection.getOperationsConfiguration());
 
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config);
         return toOutputAndStatus(output);

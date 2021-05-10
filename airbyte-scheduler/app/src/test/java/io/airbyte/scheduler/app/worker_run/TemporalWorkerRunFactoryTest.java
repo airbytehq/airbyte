@@ -89,11 +89,13 @@ class TemporalWorkerRunFactoryTest {
     final JobResetConnectionConfig resetConfig = new JobResetConnectionConfig()
         .withDestinationDockerImage("airbyte/fusion_reactor")
         .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("a", 1)))
+        .withOperationsConfiguration(Jsons.jsonNode(ImmutableMap.of("b", 2)))
         .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
     final JobSyncConfig syncConfig = new JobSyncConfig()
         .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
         .withDestinationDockerImage(resetConfig.getDestinationDockerImage())
         .withDestinationConfiguration(resetConfig.getDestinationConfiguration())
+        .withOperationsConfiguration(resetConfig.getOperationsConfiguration())
         .withSourceConfiguration(Jsons.emptyObject())
         .withConfiguredAirbyteCatalog(resetConfig.getConfiguredAirbyteCatalog());
     when(job.getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
