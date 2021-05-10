@@ -234,7 +234,7 @@ class JobTrackerTest {
 
   @Test
   void testConfigToMetadata() throws IOException {
-    String configJson = MoreResources.readResource("config.json");
+    String configJson = MoreResources.readResource("example_config.json");
     JsonNode config = Jsons.deserialize(configJson);
 
     Map<String, Object> expected = ImmutableMap.of(
