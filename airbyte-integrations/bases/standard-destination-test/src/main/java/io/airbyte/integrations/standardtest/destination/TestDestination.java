@@ -367,7 +367,7 @@ public abstract class TestDestination {
             .withData(Jsons.jsonNode(ImmutableMap.builder()
                 .put("id", 1)
                 .put("currency", "USD\u2028")
-                .put("date", "2020-03-31T00:00:00Z\r")
+                .put("date", "2020-03-\n31T00:00:00Z\r")
                 .put("HKD", 10)
                 .put("NZD", 700)
                 .build()))));
