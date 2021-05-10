@@ -40,14 +40,14 @@ the user-provided configuration, specified in the `spec.json` returned by `Spec`
 access and permissioning. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py#L90) from the same Exchange Rates API.
 
 #### The `Stream` Abstract Base Class
-An `AbstractSource` also owns a set of `Stream`s. This is populated via the `AbstractSource`'s `streams` [function](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L63).
+An `AbstractSource` also owns a set of `Stream`s. This is populated via the `AbstractSource`'s `streams` [function](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/abstract_source.py#L63).
 `Discover` and `Read` rely on this populated set.
 
 `Discover` returns an `AirbyteCatalog` representing all the distinct resources the underlying API supports.
-Here is the [entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L74) for those interested in reading the code.
+Here is the [entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/abstract_source.py#L74) for those interested in reading the code.
 
 `Read` creates an in-memory stream reading from each of the `AbstractSource`'s streams. Here is the
-[entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/abstract_source.py#L90) for those interested.
+[entrypoint](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/abstract_source.py#L90) for those interested.
 
 As the code examples show, the `AbstractSource` delegates to the set of `Stream`s it owns to fulfill both `Discover`
 and `Read`. Thus, implementing `AbstractSource`'s `streams` function is required when using the CDK.
