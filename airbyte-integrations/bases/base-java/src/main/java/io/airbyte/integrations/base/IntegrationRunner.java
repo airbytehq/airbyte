@@ -125,8 +125,8 @@ public class IntegrationRunner {
     final Scanner input = new Scanner(System.in).useDelimiter("[\r\n]+");
     try (consumer) {
       consumer.start();
-      while (input.hasNextLine()) {
-        final String inputString = input.nextLine();
+      while (input.hasNext()) {
+        final String inputString = input.next();
         final Optional<AirbyteMessage> singerMessageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
         if (singerMessageOptional.isPresent()) {
           consumer.accept(singerMessageOptional.get());
