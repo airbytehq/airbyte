@@ -76,7 +76,7 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-scaffold-source-http:d
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-scaffold-source-http:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 ## Testing
-   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
 ```
 pip install .[tests]
