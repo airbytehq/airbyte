@@ -120,7 +120,7 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   static void consumeWriteStream(AirbyteMessageConsumer consumer) throws Exception {
-    final Scanner input = new Scanner(System.in);
+    final Scanner input = new Scanner(System.in).useDelimiter("\\n");
     try (consumer) {
       consumer.start();
       while (input.hasNextLine()) {
