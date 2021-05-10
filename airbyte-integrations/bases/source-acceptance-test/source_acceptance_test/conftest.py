@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any, List, MutableMapping, Optional
 
 import pytest
-from airbyte_protocol import AirbyteCatalog, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
+from airbyte_cdk.models import AirbyteCatalog, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from source_acceptance_test.config import Config
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, load_config
 

@@ -26,7 +26,7 @@ from collections import Counter, defaultdict
 from typing import Any, List, Mapping, MutableMapping
 
 import pytest
-from airbyte_protocol import AirbyteMessage, ConnectorSpecification, Status, Type
+from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
