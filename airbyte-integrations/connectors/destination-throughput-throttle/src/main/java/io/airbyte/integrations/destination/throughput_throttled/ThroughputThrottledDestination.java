@@ -35,11 +35,14 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ThroughputThrottledDestination extends BaseConnector implements Destination {
 
+  private static final AtomicLong RECORD_COUNTER = new AtomicLong();
   private static final Logger LOGGER = LoggerFactory.getLogger(ThroughputThrottledDestination.class);
 
   @Override
@@ -67,7 +70,13 @@ public class ThroughputThrottledDestination extends BaseConnector implements Des
 
     @Override
     public void accept(final AirbyteMessage message) throws Exception {
-      LOGGER.info("received record: {}", message.getRecord().getData().get("column1").asText());
+      final long value = message.getRecord().getData().get("column1").asLong();
+      if(RECORD_COUNTER.get() != 0 && value - 1 != RECORD_COUNTER.get()) {
+        throw new IllegalStateException(String.format("Previous value was: %s, but next value was: %s", RECORD_COUNTER.get(), value));
+      }
+      RECORD_COUNTER.set(value);
+
+      LOGGER.info("received record: {}", value);
       sleep(millisPerRecord);
       LOGGER.info("completed sleep");
     }

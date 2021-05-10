@@ -88,7 +88,7 @@ public class InfiniteFeedSource extends BaseConnector implements Source {
                   .withStream("data")
                   .withEmittedAt(Instant.now().toEpochMilli())
                   .withData(Jsons.jsonNode(ImmutableMap.of(
-                      "column1", "contents1 " + i,
+                      "column1", i,
                       "column2", "contents2 " + i,
                       "column3", "contents3 " + i))));
         } else {
