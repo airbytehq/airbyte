@@ -228,10 +228,10 @@ public class JobTracker {
   }
 
   /**
-   * The CheckConnection jobs (both source and destination) of the SynchronousSchedulerClient
-   * interface can have a successful job with a failed check. Because of this, tracking just the job
-   * attempt status does not capture the whole picture. The `check_connection_outcome` field tracks
-   * this.
+   * The CheckConnection jobs (both source and destination) of the
+   * {@link io.airbyte.scheduler.client.SynchronousSchedulerClient} interface can have a successful
+   * job with a failed check. Because of this, tracking just the job attempt status does not capture
+   * the whole picture. The `check_connection_outcome` field tracks this.
    */
   private ImmutableMap<String, Object> generateCheckConnectionMetadata(StandardCheckConnectionOutput output) {
     if (output == null) {
