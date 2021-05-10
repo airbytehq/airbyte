@@ -165,7 +165,7 @@ class Employees(Incremental{{properCase name}}Stream):
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key =
 
-def path(self, **kwargs) -> str:
+    def path(self, **kwargs) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
         return "single". Required.
