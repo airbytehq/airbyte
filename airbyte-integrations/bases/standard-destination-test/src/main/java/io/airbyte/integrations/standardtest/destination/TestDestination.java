@@ -349,6 +349,35 @@ public abstract class TestDestination {
   }
 
   /**
+   * Tests that we are able to read over special characters properly when processing line breaks in
+   * destinations.
+   */
+  @Test
+  public void testLineBreakCharacters() throws Exception {
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final JsonNode config = getConfig();
+
+    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(catalog.getStreams().get(0).getName())
+            .withEmittedAt(Instant.now().toEpochMilli())
+            .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 1)
+                .put("currency", "USD\u2028")
+                .put("date", "2020-03-\n31T00:00:00Z\r")
+                .put("HKD", 10)
+                .put("NZD", 700)
+                .build()))));
+
+    runSync(config, secondSyncMessages, configuredCatalog);
+    final String defaultSchema = getDefaultSchema(config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
+  }
+
+  /**
    * Verify that the integration successfully writes records incrementally. The second run should
    * append records to the datastore instead of overwriting the previous run.
    */
