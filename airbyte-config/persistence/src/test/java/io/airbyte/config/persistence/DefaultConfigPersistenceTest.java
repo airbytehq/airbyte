@@ -33,7 +33,6 @@ import com.google.common.collect.Sets;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
