@@ -6,7 +6,7 @@
     "generate": "plop"
   },
   "devDependencies": {
-    "plop": "^2.7.4",
-    "handlebars": "^4.7.7"
+    "handlebars": "^4.7.7",
+    "plop": "^2.7.4"
   }
 }
