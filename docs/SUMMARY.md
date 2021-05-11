@@ -30,7 +30,7 @@
   * [On Azure\(VM)](deploying-airbyte/on-azure-vm-cloud-shell.md)
   * [On Kubernetes \(Alpha\)](deploying-airbyte/on-kubernetes.md)
   * [On AWS ECS \(Coming Soon\)](deploying-airbyte/on-aws-ecs.md)
-* [Connectors](integrations/README.md)
+* [Connector Catalog](integrations/README.md)
   * [Sources](integrations/sources/README.md)
     * [Appstore](integrations/sources/appstore.md)
     * [Braintree](integrations/sources/braintree.md)
