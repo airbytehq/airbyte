@@ -32,7 +32,7 @@ invalid_config_path: str = Field(description="Path to a JSON object representing
 spec_path: str = Field(
     default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector"
 )
-configured_catalog_path: str = Field(default="sample_files/configured_catalog.json", description="Path to configured catalog")
+configured_catalog_path: str = Field(default="integration_tests/configured_catalog.json", description="Path to configured catalog")
 
 
 class BaseConfig(BaseModel):
@@ -56,7 +56,6 @@ class ConnectionTestConfig(BaseConfig):
 
 class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
-    configured_catalog_path: Optional[str] = configured_catalog_path
 
 
 class ExpectedRecordsConfig(BaseModel):
