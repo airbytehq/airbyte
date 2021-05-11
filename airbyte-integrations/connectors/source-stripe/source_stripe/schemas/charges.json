@@ -283,8 +283,7 @@
           "type": ["null", "string"]
         },
         "created": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "address_state": {
           "type": ["null", "string"]
