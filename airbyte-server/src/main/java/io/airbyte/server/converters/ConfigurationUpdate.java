@@ -56,7 +56,8 @@ public class ConfigurationUpdate {
     this.secretsProcessor = secretsProcessor;
   }
 
-  public SourceConnection source(UUID sourceId, String sourceName, JsonNode newConfiguration) throws ConfigNotFoundException, IOException, JsonValidationException {
+  public SourceConnection source(UUID sourceId, String sourceName, JsonNode newConfiguration)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing source
     final SourceConnection persistedSource = configRepository.getSourceConnection(sourceId);
     persistedSource.setName(sourceName);
