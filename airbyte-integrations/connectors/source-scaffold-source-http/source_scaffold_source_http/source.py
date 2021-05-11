@@ -220,5 +220,5 @@ class SourceScaffoldSourceHttp(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key") # Oauth2Authenticator is also available if you need oauth support
+        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
         return [Customers(authenticator=auth), Employees(authenticator=auth)]
