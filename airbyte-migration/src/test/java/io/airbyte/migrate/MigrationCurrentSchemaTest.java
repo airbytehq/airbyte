@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.migrate.migrations.MigrationV0_14_0.ConfigKeys;
+import io.airbyte.migrate.migrations.MigrationV0_14_0.JobKeys;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -43,28 +44,49 @@ public class MigrationCurrentSchemaTest {
   // from the output schema of the last migration. make sure they match.
   @Test
   void testConfigsOfLastMigrationMatchSource() {
-    final Migration lastMigration = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1);
-    final Map<ResourceId, JsonNode> lastMigrationOutputSchema = lastMigration.getOutputSchema();
+    final Map<ResourceId, JsonNode> lastMigrationSchema = getSchemaOfLastMigration(ResourceType.CONFIG);
     final Map<ResourceId, JsonNode> currentSchema = MigrationUtils.getNameToSchemasFromResourcePath(
         Path.of("types"),
         ResourceType.CONFIG,
         Enums.valuesAsStrings(ConfigKeys.class));
 
-    final Map<ResourceId, JsonNode> lastMigrationOutputSchemaCleaned = lastMigrationOutputSchema.entrySet()
+    assertSameSchemas(currentSchema, lastMigrationSchema);
+  }
+
+  private static Map<ResourceId, JsonNode> getSchemaOfLastMigration(ResourceType resourceType) {
+    final Migration lastMigration = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1);
+    final Map<ResourceId, JsonNode> lastMigrationOutputSchema = lastMigration.getOutputSchema();
+
+    return lastMigrationOutputSchema.entrySet()
         .stream()
-        .filter(entry -> entry.getKey().getType() == ResourceType.CONFIG)
+        .filter(entry -> entry.getKey().getType() == resourceType)
         .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+  }
 
-    assertEquals(currentSchema.size(), lastMigrationOutputSchemaCleaned.size());
+  // get all of the "current" jobs (in other words the one airbyte-db). get all of the configs
+  // from the output schema of the last migration. make sure they match.
+  @Test
+  void testJobsOfLastMigrationMatchSource() {
+    final Map<ResourceId, JsonNode> lastMigrationSchema = getSchemaOfLastMigration(ResourceType.JOB);
+    final Map<ResourceId, JsonNode> currentSchema = MigrationUtils.getNameToSchemasFromResourcePath(
+        Path.of("tables"),
+        ResourceType.JOB,
+        Enums.valuesAsStrings(JobKeys.class));
 
-    final List<Entry<ResourceId, JsonNode>> lastMigrationOutputSchemaCleanedSorted = lastMigrationOutputSchemaCleaned.entrySet()
+    assertSameSchemas(currentSchema, lastMigrationSchema);
+  }
+
+  private static void assertSameSchemas(Map<ResourceId, JsonNode> currentSchemas, Map<ResourceId, JsonNode> lastMigrationSchema) {
+    assertEquals(currentSchemas.size(), lastMigrationSchema.size());
+
+    final List<Entry<ResourceId, JsonNode>> lastMigrationOutputSchemaCleanedSorted = lastMigrationSchema.entrySet()
         .stream()
         .sorted(Comparator.comparing((v) -> v.getKey().getType()))
         .collect(Collectors.toList());
 
     // break out element-wise assertion so it is easier to read any failed tests.
     for (Map.Entry<ResourceId, JsonNode> lastMigrationEntry : lastMigrationOutputSchemaCleanedSorted) {
-      assertEquals(lastMigrationEntry.getValue(), currentSchema.get(lastMigrationEntry.getKey()));
+      assertEquals(lastMigrationEntry.getValue(), currentSchemas.get(lastMigrationEntry.getKey()));
     }
   }
 

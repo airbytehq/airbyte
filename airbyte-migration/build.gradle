@@ -8,6 +8,7 @@ dependencies {
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
 
     testImplementation project(':airbyte-config:models')
+    testImplementation project(':airbyte-db')
 }
 
 application {
