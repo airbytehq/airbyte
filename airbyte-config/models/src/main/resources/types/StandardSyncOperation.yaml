@@ -19,9 +19,9 @@ properties:
   # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
   operatorType:
     "$ref": OperatorType.yaml
-  OperatorNormalization:
+  operatorNormalization:
     "$ref": OperatorNormalization.yaml
-  OperatorDbt:
+  operatorDbt:
     "$ref": OperatorDbt.yaml
   tombstone:
     description:

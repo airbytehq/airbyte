@@ -50,6 +50,7 @@ public enum ConfigSchema {
   // worker
   STANDARD_SYNC_INPUT("StandardSyncInput.yaml"),
   NORMALIZATION_INPUT("NormalizationInput.yaml"),
+  OPERATOR_DBT_INPUT("OperatorDbtInput.yaml"),
 
   STANDARD_SYNC_OUTPUT("StandardSyncOutput.yaml"),
 
