@@ -32,7 +32,7 @@ setup(
     install_requires=[
         "tap-github @ https://github.com/airbytehq/tap-github/tarball/v1.9.4-airbyte",
         "requests==2.20.0",
-        "airbyte-cdk-test==0.1.0rc3",
+        "airbyte-cdk==0.1.1",
     ],
     package_data={"": ["*.json"]},
 )

@@ -11,5 +11,5 @@ RUN pip install .
 
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.6
+LABEL io.airbyte.version=0.1.7
 LABEL io.airbyte.name=airbyte/source-stripe
