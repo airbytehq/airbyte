@@ -20,11 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -102,7 +102,6 @@ class ScaffoldSourceHttpStream(HttpStream, ABC):
         """
         return {}
 
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
@@ -119,12 +118,15 @@ class Customers(ScaffoldSourceHttpStream):
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "customer_id"
 
-    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
         return "customers"
+
 
 # Basic incremental stream
 class IncrementalScaffoldSourceHttpStream(ScaffoldSourceHttpStream, ABC):
@@ -132,6 +134,7 @@ class IncrementalScaffoldSourceHttpStream(ScaffoldSourceHttpStream, ABC):
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
          if you do not need to implement incremental sync for any streams, remove this class.
     """
+
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
 
@@ -197,7 +200,6 @@ class Employees(IncrementalScaffoldSourceHttpStream):
 
 # Source
 class SourceScaffoldSourceHttp(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -218,5 +220,5 @@ class SourceScaffoldSourceHttp(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key") # Oauth2Authenticator is also available if you need oauth support
+        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
         return [Customers(authenticator=auth), Employees(authenticator=auth)]
