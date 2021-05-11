@@ -2097,6 +2097,12 @@ components:
       # - webhook
     OperatorNormalization:
       type: object
+      properties:
+        option:
+          type: string
+          enum:
+            - basic
+            #- unnesting
     OperatorDbt:
       type: object
       required:

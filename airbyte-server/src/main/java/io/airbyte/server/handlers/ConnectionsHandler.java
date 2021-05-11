@@ -86,6 +86,7 @@ public class ConnectionsHandler {
         .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
+        .withOperationIds(connectionCreate.getOperationIds())
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
@@ -155,6 +156,7 @@ public class ConnectionsHandler {
     // retrieve sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
         .withPrefix(connectionUpdate.getPrefix())
+        .withOperationIds(connectionUpdate.getOperationIds())
         .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
@@ -257,6 +259,7 @@ public class ConnectionsHandler {
         .connectionId(standardSync.getConnectionId())
         .sourceId(standardSync.getSourceId())
         .destinationId(standardSync.getDestinationId())
+        .operationIds(standardSync.getOperationIds())
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())

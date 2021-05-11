@@ -2406,7 +2406,9 @@ font-style: italic;
   "name" : "name",
   "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "operatorConfiguration" : {
-    "normalization" : "{}",
+    "normalization" : {
+      "option" : "basic"
+    },
     "dbt" : {
       "dockerImage" : "dockerImage",
       "dbtArguments" : "dbtArguments",
@@ -2512,7 +2514,9 @@ font-style: italic;
   "name" : "name",
   "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "operatorConfiguration" : {
-    "normalization" : "{}",
+    "normalization" : {
+      "option" : "basic"
+    },
     "dbt" : {
       "dockerImage" : "dockerImage",
       "dbtArguments" : "dbtArguments",
@@ -2580,7 +2584,9 @@ font-style: italic;
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
-      "normalization" : "{}",
+      "normalization" : {
+        "option" : "basic"
+      },
       "dbt" : {
         "dockerImage" : "dockerImage",
         "dbtArguments" : "dbtArguments",
@@ -2591,7 +2597,9 @@ font-style: italic;
     "name" : "name",
     "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "operatorConfiguration" : {
-      "normalization" : "{}",
+      "normalization" : {
+        "option" : "basic"
+      },
       "dbt" : {
         "dockerImage" : "dockerImage",
         "dbtArguments" : "dbtArguments",
@@ -2659,7 +2667,9 @@ font-style: italic;
   "name" : "name",
   "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "operatorConfiguration" : {
-    "normalization" : "{}",
+    "normalization" : {
+      "option" : "basic"
+    },
     "dbt" : {
       "dockerImage" : "dockerImage",
       "dbtArguments" : "dbtArguments",
@@ -3904,7 +3914,9 @@ font-style: italic;
       "name" : "name",
       "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "operatorConfiguration" : {
-        "normalization" : "{}",
+        "normalization" : {
+          "option" : "basic"
+        },
         "dbt" : {
           "dockerImage" : "dockerImage",
           "dbtArguments" : "dbtArguments",
@@ -3915,7 +3927,9 @@ font-style: italic;
       "name" : "name",
       "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
       "operatorConfiguration" : {
-        "normalization" : "{}",
+        "normalization" : {
+          "option" : "basic"
+        },
         "dbt" : {
           "dockerImage" : "dockerImage",
           "dbtArguments" : "dbtArguments",
@@ -4052,7 +4066,9 @@ font-style: italic;
         "name" : "name",
         "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
         "operatorConfiguration" : {
-          "normalization" : "{}",
+          "normalization" : {
+            "option" : "basic"
+          },
           "dbt" : {
             "dockerImage" : "dockerImage",
             "dbtArguments" : "dbtArguments",
@@ -4063,7 +4079,9 @@ font-style: italic;
         "name" : "name",
         "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
         "operatorConfiguration" : {
-          "normalization" : "{}",
+          "normalization" : {
+            "option" : "basic"
+          },
           "dbt" : {
             "dockerImage" : "dockerImage",
             "dbtArguments" : "dbtArguments",
@@ -4143,7 +4161,9 @@ font-style: italic;
         "name" : "name",
         "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
         "operatorConfiguration" : {
-          "normalization" : "{}",
+          "normalization" : {
+            "option" : "basic"
+          },
           "dbt" : {
             "dockerImage" : "dockerImage",
             "dbtArguments" : "dbtArguments",
@@ -4154,7 +4174,9 @@ font-style: italic;
         "name" : "name",
         "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
         "operatorConfiguration" : {
-          "normalization" : "{}",
+          "normalization" : {
+            "option" : "basic"
+          },
           "dbt" : {
             "dockerImage" : "dockerImage",
             "dbtArguments" : "dbtArguments",
@@ -4845,6 +4867,7 @@ font-style: italic;
     <li><a href="#OperationUpdate"><code>OperationUpdate</code> - </a></li>
     <li><a href="#OperatorConfiguration"><code>OperatorConfiguration</code> - </a></li>
     <li><a href="#OperatorDbt"><code>OperatorDbt</code> - </a></li>
+    <li><a href="#OperatorNormalization"><code>OperatorNormalization</code> - </a></li>
     <li><a href="#OperatorType"><code>OperatorType</code> - </a></li>
     <li><a href="#SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
@@ -5325,7 +5348,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">operatorType </div><div class="param-desc"><span class="param-type"><a href="#OperatorType">OperatorType</a></span>  </div>
-<div class="param">normalization (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Object</a></span>  </div>
+<div class="param">normalization (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperatorNormalization">OperatorNormalization</a></span>  </div>
 <div class="param">dbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperatorDbt">OperatorDbt</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -5336,6 +5359,15 @@ font-style: italic;
       <div class="param">gitRepoUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">dockerImage (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">dbtArguments (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperatorNormalization"><code>OperatorNormalization</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">option (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">basic</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
