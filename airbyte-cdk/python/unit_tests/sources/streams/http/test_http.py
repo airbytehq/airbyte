@@ -83,27 +83,32 @@ class StubNextPageTokenHttpStream(StubBasicReadHttpStream):
         return None
 
 
-def test_pagination(mocker):
+def test_next_page_token_is_input_to_other_methods(mocker):
+    """ Validates that the return value from next_page_token is passed into other methods that need it like request_params, headers, body, etc.."""
     pages = 5
     stream = StubNextPageTokenHttpStream(pages=pages)
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
     mocker.patch.object(StubNextPageTokenHttpStream, "_send_request", return_value=blank_response)
 
     methods = ["request_params", "request_headers", "request_body_json"]
-    expected_next_page_tokens = [{"page": i} for i in range(pages)]
-
     for method in methods:
+        # Wrap all methods we're interested in testing with mocked objects so we can later spy on their input args and verify they were what we expect
         mocker.patch.object(stream, method, wraps=getattr(stream, method))
 
     records = list(stream.read_records(SyncMode.full_refresh))
 
+    # Since we have 5 pages, we expect 5 tokens which are {"page":1}, {"page":2}, etc...
+    expected_next_page_tokens = [{"page": i} for i in range(pages)]
     for method in methods:
-        getattr(stream, method).assert_any_call(next_page_token=None, stream_slice=None, stream_state={})  # Assert first call happened
+        # First assert that they were called with no next_page_token. This is the first call in the pagination loop.
+        getattr(stream, method).assert_any_call(next_page_token=None, stream_slice=None, stream_state={})
         for token in expected_next_page_tokens:
+            # Then verify that each method
             getattr(stream, method).assert_any_call(next_page_token=token, stream_slice=None, stream_state={})
 
-    assert [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}, {"data": 5}, {"data": 6}] == records
+    expected = [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}, {"data": 5}, {"data": 6}]
 
+    assert expected == records
 
 class StubBadUrlHttpStream(StubBasicReadHttpStream):
     url_base = "bad_url"
