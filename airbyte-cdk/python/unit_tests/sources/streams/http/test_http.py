@@ -110,7 +110,6 @@ def test_next_page_token_is_input_to_other_methods(mocker):
 
     assert expected == records
 
-
 class StubBadUrlHttpStream(StubBasicReadHttpStream):
     url_base = "bad_url"
 
