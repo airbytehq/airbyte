@@ -5,16 +5,18 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CODE_PATH="source_github_singer"
-ENV AIRBYTE_IMPL_MODULE="source_github_singer"
-ENV AIRBYTE_IMPL_PATH="SourceGithubSinger"
-
-LABEL io.airbyte.version=0.2.2
-LABEL io.airbyte.name=airbyte/source-github-singer
 
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
+COPY main.py ./
+
 RUN pip install .
+
+ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+
+LABEL io.airbyte.version=0.2.4
+LABEL io.airbyte.name=airbyte/source-github-singer
 
 WORKDIR /airbyte
 

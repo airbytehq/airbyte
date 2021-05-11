@@ -37,9 +37,10 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,26 +48,36 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
+  private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+  private static final Duration CHECK_HEARTBEAT_DURATION = Duration.of(10, ChronoUnit.SECONDS);
+  // todo (cgardens) - keep the graceful shutdown consistent with current behavior for release. make
+  // sure everything is working well before we reduce this to something more reasonable.
+  private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(10, ChronoUnit.HOURS);
+  private static final Duration FORCED_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
+
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
+  private final HeartbeatMonitor heartbeatMonitor;
 
-  private Process tapProcess = null;
+  private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory());
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(), new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
-                       final AirbyteStreamFactory streamFactory) {
+                       final AirbyteStreamFactory streamFactory,
+                       final HeartbeatMonitor heartbeatMonitor) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
+    this.heartbeatMonitor = heartbeatMonitor;
   }
 
   @Override
   public void start(StandardTapConfig input, Path jobRoot) throws Exception {
-    Preconditions.checkState(tapProcess == null);
+    Preconditions.checkState(sourceProcess == null);
 
     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(input.getSourceConnectionConfiguration()));
     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, Jsons.serialize(input.getCatalog()));
@@ -74,42 +85,49 @@ public class DefaultAirbyteSource implements AirbyteSource {
       IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState().getState()));
     }
 
-    tapProcess = integrationLauncher.read(jobRoot,
+    sourceProcess = integrationLauncher.read(jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
         input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME).start();
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(tapProcess.getErrorStream(), LOGGER::error);
+    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error);
 
-    messageIterator = streamFactory.create(IOs.newBufferedReader(tapProcess.getInputStream()))
+    messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
+        .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE)
         .iterator();
   }
 
   @Override
   public boolean isFinished() {
-    Preconditions.checkState(tapProcess != null);
+    Preconditions.checkState(sourceProcess != null);
 
-    return !tapProcess.isAlive() && !messageIterator.hasNext();
+    return !sourceProcess.isAlive() && !messageIterator.hasNext();
   }
 
   @Override
   public Optional<AirbyteMessage> attemptRead() {
-    Preconditions.checkState(tapProcess != null);
+    Preconditions.checkState(sourceProcess != null);
 
     return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
 
   @Override
   public void close() throws Exception {
-    if (tapProcess == null) {
+    if (sourceProcess == null) {
       return;
     }
 
-    LOGGER.debug("Closing tap process");
-    WorkerUtils.gentleClose(tapProcess, 10, TimeUnit.HOURS);
-    if (tapProcess.isAlive() || tapProcess.exitValue() != 0) {
-      throw new WorkerException("Tap process wasn't successful");
+    LOGGER.debug("Closing source process");
+    WorkerUtils.gentleCloseWithHeartbeat(
+        sourceProcess,
+        heartbeatMonitor,
+        GRACEFUL_SHUTDOWN_DURATION,
+        CHECK_HEARTBEAT_DURATION,
+        FORCED_SHUTDOWN_DURATION);
+
+    if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
+      throw new WorkerException("Source process wasn't successful");
     }
   }
 
@@ -117,11 +135,11 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public void cancel() throws Exception {
     LOGGER.info("Attempting to cancel source process...");
 
-    if (tapProcess == null) {
+    if (sourceProcess == null) {
       LOGGER.info("Source process no longer exists, cancellation is a no-op.");
     } else {
       LOGGER.info("Source process exists, cancelling...");
-      WorkerUtils.cancelProcess(tapProcess);
+      WorkerUtils.cancelProcess(sourceProcess);
       LOGGER.info("Cancelled source process!");
     }
   }

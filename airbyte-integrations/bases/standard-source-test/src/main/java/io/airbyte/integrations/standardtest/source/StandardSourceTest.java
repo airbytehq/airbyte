@@ -104,6 +104,7 @@ public abstract class StandardSourceTest {
       "airbyte/source-intercom-singer",
       "airbyte/source-exchangeratesapi-singer",
       "airbyte/source-hubspot",
+      "airbyte/source-iterable",
       "airbyte/source-marketo-singer",
       "airbyte/source-twilio-singer",
       "airbyte/source-mixpanel-singer",
@@ -111,9 +112,13 @@ public abstract class StandardSourceTest {
       "airbyte/source-braintree-singer",
       "airbyte/source-salesforce-singer",
       "airbyte/source-stripe-singer",
+      "airbyte/source-exchange-rates",
+      "airbyte/source-stripe",
       "airbyte/source-github-singer",
       "airbyte/source-gitlab-singer",
-      "airbyte/source-google-workspace-admin-reports");
+      "airbyte/source-google-workspace-admin-reports",
+      "airbyte/source-zendesk-talk",
+      "airbyte/source-quickbooks-singer");
 
   /**
    * FIXME: Some sources can't guarantee that there will be no events between two sequential sync
@@ -328,7 +333,6 @@ public abstract class StandardSourceTest {
         .filter(m -> m.getType() == Type.STATE)
         .map(AirbyteMessage::getState)
         .collect(Collectors.toList());
-
     assertFalse(recordMessages.isEmpty(), "Expected the first incremental sync to produce records");
     assertFalse(stateMessages.isEmpty(), "Expected incremental sync to produce STATE messages");
     // TODO validate exact records
@@ -433,15 +437,14 @@ public abstract class StandardSourceTest {
 
   // todo (cgardens) - assume no state since we are all full refresh right now.
   private List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    final StandardTapConfig tapConfig = new StandardTapConfig()
+    final StandardTapConfig sourceConfig = new StandardTapConfig()
         .withSourceConnectionConfiguration(getConfig())
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);
 
     final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
     final List<AirbyteMessage> messages = new ArrayList<>();
-
-    source.start(tapConfig, jobRoot);
+    source.start(sourceConfig, jobRoot);
     while (!source.isFinished()) {
       source.attemptRead().ifPresent(messages::add);
     }

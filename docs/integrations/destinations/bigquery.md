@@ -26,6 +26,7 @@ Each stream will be output into its own table in BigQuery. Each table will conta
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Namespaces | Yes |  |
 
 ## Getting started
 

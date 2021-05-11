@@ -17,6 +17,7 @@ At this time, this source produces only a single stream for the target file as i
 | Replicate Incremental Deletes | No |
 | Replicate Folders \(multiple Files\) | No |
 | Replicate Glob Patterns \(multiple Files\) | No |
+| Namespaces | No |
 
 How do we rate the functionalities below?
 

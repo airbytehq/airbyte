@@ -16,8 +16,38 @@ jobs:
         run: ./tools/bin/ci_integration_workflow_launcher.sh
         env:
           GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
-  build:
+
+  ## Gradle Build
+  # In case of self-hosted EC2 errors, remove the `start-build-runner` block.
+  start-build-runner:
+    name: Start Build EC2 Runner
     runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Start EC2 Runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2.1.0
+        with:
+          mode: start
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          ec2-image-id: ami-04bd6e81239f4f3fb
+          ec2-instance-type: c5.2xlarge
+          subnet-id: subnet-0469a9e68a379c1d3
+          security-group-id: sg-0793f3c9413f21970
+  build:
+    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
+    needs: start-build-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-build-runner.outputs.label }} # run the job on the newly created runner
+    # runs-on: ubuntu-latest
+    name: Build Airbyte
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -128,8 +158,60 @@ jobs:
           SLACK_USERNAME: Buildbot
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
-  test_docker:
+  # In case of self-hosted EC2 errors, remove the `stop-build-runner` block.
+  stop-build-runner:
+    name: Stop Build EC2 Runner
+    needs:
+      - start-build-runner # required to get output from the start-runner job
+      - build # required to wait when the main job is done
     runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2.1.0
+        with:
+          mode: stop
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          label: ${{ needs.start-build-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-build-runner.outputs.ec2-instance-id }}
+
+  ## Acceptance Test
+  # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
+  start-acceptance-test-runner:
+    name: Start Acceptance Test EC2 Runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2.1.0
+        with:
+          mode: start
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          ec2-image-id: ami-04bd6e81239f4f3fb
+          ec2-instance-type: c5.2xlarge
+          subnet-id: subnet-0469a9e68a379c1d3
+          security-group-id: sg-0793f3c9413f21970
+  acceptance-test:
+    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
+    needs: start-acceptance-test-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
+    # runs-on: ubuntu-latest
+    name: Run Acceptance Tests
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -152,15 +234,36 @@ jobs:
           GIT_REVISION: ${{ github.sha }}
           CORE_ONLY: true
 
-      - name: Ensure no file change
-        run: git status --porcelain && test -z "$(git status --porcelain)"
-
       - name: Run Docker End-to-End Acceptance Tests
         run: |
           ./tools/bin/acceptance_test.sh
-
-  launch_e2e_frontend_tests:
+  # In case of self-hosted EC2 errors, remove the `stop-build-runner` block.
+  stop-acceptance-test-runner:
+    name: Stop Acceptance Test EC2 Runner
+    needs:
+      - start-acceptance-test-runner # required to get output from the start-runner job
+      - acceptance-test # required to wait when the main job is done
     runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2.1.0
+        with:
+          mode: stop
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          label: ${{ needs.start-acceptance-test-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-acceptance-test-runner.outputs.ec2-instance-id }}
+
+  ## Frontend Test
+  frontend-test:
+    runs-on: ubuntu-latest
+    name: Run Frontend Test
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -182,6 +285,7 @@ jobs:
 
       - name: Run End-to-End Frontend Tests
         run: ./tools/bin/e2e_test.sh
+
 # DISABLED UNTIL WE HAVE TEMPORAL ON KUBE
 #  test_kube:
 #    runs-on: ubuntu-latest
@@ -215,9 +319,6 @@ jobs:
 #        env:
 #          GIT_REVISION: ${{ github.sha }}
 #          CORE_ONLY: true
-#
-#      - name: Ensure no file change
-#        run: git status --porcelain && test -z "$(git status --porcelain)"
 #
 #      - name: Run Kubernetes End-to-End Acceptance Tests
 #        run: |

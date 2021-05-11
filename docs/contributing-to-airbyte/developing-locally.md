@@ -64,7 +64,7 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 ## Run in `dev` mode with `docker-compose`
 
 ```bash
-./gradlew build
+CORE_ONLY=1 ./gradlew build
 VERSION=dev docker-compose up
 ```
 
@@ -77,9 +77,21 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
-./gradlew build
+CORE_ONLY=1 ./gradlew build
 VERSION=dev docker-compose up
 ./gradlew :airbyte-tests:acceptanceTests
+```
+
+## Run formatting automation/tests
+
+To format code in the repo, simply run `./gradlew format` at the base of the repo. 
+
+Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
+
+```python
+"""
+[FILENAME] includes [INSERT DESCRIPTION OF CONTENTS HERE]
+"""
 ```
 
 ### Develop on `airbyte-webapp`
@@ -130,7 +142,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 * Rebuild the project
 
   ```bash
-   ./gradlew build
+   CORE_ONLY=1 ./gradlew build
    VERSION=dev docker-compose up -V
   ```
 

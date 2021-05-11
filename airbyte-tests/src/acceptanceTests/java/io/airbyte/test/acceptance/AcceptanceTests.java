@@ -56,7 +56,6 @@ import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
 import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.client.model.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
 import io.airbyte.api.client.model.DestinationSyncMode;
@@ -69,7 +68,6 @@ import io.airbyte.api.client.model.LogsRequestBody;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.client.model.SourceDefinitionUpdate;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
@@ -79,8 +77,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -146,8 +142,6 @@ public class AcceptanceTests {
         .withUsername(SOURCE_USERNAME)
         .withPassword(SOURCE_PASSWORD);
     sourcePsql.start();
-    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-    destinationPsql.start();
   }
 
   @AfterAll
@@ -157,30 +151,21 @@ public class AcceptanceTests {
 
   @BeforeEach
   public void setup() throws ApiException {
+    destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+    destinationPsql.start();
+
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
 
     // seed database.
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-
-    // TODO(davin): Temporary use the dev image for schema tests. This will be removed once the version
-    // is released. The namespace change requires source, destination and normalization to all use the
-    // namespace field.
-    final var updateSrc = new SourceDefinitionUpdate()
-        .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")) // Postgres
-        .dockerImageTag("dev");
-    apiClient.getSourceDefinitionApi().updateSourceDefinition(updateSrc);
-
-    final var updateDst = new DestinationDefinitionUpdate()
-        .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")) // Postgres
-        .dockerImageTag("dev");
-    apiClient.getDestinationDefinitionApi().updateDestinationDefinition(updateDst);
   }
 
   @AfterEach
   public void tearDown() throws ApiException, SQLException {
     clearDbData(sourcePsql);
+    destinationPsql.stop();
 
     for (UUID sourceId : sourceIds) {
       deleteSource(sourceId);
@@ -442,6 +427,48 @@ public class AcceptanceTests {
 
   @Test
   @Order(10)
+  public void testMultipleSchemasAndTablesSync() throws Exception {
+    // create tables in another schema
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+    assertSourceAndTargetDbInSync(sourcePsql, false);
+  }
+
+  @Test
+  @Order(11)
+  public void testMultipleSchemasSameTablesSync() throws Exception {
+    // create tables in another schema
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = createPostgresSource().getSourceId();
+    final UUID destinationId = createDestination().getDestinationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+    assertSourceAndTargetDbInSync(sourcePsql, false);
+  }
+
+  @Test
+  @Order(12)
   public void testIncrementalDedupSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -484,7 +511,7 @@ public class AcceptanceTests {
   }
 
   @Test
-  @Order(11)
+  @Order(13)
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = Files.readLines(
@@ -513,8 +540,7 @@ public class AcceptanceTests {
     final Database source = getDatabase(sourceDb);
 
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
-    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable,
-        sourceTables);
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
     final Database destination = getDatabase(destinationPsql);
     final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
     assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
@@ -639,7 +665,7 @@ public class AcceptanceTests {
 
   private List<JsonNode> retrieveSourceRecords(Database database, String table) throws SQLException {
     final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", cleanedName)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", cleanedName)))
         .stream()
         .map(Record::intoMap)
         .map(Jsons::jsonNode)
@@ -648,7 +674,7 @@ public class AcceptanceTests {
 
   private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
     final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM \"%s\";", cleanedName)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", cleanedName)))
         .stream()
         .map(Record::intoMap)
         .map(r -> r.get(COLUMN_NAME_DATA))
@@ -690,8 +716,11 @@ public class AcceptanceTests {
     try {
       final Map<Object, Object> dbConfig = new HashMap<>();
 
+      // todo (cgardens) - hack to get building passing in CI. need to follow up on why this was necessary
+      // (and affect on the k8s version of these tests).
+      dbConfig.put("host", "localhost");
       // necessary for minikube tests on Github Actions instead of psql.getHost()
-      dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+      // dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
 
       if (hiddenPassword) {
         dbConfig.put("password", "**********");
@@ -712,7 +741,7 @@ public class AcceptanceTests {
       }
 
       return Jsons.jsonNode(dbConfig);
-    } catch (UnknownHostException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }

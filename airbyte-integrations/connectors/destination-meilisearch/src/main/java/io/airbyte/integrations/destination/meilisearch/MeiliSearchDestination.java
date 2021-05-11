@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
-import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.BaseConnector;
@@ -37,10 +36,11 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -49,8 +49,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,16 +102,20 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
     final Client client = getClient(config);
     final Map<String, Index> indexNameToIndex = createIndices(catalog, client);
 
     return new BufferedStreamConsumer(
+        outputRecordCollector,
         () -> LOGGER.info("Starting write to MeiliSearch."),
         recordWriterFunction(indexNameToIndex),
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),
         catalog,
-        CatalogHelpers.getStreamNames(catalog));
+        (data) -> true);
   }
 
   private static Map<String, Index> createIndices(ConfiguredAirbyteCatalog catalog, Client client) throws Exception {
@@ -138,9 +142,9 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
         .anyMatch(actualIndexName -> actualIndexName.equals(indexName));
   }
 
-  private static CheckedBiConsumer<String, Stream<AirbyteRecordMessage>, Exception> recordWriterFunction(final Map<String, Index> indexNameToWriteConfig) {
-    return (streamName, recordStream) -> {
-      final String resolvedIndexName = getIndexName(streamName);
+  private static RecordWriter recordWriterFunction(final Map<String, Index> indexNameToWriteConfig) {
+    return (namePair, records) -> {
+      final String resolvedIndexName = getIndexName(namePair.getName());
       if (!indexNameToWriteConfig.containsKey(resolvedIndexName)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \nexpected streams: %s",
@@ -153,7 +157,8 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
       // destinations work. There is not really a viable way to "transform" data after it is MeiliSearch.
       // Tools like DBT do not apply. Therefore, we need to try to write data in the most usable format
       // possible that does not require alteration.
-      final String json = Jsons.serialize(recordStream
+      final String json = Jsons.serialize(records
+          .stream()
           .map(AirbyteRecordMessage::getData)
           .peek(o -> ((ObjectNode) o).put(AB_PK_COLUMN, Names.toAlphanumericAndUnderscore(UUID.randomUUID().toString())))
           .collect(Collectors.toList()));
