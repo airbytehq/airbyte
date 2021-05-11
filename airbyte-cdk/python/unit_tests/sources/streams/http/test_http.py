@@ -42,16 +42,16 @@ class StubBasicReadHttpStream(HttpStream):
         return None
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return ""
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
@@ -89,8 +89,8 @@ def test_pagination(mocker):
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
     mocker.patch.object(StubNextPageTokenHttpStream, "_send_request", return_value=blank_response)
 
-    methods = ['request_params', 'request_headers', 'request_body_json']
-    expected_next_page_tokens = [{'page': i} for i in range(pages)]
+    methods = ["request_params", "request_headers", "request_body_json"]
+    expected_next_page_tokens = [{"page": i} for i in range(pages)]
 
     for method in methods:
         mocker.patch.object(stream, method, wraps=getattr(stream, method))
@@ -98,7 +98,7 @@ def test_pagination(mocker):
     records = list(stream.read_records(SyncMode.full_refresh))
 
     for method in methods:
-        getattr(stream, method).assert_any_call(next_page_token=None, stream_slice=None, stream_state={}) # Assert first call happened
+        getattr(stream, method).assert_any_call(next_page_token=None, stream_slice=None, stream_state={})  # Assert first call happened
         for token in expected_next_page_tokens:
             getattr(stream, method).assert_any_call(next_page_token=token, stream_slice=None, stream_state={})
 
