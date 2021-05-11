@@ -127,6 +127,7 @@ class Customers(ScaffoldSourceHttpStream):
         """
         return "customers"
 
+
 # Basic incremental stream
 class IncrementalScaffoldSourceHttpStream(ScaffoldSourceHttpStream, ABC):
     """
@@ -199,7 +200,6 @@ class Employees(IncrementalScaffoldSourceHttpStream):
 
 # Source
 class SourceScaffoldSourceHttp(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API

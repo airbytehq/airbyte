@@ -127,6 +127,7 @@ class Customers({{properCase name}}Stream):
         """
         return "customers"
 
+
 # Basic incremental stream
 class Incremental{{properCase name}}Stream({{properCase name}}Stream, ABC):
     """
@@ -199,7 +200,6 @@ class Employees(Incremental{{properCase name}}Stream):
 
 # Source
 class Source{{properCase name}}(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
