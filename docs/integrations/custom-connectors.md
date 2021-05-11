@@ -34,3 +34,10 @@ Once this is filled, you will see your connector in the UI and your team will be
 
 Note that this new connector could just be an updated version of an existing connector that you adapted to your specific edge case. Anything is possible!
 
+## Upgrading a connector
+
+To upgrade your connector version, go to the admin panel in the left hand side of the UI, find this connector in the list, and input the latest connector version. 
+
+![](../.gitbook/assets/upgrading_connector_admin_panel.png)
+
+To browse the available connector versions, head over to our [DockerHub page](https://hub.docker.com/u/airbyte), locate the appropriate source/destination container, and click on the `Tags` section in the top bar. 
