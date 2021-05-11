@@ -337,8 +337,9 @@ public abstract class JdbcSourceStandardTest {
 
     setEmittedAtToNull(actualMessages);
     List<AirbyteMessage> expectedMessages = getTestMessages();
-    assertTrue(expectedMessages.size() == actualMessages.size() && expectedMessages.containsAll(actualMessages)
-        && actualMessages.containsAll(expectedMessages));
+    assertTrue(expectedMessages.size() == actualMessages.size());
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   @Test
@@ -359,8 +360,9 @@ public abstract class JdbcSourceStandardTest {
               convertIdBasedOnDatabase(m.getRecord().getData().get(COL_ID).asInt()));
         })
         .collect(Collectors.toList());
-    assertTrue(expectedMessages.size() == actualMessages.size() && expectedMessages.containsAll(actualMessages)
-        && actualMessages.containsAll(expectedMessages));
+    assertTrue(expectedMessages.size() == actualMessages.size());
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   @Test
@@ -412,8 +414,9 @@ public abstract class JdbcSourceStandardTest {
 
     setEmittedAtToNull(actualMessages);
 
-    assertTrue(expectedMessages.size() == actualMessages.size() && expectedMessages.containsAll(actualMessages)
-        && actualMessages.containsAll(expectedMessages));
+    assertTrue(expectedMessages.size() == actualMessages.size());
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   @Test
@@ -444,8 +447,9 @@ public abstract class JdbcSourceStandardTest {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
     expectedMessages.addAll(secondStreamExpectedMessages);
 
-    assertTrue(expectedMessages.size() == actualMessages.size() && expectedMessages.containsAll(actualMessages)
-        && actualMessages.containsAll(expectedMessages));
+    assertTrue(expectedMessages.size() == actualMessages.size());
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -596,8 +600,9 @@ public abstract class JdbcSourceStandardTest {
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
-    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size() && expectedMessages.containsAll(actualMessagesSecondSync)
-        && actualMessagesSecondSync.containsAll(expectedMessages));
+    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size());
+    assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
+    assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
   }
 
   @Test
@@ -692,8 +697,9 @@ public abstract class JdbcSourceStandardTest {
 
     setEmittedAtToNull(actualMessagesFirstSync);
 
-    assertTrue(expectedMessagesFirstSync.size() == actualMessagesFirstSync.size() && expectedMessagesFirstSync.containsAll(actualMessagesFirstSync)
-        && actualMessagesFirstSync.containsAll(expectedMessagesFirstSync));
+    assertTrue(expectedMessagesFirstSync.size() == actualMessagesFirstSync.size());
+    assertTrue(expectedMessagesFirstSync.containsAll(actualMessagesFirstSync));
+    assertTrue(actualMessagesFirstSync.containsAll(expectedMessagesFirstSync));
   }
 
   // when initial and final cursor fields are the same.
@@ -758,8 +764,9 @@ public abstract class JdbcSourceStandardTest {
                     .withCursorField(ImmutableList.of(cursorField))
                     .withCursor(endCursorValue)))))));
 
-    assertTrue(expectedMessages.size() == actualMessages.size() && expectedMessages.containsAll(actualMessages)
-        && actualMessages.containsAll(expectedMessages));
+    assertTrue(expectedMessages.size() == actualMessages.size());
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   // get catalog and perform a defensive copy.

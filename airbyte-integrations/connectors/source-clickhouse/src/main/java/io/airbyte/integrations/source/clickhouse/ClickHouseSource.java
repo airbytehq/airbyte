@@ -57,8 +57,6 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
             tableInfo -> {
               try {
                 return database.resultSetQuery(connection -> {
-                  // select name from system.columns where database = 'default' and table = 'full_name_composite_pk'
-                  // and is_in_primary_key = 1;
                   String sql = "SELECT name FROM system.columns WHERE database = ? AND  table = ? AND is_in_primary_key = 1";
                   PreparedStatement preparedStatement = connection.prepareStatement(sql);
                   preparedStatement.setString(1, tableInfo.getSchemaName());
