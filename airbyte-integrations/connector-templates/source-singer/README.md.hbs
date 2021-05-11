@@ -37,7 +37,7 @@ From the Airbyte repository root, run:
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/{{dashCase name}})
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_{{snakeCase name}}_singer/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
+See `integration_tests/sample_config.json` for a sample config file.
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source {{dashCase name}} test creds`
 and place them into `secrets/config.json`.
@@ -47,7 +47,7 @@ and place them into `secrets/config.json`.
 python main_dev.py spec
 python main_dev.py check --config secrets/config.json
 python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main_dev.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
@@ -71,7 +71,7 @@ Then run any of the connector commands as follows:
 docker run --rm airbyte/source-{{dashCase name}}-singer:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-{{dashCase name}}-singer:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-{{dashCase name}}-singer:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-{{dashCase name}}-singer:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-{{dashCase name}}-singer:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -109,7 +109,7 @@ To run unit tests:
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}-singer:IntegrationTest
+./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}-singer:integrationTest
 ```
 
 ## Dependency Management
