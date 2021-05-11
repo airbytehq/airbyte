@@ -210,6 +210,7 @@ class SchedulerHandlerTest {
   void testCheckSourceConnectionFromUpdate() throws IOException, JsonValidationException, ConfigNotFoundException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final SourceUpdate sourceUpdate = new SourceUpdate()
+        .name(source.getName())
         .sourceId(source.getSourceId())
         .connectionConfiguration(source.getConfiguration());
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
@@ -331,6 +332,7 @@ class SchedulerHandlerTest {
   void testCheckDestinationConnectionFromUpdate() throws IOException, JsonValidationException, ConfigNotFoundException {
     final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
     final DestinationUpdate destinationUpdate = new DestinationUpdate()
+        .name(destination.getName())
         .destinationId(destination.getDestinationId())
         .connectionConfiguration(destination.getConfiguration());
     when(configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId()))
@@ -339,7 +341,8 @@ class SchedulerHandlerTest {
             .withDockerImageTag(DESTINATION_DOCKER_TAG)
             .withDestinationDefinitionId(destination.getDestinationDefinitionId()));
     when(configRepository.getDestinationConnection(destination.getDestinationId())).thenReturn(destination);
-    when(configurationUpdate.destination(destination.getDestinationId(), destinationUpdate.getConnectionConfiguration())).thenReturn(destination);
+    when(configurationUpdate.destination(destination.getDestinationId(), destination.getName(), destinationUpdate.getConnectionConfiguration()))
+        .thenReturn(destination);
     when(specFetcher.execute(DESTINATION_DOCKER_IMAGE)).thenReturn(CONNECTION_SPECIFICATION);
     final DestinationConnection submittedDestination = new DestinationConnection()
         .withDestinationDefinitionId(destination.getDestinationDefinitionId())

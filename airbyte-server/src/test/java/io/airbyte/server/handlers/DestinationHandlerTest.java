@@ -189,7 +189,9 @@ class DestinationHandlerTest {
     final DestinationConnection expectedDestinationConnection = Jsons.clone(destinationConnection)
         .withConfiguration(newConfiguration)
         .withTombstone(false);
+
     final DestinationUpdate destinationUpdate = new DestinationUpdate()
+        .name(destinationConnection.getName())
         .destinationId(destinationConnection.getDestinationId())
         .name(destinationConnection.getName())
         .connectionConfiguration(newConfiguration);
@@ -205,7 +207,8 @@ class DestinationHandlerTest {
             .thenReturn(newConfiguration);
     when(secretsProcessor.maskSecrets(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(newConfiguration);
-    when(configurationUpdate.destination(destinationConnection.getDestinationId(), newConfiguration)).thenReturn(expectedDestinationConnection);
+    when(configurationUpdate.destination(destinationConnection.getDestinationId(), destinationConnection.getName(), newConfiguration))
+        .thenReturn(expectedDestinationConnection);
 
     final DestinationRead actualDestinationRead = destinationHandler.updateDestination(destinationUpdate);
 

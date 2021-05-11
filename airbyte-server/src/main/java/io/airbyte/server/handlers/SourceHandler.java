@@ -113,6 +113,7 @@ public class SourceHandler {
 
   public SourceRead updateSource(SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+
     final SourceConnection updatedSource = configurationUpdate
         .source(sourceUpdate.getSourceId(), sourceUpdate.getName(),
             sourceUpdate.getConnectionConfiguration());

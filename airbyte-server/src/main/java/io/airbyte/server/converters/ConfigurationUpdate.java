@@ -74,10 +74,11 @@ public class ConfigurationUpdate {
     return Jsons.clone(persistedSource).withConfiguration(updatedConfiguration);
   }
 
-  public DestinationConnection destination(UUID destinationId, JsonNode newConfiguration)
+  public DestinationConnection destination(UUID destinationId, String destName, JsonNode newConfiguration)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing destination
     final DestinationConnection persistedDestination = configRepository.getDestinationConnection(destinationId);
+    persistedDestination.setName(destName);
     // get spec
     final StandardDestinationDefinition destinationDefinition = configRepository
         .getStandardDestinationDefinition(persistedDestination.getDestinationDefinitionId());
