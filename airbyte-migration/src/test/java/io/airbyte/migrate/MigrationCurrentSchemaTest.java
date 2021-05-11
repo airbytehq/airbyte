@@ -44,7 +44,6 @@ public class MigrationCurrentSchemaTest {
   @Test
   void testConfigsOfLastMigrationMatchSource() {
     final Migration lastMigration = Migrations.MIGRATIONS.get(Migrations.MIGRATIONS.size() - 1);
-    System.out.println("lastMigration.getVersion() = " + lastMigration.getVersion());
     final Map<ResourceId, JsonNode> lastMigrationOutputSchema = lastMigration.getOutputSchema();
     final Map<ResourceId, JsonNode> currentSchema = MigrationUtils.getNameToSchemasFromResourcePath(
         Path.of("types"),
