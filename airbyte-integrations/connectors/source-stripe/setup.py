@@ -30,5 +30,5 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    install_requires=["airbyte-cdk==0.1.0rc5", "stripe"],
+    install_requires=["airbyte-cdk==0.1.1", "stripe"],
 )
