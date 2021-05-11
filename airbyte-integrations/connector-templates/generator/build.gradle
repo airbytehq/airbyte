@@ -17,7 +17,7 @@ def addScaffoldTemplateTask(name, packageName,scaffoldParams=[]) {
     def outputDir = "airbyte-integrations/connectors/source-${packageName}"
 
    def task = tasks.create(taskName) {
-        inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/${name}")
+        inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/")
 
         doLast {
             exec {
