@@ -14,7 +14,7 @@ This step sets up the initial python environment. **All** subsequent `python` or
 Let's verify everything is working as intended. Run:
 
 ```text
-python main_dev.py spec
+python main.py spec
 ```
 
 You should see some output:
@@ -25,7 +25,7 @@ You should see some output:
 
 We just ran Airbyte Protocol's `spec` command! We'll talk more about this later, but this is a simple sanity check to make sure everything is wired up correctly.
 
-Note that the `main_dev.py` file is a simple script that makes it easy to run your connector. Its invocation format is `python main_dev.py <command> [args]`. See the module's generated `README.md` for the commands it supports.
+Note that the `main.py` file is a simple script that makes it easy to run your connector. Its invocation format is `python main.py <command> [args]`. See the module's generated `README.md` for the commands it supports.
 
 ## Notes on iteration cycle
 
@@ -45,14 +45,14 @@ There are two ways we recommend iterating on a source. Consider using whichever 
 
 **Run the source using python**
 
-You'll notice in your source's directory that there is a python file called `main_dev.py`. This file exists as convenience for development. You run it to test that your source works:
+You'll notice in your source's directory that there is a python file called `main.py`. This file exists as convenience for development. You run it to test that your source works:
 
 ```text
 # from airbyte-integrations/connectors/source-<name>
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 The nice thing about this approach is that you can iterate completely within python. The downside is that you are not quite running your source as it will actually be run by Airbyte. Specifically, you're not running it from within the docker container that will house it.

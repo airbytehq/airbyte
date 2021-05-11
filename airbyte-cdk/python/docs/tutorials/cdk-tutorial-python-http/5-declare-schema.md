@@ -40,7 +40,7 @@ class ExchangeRates(HttpStream):
 Note that this implementation is entirely empty -- we haven't actually done anything. We'll come back to this in the next step. But for now we just want to declare the schema of this stream. We'll declare this as a stream that the connector outputs by returning it from the `streams` method:
 
 ```python
-from base_python.cdk.streams.auth.core import NoAuth
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 class SourcePythonHttpTutorial(AbstractSource):
 
@@ -55,12 +55,12 @@ class SourcePythonHttpTutorial(AbstractSource):
         return [ExchangeRates(authenticator=auth)]
 ```
 
-Having created this stream in code, we'll put a file `exchange_rates.json` in the `schemas/` folder. You can download the JSON file describing the output schema [here](https://github.com/airbytehq/airbyte/tree/d940c78307f09f38198e50e54195052d762af944/docs/contributing-to-airbyte/tutorials/cdk-tutorial-alpha/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
+Having created this stream in code, we'll put a file `exchange_rates.json` in the `schemas/` folder. You can download the JSON file describing the output schema [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
 
 With `.json` schema file in place, let's see if the connector can now find this schema and produce a valid catalog:
 
 ```text
-python main_dev.py discover --config sample_files/config.json
+python main.py discover --config sample_files/config.json
 ```
 
 you should see some output like:

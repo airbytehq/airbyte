@@ -41,7 +41,7 @@ stream from a source. This pattern is the same one used by Airbyte internally to
 
 The approach here is not authoritative, and devs are free to use their own judgement.
 
-There are additional required TODOs in the files within the sample_files folder and the spec.json file.
+There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
 """
 
 
