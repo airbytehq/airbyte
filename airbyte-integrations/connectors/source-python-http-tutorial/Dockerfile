@@ -9,5 +9,7 @@ COPY main.py ./
 COPY setup.py ./
 RUN pip install .
 
+ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+
 LABEL io.airbyte.version=0.1.0
 LABEL io.airbyte.name=airbyte/source-python-http-tutorial

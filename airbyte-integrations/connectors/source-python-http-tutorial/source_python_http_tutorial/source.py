@@ -34,6 +34,7 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 class ExchangeRates(HttpStream):
     url_base = "https://api.ratesapi.io/"
     cursor_field = "date"
+    primary_key = "date"
 
     def __init__(self, base: str, start_date: datetime, **kwargs):
         super().__init__(**kwargs)
