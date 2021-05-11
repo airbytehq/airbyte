@@ -99,7 +99,7 @@ jobs:
         run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
 
       - name: Format
-        run: ./gradlew --no-daemon format --scan --debug --stacktrace
+        run: ./gradlew --no-daemon format --scan --info --stacktrace
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
