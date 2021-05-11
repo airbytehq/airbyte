@@ -21,13 +21,14 @@
 # SOFTWARE.
 
 
-import operator
-from functools import partial, reduce
+from functools import partial
 from json.decoder import JSONDecodeError
-from typing import Dict, Mapping, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
+import pendulum
 import requests
 from base_python import BaseClient
+from base_python.entrypoint import logger
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import ConnectionError
 
@@ -47,6 +48,9 @@ class Client(BaseClient):
         self._issue_keys = []
         self._project_keys = []
         self._workflow_scheme_keys = []
+        self._state = {
+            "issues": {"state": None, "state_pk": "created"}
+        }
         super().__init__()
 
     @staticmethod
@@ -83,6 +87,19 @@ class Client(BaseClient):
             next_page, request_params = self.get_next_page(response, f"{self.base_api_url}{url}", params)
             if not next_page:
                 break
+
+    def get_stream_state(self, name: str) -> Any:
+        stream_state = self._state.get(name)
+        if stream_state["state"]:
+            return {stream_state.get("state_pk"): str(stream_state["state"])}
+        return None
+
+    def set_stream_state(self, name: str, state: Any):
+        stream_state = self._state.get(name)
+        stream_state["state"] = pendulum.parse(state[stream_state.get("state_pk")])
+
+    def stream_has_state(self, name: str) -> bool:
+        return name in self._state
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         # Many streams are just a wrapper around a call to lists() with some preconfigured params.
@@ -186,6 +203,26 @@ class Client(BaseClient):
             }
             for permission in self.lists(name="filter_sharing", **filter_sharing_configs):
                 yield permission
+
+    def stream__issues(self, fields):
+        cursor = None
+        issues_state = self._state.get("issues").get("state")
+        issues_config = {**ENTITIES_MAP.get("issues")}
+        stream_state = self._state.get("issues")
+        if issues_state:
+            issues_state_row = issues_state.format("YYYY/MM/DD HH:mm")
+            issues_config["params"]["jql"] = f"created > '{issues_state_row}'"
+        for issue in self.lists(name="issues", **issues_config):
+            "Jira API returns records from newest to oldest"
+            if not cursor:
+                cursor = pendulum.parse(issue["fields"][stream_state["state_pk"]])
+            yield issue
+
+        if cursor:
+            new_state = max(cursor, stream_state["state"]) if stream_state["state"] else cursor
+            if new_state != stream_state["state"]:
+                logger.info(f"Advancing bookmark for Issues stream from {stream_state['state']} to {new_state}")
+                stream_state["state"] = new_state
 
     def stream__issue_comments(self, fields):
         for comment in self._get_issues_related("comments"):
