@@ -248,7 +248,7 @@
 - sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   name: Smartsheets
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-smartsheets
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   name: Oracle DB
