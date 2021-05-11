@@ -169,9 +169,18 @@ public class JdbcUtils {
     switch (cursorFieldType) {
       // parse date, time, and timestamp the same way. this seems to not cause an problems and allows us
       // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
-      case DATE, TIME, TIMESTAMP -> {
+      case TIME, TIMESTAMP -> {
         try {
           preparedStatement.setTimestamp(parameterIndex, Timestamp.from(DATE_FORMAT.parse(value).toInstant()));
+        } catch (ParseException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      case DATE -> {
+        try {
+          Timestamp from = Timestamp.from(DATE_FORMAT.parse(value).toInstant());
+          preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
         } catch (ParseException e) {
           throw new RuntimeException(e);
         }
