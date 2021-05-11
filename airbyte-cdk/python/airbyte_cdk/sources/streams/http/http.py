@@ -213,8 +213,8 @@ class HttpStream(Stream, ABC):
         stream_state = stream_state or {}
         pagination_complete = False
 
+        next_page_token = None
         while not pagination_complete:
-            next_page_token = None
             request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             request = self._create_prepared_request(
                 path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
