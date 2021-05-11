@@ -26,12 +26,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
-from airbyte_protocol import SyncMode
-from base_python.cdk.abstract_source import AbstractSource
-from base_python.cdk.streams.auth.token import TokenAuthenticator
-from base_python.cdk.streams.core import Stream
-from base_python.cdk.streams.http import HttpStream
-from base_python.logger import AirbyteLogger
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from pendulum import DateTime
 from slack_sdk import WebClient
 

@@ -26,7 +26,8 @@ from datetime import datetime
 from typing import Dict, Generator
 
 import smartsheet
-from airbyte_protocol import (
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -36,10 +37,11 @@ from airbyte_protocol import (
     Status,
     Type,
 )
-from base_python import AirbyteLogger, Source
-
 
 # helpers
+from airbyte_cdk.sources import Source
+
+
 def get_prop(col_type: str) -> Dict[str, any]:
     props = {
         "TEXT_NUMBER": {"type": "string"},
@@ -131,7 +133,7 @@ class SourceSmartsheets(Source):
                 logger.info(f"Row count: {sheet['totalRowCount']}")
 
                 for row in sheet["rows"]:
-                    values = tuple(i["value"] for i in row["cells"])
+                    values = tuple(i["value"] if "value" in i else "" for i in row["cells"])
                     try:
                         data = dict(zip(columns, values))
 

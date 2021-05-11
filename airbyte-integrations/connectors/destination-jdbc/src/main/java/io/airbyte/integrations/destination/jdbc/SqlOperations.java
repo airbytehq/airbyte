@@ -103,11 +103,18 @@ public interface SqlOperations {
    * @param queries queries to execute
    * @throws Exception exception
    */
-  void executeTransaction(JdbcDatabase database, String queries) throws Exception;
+  void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception;
 
   /**
    * Check if the data record is valid and ok to be written to destination
    */
   boolean isValidData(final String data);
+
+  /**
+   * Denotes whether the destination has the concept of schema or not
+   *
+   * @return true if the destination supports schema (ex: Postgres), false if it doesn't(MySQL)
+   */
+  boolean isSchemaRequired();
 
 }

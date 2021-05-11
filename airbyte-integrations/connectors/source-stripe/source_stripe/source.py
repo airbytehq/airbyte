@@ -27,12 +27,17 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 import stripe
-from airbyte_protocol import SyncMode
-from base_python import AbstractSource, HttpStream, Stream, TokenAuthenticator
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
+    primary_key = "id"
 
     def __init__(self, account_id: str, **kwargs):
         super().__init__(**kwargs)
@@ -61,7 +66,10 @@ class StripeStream(HttpStream, ABC):
         return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {"Stripe-Account": self.account_id}
+        if self.account_id:
+            return {"Stripe-Account": self.account_id}
+
+        return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -256,7 +264,7 @@ class BankAccounts(StripeStream):
 
 
 class SourceStripe(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             stripe.api_key = config["client_secret"]
             stripe.Account.retrieve(config["account_id"])
