@@ -34,10 +34,12 @@ import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.OperatorConfiguration;
+import io.airbyte.api.model.OperatorNormalization.OptionEnum;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
+import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -74,7 +76,7 @@ public class OperationsHandler {
         .withTombstone(false);
     if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getNormalization() != null);
-      standardSyncOperation.withOperatorNormalization(new OperatorNormalization());
+      standardSyncOperation.withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
     }
     if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.DBT) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getDbt() != null);
@@ -94,7 +96,7 @@ public class OperationsHandler {
         .withOperatorType(Enums.convertTo(operationUpdate.getOperatorConfiguration().getOperatorType(), OperatorType.class));
     if (operationUpdate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
       Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getNormalization() != null);
-      persistedSync.withOperatorNormalization(new OperatorNormalization());
+      persistedSync.withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
     } else {
       persistedSync.withOperatorNormalization(null);
     }
@@ -171,7 +173,8 @@ public class OperationsHandler {
         .operatorType(Enums.convertTo(standardSyncOperation.getOperatorType(), io.airbyte.api.model.OperatorType.class));
     if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
       Preconditions.checkArgument(standardSyncOperation.getOperatorNormalization() != null);
-      operatorConfiguration.normalization(new io.airbyte.api.model.OperatorNormalization());
+      operatorConfiguration.normalization(new io.airbyte.api.model.OperatorNormalization()
+          .option(Enums.convertTo(standardSyncOperation.getOperatorNormalization().getOption(), OptionEnum.class)));
     }
     if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
       Preconditions.checkArgument(standardSyncOperation.getOperatorDbt() != null);

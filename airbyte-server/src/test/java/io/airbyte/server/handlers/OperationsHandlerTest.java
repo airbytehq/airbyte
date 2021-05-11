@@ -40,8 +40,10 @@ import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.OperatorConfiguration;
 import io.airbyte.api.model.OperatorDbt;
 import io.airbyte.api.model.OperatorNormalization;
+import io.airbyte.api.model.OperatorNormalization.OptionEnum;
 import io.airbyte.api.model.OperatorType;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -73,7 +75,7 @@ class OperationsHandlerTest {
         .withOperationId(UUID.randomUUID())
         .withName("presto to hudi")
         .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.NORMALIZATION)
-        .withOperatorNormalization(new io.airbyte.config.OperatorNormalization())
+        .withOperatorNormalization(new io.airbyte.config.OperatorNormalization().withOption(Option.BASIC))
         .withOperatorDbt(null)
         .withTombstone(false);
   }
@@ -88,7 +90,7 @@ class OperationsHandlerTest {
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()
             .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization()));
+            .normalization(new OperatorNormalization().option(OptionEnum.BASIC)));
 
     final OperationRead actualOperationRead = operationsHandler.createOperation(operationCreate);
 
@@ -97,7 +99,7 @@ class OperationsHandlerTest {
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()
             .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization()));
+            .normalization(new OperatorNormalization().option(OptionEnum.BASIC)));
 
     assertEquals(expectedOperationRead, actualOperationRead);
 
@@ -165,7 +167,7 @@ class OperationsHandlerTest {
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()
             .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization()));
+            .normalization(new OperatorNormalization().option(OptionEnum.BASIC)));
   }
 
   @Test

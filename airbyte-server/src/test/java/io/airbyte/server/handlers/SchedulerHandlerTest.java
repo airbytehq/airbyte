@@ -55,6 +55,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.OperatorNormalization;
+import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -573,7 +574,7 @@ class SchedulerHandlerTest {
         .withOperationId(operationId)
         .withName(OPERATION_NAME)
         .withOperatorType(OperatorType.NORMALIZATION)
-        .withOperatorNormalization(new OperatorNormalization());
+        .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
   }
 
 }

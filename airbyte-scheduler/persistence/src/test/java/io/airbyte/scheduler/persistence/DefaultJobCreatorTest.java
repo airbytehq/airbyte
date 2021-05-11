@@ -41,6 +41,7 @@ import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.OperatorNormalization;
+import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
@@ -124,7 +125,7 @@ public class DefaultJobCreatorTest {
         .withName("normalize")
         .withTombstone(false)
         .withOperatorType(OperatorType.NORMALIZATION)
-        .withOperatorNormalization(new OperatorNormalization());
+        .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
   }
 
   @BeforeEach

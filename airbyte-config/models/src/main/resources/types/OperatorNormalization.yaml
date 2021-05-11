@@ -5,3 +5,9 @@ title: OperatorNormalization
 description: Settings for a normalization operator
 type: object
 additionalProperties: false
+properties:
+  option:
+    type: string
+    enum:
+      - basic
+      #- unnesting
