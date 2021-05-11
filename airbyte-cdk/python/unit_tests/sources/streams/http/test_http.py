@@ -90,7 +90,6 @@ def test_next_page_token_is_input_to_other_methods(mocker):
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
     mocker.patch.object(StubNextPageTokenHttpStream, "_send_request", return_value=blank_response)
 
-
     methods = ["request_params", "request_headers", "request_body_json"]
     for method in methods:
         # Wrap all methods we're interested in testing with mocked objects so we can later spy on their input args and verify they were what we expect
