@@ -76,7 +76,8 @@ public class OperationsHandler {
         .withTombstone(false);
     if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getNormalization() != null);
-      standardSyncOperation.withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
+      standardSyncOperation.withOperatorNormalization(new OperatorNormalization()
+          .withOption(Enums.convertTo(operationCreate.getOperatorConfiguration().getNormalization().getOption(), Option.class)));
     }
     if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.DBT) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getDbt() != null);
@@ -96,7 +97,8 @@ public class OperationsHandler {
         .withOperatorType(Enums.convertTo(operationUpdate.getOperatorConfiguration().getOperatorType(), OperatorType.class));
     if (operationUpdate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
       Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getNormalization() != null);
-      persistedSync.withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC));
+      persistedSync.withOperatorNormalization(new OperatorNormalization()
+          .withOption(Enums.convertTo(operationUpdate.getOperatorConfiguration().getNormalization().getOption(), Option.class)));
     } else {
       persistedSync.withOperatorNormalization(null);
     }

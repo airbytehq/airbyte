@@ -205,6 +205,7 @@ class OperationsHandlerTest {
   @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorType.class, io.airbyte.config.StandardSyncOperation.OperatorType.class));
+    assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorNormalization.OptionEnum.class, io.airbyte.config.OperatorNormalization.Option.class));
   }
 
 }
