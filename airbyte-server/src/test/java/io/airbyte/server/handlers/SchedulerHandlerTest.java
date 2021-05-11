@@ -62,7 +62,6 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
-import io.airbyte.config.StandardSyncOperation.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -573,9 +572,8 @@ class SchedulerHandlerTest {
     return new StandardSyncOperation()
         .withOperationId(operationId)
         .withName(OPERATION_NAME)
-        .withStatus(Status.ACTIVE)
         .withOperatorType(OperatorType.NORMALIZATION)
-        .withOperatorNormalization(new OperatorNormalization().withEnabled(true));
+        .withOperatorNormalization(new OperatorNormalization());
   }
 
 }

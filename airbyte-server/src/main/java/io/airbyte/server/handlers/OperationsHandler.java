@@ -35,12 +35,12 @@ import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.OperatorConfiguration;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
-import io.airbyte.config.StandardSyncOperation.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
@@ -71,11 +71,10 @@ public class OperationsHandler {
         .withOperationId(operationId)
         .withName(operationCreate.getName())
         .withOperatorType(Enums.convertTo(operationCreate.getOperatorConfiguration().getOperatorType(), OperatorType.class))
-        .withStatus(Enums.convertTo(operationCreate.getStatus(), Status.class));
+        .withTombstone(false);
     if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getNormalization() != null);
-      standardSyncOperation.withOperatorNormalization(new OperatorNormalization()
-          .withEnabled(operationCreate.getOperatorConfiguration().getNormalization().getEnabled()));
+      standardSyncOperation.withOperatorNormalization(new OperatorNormalization());
     }
     if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.DBT) {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getDbt() != null);
@@ -92,12 +91,10 @@ public class OperationsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSyncOperation persistedSync = configRepository.getStandardSyncOperation(operationUpdate.getOperationId())
         .withName(operationUpdate.getName())
-        .withOperatorType(Enums.convertTo(operationUpdate.getOperatorConfiguration().getOperatorType(), OperatorType.class))
-        .withStatus(Enums.convertTo(operationUpdate.getStatus(), Status.class));
+        .withOperatorType(Enums.convertTo(operationUpdate.getOperatorConfiguration().getOperatorType(), OperatorType.class));
     if (operationUpdate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
       Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getNormalization() != null);
-      persistedSync.withOperatorNormalization(new OperatorNormalization()
-          .withEnabled(operationUpdate.getOperatorConfiguration().getNormalization().getEnabled()));
+      persistedSync.withOperatorNormalization(new OperatorNormalization());
     } else {
       persistedSync.withOperatorNormalization(null);
     }
@@ -125,7 +122,7 @@ public class OperationsHandler {
     final List<OperationRead> operationReads = Lists.newArrayList();
     final StandardSync standardSync = configRepository.getStandardSync(connectionIdRequestBody.getConnectionId());
     for (StandardSyncOperation standardSyncOperation : configRepository.listStandardSyncOperations()) {
-      if (standardSyncOperation.getStatus() == StandardSyncOperation.Status.DEPRECATED) {
+      if (standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone()) {
         continue;
       }
       if (!standardSync.getOperationIds().contains(standardSyncOperation.getOperationId())) {
@@ -143,18 +140,30 @@ public class OperationsHandler {
 
   public void deleteOperation(OperationIdRequestBody operationIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final OperationRead OperationRead = getOperation(operationIdRequestBody);
-    deleteOperation(OperationRead);
-  }
-
-  public void deleteOperation(OperationRead operationRead) throws ConfigNotFoundException, IOException, JsonValidationException {
-    // TODO chris: to implement in next PR on custom-dbt-config
+    final UUID operationId = operationIdRequestBody.getOperationId();
+    // Remove operation from all connections using it
+    for (StandardSync standardSync : configRepository.listStandardSyncs()) {
+      if (standardSync.getOperationIds().removeAll(List.of(operationId))) {
+        configRepository.writeStandardSync(standardSync);
+      }
+    }
+    final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
+    if (standardSyncOperation != null) {
+      standardSyncOperation.withTombstone(true);
+      configRepository.writeStandardSyncOperation(standardSyncOperation);
+    } else {
+      throw new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_OPERATION, operationId.toString());
+    }
   }
 
   private OperationRead buildOperationRead(UUID operationId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
-    return buildOperationRead(standardSyncOperation);
+    if (standardSyncOperation != null) {
+      return buildOperationRead(standardSyncOperation);
+    } else {
+      throw new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_OPERATION, operationId.toString());
+    }
   }
 
   private OperationRead buildOperationRead(StandardSyncOperation standardSyncOperation) {
@@ -162,8 +171,7 @@ public class OperationsHandler {
         .operatorType(Enums.convertTo(standardSyncOperation.getOperatorType(), io.airbyte.api.model.OperatorType.class));
     if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
       Preconditions.checkArgument(standardSyncOperation.getOperatorNormalization() != null);
-      operatorConfiguration.normalization(new io.airbyte.api.model.OperatorNormalization()
-          .enabled(standardSyncOperation.getOperatorNormalization().getEnabled()));
+      operatorConfiguration.normalization(new io.airbyte.api.model.OperatorNormalization());
     }
     if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
       Preconditions.checkArgument(standardSyncOperation.getOperatorDbt() != null);
@@ -175,8 +183,7 @@ public class OperationsHandler {
     return new OperationRead()
         .operationId(standardSyncOperation.getOperationId())
         .name(standardSyncOperation.getName())
-        .operatorConfiguration(operatorConfiguration)
-        .status(Enums.convertTo(standardSyncOperation.getStatus(), OperationStatus.class));
+        .operatorConfiguration(operatorConfiguration);
   }
 
 }

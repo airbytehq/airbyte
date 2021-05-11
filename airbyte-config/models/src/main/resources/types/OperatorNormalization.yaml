@@ -4,9 +4,4 @@
 title: OperatorNormalization
 description: Settings for a normalization operator
 type: object
-required:
-  - enabled
 additionalProperties: false
-properties:
-  enabled:
-    type: boolean

@@ -26,7 +26,6 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -37,7 +36,6 @@ import io.airbyte.api.model.OperationCreate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
-import io.airbyte.api.model.OperationStatus;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.OperatorConfiguration;
 import io.airbyte.api.model.OperatorDbt;
@@ -46,7 +44,6 @@ import io.airbyte.api.model.OperatorType;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.StandardSyncOperation.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
@@ -76,10 +73,9 @@ class OperationsHandlerTest {
         .withOperationId(UUID.randomUUID())
         .withName("presto to hudi")
         .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.NORMALIZATION)
-        .withOperatorNormalization(new io.airbyte.config.OperatorNormalization()
-            .withEnabled(true))
+        .withOperatorNormalization(new io.airbyte.config.OperatorNormalization())
         .withOperatorDbt(null)
-        .withStatus(Status.ACTIVE);
+        .withTombstone(false);
   }
 
   @Test
@@ -92,9 +88,7 @@ class OperationsHandlerTest {
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()
             .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization()
-                .enabled(true)))
-        .status(OperationStatus.ACTIVE);
+            .normalization(new OperatorNormalization()));
 
     final OperationRead actualOperationRead = operationsHandler.createOperation(operationCreate);
 
@@ -103,9 +97,7 @@ class OperationsHandlerTest {
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()
             .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization()
-                .enabled(true)))
-        .status(OperationStatus.ACTIVE);
+            .normalization(new OperatorNormalization()));
 
     assertEquals(expectedOperationRead, actualOperationRead);
 
@@ -122,8 +114,7 @@ class OperationsHandlerTest {
             .dbt(new OperatorDbt()
                 .gitRepoUrl("git_repo")
                 .dockerImage("docker")
-                .dbtArguments("--full-refresh")))
-        .status(OperationStatus.INACTIVE);
+                .dbtArguments("--full-refresh")));
 
     final StandardSyncOperation updatedStandardSyncOperation = new StandardSyncOperation()
         .withOperationId(standardSyncOperation.getOperationId())
@@ -134,7 +125,7 @@ class OperationsHandlerTest {
             .withDockerImage("docker")
             .withDbtArguments("--full-refresh"))
         .withOperatorNormalization(null)
-        .withStatus(Status.INACTIVE);
+        .withTombstone(false);
 
     when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation)
         .thenReturn(updatedStandardSyncOperation);
@@ -149,8 +140,7 @@ class OperationsHandlerTest {
             .dbt(new OperatorDbt()
                 .gitRepoUrl("git_repo")
                 .dockerImage("docker")
-                .dbtArguments("--full-refresh")))
-        .status(OperationStatus.INACTIVE);
+                .dbtArguments("--full-refresh")));
 
     assertEquals(expectedOperationRead, actualOperationRead);
 
@@ -175,9 +165,7 @@ class OperationsHandlerTest {
         .name(standardSyncOperation.getName())
         .operatorConfiguration(new OperatorConfiguration()
             .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization()
-                .enabled(standardSyncOperation.getOperatorNormalization().getEnabled())))
-        .status(OperationStatus.ACTIVE);
+            .normalization(new OperatorNormalization()));
   }
 
   @Test
@@ -204,31 +192,17 @@ class OperationsHandlerTest {
   void testDeleteOperation() throws JsonValidationException, IOException, ConfigNotFoundException {
     final OperationIdRequestBody operationIdRequestBody = new OperationIdRequestBody().operationId(standardSyncOperation.getOperationId());
 
-    final OperationRead operationRead = generateOperationRead();
-
-    final OperationUpdate expectedOperationUpdate = new OperationUpdate()
-        .operationId(standardSyncOperation.getOperationId())
-        .name(standardSyncOperation.getName())
-        .operatorConfiguration(new OperatorConfiguration()
-            .operatorType(OperatorType.NORMALIZATION)
-            .normalization(new OperatorNormalization()
-                .enabled(standardSyncOperation.getOperatorNormalization().getEnabled())))
-        .status(OperationStatus.DEPRECATED);
-
     final OperationsHandler spiedOperationsHandler = spy(operationsHandler);
-    doReturn(operationRead).when(spiedOperationsHandler).getOperation(operationIdRequestBody);
-    doReturn(null).when(spiedOperationsHandler).updateOperation(expectedOperationUpdate);
+    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
 
     spiedOperationsHandler.deleteOperation(operationIdRequestBody);
 
-    verify(spiedOperationsHandler).getOperation(operationIdRequestBody);
-    verify(spiedOperationsHandler).updateOperation(expectedOperationUpdate);
+    verify(configRepository).writeStandardSyncOperation(standardSyncOperation.withTombstone(true));
   }
 
   @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorType.class, io.airbyte.config.StandardSyncOperation.OperatorType.class));
-    assertTrue(Enums.isCompatible(io.airbyte.api.model.OperationStatus.class, io.airbyte.config.StandardSyncOperation.Status.class));
   }
 
 }

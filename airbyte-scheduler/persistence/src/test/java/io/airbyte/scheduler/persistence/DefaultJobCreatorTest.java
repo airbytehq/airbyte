@@ -45,7 +45,6 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
-import io.airbyte.config.StandardSyncOperation.Status;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -123,10 +122,9 @@ public class DefaultJobCreatorTest {
     STANDARD_SYNC_OPERATION = new StandardSyncOperation()
         .withOperationId(operationId)
         .withName("normalize")
-        .withStatus(Status.ACTIVE)
+        .withTombstone(false)
         .withOperatorType(OperatorType.NORMALIZATION)
-        .withOperatorNormalization(new OperatorNormalization()
-            .withEnabled(true));
+        .withOperatorNormalization(new OperatorNormalization());
   }
 
   @BeforeEach

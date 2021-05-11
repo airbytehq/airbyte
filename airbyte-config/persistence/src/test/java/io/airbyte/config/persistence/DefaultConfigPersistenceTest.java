@@ -105,8 +105,7 @@ class DefaultConfigPersistenceTest {
         .withConnectionId(UUID_1)
         .withSourceId(UUID.randomUUID())
         .withDestinationId(UUID.randomUUID())
-        .withOperationIds(List.of(UUID.randomUUID()))
-        .withStatus(StandardSync.Status.ACTIVE);
+        .withOperationIds(List.of(UUID.randomUUID()));
 
     configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), standardSync);
 
