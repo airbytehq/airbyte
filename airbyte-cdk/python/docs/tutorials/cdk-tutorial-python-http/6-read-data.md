@@ -2,7 +2,7 @@
 
 Describing schemas is good and all, but at some point we have to start reading data! So let's get to work. But before, let's describe what we're about to do:
 
-The `HttpStream` superclass, like described in the [concepts documentation](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/README.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for:
+The `HttpStream` superclass, like described in the [concepts documentation](../../concepts/http-streams.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for:
 
 * authentication
 * pagination
@@ -21,7 +21,7 @@ Optionally, we can provide additional inputs to customize requests:
 * how to recognize rate limit errors, and how long to wait \(by default it retries 429 and 5XX errors using exponential backoff\)
 * HTTP method and request body if applicable
 
-There are many other customizable options - you can find them in the [`base_python.cdk.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/streams/http.py) class.
+There are many other customizable options - you can find them in the [`airbyte_cdk.sources.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/http.py) class.
 
 So in order to read data from the exchange rates API, we'll fill out the necessary information for the stream to do its work. First, we'll implement a basic read that just reads the last day's exchange rates, then we'll implement incremental sync using stream slicing.
 
@@ -30,7 +30,9 @@ Let's begin by pulling data for the last day's rates by using the `/latest` endp
 ```python
 class ExchangeRates(HttpStream):
     url_base = "https://api.ratesapi.io/"
-
+    
+    primary_key = None
+    
     def __init__(self, base: str, **kwargs):
         super().__init__()
         self.base = base
@@ -83,10 +85,10 @@ def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
 We're now ready to query the API!
 
-To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.io/tutorials/tutorials/beginners-guide-to-catalog). We've prepared one [here](https://github.com/airbytehq/airbyte/tree/d940c78307f09f38198e50e54195052d762af944/docs/contributing-to-airbyte/tutorials/cdk-tutorial-alpha/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
+To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.io/tutorials/tutorials/beginners-guide-to-catalog). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```text
- python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
+ python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
 ```
 
 you should see some output lines, one of which is a record from the API:
@@ -126,6 +128,7 @@ from datetime import datetime, timedelta
 class ExchangeRates(HttpStream):
     url_base = "https://api.ratesapi.io/"
     cursor_field = "date"
+    primary_key = "date"
 
     def __init__(self, base: str, start_date: datetime, **kwargs):
         super().__init__()
@@ -173,7 +176,7 @@ We'll implement the `stream_slices` method to return a list of the dates for whi
         return self._chunk_date_range(start_date)
 ```
 
-Each slice will cause an HTTP request to be made to the API. We can then use the information present in the `stream_slice` parameter \(a single element from the list we constructed in `stream_slices` above\) to set other configurations for the outgoing request like `path` or `request_params`. For more info about stream slicing, see [the slicing docs](https://github.com/airbytehq/airbyte/tree/d940c78307f09f38198e50e54195052d762af944/docs/contributing-to-airbyte/tutorials/concepts/stream_slices.md).
+Each slice will cause an HTTP request to be made to the API. We can then use the information present in the `stream_slice` parameter \(a single element from the list we constructed in `stream_slices` above\) to set other configurations for the outgoing request like `path` or `request_params`. For more info about stream slicing, see [the slicing docs](../../concepts/stream_slices.md).
 
 In order to pull data for a specific date, the Exchange Rates API requires that we pass the date as the path component of the URL. Let's override the `path` method to achieve this:
 
@@ -195,17 +198,17 @@ We should now have a working implementation of incremental sync!
 Let's try it out:
 
 ```text
-python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
+python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
 ```
 
 You should see a bunch of `RECORD` messages and `STATE` messages. To verify that incremental sync is working, pass the input state back to the connector and run it again:
 
 ```text
 # Save the latest state to sample_files/state.json
-python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json | grep STATE | tail -n 1 | jq .state.data > sample_files/state.json
+python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json | grep STATE | tail -n 1 | jq .state.data > sample_files/state.json
 
 # Run a read operation with the latest state message
-python main_dev.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json --state sample_files/state.json
+python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json --state sample_files/state.json
 ```
 
 You should see that only the record from the last date is being synced! This is acceptable behavior, since Airbyte requires at-least-once delivery of records, so repeating the last record twice is OK.

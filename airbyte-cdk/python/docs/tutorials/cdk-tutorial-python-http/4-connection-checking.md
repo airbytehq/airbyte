@@ -42,17 +42,17 @@ Let's test out this implementation by creating two objects: a valid and an inval
 ```text
 echo '{"start_date": "2021-04-01", "base": "USD"}'  > sample_files/config.json
 echo '{"start_date": "2021-04-01", "base": "BTC"}'  > sample_files/invalid_config.json
-python main_dev.py check --config sample_files/config.json
-python main_dev.py check --config sample_files/invalid_config.json
+python main.py check --config sample_files/config.json
+python main.py check --config sample_files/invalid_config.json
 ```
 
 You should see output like the following:
 
 ```text
-> python main_dev.py check --config sample_files/config.json
+> python main.py check --config sample_files/config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "SUCCEEDED"}}
 
-> python main_dev.py check --config sample_files/invalid_config.json
+> python main.py check --config sample_files/invalid_config.json
 {"type": "CONNECTION_STATUS", "connectionStatus": {"status": "FAILED", "message": "Input currency BTC is invalid. Please input one of the following currencies: {'DKK', 'USD', 'CZK', 'BGN', 'JPY'}"}}
 ```
 
