@@ -167,11 +167,22 @@ public class JdbcUtils {
                                        String value)
       throws SQLException {
     switch (cursorFieldType) {
-      // parse date, time, and timestamp the same way. this seems to not cause an problems and allows us
+      // parse time, and timestamp the same way. this seems to not cause an problems and allows us
       // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
-      case DATE, TIME, TIMESTAMP -> {
+      // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
+      // value in the following format
+      case TIME, TIMESTAMP -> {
         try {
           preparedStatement.setTimestamp(parameterIndex, Timestamp.from(DATE_FORMAT.parse(value).toInstant()));
+        } catch (ParseException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      case DATE -> {
+        try {
+          Timestamp from = Timestamp.from(DATE_FORMAT.parse(value).toInstant());
+          preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
         } catch (ParseException e) {
           throw new RuntimeException(e);
         }
