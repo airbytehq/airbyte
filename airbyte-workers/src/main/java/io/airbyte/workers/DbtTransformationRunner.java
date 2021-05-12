@@ -58,8 +58,8 @@ public class DbtTransformationRunner implements AutoCloseable {
   }
 
   /**
-   * Re-use the Normalization runner to configure the dbt project with the correct destination settings and then
-   * run the custom transformation command.
+   * Re-use the Normalization runner to configure the dbt project with the correct destination
+   * settings and then run the custom transformation command.
    */
   public boolean run(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) throws Exception {
     if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, dbtConfig)) {
