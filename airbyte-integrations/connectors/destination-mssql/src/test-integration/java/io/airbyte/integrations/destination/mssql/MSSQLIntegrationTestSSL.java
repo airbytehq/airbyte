@@ -56,7 +56,7 @@ public class MSSQLIntegrationTestSSL extends TestDestination {
 
   @Override
   protected String getImageName() {
-    return "airbyte/mssql_ssltest:dev";
+    return "airbyte/destination-mssql:dev";
   }
 
   private JsonNode getConfig(MSSQLServerContainer<?> db) {
@@ -66,6 +66,8 @@ public class MSSQLIntegrationTestSSL extends TestDestination {
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schema", "testSchema")
+        .put("ssl", true)
+        .put("trustServerCertificate", true)
         .build());
   }
 
