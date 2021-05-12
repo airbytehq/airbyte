@@ -48,9 +48,7 @@ class Client(BaseClient):
         self._issue_keys = []
         self._project_keys = []
         self._workflow_scheme_keys = []
-        self._state = {
-            "issues": {"state": None, "state_pk": "created"}
-        }
+        self._state = {"issues": {"state": None, "state_pk": "created"}, "issue_worklogs": {"state": None, "state_pk": "startedAfter"}}
         super().__init__()
 
     @staticmethod
@@ -112,6 +110,14 @@ class Client(BaseClient):
                 mapping[entity] = partial(self.lists, name=entity, **value)
         return mapping
 
+    @staticmethod
+    def _update_cursor(cursor, stream_state):
+        if cursor:
+            new_state = max(cursor, stream_state["state"]) if stream_state["state"] else cursor
+            if new_state != stream_state["state"]:
+                logger.info(f"Advancing bookmark for Issues stream from {stream_state['state']} to {new_state}")
+                stream_state["state"] = new_state
+
     def health_check(self) -> Tuple[bool, str]:
         alive = True
         error_msg = None
@@ -159,10 +165,12 @@ class Client(BaseClient):
             if field.get("custom"):
                 yield field
 
-    def _get_issues_related(self, name):
+    def _get_issues_related(self, name, params={}):
         issue_keys = self._get_issue_keys()
         for issue_key in issue_keys:
             configs = {**ENTITIES_MAP.get(f"issue_{name}"), "url": ENTITIES_MAP.get(f"issue_{name}").get("url").format(key=issue_key)}
+            if params:
+                configs["params"].update(params)
             for item in self.lists(name=f"issue_{name}", **configs):
                 yield item
 
@@ -206,11 +214,10 @@ class Client(BaseClient):
 
     def stream__issues(self, fields):
         cursor = None
-        issues_state = self._state.get("issues").get("state")
         issues_config = {**ENTITIES_MAP.get("issues")}
         stream_state = self._state.get("issues")
-        if issues_state:
-            issues_state_row = issues_state.format("YYYY/MM/DD HH:mm")
+        if stream_state["state"]:
+            issues_state_row = stream_state["state"].format("YYYY/MM/DD HH:mm")
             issues_config["params"]["jql"] = f"created > '{issues_state_row}'"
         for issue in self.lists(name="issues", **issues_config):
             "Jira API returns records from newest to oldest"
@@ -218,11 +225,7 @@ class Client(BaseClient):
                 cursor = pendulum.parse(issue["fields"][stream_state["state_pk"]])
             yield issue
 
-        if cursor:
-            new_state = max(cursor, stream_state["state"]) if stream_state["state"] else cursor
-            if new_state != stream_state["state"]:
-                logger.info(f"Advancing bookmark for Issues stream from {stream_state['state']} to {new_state}")
-                stream_state["state"] = new_state
+        self._update_cursor(cursor, stream_state)
 
     def stream__issue_comments(self, fields):
         for comment in self._get_issues_related("comments"):
@@ -264,8 +267,17 @@ class Client(BaseClient):
             yield watcher
 
     def stream__issue_worklogs(self, fields):
-        for worklog in self._get_issues_related("worklogs"):
+        cursor = None
+        params = {}
+        stream_state = self._state.get("issue_worklogs")
+        if stream_state["state"]:
+            state_row = int(stream_state["state"].timestamp() * 1000)
+            params["startedAfter"] = state_row
+        for worklog in self._get_issues_related("worklogs", params):
+            cursor = pendulum.parse(worklog["created"])
             yield worklog
+
+        self._update_cursor(cursor, stream_state)
 
     def stream__project_avatars(self, fields):
         for avatar in self._get_projects_related("avatars"):
