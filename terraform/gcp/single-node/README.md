@@ -25,3 +25,11 @@ cat /var/log/daemon.log | grep startup
 ```
 gcloud beta compute ssh airbyte-prod --zone=us-central1-c -- -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f
 ```
+
+Before using, we'll need to manually modify the env to make this accessible and restart the app.
+1. Set API_URL in `.env` to `https://YOUR_IP/api/v1/`.
+2. 
+```
+docker-compose down
+docker-compose up -d
+```

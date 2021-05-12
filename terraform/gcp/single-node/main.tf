@@ -20,6 +20,19 @@ resource "google_compute_firewall" "allow-ssh" {
   }
 }
 
+resource "google_compute_firewall" "allow-lb" {
+  name    = "allow-lb-firewall"
+  network = google_compute_network.airbyte-network.self_link
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8000", "8001"]
+  }
+
+  // allow load balancer ips to access
+  source_ranges = ["35.191.0.0/16", "130.211.0.0/22"]
+}
+
 resource "google_compute_router" "airbyte-router" {
   name    = "airbyte-nat"
   network = google_compute_network.airbyte-network.self_link
@@ -120,7 +133,7 @@ resource "google_compute_health_check" "api" {
   description = "Health check via http"
 
   timeout_sec         = 10
-  check_interval_sec  = 20
+  check_interval_sec  = 10
 
   http_health_check {
     port_name = "api-port"
@@ -134,7 +147,7 @@ resource "google_compute_health_check" "webapp" {
   description = "Health check via http"
 
   timeout_sec         = 10
-  check_interval_sec  = 20
+  check_interval_sec  = 10
 
   http_health_check {
     port_name = "webapp-port"
