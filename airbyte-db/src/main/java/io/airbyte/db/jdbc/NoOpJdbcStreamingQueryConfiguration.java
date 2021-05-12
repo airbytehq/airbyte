@@ -22,22 +22,18 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.clickhouse;
+package io.airbyte.db.jdbc;
 
-import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-public class ClickHouseJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
+public class NoOpJdbcStreamingQueryConfiguration implements JdbcStreamingQueryConfiguration {
 
-  /**
-   * The reason accept method for ClickHouse is not setting auto commit to false like other JDBC
-   * sources is cause method {@link ru.yandex.clickhouse.ClickHouseConnectionImpl#setAutoCommit} is
-   * empty. The reason accept method for ClickHouse is not setting fetch size to 1000 like other JDBC
-   * sources is cause method {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is
-   * empty
-   */
   @Override
-  public void accept(Connection connection, PreparedStatement preparedStatement) {}
+  public void accept(Connection connection, PreparedStatement preparedStatement)
+      throws SQLException {
+
+  }
 
 }

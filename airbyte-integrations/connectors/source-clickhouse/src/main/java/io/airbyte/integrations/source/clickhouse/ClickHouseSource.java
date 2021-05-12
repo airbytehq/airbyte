@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -45,6 +46,13 @@ import org.slf4j.LoggerFactory;
 
 public class ClickHouseSource extends AbstractJdbcSource implements Source {
 
+  /**
+   * The default implementation relies on {@link java.sql.DatabaseMetaData#getPrimaryKeys} method to
+   * get it but the ClickHouse JDBC driver returns an empty result set from the method
+   * {@link ru.yandex.clickhouse.ClickHouseDatabaseMetadata#getPrimaryKeys}. That's why we have to
+   * query the system table mentioned here
+   * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
+   */
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
                                                           Optional<String> databaseOptional,
@@ -73,8 +81,14 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickHouseSource.class);
   public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
 
+  /**
+   * The reason we use NoOpJdbcStreamingQueryConfiguration(not setting auto commit to false and not
+   * setting fetch size to 1000) for ClickHouse is cause method
+   * {@link ru.yandex.clickhouse.ClickHouseConnectionImpl#setAutoCommit} is empty and method
+   * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
+   */
   public ClickHouseSource() {
-    super(DRIVER_CLASS, new ClickHouseJdbcStreamingQueryConfiguration());
+    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration());
   }
 
   @Override

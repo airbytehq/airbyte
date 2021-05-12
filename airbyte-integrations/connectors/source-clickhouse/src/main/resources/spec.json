@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ClickHouse Source Spec",
     "type": "object",
-    "required": ["host", "port", "database", "username", "password"],
+    "required": ["host", "port", "database", "username"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -22,7 +22,7 @@
       "database": {
         "description": "Name of the database.",
         "type": "string",
-        "examples": ["master"]
+        "examples": ["default"]
       },
       "username": {
         "description": "Username to use to access the database.",

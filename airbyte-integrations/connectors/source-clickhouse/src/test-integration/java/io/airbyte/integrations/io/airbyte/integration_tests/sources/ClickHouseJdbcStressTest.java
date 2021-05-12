@@ -33,8 +33,10 @@ import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
 
+@Disabled
 public class ClickHouseJdbcStressTest extends JdbcStressTest {
 
   private static final String SCHEMA_NAME = "default";
@@ -65,6 +67,8 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
 
   @Override
   protected String createTableQuery(String tableName, String columnClause) {
+    // ClickHouse requires Engine to be mentioned as part of create table query.
+    // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
     return String.format("CREATE TABLE %s(%s) %s",
         tableName, columnClause, "ENGINE = TinyLog");
   }
