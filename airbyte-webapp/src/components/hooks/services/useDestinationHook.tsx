@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useFetcher } from "rest-hooks";
+import { useFetcher, useResource } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
 import config from "config";
@@ -22,12 +22,11 @@ type ValuesProps = {
 
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
-// TODO: investigate the problem with optional type
 export const useDestinationDefinitionSpecificationLoad = (
   destinationDefinitionId: string | null
 ): {
   isLoading: boolean;
-  destinationDefinitionSpecification: DestinationDefinitionSpecification;
+  destinationDefinitionSpecification?: DestinationDefinitionSpecification;
   error?: Error;
 } => {
   const {
@@ -44,6 +43,19 @@ export const useDestinationDefinitionSpecificationLoad = (
   );
 
   return { destinationDefinitionSpecification, error, isLoading };
+};
+
+export const useDestinationDefinitionSpecificationLoadAsync = (
+  destinationDefinitionId: string
+): DestinationDefinitionSpecification => {
+  const definition = useResource(
+    DestinationDefinitionSpecificationResource.detailShape(),
+    {
+      destinationDefinitionId,
+    }
+  );
+
+  return definition;
 };
 
 type DestinationService = {
