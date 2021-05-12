@@ -101,10 +101,10 @@ class JobTrackerTest {
       .put("volume_mb", SYNC_BYTES_SYNC)
       .build();
   private static final ImmutableMap<String, Object> SYNC_CONFIG_METADATA = ImmutableMap.<String, Object>builder()
-      .put(JobTracker.CONFIG + ".source.key", true)
+      .put(JobTracker.CONFIG + ".source.key", JobTracker.SET)
       .put(JobTracker.CONFIG + ".destination.key", false)
-      .put(JobTracker.CATALOG + ".sync_mode.full_refresh", true)
-      .put(JobTracker.CATALOG + ".destination_sync_mode.append", true)
+      .put(JobTracker.CATALOG + ".sync_mode.full_refresh", JobTracker.SET)
+      .put(JobTracker.CATALOG + ".destination_sync_mode.append", JobTracker.SET)
       .build();
 
   private ConfigRepository configRepository;
@@ -238,10 +238,10 @@ class JobTrackerTest {
     JsonNode config = Jsons.deserialize(configJson);
 
     Map<String, Object> expected = ImmutableMap.of(
-        JobTracker.CONFIG + ".username", true,
+        JobTracker.CONFIG + ".username", JobTracker.SET,
         JobTracker.CONFIG + ".has_ssl", false,
-        JobTracker.CONFIG + ".password", true,
-        JobTracker.CONFIG + ".one_of.some_key", true);
+        JobTracker.CONFIG + ".password", JobTracker.SET,
+        JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET);
 
     Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config);
 
@@ -303,7 +303,7 @@ class JobTrackerTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
-        .withSourceConfiguration(Jsons.jsonNode(ImmutableMap.of("key", true)))
+        .withSourceConfiguration(Jsons.jsonNode(ImmutableMap.of("key", "some_value")))
         .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("key", false)))
         .withConfiguredAirbyteCatalog(catalog);
 

@@ -72,6 +72,7 @@ public class JobTracker {
   public static final String MESSAGE_NAME = "Connector Jobs";
   public static final String CONFIG = "config";
   public static final String CATALOG = "catalog";
+  public static final String SET = "set";
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
@@ -169,8 +170,8 @@ public class JobTracker {
     final Map<String, Object> output = new HashMap<>();
 
     for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      output.put(CATALOG + ".sync_mode." + stream.getSyncMode().name().toLowerCase(), true);
-      output.put(CATALOG + ".destination_sync_mode." + stream.getDestinationSyncMode().name().toLowerCase(), true);
+      output.put(CATALOG + ".sync_mode." + stream.getSyncMode().name().toLowerCase(), SET);
+      output.put(CATALOG + ".destination_sync_mode." + stream.getDestinationSyncMode().name().toLowerCase(), SET);
     }
 
     return output;
@@ -193,7 +194,7 @@ public class JobTracker {
           if (child.isObject()) {
             output.putAll(configToMetadata(fieldJsonPath, child));
           } else if (!child.isTextual() || (child.isTextual() && !child.asText().isEmpty())) {
-            output.put(fieldJsonPath, true);
+            output.put(fieldJsonPath, SET);
           }
         }
       }
