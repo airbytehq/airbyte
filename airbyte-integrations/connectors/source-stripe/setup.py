@@ -32,6 +32,6 @@ setup(
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     install_requires=["airbyte-cdk==0.1.2", "stripe"],
     extras_require={
-        "tests": ["pytest==6.1.2", "source-acceptance-test"],
+        "tests": ["pytest==6.1.2"],
     },
 )
