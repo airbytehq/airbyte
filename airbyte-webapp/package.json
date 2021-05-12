@@ -39,7 +39,7 @@
     "react-use": "^15.3.8",
     "react-widgets": "^4.5.0",
     "rest-hooks": "^5.0.20",
-    "sanitize-html": "^2.1.2",
+    "sanitize-html": "^2.3.3",
     "styled-components": "^5.1.1",
     "yup": "^0.28.1"
   },
