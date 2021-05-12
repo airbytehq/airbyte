@@ -211,44 +211,14 @@ resource "google_compute_target_https_proxy" "default" {
   name    = "airbyte-https-proxy"
   url_map = google_compute_url_map.urlmap.self_link
 
-  ssl_certificates = google_compute_ssl_certificate.certificate.*.self_link
+  ssl_certificates = [google_compute_managed_ssl_certificate.default.id]
 }
 
-resource "tls_self_signed_cert" "cert" {
-  count = 1
+resource "google_compute_managed_ssl_certificate" "default" {
+  provider = google-beta
 
-  key_algorithm   = "RSA"
-  private_key_pem = join("", tls_private_key.private_key.*.private_key_pem)
-
-  subject {
-    common_name = "airbyte-domain"
-    organization = "Airbyte"
-  }
-
-  validity_period_hours = 24000
-
-  allowed_uses = [
-    "key_encipherment",
-    "digital_signature",
-    "server_auth",
-  ]
-}
-
-resource "tls_private_key" "private_key" {
-  count       = 1
-  algorithm   = "RSA"
-  ecdsa_curve = "P256"
-}
-
-resource "google_compute_ssl_certificate" "certificate" {
-  count = 1
-
-  name_prefix = "airbyte"
-  description = "SSL Certificate"
-  private_key = join("", tls_private_key.private_key.*.private_key_pem)
-  certificate = join("", tls_self_signed_cert.cert.*.cert_pem)
-
-  lifecycle {
-    create_before_destroy = true
+  name = "airbyte-cert"
+  managed {
+    domains = ["test.airbyte.io"]
   }
 }
