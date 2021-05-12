@@ -22,11 +22,12 @@ type ValuesProps = {
 
 type ConnectorProps = { name: string; destinationDefinitionId: string };
 
+// TODO: investigate the problem with optional type
 export const useDestinationDefinitionSpecificationLoad = (
   destinationDefinitionId: string | null
 ): {
   isLoading: boolean;
-  destinationDefinitionSpecification?: DestinationDefinitionSpecification;
+  destinationDefinitionSpecification: DestinationDefinitionSpecification;
   error?: Error;
 } => {
   const {
