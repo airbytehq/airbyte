@@ -139,7 +139,13 @@ public class JobTracker {
       final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
       final Map<String, Object> syncConfigMetadata = generateSyncConfigMetadata(job.getConfig());
 
-      track(MoreMaps.merge(jobMetadata, jobAttemptMetadata, sourceDefMetadata, destinationDefMetadata, syncMetadata, stateMetadata,
+      track(MoreMaps.merge(
+          jobMetadata,
+          jobAttemptMetadata,
+          sourceDefMetadata,
+          destinationDefMetadata,
+          syncMetadata,
+          stateMetadata,
           syncConfigMetadata));
     });
   }
@@ -183,10 +189,12 @@ public class JobTracker {
 
         if (child.isBoolean()) {
           output.put(fieldJsonPath, child.asBoolean());
-        } else if (child.isObject()) {
-          output.putAll(configToMetadata(fieldJsonPath, child));
-        } else {
-          output.put(fieldJsonPath, true);
+        } else if (!child.isNull()) {
+          if (child.isObject()) {
+            output.putAll(configToMetadata(fieldJsonPath, child));
+          } else if (!child.isTextual() || (child.isTextual() && !child.asText().isEmpty())) {
+            output.put(fieldJsonPath, true);
+          }
         }
       }
     }
