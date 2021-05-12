@@ -512,8 +512,7 @@
               "type": ["null", "string"]
             },
             "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "integer"]
             },
             "order": {
               "type": ["null", "string"]
@@ -1599,176 +1598,6 @@
     },
     {
       "stream": {
-        "name": "disputes",
-        "json_schema": {
-          "type": ["null", "object"],
-          "properties": {
-            "id": {
-              "type": ["string"]
-            },
-            "object": {
-              "type": ["null", "string"]
-            },
-            "amount": {
-              "type": ["null", "integer"]
-            },
-            "balance_transactions": {
-              "type": ["null", "array"],
-              "items": {
-                "type": ["null", "object"],
-                "properties": {
-                  "id": {
-                    "type": ["string"]
-                  }
-                }
-              }
-            },
-            "charge": {
-              "type": ["null", "string"]
-            },
-            "created": {
-              "type": ["null", "integer"]
-            },
-            "currency": {
-              "type": ["null", "string"]
-            },
-            "evidence": {
-              "type": ["null", "string", "object"],
-              "properties": {
-                "refund_policy": {
-                  "type": ["null", "string"]
-                },
-                "shipping_address": {
-                  "type": ["null", "string"]
-                },
-                "duplicate_charge_explanation": {
-                  "type": ["null", "string"]
-                },
-                "shipping_tracking_number": {
-                  "type": ["null", "string"]
-                },
-                "customer_signature": {
-                  "type": ["null", "string"]
-                },
-                "uncategorized_text": {
-                  "type": ["null", "string"]
-                },
-                "cancellation_policy_disclosure": {
-                  "type": ["null", "string"]
-                },
-                "refund_policy_disclosure": {
-                  "type": ["null", "string"]
-                },
-                "receipt": {
-                  "type": ["null", "string"]
-                },
-                "customer_name": {
-                  "type": ["null", "string"]
-                },
-                "refund_refusal_explanation": {
-                  "type": ["null", "string"]
-                },
-                "cancellation_rebuttal": {
-                  "type": ["null", "string"]
-                },
-                "product_description": {
-                  "type": ["null", "string"]
-                },
-                "shipping_date": {
-                  "type": ["null", "string"]
-                },
-                "customer_email_address": {
-                  "type": ["null", "string"]
-                },
-                "duplicate_charge_id": {
-                  "type": ["null", "string"]
-                },
-                "shipping_documentation": {
-                  "type": ["null", "string"]
-                },
-                "access_activity_log": {
-                  "type": ["null", "string"]
-                },
-                "customer_purchase_ip": {
-                  "type": ["null", "string"]
-                },
-                "service_date": {
-                  "type": ["null", "string"]
-                },
-                "shipping_carrier": {
-                  "type": ["null", "string"]
-                },
-                "service_documentation": {
-                  "type": ["null", "string"]
-                },
-                "duplicate_charge_documentation": {
-                  "type": ["null", "string"]
-                },
-                "cancellation_policy": {
-                  "type": ["null", "string"]
-                },
-                "customer_communication": {
-                  "type": ["null", "string"]
-                },
-                "uncategorized_file": {
-                  "type": ["null", "string"]
-                },
-                "billing_address": {
-                  "type": ["null", "string"]
-                }
-              }
-            },
-            "evidence_details": {
-              "type": ["null", "object"],
-              "properties": {
-                "due_by": {
-                  "type": ["null", "string"],
-                  "format": "date-time"
-                },
-                "has_evidence": {
-                  "type": ["null", "boolean"]
-                },
-                "past_due": {
-                  "type": ["null", "boolean"]
-                },
-                "submission_count": {
-                  "type": ["null", "integer"]
-                }
-              }
-            },
-            "is_charge_refundable": {
-              "type": ["null", "boolean"]
-            },
-            "livemode": {
-              "type": ["null", "boolean"]
-            },
-            "metadata": {
-              "type": ["null", "object"],
-              "properties": {}
-            },
-            "reason": {
-              "type": ["null", "string"]
-            },
-            "status": {
-              "type": ["null", "string"]
-            },
-            "updated": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
-    },
-    {
-      "stream": {
         "name": "events",
         "json_schema": {
           "type": "object",
@@ -1988,6 +1817,169 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["date"]
+    },
+    {
+      "stream": {
+        "name": "invoice_line_items",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "invoice": {
+              "type": ["null", "string"]
+            },
+            "subscription_item": {
+              "type": ["null", "string"]
+            },
+            "metadata": {
+              "type": ["null", "object"],
+              "properties": {}
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "object": {
+              "type": ["null", "string"]
+            },
+            "discountable": {
+              "type": ["null", "boolean"]
+            },
+            "quantity": {
+              "type": ["null", "integer"]
+            },
+            "amount": {
+              "type": ["null", "integer"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "livemode": {
+              "type": ["null", "boolean"]
+            },
+            "proration": {
+              "type": ["null", "boolean"]
+            },
+            "period": {
+              "type": ["null", "object"],
+              "properties": {
+                "start": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "end": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                }
+              }
+            },
+            "subscription": {
+              "type": ["null", "string"]
+            },
+            "plan": {
+              "type": ["null", "object", "string"],
+              "properties": {
+                "nickname": {
+                  "type": ["null", "string"]
+                },
+                "tiers": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string", "object"],
+                    "properties": {
+                      "flat_amount": {
+                        "type": ["null", "integer"]
+                      },
+                      "unit_amount": {
+                        "type": ["null", "integer"]
+                      },
+                      "up_to": {
+                        "type": ["null", "integer"]
+                      }
+                    }
+                  }
+                },
+                "object": {
+                  "type": ["null", "string"]
+                },
+                "aggregate_usage": {
+                  "type": ["null", "string"]
+                },
+                "created": {
+                  "type": ["null", "integer"]
+                },
+                "statement_description": {
+                  "type": ["null", "string"]
+                },
+                "product": {
+                  "type": ["null", "string"]
+                },
+                "statement_descriptor": {
+                  "type": ["null", "string"]
+                },
+                "interval_count": {
+                  "type": ["null", "integer"]
+                },
+                "transform_usage": {
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "amount": {
+                  "type": ["null", "integer"]
+                },
+                "interval": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "string"]
+                },
+                "trial_period_days": {
+                  "type": ["null", "integer"]
+                },
+                "usage_type": {
+                  "type": ["null", "string"]
+                },
+                "active": {
+                  "type": ["null", "boolean"]
+                },
+                "tiers_mode": {
+                  "type": ["null", "string"]
+                },
+                "billing_scheme": {
+                  "type": ["null", "string"]
+                },
+                "livemode": {
+                  "type": ["null", "boolean"]
+                },
+                "currency": {
+                  "type": ["null", "string"]
+                },
+                "metadata": {
+                  "type": ["null", "object"],
+                  "properties": {}
+                },
+                "updated": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                }
+              }
+            },
+            "invoice_item": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -3028,8 +3020,7 @@
               "type": ["null", "string"]
             },
             "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "integer"]
             },
             "currency": {
               "type": ["null", "string"]
