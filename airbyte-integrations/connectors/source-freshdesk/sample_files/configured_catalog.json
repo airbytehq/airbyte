@@ -120,7 +120,7 @@
               "type": "object"
             },
             "health_score": {
-              "type": ["number", "null"]
+              "type": ["string", "null"]
             },
             "account_tier": {
               "type": "string"
@@ -324,7 +324,7 @@
               "type": "string"
             },
             "auto_ticket_assign": {
-              "type": "boolean"
+              "type": ["string", "null"]
             }
           }
         },
