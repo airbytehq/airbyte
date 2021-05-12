@@ -277,6 +277,14 @@ font-style: italic;
   <ul>
   <li><a href="#getOpenApiSpec"><code><span class="http-method">get</span> /v1/openapi</code></a></li>
   </ul>
+  <h4><a href="#Operation">Operation</a></h4>
+  <ul>
+  <li><a href="#createOperation"><code><span class="http-method">post</span> /v1/operations/create</code></a></li>
+  <li><a href="#deleteOperation"><code><span class="http-method">post</span> /v1/operations/delete</code></a></li>
+  <li><a href="#getOperation"><code><span class="http-method">post</span> /v1/operations/get</code></a></li>
+  <li><a href="#listOperationsForConnection"><code><span class="http-method">post</span> /v1/operations/list</code></a></li>
+  <li><a href="#updateOperation"><code><span class="http-method">post</span> /v1/operations/update</code></a></li>
+  </ul>
   <h4><a href="#Scheduler">Scheduler</a></h4>
   <ul>
   <li><a href="#executeDestinationCheckConnection"><code><span class="http-method">post</span> /v1/scheduler/destinations/check_connection</code></a></li>
@@ -401,6 +409,7 @@ font-style: italic;
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "operationIds" : [ null, null ],
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -539,6 +548,7 @@ font-style: italic;
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "operationIds" : [ null, null ],
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -639,6 +649,7 @@ font-style: italic;
       } ]
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operationIds" : [ null, null ],
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -682,6 +693,7 @@ font-style: italic;
       } ]
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operationIds" : [ null, null ],
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
 }</code></pre>
@@ -885,7 +897,7 @@ font-style: italic;
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connections/update</code></pre></div>
-    <div class="method-summary">Updated a connection status (<span class="nickname">updateConnection</span>)</div>
+    <div class="method-summary">Update a connection (<span class="nickname">updateConnection</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -958,6 +970,7 @@ font-style: italic;
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "operationIds" : [ null, null ],
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -2353,6 +2366,334 @@ font-style: italic;
         <a href="#File">File</a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="Operation">Operation</a></h1>
+  <div class="method"><a name="createOperation"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/operations/create</code></pre></div>
+    <div class="method-summary">Create an operation to be applied as part of a connection pipeline (<span class="nickname">createOperation</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">OperationCreate <a href="#OperationCreate">OperationCreate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#OperationRead">OperationRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "name" : "name",
+  "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "operatorConfiguration" : {
+    "normalization" : {
+      "option" : "basic"
+    },
+    "dbt" : {
+      "dockerImage" : "dockerImage",
+      "dbtArguments" : "dbtArguments",
+      "gitRepoUrl" : "gitRepoUrl"
+    }
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#OperationRead">OperationRead</a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="deleteOperation"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/operations/delete</code></pre></div>
+    <div class="method-summary">Delete an operation (<span class="nickname">deleteOperation</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">OperationIdRequestBody <a href="#OperationIdRequestBody">OperationIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    The resource was deleted successfully.
+        <a href="#"></a>
+    <h4 class="field-label">404</h4>
+    Operation not found
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getOperation"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/operations/get</code></pre></div>
+    <div class="method-summary">Returns an operation (<span class="nickname">getOperation</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">OperationIdRequestBody <a href="#OperationIdRequestBody">OperationIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#OperationRead">OperationRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "name" : "name",
+  "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "operatorConfiguration" : {
+    "normalization" : {
+      "option" : "basic"
+    },
+    "dbt" : {
+      "dockerImage" : "dockerImage",
+      "dbtArguments" : "dbtArguments",
+      "gitRepoUrl" : "gitRepoUrl"
+    }
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#OperationRead">OperationRead</a>
+    <h4 class="field-label">404</h4>
+    Operation not found
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listOperationsForConnection"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/operations/list</code></pre></div>
+    <div class="method-summary">Returns all operations for a connection. (<span class="nickname">listOperationsForConnection</span>)</div>
+    <div class="method-notes">List operations for connection.</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectionIdRequestBody <a href="#ConnectionIdRequestBody">ConnectionIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#OperationReadList">OperationReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "operations" : [ {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
+      }
+    }
+  }, {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
+      }
+    }
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#OperationReadList">OperationReadList</a>
+    <h4 class="field-label">404</h4>
+    Connection not found
+        <a href="#"></a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="updateOperation"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/operations/update</code></pre></div>
+    <div class="method-summary">Update an operation (<span class="nickname">updateOperation</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">OperationUpdate <a href="#OperationUpdate">OperationUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#OperationRead">OperationRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "name" : "name",
+  "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "operatorConfiguration" : {
+    "normalization" : {
+      "option" : "basic"
+    },
+    "dbt" : {
+      "dockerImage" : "dockerImage",
+      "dbtArguments" : "dbtArguments",
+      "gitRepoUrl" : "gitRepoUrl"
+    }
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#OperationRead">OperationRead</a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Scheduler">Scheduler</a></h1>
   <div class="method"><a name="executeDestinationCheckConnection"/>
     <div class="method-path">
@@ -3568,6 +3909,35 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
+  "operations" : {
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      }
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      }
+    } ]
+  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -3602,7 +3972,8 @@ font-style: italic;
       }
     } ]
   },
-  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -3690,6 +4061,35 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "operations" : {
+      "operations" : [ {
+        "name" : "name",
+        "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "operatorConfiguration" : {
+          "normalization" : {
+            "option" : "basic"
+          },
+          "dbt" : {
+            "dockerImage" : "dockerImage",
+            "dbtArguments" : "dbtArguments",
+            "gitRepoUrl" : "gitRepoUrl"
+          }
+        }
+      }, {
+        "name" : "name",
+        "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "operatorConfiguration" : {
+          "normalization" : {
+            "option" : "basic"
+          },
+          "dbt" : {
+            "dockerImage" : "dockerImage",
+            "dbtArguments" : "dbtArguments",
+            "gitRepoUrl" : "gitRepoUrl"
+          }
+        }
+      } ]
+    },
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -3724,7 +4124,8 @@ font-style: italic;
         }
       } ]
     },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operationIds" : [ null, null ]
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
@@ -3755,6 +4156,35 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
+    "operations" : {
+      "operations" : [ {
+        "name" : "name",
+        "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "operatorConfiguration" : {
+          "normalization" : {
+            "option" : "basic"
+          },
+          "dbt" : {
+            "dockerImage" : "dockerImage",
+            "dbtArguments" : "dbtArguments",
+            "gitRepoUrl" : "gitRepoUrl"
+          }
+        }
+      }, {
+        "name" : "name",
+        "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+        "operatorConfiguration" : {
+          "normalization" : {
+            "option" : "basic"
+          },
+          "dbt" : {
+            "dockerImage" : "dockerImage",
+            "dbtArguments" : "dbtArguments",
+            "gitRepoUrl" : "gitRepoUrl"
+          }
+        }
+      } ]
+    },
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -3789,7 +4219,8 @@ font-style: italic;
         }
       } ]
     },
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operationIds" : [ null, null ]
   } ]
 }</code></pre>
 
@@ -4013,6 +4444,7 @@ font-style: italic;
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "operationIds" : [ null, null ],
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
 
@@ -4428,6 +4860,15 @@ font-style: italic;
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
+    <li><a href="#OperationCreate"><code>OperationCreate</code> - </a></li>
+    <li><a href="#OperationIdRequestBody"><code>OperationIdRequestBody</code> - </a></li>
+    <li><a href="#OperationRead"><code>OperationRead</code> - </a></li>
+    <li><a href="#OperationReadList"><code>OperationReadList</code> - </a></li>
+    <li><a href="#OperationUpdate"><code>OperationUpdate</code> - </a></li>
+    <li><a href="#OperatorConfiguration"><code>OperatorConfiguration</code> - </a></li>
+    <li><a href="#OperatorDbt"><code>OperatorDbt</code> - </a></li>
+    <li><a href="#OperatorNormalization"><code>OperatorNormalization</code> - </a></li>
+    <li><a href="#OperatorType"><code>OperatorType</code> - </a></li>
     <li><a href="#SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
     <li><a href="#SourceCoreConfig"><code>SourceCoreConfig</code> - </a></li>
@@ -4544,6 +4985,7 @@ font-style: italic;
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
@@ -4565,6 +5007,7 @@ font-style: italic;
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
@@ -4599,6 +5042,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
+<div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
@@ -4860,6 +5304,79 @@ font-style: italic;
           </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="OperationCreate"><code>OperationCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperationIdRequestBody"><code>OperationIdRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">OperationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperationRead"><code>OperationRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">operationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperationReadList"><code>OperationReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">operations </div><div class="param-desc"><span class="param-type"><a href="#OperationRead">array[OperationRead]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperationUpdate"><code>OperationUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">operationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperatorConfiguration"><code>OperatorConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">operatorType </div><div class="param-desc"><span class="param-type"><a href="#OperatorType">OperatorType</a></span>  </div>
+<div class="param">normalization (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperatorNormalization">OperatorNormalization</a></span>  </div>
+<div class="param">dbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperatorDbt">OperatorDbt</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperatorDbt"><code>OperatorDbt</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">gitRepoUrl </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">dockerImage (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">dbtArguments (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperatorNormalization"><code>OperatorNormalization</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">option (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">basic</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperatorType"><code>OperatorType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -5039,8 +5556,10 @@ font-style: italic;
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">SourceRead</a></span>  </div>
 <div class="param">destination </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">DestinationRead</a></span>  </div>
+<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationReadList">OperationReadList</a></span>  </div>
 <div class="param">latestSyncJobCreatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> epoch time of the latest sync job. null if no sync job has taken place. format: int64</div>
 <div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
 <div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
@@ -5067,6 +5586,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
+<div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
