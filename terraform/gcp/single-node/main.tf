@@ -190,7 +190,6 @@ resource "google_compute_backend_service" "webapp" {
   depends_on = [google_compute_instance_group.airbyte-instance-group]
 }
 
-// todo: link this
 resource "google_compute_global_address" "default" {
   name         = "airbyte-address"
   ip_version   = "IPV4"
