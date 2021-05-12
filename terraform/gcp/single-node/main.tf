@@ -76,10 +76,167 @@ resource "google_compute_instance" "airbyte-instance" {
 }
 
 resource "google_compute_instance_group" "airbyte-instance-group" {
-  count        = 1
   name        = "airbyte-instance-group"
 
   instances = [
     google_compute_instance.airbyte-instance[0].id
   ]
+
+  named_port {
+    name = "api-port"
+    port = "8001"
+  }
+
+  named_port {
+    name = "webapp-port"
+    port = "8000"
+  }
+}
+
+resource "google_compute_url_map" "urlmap" {
+  name        = "airbyte-url-map"
+  description = "URL map for airbyte"
+
+  default_service = google_compute_backend_service.webapp.self_link
+
+  host_rule {
+    hosts        = ["*"]
+    path_matcher = "all"
+  }
+
+  path_matcher {
+    name            = "all"
+    default_service = google_compute_backend_service.webapp.self_link
+
+    path_rule {
+      paths   = ["/api", "/api/*"]
+      service = google_compute_backend_service.api.self_link
+    }
+  }
+}
+
+resource "google_compute_health_check" "api" {
+  name        = "api-health-check"
+  description = "Health check via http"
+
+  timeout_sec         = 10
+  check_interval_sec  = 20
+
+  http_health_check {
+    port_name = "api-port"
+    port_specification = "USE_NAMED_PORT"
+    request_path       = "/api/v1/health"
+  }
+}
+
+resource "google_compute_health_check" "webapp" {
+  name        = "webapp-health-check"
+  description = "Health check via http"
+
+  timeout_sec         = 10
+  check_interval_sec  = 20
+
+  http_health_check {
+    port_name = "webapp-port"
+    port_specification = "USE_NAMED_PORT"
+    request_path       = "/"
+  }
+}
+
+resource "google_compute_backend_service" "api" {
+  name        = "airbyte-api"
+  description = "API Backend for airbyte"
+  port_name   = "api-port"
+  protocol    = "HTTP"
+  timeout_sec = 20
+  enable_cdn  = false
+
+  backend {
+    group = google_compute_instance_group.airbyte-instance-group.self_link
+  }
+
+  health_checks = [google_compute_health_check.api.self_link]
+
+  depends_on = [google_compute_instance_group.airbyte-instance-group]
+}
+
+resource "google_compute_backend_service" "webapp" {
+  name        = "airbyte-webapp"
+  description = "webapp Backend for airbyte"
+  port_name   = "webapp-port"
+  protocol    = "HTTP"
+  timeout_sec = 20
+  enable_cdn  = false
+
+  backend {
+    group = google_compute_instance_group.airbyte-instance-group.self_link
+  }
+
+  health_checks = [google_compute_health_check.webapp.self_link]
+
+  depends_on = [google_compute_instance_group.airbyte-instance-group]
+}
+
+// todo: link this
+resource "google_compute_global_address" "default" {
+  name         = "airbyte-address"
+  ip_version   = "IPV4"
+  address_type = "EXTERNAL"
+}
+
+resource "google_compute_global_forwarding_rule" "https" {
+  provider   = google-beta
+  count      = 1
+  name       = "airbyte-https-rule"
+  target     = google_compute_target_https_proxy.default[0].self_link
+  ip_address = google_compute_global_address.default.address
+  port_range = "443"
+  depends_on = [google_compute_global_address.default]
+}
+
+resource "google_compute_target_https_proxy" "default" {
+  count   = 1
+  name    = "airbyte-https-proxy"
+  url_map = google_compute_url_map.urlmap.self_link
+
+  ssl_certificates = google_compute_ssl_certificate.certificate.*.self_link
+}
+
+resource "tls_self_signed_cert" "cert" {
+  count = 1
+
+  key_algorithm   = "RSA"
+  private_key_pem = join("", tls_private_key.private_key.*.private_key_pem)
+
+  subject {
+    common_name = "airbyte-domain"
+    organization = "Airbyte"
+  }
+
+  validity_period_hours = 24000
+
+  allowed_uses = [
+    "key_encipherment",
+    "digital_signature",
+    "server_auth",
+  ]
+}
+
+resource "tls_private_key" "private_key" {
+  count       = 1
+  algorithm   = "RSA"
+  ecdsa_curve = "P256"
+}
+
+resource "google_compute_ssl_certificate" "certificate" {
+  count = 1
+
+  name_prefix = "airbyte"
+  description = "SSL Certificate"
+  private_key = join("", tls_private_key.private_key.*.private_key_pem)
+  certificate = join("", tls_self_signed_cert.cert.*.cert_pem)
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }

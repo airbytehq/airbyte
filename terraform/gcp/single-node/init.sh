@@ -27,6 +27,8 @@ install_airbyte() {
   mkdir airbyte && cd airbyte
   wget https://raw.githubusercontent.com/airbytehq/airbyte/master/.env
   wget https://raw.githubusercontent.com/airbytehq/airbyte/master/docker-compose.yaml
+#  sed -i 's/8000/80/' .env
+#  sed -i 's/8000/80/' docker-compose.yaml
   sudo docker-compose up -d
 }
 
