@@ -30,19 +30,27 @@ import java.util.List;
 
 public interface ProcessBuilderFactory {
 
-  ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final String... args) throws WorkerException;
+  ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
+      throws WorkerException;
 
-  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String... args) throws WorkerException {
-    return create(String.valueOf(jobId), attempt, jobPath, imageName, args);
-  }
-
-  default ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final List<String> args)
+  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
       throws WorkerException {
-    return create(jobId, attempt, jobPath, imageName, args.toArray(new String[0]));
+    return create(String.valueOf(jobId), attempt, jobPath, imageName, entrypoint, args);
   }
 
-  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final List<String> args) throws WorkerException {
-    return create(String.valueOf(jobId), attempt, jobPath, imageName, args);
+  default ProcessBuilder create(String jobId,
+                                int attempt,
+                                final Path jobPath,
+                                final String imageName,
+                                final String entrypoint,
+                                final List<String> args)
+      throws WorkerException {
+    return create(jobId, attempt, jobPath, imageName, entrypoint, args.toArray(new String[0]));
+  }
+
+  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final List<String> args)
+      throws WorkerException {
+    return create(String.valueOf(jobId), attempt, jobPath, imageName, entrypoint, args);
   }
 
 }

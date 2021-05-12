@@ -38,6 +38,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -52,6 +53,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.WorkerConstants;
@@ -606,6 +608,47 @@ public abstract class TestDestination {
    */
   protected int getMaxRecordValueLimit() {
     return 1000000000;
+  }
+
+  @Test
+  void testCustomDbtTransformations() throws Exception {
+    final JsonNode config = getConfigWithBasicNormalization();
+
+    if (!config.hasNonNull(WorkerConstants.BASIC_NORMALIZATION_KEY) || !config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).asBoolean()) {
+      return;
+    }
+
+    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+        getImageName(),
+        pbf,
+        config));
+    runner.start();
+    final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
+    final OperatorDbt dbtConfig = new OperatorDbt()
+        .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
+        .withGitRepoBranch("main")
+        .withDockerImage("fishtownanalytics/dbt:0.19.1")
+        .withDbtArguments("debug");
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt debug Failed.");
+    }
+    dbtConfig.withDbtArguments("seed");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt seed Failed.");
+    }
+    dbtConfig.withDbtArguments("run");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt run Failed.");
+    }
+    dbtConfig.withDbtArguments("test");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt test Failed.");
+    }
+    dbtConfig.withDbtArguments("docs generate");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt docs generate Failed.");
+    }
+    runner.close();
   }
 
   /**

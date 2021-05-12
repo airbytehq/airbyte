@@ -13,6 +13,28 @@ function error() {
 
 PROJECT_DIR=$(pwd)
 
+function configuredbt() {
+  if [[ -z "${GIT_REPO}" ]]; then
+    cp -r /airbyte/normalization_code/dbt-template/* "${PROJECT_DIR}"
+    echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
+    transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
+    if [[ ! -z "${CATALOG_FILE}" ]]; then
+      echo "Running: transform-catalog --integration-type ${INTEGRATION_TYPE} --profile-config-dir ${PROJECT_DIR} --catalog ${CATALOG_FILE} --out ${PROJECT_DIR}/models/generated/ --json-column _airbyte_data"
+      transform-catalog --integration-type "${INTEGRATION_TYPE}" --profile-config-dir "${PROJECT_DIR}" --catalog "${CATALOG_FILE}" --out "${PROJECT_DIR}/models/generated/" --json-column "_airbyte_data"
+    fi
+  else
+    if [[ -z "${GIT_BRANCH}" ]]; then
+      echo "Running: git clone --depth 1 --single-branch  \$GIT_REPO git_repo"
+      git clone --depth 1 --single-branch  "${GIT_REPO}" git_repo
+    else
+      echo "Running: git clone --depth 1 -b ${GIT_BRANCH} --single-branch  \$GIT_REPO git_repo"
+      git clone --depth 1 -b "${GIT_BRANCH}" --single-branch  "${GIT_REPO}" git_repo
+    fi
+    echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
+    transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
+  fi
+}
+
 ## todo: make it easy to select source or destination and validate based on selection by adding an integration type env variable.
 function main() {
   CMD="$1"
@@ -33,6 +55,14 @@ function main() {
       INTEGRATION_TYPE="$2"
       shift 2
       ;;
+    --git-repo)
+      GIT_REPO="$2"
+      shift 2
+      ;;
+    --git-branch)
+      GIT_BRANCH="$2"
+      shift 2
+      ;;
     *)
       error "Unknown option: $1"
       ;;
@@ -41,17 +71,11 @@ function main() {
 
   case "$CMD" in
   run)
-    cp -r /airbyte/normalization_code/dbt-template/* $PROJECT_DIR
-    transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out $PROJECT_DIR
-    transform-catalog --integration-type "$INTEGRATION_TYPE" --profile-config-dir $PROJECT_DIR --catalog "$CATALOG_FILE" --out $PROJECT_DIR/models/generated/ --json-column _airbyte_data
-    dbt run --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
+    configuredbt
+    dbt run --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
     ;;
-  dry-run)
-    cp -r /airbyte/normalization_code/dbt-template/* $PROJECT_DIR
-    transform-config --config "$CONFIG_FILE" --integration-type "$INTEGRATION_TYPE" --out $PROJECT_DIR
-    dbt debug --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
-    transform-catalog --profile-config-dir $PROJECT_DIR --catalog "$CATALOG_FILE" --out $PROJECT_DIR/models/generated/ --json-column _airbyte_data
-    dbt compile --profiles-dir $PROJECT_DIR --project-dir $PROJECT_DIR
+  configure-dbt)
+    configuredbt
     ;;
   *)
     error "Unknown command: $CMD"

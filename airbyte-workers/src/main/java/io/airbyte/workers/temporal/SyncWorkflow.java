@@ -30,10 +30,15 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.DbtTransformationRunner;
+import io.airbyte.workers.DbtTransformationWorker;
 import io.airbyte.workers.DefaultNormalizationWorker;
 import io.airbyte.workers.DefaultReplicationWorker;
 import io.airbyte.workers.Worker;
@@ -82,6 +87,7 @@ public interface SyncWorkflow {
 
     private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, options);
     private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, options);
+    private final DbtTransformationActivity dbtTransformationActivity = Workflow.newActivityStub(DbtTransformationActivity.class, options);
 
     @Override
     public StandardSyncOutput run(JobRunConfig jobRunConfig,
@@ -90,11 +96,25 @@ public interface SyncWorkflow {
                                   StandardSyncInput syncInput) {
       final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
-      final NormalizationInput normalizationInput = new NormalizationInput()
-          .withDestinationConfiguration(syncInput.getDestinationConfiguration())
-          .withCatalog(run.getOutputCatalog());
+      if (syncInput.getOperationSequence() != null) {
+        for (StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
+          if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
+            final NormalizationInput normalizationInput = new NormalizationInput()
+                .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+                .withCatalog(run.getOutputCatalog());
 
-      normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
+            normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
+          } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
+            final OperatorDbtInput operatorDbtInput = new OperatorDbtInput()
+                .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+                .withOperatorDbt(standardSyncOperation.getOperatorDbt());
+
+            dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, operatorDbtInput);
+          } else {
+            LOGGER.warn("Unsupported operation type: {}", standardSyncOperation.getOperatorType());
+          }
+        }
+      }
 
       return run;
     }
@@ -131,6 +151,7 @@ public interface SyncWorkflow {
       this.validator = validator;
     }
 
+    @Override
     public StandardSyncOutput replicate(JobRunConfig jobRunConfig,
                                         IntegrationLauncherConfig sourceLauncherConfig,
                                         IntegrationLauncherConfig destinationLauncherConfig,
@@ -214,6 +235,7 @@ public interface SyncWorkflow {
       this.validator = validator;
     }
 
+    @Override
     public Void normalize(JobRunConfig jobRunConfig,
                           IntegrationLauncherConfig destinationLauncherConfig,
                           NormalizationInput input) {
@@ -243,6 +265,67 @@ public interface SyncWorkflow {
               destinationLauncherConfig.getDockerImage(),
               pbf,
               normalizationInput.getDestinationConfiguration()));
+    }
+
+  }
+
+  @ActivityInterface
+  interface DbtTransformationActivity {
+
+    @ActivityMethod
+    Void run(JobRunConfig jobRunConfig,
+             IntegrationLauncherConfig destinationLauncherConfig,
+             OperatorDbtInput input);
+
+  }
+
+  class DbtTransformationActivityImpl implements DbtTransformationActivity {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationActivityImpl.class);
+
+    private final ProcessBuilderFactory pbf;
+    private final Path workspaceRoot;
+    private final AirbyteConfigValidator validator;
+
+    public DbtTransformationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+      this(pbf, workspaceRoot, new AirbyteConfigValidator());
+    }
+
+    @VisibleForTesting
+    DbtTransformationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigValidator validator) {
+      this.pbf = pbf;
+      this.workspaceRoot = workspaceRoot;
+      this.validator = validator;
+    }
+
+    @Override
+    public Void run(JobRunConfig jobRunConfig, IntegrationLauncherConfig destinationLauncherConfig, OperatorDbtInput input) {
+
+      final Supplier<OperatorDbtInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(input));
+        return input;
+      };
+
+      final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
+          workspaceRoot,
+          jobRunConfig,
+          getWorkerFactory(destinationLauncherConfig, jobRunConfig, input),
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler());
+
+      return temporalAttemptExecution.get();
+    }
+
+    private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                        JobRunConfig jobRunConfig,
+                                                                                        OperatorDbtInput operatorDbtInput) {
+      return () -> new DbtTransformationWorker(
+          jobRunConfig.getJobId(),
+          Math.toIntExact(jobRunConfig.getAttemptId()),
+          new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+              destinationLauncherConfig.getDockerImage(),
+              pbf,
+              operatorDbtInput.getDestinationConfiguration())));
     }
 
   }
