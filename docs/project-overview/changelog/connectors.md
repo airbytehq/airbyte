@@ -12,6 +12,19 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
 
+## 05/11/2021
+
+1 new destination: [**MySQL**](https://docs.airbyte.io/integrations/destinations/mysql)
+
+2 new sources: 
+* [**Google Search Console**](https://docs.airbyte.io/integrations/sources/google-search-console)
+* [**PokeAPI**](https://docs.airbyte.io/integrations/sources/pokeapi) (talking about long tail and having fun ;))
+
+Progress on connectors:
+* **Zoom**: bugfix on declaring correct types to match data coming from API ([#3159](https://github.com/airbytehq/airbyte/pull/3159)), thanks to [vovavovavovavova](https://github.com/vovavovavovavova) 
+* **Smartsheets**: bugfix on gracefully handling empty cell values ([#3337](https://github.com/airbytehq/airbyte/pull/3337)), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
+* **Stripe**: fix date property name, only add connected account header when set, and set primary key (#3210), thanks to [Nathan Yergler](https://github.com/nyergler)
+
 ## 05/04/2021
 
 2 new sources: 
