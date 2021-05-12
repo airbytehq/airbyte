@@ -27,12 +27,21 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 import stripe
-from airbyte_protocol import SyncMode
-from base_python import AbstractSource, HttpStream, Stream, TokenAuthenticator
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
+    primary_key = "id"
+
+    def __init__(self, account_id: str, **kwargs):
+        super().__init__(**kwargs)
+        self.account_id = account_id
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -55,6 +64,12 @@ class StripeStream(HttpStream, ABC):
             params.update(next_page_token)
 
         return params
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        if self.account_id:
+            return {"Stripe-Account": self.account_id}
+
+        return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -118,7 +133,7 @@ class CustomerBalanceTransactions(StripeStream):
         return f"customers/{customer_id}/balance_transactions"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        customers_stream = Customers(authenticator=self.authenticator)
+        customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"customer_id": customer["id"]}, **kwargs)
 
@@ -158,7 +173,7 @@ class InvoiceLineItems(StripeStream):
         return f"invoices/{stream_slice['invoice_id']}/lines"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        invoices_stream = Invoices(authenticator=self.authenticator)
+        invoices_stream = Invoices(authenticator=self.authenticator, account_id=self.account_id)
         for invoice in invoices_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"invoice_id": invoice["id"]}, **kwargs)
 
@@ -211,7 +226,7 @@ class SubscriptionItems(StripeStream):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        subscriptions_stream = Subscriptions(authenticator=self.authenticator)
+        subscriptions_stream = Subscriptions(authenticator=self.authenticator, account_id=self.account_id)
         for subscriptions in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"subscription_id": subscriptions["id"]}, **kwargs)
 
@@ -243,13 +258,13 @@ class BankAccounts(StripeStream):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        customers_stream = Customers(authenticator=self.authenticator)
+        customers_stream = Customers(authenticator=self.authenticator, account_id=self.account_id)
         for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"customer_id": customer["id"]}, **kwargs)
 
 
 class SourceStripe(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             stripe.api_key = config["client_secret"]
             stripe.Account.retrieve(config["account_id"])
@@ -259,24 +274,24 @@ class SourceStripe(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["client_secret"])
-
+        args = {"authenticator": authenticator, "account_id": config["account_id"]}
         return [
-            BalanceTransactions(authenticator=authenticator),
-            Charges(authenticator=authenticator),
-            Coupons(authenticator=authenticator),
-            Customers(authenticator=authenticator),
-            CustomerBalanceTransactions(authenticator=authenticator),
-            Disputes(authenticator=authenticator),
-            Events(authenticator=authenticator),
-            InvoiceItems(authenticator=authenticator),
-            InvoiceLineItems(authenticator=authenticator),
-            Invoices(authenticator=authenticator),
-            Plans(authenticator=authenticator),
-            Payouts(authenticator=authenticator),
-            Products(authenticator=authenticator),
-            Subscriptions(authenticator=authenticator),
-            SubscriptionItems(authenticator=authenticator),
-            Transfers(authenticator=authenticator),
-            Refunds(authenticator=authenticator),
-            BankAccounts(authenticator=authenticator),
+            BankAccounts(**args),
+            BalanceTransactions(**args),
+            Charges(**args),
+            Coupons(**args),
+            Customers(**args),
+            CustomerBalanceTransactions(**args),
+            Disputes(**args),
+            Events(**args),
+            InvoiceItems(**args),
+            InvoiceLineItems(**args),
+            Invoices(**args),
+            Plans(**args),
+            Payouts(**args),
+            Products(**args),
+            Subscriptions(**args),
+            SubscriptionItems(**args),
+            Refunds(**args),
+            Transfers(**args),
         ]

@@ -43,7 +43,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.25";
+  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.28";
 
   private final DestinationType destinationType;
   private final ProcessBuilderFactory pbf;
@@ -94,10 +94,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return;
     }
 
-    LOGGER.debug("Closing tap process");
+    LOGGER.debug("Closing source process");
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Tap process wasn't successful");
+      throw new WorkerException("Source process wasn't successful");
     }
   }
 

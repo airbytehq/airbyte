@@ -21,36 +21,14 @@
 # SOFTWARE.
 
 
-"""
-MIT License
-
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from base_python import AbstractSource, HttpStream, Stream
-from base_python.cdk.streams.auth.token import TokenAuthenticator
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -63,7 +41,7 @@ stream from a source. This pattern is the same one used by Airbyte internally to
 
 The approach here is not authoritative, and devs are free to use their own judgement.
 
-There are additional required TODOs in the files within the sample_files folder and the spec.json file.
+There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
 """
 
 
@@ -137,6 +115,9 @@ class Customers(ScaffoldSourceHttpStream):
     TODO: Change class name to match the table/data source this stream corresponds to.
     """
 
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "customer_id"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -151,7 +132,7 @@ class Customers(ScaffoldSourceHttpStream):
 class IncrementalScaffoldSourceHttpStream(ScaffoldSourceHttpStream, ABC):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-          if you do not need to implement incremental sync for any streams, remove this class.
+         if you do not need to implement incremental sync for any streams, remove this class.
     """
 
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
@@ -183,6 +164,9 @@ class Employees(IncrementalScaffoldSourceHttpStream):
 
     # TODO: Fill in the cursor_field. Required.
     cursor_field = "start_date"
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "employee_id"
 
     def path(self, **kwargs) -> str:
         """

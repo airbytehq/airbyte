@@ -47,10 +47,10 @@ and place them into `secrets/config.json`.
 
 ### Locally running the connector
 ```
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main.py spec
+python main.py check --config sample_files/config.json
+python main.py discover --config sample_files/config.json
+python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Unit Tests
@@ -78,9 +78,9 @@ the Dockerfile.
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-python-http-tutorial:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-python-http-tutorial:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-python-http-tutorial:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-tutorial:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-tutorial:dev check --config /sample_files/config.json
+docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-tutorial:dev discover --config /sample_files/config.json
+docker run --rm -v $(pwd)/sample_files:/sample_files -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-tutorial:dev read --config /sample_files/config.json --catalog /sample_files/configured_catalog.json
 ```
 
 ### Integration Tests
@@ -93,8 +93,8 @@ All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The re
 
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing unit and integration tests
+1. Make sure your changes are passing unit and integration tests.
 1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use SemVer).
-1. Create a Pull Request
-1. Pat yourself on the back for being an awesome contributor
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master
+1. Create a Pull Request.
+1. Pat yourself on the back for being an awesome contributor.
+1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.

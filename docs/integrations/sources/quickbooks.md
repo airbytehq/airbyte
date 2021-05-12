@@ -64,6 +64,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 3. Obtain credentials
 
 ### Requirements
+
 * Client ID
 * Client Secret
 * Realm ID
@@ -71,4 +72,5 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 The easiest way to get these credentials is by using Quickbook's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground)
 
-**Important note:** The refresh token expires every 100 days. You will need to manually revisit the Oauth playground to obtain a refresh token every 100 days, or your syncs will expire. We plan on offering full Oauth support soon so you don't need to redo this process manually. 
+**Important note:** The refresh token expires every 100 days. You will need to manually revisit the Oauth playground to obtain a refresh token every 100 days, or your syncs will expire. We plan on offering full Oauth support soon so you don't need to redo this process manually.
+

@@ -22,7 +22,7 @@ import { SyncSchema } from "core/domain/catalog";
 
 import useConnection from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
-import { useDestinationDefinitionSpecificationLoad } from "../hooks/services/useDestinationHook";
+import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import { useResource } from "@rest-hooks/core/lib/react-integration/hooks";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
@@ -75,7 +75,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
   );
 
   const {
-    destinationDefinitionSpecification,
     isLoading: loadingDestination,
   } = useDestinationDefinitionSpecificationLoad(
     destination?.destinationDefinitionId
@@ -167,7 +166,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
           schema={schema}
           source={source}
           destination={destination}
-          destinationDefinition={destinationDefinitionSpecification}
           sourceIcon={getIcon(sourceDefinition)}
           destinationIcon={getIcon(destinationDefinition)}
         />
