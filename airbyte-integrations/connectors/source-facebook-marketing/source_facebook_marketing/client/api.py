@@ -106,6 +106,8 @@ class StreamAPI(ABC):
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
+    loop_back = -1
+
     @property
     @abstractmethod
     def state_pk(self):
@@ -154,10 +156,9 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
         params = params or {}
         latest_cursor = None
-        buffer_days = getattr(self, 'buffer_days') + 1 if hasattr(self, 'buffer_days') else 0
         for record in super().read(getter, params):
             cursor = pendulum.parse(record[self.state_pk])
-            if self._state and self._state.subtract(days=buffer_days) >= cursor:
+            if self._state and self._state.subtract(days=self.loop_back + 1) >= cursor:
                 continue
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
             yield record
@@ -327,7 +328,7 @@ class AdsInsightAPI(IncrementalStreamAPI):
     level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
-    buffer_days = 28
+    loop_back = 28
 
     def __init__(self, api, start_date, breakdowns=None):
         super().__init__(api=api)
@@ -377,7 +378,7 @@ class AdsInsightAPI(IncrementalStreamAPI):
     def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
         # Facebook freezes insight data 28 days after it was generated, which means that all data
         # from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-        buffered_start_date = self._state.subtract(days=self.buffer_days)
+        buffered_start_date = self._state.subtract(days=self.loop_back)
         end_date = pendulum.now()
 
         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
