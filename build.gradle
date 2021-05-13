@@ -247,7 +247,14 @@ subprojects {
             source = fileTree(dir: projectDir).include("**/*.py").exclude(".venv/**/*.py")
         }
         def licenseTask = project.tasks.findByName('licenseFormatPython')
-        pythonFormatTask.dependsOn(licenseTask)
+        blackFormat.dependsOn licenseTask
+        isortFormat.dependsOn licenseTask
+        flakeCheck.dependsOn licenseTask
+
+        def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
+        if(generateFilesTask != null) {
+            licenseTask.dependsOn generateFilesTask
+        }
     }
 }
 
