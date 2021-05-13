@@ -34,6 +34,7 @@
   * [Sources](integrations/sources/README.md)
     * [Appstore](integrations/sources/appstore.md)
     * [Braintree](integrations/sources/braintree.md)
+    * [ClickHouse](integrations/sources/clickhouse.md)
     * [Drift](integrations/sources/drift.md)
     * [Exchange Rates API](integrations/sources/exchangeratesapi.md)
     * [Facebook Marketing](integrations/sources/facebook-marketing.md)
