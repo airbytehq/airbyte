@@ -9,7 +9,6 @@ import EnabledControl from "./EnabledControl";
 import { Connection } from "core/resources/Connection";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { SourceDefinition } from "core/resources/SourceDefinition";
-import { getIcon } from "../../../../../utils/imageUtils";
 
 const MainInfo = styled(ContentCard)`
   margin-bottom: 14px;
@@ -61,11 +60,11 @@ const StatusMainInfo: React.FC<IProps> = ({
       </Header>
       <Row>
         <SourceCell flex={2}>
-          <Img img={getIcon(sourceDefinition)} />
+          <Img img={sourceDefinition?.icon} />
           {connection.source?.sourceName}
         </SourceCell>
         <SourceCell flex={2}>
-          <Img img={getIcon(destinationDefinition)} />
+          <Img img={destinationDefinition?.icon} />
           {connection.destination?.destinationName}
         </SourceCell>
         <Cell>{frequencyText}</Cell>

@@ -65,8 +65,8 @@ type ConnectionFormProps = {
   isEditMode?: boolean;
   isLoading?: boolean;
   additionalSchemaControl?: React.ReactNode;
-  sourceIcon?: React.ReactNode | string;
-  destinationIcon?: React.ReactNode | string;
+  sourceIcon?: string;
+  destinationIcon?: string;
 };
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({

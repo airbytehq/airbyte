@@ -1,4 +1,3 @@
-import React from "react";
 import { ScheduleProperties } from "core/resources/Connection";
 
 type EntityTableDataItem = {
@@ -13,7 +12,7 @@ type EntityTableDataItem = {
   }[];
   enabled: boolean;
   lastSync?: number | null;
-  connectorIcon?: string | React.ReactNode;
+  connectorIcon?: string;
 };
 
 type ITableDataItem = {
@@ -26,8 +25,8 @@ type ITableDataItem = {
   lastSync?: number | null;
   schedule: ScheduleProperties | null;
   lastSyncStatus: string | null;
-  connectorIcon?: string | React.ReactNode;
-  entityIcon?: string | React.ReactNode;
+  connectorIcon?: string;
+  entityIcon?: string;
 };
 
 enum Status {

@@ -34,7 +34,7 @@ const ConnectorName = styled.div`
 
 type IProps = {
   name: string;
-  icon?: string | React.ReactNode;
+  icon?: string;
 };
 
 const Connector: React.FC<IProps> = ({ name, icon }) => {

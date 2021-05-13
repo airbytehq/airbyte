@@ -15,9 +15,8 @@ const IconDefaultContainer = styled.div`
   padding: 4px 0 3px;
 `;
 
-// TODO FIX IT
-export const getIcon = (connector: any): React.ReactNode => {
-  if (!connector.icon) {
+export const getIcon = (icon?: string): React.ReactNode => {
+  if (!icon) {
     return (
       <IconDefaultContainer>
         <DefaultLogoCatalog />
@@ -25,5 +24,5 @@ export const getIcon = (connector: any): React.ReactNode => {
     );
   }
 
-  return <IconContainer dangerouslySetInnerHTML={{ __html: connector.icon }} />;
+  return <IconContainer dangerouslySetInnerHTML={{ __html: icon }} />;
 };

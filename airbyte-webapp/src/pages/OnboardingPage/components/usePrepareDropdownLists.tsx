@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useResource } from "rest-hooks";
 
 import SourceDefinitionResource, {
@@ -7,12 +7,11 @@ import SourceDefinitionResource, {
 import DestinationDefinitionResource, {
   DestinationDefinition,
 } from "core/resources/DestinationDefinition";
-import { getIcon } from "../../../utils/imageUtils";
 
 type DropDownItem = {
   text: string;
   value: string;
-  img: string | React.ReactNode;
+  img: string;
 };
 
 const usePrepareDropdownLists = (): {
@@ -37,7 +36,7 @@ const usePrepareDropdownLists = (): {
       sourceDefinitions.map((item) => ({
         text: item.name,
         value: item.sourceDefinitionId,
-        img: getIcon(item),
+        img: item.icon,
       })),
     [sourceDefinitions]
   );
@@ -47,7 +46,7 @@ const usePrepareDropdownLists = (): {
       destinationDefinitions.map((item) => ({
         text: item.name,
         value: item.destinationDefinitionId,
-        img: getIcon(item),
+        img: item.icon,
       })),
     [destinationDefinitions]
   );

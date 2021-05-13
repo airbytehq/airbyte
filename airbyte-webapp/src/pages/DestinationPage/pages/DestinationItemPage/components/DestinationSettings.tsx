@@ -15,7 +15,7 @@ import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import { getIcon } from "../../../../../utils/imageUtils";
+import ImageBlock from "components/ImageBlock";
 
 const Content = styled.div`
   width: 100%;
@@ -118,7 +118,7 @@ const DestinationsSettings: React.FC<IProps> = ({
             {
               value: currentDestination.destinationDefinitionId,
               text: currentDestination.destinationName,
-              img: getIcon(destinationDefinition),
+              img: <ImageBlock img={destinationDefinition.icon} />,
             },
           ]}
           formValues={{

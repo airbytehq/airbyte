@@ -14,8 +14,8 @@ import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { getIcon } from "utils/imageUtils";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
+import ImageBlock from "../../../../../components/ImageBlock";
 
 const Content = styled.div`
   max-width: 813px;
@@ -104,7 +104,7 @@ const SourceSettings: React.FC<IProps> = ({
             {
               value: currentSource.sourceDefinitionId,
               text: currentSource.sourceName,
-              img: getIcon(sourceDefinition),
+              img: <ImageBlock img={sourceDefinition.icon} />,
             },
           ]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}

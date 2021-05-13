@@ -5,7 +5,6 @@ import useRouter from "components/hooks/useRouterHook";
 import config from "config";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import useDestination from "components/hooks/services/useDestinationHook";
-import { getIcon } from "utils/imageUtils";
 
 // TODO: create separate component for source and destinations forms
 import DestinationForm from "../../../../DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
@@ -33,7 +32,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
       destinationDefinitions.map((item) => ({
         text: item.name,
         value: item.destinationDefinitionId,
-        img: getIcon(item),
+        img: item.icon,
       })),
     [destinationDefinitions]
   );

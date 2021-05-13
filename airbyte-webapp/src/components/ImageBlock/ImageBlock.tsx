@@ -1,8 +1,9 @@
 import styled from "styled-components";
 import React from "react";
+import { getIcon } from "../../utils/imageUtils";
 
 type IProps = {
-  img?: string | React.ReactNode;
+  img?: string;
   className?: string;
   num?: number;
   small?: boolean;
@@ -21,10 +22,6 @@ export const Content = styled.div<{ small?: boolean }>`
   overflow: hidden;
 `;
 
-export const Image = styled.img<{ small?: boolean }>`
-  border-radius: ${({ small }) => (small ? 0 : 50)}%;
-`;
-
 export const Number = styled.div`
   font-weight: 500;
   font-size: 14px;
@@ -34,18 +31,7 @@ export const Number = styled.div`
 
 const ImageBlock: React.FC<IProps> = ({ img, className, num, small }) => (
   <Content className={className} small={small && !num}>
-    {num ? (
-      <Number>{num}</Number>
-    ) : typeof img === "string" ? (
-      <Image
-        small={small}
-        src={img || "/default-logo-catalog.svg"}
-        height={18}
-        alt="logo"
-      />
-    ) : (
-      <>{img}</>
-    )}
+    {num ? <Number>{num}</Number> : <>{getIcon(img)}</>}
   </Content>
 );
 

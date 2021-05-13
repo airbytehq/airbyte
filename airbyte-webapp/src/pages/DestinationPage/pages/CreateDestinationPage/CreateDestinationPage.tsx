@@ -12,7 +12,7 @@ import useDestination from "components/hooks/services/useDestinationHook";
 import { FormPageContent } from "components/SourceAndDestinationsBlocks";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { getIcon } from "utils/imageUtils";
+import ImageBlock from "components/ImageBlock";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
@@ -35,7 +35,7 @@ const CreateDestinationPage: React.FC = () => {
       destinationDefinitions.map((item) => ({
         text: item.name,
         value: item.destinationDefinitionId,
-        img: getIcon(item),
+        img: <ImageBlock img={item.icon} />,
       })),
     [destinationDefinitions]
   );

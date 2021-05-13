@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useResource } from "rest-hooks";
 
 import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
@@ -23,10 +24,8 @@ import { SyncSchema } from "core/domain/catalog";
 import useConnection from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
-import { useResource } from "@rest-hooks/core/lib/react-integration/hooks";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import { getIcon } from "utils/imageUtils";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -166,8 +165,8 @@ const CreateConnectionContent: React.FC<IProps> = ({
           schema={schema}
           source={source}
           destination={destination}
-          sourceIcon={getIcon(sourceDefinition)}
-          destinationIcon={getIcon(destinationDefinition)}
+          sourceIcon={sourceDefinition?.icon}
+          destinationIcon={destinationDefinition?.icon}
         />
       </Suspense>
     </ContentCard>

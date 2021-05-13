@@ -5,14 +5,13 @@ import { useIntl } from "react-intl";
 import StatusIcon from "components/StatusIcon";
 import ImageBlock from "components/ImageBlock";
 import { Status } from "../types";
-import { getIcon } from "../../../utils/imageUtils";
 
 type IProps = {
   value: string;
   enabled?: boolean;
   status?: string | null;
   icon?: boolean;
-  img?: React.ReactNode | string;
+  img?: string;
 };
 
 const Content = styled.div`
@@ -70,7 +69,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
       ) : (
         <Space />
       )}
-      {icon && <Image small img={getIcon({ icon: img })} />}
+      {icon && <Image small img={img} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

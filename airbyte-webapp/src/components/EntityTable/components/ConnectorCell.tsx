@@ -2,12 +2,11 @@ import React from "react";
 import styled from "styled-components";
 
 import ImageBlock from "components/ImageBlock";
-import { getIcon } from "../../../utils/imageUtils";
 
 type IProps = {
   value: string;
   enabled?: boolean;
-  img?: React.ReactNode | string;
+  img?: string;
 };
 
 const Content = styled.div<{ enabled?: boolean }>`
@@ -24,7 +23,7 @@ const Image = styled(ImageBlock)`
 const ConnectorCell: React.FC<IProps> = ({ value, enabled, img }) => {
   return (
     <Content enabled={enabled}>
-      <Image small img={getIcon({ icon: img })} />
+      <Image small img={img} />
       {value}
     </Content>
   );

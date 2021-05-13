@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import Indicator from "../../../components/Indicator";
-import { getIcon } from "../../../utils/imageUtils";
+import Indicator from "components/Indicator";
+import { getIcon } from "utils/imageUtils";
 
 type IProps = {
   connectorName: string;
@@ -31,7 +31,7 @@ const ConnectorCell: React.FC<IProps> = ({ connectorName, img, hasUpdate }) => {
   return (
     <Content>
       {hasUpdate && <Notification />}
-      <Image>{getIcon({ icon: img })}</Image>
+      <Image>{getIcon(img)}</Image>
       {connectorName}
     </Content>
   );

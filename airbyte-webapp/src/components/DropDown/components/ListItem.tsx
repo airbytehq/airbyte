@@ -2,7 +2,6 @@ import React from "react";
 import styled from "styled-components";
 
 import Text from "./Text";
-import ImageBlock from "components/ImageBlock";
 
 export type IProps = {
   item: {
@@ -18,7 +17,7 @@ export type IDataItem = {
   value: string;
   groupValue?: string;
   groupValueText?: string;
-  img?: string | React.ReactNode;
+  img?: React.ReactNode;
   primary?: boolean;
   secondary?: boolean;
 };
@@ -40,7 +39,7 @@ const ListItem: React.FC<IProps> = ({ item, fullText }) => {
       >
         {item.text}
       </Text>
-      {item.item.img ? <ImageBlock img={item.item.img} /> : null}
+      {item.item.img || null}
     </ItemView>
   );
 };

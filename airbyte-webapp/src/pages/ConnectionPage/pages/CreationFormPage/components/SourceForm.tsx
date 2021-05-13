@@ -9,7 +9,6 @@ import useSource from "components/hooks/services/useSourceHook";
 // TODO: create separate component for source and destinations forms
 import SourceForm from "../../../../SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { getIcon } from "utils/imageUtils";
 
 type IProps = {
   afterSubmit: () => void;
@@ -33,7 +32,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
       sourceDefinitions.map((item) => ({
         text: item.name,
         value: item.sourceDefinitionId,
-        img: getIcon(item),
+        img: item.icon,
       })),
     [sourceDefinitions]
   );

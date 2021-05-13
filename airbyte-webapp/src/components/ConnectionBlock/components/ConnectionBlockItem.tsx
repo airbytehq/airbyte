@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import ImageBlock from "components/ImageBlock";
-import { getIcon } from "utils/imageUtils";
 
 type IProps = {
   name: string;
@@ -31,7 +30,7 @@ const Name = styled.div`
 const ConnectionBlockItem: React.FC<IProps> = (props) => {
   return (
     <Content>
-      <ImageBlock img={getIcon(props)} />
+      <ImageBlock img={props.icon} />
       <Name>{props.name}</Name>
     </Content>
   );
