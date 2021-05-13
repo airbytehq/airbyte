@@ -30,7 +30,7 @@ MAIN_REQUIREMENTS = [
     "inflection==0.5.1",
     "icdiff==1.9.1",
     "pendulum==1.2.0",
-    "pydantic==1.6.1",
+    "pydantic==1.6.2",
     "pytest==6.1.2",
     "pytest-sugar==0.9.4",
     "pytest-timeout==1.4.2",
