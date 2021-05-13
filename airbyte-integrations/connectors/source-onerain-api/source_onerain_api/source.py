@@ -29,6 +29,8 @@ import xmltodict
 import requests
 from jsonschema import validate 
 from datetime import datetime
+from urllib.parse import urlencode
+import traceback
 
 from airbyte_protocol import (
     AirbyteCatalog,
@@ -268,19 +270,54 @@ class SourceOnerainApi(Source):
         """
         stream_name = StreamGetSiteMetaData  # Example
 
-        data_api_url = config[ConfigPropDataApiUrl]
-        system_key = config[ConfigPropSystemKey]
 
-        req_url = f"{data_api_url}?method={stream_name}&system_key={system_key}"
+        def get_request_url(stream,config):
+            query_params=dict()
+            data_api_url = config[ConfigPropDataApiUrl]
+            query_params[ConfigPropSystemKey] = config[ConfigPropSystemKey]
 
+            if stream in config:
+                for stream_prop in config[stream]:
+                    query_params[stream_prop] = config[stream][stream_prop]
+
+            return f'{data_api_url}?method={stream}&{urlencode(query_params)}'
+
+
+        req_url = get_request_url(stream_name,config)
+
+        logger.info(f'requesting {req_url}')
+
+        def assert_onerain_response(response_object,expect_http_code):
+            assert isinstance(expect_http_code,int)
+            assert response_object.status_code == expect_http_code
+
+            #logger.info(r.text)
+            doc = xmltodict.parse(r.text)
+            assert 'onerain' in doc
+            if 'error' in doc['onerain']:
+                err_msg  = doc['onerain']['error']
+                raise ValueError(err_msg)
+            
+
+            # if 'row' key is not an ordered dictionary then return
+            # empty ordered dictionary 
+            results=[] #collections.OrderedDict()
+            try:
+                rows = doc['onerain']['response']['general']['row']
+                row=rows[0]
+                results = rows
+            except Exception as e:
+                logger.debug(f'no records: str(e)')
+           
+            return results
+ 
         # RETRIEVE SITE METADATA
         try:
             r = requests.get(req_url)
-            assert r.status_code == 200 
-
+    
             # ITERATE SITE METADATA AND RETURN AS STREAM
-            doc = xmltodict.parse(r.text)
-            for row in doc['onerain']['response']['general']['row']:
+            results = assert_onerain_response(r,200)
+            for row in results:
                 or_site_id = int(row['or_site_id'])
                 site_id = row['site_id']
                 location = row['location']
@@ -308,21 +345,22 @@ class SourceOnerainApi(Source):
                 )       
 
         except Exception as e:
-            logger.error(f'failed to process stream {stream_name}: {str(e)}')
+            logger.error(f'failed to process stream {stream_name}: {traceback.format_exc()}')
+
 
         # RETRIEVE SENSOR METADATA AND RETURN AS STREAM
         stream_name = StreamGetSensorMetaData
 
-        req_url = f'{data_api_url}?method={stream_name}&system_key={system_key}' 
+        req_url = get_request_url(stream_name,config)
+
+        logger.info(f'requesting {req_url}')
 
         try:
             # submit request
             r = requests.get(req_url)
-            assert r.status_code == 200
-            #logger.info(r.text)
-            doc = xmltodict.parse(r.text)
+            results = assert_onerain_response(r,200) 
             
-            for row in doc['onerain']['response']['general']['row']:
+            for row in results:
 
                 data=dict()
                 data['site_id'] = row['site_id']
@@ -369,20 +407,20 @@ class SourceOnerainApi(Source):
                     record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                 )       
         except Exception as e:
-            logger.error(f'failed to process stream {stream_name}: {str(e)}') 
-
+            logger.error(f'failed to process stream {stream_name}: {traceback.format_exc()}') 
         # RETRIEVE SENSOR DATA AND RETURN AS STREAM
         stream_name = StreamGetSensorData
 
-        req_url = f"{data_api_url}?method={stream_name}&system_key={system_key}"
+        req_url = get_request_url(stream_name,config)
+        logger.info(f'requesting {req_url}')
         
         try:
             # submit request
             r = requests.get(req_url)
-            assert r.status_code == 200
-            doc = xmltodict.parse(r.text)
 
-            for row in doc['onerain']['response']['general']['row']:
+            results = assert_onerain_response(r,200)
+
+            for row in results:
                 data=dict()
                 data['site_id'] = row['site_id']
                 data['sensor_id'] = row['sensor_id']
@@ -399,7 +437,9 @@ class SourceOnerainApi(Source):
                     record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                 )       
         except Exception as e:
-            logger.error(f'failed to process stream {stream_name}: {str(e)}') 
+            logger.error(f'failed to process stream {stream_name}: {traceback.format_exc()}') 
+            # logger.error(traceback.format_exc())
+
 
 def str_to_bool(s):
     true_values = ['true','t','yes','y',1]
