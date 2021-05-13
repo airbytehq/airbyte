@@ -2,6 +2,7 @@ plugins {
     id 'base'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
+    id "com.github.hierynomus.license" version "0.15.0"
 }
 
 repositories {
@@ -99,22 +100,19 @@ spotless {
 
         dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
-    python {
-        target createSpotlessTarget('**/*.py')
-
-        // Many __init__.py files are blank which makes it hard to write a regex to know where to add a license
-        targetExclude createSpotlessTarget('**/__init__.py')
-
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
-        trimTrailingWhitespace()
-    }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
 
         prettier()
     }
 }
+license {
+    header rootProject.file('LICENSE')
+    strictCheck true
+    include "**/*.py"
+}
 check.dependsOn 'spotlessApply'
+check.dependsOn 'licenseFormat'
 
 allprojects {
     apply plugin: 'base'

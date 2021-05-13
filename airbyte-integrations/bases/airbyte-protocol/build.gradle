@@ -13,8 +13,7 @@ task generateProtocolClassFilesWithoutLicense(type: Exec) {
     dependsOn ':tools:code-generator:airbyteDocker'
 }
 
-// todo: figure out dependencies
-task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense, rootProject.spotlessPython])
-rootProject.spotlessPython.mustRunAfter(generateProtocolClassFilesWithoutLicense)
+task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense, rootProject.licenseFormat])
+rootProject.licenseFormat.mustRunAfter(generateProtocolClassFilesWithoutLicense)
 rootProject.build.dependsOn generateProtocolClassFiles
 installReqs.dependsOn(generateProtocolClassFiles)
