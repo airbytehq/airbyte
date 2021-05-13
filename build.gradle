@@ -2,7 +2,7 @@ plugins {
     id 'base'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
-    id "com.github.hierynomus.license" version "0.15.0"
+    id 'com.github.hierynomus.license' version '0.15.0'
 }
 
 repositories {
@@ -47,11 +47,11 @@ def createLicenseWith = { File license, String startComment, String endComment, 
 }
 
 def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '', '', "# ", true)
+    return createLicenseWith(license, '', '', '', true)
 }
 
 def createJavaLicenseWith = { license ->
-    return createLicenseWith(license, '/*', ' */', " * ", false)
+    return createLicenseWith(license, '/*', ' */', ' * ', false)
 }
 
 // We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a
@@ -106,13 +106,7 @@ spotless {
         prettier()
     }
 }
-license {
-    header rootProject.file('LICENSE')
-    strictCheck true
-    include "**/*.py"
-}
 check.dependsOn 'spotlessApply'
-check.dependsOn 'licenseFormat'
 
 allprojects {
     apply plugin: 'base'
@@ -240,6 +234,21 @@ task('format') {
     dependsOn generate
     dependsOn spotlessApply
     dependsOn subprojects.collect { it.getTasksByName('airbytePythonFormat', true) }
+}
+
+// add licenses for python projects.
+subprojects {
+    def pythonFormatTask = project.tasks.findByName('blackFormat')
+
+    if(pythonFormatTask != null) {
+        apply plugin: "com.github.hierynomus.license"
+        task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
+            header = createPythonLicenseWith(rootProject.file('LICENSE'))
+            source = fileTree(dir: projectDir).include("**/*.py").exclude(".venv/**/*.py")
+        }
+        def licenseTask = project.tasks.findByName('licenseFormatPython')
+        pythonFormatTask.dependsOn(licenseTask)
+    }
 }
 
 // produce reproducible archives

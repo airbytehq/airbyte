@@ -1,7 +1,7 @@
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import ru.vyarus.gradle.plugin.python.task.PythonTask;
+import ru.vyarus.gradle.plugin.python.task.PythonTask
 
 class AirbytePythonConfiguration {
     String moduleDirectory
