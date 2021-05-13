@@ -52,7 +52,7 @@ class StripeStream(HttpStream, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
+        stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
@@ -128,7 +128,7 @@ class Charges(IncrementalStripeStream):
 class CustomerBalanceTransactions(StripeStream):
     name = "customer_balance_transactions"
 
-    def path(self, stream_slice: Mapping[str, any] = None, **kwargs):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         customer_id = stream_slice["customer_id"]
         return f"customers/{customer_id}/balance_transactions"
 
@@ -169,7 +169,7 @@ class Invoices(IncrementalStripeStream):
 class InvoiceLineItems(StripeStream):
     name = "invoice_line_items"
 
-    def path(self, stream_slice: Mapping[str, any] = None, **kwargs):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"invoices/{stream_slice['invoice_id']}/lines"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -220,7 +220,7 @@ class SubscriptionItems(StripeStream):
     def path(self, **kwargs):
         return "subscription_items"
 
-    def request_params(self, stream_slice: Mapping[str, any] = None, **kwargs):
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
         params["subscription"] = stream_slice["subscription_id"]
         return params
@@ -248,7 +248,7 @@ class Refunds(IncrementalStripeStream):
 class BankAccounts(StripeStream):
     name = "bank_accounts"
 
-    def path(self, stream_slice: Mapping[str, any] = None, **kwargs):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         customer_id = stream_slice["customer_id"]
         return f"customers/{customer_id}/sources"
 
@@ -264,7 +264,7 @@ class BankAccounts(StripeStream):
 
 
 class SourceStripe(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             stripe.api_key = config["client_secret"]
             stripe.Account.retrieve(config["account_id"])
