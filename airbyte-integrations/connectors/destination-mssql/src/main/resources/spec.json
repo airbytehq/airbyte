@@ -52,38 +52,70 @@
         "airbyte_secret": true,
         "order": 5
       },
-      "ssl": {
-        "title": "SSL Connection",
-        "description": "Encrypt data using SSL.",
-        "type": "boolean",
-        "default": false,
-        "order": 6
-      },
-      "trustServerCertificate": {
-        "title": "Trust Server Certificate",
-        "type": "boolean",
-        "default": false,
-        "description": "Whether or not to implicitly trust the server certificate without verification.  (Useful for local test databases.)",
-        "examples": [true, false],
-        "order": 7
-      },
-      "trustStoreName": {
-        "title": "Trust Store Name",
-        "type": "string",
-        "description": "The full path (including filename) to the certificate trustStore file, which contains the list of certificates that the client trusts.",
-        "order": 8
-      },
-      "trustStorePassword": {
-        "title": "Trust Store Password",
-        "type": "string",
-        "description": "The password used to check the integrity of the trustStore data.",
-        "order": 9
-      },
-      "hostNameInCertificate": {
-        "title": "Host Name In Certificate",
-        "type": "string",
-        "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
-        "order": 10
+      "ssl_method": {
+        "title": "SSL Method",
+        "type": "object",
+        "description": "Encryption method to use when communicating with the database",
+        "order": 6,
+        "oneOf": [
+          {
+            "title": "Unencrypted",
+            "additionalProperties": false,
+            "description": "Data transfer will not be encrypted.",
+            "required": ["ssl_method"],
+            "properties": {
+              "ssl_method": {
+                "type": "string",
+                "enum": ["unencrypted"],
+                "default": "unencrypted"
+              }
+            }
+          },
+          {
+            "title": "Encrypted (trust server certificate)",
+            "additionalProperties": false,
+            "description": "Use the cert provided by the server without verification.  (For testing purposes only!)",
+            "required": ["ssl_method"],
+            "properties": {
+              "ssl_method": {
+                "type": "string",
+                "enum": ["encrypted_trust_server_certificate"],
+                "default": "encrypted_trust_server_certificate"
+              }
+            }
+          },
+          {
+            "title": "Encrypted (verify certificate)",
+            "additionalProperties": false,
+            "description": "Verify and use the cert provided by the server.",
+            "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
+            "properties": {
+              "ssl_method": {
+                "type": "string",
+                "enum": ["encrypted_verify_certificate"],
+                "default": "encrypted_verify_certificate"
+              },
+              "trustStoreName": {
+                "title": "Trust Store Name",
+                "type": "string",
+                "description": "The full path (including filename) to the certificate trustStore file, which contains the list of certificates that the client trusts.",
+                "order": 8
+              },
+              "trustStorePassword": {
+                "title": "Trust Store Password",
+                "type": "string",
+                "description": "The password used to check the integrity of the trustStore data.",
+                "order": 9
+              },
+              "hostNameInCertificate": {
+                "title": "Host Name In Certificate",
+                "type": "string",
+                "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
+                "order": 10
+              }
+            }
+          }
+        ]
       }
     }
   }

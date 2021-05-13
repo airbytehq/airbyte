@@ -66,8 +66,7 @@ public class MSSQLIntegrationTestSSL extends TestDestination {
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schema", "testSchema")
-        .put("ssl", true)
-        .put("trustServerCertificate", true)
+        .put("ssl_method", "encrypted_trust_server_certificate")
         .build());
   }
 

@@ -57,18 +57,8 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         config.get("port").asText(),
         config.get("database").asText()));
 
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
-      additionalParameters.add("encrypt=true");
-      if (config.has("trustServerCertificate") && config.get("trustServerCertificate").asBoolean()) {
-        additionalParameters.add("trustServerCertificate=true");
-      } else {
-        additionalParameters.add("trustServerCertificate=false");
-        additionalParameters.add("trustStore=" + config.get("trustStoreName").asText());
-        additionalParameters.add("trustStorePassword=" + config.get("trustStorePassword").asText());
-        if (config.has("hostNameInCertificate")) {
-          additionalParameters.add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
-        }
-      }
+    if (config.has("ssl_method")) {
+      readSsl(config, additionalParameters);
     }
 
     if (!additionalParameters.isEmpty()) {
@@ -82,6 +72,26 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         .put("schema", schema);
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  private void readSsl(JsonNode config, List<String> additionalParameters) {
+    switch (config.get("ssl_method").asText()) {
+      case "unencrypted":
+        additionalParameters.add("encrypt=false");
+        break;
+      case "encrypted_trust_server_certificate":
+        additionalParameters.add("encrypt=true");
+        additionalParameters.add("trustServerCertificate=true");
+        break;
+      case "encrypted_verify_certificate":
+        additionalParameters.add("encrypt=true");
+        additionalParameters.add("trustStore=" + config.get("trustStoreName").asText());
+        additionalParameters.add("trustStorePassword=" + config.get("trustStorePassword").asText());
+        if (config.has("hostNameInCertificate")) {
+          additionalParameters.add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
+        }
+        break;
+    }
   }
 
   public static void main(String[] args) throws Exception {
