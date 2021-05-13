@@ -15,5 +15,4 @@ task generateProtocolClassFilesWithoutLicense(type: Exec) {
 
 task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense, spotlessPython])
 spotlessPython.mustRunAfter(generateProtocolClassFilesWithoutLicense)
-rootProject.build.dependsOn generateProtocolClassFiles
 installReqs.dependsOn(generateProtocolClassFiles)
