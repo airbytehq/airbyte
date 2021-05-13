@@ -28,8 +28,8 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
-from airbyte_protocol import ConfiguredAirbyteStream
-from base_python import HttpStream
+from airbyte_cdk.models import ConfiguredAirbyteStream
+from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class IterableStream(HttpStream, ABC):

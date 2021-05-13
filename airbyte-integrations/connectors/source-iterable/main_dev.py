@@ -23,7 +23,7 @@
 
 import sys
 
-from base_python.entrypoint import launch
+from airbyte_cdk.entrypoint import launch
 from source_iterable import SourceIterable
 
 if __name__ == "__main__":

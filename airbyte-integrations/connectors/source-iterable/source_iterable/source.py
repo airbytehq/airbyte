@@ -23,7 +23,8 @@
 
 from typing import Any, List, Mapping, Tuple
 
-from base_python import AbstractSource, Stream
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
 
 from .api import (
     Campaigns,
