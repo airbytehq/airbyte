@@ -34,6 +34,7 @@ This connector outputs the following streams:
 | Incremental - Append Sync | Yes |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 

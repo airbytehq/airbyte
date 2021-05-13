@@ -20,10 +20,11 @@ Each stream will be output into its own file. Each file will a collections of `j
 
 #### Features
 
-| Feature | Supported |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
+| Feature | Supported |  |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+| Namespaces | No |  |
 
 #### Performance considerations
 

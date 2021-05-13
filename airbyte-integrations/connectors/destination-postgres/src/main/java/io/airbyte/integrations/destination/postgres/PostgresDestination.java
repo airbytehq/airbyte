@@ -58,7 +58,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
         config.get("port").asText(),
         config.get("database").asText()));
 
-    if (config.get("ssl").asBoolean()) {
+    if (config.has("ssl") && config.get("ssl").asBoolean()) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }

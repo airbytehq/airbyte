@@ -4,6 +4,7 @@ import { useIntl, FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import {
+  AirbyteStream,
   AirbyteStreamConfiguration,
   DestinationSyncMode,
   SyncMode,
@@ -45,20 +46,26 @@ type TreeViewRowProps = {
   isChild?: boolean;
   streamNode: SyncSchemaStream;
   destinationSupportedSyncModes: DestinationSyncMode[];
-  updateItem: (
-    streamId: string,
+  updateStream: (
+    stream: AirbyteStream,
     newConfiguration: Partial<AirbyteStreamConfiguration>
   ) => void;
 };
 
 const TreeViewSection: React.FC<TreeViewRowProps> = ({
   streamNode,
-  updateItem,
+  updateStream,
   destinationSupportedSyncModes,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const { stream, config } = streamNode;
   const streamId = stream.name;
+
+  const updateStreamWithConfig = useCallback(
+    (config: Partial<AirbyteStreamConfiguration>) =>
+      updateStream(stream, config),
+    [updateStream, stream]
+  );
 
   const [, { has, toggle }] = useSet(new Set());
   const isRowExpanded = has(streamId);
@@ -75,17 +82,17 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
         SyncMode,
         DestinationSyncMode
       ];
-      updateItem(streamId, { syncMode, destinationSyncMode });
+      updateStreamWithConfig({ syncMode, destinationSyncMode });
     },
-    [streamId, updateItem]
+    [updateStreamWithConfig]
   );
 
   const onCheckBoxClick = useCallback(
     () =>
-      updateItem(streamId, {
+      updateStreamWithConfig({
         selected: !config.selected,
       }),
-    [streamId, config, updateItem]
+    [config, updateStreamWithConfig]
   );
 
   const fullData = useMemo(
@@ -115,35 +122,32 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
             }
           ),
         })),
-    [stream.supportedSyncModes, formatMessage]
+    [stream.supportedSyncModes, destinationSupportedSyncModes, formatMessage]
   );
 
   const pkPaths = useMemo(
-    () =>
-      new Set(
-        config.primaryKey.map((pkPath) => `${stream.name}.${pkPath.join(".")}`)
-      ),
-    [config, stream]
+    () => new Set(config.primaryKey.map((pkPath) => pkPath.join("."))),
+    [config]
   );
 
   const onPkSelect = (field: SyncSchemaField) => {
-    const pkPath = field.name.replace(`${stream.name}.`, "").split(".");
+    const pkPath = field.name.split(".");
+
+    let newPrimaryKey: string[][];
 
     if (pkPaths.has(field.name)) {
-      updateItem(streamId, {
-        primaryKey: config.primaryKey.filter((key) => !equal(key, pkPath)),
-      });
+      newPrimaryKey = config.primaryKey.filter((key) => !equal(key, pkPath));
     } else {
-      updateItem(streamId, { primaryKey: [...config.primaryKey, pkPath] });
+      newPrimaryKey = [...config.primaryKey, pkPath];
     }
+
+    updateStreamWithConfig({ primaryKey: newPrimaryKey });
   };
 
-  const selectedCursorPath = `${stream.name}.${config.cursorField.join(".")}`;
-
   const onCursorSelect = (field: SyncSchemaField) => {
-    const cursorPath = field.name.replace(`${stream.name}.`, "").split(".");
+    const cursorPath = field.name.split(".");
 
-    updateItem(streamId, { cursorField: cursorPath });
+    updateStreamWithConfig({ cursorField: cursorPath });
   };
 
   const hasChildren = fields && fields.length > 0;
@@ -154,6 +158,7 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   const showCursor = !stream.sourceDefinedCursor;
 
   const pkKeyItems = config.primaryKey.map((k) => k.join("."));
+  const selectedCursorPath = config.cursorField.join(".");
 
   return (
     <>

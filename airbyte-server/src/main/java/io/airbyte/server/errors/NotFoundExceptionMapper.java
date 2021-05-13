@@ -38,7 +38,7 @@ public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundExceptio
 
   @Override
   public Response toResponse(NotFoundException e) {
-    LOGGER.debug("Not found exception", e);
+    LOGGER.error("Not found exception", e);
     return Response.status(404)
         .entity(Jsons.serialize(ImmutableMap.of("message", e.getMessage())))
         .type("application/json")

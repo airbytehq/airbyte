@@ -1,12 +1,15 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
+import Button from "components/Button";
 
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
@@ -19,7 +22,7 @@ import { SyncSchema } from "core/domain/catalog";
 
 import useConnection from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
-import { useDestinationDefinitionSpecificationLoad } from "../hooks/services/useDestinationHook";
+import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -28,6 +31,11 @@ const SkipButton = styled.div`
     min-width: 239px;
     margin-left: 9px;
   }
+`;
+
+const TryArrow = styled(FontAwesomeIcon)`
+  margin: 0 10px -1px 0;
+  font-size: 14px;
 `;
 
 type IProps = {
@@ -53,7 +61,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
   } = useDiscoverSchema(source?.sourceId);
 
   const {
-    destinationDefinitionSpecification,
     isLoading: loadingDestination,
   } = useDestinationDefinitionSpecificationLoad(
     destination.destinationDefinitionId
@@ -124,18 +131,27 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
   };
 
+  const RefreshSchemaButton = () => {
+    return (
+      <Button onClick={onDiscoverSchema} type="button">
+        <TryArrow icon={faRedoAlt} />
+        <FormattedMessage id="connection.refreshSchema" />
+      </Button>
+    );
+  };
+
   return (
     <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
       <Suspense fallback={<LoadingSchema />}>
         <ConnectionForm
           additionBottomControls={additionBottomControls}
           onDropDownSelect={onSelectFrequency}
+          additionalSchemaControl={RefreshSchemaButton()}
           onSubmit={onSubmitConnectionStep}
           errorMessage={createFormErrorMessage({ status: errorStatusRequest })}
           schema={schema}
           source={source}
           destination={destination}
-          destinationDefinition={destinationDefinitionSpecification}
         />
       </Suspense>
     </ContentCard>

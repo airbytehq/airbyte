@@ -20,6 +20,7 @@ Each stream will be output into its own table in Snowflake. Each table will cont
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Namespaces | Yes |  |
 
 ## Getting started
 
@@ -142,3 +143,42 @@ When an identifier is double-quoted, it is stored and resolved exactly as entere
 
 Therefore, Airbyte Snowflake destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
 
+## Cloud Storage Staging
+By default, Airbyte uses batches of `INSERT` commands to add data to a temporary table before copying it over to the final table in Snowflake. This is too slow for larger/multi-GB replications. For those larger replications we recommend configuring using cloud storage to allow batch writes and loading.
+
+### AWS S3
+
+For AWS S3, you will need to create a bucket and provide credentials to access the bucket. We recommend creating a bucket that is only used for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this bucket.
+
+### Google Cloud Storage (GCS)
+
+First you will need to create a GCS bucket.
+
+Then you will need to run the script below:
+* You must run the script as the account admin for Snowflake. 
+* You should replace `AIRBYTE_ROLE` with the role you used for Airbyte's Snowflake configuration.
+* Replace `YOURBUCKETNAME` with your bucket name
+* The stage name can be modified to any valid name.
+* `gcs_airbyte_integration` must be used
+
+The script:
+```
+create storage INTEGRATION gcs_airbyte_integration
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = GCS
+  ENABLED = TRUE
+  STORAGE_ALLOWED_LOCATIONS = ('gcs://YOURBUCKETNAME');
+
+create stage gcs_airbyte_stage
+  url = 'gcs://io_airbyte_test_staging'
+  storage_integration = gcs_airbyte_integration;
+
+GRANT USAGE ON integration gcs_airbyte_integration TO ROLE AIRBYTE_ROLE;
+GRANT USAGE ON stage gcs_airbyte_stage TO ROLE AIRBYTE_ROLE;
+
+DESC STORAGE INTEGRATION gcs_airbyte_integration;
+```
+
+The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value. 
+
+Finally, you need to add read/write permissions to your bucket with that email.

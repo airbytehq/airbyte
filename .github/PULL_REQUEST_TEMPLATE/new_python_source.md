@@ -11,6 +11,7 @@ Thanks for contributing to Airbyte! Please complete the following items in order
 - [ ] Added the credentials for this integration to Github secrets 
 - [ ] Run standard tests on this branch by commenting `/test connector=<name>`*
 - [ ] Add entry in `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` to use the new source in Airbyte core
+    - [ ] Generate UUID for `source_definitions` template here: https://www.uuidgenerator.net/ 
 - [ ] Deployed the connector to Dockerhub via `./tools/integrations/manage.sh publish airbyte-integrations/connectors/source-<name>`
 
 ## Documentation

@@ -71,6 +71,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: LOCAL_ROOT
+            - name: WEBAPP_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WEBAPP_URL
+            - name: TEMPORAL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TEMPORAL_HOST
           ports:
             - containerPort: 8001
           volumeMounts:
