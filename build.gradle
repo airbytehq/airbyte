@@ -244,7 +244,10 @@ subprojects {
         apply plugin: "com.github.hierynomus.license"
         task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
             header = createPythonLicenseWith(rootProject.file('LICENSE'))
-            source = fileTree(dir: projectDir).include("**/*.py").exclude(".venv/**/*.py")
+            source = fileTree(dir: projectDir)
+                    .include("**/*.py")
+                    .exclude(".venv/**/*.py")
+                    .exclude("**/__init__.py")
             strictCheck = true
         }
         def licenseTask = project.tasks.findByName('licenseFormatPython')
