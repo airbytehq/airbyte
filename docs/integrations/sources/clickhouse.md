@@ -26,7 +26,7 @@ The ClickHouse source does not alter the schema present in your warehouse. Depen
 
 ### Requirements
 
-1. ClickHouse Server `21.3.10.1`.
+1. ClickHouse Server `21.3.10.1` or later.
 2. Create a dedicated read-only Airbyte user with access to all tables needed for replication
 
 ### Setup guide
