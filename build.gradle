@@ -133,6 +133,7 @@ subprojects {
 
             // Many __init__.py files are blank which makes it hard to write a regex to know where to add a license
             targetExclude createSpotlessTarget('**/__init__.py')
+            targetExclude createSpotlessTarget("airbyte-cdk/**/*.py");
 
             licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|""")'
             trimTrailingWhitespace()
