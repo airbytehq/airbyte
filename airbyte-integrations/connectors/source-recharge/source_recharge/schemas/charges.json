@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "address_id": {
+      "type": ["null", "integer"]
+    },
+    "billing_address": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "address1": {
+          "type": ["null", "string"]
+        },
+        "address2": {
+          "type": ["null", "string"]
+        },
+        "cart_note": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "company": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "customer_id": {
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "discount_id": {
+          "type": ["null", "integer"]
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "note_attributes": {
+          "type": ["null", "array"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        },
+        "province": {
+          "type": ["null", "string"]
+        },
+        "shipping_lines_override": {
+          "type": ["null", "array"]
+        },
+        "updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "zip": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "line_items": {
+      "type": ["null", "array"]
+    },
+    "has_uncommited_changes": {
+      "type": ["null", "boolean"]
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "note_attributes": {
+      "type": ["null", "array"]
+    },
+    "processed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "processor_name": {
+      "type": ["null", "string"]
+    },
+    "scheduled_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shipments_count": {
+      "type": ["null", "integer"]
+    },
+    "shipping_address": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "address1": {
+          "type": ["null", "string"]
+        },
+        "address2": {
+          "type": ["null", "string"]
+        },
+        "cart_note": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "company": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "customer_id": {
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "discount_id": {
+          "type": ["null", "integer"]
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "note_attributes": {
+          "type": ["null", "array"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        },
+        "province": {
+          "type": ["null", "string"]
+        },
+        "shipping_lines_override": {
+          "type": ["null", "array"]
+        },
+        "updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "zip": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "shopify_order_id": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "subtotal_price": {
+      "type": ["null", "string"]
+    },
+    "total_discounts": {
+      "type": ["null", "string"]
+    },
+    "total_price": {
+      "type": ["null", "string"]
+    },
+    "total_refunds": {
+      "type": ["null", "string"]
+    },
+    "transaction_id": {
+      "type": ["null", "string"]
+    }
+  }
+}
