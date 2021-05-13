@@ -22,7 +22,7 @@ import { SyncSchema } from "core/domain/catalog";
 
 import useConnection from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
-import { useDestinationDefinitionSpecificationLoad } from "../hooks/services/useDestinationHook";
+import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -61,7 +61,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
   } = useDiscoverSchema(source?.sourceId);
 
   const {
-    destinationDefinitionSpecification,
     isLoading: loadingDestination,
   } = useDestinationDefinitionSpecificationLoad(
     destination.destinationDefinitionId
@@ -153,7 +152,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
           schema={schema}
           source={source}
           destination={destination}
-          destinationDefinition={destinationDefinitionSpecification}
         />
       </Suspense>
     </ContentCard>
