@@ -154,12 +154,11 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         """Apply state filter to set of records, update cursor(state) if necessary in the end"""
         params = params or {}
         latest_cursor = None
+        buffer_days = getattr(self, 'buffer_days') + 1 if hasattr(self, 'buffer_days') else 0
         for record in super().read(getter, params):
             cursor = pendulum.parse(record[self.state_pk])
-            if self._state:
-                buffer_days = getattr(self, 'buffer_days') + 1 if hasattr(self, 'buffer_days') else 0
-                if self._state.subtract(days=buffer_days) >= cursor:
-                    continue
+            if self._state and self._state.subtract(days=buffer_days) >= cursor:
+                continue
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
             yield record
 
