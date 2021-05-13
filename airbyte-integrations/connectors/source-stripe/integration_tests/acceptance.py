@@ -21,17 +21,14 @@
 # SOFTWARE.
 
 
-from setuptools import find_packages, setup
+import pytest
 
-setup(
-    name="source_stripe",
-    description="Source implementation for Stripe.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    install_requires=["airbyte-cdk==0.1.2", "stripe"],
-    extras_require={
-        "tests": ["pytest==6.1.2"],
-    },
-)
+pytest_plugins = ("source_acceptance_test.plugin",)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """This fixture is a placeholder for external resources that acceptance test might require."""
+    # TODO: setup test dependencies
+    yield
+    # TODO: clean up test dependencies
