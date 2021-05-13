@@ -100,8 +100,7 @@
               "type": ["null", "integer"]
             },
             "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "integer"]
             }
           }
         },
@@ -170,8 +169,7 @@
           }
         },
         "created": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "nickname": {
           "type": ["null", "string"]
@@ -224,8 +222,7 @@
       "type": ["null", "string"]
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "ended_at": {
       "type": ["null", "string"],
