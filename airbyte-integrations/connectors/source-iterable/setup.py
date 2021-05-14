@@ -24,7 +24,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk==0.1.2",
+    "airbyte-cdk==0.1.3",
     "pendulum==1.2.0",
     "requests==2.25.1",
 ]
