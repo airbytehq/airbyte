@@ -632,6 +632,10 @@ public abstract class TestDestination {
     if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
       throw new WorkerException("dbt debug Failed.");
     }
+    dbtConfig.withDbtArguments("deps");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt deps Failed.");
+    }
     dbtConfig.withDbtArguments("seed");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
       throw new WorkerException("dbt seed Failed.");
