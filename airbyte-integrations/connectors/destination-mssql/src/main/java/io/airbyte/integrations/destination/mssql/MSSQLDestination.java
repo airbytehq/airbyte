@@ -30,6 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -85,8 +86,21 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         break;
       case "encrypted_verify_certificate":
         additionalParameters.add("encrypt=true");
-        additionalParameters.add("trustStore=" + config.get("trustStoreName").asText());
-        additionalParameters.add("trustStorePassword=" + config.get("trustStorePassword").asText());
+
+        // trust store location code found at https://stackoverflow.com/a/56570588
+        String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
+            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
+        File trustStoreFile = new File(trustStoreLocation);
+        if (!trustStoreFile.exists()) {
+          throw new RuntimeException("Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
+              + trustStoreLocation + " does not exist.");
+        }
+        String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+
+        additionalParameters.add("trustStore=" + trustStoreLocation);
+        if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
+          additionalParameters.add("trustStorePassword=" + config.get("trustStorePassword").asText());
+        }
         if (config.has("hostNameInCertificate")) {
           additionalParameters.add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
         }

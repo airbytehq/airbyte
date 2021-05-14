@@ -95,23 +95,11 @@
                 "enum": ["encrypted_verify_certificate"],
                 "default": "encrypted_verify_certificate"
               },
-              "trustStoreName": {
-                "title": "Trust Store Name",
-                "type": "string",
-                "description": "The full path (including filename) to the certificate trustStore file, which contains the list of certificates that the client trusts.",
-                "order": 8
-              },
-              "trustStorePassword": {
-                "title": "Trust Store Password",
-                "type": "string",
-                "description": "The password used to check the integrity of the trustStore data.",
-                "order": 9
-              },
               "hostNameInCertificate": {
                 "title": "Host Name In Certificate",
                 "type": "string",
                 "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
-                "order": 10
+                "order": 7
               }
             }
           }
