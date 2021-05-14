@@ -612,11 +612,11 @@ public abstract class TestDestination {
 
   @Test
   void testCustomDbtTransformations() throws Exception {
-    final JsonNode config = getConfigWithBasicNormalization();
-
-    if (!config.hasNonNull(WorkerConstants.BASIC_NORMALIZATION_KEY) || !config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).asBoolean()) {
+    if (!implementsBasicNormalization()) {
       return;
     }
+
+    final JsonNode config = getConfigWithBasicNormalization();
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
         getImageName(),
