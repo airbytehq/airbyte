@@ -38,9 +38,17 @@ from .common import FacebookAPIException
 
 
 class Client(BaseClient):
-    def __init__(self, account_id: str, access_token: str, start_date: str, include_deleted: bool = False):
+    def __init__(
+            self,
+            account_id: str,
+            access_token: str,
+            start_date: str,
+            include_deleted: bool = False,
+            insights_lookback_window: int = 28
+    ):
         self._account_id = account_id
         self._start_date = pendulum.parse(start_date)
+        self._insights_lookback_window = insights_lookback_window
 
         self._api = FacebookAdsApi.init(access_token=access_token)
         self._apis = {
@@ -48,13 +56,44 @@ class Client(BaseClient):
             "adsets": AdSetsAPI(self, include_deleted=include_deleted),
             "ads": AdsAPI(self, include_deleted=include_deleted),
             "adcreatives": AdCreativeAPI(self),
-            "ads_insights": AdsInsightAPI(self, start_date=self._start_date),
-            "ads_insights_age_and_gender": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["age", "gender"]),
-            "ads_insights_country": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["country"]),
-            "ads_insights_region": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["region"]),
-            "ads_insights_dma": AdsInsightAPI(self, start_date=self._start_date, breakdowns=["dma"]),
+            "ads_insights": AdsInsightAPI(
+                self,
+                start_date=self._start_date,
+                buffer_days=self._insights_lookback_window
+            ),
+            "ads_insights_age_and_gender": AdsInsightAPI(
+                self,
+                start_date=self._start_date,
+                breakdowns=["age", "gender"],
+                buffer_days=self._insights_lookback_window
+            ),
+            "ads_insights_country": AdsInsightAPI(
+                self,
+                start_date=self._start_date,
+                breakdowns=["country"],
+                buffer_days=self._insights_lookback_window
+            ),
+            "ads_insights_region": AdsInsightAPI(
+                self,
+                start_date=self._start_date,
+                breakdowns=["region"],
+                buffer_days=self._insights_lookback_window
+            ),
+            "ads_insights_dma": AdsInsightAPI(
+                self,
+                start_date=self._start_date,
+                breakdowns=["dma"],
+                buffer_days=self._insights_lookback_window
+            ),
             "ads_insights_platform_and_device": AdsInsightAPI(
-                self, start_date=self._start_date, breakdowns=["publisher_platform", "platform_position", "impression_device"]
+                self,
+                start_date=self._start_date,
+                breakdowns=[
+                    "publisher_platform",
+                    "platform_position",
+                    "impression_device"
+                ],
+                buffer_days=self._insights_lookback_window
             ),
         }
         super().__init__()

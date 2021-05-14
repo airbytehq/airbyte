@@ -326,11 +326,11 @@ class AdsInsightAPI(IncrementalStreamAPI):
     level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
-    buffer_days = 28
 
-    def __init__(self, api, start_date, breakdowns=None):
+    def __init__(self, api, start_date, breakdowns=None, buffer_days=28):
         super().__init__(api=api)
         self.start_date = start_date
+        self.buffer_days = buffer_days
         self._state = start_date
         self.breakdowns = breakdowns
 
