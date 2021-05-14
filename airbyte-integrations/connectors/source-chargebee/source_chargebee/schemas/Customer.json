@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "name": "Customer",
+    "type": "object",
+    "properties": {
+        "id": {"type": "string"},
+        "first_name": {"type": "string"},
+        "last_name": {"type": "string"},
+        "email": {"type": "string"},
+        "phone": {"type": "string"},
+        "company": {"type": "string"},
+        "vat_number": {"type": "string"},
+        "auto_collection": {"type": "string"},
+        
+        "offline_payment_method": {"type": "string"},
+        "net_term_days": {"type": "string"},
+        "vat_number_validated_time": {"type": "string"},
+        "vat_number_status": {"type": "string"},
+        
+        "allow_direct_debit": {"type": "string"},
+        "is_location_valid": {"type": "string"},
+        "created_at": {"type": "string"},
+        "created_from_ip": {"type": "string"},
+        "exemption_details": {"type": "string"},
+        
+        "taxability": {"type": "string"},
+        "entity_code": {"type": "string"},
+        "exempt_number": {"type": "string"},
+        "resource_version": {"type": "string"},
+        "updated_at": {"type": "string"},
+        "locale": {"type": "string"},
+        "billing_date": {"type": "string"},
+        
+        "billing_date_mode": {"type": "string"},
+        "billing_day_of_week": {"type": "string"},
+        "billing_day_of_week_mode": {"type": "string"},
+        "pii_cleared": {"type": "string"},
+        "auto_close_invoices": {"type": "string"},
+        
+        "card_status": {"type": "string"},
+        "fraud_flag": {"type": "string"},
+        "primary_payment_source_id": {"type": "string"},
+        "backup_payment_source_id": {"type": "string"},
+        "billing_address": {"type": "string"},
+        
+        "referral_urls": {"type": "string"},
+        "contacts": {"type": "string"},
+        "payment_method": {"type": "string"},
+        "invoice_notes": {"type": "string"},
+        "preferred_currency_code": {"type": "string"},
+        "promotional_credits": {"type": "string"},
+        
+        "unbilled_charges": {"type": "string"},
+        "refundable_credits": {"type": "string"},
+        "excess_payments": {"type": "string"},
+        "balances": {"type": "string"},
+        "meta_data": {"type": "string"},
+        "deleted": {"type": "string"},
+        
+        "registered_for_gst": {"type": "string"},
+        "consolidated_invoicing": {"type": "string"},
+        "customer_type": {"type": "string"},
+        "business_customer_without_vat_number": {"type": "string"},
+        
+        "client_profile_id": {"type": "string"},
+        "relationship": {"type": "string"},
+        "use_default_hierarchy_settings": {"type": "string"},
+        "parent_account_access": {"type": "string"},
+        
+        "child_account_access": {"type": "string"}
+    }
+}
