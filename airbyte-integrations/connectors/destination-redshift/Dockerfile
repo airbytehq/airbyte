@@ -4,6 +4,8 @@ WORKDIR /airbyte
 
 ENV APPLICATION destination-redshift
 
+RUN apt-get update && apt-get install -y procps && rm -rf /var/lib/apt/lists/*
+
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1

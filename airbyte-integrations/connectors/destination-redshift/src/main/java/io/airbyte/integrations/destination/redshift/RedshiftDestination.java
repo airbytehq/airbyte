@@ -32,6 +32,8 @@ import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,10 +104,17 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
     LOGGER.info("Initial Memory (xms) : {}mb", xms);
     LOGGER.info("Max Memory (xmx) : {}mb", xmx);
 
+    var service = Executors.newSingleThreadScheduledExecutor();
+    service.scheduleAtFixedRate(() -> {
+      LOGGER.info("Used heap memory: {}mb, Used non-heap memory: {}mb", memoryBean.getHeapMemoryUsage().getUsed() / mb, memoryBean.getNonHeapMemoryUsage().getUsed() / mb);
+    }, 0, 20, TimeUnit.SECONDS);
+
     final Destination destination = new RedshiftDestination();
     LOGGER.info("starting destination: {}", RedshiftDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", RedshiftDestination.class);
+
+    service.shutdown();
   }
 
 }
