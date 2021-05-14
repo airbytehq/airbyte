@@ -96,7 +96,7 @@ public interface SyncWorkflow {
                                   StandardSyncInput syncInput) {
       final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
 
-      if (syncInput.getOperationSequence() != null) {
+      if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
         for (StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
           if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
             final NormalizationInput normalizationInput = new NormalizationInput()
