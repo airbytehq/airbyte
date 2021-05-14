@@ -1,35 +1,39 @@
-"""
-MIT License
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import unittest
 from unittest.mock import Mock, patch
 
 from airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode
+from base_python import AirbyteLogger
 from google_sheets_source.client import GoogleSheetsClient
 from google_sheets_source.helpers import Helpers
 from google_sheets_source.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
+
+logger = AirbyteLogger()
 
 
 class TestHelpers(unittest.TestCase):
@@ -47,14 +51,38 @@ class TestHelpers(unittest.TestCase):
             },
         )
 
-        actual_stream = Helpers.headers_to_airbyte_stream(sheet_name, header_values)
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
         self.assertEqual(expected_stream, actual_stream)
 
-    def test_duplicate_headers_to_ab_stream_fails(self):
+    def test_duplicate_headers_retrived(self):
+        header_values = ["h1", "h1", "h3"]
+
+        expected_valid_header_values = ["h3"]
+        expected_duplicate_header_values = ["h1"]
+
+        actual_header_values, actual_duplicate_header_values = Helpers.get_valid_headers_and_duplicates(header_values)
+
+        self.assertEqual(expected_duplicate_header_values, actual_duplicate_header_values)
+        self.assertEqual(expected_valid_header_values, actual_header_values)
+
+    def test_duplicate_headers_to_ab_stream_ignores_duplicates(self):
         sheet_name = "sheet1"
         header_values = ["h1", "h1", "h3"]
-        with self.assertRaises(BaseException):
-            Helpers.headers_to_airbyte_stream(sheet_name, header_values)
+
+        # h1 is ignored because it is duplicate
+        expected_stream_header_values = ["h3"]
+        expected_stream = AirbyteStream(
+            name=sheet_name,
+            json_schema={
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                # For simplicity, the type of every cell is a string
+                "properties": {header: {"type": "string"} for header in expected_stream_header_values},
+            },
+        )
+
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
+        self.assertEqual(expected_stream, actual_stream)
 
     def test_headers_to_airbyte_stream_blank_values_terminate_row(self):
         sheet_name = "sheet1"
@@ -69,7 +97,7 @@ class TestHelpers(unittest.TestCase):
                 "properties": {"h1": {"type": "string"}},
             },
         )
-        actual_stream = Helpers.headers_to_airbyte_stream(sheet_name, header_values)
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
 
         self.assertEqual(expected_stream, actual_stream)
 

@@ -2,8 +2,7 @@
   "type": ["null", "object"],
   "properties": {
     "date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "next_payment_attempt": {
       "type": ["null", "string"],
@@ -128,8 +127,7 @@
               "type": ["null", "integer"]
             },
             "created": {
-              "type": ["null", "string"],
-              "format": "date-time"
+              "type": ["null", "integer"]
             }
           }
         },

@@ -10,6 +10,7 @@ export * from "./StatusIcon";
 export * from "./Label";
 export * from "./LabeledControl";
 export * from "./LabeledToggle";
+export * from "./Toggle";
 export * from "./Link";
 export * from "./TextWithHTML";
 export * from "./TextArea";

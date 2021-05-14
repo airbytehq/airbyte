@@ -4,11 +4,28 @@
 
 The Stripe source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Stripe source is based on the [Singer Stripe Tap](https://github.com/singer-io/tap-stripe).
-
 ### Output schema
 
-Several output streams are available from this source \(customers, charges, invoices, subscriptions, etc.\) For a comprehensive output schema [look at the Singer tap schema files](https://github.com/singer-io/tap-stripe/tree/master/tap_stripe/schemas).
+This Source is capable of syncing the following core Streams:
+
+* [Balance Transactions](https://stripe.com/docs/api/balance_transactions/list) (Incremental)
+* [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list)
+* [Charges](https://stripe.com/docs/api/charges/list) (Incremental)
+* [Coupons](https://stripe.com/docs/api/coupons/list) (Incremental)
+* [Customers](https://stripe.com/docs/api/customers/list) (Incremental)
+* [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list) (Incremental)
+* [Disputes](https://stripe.com/docs/api/disputes/list) (Incremental)
+* [Events](https://stripe.com/docs/api/events/list) (Incremental)
+* [Invoices](https://stripe.com/docs/api/invoices/list) (Incremental)
+* [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) (Incremental)
+* [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+* [Payouts](https://stripe.com/docs/api/payouts/list) (Incremental)
+* [Plans](https://stripe.com/docs/api/plans/list) (Incremental)
+* [Products](https://stripe.com/docs/api/products/list) (Incremental)
+* [Refunds](https://stripe.com/docs/api/refunds/list) (Incremental)
+* [Subscriptions](https://stripe.com/docs/api/subscriptions/list) (Incremental)
+* [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+* [Transfers](https://stripe.com/docs/api/transfers/list) (Incremental)
 
 ### Data type mapping
 
@@ -22,6 +39,7 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https:/
 | Incremental - Append Sync | Yes |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 

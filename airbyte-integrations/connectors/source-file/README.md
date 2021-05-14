@@ -72,6 +72,7 @@ In order to run integrations tests in this connector, you need:
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source file test creds`
 and place them into `secrets/config.json`.
 
+
 ### Locally running the connector
 ```
 python main_dev.py spec
@@ -91,7 +92,7 @@ python -m pytest unit_tests
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/file:dev
+docker build . -t airbyte/source-file:dev
 ```
 
 You can also build the connector image via Gradle:

@@ -42,7 +42,7 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 
 /**
- * Integration test testing {@link RedshiftCopyDestination}. The default Redshift integration test
+ * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
  * credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
 public class RedshiftCopyIntegrationTest extends TestDestination {
@@ -64,7 +64,7 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
     return config;
   }
 
-  private static JsonNode getStaticConfig() {
+  public JsonNode getStaticConfig() {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
@@ -85,6 +85,11 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
 
   @Override
   protected boolean implementsBasicNormalization() {
+    return true;
+  }
+
+  @Override
+  protected boolean implementsNamespaces() {
     return true;
   }
 
@@ -148,6 +153,16 @@ public class RedshiftCopyIntegrationTest extends TestDestination {
             baseConfig.get("port").asText(),
             baseConfig.get("database").asText()),
         "com.amazon.redshift.jdbc.Driver", null);
+  }
+
+  @Override
+  protected boolean implementsRecordSizeLimitChecks() {
+    return true;
+  }
+
+  @Override
+  protected int getMaxRecordValueLimit() {
+    return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 
 }

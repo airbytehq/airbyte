@@ -18,7 +18,6 @@ services:
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
-      - POSTGRES_DB=db-${DATABASE_DB}
     volumes:
       - db:/var/lib/postgresql/data
   seed:
@@ -83,7 +82,7 @@ services:
     environment:
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - AIRBYTE_VERSION=${VERSION}
-      - API_URL=${API_URL}
+      - API_URL=${API_URL:-}
       - IS_DEMO=${IS_DEMO:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}

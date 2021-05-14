@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -46,6 +47,7 @@ import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +57,7 @@ class JobSchedulerTest {
 
   private static final StandardSync STANDARD_SYNC;
   private static final StandardSyncSchedule STANDARD_SYNC_SCHEDULE;
+  private static final List<StandardSyncOperation> STANDARD_SYNC_OPERATIONS;
   private static final long JOB_ID = 12L;
   private Job previousJob;
 
@@ -71,6 +74,7 @@ class JobSchedulerTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
 
     final UUID connectionId = UUID.randomUUID();
+    final UUID operationId = UUID.randomUUID();
 
     STANDARD_SYNC = new StandardSync()
         .withConnectionId(connectionId)
@@ -79,10 +83,12 @@ class JobSchedulerTest {
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)
         .withSourceId(sourceId)
-        .withDestinationId(destinationId);
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(operationId));
 
     // empty. contents not needed for any of these unit tests.
     STANDARD_SYNC_SCHEDULE = new StandardSyncSchedule();
+    STANDARD_SYNC_OPERATIONS = List.of(new StandardSyncOperation().withOperationId(operationId));
   }
 
   private ConfigRepository configRepository;

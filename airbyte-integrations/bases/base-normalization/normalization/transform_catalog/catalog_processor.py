@@ -1,26 +1,27 @@
-"""
-MIT License
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
 
 import json
 import os
@@ -53,18 +54,21 @@ class CatalogProcessor:
         self.destination_type: DestinationType = destination_type
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
 
-    def process(self, catalog_file: str, json_column_name: str, target_schema: str):
+    def process(self, catalog_file: str, json_column_name: str, default_schema: str):
         """
         This method first parse and build models to handle top-level streams.
         In a second loop will go over the substreams that were nested in a breadth-first traversal manner.
 
         @param catalog_file input AirbyteCatalog file in JSON Schema describing the structure of the raw data
         @param json_column_name is the column name containing the JSON Blob with the raw data
-        @param target_schema is the final schema where to output the final transformed data to
+        @param default_schema is the final schema where to output the final transformed data to
         """
-        # Registry of all tables in all schemas
-        tables_registry: Set[str] = set()
+        # Registry of all tables produced in each schema. Those maps to the final sql file (dbt use that as
+        # internal model and thus filename should be unique accross schema/table names):
+        # { schema_name : [ { table_name : file_name } ] }
+        tables_registry: Dict[str, Dict[str, str]] = {}
         # Registry of source tables in each schemas
+        # { schema_name : [ table_name ] }
         schema_to_source_tables: Dict[str, Set[str]] = {}
 
         catalog = read_json(catalog_file)
@@ -73,7 +77,7 @@ class CatalogProcessor:
         for stream_processor in self.build_stream_processor(
             catalog=catalog,
             json_column_name=json_column_name,
-            target_schema=target_schema,
+            default_schema=default_schema,
             name_transformer=self.name_transformer,
             destination_type=self.destination_type,
             tables_registry=tables_registry,
@@ -86,7 +90,7 @@ class CatalogProcessor:
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
             nested_processors = stream_processor.process()
-            add_table_to_registry(tables_registry, stream_processor)
+            tables_registry = add_table_to_registry(tables_registry, stream_processor)
             if nested_processors and len(nested_processors) > 0:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
@@ -98,16 +102,22 @@ class CatalogProcessor:
     def build_stream_processor(
         catalog: Dict,
         json_column_name: str,
-        target_schema: str,
+        default_schema: str,
         name_transformer: DestinationNameTransformer,
         destination_type: DestinationType,
-        tables_registry: Set[str],
+        tables_registry: Dict[str, Dict[str, str]],
     ) -> List[StreamProcessor]:
         result = []
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
             stream_config = get_field(configured_stream, "stream", "Invalid Stream: 'stream' is not defined in Catalog streams")
-            schema_name = name_transformer.normalize_schema_name(target_schema)
-            raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{target_schema}", truncate=False)
+
+            # The logic here matches the logic in JdbcBufferedConsumerFactory.java. Any modifications need to be reflected there and vice versa.
+            schema = default_schema
+            if "namespace" in stream_config:
+                schema = stream_config["namespace"]
+
+            schema_name = name_transformer.normalize_schema_name(schema)
+            raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=False)
 
@@ -152,7 +162,7 @@ class CatalogProcessor:
             result.append(stream_processor)
         return result
 
-    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Set[str]):
+    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Dict[str, Dict[str, str]]):
         """
         Handle nested stream/substream/children
         """
@@ -162,7 +172,7 @@ class CatalogProcessor:
             for substream in children:
                 substream.tables_registry = tables_registry
                 nested_processors = substream.process()
-                add_table_to_registry(tables_registry, substream)
+                tables_registry = add_table_to_registry(tables_registry, substream)
                 if nested_processors:
                     substreams += nested_processors
                 for file in substream.sql_outputs:
@@ -173,10 +183,11 @@ class CatalogProcessor:
         Generate the sources.yaml file as described in https://docs.getdbt.com/docs/building-a-dbt-project/using-sources/
         """
         schemas = []
-        for schema in schema_to_source_tables:
+        for entry in sorted(schema_to_source_tables.items(), key=lambda kv: kv[0]):
+            schema = entry[0]
             quoted_schema = self.name_transformer.needs_quotes(schema)
             tables = []
-            for source in schema_to_source_tables[schema]:
+            for source in sorted(schema_to_source_tables[schema]):
                 if quoted_schema:
                     tables.append({"name": source, "quoting": {"identifier": True}})
                 else:
@@ -195,7 +206,7 @@ class CatalogProcessor:
         source_config = {"version": 2, "sources": schemas}
         source_path = os.path.join(self.output_directory, "sources.yml")
         with open(source_path, "w") as fh:
-            fh.write(yaml.dump(source_config))
+            fh.write(yaml.dump(source_config, sort_keys=False))
 
 
 # Static Functions
@@ -267,18 +278,29 @@ def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_na
         raise KeyError(f"Duplicate table {table_name} in {schema_name}")
 
 
-def add_table_to_registry(tables_registry: Set[str], processor: StreamProcessor):
+def add_table_to_registry(tables_registry: Dict[str, Dict[str, str]], processor: StreamProcessor) -> Dict[str, Dict[str, str]]:
     """
-    Keeps track of all table names created by this catalog, regardless of their destination schema
+    Keeps track of all schema/table names created by this catalog, regardless of their destination schema.
+
+    Each StreamProcessor has its own "local" registry for schema/tables produced by the stream they are currently
+    processing. Here, we aggregate all "local" registries into a "global" one accross all streams being
+    processed from this catalog.
 
     @param tables_registry where all table names are recorded
     @param processor the processor that created tables as part of its process
     """
-    for table_name in processor.local_registry:
-        if table_name not in tables_registry:
-            tables_registry.add(table_name)
-        else:
-            raise KeyError(f"Duplicate table {table_name}")
+    base_registry = tables_registry
+    new_registry = processor.local_registry
+    for schema in new_registry:
+        if len(new_registry[schema]) > 0:
+            if schema not in base_registry:
+                base_registry[schema] = {}
+            for table_name in new_registry[schema]:
+                if table_name not in base_registry[schema]:
+                    base_registry[schema][table_name] = new_registry[schema][table_name]
+                else:
+                    raise KeyError(f"Duplicate table {table_name} in schema {schema}")
+    return base_registry
 
 
 def output_sql_file(file: str, sql: str):

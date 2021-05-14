@@ -146,7 +146,7 @@ public class JdbcUtils {
         java.util.Date d = new java.util.Date(t.getTime() + (t.getNanos() / 1000000));
         o.put(columnName, toISO8601String(d));
       }
-      case BINARY, VARBINARY, LONGVARBINARY -> o.put(columnName, r.getBytes(i));
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> o.put(columnName, r.getBytes(i));
       default -> o.put(columnName, r.getString(i));
     }
   }
@@ -167,11 +167,22 @@ public class JdbcUtils {
                                        String value)
       throws SQLException {
     switch (cursorFieldType) {
-      // parse date, time, and timestamp the same way. this seems to not cause an problems and allows us
+      // parse time, and timestamp the same way. this seems to not cause an problems and allows us
       // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
-      case DATE, TIME, TIMESTAMP -> {
+      // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
+      // value in the following format
+      case TIME, TIMESTAMP -> {
         try {
           preparedStatement.setTimestamp(parameterIndex, Timestamp.from(DATE_FORMAT.parse(value).toInstant()));
+        } catch (ParseException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      case DATE -> {
+        try {
+          Timestamp from = Timestamp.from(DATE_FORMAT.parse(value).toInstant());
+          preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
         } catch (ParseException e) {
           throw new RuntimeException(e);
         }
@@ -189,7 +200,7 @@ public class JdbcUtils {
       case REAL -> preparedStatement.setFloat(parameterIndex, Float.parseFloat(value));
       case NUMERIC, DECIMAL -> preparedStatement.setBigDecimal(parameterIndex, new BigDecimal(value));
       case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> preparedStatement.setString(parameterIndex, value);
-      case BINARY -> preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseHexBinary(value));
+      case BINARY, BLOB -> preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseHexBinary(value));
       // since cursor are expected to be comparable, handle cursor typing strictly and error on
       // unrecognized types
       default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
@@ -213,7 +224,7 @@ public class JdbcUtils {
       case DATE -> JsonSchemaPrimitive.STRING;
       case TIME -> JsonSchemaPrimitive.STRING;
       case TIMESTAMP -> JsonSchemaPrimitive.STRING;
-      case BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaPrimitive.STRING;
       // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
       // types to String
       default -> JsonSchemaPrimitive.STRING;

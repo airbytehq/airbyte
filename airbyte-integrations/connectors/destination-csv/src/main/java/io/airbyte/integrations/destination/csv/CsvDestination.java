@@ -36,6 +36,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -50,6 +52,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.io.FileUtils;
@@ -91,7 +94,10 @@ public class CsvDestination implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector)
+      throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
@@ -165,18 +171,23 @@ public class CsvDestination implements Destination {
     }
 
     @Override
-    protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
+    protected void acceptTracked(AirbyteMessage message) throws Exception {
+      if (message.getType() != Type.RECORD) {
+        return;
+      }
+      final AirbyteRecordMessage recordMessage = message.getRecord();
+
       // ignore other message types.
-      if (!writeConfigs.containsKey(message.getStream())) {
+      if (!writeConfigs.containsKey(recordMessage.getStream())) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                Jsons.serialize(catalog), Jsons.serialize(message)));
+                Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
 
-      writeConfigs.get(message.getStream()).getWriter().printRecord(
+      writeConfigs.get(recordMessage.getStream()).getWriter().printRecord(
           UUID.randomUUID(),
-          message.getEmittedAt(),
-          Jsons.serialize(message.getData()));
+          recordMessage.getEmittedAt(),
+          Jsons.serialize(recordMessage.getData()));
     }
 
     @Override
