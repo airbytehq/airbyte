@@ -165,7 +165,8 @@ class Client(BaseClient):
             if field.get("custom"):
                 yield field
 
-    def _get_issues_related(self, name, params={}):
+    def _get_issues_related(self, name, params=None):
+        params = params or {}
         issue_keys = self._get_issue_keys()
         for issue_key in issue_keys:
             configs = {**ENTITIES_MAP.get(f"issue_{name}"), "url": ENTITIES_MAP.get(f"issue_{name}").get("url").format(key=issue_key)}
