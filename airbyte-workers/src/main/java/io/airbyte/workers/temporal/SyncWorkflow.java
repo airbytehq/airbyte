@@ -111,14 +111,15 @@ public interface SyncWorkflow {
 
             dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, operatorDbtInput);
           } else {
-            LOGGER.warn("Unsupported operation type: {}", standardSyncOperation.getOperatorType());
+            final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
+            LOGGER.warn(message);
+            throw new IllegalArgumentException(message);
           }
         }
       } else {
         // TODO chris: Normalization operations should be defined at connection level in the
-        // operationSequence of StandardSyncInput
-        // We keep this code for backward compatibility until we fully migrate normalization settings from
-        // destination to connection level
+        // operationSequence of StandardSyncInput. We keep this code for backward compatibility until we
+        // fully migrate normalization settings from destination to connection level
         final NormalizationInput normalizationInput = new NormalizationInput()
             .withDestinationConfiguration(syncInput.getDestinationConfiguration())
             .withCatalog(run.getOutputCatalog());
