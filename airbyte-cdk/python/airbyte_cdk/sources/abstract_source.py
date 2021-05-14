@@ -83,9 +83,9 @@ class AbstractSource(Source, ABC):
         try:
             check_succeeded, error = self.check_connection(logger, config)
             if not check_succeeded:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=str(error))
+                return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
+            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 

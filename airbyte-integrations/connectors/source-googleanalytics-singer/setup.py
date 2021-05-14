@@ -32,7 +32,7 @@ setup(
     author_email="contact@airbyte.io",
     install_requires=[
         "pipelinewise-tap-google-analytics @ https://github.com/airbytehq/pipelinewise-tap-google-analytics/tarball/master#egg=pipelinewise-tap-google-analytics-1.3.0-airbyte",
-        "pydantic==1.6.1",
+        "pydantic==1.6.2",
         "base-singer",
         "base-python",
         "airbyte-protocol",
