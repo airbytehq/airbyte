@@ -9,6 +9,9 @@ if [[ -f "/data/job/transform/git_repo/dbt_project.yml" ]]; then
   echo "Regenerate profiles.yml file for profile: $PROFILE_NAME"
   cat /data/job/transform/profiles.txt | sed -E "s/normalize:/$PROFILE_NAME:/" > /data/job/transform/profiles.yml
   rm -f /data/job/transform/profiles.txt
+  if [[ -f "/data/job/transform/bq_keyfile.json" ]]; then
+    cp /data/job/transform/bq_keyfile.json /tmp/bq_keyfile.json
+  fi
 else
   echo "git repo does not contain a dbt_project.yml file?"
 fi
