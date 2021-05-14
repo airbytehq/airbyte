@@ -114,6 +114,14 @@ public interface SyncWorkflow {
             LOGGER.warn("Unsupported operation type: {}", standardSyncOperation.getOperatorType());
           }
         }
+      } else {
+        // TODO chris: Normalization operations should be defined at connection level in the operationSequence of StandardSyncInput
+        // We keep this code for backward compatibility until we fully migrate normalization settings from destination to connection level
+        final NormalizationInput normalizationInput = new NormalizationInput()
+            .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+            .withCatalog(run.getOutputCatalog());
+
+        normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
       }
 
       return run;
