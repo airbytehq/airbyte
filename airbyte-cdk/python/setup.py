@@ -68,7 +68,7 @@ setup(
         "backoff",
         "jsonschema==2.6.0",
         "pendulum",
-        "pydantic==1.6.1",
+        "pydantic==1.6.2",
         "PyYAML==5.4",
         "requests",
     ],
