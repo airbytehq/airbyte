@@ -128,7 +128,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
-      final String data = Jsons.serialize(message);
+      final String data = Jsons.serialize(message.getRecord().getData());
 
       if (!streamNames.contains(stream)) {
         throwUnrecognizedStream(catalog, message);
