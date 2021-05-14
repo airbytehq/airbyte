@@ -76,11 +76,7 @@ class SourceMailchimp(Source):
     def _read_record(
         client: Client, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
-        entity_map = {
-            "Lists": client.lists,
-            "Campaigns": client.campaigns,
-            'Email_activity': client.email_activity
-        }
+        entity_map = {"Lists": client.lists, "Campaigns": client.campaigns, "Email_activity": client.email_activity}
 
         stream_name = configured_stream.stream.name
 

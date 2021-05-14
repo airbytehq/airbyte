@@ -38,8 +38,8 @@ class Client:
     PAGINATION = 100
     _CAMPAIGNS = "Campaigns"
     _LISTS = "Lists"
-    _EMAIL_ACTIVITIES = "Email_activity"
-    _ENTITIES = [_CAMPAIGNS, _LISTS, _EMAIL_ACTIVITIES]
+    _EMAIL_ACTIVITY = "Email_activity"
+    _ENTITIES = [_CAMPAIGNS, _LISTS, _EMAIL_ACTIVITY]
 
     def __init__(self, username: str, apikey: str):
         self._client = MailChimp(mc_api=apikey, mc_user=username)
@@ -68,67 +68,87 @@ class Client:
         date_created = self._get_cursor_or_none(state, stream_name, cursor_field)
         default_params, max_date_created = self._get_default_params_and_cursor(cursor_field, date_created)
 
-        offset = 0
-        done = False
-        while not done:
-            params = dict(default_params, count=self.PAGINATION, offset=offset)
-            lists_response = self._client.lists.all(**params)["lists"]
-            for mc_list in lists_response:
-                list_created_at = parser.isoparse(mc_list[cursor_field])
-                max_date_created = max(max_date_created, list_created_at) if max_date_created else list_created_at
-                yield self._record(stream=self._LISTS, data=mc_list)
-
-            if max_date_created:
-                state[self._LISTS][cursor_field] = self._format_date_as_string(max_date_created)
-                yield self._state(state)
-
-            done = len(lists_response) < self.PAGINATION
-            offset += self.PAGINATION
+        generator = self.query_paginated(
+            state=state,
+            stream_name=stream_name,
+            params=dict(default_params, count=self.PAGINATION, offset=0),
+            query_subject=self._client.lists,
+            response_data_field="lists",
+            cursor_field=cursor_field,
+            max_cursor_field_value=max_date_created,
+        )
+        return generator
 
     def campaigns(self, state: DefaultDict[str, any]) -> Generator[AirbyteMessage, None, None]:
+
         self.reset_campaign_ids()
         cursor_field = "create_time"
         stream_name = self._CAMPAIGNS
         create_time = self._get_cursor_or_none(state, stream_name, cursor_field)
         default_params, max_create_time = self._get_default_params_and_cursor(cursor_field, create_time)
 
-        offset = 0
-        done = False
-        while not done:
-            params = dict(default_params, count=self.PAGINATION, offset=offset)
-            campaigns_response = self._client.campaigns.all(**params)
-            for campaign in campaigns_response["campaigns"]:
-                self.campaign_ids.append(campaign['id'])
-                campaign_created_at = parser.isoparse(campaign[cursor_field])
-                max_create_time = max(max_create_time, campaign_created_at) if max_create_time else campaign_created_at
-                yield self._record(stream=stream_name, data=campaign)
-
-            if max_create_time:
-                state[stream_name][cursor_field] = self._format_date_as_string(max_create_time)
-                yield self._state(state)
-
-            done = len(campaigns_response["campaigns"]) < self.PAGINATION
-            offset += self.PAGINATION
+        generator = self.query_paginated(
+            state=state,
+            stream_name=stream_name,
+            params=dict(default_params, count=self.PAGINATION, offset=0),
+            query_subject=self._client.campaigns,
+            response_data_field="campaigns",
+            cursor_field=cursor_field,
+            max_cursor_field_value=max_create_time,
+            store_responce_field={"where": self.campaign_ids, "field": "id"},
+        )
+        return generator
 
     def email_activity(self, state: DefaultDict[str, any]) -> Generator[AirbyteMessage, None, None]:
         if not self.campaign_ids:
             _ = self.campaigns(state=state)
-        stream_name = self._EMAIL_ACTIVITIES
-        offset = 0
-        done = False
+        stream_name = self._EMAIL_ACTIVITY
         for campaign_id in self.campaign_ids:
-            while not done:
-                params = {
-                    "campaign_id": campaign_id,
-                    "count": self.PAGINATION,
-                    "offset": offset
-                }
-                email_activities = self._client.reports.email_activity.all(**params)
-                for activity in email_activities['emails']:
-                    yield self._record(stream=stream_name, data=activity)
+            # possible TODO - use batch
+            params = {"campaign_id": campaign_id, "count": self.PAGINATION, "offset": 0}
+            generator = self.query_paginated(
+                state=state,
+                stream_name=stream_name,
+                params=params,
+                query_subject=self._client.reports.email_activity,
+                response_data_field="emails",
+                cursor_field=None,
+                max_cursor_field_value=None,
+            )
 
-                done += len(email_activities['emails']) < self.PAGINATION
-                offset += self.PAGINATION
+            yield from generator
+
+    def query_paginated(
+        self,
+        state: DefaultDict[str, any],
+        stream_name: str,
+        params: dict,
+        query_subject,
+        response_data_field: str,
+        cursor_field: str = None,
+        max_cursor_field_value: str = None,
+        store_responce_field: Dict[str, str] = None,
+    ) -> Generator[AirbyteMessage, None, None]:
+
+        done = False
+        while not done:
+            api_response = query_subject.all(**params)
+            api_data = api_response[response_data_field]
+            for entry in api_data:
+                if store_responce_field:
+                    value = entry[store_responce_field["field"]]
+                    store_responce_field["where"].append(value)
+                if cursor_field:
+                    created_at = parser.isoparse(entry[cursor_field])
+                    max_cursor_field_value = max(max_cursor_field_value, created_at) if max_cursor_field_value else created_at
+                yield self._record(stream=stream_name, data=entry)
+
+            if max_cursor_field_value:
+                state[stream_name][cursor_field] = self._format_date_as_string(max_cursor_field_value)
+                yield self._state(state)
+
+            done = len(api_data) < self.PAGINATION
+            params["offset"] += self.PAGINATION
 
     @staticmethod
     def _get_default_params_and_cursor(cursor_field_name: str, cursor_value: str) -> Tuple[Dict[str, str], datetime]:

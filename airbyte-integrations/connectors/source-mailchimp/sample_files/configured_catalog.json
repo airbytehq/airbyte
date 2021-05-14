@@ -68,12 +68,7 @@
               "type": "string",
               "title": "Content Type",
               "description": "How the campaign's content is put together.",
-              "enum": [
-                "template",
-                "html",
-                "url",
-                "multichannel"
-              ]
+              "enum": ["template", "html", "url", "multichannel"]
             },
             "needs_block_refresh": {
               "type": "boolean",
@@ -245,12 +240,7 @@
                   "type": "string",
                   "title": "Winning Criteria",
                   "description": "The combination that performs the best. This may be determined automatically by click rate, open rate, or total revenue -- or you may choose manually based on the reporting data you find the most valuable. For Multivariate Campaigns testing send_time, winner_criteria is ignored. For Multivariate Campaigns with 'manual' as the winner_criteria, the winner must be chosen in the Mailchimp web application.",
-                  "enum": [
-                    "opens",
-                    "clicks",
-                    "manual",
-                    "total_revenue"
-                  ]
+                  "enum": ["opens", "clicks", "manual", "total_revenue"]
                 },
                 "wait_time": {
                   "type": "integer",
@@ -438,11 +428,7 @@
                   "type": "string",
                   "title": "Frequency",
                   "description": "The frequency of the RSS Campaign.",
-                  "enum": [
-                    "daily",
-                    "weekly",
-                    "monthly"
-                  ]
+                  "enum": ["daily", "weekly", "monthly"]
                 },
                 "schedule": {
                   "type": "object",
@@ -545,30 +531,19 @@
                   "type": "string",
                   "title": "Split Test",
                   "description": "The type of AB split to run.",
-                  "enum": [
-                    "subject",
-                    "from_name",
-                    "schedule"
-                  ]
+                  "enum": ["subject", "from_name", "schedule"]
                 },
                 "pick_winner": {
                   "type": "string",
                   "title": "Pick Winner",
                   "description": "How we should evaluate a winner. Based on 'opens', 'clicks', or 'manual'.",
-                  "enum": [
-                    "opens",
-                    "clicks",
-                    "manual"
-                  ]
+                  "enum": ["opens", "clicks", "manual"]
                 },
                 "wait_units": {
                   "type": "string",
                   "title": "Wait Time",
                   "description": "How unit of time for measuring the winner ('hours' or 'days'). This cannot be changed after a campaign is sent.",
-                  "enum": [
-                    "hours",
-                    "days"
-                  ]
+                  "enum": ["hours", "days"]
                 },
                 "wait_time": {
                   "type": "integer",
@@ -742,12 +717,7 @@
                   "type": "string",
                   "title": "Campaign Delivery Status",
                   "description": "The current state of a campaign delivery.",
-                  "enum": [
-                    "delivering",
-                    "delivered",
-                    "canceling",
-                    "canceled"
-                  ],
+                  "enum": ["delivering", "delivered", "canceling", "canceled"],
                   "readOnly": true
                 },
                 "emails_sent": {
@@ -818,19 +788,12 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "create_time"
-        ]
+        "default_cursor_field": ["create_time"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [
-        "create_time"
-      ],
+      "cursor_field": ["create_time"],
       "destination_sync_mode": "append"
     },
     {
@@ -994,10 +957,7 @@
             "visibility": {
               "type": "string",
               "title": "Visibility",
-              "enum": [
-                "pub",
-                "prv"
-              ],
+              "enum": ["pub", "prv"],
               "description": "Whether this list is [public or private](https://mailchimp.com/help/about-list-publicity/)."
             },
             "double_optin": {
@@ -1195,19 +1155,12 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "date_created"
-        ]
+        "default_cursor_field": ["date_created"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [
-        "date_created"
-      ],
+      "cursor_field": ["date_created"],
       "destination_sync_mode": "append"
     },
     {
@@ -1258,20 +1211,13 @@
                       "action": {
                         "type": "string",
                         "title": "action",
-                        "enum": [
-                          "open",
-                          "click",
-                          "bounce"
-                        ],
+                        "enum": ["open", "click", "bounce"],
                         "description": "One of the following actions: 'open', 'click', or 'bounce'"
                       },
                       "type": {
                         "type": "string",
                         "title": "Type",
-                        "enum": [
-                          "hard",
-                          "soft"
-                        ],
+                        "enum": ["hard", "soft"],
                         "description": "If the action is a 'bounce', the type of bounce received: 'hard', 'soft'."
                       },
                       "timestamp": {
@@ -1377,14 +1323,11 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": []
       },
-	  "sync_mode": "incremental",
+      "sync_mode": "incremental",
       "cursor_field": [],
       "destination_sync_mode": "append"
     }
