@@ -39,7 +39,7 @@ setup(
         "google-auth-httplib2",
         "google-api-python-client",
         "PyYAML==5.4",
-        "pydantic==1.6.1",
+        "pydantic==1.6.2",
         "pytest==6.1.2",
     ],
     package_data={"": ["*.json"]},
