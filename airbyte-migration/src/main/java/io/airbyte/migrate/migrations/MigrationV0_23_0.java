@@ -43,17 +43,20 @@ import org.slf4j.LoggerFactory;
  * Additionally, this migration updates the JSON Schema for StandardWorkspace with a new optional
  * field 'failureNotificationsWebhook' introduced in issue #1689
  */
-public class MigrationV0_20_0 extends BaseMigration implements Migration {
+public class MigrationV0_23_0 extends BaseMigration implements Migration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_20_0.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_23_0.class);
 
-  private static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
+  private static final ResourceId SOURCE_DEFINITION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION");
+  private static final ResourceId DESTINATION_DEFINITION_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_DESTINATION_DEFINITION");
+  private static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
-  private static final String MIGRATION_VERSION = "0.20.0-alpha";
+  private static final String MIGRATION_VERSION = "0.23.0-alpha";
 
   private final Migration previousMigration;
 
-  public MigrationV0_20_0(Migration previousMigration) {
+  public MigrationV0_23_0(Migration previousMigration) {
     super(previousMigration);
     this.previousMigration = previousMigration;
   }
@@ -65,16 +68,22 @@ public class MigrationV0_20_0 extends BaseMigration implements Migration {
 
   @Override
   public Map<ResourceId, JsonNode> getInputSchema() {
-    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
-    outputSchema.put(
-        STANDARD_WORKSPACE_RESOURCE_ID,
-        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_WORKSPACE_RESOURCE_ID));
-    return outputSchema;
+    return new HashMap<>(previousMigration.getOutputSchema());
   }
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    return getInputSchema();
+    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
+    outputSchema.put(
+        SOURCE_DEFINITION_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_23_0"), SOURCE_DEFINITION_RESOURCE_ID));
+    outputSchema.put(
+        DESTINATION_DEFINITION_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_23_0"), DESTINATION_DEFINITION_RESOURCE_ID));
+    outputSchema.put(
+        STANDARD_SYNC_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_23_0"), STANDARD_SYNC_RESOURCE_ID));
+    return outputSchema;
   }
 
   @Override
