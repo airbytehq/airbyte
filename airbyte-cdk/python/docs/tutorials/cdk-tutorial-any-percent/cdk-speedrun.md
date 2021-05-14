@@ -1,6 +1,8 @@
-# CDK Speedrun (Any% Route)
+# CDK Speedrun (HTTP Source Creation [Any%](https://en.wikipedia.org/wiki/Speedrun#:~:text=Any%25%2C%20or%20fastest%20completion%2C,the%20game%20to%20its%20fullest.&text=Specific%20requirements%20for%20a%20100,different%20depending%20on%20the%20game.) Route)
 
-## Dependencies
+This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](../../cdk-tutorial-python-http.md)
+
+# Dependencies
 
 1. Python &gt;= 3.7
 2. Docker
@@ -114,7 +116,7 @@ Expected output:
 
 ## Define your Stream
 
-In your `source.py` file, add this `PythonHttpExampleStream` class. This stream represents an endpoint you want to hit.
+In your `source.py` file, add this `ExchangeRates` class. This stream represents an endpoint you want to hit.
 
 ```python
 from airbyte_cdk.sources.streams.http import HttpStream
