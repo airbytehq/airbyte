@@ -23,13 +23,19 @@ function configuredbt() {
       transform-catalog --integration-type "${INTEGRATION_TYPE}" --profile-config-dir "${PROJECT_DIR}" --catalog "${CATALOG_FILE}" --out "${PROJECT_DIR}/models/generated/" --json-column "_airbyte_data"
     fi
   else
-    if [[ -z "${GIT_BRANCH}" ]]; then
-      echo "Running: git clone --depth 1 --single-branch  \$GIT_REPO git_repo"
-      git clone --depth 1 --single-branch  "${GIT_REPO}" git_repo
+    if [[ -d git_repo ]]; then
+      echo "git_repo already exists in ${PROJECT_DIR}"
     else
-      echo "Running: git clone --depth 1 -b ${GIT_BRANCH} --single-branch  \$GIT_REPO git_repo"
-      git clone --depth 1 -b "${GIT_BRANCH}" --single-branch  "${GIT_REPO}" git_repo
+      if [[ -z "${GIT_BRANCH}" ]]; then
+        echo "Running: git clone --depth 1 --single-branch  \$GIT_REPO git_repo"
+        git clone --depth 1 --single-branch  "${GIT_REPO}" git_repo
+      else
+        echo "Running: git clone --depth 1 -b ${GIT_BRANCH} --single-branch  \$GIT_REPO git_repo"
+        git clone --depth 1 -b "${GIT_BRANCH}" --single-branch  "${GIT_REPO}" git_repo
+      fi
     fi
+    echo "Last 5 commits in git_repo:"
+    (cd git_repo; git log --oneline -5; cd -)
     echo "Running: transform-config --config ${CONFIG_FILE} --integration-type ${INTEGRATION_TYPE} --out ${PROJECT_DIR}"
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
   fi
