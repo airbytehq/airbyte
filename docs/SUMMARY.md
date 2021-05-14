@@ -124,6 +124,7 @@
   * [Updating Documentation](contributing-to-airbyte/updating-documentation.md)
   * [Templates](contributing-to-airbyte/templates/README.md)
     * [Connector Doc Template](contributing-to-airbyte/templates/integration-documentation-template.md)
+  * [Accessing Jobs DB](contributing-to-airbyte/accessing-jobs-db.md)
 * [Understanding Airbyte](understanding-airbyte/README.md)
   * [AirbyteCatalog & ConfiguredAirbyteCatalog](understanding-airbyte/catalog.md)
   * [Airbyte Specification](understanding-airbyte/airbyte-specification.md)
