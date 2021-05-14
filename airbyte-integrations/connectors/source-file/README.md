@@ -8,6 +8,10 @@ For information about how to use this connector within Airbyte, see [the documen
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
+#### Connector-Specific Dependencies
+
+For this connector, you will need Rust, as it is a prerequisite for running `pip install cryptography`.
+
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```
