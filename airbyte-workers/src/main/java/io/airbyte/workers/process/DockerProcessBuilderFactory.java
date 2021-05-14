@@ -83,7 +83,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
     if (!checkImageExists(imageName)) {
       throw new WorkerException("Could not find image: " + imageName);
     }
-
+    LOGGER.info("Creating Docker job id: {}", jobId);
     final List<String> cmd =
         Lists.newArrayList(
             "docker",

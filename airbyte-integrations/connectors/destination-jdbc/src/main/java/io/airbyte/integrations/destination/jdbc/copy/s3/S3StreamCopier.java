@@ -37,6 +37,8 @@ import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Timestamp;

@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +95,13 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   public static void main(String[] args) throws Exception {
+    int mb = 1024 * 1024;
+    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
+    long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
+    LOGGER.info("Initial Memory (xms) : {}mb", xms);
+    LOGGER.info("Max Memory (xmx) : {}mb", xmx);
+
     final Destination destination = new RedshiftDestination();
     LOGGER.info("starting destination: {}", RedshiftDestination.class);
     new IntegrationRunner(destination).run(args);

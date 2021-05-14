@@ -6,6 +6,7 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
+    applicationDefaultJvmArgs = ['-Xmx2048m']
 }
 
 dependencies {

@@ -55,6 +55,8 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.PreparedStatement;
@@ -322,6 +324,13 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
+    int mb = 1024 * 1024;
+    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
+    long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
+    LOGGER.info("Initial Memory (xms) : {}mb", xms);
+    LOGGER.info("Max Memory (xmx) : {}mb", xmx);
+
     final Source source = new PostgresSource();
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
