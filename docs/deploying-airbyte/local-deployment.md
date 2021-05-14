@@ -18,6 +18,16 @@ docker-compose up
 * In your browser, just visit [http://localhost:8000](http://localhost:8000)
 * Start moving some data!
 
+## Deploy on Windows
+
+We recommend follow [this](https://docs.docker.com/docker-for-windows/install/) steps to install Docker on Windows.
+After installing WSL 2 backend and `docker` you should be able to run containers using Windows PowerShell. 
+The steps on documentation suggested already install `docker-compose`. 
+If you don't have `git` installed in your machine you can download the latest Airbyte release [here](https://github.com/airbytehq/airbyte/releases).
+Unzip the file downloaded, access the path you unzip the file using PowerShell terminal and run `docker-compose up`.
+After this, you should see the Airbyte containers in the Docker application as in the image below.
+![](../.gitbook/assets/airbyte_deploy_windows_docker.png)
+
 ## Troubleshooting
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../faq/technical-support.md) section in our docs for common problems.
