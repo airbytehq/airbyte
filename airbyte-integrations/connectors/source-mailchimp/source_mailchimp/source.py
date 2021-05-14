@@ -79,6 +79,7 @@ class SourceMailchimp(Source):
         entity_map = {
             "Lists": client.lists,
             "Campaigns": client.campaigns,
+            'Email_activity': client.email_activity
         }
 
         stream_name = configured_stream.stream.name

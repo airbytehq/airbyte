@@ -38,10 +38,15 @@ class Client:
     PAGINATION = 100
     _CAMPAIGNS = "Campaigns"
     _LISTS = "Lists"
-    _ENTITIES = [_CAMPAIGNS, _LISTS]
+    _EMAIL_ACTIVITIES = "Email_activity"
+    _ENTITIES = [_CAMPAIGNS, _LISTS, _EMAIL_ACTIVITIES]
 
     def __init__(self, username: str, apikey: str):
         self._client = MailChimp(mc_api=apikey, mc_user=username)
+        self.reset_campaign_ids()
+
+    def reset_campaign_ids(self):
+        self.campaign_ids = []
 
     def health_check(self):
         try:
@@ -81,6 +86,7 @@ class Client:
             offset += self.PAGINATION
 
     def campaigns(self, state: DefaultDict[str, any]) -> Generator[AirbyteMessage, None, None]:
+        self.reset_campaign_ids()
         cursor_field = "create_time"
         stream_name = self._CAMPAIGNS
         create_time = self._get_cursor_or_none(state, stream_name, cursor_field)
@@ -92,6 +98,7 @@ class Client:
             params = dict(default_params, count=self.PAGINATION, offset=offset)
             campaigns_response = self._client.campaigns.all(**params)
             for campaign in campaigns_response["campaigns"]:
+                self.campaign_ids.append(campaign['id'])
                 campaign_created_at = parser.isoparse(campaign[cursor_field])
                 max_create_time = max(max_create_time, campaign_created_at) if max_create_time else campaign_created_at
                 yield self._record(stream=stream_name, data=campaign)
@@ -100,8 +107,28 @@ class Client:
                 state[stream_name][cursor_field] = self._format_date_as_string(max_create_time)
                 yield self._state(state)
 
-            done = len(campaigns_response) < self.PAGINATION
+            done = len(campaigns_response["campaigns"]) < self.PAGINATION
             offset += self.PAGINATION
+
+    def email_activity(self, state: DefaultDict[str, any]) -> Generator[AirbyteMessage, None, None]:
+        if not self.campaign_ids:
+            _ = self.campaigns(state=state)
+        stream_name = self._EMAIL_ACTIVITIES
+        offset = 0
+        done = False
+        for campaign_id in self.campaign_ids:
+            while not done:
+                params = {
+                    "campaign_id": campaign_id,
+                    "count": self.PAGINATION,
+                    "offset": offset
+                }
+                email_activities = self._client.reports.email_activity.all(**params)
+                for activity in email_activities['emails']:
+                    yield self._record(stream=stream_name, data=activity)
+
+                done += len(email_activities['emails']) < self.PAGINATION
+                offset += self.PAGINATION
 
     @staticmethod
     def _get_default_params_and_cursor(cursor_field_name: str, cursor_value: str) -> Tuple[Dict[str, str], datetime]:
