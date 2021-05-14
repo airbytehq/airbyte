@@ -63,7 +63,8 @@ public class NormalizationRunnerFactory {
    * @param config destination json config object
    * @return the value of the basic normalization key
    *
-   * @deprecated As this should not be configured at the destination level but connection level (StandardSync) instead
+   * @deprecated As this should not be configured at the destination level but connection level
+   *             (StandardSync) instead
    */
   private static boolean shouldNormalize(JsonNode config) {
     return Optional.ofNullable(config.get(WorkerConstants.BASIC_NORMALIZATION_KEY))
