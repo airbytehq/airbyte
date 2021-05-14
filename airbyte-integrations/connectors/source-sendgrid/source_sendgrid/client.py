@@ -26,8 +26,8 @@ from typing import Generator
 
 import backoff
 import requests
-from base_python import BaseClient
-from base_python.entrypoint import logger
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.sources.deprecated.client import BaseClient
 from requests.models import Response
 from requests.status_codes import codes as status_codes
 
