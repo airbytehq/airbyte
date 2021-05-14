@@ -33,16 +33,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: AIRBYTE_VERSION
-            - name: API_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: API_URL
             - name: TRACKING_STRATEGY
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
                   key: TRACKING_STRATEGY
+            - name: INTERNAL_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: INTERNAL_API_URL
             - name: PAPERCUPS_STORYTIME
               valueFrom:
                 configMapKeyRef:

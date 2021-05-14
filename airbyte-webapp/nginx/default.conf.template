@@ -6,6 +6,8 @@ server {
     #charset koi8-r;
     #access_log  /var/log/nginx/host.access.log  main;
 
+    resolver_timeout 30s;
+
     location / {
         root   /usr/share/nginx/html;
         try_files $uri $uri/ /index.html;
@@ -15,7 +17,6 @@ server {
                 window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
                 window.PAPERCUPS_STORYTIME = "$PAPERCUPS_STORYTIME";
                 window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
-                window.API_URL = "$API_URL";
                 window.IS_DEMO = "$IS_DEMO";
                 </script>';
         sub_filter_once on;
@@ -28,5 +29,9 @@ server {
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
         root   /usr/share/nginx/html;
+    }
+
+    location /api/ {
+        proxy_pass $INTERNAL_API_URL;
     }
 }

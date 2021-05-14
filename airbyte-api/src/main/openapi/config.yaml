@@ -9,11 +9,11 @@ info:
     Here are some conventions that this API follows:
     * All endpoints are http POST methods.
     * All endpoints accept data via `application/json` request bodies. The API does not accept any data via query params.
-    * The naming convention for endpoints is: localhost:8001/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8001/v1/connections/create`.
+    * The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8000/v1/connections/create`.
     * For all `update` method, the whole object must be passed in, even the fields that did not change.
 
     Change Management:
-    * The major version of the API endpoint can be determined / specified in the URL `localhost:8080/v1/connections/create`
+    * The major version of the API endpoint can be determined / specified in the URL `localhost:8000/v1/connections/create`
     * Minor version bumps will be invisible to the end user. The user cannot specify minor versions in requests.
     * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
       * Adding fields to request or response bodies.
@@ -30,7 +30,7 @@ externalDocs:
   description: Find out more about Airbyte
   url: "https://airbyte.io"
 servers:
-  - url: "http://localhost:8001/api"
+  - url: "http://localhost:8000/api"
 tags:
   - name: workspace
     description: Workspace related resources.

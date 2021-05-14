@@ -5,7 +5,6 @@ declare global {
     TRACKING_STRATEGY?: string;
     PAPERCUPS_STORYTIME?: string;
     AIRBYTE_VERSION?: string;
-    API_URL?: string;
     IS_DEMO?: string;
     analytics: SegmentAnalytics;
   }
@@ -55,10 +54,7 @@ const config: {
     enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
   },
   version: window.AIRBYTE_VERSION,
-  apiUrl:
-    window.API_URL ||
-    process.env.REACT_APP_API_URL ||
-    `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
+  apiUrl: "/api/v1/",
   isDemo: window.IS_DEMO === "true",
 };
 

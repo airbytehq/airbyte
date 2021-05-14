@@ -129,7 +129,7 @@ public class AcceptanceTests {
   private final AirbyteApiClient apiClient = new AirbyteApiClient(
       new ApiClient().setScheme("http")
           .setHost("localhost")
-          .setPort(8001)
+          .setPort(8000)
           .setBasePath("/api"));
 
   private List<UUID> sourceIds;

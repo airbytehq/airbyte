@@ -8,7 +8,7 @@ IMAGE_RESTISH_PATH=/root/.restish/apis.json
 DOWNLOADED_CONFIG_PATH=/tmp/downloaded-airbyte-api-config
 IMAGE_CONFIG_PATH=/tmp/config.yaml
 
-API_URL=http://localhost:8001
+API_URL="${API_URL:-http://localhost:8000}"
 curl -s "$API_URL"/api/v1/openapi -o "$DOWNLOADED_CONFIG_PATH"
 
 cat > "$LOCAL_RESTISH_PATH" <<EOL

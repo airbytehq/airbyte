@@ -32,7 +32,7 @@ Once Airflow starts, navigate to Airflow's `Connections` page as seen below. The
 
 ![](../.gitbook/assets/airflow_create_connection.png)
 
-Airflow will use the Airbyte API to execute our actions. The Airbyte API uses HTTP, so we'll need to create a HTTP Connection. Airbyte is typically hosted at `localhost:8001`. Configure Airflow's HTTP connection accordingly - we've provided a screenshot example.
+Airflow will use the Airbyte API to execute our actions. The Airbyte API uses HTTP, so we'll need to create an HTTP Connection. Airbyte is typically hosted at `localhost:8000`. Configure Airflow's HTTP connection accordingly - we've provided a screenshot example.
 
 ![](../.gitbook/assets/airflow_edit_connection.png)
 

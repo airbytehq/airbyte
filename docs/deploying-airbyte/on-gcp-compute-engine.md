@@ -121,7 +121,7 @@ For security reasons, we strongly recommend to not expose Airbyte publicly. Futu
 
 ```bash
 # In your workstation terminal
-gcloud --project=$PROJECT_ID beta compute ssh airbyte -- -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f
+gcloud --project=$PROJECT_ID beta compute ssh airbyte -- -L 8000:localhost:8000 -N -f
 ```
 
 * Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!

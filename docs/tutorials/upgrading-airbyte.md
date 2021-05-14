@@ -92,19 +92,19 @@ If you prefer to import and export your data via API instead the UI, follow thes
 1. Instead of Step 3 above use the following curl command to export the archive:
 
    ```bash
-   curl -H "Content-Type: application/json" -X POST localhost:8001/api/v1/deployment/export --output /tmp/airbyte_archive.tar.gz
+   curl -H "Content-Type: application/json" -X POST localhost:8000/api/v1/deployment/export --output /tmp/airbyte_archive.tar.gz
    ```
 
 2. Instead of Step X above user the following curl command to import the migrated archive:
 
    ```bash
-   curl -H "Content-Type: application/x-gzip" -X POST localhost:8001/api/v1/deployment/import --data-binary @<path to arhive>
+   curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deployment/import --data-binary @<path to arhive>
    ```
 
 Here is an example of what this request might look like assuming that the migrated archive is called `airbyte_archive_migrated.tar.gz` and is in the `/tmp` directory.
 
 ```bash
-curl -H "Content-Type: application/x-gzip" -X POST localhost:8001/api/v1/deployment/import --data-binary @/tmp/airbyte_archive_migrated.tar.gz
+curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deployment/import --data-binary @/tmp/airbyte_archive_migrated.tar.gz
 ```
 
 ## Upgrading \(K8s\)
