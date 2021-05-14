@@ -7,14 +7,13 @@ airbytePython {
     moduleDirectory 'airbyte_protocol'
 }
 
-task generateProtocolClassFilesWithoutLicense(type: Exec) {
+task generateProtocolClassFiles(type: Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-protocol-files.sh'
     dependsOn ':tools:code-generator:airbyteDocker'
 }
 
-task generateProtocolClassFiles(dependsOn: [generateProtocolClassFilesWithoutLicense])
-blackFormat.dependsOn generateProtocolClassFilesWithoutLicense
-isortFormat.dependsOn generateProtocolClassFilesWithoutLicense
-flakeCheck.dependsOn generateProtocolClassFilesWithoutLicense
-installReqs.dependsOn generateProtocolClassFilesWithoutLicense
+blackFormat.dependsOn generateProtocolClassFiles
+isortFormat.dependsOn generateProtocolClassFiles
+flakeCheck.dependsOn generateProtocolClassFiles
+installReqs.dependsOn generateProtocolClassFiles
