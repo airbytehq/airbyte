@@ -12,7 +12,7 @@
   * [Using the Airflow Airbyte Operator](tutorials/using-the-airflow-airbyte-operator.md)
   * [Contributing to Airbyte](tutorials/tutorials/README.md)
     * [A Beginner's Guide to the AirbyteCatalog](tutorials/tutorials/beginners-guide-to-catalog.md)
-    * [Building a Connector: The Hard way](tutorials/tutorials/build-a-connector-the-hard-way.md)
+    * [Building a Connector: The Hard Way](tutorials/tutorials/build-a-connector-the-hard-way.md)
     * [Adding Incremental to a Source](tutorials/tutorials/adding-incremental-sync.md)
     * [Building a Python Source](tutorials/tutorials/building-a-python-source.md)
   * [Transformations and Normalization](tutorials/transformation-and-normalization/README.md)
@@ -159,4 +159,3 @@
     * [Singer vs Airbyte](faq/differences-with/singer-vs-airbyte.md)
     * [Pipelinewise vs Airbyte](faq/differences-with/pipelinewise-vs-airbyte.md)
     * [Meltano vs Airbyte](faq/differences-with/meltano-vs-airbyte.md)
-
