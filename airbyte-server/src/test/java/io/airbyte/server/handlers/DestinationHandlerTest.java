@@ -99,8 +99,7 @@ class DestinationHandlerTest {
         .withName("db2")
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")
-        .withDocumentationUrl("https://wikipedia.org");
-    ;
+        .withDocumentationUrl("https://wikipedia.org");;
     imageName =
         DockerUtils.getTaggedImageName(standardDestinationDefinition.getDockerRepository(), standardDestinationDefinition.getDockerImageTag());
 
@@ -199,7 +198,7 @@ class DestinationHandlerTest {
 
     when(secretsProcessor
         .copySecrets(destinationConnection.getConfiguration(), newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
-        .thenReturn(newConfiguration);
+            .thenReturn(newConfiguration);
     when(secretsProcessor.maskSecrets(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(newConfiguration);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
