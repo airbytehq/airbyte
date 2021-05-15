@@ -2,7 +2,7 @@
 description: Building a source connector without using any helpers to learn the Airbyte Specification for sources
 ---
 
-# Building a Source Connector: The hard way
+# Building a Source Connector: The Hard Way
 
 This tutorial walks you through building a simple Airbyte source without using any helpers to demonstrate the following concepts in Action:
 
