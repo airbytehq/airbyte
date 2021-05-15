@@ -92,7 +92,8 @@ public class TemporalUtils {
    * Allows running a given temporal workflow stub asynchronously. This method only works for
    * workflows that take one argument. Because of the iface that Temporal supplies, in order to handle
    * other method signatures, if we need to support them, we will need to add another helper with that
-   * number of args.
+   * number of args. For a reference on how Temporal recommends to do this see their docs:
+   * https://docs.temporal.io/docs/java/workflows#asynchronous-start
    *
    * @param workflowStub - workflow stub to be executed
    * @param function - function on the workflow stub to be executed
