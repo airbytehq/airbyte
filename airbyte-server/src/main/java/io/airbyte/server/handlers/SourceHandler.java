@@ -61,12 +61,12 @@ public class SourceHandler {
   private final ConfigurationUpdate configurationUpdate;
 
   SourceHandler(final ConfigRepository configRepository,
-                final JsonSchemaValidator integrationSchemaValidation,
-                final SpecFetcher specFetcher,
-                final ConnectionsHandler connectionsHandler,
-                final Supplier<UUID> uuidGenerator,
-                final JsonSecretsProcessor secretsProcessor,
-                final ConfigurationUpdate configurationUpdate) {
+      final JsonSchemaValidator integrationSchemaValidation,
+      final SpecFetcher specFetcher,
+      final ConnectionsHandler connectionsHandler,
+      final Supplier<UUID> uuidGenerator,
+      final JsonSecretsProcessor secretsProcessor,
+      final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
     this.validator = integrationSchemaValidation;
     this.specFetcher = specFetcher;
@@ -77,9 +77,9 @@ public class SourceHandler {
   }
 
   public SourceHandler(final ConfigRepository configRepository,
-                       final JsonSchemaValidator integrationSchemaValidation,
-                       final SpecFetcher specFetcher,
-                       final ConnectionsHandler connectionsHandler) {
+      final JsonSchemaValidator integrationSchemaValidation,
+      final SpecFetcher specFetcher,
+      final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
         integrationSchemaValidation,
@@ -239,11 +239,11 @@ public class SourceHandler {
   }
 
   private void persistSourceConnection(final String name,
-                                       final UUID sourceDefinitionId,
-                                       final UUID workspaceId,
-                                       final UUID sourceId,
-                                       final boolean tombstone,
-                                       final JsonNode configurationJson)
+      final UUID sourceDefinitionId,
+      final UUID workspaceId,
+      final UUID sourceId,
+      final boolean tombstone,
+      final JsonNode configurationJson)
       throws JsonValidationException, IOException {
     final SourceConnection sourceConnection = new SourceConnection()
         .withName(name)
@@ -257,7 +257,7 @@ public class SourceHandler {
   }
 
   private SourceRead toSourceRead(final SourceConnection sourceConnection,
-                                  final StandardSourceDefinition standardSourceDefinition) {
+      final StandardSourceDefinition standardSourceDefinition) {
     return new SourceRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
         .sourceName(standardSourceDefinition.getName())
