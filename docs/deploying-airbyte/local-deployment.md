@@ -20,13 +20,10 @@ docker-compose up
 
 ## Deploy on Windows
 
-We recommend following [this guide](https://docs.docker.com/docker-for-windows/install/) to install Docker on Windows.
-After installing the WSL 2 backend and Docker you should be able to run containers using Windows PowerShell.
-Additionally, as we note frequently, you will need `docker-compose` to build Airbyte from source.
-The suggested guide already installs `docker-compose` on Windows.
-Instead of cloning the repo, you can alternatively download the latest Airbyte release [here](https://github.com/airbytehq/airbyte/releases).
-Unzip the downloaded file, access the unzipped file using PowerShell terminal, and run `docker-compose up`.
-After this, you should see the Airbyte containers in the Docker application as in the image below.
+We recommend following [this guide](https://docs.docker.com/docker-for-windows/install/) to install Docker on Windows. After installing the WSL 2 backend and Docker you should be able to run containers using Windows PowerShell. Additionally, as we note frequently, you will need `docker-compose` to build Airbyte from source. The suggested guide already installs `docker-compose` on Windows. 
+
+Instead of cloning the repo, you can alternatively download the latest Airbyte release [here](https://github.com/airbytehq/airbyte/releases). Unzip the downloaded file, access the unzipped file using PowerShell terminal, and run `docker-compose up`. After this, you should see the Airbyte containers in the Docker application as in the image below.
+
 ![](../.gitbook/assets/airbyte_deploy_windows_docker.png)
 
 ## Troubleshooting

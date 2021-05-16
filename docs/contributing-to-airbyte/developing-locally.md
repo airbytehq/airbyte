@@ -84,7 +84,7 @@ VERSION=dev docker-compose up
 
 ## Run formatting automation/tests
 
-To format code in the repo, simply run `./gradlew format` at the base of the repo. 
+To format code in the repo, simply run `./gradlew format` at the base of the repo.
 
 Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
 
