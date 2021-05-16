@@ -46,9 +46,7 @@ MySQL doesn't differentiate between a database and schema. A database is essenti
 
 ### Setup the MySQL destination in Airbyte
 
-Before setting up MySQL destination in Airbyte, you need to set the [local_infile](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_local_infile) 
-system variable to true. You can do this by running the query `SET GLOBAL local_infile = true` with a user with [SYSTEM_VARIABLES_ADMIN](https://dev.mysql.com/doc/refman/8.0/en/privileges-provided.html#priv_system-variables-admin) permission. 
-This is required cause Airbyte uses `LOAD DATA LOCAL INFILE` to load data into table.
+Before setting up MySQL destination in Airbyte, you need to set the [local\_infile](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_local_infile) system variable to true. You can do this by running the query `SET GLOBAL local_infile = true` with a user with [SYSTEM\_VARIABLES\_ADMIN](https://dev.mysql.com/doc/refman/8.0/en/privileges-provided.html#priv_system-variables-admin) permission. This is required cause Airbyte uses `LOAD DATA LOCAL INFILE` to load data into table.
 
 You should now have all the requirements needed to configure MySQL as a destination in the UI. You'll need the following information to configure the MySQL destination:
 
@@ -57,3 +55,4 @@ You should now have all the requirements needed to configure MySQL as a destinat
 * **Username**
 * **Password**
 * **Database**
+

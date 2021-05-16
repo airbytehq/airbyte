@@ -50,7 +50,7 @@ For more information, see the [Facebook Insights API documentation. ](https://de
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
 {% endhint %}
 
-See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) for more information on requesting a quota upgrade. 
+See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) for more information on requesting a quota upgrade.
 
 ## Getting started
 
