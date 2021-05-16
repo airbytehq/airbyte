@@ -799,8 +799,21 @@ paths:
       tags:
         - connection
       summary: Returns all connections for a workspace.
-      description: List connections for workspace. Does not return deleted connections.
+      description: List connections for workspace. Does not return deleted connections. Returns the first 25 connections by default.
       operationId: listConnectionsForWorkspace
+      parameters:
+        - name: limit
+          in: path
+          description: Number of connections to return.
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: path
+          description: Number of connections to start from when listing.
+          required: false
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -1993,6 +2006,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ConnectionRead"
+        offset:
+          type: integer
+        limit:
+          type: integer
     ConnectionStatus:
       type: string
       description: Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.
