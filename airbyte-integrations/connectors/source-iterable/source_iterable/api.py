@@ -28,6 +28,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -36,6 +37,7 @@ class IterableStream(HttpStream, ABC):
 
     # Hardcode the value because it is not returned from the API
     BACKOFF_TIME_CONSTANT = 10.0
+    primary_key = "id"
 
     def __init__(self, api_key, **kwargs):
         super().__init__(**kwargs)
@@ -125,8 +127,13 @@ class ListUsers(IterableStream):
     data_field = "getUsers"
     name = "list_users"
 
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        lists = Lists(api_key=self._api_key)
+        for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
+            yield {"list_id": list_record["id"]}
+
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"lists/{self.data_field}?listId={stream_slice['id']}"
+        return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         list_id = self._get_list_id(response.url)
@@ -223,7 +230,7 @@ class Templates(IterableExportStream):
         for template in self.template_types:
             for message in self.message_types:
                 self.stream_params = {"templateType": template, "messageMedium": message}
-                yield from super().read_records(stream_slice=stream_slice, stream_state=self.stream_params, **kwargs)
+                yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
