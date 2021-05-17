@@ -112,7 +112,7 @@ public interface SyncWorkflow {
             dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, operatorDbtInput);
           } else {
             final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
-            LOGGER.warn(message);
+            LOGGER.error(message);
             throw new IllegalArgumentException(message);
           }
         }
