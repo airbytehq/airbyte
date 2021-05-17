@@ -27,6 +27,7 @@ import argparse
 import json
 import os
 import pkgutil
+import shutil
 from enum import Enum
 
 import yaml
@@ -46,6 +47,10 @@ class TransformConfig:
         integration_type = inputs["integration_type"]
         transformed_config = self.transform(integration_type, original_config)
         self.write_yaml_config(inputs["output_path"], transformed_config)
+        if DestinationType.bigquery.value == integration_type.value:
+            # for Bigquery, the credentials should be stored in a separate json file to be used by dbt
+            # move it right next to the profile.yml file for easier access.
+            shutil.copy("/tmp/bq_keyfile.json", os.path.join(inputs["output_path"], "bq_keyfile.json"))
 
     def parse(self, args):
         parser = argparse.ArgumentParser(add_help=False)
