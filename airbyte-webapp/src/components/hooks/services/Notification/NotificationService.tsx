@@ -1,13 +1,14 @@
 import React, { useContext, useEffect } from "react";
 
+import SingletonCard from "components/SingletonCard";
+
 import {
   NotificationServiceApi,
   Notification,
   NotificationServiceState,
 } from "./types";
-import useTypesafeReducer from "../useTypesafeReducer";
+import useTypesafeReducer from "components/hooks/useTypesafeReducer";
 import { actions, initialState, notificationServiceReducer } from "./reducer";
-import SingletonCard from "components/SingletonCard";
 
 const notificationServiceContext = React.createContext<NotificationServiceApi | null>(
   null
