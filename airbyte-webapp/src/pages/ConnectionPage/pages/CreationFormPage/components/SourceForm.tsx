@@ -32,7 +32,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
       sourceDefinitions.map((item) => ({
         text: item.name,
         value: item.sourceDefinitionId,
-        img: "/default-logo-catalog.svg",
+        img: item.icon,
       })),
     [sourceDefinitions]
   );

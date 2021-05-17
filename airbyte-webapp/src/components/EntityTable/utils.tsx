@@ -7,12 +7,20 @@ import {
   EntityTableDataItem,
   Status as ConnectionStatus,
 } from "./types";
+import { SourceDefinition } from "../../core/resources/SourceDefinition";
+import { DestinationDefinition } from "../../core/resources/DestinationDefinition";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
   S extends "source" | "destination",
-  SoD extends S extends "source" ? Source : Destination
->(entities: SoD[], connections: Connection[], type: S): EntityTableDataItem[] {
+  SoD extends S extends "source" ? Source : Destination,
+  Def extends S extends "source" ? SourceDefinition : DestinationDefinition
+>(
+  entities: SoD[],
+  connections: Connection[],
+  definitions: Def[],
+  type: S
+): EntityTableDataItem[] {
   const connectType = type === "source" ? "destination" : "source";
 
   const mappedEntities = entities.map((entityItem) => {
@@ -28,12 +36,21 @@ export function getEntityTableData<
         entitySoDId
     );
 
+    const definitionId = `${type}DefinitionId` as keyof Def;
+    const entityDefinitionId = entityItem[`${type}DefinitionId` as keyof SoD];
+
+    const definition = definitions.find(
+      // @ts-ignore
+      (def) => def[definitionId] === entityDefinitionId
+    );
+
     if (!entityConnections.length) {
       return {
         entityId: entitySoDId,
         entityName: entityItem.name,
         enabled: true,
         connectorName: entitySoDName,
+        connectorIcon: definition?.icon,
         lastSync: null,
         connectEntities: [],
       };
@@ -63,6 +80,7 @@ export function getEntityTableData<
       connectorName: entitySoDName,
       lastSync: sortBySync?.[0].latestSyncJobCreatedAt,
       connectEntities: connectEntities,
+      connectorIcon: definition?.icon,
     };
   });
 
@@ -71,31 +89,47 @@ export function getEntityTableData<
 
 export const getConnectionTableData = (
   connections: Connection[],
+  sourceDefinitions: SourceDefinition[],
+  destinationDefinitions: DestinationDefinition[],
   type: "source" | "destination" | "connection"
 ): ITableDataItem[] => {
   const connectType = type === "source" ? "destination" : "source";
 
-  return connections.map((connection) => ({
-    connectionId: connection.connectionId,
-    entityName:
-      type === "connection"
-        ? `${connection.source?.sourceName} - ${connection.source?.name}`
-        : connection[connectType]?.name || "",
-    connectorName:
-      type === "connection"
-        ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
-        : // @ts-ignore conditional types are not supported here
-          connection[connectType]?.[`${connectType}Name`] || "",
-    lastSync: connection.latestSyncJobCreatedAt,
-    enabled: connection.status === ConnectionStatus.ACTIVE,
-    schedule: connection.schedule,
-    status: connection.status,
-    isSyncing: connection.isSyncing,
-    lastSyncStatus: getConnectionSyncStatus(
-      connection.status,
-      connection.latestSyncJobStatus
-    ),
-  }));
+  return connections.map((connection) => {
+    const sourceIcon = sourceDefinitions.find(
+      (definition) =>
+        definition.sourceDefinitionId === connection.source.sourceDefinitionId
+    )?.icon;
+    const destinationIcon = destinationDefinitions.find(
+      (definition) =>
+        definition.destinationDefinitionId ===
+        connection.destination.destinationDefinitionId
+    )?.icon;
+
+    return {
+      connectionId: connection.connectionId,
+      entityName:
+        type === "connection"
+          ? `${connection.source?.sourceName} - ${connection.source?.name}`
+          : connection[connectType]?.name || "",
+      connectorName:
+        type === "connection"
+          ? `${connection.destination?.destinationName} - ${connection.destination?.name}`
+          : // @ts-ignore conditional types are not supported here
+            connection[connectType]?.[`${connectType}Name`] || "",
+      lastSync: connection.latestSyncJobCreatedAt,
+      enabled: connection.status === ConnectionStatus.ACTIVE,
+      schedule: connection.schedule,
+      status: connection.status,
+      isSyncing: connection.isSyncing,
+      lastSyncStatus: getConnectionSyncStatus(
+        connection.status,
+        connection.latestSyncJobStatus
+      ),
+      connectorIcon: type === "destination" ? sourceIcon : destinationIcon,
+      entityIcon: type === "destination" ? destinationIcon : sourceIcon,
+    };
+  });
 };
 
 export const getConnectionSyncStatus = (

@@ -15,6 +15,8 @@ import { AnalyticsService } from "core/analytics/AnalyticsService";
 import FrequencyConfig from "data/FrequencyConfig.json";
 import Link from "components/Link";
 import { Routes } from "../../../routes";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
 
 type ConnectionItemPageProps = {
   currentStep: "status" | "settings";
@@ -32,6 +34,25 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   const frequency = FrequencyConfig.find(
     (item) =>
       JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+  );
+
+  const sourceDefinition = useResource(
+    SourceDefinitionResource.detailShape(),
+    connection.source
+      ? {
+          sourceDefinitionId: connection.source.sourceDefinitionId,
+        }
+      : null
+  );
+
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    connection.destination
+      ? {
+          destinationDefinitionId:
+            connection.destination.destinationDefinitionId,
+        }
+      : null
   );
 
   const steps = [
@@ -71,7 +92,12 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   const renderStep = () => {
     if (currentStep === "status") {
       return (
-        <StatusView connection={connection} frequencyText={frequency?.text} />
+        <StatusView
+          connection={connection}
+          frequencyText={frequency?.text}
+          sourceDefinition={sourceDefinition}
+          destinationDefinition={destinationDefinition}
+        />
       );
     }
 
@@ -80,6 +106,8 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
         onAfterSaveSchema={onAfterSaveSchema}
         connectionId={connection.connectionId}
         frequencyText={frequency?.text}
+        sourceDefinition={sourceDefinition}
+        destinationDefinition={destinationDefinition}
       />
     );
   };

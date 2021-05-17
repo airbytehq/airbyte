@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.1.0",
+  "version": "0.22.3-alpha",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -17,7 +17,7 @@
     "@fortawesome/react-fontawesome": "^0.1.8",
     "@papercups-io/chat-widget": "^1.1.5",
     "@papercups-io/storytime": "^1.0.6",
-    "@rest-hooks/legacy": "^2.0.1",
+    "@rest-hooks/legacy": "^2.0.5",
     "dayjs": "^1.8.35",
     "flat": "^5.0.2",
     "formik": "2.1.5",
@@ -38,8 +38,8 @@
     "react-table": "^7.5.0",
     "react-use": "^15.3.8",
     "react-widgets": "^4.5.0",
-    "rest-hooks": "^5.0.3",
-    "sanitize-html": "^2.1.2",
+    "rest-hooks": "^5.0.20",
+    "sanitize-html": "^2.3.3",
     "styled-components": "^5.1.1",
     "yup": "^0.28.1"
   },
