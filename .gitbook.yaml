@@ -29,7 +29,8 @@ redirects:
   tutorials/zoom-activity-dashboard: ./examples/zoom-activity-dashboard.md
   tutorials/slack-history: ./examples/slack-history.md
   tutorials/beginners-guide-to-catalog: ./tutorials/tutorials/beginners-guide-to-catalog.md
-  tutorials/toy-connector: ./tutorials/tutorials/toy-connector.md
+  tutorials/toy-connector: ./tutorials/tutorials/build-a-connector-the-hard-way.md
+  tutorials/build-a-connector-the-hard-way: ./tutorials/tutorials/build-a-connector-the-hard-way.md
   tutorials/adding-incremental-sync: ./tutorials/tutorials/adding-incremental-sync.md
   tutorials/building-a-python-source: ./tutorials/tutorials/building-a-python-source.md
   tutorials/transformations-with-sql: ./tutorials/transformation-and-normalization/transformations-with-sql.md
