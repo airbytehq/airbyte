@@ -15,7 +15,6 @@ import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import ImageBlock from "components/ImageBlock";
 
 const Content = styled.div`
   width: 100%;
@@ -114,11 +113,11 @@ const DestinationsSettings: React.FC<IProps> = ({
           isEditMode
           onSubmit={onSubmitForm}
           formType="destination"
-          dropDownData={[
+          availableServices={[
             {
               value: currentDestination.destinationDefinitionId,
               text: currentDestination.destinationName,
-              img: <ImageBlock img={destinationDefinition.icon} />,
+              icon: destinationDefinition.icon,
             },
           ]}
           formValues={{

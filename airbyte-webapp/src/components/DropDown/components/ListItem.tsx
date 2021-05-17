@@ -4,13 +4,10 @@ import styled from "styled-components";
 import Text from "./Text";
 
 export type IProps = {
-  item: {
-    disabled: boolean;
-    index: number;
-    item: IDataItem;
-  } & IDataItem;
+  disabled: boolean;
+  index: number;
   fullText?: boolean;
-};
+} & IDataItem;
 
 export type IDataItem = {
   text: string;
@@ -29,17 +26,20 @@ const ItemView = styled.div`
   align-items: center;
 `;
 
-const ListItem: React.FC<IProps> = ({ item, fullText }) => {
+const ListItem: React.FC<IProps> = ({
+  value,
+  primary,
+  secondary,
+  text,
+  img,
+  fullText,
+}) => {
   return (
-    <ItemView data-id={item.value}>
-      <Text
-        primary={item.primary}
-        secondary={item.secondary}
-        fullText={fullText}
-      >
-        {item.text}
+    <ItemView data-id={value}>
+      <Text primary={primary} secondary={secondary} fullText={fullText}>
+        {text}
       </Text>
-      {item.item.img || null}
+      {img || null}
     </ItemView>
   );
 };

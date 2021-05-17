@@ -9,7 +9,6 @@ import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
-import { IDataItem } from "components/DropDown/components/ListItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
@@ -17,7 +16,7 @@ import SkipOnboardingButton from "./SkipOnboardingButton";
 import { ConnectionConfiguration } from "core/domain/connection";
 
 type IProps = {
-  dropDownData: IDataItem[];
+  dropDownData: { value: string; text: string; icon: string }[];
   hasSuccess?: boolean;
   onSubmit: (values: {
     name: string;
@@ -95,7 +94,7 @@ const DestinationStep: React.FC<IProps> = ({
           onSubmit={onSubmitForm}
           hasSuccess={hasSuccess}
           formType="destination"
-          dropDownData={dropDownData}
+          availableServices={dropDownData}
           errorMessage={errorMessage}
           specifications={
             destinationDefinitionSpecification?.connectionSpecification
