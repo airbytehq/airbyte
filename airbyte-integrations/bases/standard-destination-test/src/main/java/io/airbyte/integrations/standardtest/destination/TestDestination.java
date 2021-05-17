@@ -205,7 +205,7 @@ public abstract class TestDestination {
     return false;
   }
 
-  private boolean implementsDBTTransformation() {
+  private boolean supportsDBT() {
     return implementsBasicNormalization();
   }
 
@@ -617,7 +617,7 @@ public abstract class TestDestination {
 
   @Test
   void testCustomDbtTransformations() throws Exception {
-    if (!implementsBasicNormalization()) {
+    if (!supportsDBT()) {
       return;
     }
 
@@ -662,7 +662,7 @@ public abstract class TestDestination {
 
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
-    if (!implementsBasicNormalization()) {
+    if (!supportsDBT()) {
       return;
     }
 
