@@ -62,13 +62,13 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection | Yes |
-| Namespaces | No |
+| Feature | Supported? |  |
+| :--- | :--- | :--- 
+| Full Refresh Sync | Yes |  |
+| Incremental Sync | Yes | Only Issues and Issue worklogs |
+| Replicate Incremental Deletes | Coming soon | |
+| SSL connection | Yes |  |
+| Namespaces | No |  |
 
 ### Performance considerations
 

@@ -21,13 +21,14 @@
 # SOFTWARE.
 
 
-import operator
-from functools import partial, reduce
+from functools import partial
 from json.decoder import JSONDecodeError
-from typing import Dict, Mapping, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
+import pendulum
 import requests
-from base_python import BaseClient
+from airbyte_cdk.sources.deprecated.client import BaseClient
+from airbyte_cdk.entrypoint import logger
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import ConnectionError
 
@@ -47,6 +48,7 @@ class Client(BaseClient):
         self._issue_keys = []
         self._project_keys = []
         self._workflow_scheme_keys = []
+        self._state = {"issues": {"state": None, "state_pk": "created"}, "issue_worklogs": {"state": None, "state_pk": "startedAfter"}}
         super().__init__()
 
     @staticmethod
@@ -84,6 +86,19 @@ class Client(BaseClient):
             if not next_page:
                 break
 
+    def get_stream_state(self, name: str) -> Any:
+        stream_state = self._state.get(name)
+        if stream_state["state"]:
+            return {stream_state.get("state_pk"): str(stream_state["state"])}
+        return None
+
+    def set_stream_state(self, name: str, state: Any):
+        stream_state = self._state.get(name)
+        stream_state["state"] = pendulum.parse(state[stream_state.get("state_pk")])
+
+    def stream_has_state(self, name: str) -> bool:
+        return name in self._state
+
     def _enumerate_methods(self) -> Mapping[str, callable]:
         # Many streams are just a wrapper around a call to lists() with some preconfigured params.
         # However, more complicated streams require a custom implementation, which is expressed via
@@ -94,6 +109,14 @@ class Client(BaseClient):
             if entity not in mapping:
                 mapping[entity] = partial(self.lists, name=entity, **value)
         return mapping
+
+    @staticmethod
+    def _update_cursor(cursor, stream_state):
+        if cursor:
+            new_state = max(cursor, stream_state["state"]) if stream_state["state"] else cursor
+            if new_state != stream_state["state"]:
+                logger.info(f"Advancing bookmark for Issues stream from {stream_state['state']} to {new_state}")
+                stream_state["state"] = new_state
 
     def health_check(self) -> Tuple[bool, str]:
         alive = True
@@ -142,10 +165,13 @@ class Client(BaseClient):
             if field.get("custom"):
                 yield field
 
-    def _get_issues_related(self, name):
+    def _get_issues_related(self, name, params=None):
+        params = params or {}
         issue_keys = self._get_issue_keys()
         for issue_key in issue_keys:
             configs = {**ENTITIES_MAP.get(f"issue_{name}"), "url": ENTITIES_MAP.get(f"issue_{name}").get("url").format(key=issue_key)}
+            if params:
+                configs["params"].update(params)
             for item in self.lists(name=f"issue_{name}", **configs):
                 yield item
 
@@ -187,6 +213,21 @@ class Client(BaseClient):
             for permission in self.lists(name="filter_sharing", **filter_sharing_configs):
                 yield permission
 
+    def stream__issues(self, fields):
+        cursor = None
+        issues_config = {**ENTITIES_MAP.get("issues")}
+        stream_state = self._state.get("issues")
+        if stream_state["state"]:
+            issues_state_row = stream_state["state"].format("YYYY/MM/DD HH:mm")
+            issues_config["params"]["jql"] = f"created > '{issues_state_row}'"
+        for issue in self.lists(name="issues", **issues_config):
+            "Jira API returns records from newest to oldest"
+            if not cursor:
+                cursor = pendulum.parse(issue["fields"][stream_state["state_pk"]])
+            yield issue
+
+        self._update_cursor(cursor, stream_state)
+
     def stream__issue_comments(self, fields):
         for comment in self._get_issues_related("comments"):
             yield comment
@@ -227,8 +268,17 @@ class Client(BaseClient):
             yield watcher
 
     def stream__issue_worklogs(self, fields):
-        for worklog in self._get_issues_related("worklogs"):
+        cursor = None
+        params = {}
+        stream_state = self._state.get("issue_worklogs")
+        if stream_state["state"]:
+            state_row = int(stream_state["state"].timestamp() * 1000)
+            params["startedAfter"] = state_row
+        for worklog in self._get_issues_related("worklogs", params):
+            cursor = pendulum.parse(worklog["created"])
             yield worklog
+
+        self._update_cursor(cursor, stream_state)
 
     def stream__project_avatars(self, fields):
         for avatar in self._get_projects_related("avatars"):

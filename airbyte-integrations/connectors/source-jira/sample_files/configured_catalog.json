@@ -7453,10 +7453,13 @@
           },
           "additionalProperties": false
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -9529,11 +9532,13 @@
           "additionalProperties": true,
           "description": "Details of a worklog."
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["startedAfter"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["startedAfter"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
