@@ -22,4 +22,5 @@ export * from "./RadioButton";
 export * from "./ArrayOfObjectsEditor";
 export * from "./ContentCard";
 export * from "./PreferencesForm";
+export * from "./DefaultLogoCatalog";
 export * from "./ContentCard";

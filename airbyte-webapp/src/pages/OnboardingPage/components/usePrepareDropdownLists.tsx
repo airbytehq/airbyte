@@ -36,7 +36,7 @@ const usePrepareDropdownLists = (): {
       sourceDefinitions.map((item) => ({
         text: item.name,
         value: item.sourceDefinitionId,
-        img: "/default-logo-catalog.svg",
+        img: item.icon,
       })),
     [sourceDefinitions]
   );
@@ -46,7 +46,7 @@ const usePrepareDropdownLists = (): {
       destinationDefinitions.map((item) => ({
         text: item.name,
         value: item.destinationDefinitionId,
-        img: "/default-logo-catalog.svg",
+        img: item.icon,
       })),
     [destinationDefinitions]
   );
