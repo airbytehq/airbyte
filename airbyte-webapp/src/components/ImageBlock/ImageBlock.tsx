@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import React from "react";
-import { getIcon } from "../../utils/imageUtils";
+import { getIcon } from "utils/imageUtils";
 
 type IProps = {
   img?: string;
@@ -36,3 +36,4 @@ const ImageBlock: React.FC<IProps> = ({ img, className, num, small }) => (
 );
 
 export default ImageBlock;
+export { ImageBlock };

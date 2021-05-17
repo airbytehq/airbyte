@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "components/ContentCard";
@@ -7,11 +7,11 @@ import { AnalyticsService } from "core/analytics/AnalyticsService";
 import config from "config";
 import useRouter from "components/hooks/useRouterHook";
 import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
-import { IDataItem } from "components/DropDown/components/ListItem";
 import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { SourceDefinition } from "core/resources/SourceDefinition";
 
 type IProps = {
   onSubmit: (values: {
@@ -21,7 +21,7 @@ type IProps = {
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
   afterSelectConnector?: () => void;
-  dropDownData: IDataItem[];
+  sourceDefinitions: SourceDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
   jobInfo?: JobInfo;
@@ -29,13 +29,23 @@ type IProps = {
 
 const SourceForm: React.FC<IProps> = ({
   onSubmit,
-  dropDownData,
+  sourceDefinitions,
   error,
   hasSuccess,
   jobInfo,
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
+
+  const availableServices = useMemo(
+    () =>
+      sourceDefinitions.map((item) => ({
+        text: item.name,
+        value: item.sourceDefinitionId,
+        icon: item.icon,
+      })),
+    [sourceDefinitions]
+  );
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState(
     location.state?.sourceDefinitionId || ""
@@ -46,7 +56,7 @@ const SourceForm: React.FC<IProps> = ({
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
-    const connector = dropDownData.find(
+    const connector = availableServices.find(
       (item) => item.value === sourceDefinitionId
     );
 
@@ -80,7 +90,7 @@ const SourceForm: React.FC<IProps> = ({
         onDropDownSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         formType="source"
-        dropDownData={dropDownData}
+        availableServices={availableServices}
         specifications={sourceDefinitionSpecification?.connectionSpecification}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}

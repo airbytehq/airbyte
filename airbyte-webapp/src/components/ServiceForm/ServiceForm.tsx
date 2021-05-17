@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { Formik } from "formik";
 import { JSONSchema7 } from "json-schema";
 
-import { DropDownRow } from "components";
+import { ImageBlock } from "components";
 
 import {
   useBuildForm,
@@ -27,7 +27,7 @@ type ServiceFormProps = {
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  dropDownData: Array<DropDownRow.IDataItem>;
+  availableServices: { value: string; text: string; icon: string }[];
   onDropDownSelect?: (id: string) => void;
   documentationUrl?: string;
 };
@@ -54,6 +54,15 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       required: ["name", "serviceType"],
     }),
     [isLoading, specifications]
+  );
+
+  const dropDownData = useMemo(
+    () =>
+      props.availableServices.map((item) => ({
+        ...item,
+        img: <ImageBlock img={item.icon} />,
+      })),
+    [props.availableServices]
   );
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
@@ -101,7 +110,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       allowChangeConnector={props.allowChangeConnector}
       isLoadingSchema={props.isLoading}
       onChangeServiceType={props.onDropDownSelect}
-      dropDownData={props.dropDownData}
+      dropDownData={dropDownData}
       documentationUrl={props.documentationUrl}
     >
       <Formik
@@ -123,9 +132,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
               }}
               formFields={formFields}
               connector={
-                props.dropDownData?.find(
-                  (item) => item.value === values.serviceType
-                )?.text
+                dropDownData?.find((item) => item.value === values.serviceType)
+                  ?.text
               }
             />
           </>
