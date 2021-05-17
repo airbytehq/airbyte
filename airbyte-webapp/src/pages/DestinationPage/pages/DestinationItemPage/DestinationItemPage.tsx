@@ -22,6 +22,10 @@ import DestinationSettings from "./components/DestinationSettings";
 import LoadingPage from "components/LoadingPage";
 import SourceResource from "core/resources/Source";
 import MainPageWithScroll from "components/MainPageWithScroll";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import { getIcon } from "utils/imageUtils";
+import ImageBlock from "components/ImageBlock";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -37,9 +41,23 @@ const DestinationItemPage: React.FC = () => {
     workspaceId: config.ui.workspaceId,
   });
 
+  const { sourceDefinitions } = useResource(
+    SourceDefinitionResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId,
+    }
+  );
+
   const destination = useResource(DestinationResource.detailShape(), {
     destinationId: query.id,
   });
+
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    {
+      destinationDefinitionId: destination.destinationDefinitionId,
+    }
+  );
 
   const { connections } = useResource(ConnectionResource.listShape(), {
     workspaceId: config.ui.workspaceId,
@@ -62,12 +80,17 @@ const DestinationItemPage: React.FC = () => {
 
   const sourcesDropDownData = useMemo(
     () =>
-      sources.map((item) => ({
-        text: item.name,
-        value: item.sourceId,
-        img: "/default-logo-catalog.svg",
-      })),
-    [sources]
+      sources.map((item) => {
+        const sourceDef = sourceDefinitions.find(
+          (sd) => sd.sourceDefinitionId === item.sourceDefinitionId
+        );
+        return {
+          text: item.name,
+          value: item.sourceId,
+          img: <ImageBlock img={sourceDef?.icon} />,
+        };
+      }),
+    [sources, sourceDefinitions]
   );
 
   const onSelect = (data: { value: string }) => {
@@ -105,6 +128,11 @@ const DestinationItemPage: React.FC = () => {
           onSelect={onSelect}
           entityName={destination.name}
           entity={destination.destinationName}
+          entityIcon={
+            destinationDefinition.icon
+              ? getIcon(destinationDefinition.icon)
+              : null
+          }
         />
         {connectionsWithDestination.length ? (
           <DestinationConnectionTable
