@@ -32,7 +32,7 @@ const CreateDestinationPage: React.FC<IProps> = ({ afterSubmit }) => {
       destinationDefinitions.map((item) => ({
         text: item.name,
         value: item.destinationDefinitionId,
-        img: "/default-logo-catalog.svg",
+        img: item.icon,
       })),
     [destinationDefinitions]
   );

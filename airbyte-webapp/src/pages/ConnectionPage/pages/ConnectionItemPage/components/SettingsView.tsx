@@ -9,6 +9,7 @@ import FrequencyConfig from "data/FrequencyConfig.json";
 import useConnection, {
   useConnectionLoad,
 } from "components/hooks/services/useConnectionHook";
+import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import DeleteBlock from "components/DeleteBlock";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import { SyncSchema } from "core/domain/catalog";
@@ -18,12 +19,15 @@ import { ModalTypes } from "components/ResetDataModal/types";
 import Button from "components/Button";
 import LoadingSchema from "components/LoadingSchema";
 import EnabledControl from "./EnabledControl";
-import { useDestinationDefinitionSpecificationLoad } from "../../../../../components/hooks/services/useDestinationHook";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { SourceDefinition } from "core/resources/SourceDefinition";
 
 type IProps = {
   onAfterSaveSchema: () => void;
   connectionId: string;
   frequencyText?: string;
+  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinition;
 };
 
 const Content = styled.div`
@@ -100,7 +104,6 @@ const SettingsView: React.FC<IProps> = ({
 
   // TODO: check if it makes more sense to move it to frequencyform
   const {
-    destinationDefinitionSpecification,
     isLoading: loadingDestination,
   } = useDestinationDefinitionSpecificationLoad(
     connection?.destination?.destinationDefinitionId ?? null
@@ -214,7 +217,6 @@ const SettingsView: React.FC<IProps> = ({
             prefixValue={connection.prefix}
             source={connection.source}
             destination={connection.destination}
-            destinationDefinition={destinationDefinitionSpecification}
             onSubmit={onSubmitForm}
             onReset={onReset}
             frequencyValue={schedule?.value}

@@ -115,6 +115,11 @@ public abstract class JdbcStressTest {
    */
   public abstract AbstractJdbcSource getSource();
 
+  protected String createTableQuery(String tableName, String columnClause) {
+    return String.format("CREATE TABLE %s(%s)",
+        tableName, columnClause);
+  }
+
   public void setup() throws Exception {
     LOGGER.info("running for driver:" + getDriverClass());
     bitSet = new BitSet((int) TOTAL_RECORDS);
@@ -131,7 +136,7 @@ public abstract class JdbcStressTest {
         getDriverClass());
 
     database.execute(connection -> connection.createStatement().execute(
-        String.format("CREATE TABLE id_and_name(id %s, name VARCHAR(200))", COL_ID_TYPE)));
+        createTableQuery("id_and_name", String.format("id %s, name VARCHAR(200)", COL_ID_TYPE))));
     final long batchCount = TOTAL_RECORDS / BATCH_SIZE;
     LOGGER.info("writing {} batches of {}", batchCount, BATCH_SIZE);
     for (int i = 0; i < batchCount; i++) {

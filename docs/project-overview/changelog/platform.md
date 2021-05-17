@@ -10,6 +10,13 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 * We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
+## [05-11-2021 - 0.22.3](https://github.com/airbytehq/airbyte/releases/tag/v0.22.3-alpha)
+
+* Bump K8s deployment version to latest stable version, thanks to [Coetzee van Staden](https://github.com/coetzeevs)
+* Added tutorial to deploy Airbyte on Azure VM \([\#3171](https://github.com/airbytehq/airbyte/pull/3171)\), thanks to [geekwhocodes](https://github.com/geekwhocodes)
+* Progress on checkpointing to support rate limits better
+* Upgrade normalization to use dbt from docker images \([\#3186](https://github.com/airbytehq/airbyte/pull/3186)\)
+
 ## [05-04-2021 - 0.22.2](https://github.com/airbytehq/airbyte/releases/tag/v0.22.2-alpha)
 
 * Split replication and normalization into separate temporal activities \([\#3136](https://github.com/airbytehq/airbyte/pull/3136)\)

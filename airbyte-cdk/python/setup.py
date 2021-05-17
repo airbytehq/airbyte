@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import pathlib
@@ -33,7 +35,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.0rc5",
+    version="0.1.3",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -66,7 +68,7 @@ setup(
         "backoff",
         "jsonschema==2.6.0",
         "pendulum",
-        "pydantic==1.6.1",
+        "pydantic==1.6.2",
         "PyYAML==5.4",
         "requests",
     ],
