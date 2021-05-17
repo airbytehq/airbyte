@@ -111,4 +111,3 @@ public class SqlServerOperations implements SqlOperations {
   }
 
 }
-qq
