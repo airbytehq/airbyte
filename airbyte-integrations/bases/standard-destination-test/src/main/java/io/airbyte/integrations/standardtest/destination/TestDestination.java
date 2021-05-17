@@ -632,27 +632,46 @@ public abstract class TestDestination {
     final OperatorDbt dbtConfig = new OperatorDbt()
         .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
         .withGitRepoBranch("main")
-        .withDockerImage("fishtownanalytics/dbt:0.19.1")
-        .withDbtArguments("debug");
+        .withDockerImage("fishtownanalytics/dbt:0.19.1");
+    //
+    // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
+    //
+    // This dbt project transforms raw data from an app database into a customers and orders model ready
+    // for analytics.
+    // The repo is a self-contained playground dbt project, useful for testing out scripts, and
+    // communicating some of the core dbt concepts:
+    //
+    // 1. First, it tests if connection to the destination works.
+    dbtConfig.withDbtArguments("debug");
     if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
       throw new WorkerException("dbt debug Failed.");
     }
+    // 2. Install any dependencies packages, if any
     dbtConfig.withDbtArguments("deps");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
       throw new WorkerException("dbt deps Failed.");
     }
+    // 3. It contains seeds that includes some (fake) raw data from a fictional app as CSVs data sets.
+    // This materializes the CSVs as tables in your target schema.
+    // Note that a typical dbt project does not require this step since dbt assumes your raw data is
+    // already in your warehouse.
     dbtConfig.withDbtArguments("seed");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
       throw new WorkerException("dbt seed Failed.");
     }
+    // 4. Run the models:
+    // Note: If this steps fails, it might mean that you need to make small changes to the SQL in the
+    // models folder to adjust for the flavor of SQL of your target database.
     dbtConfig.withDbtArguments("run");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
       throw new WorkerException("dbt run Failed.");
     }
+    // 5. Test the output of the models and tables have been properly populated:
     dbtConfig.withDbtArguments("test");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
       throw new WorkerException("dbt test Failed.");
     }
+    // 6. Generate dbt documentation for the project:
     dbtConfig.withDbtArguments("docs generate");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
       throw new WorkerException("dbt docs generate Failed.");
