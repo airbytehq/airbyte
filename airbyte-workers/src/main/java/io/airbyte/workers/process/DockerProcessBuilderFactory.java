@@ -96,12 +96,17 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             "-v",
             String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
             "-w",
-            rebasePath(jobRoot).toString(),
-            "--network",
-            networkName,
-            imageName);
-    cmd.addAll(Arrays.asList(args));
+            rebasePath(jobRoot).toString());
 
+    if (imageName.startsWith("airbyte/destination")) {
+      LOGGER.info("Exposing image {} port", imageName);
+      cmd.add("-p");
+      cmd.add("6000:6000");
+    }
+
+    cmd.add(imageName);
+    cmd.addAll(Arrays.asList(args));
+    LOGGER.info("Command: {}", cmd);
     LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 
     return new ProcessBuilder(cmd);
