@@ -1,6 +1,7 @@
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import ru.vyarus.gradle.plugin.python.task.PythonTask;
+import ru.vyarus.gradle.plugin.python.task.PythonTask
 
 class AirbytePythonConfiguration {
     String moduleDirectory
@@ -20,7 +21,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             installVirtualenv = true
             pip 'flake8:3.8.4'
             pip 'black:20.8b1'
-            pip 'mypy:0.790'
+            pip 'mypy:0.812'
             pip 'isort:5.6.4'
             pip 'pytest:6.1.2'
             pip 'pip:21.1'
@@ -35,7 +36,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             module = "black"
             // the line length should match .isort.cfg
             command = ". --line-length 140"
-            dependsOn project.rootProject.spotlessPythonApply
+            dependsOn project.rootProject.licenseFormat
             dependsOn project.isortFormat
         }
 
@@ -45,16 +46,28 @@ class AirbytePythonPlugin implements Plugin<Project> {
         }
 
         // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
-        project.task('installLocalReqs', type: PythonTask) {
-            module = "pip"
-            command = "install -r requirements.txt"
-            inputs.file('requirements.txt')
-            outputs.file('build/installedlocalreqs.txt')
 
-            // HACK: makes all integrations depend on installing requirements for bases. long term we should resolve deps and install in order.
-            if(project.getPath().startsWith(":airbyte-integrations:connectors")) {
-                dependsOn project.rootProject.getTasksByName("airbytePythonApply", true).findAll { it.project.getPath().startsWith(":airbyte-integrations:bases")}
+        if (project.file('requirements.txt').exists()) {
+            project.task('installLocalReqs', type: PythonTask) {
+                module = "pip"
+                command = "install -r requirements.txt"
+                inputs.file('requirements.txt')
+                outputs.file('build/installedlocalreqs.txt')
+
+                // HACK: makes all integrations depend on installing requirements for bases. long term we should resolve deps and install in order.
+                if (project.getPath().startsWith(":airbyte-integrations:connectors")) {
+                    dependsOn project.rootProject.getTasksByName("airbytePythonApply", true).findAll { it.project.getPath().startsWith(":airbyte-integrations:bases") }
+                }
             }
+        } else if(project.file('setup.py').exists()) {
+            // If requirements.txt does not exists, install from setup.py instead, assume a dev profile exists.
+            // In this case, there is no need to depend on the base python modules since everything should be contained in the setup.py.
+            project.task('installLocalReqs', type: PythonTask) {
+                module = "pip"
+                command = "install -e .[dev]"
+            }
+        } else {
+            throw new GradleException('Error: Python module lacks requirement.txt and setup.py')
         }
 
         project.task('installReqs', type: PythonTask, dependsOn: project.installLocalReqs) {
@@ -71,10 +84,10 @@ class AirbytePythonPlugin implements Plugin<Project> {
             outputs.file('build/installedtestreqs.txt')
         }
 
-        if(project.file('unit_tests').exists()) {
+        if (project.file('unit_tests').exists()) {
             project.task('unitTest', type: PythonTask, dependsOn: project.installTestReqs) {
                 module = "pytest"
-                command = "unit_tests"
+                command = "-s unit_tests"
             }
         } else {
             project.task('unitTest') {

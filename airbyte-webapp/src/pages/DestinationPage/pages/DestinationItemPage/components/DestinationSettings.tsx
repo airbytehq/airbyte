@@ -14,6 +14,8 @@ import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import ImageBlock from "components/ImageBlock";
 
 const Content = styled.div`
   width: 100%;
@@ -38,6 +40,13 @@ const DestinationsSettings: React.FC<IProps> = ({
 
   const destinationSpecification = useResource(
     DestinationDefinitionSpecificationResource.detailShape(),
+    {
+      destinationDefinitionId: currentDestination.destinationDefinitionId,
+    }
+  );
+
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
     {
       destinationDefinitionId: currentDestination.destinationDefinitionId,
     }
@@ -109,7 +118,7 @@ const DestinationsSettings: React.FC<IProps> = ({
             {
               value: currentDestination.destinationDefinitionId,
               text: currentDestination.destinationName,
-              img: "/default-logo-catalog.svg",
+              img: <ImageBlock img={destinationDefinition.icon} />,
             },
           ]}
           formValues={{

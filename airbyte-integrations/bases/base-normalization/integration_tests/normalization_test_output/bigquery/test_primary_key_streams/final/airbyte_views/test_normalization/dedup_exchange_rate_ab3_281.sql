@@ -12,7 +12,9 @@ select
     string
 ), ''), '-', coalesce(cast(date as 
     string
-), ''), '-', coalesce(cast(HKD as 
+), ''), '-', coalesce(cast(HKD_special___characters as 
+    string
+), ''), '-', coalesce(cast(HKD_special___characters_1 as 
     string
 ), ''), '-', coalesce(cast(NZD as 
     string

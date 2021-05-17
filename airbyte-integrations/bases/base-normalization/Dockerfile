@@ -1,7 +1,5 @@
-FROM airbyte/base-airbyte-protocol-python:0.1.1
-
-# dbt needs git in order to run.
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+FROM fishtownanalytics/dbt:0.19.1
+COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
 WORKDIR /airbyte
 COPY entrypoint.sh .
@@ -9,15 +7,20 @@ COPY entrypoint.sh .
 WORKDIR /airbyte/normalization_code
 COPY normalization ./normalization
 COPY setup.py .
-RUN pip install .
 COPY dbt-project-template/ ./dbt-template/
+
+WORKDIR /airbyte/base_python_structs
+RUN pip install .
+
+WORKDIR /airbyte/normalization_code
+RUN pip install .
+
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
 RUN dbt deps
 
 WORKDIR /airbyte
-
 ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
-LABEL io.airbyte.version=0.1.26
+LABEL io.airbyte.version=0.1.28
 LABEL io.airbyte.name=airbyte/normalization

@@ -37,6 +37,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -52,6 +54,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +94,10 @@ public class LocalJsonDestination implements Destination {
    * @throws IOException - exception throw in manipulating the filesystem.
    */
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws IOException {
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector)
+      throws IOException {
     final Path destinationDir = getDestinationPath(config);
 
     FileUtils.forceMkdir(destinationDir.toFile());
@@ -159,20 +165,24 @@ public class LocalJsonDestination implements Destination {
     }
 
     @Override
-    protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
+    protected void acceptTracked(AirbyteMessage message) throws Exception {
+      if (message.getType() != Type.RECORD) {
+        return;
+      }
+      final AirbyteRecordMessage recordMessage = message.getRecord();
 
       // ignore other message types.
-      if (!writeConfigs.containsKey(message.getStream())) {
+      if (!writeConfigs.containsKey(recordMessage.getStream())) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-                Jsons.serialize(catalog), Jsons.serialize(message)));
+                Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
 
-      final Writer writer = writeConfigs.get(message.getStream()).getWriter();
+      final Writer writer = writeConfigs.get(recordMessage.getStream()).getWriter();
       writer.write(Jsons.serialize(ImmutableMap.of(
           JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID(),
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, message.getEmittedAt(),
-          JavaBaseConstants.COLUMN_NAME_DATA, message.getData())));
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
+          JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData())));
       writer.write(System.lineSeparator());
     }
 

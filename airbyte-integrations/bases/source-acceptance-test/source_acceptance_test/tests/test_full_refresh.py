@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,13 +20,14 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
 from functools import partial
 
 import pytest
-from airbyte_protocol import Type
+from airbyte_cdk.models import Type
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.utils import ConnectorRunner, full_refresh_only_catalog
 

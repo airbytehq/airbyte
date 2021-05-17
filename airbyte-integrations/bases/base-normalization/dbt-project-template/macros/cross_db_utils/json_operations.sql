@@ -16,7 +16,7 @@
 {%- endmacro %}
 
 {% macro bigquery__format_json_path(json_path_list) -%}
-  {{ '"$.' ~ json_path_list|join('"."') ~ '"' }}
+  {{ '"$[\'' ~ json_path_list|join('\'][\'') ~ '\']"' }}
 {%- endmacro %}
 
 {% macro postgres__format_json_path(json_path_list) -%}

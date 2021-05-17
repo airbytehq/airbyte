@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import inspect
@@ -81,6 +83,11 @@ class Stream(ABC):
             stream.source_defined_cursor = self.source_defined_cursor
             stream.supported_sync_modes.append(SyncMode.incremental)
             stream.default_cursor_field = self._wrapped_cursor_field()
+
+        keys = self._wrapped_primary_key()
+        if len(keys) > 0:
+            stream.source_defined_primary_key = keys
+
         return stream
 
     @property
@@ -107,6 +114,33 @@ class Stream(ABC):
         Return False if the cursor can be configured by the user.
         """
         return True
+
+    @property
+    @abstractmethod
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        """
+        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+        If the stream has no primary keys, return None.
+        """
+
+    def _wrapped_primary_key(self) -> Optional[List[List[str]]]:
+        """
+        :return: wrap the primary_key property in a list of list of strings required by the Airbyte Stream object.
+        """
+        keys = self.primary_key
+        if isinstance(keys, str):
+            return [[keys]]
+        elif isinstance(keys, list):
+            wrapped_key = []
+            for component in keys:
+                if isinstance(component, str):
+                    wrapped_key.append([component])
+                elif isinstance(component, list):
+                    wrapped_key.append(component)
+                else:
+                    raise ValueError("Element must be either list or str.")
+        else:
+            raise ValueError("Element must be either list or str.")
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

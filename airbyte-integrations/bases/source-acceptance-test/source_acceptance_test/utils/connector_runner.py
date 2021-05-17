@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
@@ -27,13 +29,17 @@ from pathlib import Path
 from typing import Iterable, List, Mapping, Optional
 
 import docker
-from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
+from pydantic import ValidationError
 
 
 class ConnectorRunner:
     def __init__(self, image_name: str, volume: Path):
         self._client = docker.from_env()
-        self._image = self._client.images.pull(image_name)
+        try:
+            self._image = self._client.images.get(image_name)
+        except docker.errors.ImageNotFound:
+            self._image = self._client.images.pull(image_name)
         self._runs = 0
         self._volume_base = volume
 
@@ -110,4 +116,7 @@ class ConnectorRunner:
             f.write(logs)
 
         for line in logs.decode("utf-8").splitlines():
-            yield AirbyteMessage.parse_raw(line)
+            try:
+                yield AirbyteMessage.parse_raw(line)
+            except ValidationError as exc:
+                logging.warning("Unable to parse connector's output %s", exc)

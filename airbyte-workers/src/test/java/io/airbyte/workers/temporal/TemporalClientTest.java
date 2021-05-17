@@ -48,6 +48,7 @@ import io.temporal.client.WorkflowClient;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -178,11 +179,13 @@ class TemporalClientTest {
           .withSourceDockerImage(IMAGE_NAME2)
           .withSourceConfiguration(Jsons.emptyObject())
           .withDestinationConfiguration(Jsons.emptyObject())
+          .withOperationSequence(List.of())
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
       final StandardSyncInput input = new StandardSyncInput()
           .withPrefix(syncConfig.getPrefix())
           .withSourceConfiguration(syncConfig.getSourceConfiguration())
           .withDestinationConfiguration(syncConfig.getDestinationConfiguration())
+          .withOperationSequence(syncConfig.getOperationSequence())
           .withCatalog(syncConfig.getConfiguredAirbyteCatalog())
           .withState(syncConfig.getState());
 

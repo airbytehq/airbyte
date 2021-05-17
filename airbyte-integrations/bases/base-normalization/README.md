@@ -110,7 +110,8 @@ For example, below, we would have 2 different tests "suites" with this hierarchy
       ├── test_suite1/
       │   ├── data_input/
       │   │   ├── catalog.json
-      │   │   └── messages.txt
+      │   │   ├── messages.txt
+      │   │   └── replace_identifiers.json
       │   ├── dbt_data_tests/
       │   │   ├── file1.sql
       │   │   └── file2.sql
@@ -135,7 +136,7 @@ how it is specifically built.
 
 #### data_input/catalog.json:
 
-The catalog.json is the main input for normalization from which the dbt models files are being
+The `catalog.json` is the main input for normalization from which the dbt models files are being
 generated from as it describes in JSON Schema format what the data structure is.
 
 #### data_input/messages.txt:
@@ -144,6 +145,13 @@ The `messages.txt` are serialized Airbyte JSON records that should be sent to th
 transmitted by a source. In this integration test, the files is read and "cat" through to the docker image of
 each destination connectors to populate `_airbyte_raw_tables`. These tables are finally used as input
 data for dbt to run from.
+
+#### data_input/replace_identifiers.json:
+The `replace_identifiers.json` contains maps of string patterns and values to replace in the `dbt_schema_tests`
+and `dbt_data_tests` files to handle cross database compatibility.
+
+Note that an additional step is added before replacing identifiers to change capitalization of identifiers in those
+tests files. (to uppercase on snowflake and lowercase on redshift).
 
 ### Integration Test Execution Flow:
 
