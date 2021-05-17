@@ -61,11 +61,15 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
     // FROM VALUES
     // (?, ?, ?),
     // ...
-    final String insertQuery = String.format(
-        "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    final String recordQuery = "(?, ?, ?),\n";
-    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
+    try {
+      final String insertQuery = String.format(
+          "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+      final String recordQuery = "(?, ?, ?),\n";
+      SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
+    } catch (Throwable e) {
+      LOGGER.error("Error while inserting records into Snowflake. Records: {}", records, e);
+    }
   }
 
 }

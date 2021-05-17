@@ -27,6 +27,7 @@ package io.airbyte.db.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.math.BigDecimal;
@@ -51,9 +52,12 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.xml.bind.DatatypeConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JdbcUtils {
 
+  private final static Logger LOGGER = LoggerFactory.getLogger(JdbcUtils.class);
   private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
 
   /**
@@ -147,6 +151,12 @@ public class JdbcUtils {
         o.put(columnName, toISO8601String(d));
       }
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> o.put(columnName, r.getBytes(i));
+      case OTHER -> {
+        // JSONB falls into the OTHER JDBC type.
+        var stringJson = r.getString(i);
+        LOGGER.info("OTHER type conversion: {}", stringJson);
+        o.put(columnName, stringJson);
+      }
       default -> o.put(columnName, r.getString(i));
     }
   }
@@ -310,6 +320,10 @@ public class JdbcUtils {
       joiner.add(s);
     }
     return joiner.toString();
+  }
+
+  public static void main(String[] args) {
+
   }
 
 }
