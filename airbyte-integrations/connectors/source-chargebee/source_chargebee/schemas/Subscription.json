@@ -476,7 +476,6 @@
                 },
                 "destination_url":{
                     "type":["string","null"],
-                    "format":"email",
                     "maxLength":250
                 },
                 "post_purchase_widget_enabled":{
