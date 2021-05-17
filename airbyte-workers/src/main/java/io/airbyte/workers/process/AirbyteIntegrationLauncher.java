@@ -58,6 +58,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
+        null,
         "spec");
   }
 
@@ -68,6 +69,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
+        null,
         "check",
         "--config", configFilename);
   }
@@ -79,6 +81,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
+        null,
         "discover",
         "--config", configFilename);
   }
@@ -104,6 +107,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
+        null,
         arguments);
   }
 
@@ -114,6 +118,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
+        null,
         "write",
         "--config", configFilename,
         "--catalog", catalogFilename);
