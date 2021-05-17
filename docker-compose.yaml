@@ -15,6 +15,7 @@ services:
   db:
     image: airbyte/db:${VERSION}
     container_name: airbyte-db
+    restart: unless-stopped
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
@@ -30,6 +31,7 @@ services:
   scheduler:
     image: airbyte/scheduler:${VERSION}
     container_name: airbyte-scheduler
+    restart: unless-stopped
     environment:
       - WEBAPP_URL=${WEBAPP_URL}
       - WAIT_BEFORE_HOSTS=5
@@ -55,6 +57,7 @@ services:
   server:
     image: airbyte/server:${VERSION}
     container_name: airbyte-server
+    restart: unless-stopped
     environment:
       - WEBAPP_URL=${WEBAPP_URL}
       - WAIT_BEFORE_HOSTS=5
@@ -77,6 +80,7 @@ services:
   webapp:
     image: airbyte/webapp:${VERSION}
     container_name: airbyte-webapp
+    restart: unless-stopped
     ports:
       - 8000:80
     environment:
@@ -89,6 +93,7 @@ services:
   airbyte-temporal:
     image: temporalio/auto-setup:1.7.0
     container_name: airbyte-temporal
+    restart: unless-stopped
     ports:
       - 7233:7233
     environment:
