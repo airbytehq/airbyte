@@ -87,7 +87,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
               "--restart=Never",
               "--overrides=" + overrides, // fails if you add quotes around the overrides string
               podName);
-
+      // TODO handle entrypoint override (to run DbtTransformationRunner for example)
       LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 
       return new ProcessBuilder(cmd);

@@ -30,6 +30,19 @@ import java.util.List;
 
 public interface ProcessBuilderFactory {
 
+  /**
+   * Creates a ProcessBuilder to run a program in a new Process.
+   *
+   * @param jobId job Id
+   * @param attempt attempt Id
+   * @param jobPath Workspace directory to run the process from
+   * @param imageName Docker image name to start the process from
+   * @param entrypoint If not null, the default entrypoint program of the docker image can be changed
+   *        by this argument
+   * @param args arguments to pass to the docker image being run in the new process
+   * @return the ProcessBuilder object to run the process
+   * @throws WorkerException
+   */
   ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
       throws WorkerException;
 
