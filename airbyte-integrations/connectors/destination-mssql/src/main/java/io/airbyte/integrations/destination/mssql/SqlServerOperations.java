@@ -30,8 +30,6 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SqlServerOperations implements SqlOperations {
 
@@ -78,9 +76,8 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tempTableName)
+  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tempTableName)
       throws Exception {
-    final List<AirbyteRecordMessage> records = recordsStream.collect(Collectors.toList());
 
     final String insertQueryComponent = String.format(
         "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
@@ -99,8 +96,18 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public void executeTransaction(JdbcDatabase database, String queries) throws Exception {
-    database.execute("BEGIN TRAN;\n" + queries + "COMMIT TRAN;");
+  public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
+    database.execute("BEGIN TRAN;\n" + String.join("\n", queries) + "\nCOMMIT TRAN;");
+  }
+
+  @Override
+  public boolean isValidData(String data) {
+    return true;
+  }
+
+  @Override
+  public boolean isSchemaRequired() {
+    return true;
   }
 
 }
