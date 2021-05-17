@@ -98,7 +98,7 @@ describe("Service Form", () => {
           formType="source"
           onSubmit={handleSubmit}
           specifications={schema}
-          dropDownData={[]}
+          availableServices={[]}
         />
       );
       container = renderResult.container;
@@ -199,7 +199,7 @@ describe("Service Form", () => {
           formValues={{ name: "test-name", serviceType: "test-service-type" }}
           onSubmit={(values) => (result = values)}
           specifications={schema}
-          dropDownData={[]}
+          availableServices={[]}
         />
       );
       container = renderResult.container;
