@@ -30,16 +30,14 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SqlServerOperations implements SqlOperations {
 
   @Override
   public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
     final String query = String.format("IF NOT EXISTS ( SELECT * FROM sys.schemas WHERE name = '%s') EXEC('CREATE SCHEMA [%s]')",
-        schemaName,
-        schemaName);
+            schemaName,
+            schemaName);
     database.execute(query);
   }
 
@@ -51,24 +49,24 @@ public class SqlServerOperations implements SqlOperations {
   @Override
   public String createTableQuery(String schemaName, String tableName) {
     return String.format(
-        "IF NOT EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
-            + "WHERE s.name = '%s' AND t.name = '%s') "
-            + "CREATE TABLE %s.%s ( \n"
-            + "%s VARCHAR(64) PRIMARY KEY,\n"
-            + "%s VARCHAR(MAX),\n"
-            + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET()\n"
-            + ");\n",
-        schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+            "IF NOT EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
+                    + "WHERE s.name = '%s' AND t.name = '%s') "
+                    + "CREATE TABLE %s.%s ( \n"
+                    + "%s VARCHAR(64) PRIMARY KEY,\n"
+                    + "%s VARCHAR(MAX),\n"
+                    + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET()\n"
+                    + ");\n",
+            schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA,
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
   public void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
     final String query = String.format(
-        "IF EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
-            + "WHERE s.name = '%s' AND t.name = '%s') "
-            + "DROP TABLE %s.%s",
-        schemaName, tableName, schemaName, tableName);
+            "IF EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
+                    + "WHERE s.name = '%s' AND t.name = '%s') "
+                    + "DROP TABLE %s.%s",
+            schemaName, tableName, schemaName, tableName);
     database.execute(query);
   }
 
@@ -78,17 +76,16 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tempTableName)
-      throws Exception {
-    final List<AirbyteRecordMessage> records = recordsStream.collect(Collectors.toList());
+  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tempTableName)
+          throws Exception {
 
     final String insertQueryComponent = String.format(
-        "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
-        schemaName,
-        tempTableName,
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
-        JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+            "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
+            schemaName,
+            tempTableName,
+            JavaBaseConstants.COLUMN_NAME_AB_ID,
+            JavaBaseConstants.COLUMN_NAME_DATA,
+            JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
   }
@@ -99,8 +96,18 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public void executeTransaction(JdbcDatabase database, String queries) throws Exception {
-    database.execute("BEGIN TRAN;\n" + queries + "COMMIT TRAN;");
+  public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
+    database.execute("BEGIN TRAN;\n" + String.join("\n", queries) + "\nCOMMIT TRAN;");
+  }
+
+  @Override
+  public boolean isValidData(String data) {
+    return true;
+  }
+
+  @Override
+  public boolean isSchemaRequired() {
+    return true;
   }
 
 }
