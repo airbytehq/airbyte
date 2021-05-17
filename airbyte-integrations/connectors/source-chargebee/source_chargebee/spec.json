@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Chargebee Spec",
     "type": "object",
-    "required": ["site", "site_api_key"],
+    "required": ["site", "site_api_token"],
     "additionalProperties": false,
     "properties": {
       "site": {
@@ -13,12 +13,11 @@
         "description": "The site prefix for your Chargebee instance",
         "examples": "kabo-test"
       },
-      "site_api_key": {
+      "site_api_token": {
         "type": "string",
         "title": "API Key",
         "description": "The API key from your Chargebee instance",
-        "examples": "test_3yzfanAXFcmUSdWC9wQcM9OCDQJkSYoppu",
-        "airbyte_secret": true
+        "examples": "test_3yzfanAXFcmUSdWC9wQcM9OCDQJkSYoppu"
       }
     }
   }
