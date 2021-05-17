@@ -29,8 +29,7 @@ class ChargebeeStream(Stream):
     supports_incremental = True
     primary_key = "id"
 
-    def __init__(self, env, limit):
-        self.env = env
+    def __init__(self, limit):
         self.limit = limit
         super().__init__()    
 
@@ -42,12 +41,9 @@ class ChargebeeStream(Stream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
 
-        result = self.api.list(
-            {
-                "env": self.env,
+        result = self.api.list({
                 "limit": self.limit,
-            }
-        )
+        })
         for message in result:
             yield message._response
 
@@ -86,31 +82,16 @@ class CustomerStream(ChargebeeStream):
 
 
 class SourceChargebee(AbstractSource):
+    # Class variables
     LIMIT = 100
 
-    def __init__(self):
-        self.env = None
-        super().__init__()
-
-    def _get_client(self, config: Mapping, logger):
-        """Construct client"""
-        # logger.info(f"GET CLIENT: Before configuration=")
-        # configuration = {"api_key": config["api_key"], "site": config["site"]}
-        logger.info(f"GET CLIENT: Before client=")
-        client = ChargeBee
-        logger.info(f"GET CLIENT: Before client.configure=")
-        client.configure(options=config)
-        logger.info(f"GET CLIENT: Before self.env=")
-        self.env = client.default_env
-        logger.info(f"GET CLIENT: End")
-
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        logger.info(f"STARTING CHECK CONNECTION") # Debugging
-        if self.env is None:
-            logger.info(f"CONNECTION: In if-statement")
-            self._get_client(config, logger)
+        # Configure the Chargebee Python SDK
+        chargebee.configure(
+            api_key=config['site_api_token'],
+            site=config["site"],
+        )
         try:
-            logger.info(f"CONNECTION: In try-statement")
             # Get one subscription to test connection
             Subscription.list(
                 # Set limit
@@ -118,10 +99,7 @@ class SourceChargebee(AbstractSource):
                 params={
                     "limit": 1,
                 },
-                # Use the Chargebee environment
-                env=self.env,
             )
-            logger.info(f"CHECK CONNECTION: Successful") # Debugging
             return True, None
         except Exception as err:
             # Should catch all exceptions
@@ -132,11 +110,14 @@ class SourceChargebee(AbstractSource):
             return False, str(err)
 
     def streams(self, config) -> List[Stream]:
-        if self.env is None:
-            self._get_client(config)
-
+        # Configure the Chargebee Python SDK
+        chargebee.configure(
+            api_key=config['site_api_token'],
+            site=config["site"],
+        )
+        # Add the streams
         streams = [
-            SubscriptionStream(env=self.env, limit=self.LIMIT),
-            CustomerStream(env=self.env, limit=self.LIMIT),
+            SubscriptionStream(limit=self.LIMIT),
+            CustomerStream(limit=self.LIMIT),
         ]
         return streams
