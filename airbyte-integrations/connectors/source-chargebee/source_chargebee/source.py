@@ -8,7 +8,7 @@ import requests
 import chargebee
 from chargebee.main import ChargeBee
 from chargebee.environment import Environment
-from chargebee.models import Subscription, Customer
+from chargebee.models import Subscription, Customer, Invoice
 from chargebee.api_error import (
     APIError,
     PaymentError,
@@ -80,6 +80,10 @@ class CustomerStream(ChargebeeStream):
     cursor_field = "updated_at"
     api = Customer
 
+class InvoiceStream(ChargebeeStream):
+    name = "Invoice"
+    cursor_field = "updated_at"
+    api = Invoice
 
 class SourceChargebee(AbstractSource):
     # Class variables
@@ -119,5 +123,6 @@ class SourceChargebee(AbstractSource):
         streams = [
             SubscriptionStream(limit=self.LIMIT),
             CustomerStream(limit=self.LIMIT),
+            InvoiceStream(limit=self.LIMIT),
         ]
         return streams
