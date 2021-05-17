@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 public class DbtTransformationRunner implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationRunner.class);
+  private static final String DBT_ENTRYPOINT_SH = "entrypoint.sh";
 
   private final ProcessBuilderFactory pbf;
   private final NormalizationRunner normalizationRunner;
@@ -58,8 +59,14 @@ public class DbtTransformationRunner implements AutoCloseable {
   }
 
   /**
-   * Re-use the Normalization runner to configure the dbt project with the correct destination
-   * settings and then run the custom transformation command.
+   * The docker image used by the DbtTransformationRunner is provided by the User, so we can't ensure
+   * to have the right python, dbt, dependencies etc software installed to successfully run our
+   * transform-config scripts (to translate Airbyte Catalogs into Dbt profiles file). Thus, we depend
+   * on the NormalizationRunner to configure the dbt project with the appropriate destination settings
+   * and pull the custom git repository into the workspace.
+   *
+   * Once the workspace folder/files is setup to run, we invoke the custom transformation command as
+   * provided by the user to execute whatever extra transformation has been implemented.
    */
   public boolean run(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) throws Exception {
     if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, dbtConfig)) {
@@ -69,10 +76,10 @@ public class DbtTransformationRunner implements AutoCloseable {
   }
 
   public boolean transform(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) throws Exception {
-    IOs.writeFile(jobRoot, WorkerConstants.CUSTOM_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"));
+    IOs.writeFile(jobRoot, DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"));
     try {
       final List<String> dbtArguments = new ArrayList<>();
-      dbtArguments.add("/data/job/transform/" + WorkerConstants.CUSTOM_ENTRYPOINT_SH);
+      dbtArguments.add("/data/job/transform/" + DBT_ENTRYPOINT_SH);
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
       if (!dbtConfig.getDbtArguments().contains("--profiles-dir=")) {
         dbtArguments.add("--profiles-dir=/data/job/transform/");

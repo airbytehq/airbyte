@@ -25,6 +25,7 @@
 package io.airbyte.integrations.standardtest.destination;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -202,6 +203,10 @@ public abstract class TestDestination {
    */
   protected boolean implementsBasicNormalization() {
     return false;
+  }
+
+  private boolean implementsDBTTransformation() {
+    return implementsBasicNormalization();
   }
 
   /**
@@ -653,6 +658,34 @@ public abstract class TestDestination {
       throw new WorkerException("dbt docs generate Failed.");
     }
     runner.close();
+  }
+
+  @Test
+  void testCustomDbtTransformationsFailure() throws Exception {
+    if (!implementsBasicNormalization()) {
+      return;
+    }
+
+    final JsonNode config = getConfigWithBasicNormalization();
+
+    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+        getImageName(),
+        pbf,
+        config));
+    runner.start();
+    final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
+    final OperatorDbt dbtConfig = new OperatorDbt()
+        .withGitRepoUrl("https://github.com/fishtown-analytics/dbt-learn-demo.git")
+        .withGitRepoBranch("master")
+        .withDockerImage("fishtownanalytics/dbt:0.19.1")
+        .withDbtArguments("debug");
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt debug Failed.");
+    }
+
+    dbtConfig.withDbtArguments("test");
+    assertFalse(runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig),
+        "dbt test should fail, as we haven't run dbt run on this project yet");
   }
 
   /**

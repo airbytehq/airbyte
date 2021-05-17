@@ -28,7 +28,6 @@ public class WorkerConstants {
 
   public static final String SOURCE_CONFIG_JSON_FILENAME = "source_config.json";
   public static final String DESTINATION_CONFIG_JSON_FILENAME = "destination_config.json";
-  public static final String CUSTOM_ENTRYPOINT_SH = "entrypoint.sh";
 
   public static final String SOURCE_CATALOG_JSON_FILENAME = "source_catalog.json";
   public static final String DESTINATION_CATALOG_JSON_FILENAME = "destination_catalog.json";
