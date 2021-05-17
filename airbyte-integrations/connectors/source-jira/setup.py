@@ -23,12 +23,21 @@
 
 from setuptools import find_packages, setup
 
+MAIN_REQUIREMENTS = ["airbyte-cdk", "requests", "pendulum==2.1.2"]
+
+TEST_REQUIREMENTS = [
+    "pytest==6.1.2",
+]
+
 setup(
     name="source_jira",
     description="Source implementation for Jira.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "requests", "pytest==6.1.2", "pendulum==2.1.2"],
+    install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
 )
