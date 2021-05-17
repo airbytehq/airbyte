@@ -29,8 +29,8 @@ from typing import Any, Dict, Mapping, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk.sources.deprecated.client import BaseClient
 from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.sources.deprecated.client import BaseClient
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import ConnectionError
 
