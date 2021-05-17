@@ -72,9 +72,11 @@ const SourcesView: React.FC = () => {
         }: CellProps<{
           latestDockerImageTag: string;
           dockerImageTag: string;
+          icon?: string;
         }>) => (
           <ConnectorCell
             connectorName={cell.value}
+            img={row.original.icon}
             hasUpdate={
               row.original.latestDockerImageTag !== row.original.dockerImageTag
             }
