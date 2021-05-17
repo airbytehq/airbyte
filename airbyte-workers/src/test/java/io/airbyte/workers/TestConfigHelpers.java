@@ -38,6 +38,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -56,6 +57,7 @@ public class TestConfigHelpers {
     final UUID destinationDefinitionId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
     final UUID connectionId = UUID.randomUUID();
+    final UUID operationId = UUID.randomUUID();
 
     final JsonNode sourceConnection =
         Jsons.jsonNode(
@@ -94,7 +96,8 @@ public class TestConfigHelpers {
         .withStatus(Status.ACTIVE)
         .withName(CONNECTION_NAME)
         .withPrefix(CONNECTION_NAME)
-        .withCatalog(catalog);
+        .withCatalog(catalog)
+        .withOperationIds(List.of(operationId));
 
     final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 

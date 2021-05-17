@@ -4,9 +4,7 @@
 
 The Airbyte Redshift destination allows you to sync data to Redshift.
 
-This Redshift destination connector has two replication strategies:
-1) INSERT: Replicates data via SQL INSERT queries. This is built on top of the destination-jdbc code base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in Redshift documentation [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). Not recommended for production workloads as this does not scale well.
-2) COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html). Requires an S3 bucket and credentials.
+This Redshift destination connector has two replication strategies: 1\) INSERT: Replicates data via SQL INSERT queries. This is built on top of the destination-jdbc code base and is configured to rely on JDBC 4.2 standard drivers provided by Amazon via Mulesoft [here](https://mvnrepository.com/artifact/com.amazon.redshift/redshift-jdbc42) as described in Redshift documentation [here](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-install.html). Not recommended for production workloads as this does not scale well. 2\) COPY: Replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html). Requires an S3 bucket and credentials.
 
 Airbyte automatically picks an approach depending on the given configuration - if S3 configuration is present, Airbyte will use the COPY strategy and vice versa.
 
@@ -40,7 +38,7 @@ You will need to choose an existing database or create a new database that will 
 
 1. Active Redshift cluster
 2. Allow connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
-3. A staging S3 bucket with credentials (for the COPY strategy).
+3. A staging S3 bucket with credentials \(for the COPY strategy\).
 
 ### Setup guide
 
@@ -62,7 +60,7 @@ You should have all the requirements needed to configure Redshift as a destinati
 * **Database**
   * This database needs to exist within the cluster provided.
 
-#### 2a. Fill up S3 info (for COPY strategy)
+#### 2a. Fill up S3 info \(for COPY strategy\)
 
 Provide the required S3 info.
 
@@ -75,6 +73,8 @@ Provide the required S3 info.
   * We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to objects in the staging bucket. 
 * **Secret Access Key**
   * Corresponding key to the above key id.
+* **Part Size**
+  * Affects the size limit of an individual Redshift table. Optional. Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default table limit of 100GB. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.
 
 ## Notes about Redshift Naming Conventions
 
@@ -92,4 +92,10 @@ From [Redshift Names & Identifiers](https://docs.aws.amazon.com/redshift/latest/
 Delimited identifiers \(also known as quoted identifiers\) begin and end with double quotation marks \("\). If you use a delimited identifier, you must use the double quotation marks for every reference to that object. The identifier can contain any standard UTF-8 printable characters other than the double quotation mark itself. Therefore, you can create column or table names that include otherwise illegal characters, such as spaces or the percent symbol. ASCII letters in delimited identifiers are case-insensitive and are folded to lowercase. To use a double quotation mark in a string, you must precede it with another double quotation mark character.
 
 Therefore, Airbyte Redshift destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
+
+## Data Size Limitations
+
+Redshift specifies a maximum limit of 65535 bytes to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
+
+See [docs](https://docs.aws.amazon.com/redshift/latest/dg/r_Character_types.html)
 

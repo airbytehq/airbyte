@@ -9,6 +9,7 @@ import ConnectionResource from "core/resources/Connection";
 import config from "config";
 import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
 
 type IProps = {
   sources: Source[];
@@ -21,7 +22,19 @@ const SourcesTable: React.FC<IProps> = ({ sources }) => {
     workspaceId: config.ui.workspaceId,
   });
 
-  const data = getEntityTableData(sources, connections, "source");
+  const { sourceDefinitions } = useResource(
+    SourceDefinitionResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId,
+    }
+  );
+
+  const data = getEntityTableData(
+    sources,
+    connections,
+    sourceDefinitions,
+    "source"
+  );
 
   const clickRow = (source: EntityTableDataItem) =>
     push(`${Routes.Source}/${source.entityId}`);

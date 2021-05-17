@@ -15,6 +15,8 @@ import { Routes } from "../../../routes";
 import CreateConnectionContent from "components/CreateConnectionContent";
 import SourceResource from "core/resources/Source";
 import DestinationResource from "core/resources/Destination";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
 
 type IProps = {
   type: "source" | "destination" | "connection";
@@ -33,6 +35,11 @@ export enum EntityStepsTypes {
 }
 
 const CreationFormPage: React.FC<IProps> = ({ type }) => {
+  const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
+  const [currentEntityStep, setCurrentEntityStep] = useState(
+    EntityStepsTypes.SOURCE
+  );
+
   const { location, push } = useRouter();
   const source = useResource(
     SourceResource.detailShape(),
@@ -42,6 +49,15 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         }
       : null
   );
+  const sourceDefinition = useResource(
+    SourceDefinitionResource.detailShape(),
+    source
+      ? {
+          sourceDefinitionId: source.sourceDefinitionId,
+        }
+      : null
+  );
+
   const destination = useResource(
     DestinationResource.detailShape(),
     location.state?.destinationId
@@ -50,52 +66,14 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         }
       : null
   );
-
-  const steps =
-    type === "connection"
-      ? [
-          {
-            id: StepsTypes.CREATE_ENTITY,
-            name: <FormattedMessage id={"onboarding.createSource"} />,
-          },
-          {
-            id: StepsTypes.CREATE_CONNECTOR,
-            name: <FormattedMessage id={"onboarding.createDestination"} />,
-          },
-          {
-            id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
-          },
-        ]
-      : [
-          {
-            id: StepsTypes.CREATE_ENTITY,
-            name:
-              type === "destination" ? (
-                <FormattedMessage id={"onboarding.createDestination"} />
-              ) : (
-                <FormattedMessage id={"onboarding.createSource"} />
-              ),
-          },
-          {
-            id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
-          },
-        ];
-  const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
-  const [currentEntityStep, setCurrentEntityStep] = useState(
-    EntityStepsTypes.SOURCE
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    destination
+      ? {
+          destinationDefinitionId: destination.destinationDefinitionId,
+        }
+      : null
   );
-
-  const afterSubmitConnection = () => {
-    if (type === "destination") {
-      push(`${Routes.Source}/${source?.sourceId}`);
-    } else if (type === "source") {
-      push(`${Routes.Destination}/${destination?.destinationId}`);
-    } else {
-      push(`${Routes.Connections}`);
-    }
-  };
 
   const renderStep = () => {
     if (
@@ -151,6 +129,16 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       }
     }
 
+    const afterSubmitConnection = () => {
+      if (type === "destination") {
+        push(`${Routes.Source}/${source?.sourceId}`);
+      } else if (type === "source") {
+        push(`${Routes.Destination}/${destination?.destinationId}`);
+      } else {
+        push(`${Routes.Connections}`);
+      }
+    };
+
     return (
       <CreateConnectionContent
         source={source!}
@@ -159,6 +147,38 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
       />
     );
   };
+
+  const steps =
+    type === "connection"
+      ? [
+          {
+            id: StepsTypes.CREATE_ENTITY,
+            name: <FormattedMessage id={"onboarding.createSource"} />,
+          },
+          {
+            id: StepsTypes.CREATE_CONNECTOR,
+            name: <FormattedMessage id={"onboarding.createDestination"} />,
+          },
+          {
+            id: StepsTypes.CREATE_CONNECTION,
+            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+          },
+        ]
+      : [
+          {
+            id: StepsTypes.CREATE_ENTITY,
+            name:
+              type === "destination" ? (
+                <FormattedMessage id={"onboarding.createDestination"} />
+              ) : (
+                <FormattedMessage id={"onboarding.createSource"} />
+              ),
+          },
+          {
+            id: StepsTypes.CREATE_CONNECTION,
+            name: <FormattedMessage id={"onboarding.setUpConnection"} />,
+          },
+        ];
 
   return (
     <MainPageWithScroll
@@ -184,8 +204,19 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         {currentStep !== StepsTypes.CREATE_CONNECTION &&
           (!!source || !!destination) && (
             <ConnectionBlock
-              itemFrom={source ? { name: source.name } : undefined}
-              itemTo={destination ? { name: destination.name } : undefined}
+              itemFrom={
+                source
+                  ? { name: source.name, icon: sourceDefinition?.icon }
+                  : undefined
+              }
+              itemTo={
+                destination
+                  ? {
+                      name: destination.name,
+                      icon: destinationDefinition?.icon,
+                    }
+                  : undefined
+              }
             />
           )}
         {renderStep()}

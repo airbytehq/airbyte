@@ -457,9 +457,11 @@ public class DefaultJobPersistence implements JobPersistence {
   private Map<DatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
     final List<String> tables = listTables(schema);
     final Map<DatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
+
     for (final String table : tables) {
       result.put(DatabaseSchema.valueOf(table.toUpperCase()), exportTable(schema, table));
     }
+
     return result;
   }
 
@@ -471,6 +473,7 @@ public class DefaultJobPersistence implements JobPersistence {
       return database.query(context -> context.meta().getSchemas(schema).stream()
           .flatMap(s -> context.meta(s).getTables().stream())
           .map(Named::getName)
+          .filter(table -> DatabaseSchema.getLowerCaseTableNames().contains(table.toLowerCase()))
           .collect(Collectors.toList()));
     } else {
       return List.of();

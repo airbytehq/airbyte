@@ -25,12 +25,11 @@
 package io.airbyte.migrate.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.migrate.Migration;
+import io.airbyte.migrate.MigrationUtils;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
-import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -67,12 +66,9 @@ public class MigrationV0_20_0 extends BaseMigration implements Migration {
   @Override
   public Map<ResourceId, JsonNode> getInputSchema() {
     final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
-    try {
-      outputSchema.put(STANDARD_WORKSPACE_RESOURCE_ID,
-          Jsons.jsonNode(MoreResources.readResource("migrations/migrationV0_20_0/StandardWorkspace.yaml")));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    outputSchema.put(
+        STANDARD_WORKSPACE_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_WORKSPACE_RESOURCE_ID));
     return outputSchema;
   }
 
