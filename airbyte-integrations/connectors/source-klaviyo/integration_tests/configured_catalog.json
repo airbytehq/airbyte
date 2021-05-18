@@ -206,7 +206,7 @@
         "namespace": null
       },
       "sync_mode": "full_refresh",
-      "cursor_field": ["timestamp"],
+      "cursor_field": null,
       "destination_sync_mode": "append",
       "primary_key": null
     },
@@ -220,22 +220,23 @@
             "object": {
               "type": "string"
             },
-            "type": {
+            "email": {
               "type": "string"
             },
             "reason": {
               "type": "string"
             },
-            "email": {
-              "type": "string"
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
             }
           },
-          "required": ["object", "type", "reason", "email"]
+          "required": ["object", "email", "reason", "timestamp"]
         },
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
         "default_cursor_field": null,
-        "source_defined_primary_key": [["TODO"]],
+        "source_defined_primary_key": [["email"]],
         "namespace": null
       },
       "sync_mode": "full_refresh",
