@@ -20,20 +20,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_klaviyo.schemas import Campaign, Event, GlobalExclusion, PersonList, Metric
+from source_klaviyo.schemas import Campaign, Event, GlobalExclusion, Metric, PersonList
 
 
 class KlaviyoStream(HttpStream, ABC):
     """Base stream"""
 
-    url_base = 'https://a.klaviyo.com/api/v1/'
+    url_base = "https://a.klaviyo.com/api/v1/"
     primary_key = "id"
     page_size = 1
 
@@ -56,17 +56,17 @@ class KlaviyoStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
         decoded_response = response.json()
-        if decoded_response['end'] < decoded_response['total'] - 1:  # end is zero based
+        if decoded_response["end"] < decoded_response["total"] - 1:  # end is zero based
             return {
                 "page": decoded_response["page"] + 1,
             }
 
         return None
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-                       next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
-        """ Usually contains common params e.g. pagination size etc.
-        """
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """Usually contains common params e.g. pagination size etc."""
         next_page_token = next_page_token or {}
         return {**next_page_token, "api_key": self._api_key, "count": self.page_size}
 
@@ -88,14 +88,14 @@ class Campaigns(KlaviyoStream):
     schema = Campaign
 
     def path(self, **kwargs) -> str:
-        return 'campaigns'
+        return "campaigns"
 
 
 class Lists(KlaviyoStream):
     schema = PersonList
 
     def path(self, **kwargs) -> str:
-        return 'lists'
+        return "lists"
 
 
 class GlobalExclusions(KlaviyoStream):
@@ -103,14 +103,14 @@ class GlobalExclusions(KlaviyoStream):
     primary_key = "email"
 
     def path(self, **kwargs) -> str:
-        return 'people/exclusions'
+        return "people/exclusions"
 
 
 class Metrics(KlaviyoStream):
     schema = Metric
 
     def path(self, **kwargs) -> str:
-        return 'metrics'
+        return "metrics"
 
 
 class IncrementalKlaviyoStream(KlaviyoStream, ABC):
@@ -157,17 +157,15 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
                 If there are no more pages in the result, return None.
         """
         decoded_response = response.json()
-        if decoded_response.get('next'):
-            return {
-                "since": decoded_response["next"]
-            }
+        if decoded_response.get("next"):
+            return {"since": decoded_response["next"]}
 
         return None
 
 
 class Events(IncrementalKlaviyoStream):
     schema = Event
-    cursor_field = 'timestamp'
+    cursor_field = "timestamp"
 
     def path(self, **kwargs) -> str:
         return "metrics/timeline"

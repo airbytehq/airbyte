@@ -20,8 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 from datetime import datetime
-from typing import Optional, Any, MutableMapping, List
+from typing import Any, List, MutableMapping, Optional
 
 from pydantic import BaseModel, Extra
 
@@ -29,10 +30,11 @@ from pydantic import BaseModel, Extra
 class BaseSchemaModel(BaseModel):
     class Config:
         extra = Extra.allow
+
         @staticmethod
         def schema_extra(schema: MutableMapping[str, Any], model) -> None:
-            for prop in schema.get('properties', {}).values():
-                prop.pop('title', None)
+            for prop in schema.get("properties", {}).values():
+                prop.pop("title", None)
 
     object: str
 

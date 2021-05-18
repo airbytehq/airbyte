@@ -20,11 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1"
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",

@@ -20,16 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import List, Tuple, Mapping, Any, Type
 
-from pydantic import Field
-from pydantic.main import BaseModel
+from typing import Any, List, Mapping, Tuple, Type
 
-from airbyte_cdk.models import DestinationSyncMode, ConnectorSpecification, SyncMode
+from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-
-from source_klaviyo.streams import Campaigns, Events, Lists, GlobalExclusions, Metrics
+from pydantic import Field
+from pydantic.main import BaseModel
+from source_klaviyo.streams import Campaigns, Events, GlobalExclusions, Lists, Metrics
 
 
 class ConnectorConfig(BaseModel):
@@ -37,7 +36,7 @@ class ConnectorConfig(BaseModel):
         title = "Klaviyo Spec"
 
     api_key: str = Field(
-        description="Klaviyo API Key. See our <a href=\"https://docs.airbyte.io/integrations/sources/klaviyo\">docs</a> if you need help finding this key.",
+        description='Klaviyo API Key. See our <a href="https://docs.airbyte.io/integrations/sources/klaviyo">docs</a> if you need help finding this key.',
         airbyte_secret=True,
     )
     start_date: str = Field(
@@ -48,9 +47,8 @@ class ConnectorConfig(BaseModel):
 
 
 class SourceKlaviyo(AbstractSource):
-
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """ Connection check to validate that the user-provided config can be used to connect to the underlying API
+        """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
@@ -73,7 +71,7 @@ class SourceKlaviyo(AbstractSource):
         return ok, error_msg
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
-        """ Discovery method, returns available streams
+        """Discovery method, returns available streams
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
@@ -95,5 +93,5 @@ class SourceKlaviyo(AbstractSource):
             changelogUrl="https://docs.airbyte.io/integrations/sources/klaviyo",
             supportsIncremental=True,
             supported_destination_sync_modes=[str(DestinationSyncMode.append)],
-            connectionSpecification=ConnectorConfig.schema()
+            connectionSpecification=ConnectorConfig.schema(),
         )
