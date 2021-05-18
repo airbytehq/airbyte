@@ -68,7 +68,7 @@ class SourceKlaviyo(AbstractSource):
             _ = list(Metrics(api_key=config.api_key).read_records(sync_mode=SyncMode.full_refresh))
             ok = True
         except Exception as e:
-            error_msg = str(e)
+            error_msg = repr(e)
 
         return ok, error_msg
 
