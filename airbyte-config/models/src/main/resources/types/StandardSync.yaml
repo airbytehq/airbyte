@@ -9,6 +9,7 @@ required:
   - destinationId
   - name
   - catalog
+  - manual
 additionalProperties: false
 properties:
   prefix:
@@ -38,3 +39,24 @@ properties:
       - active
       - inactive
       - deprecated
+  # Ideally schedule and manual should be a union, but java
+  # codegen does not handle the union type properly.
+  schedule:
+    type: object
+    required:
+      - timeUnit
+      - units
+    additionalProperties: false
+    properties:
+      timeUnit:
+        type: string
+        enum:
+          - minutes
+          - hours
+          - days
+          - weeks
+          - months
+      units:
+        type: integer
+  manual:
+    type: boolean
