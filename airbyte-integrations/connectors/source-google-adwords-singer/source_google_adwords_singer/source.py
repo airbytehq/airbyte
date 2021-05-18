@@ -50,10 +50,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
             )
             for customer_id in customer_ids:
                 sdk_client = adwords.AdWordsClient(
-                    config["developer_token"],
-                    oauth2_client,
-                    user_agent=config["user_agent"],
-                    client_customer_id=customer_id
+                    config["developer_token"], oauth2_client, user_agent=config["user_agent"], client_customer_id=customer_id
                 )
                 selector = {
                     "fields": ["Name", "CanManageClients", "CustomerId", "TestAccount", "DateTimeZone", "CurrencyCode"],
@@ -73,9 +70,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
                     is_manager = account.canManageClients
                     for stream in streams:
                         if stream.endswith("REPORT") and is_manager:
-                            logger.log_by_prefix(
-                                f"Unable to sync {stream} with the manager account {customer_id}", "ERROR"
-                            )
+                            logger.log_by_prefix(f"Unable to sync {stream} with the manager account {customer_id}", "ERROR")
                             sys.exit(1)
                 else:
                     err = f"No accounts associated with customer id {customer_id}"
