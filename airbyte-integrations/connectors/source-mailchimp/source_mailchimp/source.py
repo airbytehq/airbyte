@@ -21,67 +21,201 @@
 # SOFTWARE.
 
 
-import json
-from typing import DefaultDict, Dict, Generator
+import base64
+import math
+from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_protocol import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    Status,
-    SyncMode,
-)
-from base_python import AirbyteLogger, Source
-
-from .client import Client
+import dateutil.parser
+import requests
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from mailchimp3 import MailChimp
 
 
-class SourceMailchimp(Source):
-    """
-    Mailchimp API Reference: https://mailchimp.com/developer/api/
-    """
+class MailChimpStream(HttpStream, ABC):
+    url_base = "https://us2.api.mailchimp.com/3.0/"
+    primary_key = "id"
+    PAGINATION = 100
 
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
-        client = self._client(config)
-        alive, error = client.health_check()
-        if not alive:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{error.title}: {error.detail}")
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # self.url_base = url_base #but `us2` can differ as {ds} in docs
+        self.current_offset = 0
 
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        decoded_response = response.json()
+        api_data = decoded_response[self.data_field]
+        if len(api_data) < self.PAGINATION:
+            return {}
+        else:
+            self.current_offset += self.PAGINATION
+            return {"offset": self.current_offset}
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        client = self._client(config)
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
 
-        return AirbyteCatalog(streams=client.get_streams())
+        params = {"count": self.PAGINATION}
 
-    def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
-    ) -> Generator[AirbyteMessage, None, None]:
-        client = self._client(config)
+        # Handle pagination by inserting the next page's token in the request parameters
+        if next_page_token:
+            params.update(next_page_token)
+        return params
 
-        logger.info("Starting syncing mailchimp")
-        for configured_stream in catalog.streams:
-            yield from self._read_record(client=client, configured_stream=configured_stream, state=state)
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return {}
 
-        logger.info("Finished syncing mailchimp")
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        yield from response_json[self.data_field]
 
-    def _client(self, config: json):
-        client = Client(username=config["username"], apikey=config["apikey"])
 
-        return client
+class IncrementalMailChimpStream(MailChimpStream, ABC):
+    state_checkpoint_interval = math.inf
 
-    @staticmethod
-    def _read_record(
-        client: Client, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any]
-    ) -> Generator[AirbyteMessage, None, None]:
-        entity_map = {"Lists": client.lists, "Campaigns": client.campaigns, "Email_activity": client.email_activity}
+    @property
+    @abstractmethod
+    def cursor_field(self) -> str:
+        """
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
+        """
+        pass
 
-        stream_name = configured_stream.stream.name
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
 
-        if configured_stream.sync_mode == SyncMode.full_refresh:
-            state.pop(stream_name, None)
+        zero_date = datetime(1900, 1, 1)
 
-        for record in entity_map[stream_name](state=state):
-            yield record
+        current_state = current_stream_state.get(self.cursor_field)
+        latest_state = latest_record.get(self.cursor_field)
+        if not any([current_state, latest_state]):  # noqa
+            return {self.cursor_field: zero_date}
+
+        if not all([current_state, latest_state]):
+            nonzero_state = list(filter(bool, [current_state, latest_state]))[0]
+            if not isinstance(nonzero_state, datetime):
+                nonzero_state = dateutil.parser.isoparse(nonzero_state)
+            return {self.cursor_field: nonzero_state}
+        else:
+            if not isinstance(current_state, datetime):
+                current_state = dateutil.parser.isoparse(current_state)
+            if not isinstance(latest_state, datetime):
+                latest_state = dateutil.parser.isoparse(latest_state)
+            max_value = max(latest_state, current_state)
+            return {self.cursor_field: max_value}
+
+    def request_params(self, stream_state=None, **kwargs):
+
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        default_params = {"sort_field": self.cursor_field, "sort_dir": "ASC"}
+        since_value = stream_state.get(self.cursor_field)
+        if isinstance(since_value, datetime):
+            since_value = since_value.isoformat()
+        default_params[f"since_{self.cursor_field}"] = since_value
+        params.update(default_params)
+        return params
+
+
+class Lists(IncrementalMailChimpStream):
+    cursor_field = "date_created"
+    name = "Lists"
+    data_field = "lists"
+
+    def path(self, **kwargs) -> str:
+        return "lists"
+
+
+class Campaigns(IncrementalMailChimpStream):
+    cursor_field = "create_time"
+    name = "Campaigns"
+    data_field = "campaigns"
+
+    def path(self, **kwargs) -> str:
+        return "campaigns"
+
+
+class EmailActivity(MailChimpStream):
+    cursor_field = "timestamp"
+    name = "Email_activity"
+    data_field = "emails"
+
+    def stream_slices(self, **kwargs):
+        campaign_stream = Campaigns(authenticator=self.authenticator)
+        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"campaign_id": campaign["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        campaign_id = stream_slice["campaign_id"]
+        return f"reports/{campaign_id}/email-activity"
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        since_value = stream_state.get(self.cursor_field)
+        if since_value:
+            if isinstance(since_value, datetime):
+                since_value = since_value.isoformat()
+            params["since"] = since_value
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        # transform before save
+        # [{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', 'activity[array[object]]', '_links'}] ->
+        # -> [[{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
+        data = response_json[self.data_field]
+        for item in data:
+            for activity_record in item["activity"]:
+                new_record = {k: v for k, v in item.items() if k != "activity"}
+                for k, v in activity_record.items():
+                    new_record[k] = v
+                yield new_record
+
+
+class HttpBasicAuthenticator(HttpAuthenticator):  # should not placed in this file but we havent it!
+    def __init__(self, auth: Tuple[str, str]):
+        self.auth = auth
+
+    def get_auth_header(self) -> Mapping[str, str]:
+        # origin: resp = requests.get(url, auth=(anystring, 'your_apikey'))
+        # -> use Basic Authorization header instead
+        auth_string = f"{self.auth[0]}:{self.auth[1]}".encode("utf8")
+        b64_encoded = base64.b64encode(auth_string).decode("utf8")
+        return {"Authorization": "Basic " + b64_encoded}
+
+
+class SourceMailchimp(AbstractSource):
+    def _setup_properties(self, config: Mapping[str, Any]) -> None:
+        if not hasattr(self, "_client"):
+            self._client = MailChimp(mc_api=config["apikey"], mc_user=config["username"])
+            self.apikey = config["apikey"]
+            # MailChimpStream.url_base = self._client.base_url
+
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        try:
+            self._setup_properties(config=config)
+            self._client.ping.get()
+            return True, None
+        except Exception as e:
+            return False, e
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        self._setup_properties(config=config)
+        authenticator = HttpBasicAuthenticator(auth=("anystring", self.apikey))
+        streams_ = [Lists(authenticator=authenticator), Campaigns(authenticator=authenticator), EmailActivity(authenticator=authenticator)]
+
+        return streams_

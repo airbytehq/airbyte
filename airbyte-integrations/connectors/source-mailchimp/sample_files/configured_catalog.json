@@ -1201,43 +1201,33 @@
                   "title": "Email address for a subscriber.",
                   "description": "Email address for a subscriber."
                 },
-                "activity": {
-                  "type": "array",
-                  "title": "Activity",
-                  "description": "An array of objects, each showing an interaction with the email.",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "action": {
-                        "type": "string",
-                        "title": "action",
-                        "enum": ["open", "click", "bounce"],
-                        "description": "One of the following actions: 'open', 'click', or 'bounce'"
-                      },
-                      "type": {
-                        "type": "string",
-                        "title": "Type",
-                        "enum": ["hard", "soft"],
-                        "description": "If the action is a 'bounce', the type of bounce received: 'hard', 'soft'."
-                      },
-                      "timestamp": {
-                        "type": "string",
-                        "title": "Action date and time",
-                        "description": "The date and time recorded for the action in ISO 8601 format.",
-                        "format": "date-time"
-                      },
-                      "url": {
-                        "type": "string",
-                        "title": "The IP address.",
-                        "description": "The IP address recorded for the action."
-                      },
-                      "ip": {
-                        "type": "string",
-                        "title": "Action ip address",
-                        "description": "The IP address recorded for the action."
-                      }
-                    }
-                  }
+                "action": {
+                  "type": "string",
+                  "title": "action",
+                  "enum": ["open", "click", "bounce"],
+                  "description": "One of the following actions: 'open', 'click', or 'bounce'"
+                },
+                "type": {
+                  "type": "string",
+                  "title": "Type",
+                  "enum": ["hard", "soft"],
+                  "description": "If the action is a 'bounce', the type of bounce received: 'hard', 'soft'."
+                },
+                "timestamp": {
+                  "type": "string",
+                  "title": "Action date and time",
+                  "description": "The date and time recorded for the action in ISO 8601 format.",
+                  "format": "date-time"
+                },
+                "url": {
+                  "type": "string",
+                  "title": "The IP address.",
+                  "description": "The IP address recorded for the action."
+                },
+                "ip": {
+                  "type": "string",
+                  "title": "Action ip address",
+                  "description": "The IP address recorded for the action."
                 },
                 "_links": {
                   "type": "array",
@@ -1323,12 +1313,12 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["timestamp"]
       },
-      "sync_mode": "incremental",
-      "cursor_field": [],
+      "sync_mode": "full_refresh",
+      "cursor_field": ["timestamp"],
       "destination_sync_mode": "append"
     }
   ]
