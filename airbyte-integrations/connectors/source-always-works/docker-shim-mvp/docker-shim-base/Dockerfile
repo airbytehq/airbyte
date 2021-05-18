@@ -1,3 +1,4 @@
+# Replace this with an image of any Python source that uses the new CDK entrypoint.
 FROM airbyte/source-always-works:dev
 
 WORKDIR /airbyte/integration_code
