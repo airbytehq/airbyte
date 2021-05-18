@@ -10,6 +10,10 @@ MongoDB does not have anything like table definition, thus we have to define col
 
 Connector runs the map-reduce command which returns all unique document props in the collection. Map-reduce approach should be sufficient even for large clusters.
 
+#### Note
+
+To work with Atlas MongoDB, a **non-free** tier is required, as the free tier does not support the ability to perform the mapReduce operation.
+
 ### Step 2. Determine property types
 
 For each property found, connector selects 10k documents from the collection where this property is not empty. If all the selected values have the same type - connector will set appropriate type to the property. In all other cases connector will fallback to `string` type.

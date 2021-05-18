@@ -1,2 +1,2 @@
-# Connectors
+# Connector Catalog
 

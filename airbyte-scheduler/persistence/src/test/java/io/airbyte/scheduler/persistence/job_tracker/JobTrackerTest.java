@@ -24,15 +24,21 @@
 
 package io.airbyte.scheduler.persistence.job_tracker;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -44,12 +50,17 @@ import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -88,6 +99,12 @@ class JobTrackerTest {
       .put("duration", SYNC_DURATION)
       .put("volume_rows", SYNC_RECORDS_SYNC)
       .put("volume_mb", SYNC_BYTES_SYNC)
+      .build();
+  private static final ImmutableMap<String, Object> SYNC_CONFIG_METADATA = ImmutableMap.<String, Object>builder()
+      .put(JobTracker.CONFIG + ".source.key", JobTracker.SET)
+      .put(JobTracker.CONFIG + ".destination.key", false)
+      .put(JobTracker.CATALOG + ".sync_mode.full_refresh", JobTracker.SET)
+      .put(JobTracker.CATALOG + ".destination_sync_mode.append", JobTracker.SET)
       .build();
 
   private ConfigRepository configRepository;
@@ -167,7 +184,7 @@ class JobTrackerTest {
 
   @Test
   void testTrackSync() throws ConfigNotFoundException, IOException, JsonValidationException {
-    testAsynchronous(ConfigType.SYNC);
+    testAsynchronous(ConfigType.SYNC, SYNC_CONFIG_METADATA);
   }
 
   @Test
@@ -176,6 +193,12 @@ class JobTrackerTest {
   }
 
   void testAsynchronous(ConfigType configType) throws ConfigNotFoundException, IOException, JsonValidationException {
+    testAsynchronous(configType, Collections.emptyMap());
+  }
+
+  // todo update with connection-specific test
+  void testAsynchronous(ConfigType configType, Map<String, Object> additionalExpectedMetadata)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // for sync the job id is a long not a uuid.
     final long jobId = 10L;
 
@@ -183,19 +206,25 @@ class JobTrackerTest {
     final Job job = getJobMock(configType, jobId);
     // test when frequency is manual.
     when(configRepository.getStandardSyncSchedule(CONNECTION_ID)).thenReturn(new StandardSyncSchedule().withManual(true));
-    final Map<String, Object> manualMetadata = MoreMaps.merge(metadata, ImmutableMap.of("frequency", "manual"));
+    final Map<String, Object> manualMetadata = MoreMaps.merge(
+        metadata,
+        ImmutableMap.of("frequency", "manual"),
+        additionalExpectedMetadata);
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackSync(job, jobState), manualMetadata);
 
     // test when frequency is scheduled.
     when(configRepository.getStandardSyncSchedule(CONNECTION_ID))
         .thenReturn(new StandardSyncSchedule().withManual(false).withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
-    final Map<String, Object> scheduledMetadata = MoreMaps.merge(metadata, ImmutableMap.of("frequency", "1 min"));
+    final Map<String, Object> scheduledMetadata = MoreMaps.merge(
+        metadata,
+        ImmutableMap.of("frequency", "1 min"),
+        additionalExpectedMetadata);
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackSync(job, jobState), scheduledMetadata);
   }
 
   @Test
   void testTrackSyncAttempt() throws ConfigNotFoundException, IOException, JsonValidationException {
-    testAsynchronousAttempt(ConfigType.SYNC);
+    testAsynchronousAttempt(ConfigType.SYNC, SYNC_CONFIG_METADATA);
   }
 
   @Test
@@ -203,7 +232,28 @@ class JobTrackerTest {
     testAsynchronousAttempt(ConfigType.RESET_CONNECTION);
   }
 
+  @Test
+  void testConfigToMetadata() throws IOException {
+    String configJson = MoreResources.readResource("example_config.json");
+    JsonNode config = Jsons.deserialize(configJson);
+
+    Map<String, Object> expected = ImmutableMap.of(
+        JobTracker.CONFIG + ".username", JobTracker.SET,
+        JobTracker.CONFIG + ".has_ssl", false,
+        JobTracker.CONFIG + ".password", JobTracker.SET,
+        JobTracker.CONFIG + ".one_of.some_key", JobTracker.SET);
+
+    Map<String, Object> actual = JobTracker.configToMetadata(JobTracker.CONFIG, config);
+
+    assertEquals(expected, actual);
+  }
+
   void testAsynchronousAttempt(ConfigType configType) throws ConfigNotFoundException, IOException, JsonValidationException {
+    testAsynchronousAttempt(configType, Collections.emptyMap());
+  }
+
+  void testAsynchronousAttempt(ConfigType configType, Map<String, Object> additionalExpectedMetadata)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     // for sync the job id is a long not a uuid.
     final long jobId = 10L;
 
@@ -211,7 +261,11 @@ class JobTrackerTest {
     final Job job = getJobWithAttemptsMock(configType, jobId);
     // test when frequency is manual.
     when(configRepository.getStandardSyncSchedule(CONNECTION_ID)).thenReturn(new StandardSyncSchedule().withManual(true));
-    final Map<String, Object> manualMetadata = MoreMaps.merge(ATTEMPT_METADATA, metadata, ImmutableMap.of("frequency", "manual"));
+    final Map<String, Object> manualMetadata = MoreMaps.merge(
+        ATTEMPT_METADATA,
+        metadata,
+        ImmutableMap.of("frequency", "manual"),
+        additionalExpectedMetadata);
 
     jobTracker.trackSync(job, JobState.SUCCEEDED);
     assertCorrectMessageForSucceededState(manualMetadata);
@@ -243,8 +297,26 @@ class JobTrackerTest {
             .withName(DESTINATION_DEF_NAME)
             .withDockerImageTag(CONNECTOR_VERSION));
 
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)));
+
+    final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withSourceConfiguration(Jsons.jsonNode(ImmutableMap.of("key", "some_value")))
+        .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("key", false)))
+        .withConfiguredAirbyteCatalog(catalog);
+
+    final JobConfig jobConfig = mock(JobConfig.class);
+    when(jobConfig.getConfigType()).thenReturn(configType);
+
+    if (configType == ConfigType.SYNC) {
+      when(jobConfig.getSync()).thenReturn(jobSyncConfig);
+    }
+
     final Job job = mock(Job.class);
     when(job.getId()).thenReturn(jobId);
+    when(job.getConfig()).thenReturn(jobConfig);
     when(job.getConfigType()).thenReturn(configType);
     when(job.getScope()).thenReturn(CONNECTION_ID.toString());
     when(job.getAttemptsCount()).thenReturn(700);

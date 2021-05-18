@@ -8,6 +8,7 @@ export interface SourceDefinition {
   dockerImageTag: string;
   latestDockerImageTag: string;
   documentationUrl: string;
+  icon: string;
 }
 
 export default class SourceDefinitionResource
@@ -19,6 +20,7 @@ export default class SourceDefinitionResource
   readonly dockerImageTag: string = "";
   readonly latestDockerImageTag: string = "";
   readonly documentationUrl: string = "";
+  readonly icon: string = "";
 
   pk(): string {
     return this.sourceDefinitionId?.toString();

@@ -60,7 +60,7 @@ class DefaultAirbyteDestinationTest {
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
-  private static final StandardTargetConfig TARGET_CONFIG = WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
+  private static final StandardTargetConfig DESTINATION_CONFIG = WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
 
   private Path jobRoot;
   private IntegrationLauncher integrationLauncher;
@@ -86,19 +86,19 @@ class DefaultAirbyteDestinationTest {
   @SuppressWarnings("BusyWait")
   @Test
   public void testSuccessfulLifecycle() throws Exception {
-    final AirbyteDestination target = new DefaultAirbyteDestination(integrationLauncher);
-    target.start(TARGET_CONFIG, jobRoot);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
-    target.accept(recordMessage);
+    destination.accept(recordMessage);
 
     verify(outputStream, never()).close();
 
-    target.notifyEndOfStream();
+    destination.notifyEndOfStream();
 
     verify(outputStream).close();
 
-    target.close();
+    destination.close();
 
     final String actualOutput = new String(outputStream.toByteArray());
     assertEquals(Jsons.serialize(recordMessage) + "\n", actualOutput);
@@ -119,22 +119,22 @@ class DefaultAirbyteDestinationTest {
 
   @Test
   public void testCloseNotifiesLifecycle() throws Exception {
-    final AirbyteDestination target = new DefaultAirbyteDestination(integrationLauncher);
-    target.start(TARGET_CONFIG, jobRoot);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    destination.start(DESTINATION_CONFIG, jobRoot);
 
     verify(outputStream, never()).close();
 
-    target.close();
+    destination.close();
     verify(outputStream).close();
   }
 
   @Test
   public void testProcessFailLifecycle() throws Exception {
-    final AirbyteDestination target = new DefaultAirbyteDestination(integrationLauncher);
-    target.start(TARGET_CONFIG, jobRoot);
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    destination.start(DESTINATION_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
-    Assertions.assertThrows(WorkerException.class, target::close);
+    Assertions.assertThrows(WorkerException.class, destination::close);
   }
 
 }

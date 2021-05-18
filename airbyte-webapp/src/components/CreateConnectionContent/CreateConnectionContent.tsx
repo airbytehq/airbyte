@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useResource } from "rest-hooks";
 
 import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
@@ -22,7 +23,9 @@ import { SyncSchema } from "core/domain/catalog";
 
 import useConnection from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
-import { useDestinationDefinitionSpecificationLoad } from "../hooks/services/useDestinationHook";
+import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -60,11 +63,20 @@ const CreateConnectionContent: React.FC<IProps> = ({
     onDiscoverSchema,
   } = useDiscoverSchema(source?.sourceId);
 
+  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: source.sourceDefinitionId,
+  });
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    {
+      destinationDefinitionId: destination.destinationDefinitionId,
+    }
+  );
+
   const {
-    destinationDefinitionSpecification,
     isLoading: loadingDestination,
   } = useDestinationDefinitionSpecificationLoad(
-    destination.destinationDefinitionId
+    destination?.destinationDefinitionId
   );
 
   if (isLoading || loadingDestination) {
@@ -153,7 +165,8 @@ const CreateConnectionContent: React.FC<IProps> = ({
           schema={schema}
           source={source}
           destination={destination}
-          destinationDefinition={destinationDefinitionSpecification}
+          sourceIcon={sourceDefinition?.icon}
+          destinationIcon={destinationDefinition?.icon}
         />
       </Suspense>
     </ContentCard>

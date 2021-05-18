@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -31,7 +33,11 @@ MAIN_REQUIREMENTS = [
     "requests==2.25.1",
 ]
 
-TEST_REQUIREMENTS = ["pytest==6.1.2", "requests_mock==1.8.0"]
+TEST_REQUIREMENTS = [
+    "pytest==6.1.2",
+    "requests_mock==1.8.0",
+    "source-acceptance-test",
+]
 
 setup(
     name="source_hubspot",

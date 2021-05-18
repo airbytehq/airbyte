@@ -63,7 +63,8 @@ public class ConnectionHelpers {
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(sourceId)
-        .withDestinationId(UUID.randomUUID());
+        .withDestinationId(UUID.randomUUID())
+        .withOperationIds(List.of(UUID.randomUUID()));
   }
 
   public static StandardSync generateSyncWithDestinationId(UUID destinationId) {
@@ -76,7 +77,8 @@ public class ConnectionHelpers {
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(UUID.randomUUID())
-        .withDestinationId(destinationId);
+        .withDestinationId(destinationId)
+        .withOperationIds(List.of(UUID.randomUUID()));
   }
 
   public static ConnectionSchedule generateBasicSchedule() {
@@ -87,12 +89,14 @@ public class ConnectionHelpers {
 
   public static ConnectionRead generateExpectedConnectionRead(UUID connectionId,
                                                               UUID sourceId,
-                                                              UUID destinationId) {
+                                                              UUID destinationId,
+                                                              List<UUID> operationIds) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
         .sourceId(sourceId)
         .destinationId(destinationId)
+        .operationIds(operationIds)
         .name("presto to hudi")
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
@@ -104,7 +108,8 @@ public class ConnectionHelpers {
     return generateExpectedConnectionRead(
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
-        standardSync.getDestinationId());
+        standardSync.getDestinationId(),
+        standardSync.getOperationIds());
   }
 
   public static StandardSyncSchedule generateSchedule(UUID connectionId) {

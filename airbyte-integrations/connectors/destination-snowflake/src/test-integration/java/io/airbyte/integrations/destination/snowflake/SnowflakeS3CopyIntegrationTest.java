@@ -35,7 +35,8 @@ public class SnowflakeS3CopyIntegrationTest extends SnowflakeInsertIntegrationTe
   @Override
   public JsonNode getStaticConfig() {
     final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_s3_config.json")));
-    Preconditions.checkArgument(SnowflakeDestination.isCopy(copyConfig));
+    Preconditions.checkArgument(SnowflakeDestination.isS3Copy(copyConfig));
+    Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(copyConfig));
     return copyConfig;
   }
 

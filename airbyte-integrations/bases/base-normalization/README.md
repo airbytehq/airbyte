@@ -31,7 +31,7 @@ dbt files.
 This class is testing the transform config functionality that converts a destination_config.json into the adequate profiles.yml file for dbt to use
 see [related dbt docs on profiles.yml](https://docs.getdbt.com/reference/profiles.yml) for more context on what it actually is.
 
-#### test_stream_processor.py:
+#### test_stream_processor.py and test_stream_processor_naming.py:
 
 These unit tests functions check how each stream is converted to dbt models files.
 For example, one big focus area is around how table names are chosen.
@@ -86,7 +86,14 @@ or can also be invoked on github, thanks to the slash commands posted as comment
 
     /test connector=bases/base-normalization
 
-### Integration Tests Definitions:
+Note that these tests are connecting and processing data on top of real data warehouse destinations.
+Therefore, valid credentials files are expected to be injected in the `secrets/` folder in order to run 
+(not included in git repository).
+
+This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can 
+re-use the `destination_config.json` passed to destination connectors.
+
+### Integration Tests Definitions for test_normalization.py:
 
 Some test suites can be selected to be versioned control in Airbyte git repository (or not).
 This is useful to see direct impacts of code changes on downstream files generated or compiled
@@ -103,7 +110,8 @@ For example, below, we would have 2 different tests "suites" with this hierarchy
       ├── test_suite1/
       │   ├── data_input/
       │   │   ├── catalog.json
-      │   │   └── messages.txt
+      │   │   ├── messages.txt
+      │   │   └── replace_identifiers.json
       │   ├── dbt_data_tests/
       │   │   ├── file1.sql
       │   │   └── file2.sql
@@ -128,7 +136,7 @@ how it is specifically built.
 
 #### data_input/catalog.json:
 
-The catalog.json is the main input for normalization from which the dbt models files are being
+The `catalog.json` is the main input for normalization from which the dbt models files are being
 generated from as it describes in JSON Schema format what the data structure is.
 
 #### data_input/messages.txt:
@@ -137,6 +145,13 @@ The `messages.txt` are serialized Airbyte JSON records that should be sent to th
 transmitted by a source. In this integration test, the files is read and "cat" through to the docker image of
 each destination connectors to populate `_airbyte_raw_tables`. These tables are finally used as input
 data for dbt to run from.
+
+#### data_input/replace_identifiers.json:
+The `replace_identifiers.json` contains maps of string patterns and values to replace in the `dbt_schema_tests`
+and `dbt_data_tests` files to handle cross database compatibility.
+
+Note that an additional step is added before replacing identifiers to change capitalization of identifiers in those
+tests files. (to uppercase on snowflake and lowercase on redshift).
 
 ### Integration Test Execution Flow:
 
@@ -165,6 +180,7 @@ This can be done in yaml format as described in the following documentation page
 
 - [dbt schema-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests)
 - [custom schema test](https://docs.getdbt.com/docs/guides/writing-custom-schema-tests)
+- [dbt expectations](https://github.com/calogica/dbt-expectations)
 
 We are leveraging these capabilities in these integration tests to verify some relationships in our
 generated tables on the destinations.

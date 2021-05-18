@@ -1,4 +1,4 @@
-# Overview
+# Introduction
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
 
@@ -7,7 +7,7 @@
 **Data integration made simple, secure and extensible.**  
 The new open-source standard to sync data from applications, APIs & databases to warehouses, lakes & other destinations.
 
-[![](docs/.gitbook/assets/deploy-locally.svg)](docs/deploying-airbyte/on-your-workstation.md) [![](docs/.gitbook/assets/deploy-on-aws.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
+[![](docs/.gitbook/assets/deploy-locally.svg)](docs/deploying-airbyte/local-deployment.md) [![](docs/.gitbook/assets/deploy-on-aws.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
 
 ![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines.png)
 
@@ -32,7 +32,7 @@ docker-compose up
 
 Now visit [http://localhost:8000](http://localhost:8000)
 
-Here is a [step-by-step guide](docs/getting-started.md) showing you how to load data from an API into a file, all on your computer.
+Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md) showing you how to load data from an API into a file, all on your computer.
 
 ## Features
 
@@ -50,7 +50,7 @@ Here is a [step-by-step guide](docs/getting-started.md) showing you how to load 
 
 We love contributions to Airbyte, big or small.
 
-See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://calendly.com/michel-airbyte/contribution-1-1) with one of our core contributors.
+See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://calendly.com/d/nw9f-6xfj/connector-development) with one of our core contributors.
 
 **Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
 
@@ -67,9 +67,9 @@ For general help using Airbyte, please refer to the official Airbyte documentati
 
 ## Roadmap
 
-Check out our [roadmap](docs/roadmap.md) to get informed on what we are currently working on, and what we have in mind for the next weeks, months and years.
+Check out our [roadmap](docs/project-overview/roadmap.md) to get informed on what we are currently working on, and what we have in mind for the next weeks, months and years.
 
 ## License
 
-Airbyte is licensed under the MIT license. See the [LICENSE](docs/license.md) file for licensing information.
+Airbyte is licensed under the MIT license. See the [LICENSE](docs/project-overview/license.md) file for licensing information.
 

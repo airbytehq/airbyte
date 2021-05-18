@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import setuptools
@@ -30,7 +32,7 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
-    install_requires=["airbyte-protocol", "dbt==0.18.2rc1", "pyyaml"],
+    install_requires=["airbyte-protocol", "pyyaml", "jinja2"],
     package_data={"": ["*.yml"]},
     setup_requires=["pytest-runner"],
     entry_points={

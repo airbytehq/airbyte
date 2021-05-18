@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import time
@@ -106,6 +108,8 @@ class StreamAPI(ABC):
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
+    buffer_days = -1
+
     @property
     @abstractmethod
     def state_pk(self):
@@ -156,7 +160,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         latest_cursor = None
         for record in super().read(getter, params):
             cursor = pendulum.parse(record[self.state_pk])
-            if self._state and self._state >= cursor:
+            if self._state and self._state.subtract(days=self.buffer_days + 1) >= cursor:
                 continue
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
             yield record
@@ -318,7 +322,7 @@ class AdsInsightAPI(IncrementalStreamAPI):
         "dma",
     ]
 
-    MAX_WAIT_TO_START = pendulum.Interval(minutes=2)
+    MAX_WAIT_TO_START = pendulum.Interval(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.Interval(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.Interval(minutes=5)
 

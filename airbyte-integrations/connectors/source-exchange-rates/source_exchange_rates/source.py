@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,22 +20,27 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
-from base_python import AbstractSource, HttpStream, Stream
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
 from pendulum import DateTime
 
 
 class ExchangeRates(HttpStream):
+
     date_field_name = "date"
 
     # HttpStream related fields
     url_base = "https://api.ratesapi.io/"
     cursor_field = date_field_name
+    primary_key = ""
 
     def __init__(self, base: str, start_date: DateTime):
         super().__init__()
@@ -79,7 +85,7 @@ def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, any]]:
     now = pendulum.now()
     while start_date < now:
         day_of_week = start_date.day_of_week
-        if day_of_week != pendulum.SATURDAY & day_of_week != pendulum.SUNDAY:
+        if day_of_week != pendulum.SATURDAY and day_of_week != pendulum.SUNDAY:
             days.append({"date": start_date.to_date_string()})
         start_date = start_date.add(days=1)
 

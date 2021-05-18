@@ -27,10 +27,15 @@ package io.airbyte.workers;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.OperatorDbt;
+import io.airbyte.config.OperatorNormalization;
+import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -38,6 +43,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -56,6 +62,8 @@ public class TestConfigHelpers {
     final UUID destinationDefinitionId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
     final UUID connectionId = UUID.randomUUID();
+    final UUID normalizationOperationId = UUID.randomUUID();
+    final UUID dbtOperationId = UUID.randomUUID();
 
     final JsonNode sourceConnection =
         Jsons.jsonNode(
@@ -83,6 +91,24 @@ public class TestConfigHelpers {
         .withDestinationId(destinationId)
         .withTombstone(false);
 
+    final StandardSyncOperation normalizationOperation = new StandardSyncOperation()
+        .withOperationId(normalizationOperationId)
+        .withName("Normalization")
+        .withOperatorType(OperatorType.NORMALIZATION)
+        .withOperatorNormalization(new OperatorNormalization().withOption(Option.BASIC))
+        .withTombstone(false);
+
+    final StandardSyncOperation customDbtOperation = new StandardSyncOperation()
+        .withOperationId(dbtOperationId)
+        .withName("Custom Transformation")
+        .withOperatorType(OperatorType.DBT)
+        .withOperatorDbt(new OperatorDbt()
+            .withDockerImage("docker")
+            .withDbtArguments("--help")
+            .withGitRepoUrl("git url")
+            .withGitRepoBranch("git url"))
+        .withTombstone(false);
+
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
         .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING)));
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
@@ -94,7 +120,8 @@ public class TestConfigHelpers {
         .withStatus(Status.ACTIVE)
         .withName(CONNECTION_NAME)
         .withPrefix(CONNECTION_NAME)
-        .withCatalog(catalog);
+        .withCatalog(catalog)
+        .withOperationIds(List.of(normalizationOperationId, dbtOperationId));
 
     final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
@@ -105,7 +132,8 @@ public class TestConfigHelpers {
         .withDestinationConfiguration(destinationConnectionConfig.getConfiguration())
         .withCatalog(standardSync.getCatalog())
         .withSourceConfiguration(sourceConnectionConfig.getConfiguration())
-        .withState(state);
+        .withState(state)
+        .withOperationSequence(List.of(normalizationOperation, customDbtOperation));
 
     return new ImmutablePair<>(standardSync, syncInput);
   }

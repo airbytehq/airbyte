@@ -7,18 +7,18 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import { SyncSchema } from "core/domain/catalog";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
-import { DestinationDefinitionSpecification } from "core/resources/DestinationDefinitionSpecification";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import { equal } from "utils/objects";
 
-import { Label, ControlLabels, Input, DropDown, DropDownRow } from "components";
+import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
 
 import BottomBlock from "./components/BottomBlock";
 import Connector from "./components/Connector";
 import SchemaView from "./components/SchemaView";
 import EditControls from "./components/EditControls";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
+import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -53,7 +53,6 @@ type ConnectionFormProps = {
   className?: string;
   source: Source;
   destination: Destination;
-  destinationDefinition: DestinationDefinitionSpecification;
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
@@ -66,10 +65,14 @@ type ConnectionFormProps = {
   isEditMode?: boolean;
   isLoading?: boolean;
   additionalSchemaControl?: React.ReactNode;
+  sourceIcon?: string;
+  destinationIcon?: string;
 };
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
+  sourceIcon,
+  destinationIcon,
   onReset,
   className,
   errorMessage,
@@ -86,9 +89,11 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   additionalSchemaControl,
   source,
   destination,
-  destinationDefinition,
 }) => {
   const initialSchema = useInitialSchema(schema);
+  const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
+    destination.destinationDefinitionId
+  );
   const dropdownData = useFrequencyDropdownData();
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
@@ -127,14 +132,14 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 id: "form.sourceConnector",
               })}
             >
-              <Connector name={source.name} />
+              <Connector name={source.name} icon={sourceIcon} />
             </ConnectorLabel>
             <ConnectorLabel
               label={formatMessage({
                 id: "form.destinationConnector",
               })}
             >
-              <Connector name={destination.name} />
+              <Connector name={destination.name} icon={destinationIcon} />
             </ConnectorLabel>
             <Field name="frequency">
               {({ field }: FieldProps<string>) => (
@@ -181,7 +186,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           <SchemaView
             schema={newSchema}
             destinationSupportedSyncModes={
-              destinationDefinition.supportedDestinationSyncModes
+              destDefinition.supportedDestinationSyncModes
             }
             onChangeSchema={setNewSchema}
             additionalControl={additionalSchemaControl}
