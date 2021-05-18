@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 import base64
 import json
@@ -38,17 +40,15 @@ def create_person(seed, token):
     data = {
         "token": token,
         "properties": {
-          "$email": email,
-          "$first_name": f"First Name {seed}",
-          "$last_name": f"Last Name {seed}",
-          "$city": "Springfield",
-          "$region": "Illinois"
-        }
+            "$email": email,
+            "$first_name": f"First Name {seed}",
+            "$last_name": f"Last Name {seed}",
+            "$city": "Springfield",
+            "$region": "Illinois",
+        },
     }
 
-    querystring = {
-        "data": base64.urlsafe_b64encode(json.dumps(data).encode()).decode()
-    }
+    querystring = {"data": base64.urlsafe_b64encode(json.dumps(data).encode()).decode()}
 
     response = requests.request("GET", url, headers=headers, params=querystring)
 
@@ -61,17 +61,9 @@ def create_event(token, email, name):
     url = "https://a.klaviyo.com/api/track"
     headers = {"Accept": "text/html"}
 
-    data = {
-        "token": token,
-        "event": name,
-        "customer_properties": {
-            "$email": email
-        }
-    }
+    data = {"token": token, "event": name, "customer_properties": {"$email": email}}
 
-    querystring = {
-        "data": base64.urlsafe_b64encode(json.dumps(data).encode()).decode()
-    }
+    querystring = {"data": base64.urlsafe_b64encode(json.dumps(data).encode()).decode()}
 
     response = requests.request("GET", url, headers=headers, params=querystring)
     print(response.text)
@@ -83,10 +75,7 @@ def create_global_exclusion(email, api_key):
     querystring = {"api_key": api_key}
 
     payload = urllib.parse.urlencode([("email", email)])
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
+    headers = {"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"}
 
     response = requests.request("POST", url, data=payload, headers=headers, params=querystring)
 
