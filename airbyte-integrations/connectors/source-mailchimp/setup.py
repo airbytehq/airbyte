@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -32,7 +34,7 @@ setup(
     install_requires=[
         "airbyte-protocol",
         "base-python",
-        "pydantic==1.6.1",
+        "pydantic==1.6.2",
         "mailchimp3==3.0.14",
         "python-dateutil==2.8.1",
         "pytest==6.1.2",

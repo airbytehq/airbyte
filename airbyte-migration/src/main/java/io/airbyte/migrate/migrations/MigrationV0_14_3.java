@@ -29,12 +29,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.migrate.Migration;
+import io.airbyte.migrate.MigrationUtils;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
-import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,14 +65,9 @@ public class MigrationV0_14_3 extends BaseMigration implements Migration {
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
     final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(new MigrationV0_14_0().getOutputSchema());
-
-    try {
-      outputSchema.put(STANDARD_SYNC_RESOURCE_ID,
-          Jsons.jsonNode(MoreResources.readResource("migrations/migrationV0_14_0/airbyte_config/StandardSync.yaml")));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
+    outputSchema.put(
+        STANDARD_SYNC_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_14_3/airbyte_config"), STANDARD_SYNC_RESOURCE_ID));
     return outputSchema;
   }
 

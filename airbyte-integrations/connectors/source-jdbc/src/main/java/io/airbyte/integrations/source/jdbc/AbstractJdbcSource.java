@@ -384,9 +384,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
    * making repeated queries to the DB, we try to get all primary keys without specifying a table
    * first, if it doesn't work, we retry one table at a time.
    */
-  private Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
-                                                        Optional<String> databaseOptional,
-                                                        List<TableInfoInternal> tableInfos) {
+  protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
+                                                          Optional<String> databaseOptional,
+                                                          List<TableInfoInternal> tableInfos) {
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(

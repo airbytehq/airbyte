@@ -44,7 +44,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.22.2-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.22.3-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```

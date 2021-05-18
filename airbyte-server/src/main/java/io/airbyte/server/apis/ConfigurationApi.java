@@ -52,6 +52,11 @@ import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.Notification;
 import io.airbyte.api.model.NotificationRead;
+import io.airbyte.api.model.OperationCreate;
+import io.airbyte.api.model.OperationIdRequestBody;
+import io.airbyte.api.model.OperationRead;
+import io.airbyte.api.model.OperationReadList;
+import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SlugRequestBody;
 import io.airbyte.api.model.SourceCoreConfig;
 import io.airbyte.api.model.SourceCreate;
@@ -93,6 +98,7 @@ import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OpenApiConfigHandler;
+import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
@@ -118,6 +124,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
   private final DestinationHandler destinationHandler;
   private final ConnectionsHandler connectionsHandler;
+  private final OperationsHandler operationsHandler;
   private final SchedulerHandler schedulerHandler;
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
@@ -152,6 +159,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
     sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
+    operationsHandler = new OperationsHandler(configRepository);
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
@@ -162,7 +170,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         sourceHandler,
         destinationHandler,
         jobHistoryHandler,
-        schedulerHandler);
+        schedulerHandler,
+        operationsHandler);
     webBackendSourceHandler = new WebBackendSourceHandler(sourceHandler, schedulerHandler);
     webBackendDestinationHandler = new WebBackendDestinationHandler(destinationHandler, schedulerHandler);
     healthCheckHandler = new HealthCheckHandler(configRepository);
@@ -240,6 +249,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(@Valid SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody) {
     return execute(() -> schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdRequestBody));
   }
+
   // SOURCE IMPLEMENTATION
 
   @Override
@@ -387,7 +397,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
       connectionsHandler.deleteConnection(connectionIdRequestBody);
       return null;
     });
-
   }
 
   @Override
@@ -398,6 +407,36 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public JobInfoRead resetConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     return execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
+  }
+
+  // Operations
+
+  @Override
+  public OperationRead createOperation(@Valid OperationCreate operationCreate) {
+    return execute(() -> operationsHandler.createOperation(operationCreate));
+  }
+
+  @Override
+  public void deleteOperation(OperationIdRequestBody operationIdRequestBody) {
+    execute(() -> {
+      operationsHandler.deleteOperation(operationIdRequestBody);
+      return null;
+    });
+  }
+
+  @Override
+  public OperationReadList listOperationsForConnection(ConnectionIdRequestBody connectionIdRequestBody) {
+    return execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
+  }
+
+  @Override
+  public OperationRead getOperation(OperationIdRequestBody operationIdRequestBody) {
+    return execute(() -> operationsHandler.getOperation(operationIdRequestBody));
+  }
+
+  @Override
+  public OperationRead updateOperation(OperationUpdate operationUpdate) {
+    return execute(() -> operationsHandler.updateOperation(operationUpdate));
   }
 
   // SCHEDULER

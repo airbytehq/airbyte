@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -30,5 +32,8 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    install_requires=["airbyte-cdk==0.1.1", "stripe"],
+    install_requires=["airbyte-cdk==0.1.2", "stripe"],
+    extras_require={
+        "tests": ["pytest==6.1.2"],
+    },
 )
