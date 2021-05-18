@@ -38,7 +38,6 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -95,7 +94,6 @@ public class ConfigFileArchiverTest {
     final DestinationConnection destinationConnection = DestinationHelpers.generateDestination(standardDestination.getDestinationDefinitionId());
     final StandardSync destinationSync = ConnectionHelpers.generateSyncWithDestinationId(destinationConnection.getDestinationId());
     final StandardSync sourceSync = ConnectionHelpers.generateSyncWithSourceId(sourceConnection1.getSourceId());
-    final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
 
     // Read operations
     when(configRepository.listStandardWorkspaces(true)).thenReturn(List.of(workspace));
@@ -104,7 +102,7 @@ public class ConfigFileArchiverTest {
     when(configRepository.listSourceConnection()).thenReturn(List.of(sourceConnection1, sourceConnection2));
     when(configRepository.listDestinationConnection()).thenReturn(List.of(destinationConnection));
     when(configRepository.listStandardSyncs()).thenReturn(List.of(destinationSync, sourceSync));
-    when(configRepository.getStandardSyncSchedule(sourceSync.getConnectionId())).thenReturn(syncSchedule);
+    when(configRepository.getStandardSync(sourceSync.getConnectionId())).thenReturn(sourceSync);
 
     final Path tempFolder = Files.createTempDirectory("testConfigMigration");
     configFileArchiver.exportConfigsToArchive(tempFolder);
@@ -118,7 +116,6 @@ public class ConfigFileArchiverTest {
     verify(configRepository).writeDestinationConnection(destinationConnection);
     verify(configRepository).writeStandardSync(sourceSync);
     verify(configRepository).writeStandardSync(destinationSync);
-    verify(configRepository).writeStandardSchedule(syncSchedule);
   }
 
   @Test
@@ -131,7 +128,6 @@ public class ConfigFileArchiverTest {
     final DestinationConnection destinationConnection = DestinationHelpers.generateDestination(standardDestination.getDestinationDefinitionId());
     final StandardSync destinationSync = ConnectionHelpers.generateSyncWithDestinationId(destinationConnection.getDestinationId());
     final StandardSync sourceSync = ConnectionHelpers.generateSyncWithSourceId(sourceConnection1.getSourceId());
-    final StandardSyncSchedule syncSchedule = ConnectionHelpers.generateSchedule(sourceSync.getConnectionId());
 
     // Read operations
     when(configRepository.listStandardWorkspaces(true)).thenReturn(List.of(workspace));
@@ -140,7 +136,7 @@ public class ConfigFileArchiverTest {
     when(configRepository.listSourceConnection()).thenReturn(List.of(sourceConnection1, sourceConnection2));
     when(configRepository.listDestinationConnection()).thenReturn(List.of(destinationConnection));
     when(configRepository.listStandardSyncs()).thenReturn(List.of(destinationSync, sourceSync));
-    when(configRepository.getStandardSyncSchedule(sourceSync.getConnectionId())).thenReturn(syncSchedule);
+    when(configRepository.getStandardSync(sourceSync.getConnectionId())).thenReturn(sourceSync);
 
     final Path tempFolder = Files.createTempDirectory("testConfigMigration");
     configFileArchiver.exportConfigsToArchive(tempFolder);

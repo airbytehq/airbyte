@@ -35,9 +35,7 @@ import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.commons.text.Names;
-import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -110,17 +108,6 @@ public class ConnectionHelpers {
         standardSync.getSourceId(),
         standardSync.getDestinationId(),
         standardSync.getOperationIds());
-  }
-
-  public static StandardSyncSchedule generateSchedule(UUID connectionId) {
-    final Schedule schedule = new Schedule()
-        .withTimeUnit(Schedule.TimeUnit.DAYS)
-        .withUnits(1L);
-
-    return new StandardSyncSchedule()
-        .withConnectionId(connectionId)
-        .withSchedule(schedule)
-        .withManual(false);
   }
 
   public static JsonNode generateBasicJsonSchema() {

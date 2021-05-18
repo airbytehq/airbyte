@@ -9,7 +9,6 @@ required:
   - destinationId
   - name
   - catalog
-  - manual
 additionalProperties: false
 properties:
   prefix:
@@ -39,6 +38,8 @@ properties:
       - active
       - inactive
       - deprecated
+  # Schedule is only needed for source sync.
+  # When schedule is defined, manual should be false.
   # Ideally schedule and manual should be a union, but java
   # codegen does not handle the union type properly.
   schedule:
@@ -58,5 +59,6 @@ properties:
           - months
       units:
         type: integer
+  # When manual is true, schedule should be null, and will be ignored.
   manual:
     type: boolean
