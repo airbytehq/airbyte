@@ -5,6 +5,9 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "applies_to": {
+      "type": ["null", "integer", "string"]
+    },
     "applies_to_id": {
       "type": ["null", "integer"]
     },
@@ -71,6 +74,12 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "external_discount_id": {
+      "type": ["null", "string", "integer"]
+    },
+    "external_discount_source": {
+      "type": ["null", "string"]
+    },
     "first_time_customer_restriction": {
       "type": ["null", "string"]
     },
@@ -98,7 +107,7 @@
       "type": ["null", "integer"]
     },
     "value": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     }
   }
 }

@@ -8,6 +8,9 @@
     "address_id": {
       "type": ["null", "integer"]
     },
+    "address_is_active": {
+      "type": ["null", "integer"]
+    },
     "billing_address": {
       "type": ["null", "object"],
       "properties": {
@@ -69,8 +72,14 @@
         }
       }
     },
+    "browser_ip": {
+      "type": ["null", "string"]
+    },
     "charge_id": {
       "type": ["null", "integer"]
+    },
+    "charge_status": {
+      "type": ["null", "string"]
     },
     "currency": {
       "type": ["null", "string"]
@@ -168,14 +177,20 @@
     "customer_id": {
       "type": ["null", "integer"]
     },
+    "discount_codes": {
+      "type": ["null", "array"]
+    },
     "email": {
       "type": ["null", "string"]
     },
     "first_name": {
       "type": ["null", "string"]
     },
+    "hash": {
+      "type": ["null", "string"]
+    },
     "is_prepaid": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     },
     "last_name": {
       "type": ["null", "string"]
@@ -204,10 +219,10 @@
             "type": ["null", "integer"]
           },
           "shopify_product_id": {
-            "type": ["null", "string"]
+            "type": ["null", "string", "integer"]
           },
           "shopify_variant_id": {
-            "type": ["null", "string"]
+            "type": ["null", "string", "integer"]
           },
           "sku": {
             "type": ["null", "string"]
@@ -224,6 +239,12 @@
         }
       }
     },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "note_attributes": {
+      "type": ["null", "array"]
+    },
     "payment_processor": {
       "type": ["null", "string"]
     },
@@ -231,7 +252,14 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "redacted": {
+      "type": ["null", "boolean"]
+    },
     "scheduled_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shipped_date": {
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -296,6 +324,9 @@
         }
       }
     },
+    "shipping_lines": {
+      "type": ["null", "array"]
+    },
     "shopify_cart_token": {
       "type": ["null", "string"]
     },
@@ -309,16 +340,40 @@
       "type": ["null", "integer"]
     },
     "status": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
+    },
+    "subtotal_price": {
+      "type": ["null", "number", "string"]
+    },
+    "tags": {
+      "type": ["null", "string"]
+    },
+    "tax_lines": {
+      "type": ["null", "array"]
     },
     "transaction_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
+    },
+    "total_discounts": {
+      "type": ["null", "string"]
+    },
+    "total_line_items_price": {
+      "type": ["null", "string"]
     },
     "total_price": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
+    },
+    "total_refunds": {
+      "type": ["null", "string"]
+    },
+    "total_tax": {
+      "type": ["null", "number", "string"]
+    },
+    "total_weight": {
+      "type": ["null", "integer"]
     },
     "type": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "updated_at": {
       "type": ["null", "string"],

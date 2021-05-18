@@ -8,10 +8,13 @@
     "address_id": {
       "type": ["null", "integer"]
     },
+    "analytics_data": {
+      "type": ["null", "object"]
+    },
     "cancellation_reason": {
       "type": ["null", "string"]
     },
-    "cancellation_reason_comment": {
+    "cancellation_reason_comments": {
       "type": ["null", "string"]
     },
     "cancelled_at": {
@@ -38,7 +41,7 @@
       "type": ["null", "integer"]
     },
     "has_queued_charges": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     },
     "is_prepaid": {
       "type": ["null", "boolean"]
@@ -50,7 +53,7 @@
       "type": ["null", "boolean"]
     },
     "max_retries_reached": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     },
     "next_charge_scheduled_at": {
       "type": ["null", "string"]
@@ -82,7 +85,7 @@
             "type": "string"
           },
           "value": {
-            "type": "string"
+            "type": ["string", "integer"]
           }
         }
       }
@@ -107,6 +110,10 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "variant_title": {
       "type": ["null", "string"]

@@ -8,6 +8,9 @@
     "address_id": {
       "type": ["null", "integer"]
     },
+    "analytics_data": {
+      "type": ["null", "object"]
+    },
     "billing_address": {
       "type": ["null", "object"],
       "properties": {
@@ -69,6 +72,44 @@
         }
       }
     },
+    "client_details": {
+      "type": ["null", "object"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customer_hash": {
+      "type": ["null", "string"]
+    },
+    "customer_id": {
+      "type": ["null", "integer"]
+    },
+    "discount_codes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object"
+      }
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "error": {
+      "type": ["null", "string"]
+    },
+    "error_type": {
+      "type": ["null", "string"]
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "last_charge_attempt_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "line_items": {
       "type": ["null", "array"]
     },
@@ -81,12 +122,19 @@
     "note_attributes": {
       "type": ["null", "array"]
     },
+    "number_times_tried": {
+      "type": ["null", "integer"]
+    },
     "processed_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "processor_name": {
       "type": ["null", "string"]
+    },
+    "retry_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "scheduled_at": {
       "type": ["null", "string"],
@@ -156,8 +204,17 @@
         }
       }
     },
+    "shipping_lines": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object"
+      }
+    },
     "shopify_order_id": {
       "type": ["null", "string"]
+    },
+    "shopify_variant_id_not_found": {
+      "type": ["null", "integer", "string"]
     },
     "status": {
       "type": ["null", "string"]
@@ -165,7 +222,16 @@
     "subtotal_price": {
       "type": ["null", "string"]
     },
+    "tags": {
+      "type": ["null", "string"]
+    },
+    "tax_lines": {
+      "type": ["null", "string", "number"]
+    },
     "total_discounts": {
+      "type": ["null", "string"]
+    },
+    "total_line_items_price": {
       "type": ["null", "string"]
     },
     "total_price": {
@@ -174,8 +240,21 @@
     "total_refunds": {
       "type": ["null", "string"]
     },
+    "total_tax": {
+      "type": ["null", "string", "number"]
+    },
+    "total_weight": {
+      "type": ["null", "integer"]
+    },
     "transaction_id": {
       "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

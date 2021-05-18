@@ -23,6 +23,8 @@
 
 from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -36,31 +38,26 @@ class RechargeTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceRecharge(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.json
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        return True, None
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        try:
+            auth = RechargeTokenAuthenticator(token=config["access_token"], auth_header="X-Recharge-Access-Token")
+            list(Shop(authenticator=auth).read_records(SyncMode.full_refresh))
+            return True, None
+        except Exception as error:
+            return False, f"Unable to connect to Recharge API with the provided credentials - {error}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = RechargeTokenAuthenticator(token=config["token"], auth_header="X-Recharge-Access-Token")
+        auth = RechargeTokenAuthenticator(token=config["access_token"], auth_header="X-Recharge-Access-Token")
         return [
-            Addresses(authenticator=auth),
-            Charges(authenticator=auth),
+            Addresses(authenticator=auth, start_date=config["start_date"]),
+            Charges(authenticator=auth, start_date=config["start_date"]),
             Collections(authenticator=auth),
-            Customers(authenticator=auth),
-            Discounts(authenticator=auth),
+            Customers(authenticator=auth, start_date=config["start_date"]),
+            Discounts(authenticator=auth, start_date=config["start_date"]),
             Metafields(authenticator=auth),
-            Onetimes(authenticator=auth),
-            Orders(authenticator=auth),
+            Onetimes(authenticator=auth, start_date=config["start_date"]),
+            Orders(authenticator=auth, start_date=config["start_date"]),
             Products(authenticator=auth),
             Shop(authenticator=auth),
-            Subscriptions(authenticator=auth),
+            Subscriptions(authenticator=auth, start_date=config["start_date"]),
         ]

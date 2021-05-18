@@ -22,10 +22,10 @@
       "type": ["null", "integer"]
     },
     "discount_amount": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "discount_type": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "expire_after_specific_number_of_charges": {
       "type": ["null", "integer"]
@@ -56,6 +56,9 @@
     },
     "storefront_purchase_options": {
       "type": ["null", "string"]
+    },
+    "subscription_defaults": {
+      "type": ["null", "object"]
     },
     "title": {
       "type": ["null", "string"]

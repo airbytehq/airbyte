@@ -21,13 +21,12 @@
 # SOFTWARE.
 
 
-import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from jsonschema.validators import Draft4Validator
 
 
 class RechargeStream(HttpStream, ABC):
@@ -35,9 +34,8 @@ class RechargeStream(HttpStream, ABC):
     primary_key = "id"
     url_base = "https://api.rechargeapps.com/"
 
-    limit = 2
+    limit = 250
     page_num = 1
-    data_field = None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -51,7 +49,7 @@ class RechargeStream(HttpStream, ABC):
             return {"page": self.page_num}
 
     def request_params(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         if next_page_token:
@@ -64,9 +62,7 @@ class RechargeStream(HttpStream, ABC):
         response_data = response.json()
         stream_data = self.get_stream_data(response_data)
 
-        for record in stream_data:
-            yield self.validate(record)
-        # yield from stream_data
+        yield from stream_data
 
     def get_stream_data(self, response_data: Any) -> List[dict]:
         response_data = response_data.get(self.name, [])
@@ -78,41 +74,67 @@ class RechargeStream(HttpStream, ABC):
         else:
             raise Exception(f"Unsupported type of response data for stream {self.name}")
 
-    def validate(self, record):
-        with open(
-            f"/home/ykurochkin/PycharmProjects/airbyte/airbyte-integrations/connectors/source-recharge/source_recharge/schemas/{self.name}.json"
-        ) as f:
-            schema = json.loads(f.read())
-        if not Draft4Validator(schema).is_valid(record):
-            error_messages = []
-            for error in Draft4Validator(schema).iter_errors(record):
-                error_messages.append(error.message)
-            raise Exception("An error occurred during custom_reports data validation: " + "; ".join(error_messages))
-        return record
+
+class IncrementalRechargeStream(RechargeStream, ABC):
+    def __init__(self, start_date, **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = pendulum.parse(start_date)
+
+    cursor_field = "created_at"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        start_datetime = self._start_date
+        if stream_state.get(self.cursor_field):
+            start_datetime = pendulum.parse(stream_state[self.cursor_field])
+
+        params.update({f"{self.cursor_field}_min": start_datetime.strftime("%Y-%m-%d %H:%M:%S")})
+        return params
 
 
-class Addresses(RechargeStream):
-    """"""
+class Addresses(IncrementalRechargeStream):
+    """
+    Addresses Stream: https://developer.rechargepayments.com/v1-shopify?python#list-addresses
+    """
 
 
-class Charges(RechargeStream):
-    """"""
+class Charges(IncrementalRechargeStream):
+    """
+    Charges Stream: https://developer.rechargepayments.com/v1-shopify?python#list-charges
+    """
 
 
 class Collections(RechargeStream):
-    """"""
+    """
+    Collections Stream
+    """
 
 
-class Customers(RechargeStream):
-    """"""
+class Customers(IncrementalRechargeStream):
+    """
+    Customers Stream: https://developer.rechargepayments.com/v1-shopify?python#list-customers
+    """
 
 
-class Discounts(RechargeStream):
-    """"""
+class Discounts(IncrementalRechargeStream):
+    """
+    Discounts Stream: https://developer.rechargepayments.com/v1-shopify?python#list-discounts
+    """
 
 
 class Metafields(RechargeStream):
-    """"""
+    """
+    Metafields Stream: https://developer.rechargepayments.com/v1-shopify?python#list-metafields
+    """
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         owner_resources = ["customer", "store", "subscription"]
@@ -120,20 +142,28 @@ class Metafields(RechargeStream):
             yield from super().read_records(stream_slice={"owner_resource": owner}, **kwargs)
 
 
-class Onetimes(RechargeStream):
-    """"""
+class Onetimes(IncrementalRechargeStream):
+    """
+    Onetimes Stream: https://developer.rechargepayments.com/v1-shopify?python#list-onetimes
+    """
 
 
-class Orders(RechargeStream):
-    """"""
+class Orders(IncrementalRechargeStream):
+    """
+    Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
+    """
 
 
 class Products(RechargeStream):
-    """"""
+    """
+    Products Stream: https://developer.rechargepayments.com/v1-shopify?python#list-products
+    """
 
 
 class Shop(RechargeStream):
-    """"""
+    """
+    Shop Stream: https://developer.rechargepayments.com/v1-shopify?python#shop
+    """
 
     primary_key = ["shop", "store"]
 
@@ -141,75 +171,7 @@ class Shop(RechargeStream):
         return [response_data]
 
 
-class Subscriptions(RechargeStream):
-    """"""
-
-
-# Basic incremental stream
-class IncrementalRechargeStream(RechargeStream, ABC):
+class Subscriptions(IncrementalRechargeStream):
     """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
+    Subscriptions Stream: https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions
     """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
-
-
-class Employees(IncrementalRechargeStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
-
-    def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
-
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
-
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
-
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError("Implement stream slices or delete this method!")

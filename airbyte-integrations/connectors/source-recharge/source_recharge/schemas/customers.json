@@ -5,6 +5,12 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "accepts_marketing": {
+      "type": ["null", "integer"]
+    },
+    "analytics_data": {
+      "type": ["null", "object"]
+    },
     "billing_address1": {
       "type": ["null", "string"]
     },
@@ -77,6 +83,9 @@
       "type": ["null", "string"]
     },
     "status": {
+      "type": ["null", "string"]
+    },
+    "stripe_customer_token": {
       "type": ["null", "string"]
     },
     "updated_at": {
