@@ -47,6 +47,10 @@ from normalization.transform_catalog.utils import (
 # minimum length of parent name used for nested streams
 MINIMUM_PARENT_LENGTH = 10
 
+# using too many columns breaks ephemeral materialization (somewhere between 480 and 490 columns)
+# let's use a lower value to be safely away from the limit...
+MAXIMUM_COLUMNS_TO_USE_EPHEMERAL = 450
+
 
 class StreamProcessor(object):
     """
@@ -203,23 +207,43 @@ class StreamProcessor(object):
             return []
 
         column_names = self.extract_column_names()
+        column_count = len(column_names)
+
+        if column_count == 0:
+            print(f"  Ignoring stream '{self.stream_name}' from {self.current_json_path()} because no columns were identified")
+            return []
 
         from_table = self.from_table
         # Transformation Pipeline for this stream
-        from_table = self.add_to_outputs(self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1")
-        from_table = self.add_to_outputs(self.generate_column_typing_model(from_table, column_names), is_intermediate=True, suffix="ab2")
-        from_table = self.add_to_outputs(self.generate_id_hashing_model(from_table, column_names), is_intermediate=True, suffix="ab3")
+        from_table = self.add_to_outputs(
+            self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab1"
+        )
+        from_table = self.add_to_outputs(
+            self.generate_column_typing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab2"
+        )
+        from_table = self.add_to_outputs(
+            self.generate_id_hashing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab3"
+        )
         if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
-            from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
+            from_table = self.add_to_outputs(
+                self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab4"
+            )
             where_clause = "\nwhere _airbyte_row_num = 1"
             from_table = self.add_to_outputs(
-                self.generate_scd_type_2_model(from_table, column_names) + where_clause, is_intermediate=False, suffix="scd"
+                self.generate_scd_type_2_model(from_table, column_names) + where_clause,
+                is_intermediate=False,
+                column_count=column_count,
+                suffix="scd",
             )
             where_clause = "\nwhere _airbyte_active_row = True"
-            from_table = self.add_to_outputs(self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False)
+            from_table = self.add_to_outputs(
+                self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False, column_count=column_count
+            )
             # TODO generate yaml file to dbt test final table where primary keys should be unique
         else:
-            from_table = self.add_to_outputs(self.generate_final_model(from_table, column_names), is_intermediate=False)
+            from_table = self.add_to_outputs(
+                self.generate_final_model(from_table, column_names), is_intermediate=False, column_count=column_count
+            )
         return self.find_children_streams(from_table, column_names)
 
     def extract_column_names(self) -> Dict[str, Tuple[str, str]]:
@@ -568,14 +592,19 @@ from {{ from_table }}
     def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [column_names[field][0] for field in column_names]
 
-    def add_to_outputs(self, sql: str, is_intermediate: bool, suffix: str = "") -> str:
+    def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
         table_name = self.generate_new_table_name(is_intermediate, suffix)
         file_name = self.get_file_name(self.stream_name, schema, table_name)
         self.add_table_to_local_registry(file_name, table_name, is_intermediate)
         file = f"{file_name}.sql"
         if is_intermediate:
-            output = os.path.join("airbyte_ctes", self.schema, file)
+            if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:
+                output = os.path.join("airbyte_ctes", self.schema, file)
+            else:
+                # dbt throws "maximum recursion depth exceeded" exception at runtime
+                # if ephemeral is used with large number of columns, use views instead
+                output = os.path.join("airbyte_views", self.schema, file)
         else:
             output = os.path.join("airbyte_tables", self.schema, file)
         tags = self.get_model_tags(is_intermediate)

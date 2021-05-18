@@ -205,6 +205,9 @@ class CatalogProcessor:
             )
         source_config = {"version": 2, "sources": schemas}
         source_path = os.path.join(self.output_directory, "sources.yml")
+        output_dir = os.path.dirname(source_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         with open(source_path, "w") as fh:
             fh.write(yaml.dump(source_config, sort_keys=False))
 

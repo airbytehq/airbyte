@@ -93,6 +93,11 @@ Therefore, valid credentials files are expected to be injected in the `secrets/`
 This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can 
 re-use the `destination_config.json` passed to destination connectors.
 
+### Integration Tests Definitions for test_ephemeral.py:
+The test here focus on benchmarking the "ephemeral" materialization mode of dbt. Depending on the number of
+columns in a catalog, this may throw exceptions and fail. This test ensure that we automatically switch to a
+more scalable mode when generating dbt models to support big number of columns in tables.
+
 ### Integration Tests Definitions for test_normalization.py:
 
 Some test suites can be selected to be versioned control in Airbyte git repository (or not).
