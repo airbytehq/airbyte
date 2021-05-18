@@ -94,6 +94,6 @@ class SourceKlaviyo(AbstractSource):
             documentationUrl="https://docs.airbyte.io/integrations/sources/klaviyo",
             changelogUrl="https://docs.airbyte.io/integrations/sources/klaviyo",
             supportsIncremental=True,
-            supported_destination_sync_modes=[str(DestinationSyncMode.append)],
+            supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
         )
