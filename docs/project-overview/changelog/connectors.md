@@ -16,28 +16,32 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 
 1 new destination: [**MySQL**](https://docs.airbyte.io/integrations/destinations/mysql)
 
-2 new sources: 
+2 new sources:
+
 * [**Google Search Console**](https://docs.airbyte.io/integrations/sources/google-search-console)
-* [**PokeAPI**](https://docs.airbyte.io/integrations/sources/pokeapi) (talking about long tail and having fun ;))
+* [**PokeAPI**](https://docs.airbyte.io/integrations/sources/pokeapi) \(talking about long tail and having fun ;\)\)
 
 Progress on connectors:
-* **Zoom**: bugfix on declaring correct types to match data coming from API ([#3159](https://github.com/airbytehq/airbyte/pull/3159)), thanks to [vovavovavovavova](https://github.com/vovavovavovavova) 
-* **Smartsheets**: bugfix on gracefully handling empty cell values ([#3337](https://github.com/airbytehq/airbyte/pull/3337)), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
-* **Stripe**: fix date property name, only add connected account header when set, and set primary key (#3210), thanks to [Nathan Yergler](https://github.com/nyergler)
+
+* **Zoom**: bugfix on declaring correct types to match data coming from API \([\#3159](https://github.com/airbytehq/airbyte/pull/3159)\), thanks to [vovavovavovavova](https://github.com/vovavovavovavova) 
+* **Smartsheets**: bugfix on gracefully handling empty cell values \([\#3337](https://github.com/airbytehq/airbyte/pull/3337)\), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
+* **Stripe**: fix date property name, only add connected account header when set, and set primary key \(\#3210\), thanks to [Nathan Yergler](https://github.com/nyergler)
 
 ## 05/04/2021
 
-2 new sources: 
+2 new sources:
+
 * [**Smartsheets**](https://docs.airbyte.io/integrations/sources/smartsheets), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
 * [**Zendesk Chat**](https://docs.airbyte.io/integrations/sources/zendesk-chat)
 
 Progress on connectors:
-* **Appstore**: bugfix private key handling in the UI ([#3201](https://github.com/airbytehq/airbyte/pull/3201))
-* **Facebook marketing**: Wait longer (5 min) for async jobs to start ([#3116](https://github.com/airbytehq/airbyte/pull/3116)), thanks to [Max Krog](https://github.com/MaxKrog)
-* **Stripe**: support reading data from connected accounts (#3121), and 2 new streams with Refunds & Bank Accounts ([#3030](https://github.com/airbytehq/airbyte/pull/3030)) ([#3086](https://github.com/airbytehq/airbyte/pull/3086))
-* **Redshift destination**: Ignore records that are too big (instead of failing) ([#2988](https://github.com/airbytehq/airbyte/pull/2988))
-* **MongoDB**: add supporting TLS and Replica Sets ([#3111](https://github.com/airbytehq/airbyte/pull/3111))
-* **HTTP sources**: bugfix on handling array responses gracefully ([#3008](https://github.com/airbytehq/airbyte/pull/3008))
+
+* **Appstore**: bugfix private key handling in the UI \([\#3201](https://github.com/airbytehq/airbyte/pull/3201)\)
+* **Facebook marketing**: Wait longer \(5 min\) for async jobs to start \([\#3116](https://github.com/airbytehq/airbyte/pull/3116)\), thanks to [Max Krog](https://github.com/MaxKrog)
+* **Stripe**: support reading data from connected accounts \(\#3121\), and 2 new streams with Refunds & Bank Accounts \([\#3030](https://github.com/airbytehq/airbyte/pull/3030)\) \([\#3086](https://github.com/airbytehq/airbyte/pull/3086)\)
+* **Redshift destination**: Ignore records that are too big \(instead of failing\) \([\#2988](https://github.com/airbytehq/airbyte/pull/2988)\)
+* **MongoDB**: add supporting TLS and Replica Sets \([\#3111](https://github.com/airbytehq/airbyte/pull/3111)\)
+* **HTTP sources**: bugfix on handling array responses gracefully \([\#3008](https://github.com/airbytehq/airbyte/pull/3008)\)
 
 ## 04/27/2021
 

@@ -22,6 +22,9 @@ import {
 import LoadingPage from "components/LoadingPage";
 import DestinationResource from "core/resources/Destination";
 import MainPageWithScroll from "components/MainPageWithScroll";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import DestinationsDefinitionResource from "core/resources/DestinationDefinition";
+import { getIcon } from "utils/imageUtils";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -37,8 +40,19 @@ const SourceItemPage: React.FC = () => {
     workspaceId: config.ui.workspaceId,
   });
 
+  const { destinationDefinitions } = useResource(
+    DestinationsDefinitionResource.listShape(),
+    {
+      workspaceId: config.ui.workspaceId,
+    }
+  );
+
   const source = useResource(SourceResource.detailShape(), {
     sourceId: query.id,
+  });
+
+  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: source.sourceDefinitionId,
   });
 
   const { connections } = useResource(ConnectionResource.listShape(), {
@@ -61,12 +75,17 @@ const SourceItemPage: React.FC = () => {
 
   const destinationsDropDownData = useMemo(
     () =>
-      destinations.map((item) => ({
-        text: item.name,
-        value: item.destinationId,
-        img: "/default-logo-catalog.svg",
-      })),
-    [destinations]
+      destinations.map((item) => {
+        const destinationDef = destinationDefinitions.find(
+          (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
+        );
+        return {
+          text: item.name,
+          value: item.destinationId,
+          img: destinationDef?.icon,
+        };
+      }),
+    [destinations, destinationDefinitions]
   );
 
   const onSelect = (data: { value: string }) => {
@@ -101,6 +120,7 @@ const SourceItemPage: React.FC = () => {
           onSelect={onSelect}
           entity={source.sourceName}
           entityName={source.name}
+          entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
         />
         {connectionsWithSource.length ? (
           <SourceConnectionTable connections={connectionsWithSource} />

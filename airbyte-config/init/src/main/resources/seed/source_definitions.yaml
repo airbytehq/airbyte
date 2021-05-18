@@ -72,9 +72,9 @@
   icon: salesforce.svg
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
-  dockerRepository: airbyte/source-stripe-singer
-  dockerImageTag: 0.2.1
-  documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-stripe-source
+  dockerRepository: airbyte/source-stripe
+  dockerImageTag: 0.1.9
+  documentationUrl: https://hub.docker.com/r/airbyte/source-stripe
   icon: stripe.svg
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   name: Mailchimp
@@ -91,7 +91,7 @@
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
   icon: facebook.svg
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
@@ -103,7 +103,7 @@
 - sourceDefinitionId: b1892b11-788d-44bd-b9ec-3a436f7b54ce
   name: Shopify
   dockerRepository: airbyte/source-shopify-singer
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-shopify-singer
   icon: shopify.svg
 - sourceDefinitionId: 9845d17a-45f1-4070-8a60-50914b1c8e2b
@@ -127,7 +127,7 @@
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   name: Freshdesk
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-freshdesk
   icon: freshdesk.svg
 - sourceDefinitionId: 396e4ca3-8a97-4b85-aa4e-c9d8c2d5f992

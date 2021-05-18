@@ -27,8 +27,7 @@
       "type": ["null", "boolean"]
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "amount_reversed": {
       "type": ["null", "integer"]
