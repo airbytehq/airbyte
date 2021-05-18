@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useResource } from "rest-hooks";
 
 import useRouter from "components/hooks/useRouterHook";
@@ -7,7 +7,7 @@ import SourceDefinitionResource from "core/resources/SourceDefinition";
 import useSource from "components/hooks/services/useSourceHook";
 
 // TODO: create separate component for source and destinations forms
-import SourceForm from "../../../../SourcesPage/pages/CreateSourcePage/components/SourceForm";
+import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { ConnectionConfiguration } from "core/domain/connection";
 
 type IProps = {
@@ -26,16 +26,6 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     }
   );
   const { createSource } = useSource();
-
-  const sourcesDropDownData = useMemo(
-    () =>
-      sourceDefinitions.map((item) => ({
-        text: item.name,
-        value: item.sourceDefinitionId,
-        img: item.icon,
-      })),
-    [sourceDefinitions]
-  );
 
   const onSubmitSourceStep = async (values: {
     name: string;
@@ -67,7 +57,7 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
   return (
     <SourceForm
       onSubmit={onSubmitSourceStep}
-      dropDownData={sourcesDropDownData}
+      sourceDefinitions={sourceDefinitions}
       hasSuccess={successRequest}
       error={errorStatusRequest}
     />

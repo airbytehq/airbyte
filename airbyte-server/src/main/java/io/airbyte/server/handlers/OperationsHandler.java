@@ -83,6 +83,7 @@ public class OperationsHandler {
       Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getDbt() != null);
       standardSyncOperation.withOperatorDbt(new OperatorDbt()
           .withGitRepoUrl(operationCreate.getOperatorConfiguration().getDbt().getGitRepoUrl())
+          .withGitRepoBranch(operationCreate.getOperatorConfiguration().getDbt().getGitRepoBranch())
           .withDockerImage(operationCreate.getOperatorConfiguration().getDbt().getDockerImage())
           .withDbtArguments(operationCreate.getOperatorConfiguration().getDbt().getDbtArguments()));
     }
@@ -106,6 +107,7 @@ public class OperationsHandler {
       Preconditions.checkArgument(operationUpdate.getOperatorConfiguration().getDbt() != null);
       persistedSync.withOperatorDbt(new OperatorDbt()
           .withGitRepoUrl(operationUpdate.getOperatorConfiguration().getDbt().getGitRepoUrl())
+          .withGitRepoBranch(operationUpdate.getOperatorConfiguration().getDbt().getGitRepoBranch())
           .withDockerImage(operationUpdate.getOperatorConfiguration().getDbt().getDockerImage())
           .withDbtArguments(operationUpdate.getOperatorConfiguration().getDbt().getDbtArguments()));
     } else {
@@ -182,6 +184,7 @@ public class OperationsHandler {
       Preconditions.checkArgument(standardSyncOperation.getOperatorDbt() != null);
       operatorConfiguration.dbt(new io.airbyte.api.model.OperatorDbt()
           .gitRepoUrl(standardSyncOperation.getOperatorDbt().getGitRepoUrl())
+          .gitRepoBranch(standardSyncOperation.getOperatorDbt().getGitRepoBranch())
           .dockerImage(standardSyncOperation.getOperatorDbt().getDockerImage())
           .dbtArguments(standardSyncOperation.getOperatorDbt().getDbtArguments()));
     }
