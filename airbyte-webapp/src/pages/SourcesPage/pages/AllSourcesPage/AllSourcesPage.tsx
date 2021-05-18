@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
-import Button from "components/Button";
+import { Button } from "components";
 import { Routes } from "../../../routes";
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";

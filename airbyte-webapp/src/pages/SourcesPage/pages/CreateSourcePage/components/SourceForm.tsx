@@ -7,7 +7,7 @@ import { AnalyticsService } from "core/analytics/AnalyticsService";
 import config from "config";
 import useRouter from "components/hooks/useRouterHook";
 import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
-import { IDataItem } from "components/DropDown/components/ListItem";
+import { IDataItem } from "components/base/DropDown/components/ListItem";
 import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";

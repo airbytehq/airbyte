@@ -3,10 +3,9 @@ import styled, { keyframes } from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
-import { H5 } from "components/Titles";
+import { H5 } from "components";
 import ErrorSign from "./components/ErrorSign";
-import Button from "components/Button";
-
+import { Button } from "components";
 type SingletonCardProps = {
   title: string | React.ReactNode;
   text?: string | React.ReactNode;

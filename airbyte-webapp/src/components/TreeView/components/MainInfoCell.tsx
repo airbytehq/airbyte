@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 import { Cell } from "components/SimpleTableComponents";
-import { CheckBox } from "components/CheckBox";
+import { CheckBox } from "components";
 
 type MainInfoCellProps = {
   label: string;

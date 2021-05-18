@@ -10,8 +10,7 @@ import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import Button from "components/Button";
-
+import { Button } from "components";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
 import config from "config";

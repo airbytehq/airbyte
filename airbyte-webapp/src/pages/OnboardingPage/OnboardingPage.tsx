@@ -5,7 +5,7 @@ import { useResource } from "rest-hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
 
-import { H2 } from "components/Titles";
+import { H2 } from "components";
 import StepsMenu from "components/StepsMenu";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";

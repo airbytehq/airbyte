@@ -4,9 +4,8 @@ import styled from "styled-components";
 import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
-import { Label, Input } from "components";
+import { Label, Input, LoadingButton } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
-import LoadingButton from "components/Button/LoadingButton";
 
 const Text = styled.div`
   font-style: normal;

@@ -4,7 +4,7 @@ import styled from "styled-components";
 import * as yup from "yup";
 
 import Modal from "components/Modal";
-import Button from "components/Button";
+import { Button } from "components";
 import Link from "components/Link";
 import { Field, FieldProps, Form, Formik } from "formik";
 import LabeledInput from "components/LabeledInput";

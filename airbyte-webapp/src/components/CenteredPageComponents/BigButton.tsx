@@ -1,7 +1,6 @@
 import styled from "styled-components";
 
-import Button from "components/Button";
-
+import { Button } from "components";
 const BigButton = styled(Button)`
   font-size: 16px;
   line-height: 19px;

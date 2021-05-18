@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "styled-components";
+import { FormattedMessage } from "react-intl";
 
-import { Button } from "components/Button";
+import { Button } from "components";
 
 import { EditorHeader } from "./components/EditorHeader";
 import { EditorRow } from "./components/EditorRow";
-import { FormattedMessage } from "react-intl";
 
 const ItemsList = styled.div`
   background: ${({ theme }) => theme.greyColor0};

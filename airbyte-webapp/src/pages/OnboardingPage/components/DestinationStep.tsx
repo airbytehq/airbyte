@@ -9,7 +9,7 @@ import SourceDefinitionResource from "core/resources/SourceDefinition";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
-import { IDataItem } from "components/DropDown/components/ListItem";
+import { IDataItem } from "components/base/DropDown/components/ListItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";

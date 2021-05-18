@@ -3,8 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import Modal from "components/Modal";
-import Button from "components/Button";
-
+import { Button } from "components";
 export type IProps = {
   onClose: () => void;
   onSubmit: () => void;

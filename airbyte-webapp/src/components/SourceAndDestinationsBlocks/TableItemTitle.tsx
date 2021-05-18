@@ -2,9 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { H3, H5 } from "components/Titles";
-import { DropDown } from "components/DropDown";
-import { IDataItem } from "components/DropDown/components/ListItem";
+import { H3, H5, DropDown } from "components/base";
+import { IDataItem } from "components/base/DropDown/components/ListItem";
 
 type IProps = {
   type: "source" | "destination";

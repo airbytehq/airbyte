@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
 import BaseClearView from "components/BaseClearView";
-import { H4 } from "components/Titles";
+import { H4 } from "components";
 
 const Content = styled(ContentCard)`
   width: 100%;

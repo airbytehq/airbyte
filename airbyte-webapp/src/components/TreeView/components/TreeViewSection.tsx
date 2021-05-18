@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from "react";
 import { useSet } from "react-use";
-import { useIntl, FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import {
@@ -15,17 +15,15 @@ import {
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
 
 import { Cell } from "components/SimpleTableComponents";
-import { DropDownRow } from "components/DropDown";
-import { CheckBox } from "components/CheckBox";
-import { RadioButton } from "components/RadioButton";
+import { CheckBox, DropDownRow, RadioButton } from "components/base";
 
 import MainInfoCell from "./MainInfoCell";
 import { SyncSettingsCell } from "./SyncSettingsCell";
 import { TreeRowWrapper } from "./TreeRowWrapper";
+import { Rows } from "./Rows";
 import ExpandFieldCell from "./ExpandFieldCell";
 import { OverflowCell } from "./OverflowCell";
 import { equal } from "utils/objects";
-import { Rows } from "./Rows";
 
 const StyledRadioButton = styled(RadioButton)`
   vertical-align: middle;
