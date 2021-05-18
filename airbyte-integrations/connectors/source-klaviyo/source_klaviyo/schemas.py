@@ -35,6 +35,7 @@ class BaseSchemaModel(BaseModel):
 
         @staticmethod
         def schema_extra(schema: MutableMapping[str, Any], model) -> None:
+            # Pydantic adds title to every attribute, this is too much, so we manually drop them
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
 

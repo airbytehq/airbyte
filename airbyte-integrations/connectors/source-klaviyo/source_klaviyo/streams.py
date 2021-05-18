@@ -77,7 +77,7 @@ class KlaviyoStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         response_json = response.json()
-        for record in response_json.get("data", []):  # Stripe puts records in a container array "data"
+        for record in response_json.get("data", []):  # API returns records in a container array "data"
             self.schema.parse_obj(record)  # validate with schema first
             yield record
 
@@ -137,7 +137,8 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         params = super().request_params(stream_state=stream_state, **kwargs)
 
         if not params.get("since"):  # skip state filter if already have one from pagination
-            params["since"] = max(stream_state.get(self.cursor_field, 0), self._start_ts)
+            state_ts = int(stream_state.get(self.cursor_field, 0))
+            params["since"] = max(state_ts, self._start_ts)
         params["sort"] = "asc"
 
         return params
@@ -147,7 +148,8 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
+        state_ts = int(current_stream_state.get(self.cursor_field, 0))
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), state_ts)}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
