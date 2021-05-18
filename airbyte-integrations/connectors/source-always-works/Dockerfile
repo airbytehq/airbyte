@@ -7,7 +7,6 @@ WORKDIR /airbyte/integration_code
 COPY source_always_works ./source_always_works
 COPY main.py ./
 COPY setup.py ./
-COPY socat.sh ./
 RUN pip install .
 
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]

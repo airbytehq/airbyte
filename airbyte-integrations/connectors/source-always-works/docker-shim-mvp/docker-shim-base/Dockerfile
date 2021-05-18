@@ -3,6 +3,8 @@ FROM airbyte/source-always-works:dev
 
 WORKDIR /airbyte/integration_code
 
+COPY socat.sh ./
+
 ENTRYPOINT ["./socat.sh"]
 
 LABEL io.airbyte.version=0.1.0

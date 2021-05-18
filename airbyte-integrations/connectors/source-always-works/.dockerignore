@@ -5,4 +5,3 @@
 !source_always_works
 !setup.py
 !secrets
-!socat.sh
