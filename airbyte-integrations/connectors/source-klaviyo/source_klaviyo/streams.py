@@ -37,7 +37,7 @@ class KlaviyoStream(HttpStream, ABC):
 
     url_base = "https://a.klaviyo.com/api/v1/"
     primary_key = "id"
-    page_size = 1
+    page_size = 100
 
     def __init__(self, api_key: str, **kwargs):
         super().__init__(**kwargs)
