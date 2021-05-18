@@ -83,7 +83,8 @@ class SourceNmbgmrGwl(Source):
         """
         gwl_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
                       'type': 'object',
-                      'properties': {'PointID': {'type': 'string'},
+                      'properties': {'OBJECTID': {'type': 'number'},
+                                     'PointID': {'type': 'string'},
                                      'DateMeasured': {'type': 'string',
                                                       'format': 'date-time'},
                                      'DepthToWaterBGS': {'type': 'number'}}}
