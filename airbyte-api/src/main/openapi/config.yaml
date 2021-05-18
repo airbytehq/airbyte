@@ -841,6 +841,29 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/connections/get_state:
+    post:
+      tags:
+        - connection
+      summary: Fetch the current state for a connection.
+      operationId: getConnectionState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionState"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/connections/delete:
     post:
       tags:
@@ -2426,6 +2449,17 @@ components:
           type: string
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+    ConnectionState:
+      type: object
+      required:
+        - connectionId
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        state:
+          $ref: "#/components/schemas/ConnectionStateObject"
+    ConnectionStateObject:
+      type: object
     # Web Backend
     WbConnectionRead:
       type: object

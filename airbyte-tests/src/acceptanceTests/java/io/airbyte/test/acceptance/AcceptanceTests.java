@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.JobsApi;
@@ -50,11 +51,14 @@ import io.airbyte.api.client.model.ConnectionCreate;
 import io.airbyte.api.client.model.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.ConnectionRead;
 import io.airbyte.api.client.model.ConnectionSchedule;
+import io.airbyte.api.client.model.ConnectionState;
 import io.airbyte.api.client.model.ConnectionStatus;
 import io.airbyte.api.client.model.ConnectionUpdate;
 import io.airbyte.api.client.model.DataType;
 import io.airbyte.api.client.model.DestinationCreate;
+import io.airbyte.api.client.model.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.client.model.DestinationDefinitionRead;
 import io.airbyte.api.client.model.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.client.model.DestinationIdRequestBody;
 import io.airbyte.api.client.model.DestinationRead;
@@ -66,17 +70,21 @@ import io.airbyte.api.client.model.JobStatus;
 import io.airbyte.api.client.model.LogType;
 import io.airbyte.api.client.model.LogsRequestBody;
 import io.airbyte.api.client.model.SourceCreate;
+import io.airbyte.api.client.model.SourceDefinitionCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.SourceDefinitionRead;
 import io.airbyte.api.client.model.SourceDefinitionSpecificationRead;
 import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.api.client.model.SourceRead;
 import io.airbyte.api.client.model.SyncMode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -101,6 +109,8 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -110,6 +120,8 @@ import org.testcontainers.utility.MountableFile;
 // e.g. We test that we can create a destination before we test whether we can sync data to it.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
 
   // Skip networking related failures on kube using this flag
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
@@ -469,7 +481,7 @@ public class AcceptanceTests {
 
   @Test
   @Order(12)
-  public void testIncrementalDedupSync() throws Exception {
+  public void testIncrementalDedupeSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
@@ -512,6 +524,78 @@ public class AcceptanceTests {
 
   @Test
   @Order(13)
+  public void testCheckpointing() throws Exception {
+    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
+        .name("E2E Test Source")
+        .dockerRepository("airbyte/source-e2e-test")
+        .dockerImageTag("dev")
+        .documentationUrl(URI.create("https://example.com")));
+
+    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
+        .createDestinationDefinition(new DestinationDefinitionCreate()
+            .name("E2E Test Destination")
+            .dockerRepository("airbyte/destination-e2e-test")
+            .dockerImageTag("dev")
+            .documentationUrl(URI.create("https://example.com")));
+
+    final SourceRead source = createSource(
+        "E2E Test Source -" + UUID.randomUUID(),
+        PersistenceConstants.DEFAULT_WORKSPACE_ID,
+        sourceDefinition.getSourceDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "EXCEPTION_AFTER_N")
+            .put("throw_after_n_records", 100)
+            .build()));
+
+    final DestinationRead destination = createDestination(
+        "E2E Test Destination -" + UUID.randomUUID(),
+        PersistenceConstants.DEFAULT_WORKSPACE_ID,
+        destinationDefinition.getDestinationDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.of("type", "LOGGING")));
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = source.getSourceId();
+    final UUID destinationId = destination.getDestinationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final AirbyteStream stream = catalog.getStreams().get(0).getStream();
+
+    assertEquals(
+        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
+        stream.getSupportedSyncModes());
+    assertTrue(MoreBooleans.isTruthy(stream.getSourceDefinedCursor()));
+
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode));
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    // wait to get out of pending.
+    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    // wait to get out of running.
+    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
+    // now cancel it so that we freeze state!
+    apiClient.getJobsApi().cancelJob(new JobIdRequestBody().id(connectionSyncRead1.getJob().getId()));
+
+    final ConnectionState connectionState = waitForConnectionState(apiClient, connectionId);
+
+    // the source is set to emit a state message every 5th message. because of the multi threaded
+    // nature, we can't guarantee exactly what checkpoint will be registered. what we can do is send
+    // enough messages to make sure that we checkpoint at least once.
+    assertNotNull(connectionState.getState());
+    assertTrue(connectionState.getState().get("column1").isInt());
+    LOGGER.info("state value: {}", connectionState.getState().get("column1").asInt());
+    assertTrue(connectionState.getState().get("column1").asInt() > 0);
+    assertEquals(0, connectionState.getState().get("column1").asInt() % 5);
+  }
+
+  @Test
+  @Order(14)
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = Files.readLines(
@@ -645,13 +729,13 @@ public class AcceptanceTests {
         getDestinationDbConfig());
   }
 
-  private DestinationRead createDestination(String name, UUID workspaceId, UUID destinationId, JsonNode destinationConfig) throws ApiException {
+  private DestinationRead createDestination(String name, UUID workspaceId, UUID destinationDefId, JsonNode destinationConfig) throws ApiException {
     final DestinationRead destination =
         apiClient.getDestinationApi().createDestination(new DestinationCreate()
             .name(name)
             .connectionConfiguration(Jsons.jsonNode(destinationConfig))
             .workspaceId(workspaceId)
-            .destinationDefinitionId(destinationId));
+            .destinationDefinitionId(destinationDefId));
     destinationIds.add(destination.getDestinationId());
     return destination;
   }
@@ -804,15 +888,32 @@ public class AcceptanceTests {
   }
 
   private static void waitForSuccessfulJob(JobsApi jobsApi, JobRead originalJob) throws InterruptedException, ApiException {
+    final JobRead job = waitForJob(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
+    assertEquals(JobStatus.SUCCEEDED, job.getStatus());
+  }
+
+  private static JobRead waitForJob(JobsApi jobsApi, JobRead originalJob, Set<JobStatus> jobStatuses) throws InterruptedException, ApiException {
     JobRead job = originalJob;
     int count = 0;
-    while (count < 60 && (job.getStatus() == JobStatus.PENDING || job.getStatus() == JobStatus.RUNNING)) {
+    while (count < 60 && jobStatuses.contains(job.getStatus())) {
       Thread.sleep(1000);
       count++;
 
       job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
+      LOGGER.info("waiting: {}", job);
     }
-    assertEquals(JobStatus.SUCCEEDED, job.getStatus());
+    return job;
+  }
+
+  private static ConnectionState waitForConnectionState(AirbyteApiClient apiClient, UUID connectionId) throws ApiException, InterruptedException {
+    ConnectionState connectionState = apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId));
+    int count = 0;
+    while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
+      LOGGER.info("fetching connection state. attempt: {}", count++);
+      connectionState = apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId));
+      Thread.sleep(1000);
+    }
+    return connectionState;
   }
 
 }
