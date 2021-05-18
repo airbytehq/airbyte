@@ -1,0 +1,16 @@
+{
+  "documentationUrl": "http://www.stubstub.stub",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Always Works Spec",
+    "type": "object",
+    "required": ["limit"],
+    "additionalProperties": false,
+    "properties": {
+      "limit": {
+        "type": "number",
+        "description": "Number of records the Always On Stream will return."
+      }
+    }
+  }
+}

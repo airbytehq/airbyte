@@ -1,0 +1,23 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "always_works_stream",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["stub"],
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
