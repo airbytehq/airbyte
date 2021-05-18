@@ -23,11 +23,14 @@
 #
 
 
-from airbyte_cdk.logger import AirbyteLogger
-from source_sendgrid.source import SourceSendgrid
+import pytest
+
+pytest_plugins = ("source_acceptance_test.plugin",)
 
 
-def test_source_wrong_credentials():
-    source = SourceSendgrid()
-    status, error = source.check_connection(logger=AirbyteLogger(), config={"apikey": "wrong.api.key123"})
-    assert not status
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """This fixture is a placeholder for external resources that acceptance test might require."""
+    # TODO: setup test dependencies
+    yield
+    # TODO: clean up test dependencies

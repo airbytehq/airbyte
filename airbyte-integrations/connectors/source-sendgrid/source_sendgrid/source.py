@@ -51,7 +51,8 @@ class SourceSendgrid(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             authenticator = TokenAuthenticator(config["apikey"])
-            Scopes(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)
+            scopes_gen = Scopes(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)
+            next(scopes_gen)
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Sendgrid API with the provided credentials - {error}"

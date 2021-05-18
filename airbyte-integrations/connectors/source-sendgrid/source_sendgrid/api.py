@@ -33,6 +33,7 @@ class SendgridStream(HttpStream, ABC):
     url_base = "https://api.sendgrid.com/v3/"
     primary_key = "id"
     limit = 50
+    data_field = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
@@ -48,11 +49,6 @@ class SendgridStream(HttpStream, ABC):
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         for record in records:
             yield record
-
-    @property
-    @abstractmethod
-    def data_field(self) -> str:
-        """The name of the field in the response which contains the data"""
 
 
 class SendgridStreamOffsetPagination(SendgridStream):
@@ -70,7 +66,9 @@ class SendgridStreamOffsetPagination(SendgridStream):
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        stream_data = response.json()[self.data_field] if self.data_field else response.json()
+        stream_data = response.json()
+        if self.data_field:
+            stream_data = stream_data[self.data_field]
         if len(stream_data) < self.limit:
             return
         self.offset += self.limit
@@ -92,7 +90,7 @@ class SendgridStreamMetadataPagination(SendgridStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page_url = response.json()["_metadata"].get("next", False)
         if next_page_url:
-            return {"next_page_url": next_page_url}
+            return {"next_page_url": next_page_url.replace(self.url_base, "")}
 
     @staticmethod
     @abstractmethod
@@ -111,21 +109,8 @@ class SendgridStreamMetadataPagination(SendgridStream):
             return next_page_token["next_page_url"]
         return self.initial_path()
 
-    def _create_prepared_request(
-        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None
-    ) -> requests.PreparedRequest:
-        url = self.url_base + path if self.url_base not in path else path
-        args = {"method": self.http_method, "url": url, "headers": headers, "params": params}
-
-        if self.http_method.upper() == "POST":
-            args["json"] = json
-
-        return requests.Request(**args).prepare()
-
 
 class Scopes(SendgridStream):
-    data_field = None
-
     def path(self, **kwargs) -> str:
         return "scopes"
 
@@ -154,7 +139,7 @@ class Contacts(SendgridStream):
 
 
 class StatsAutomations(SendgridStreamMetadataPagination):
-    data_field = "result"
+    data_field = "results"
 
     @staticmethod
     def initial_path() -> str:
@@ -162,7 +147,7 @@ class StatsAutomations(SendgridStreamMetadataPagination):
 
 
 class Segments(SendgridStream):
-    data_field = "result"
+    data_field = "results"
 
     def path(self, **kwargs) -> str:
         return "marketing/segments"
@@ -171,55 +156,47 @@ class Segments(SendgridStream):
 class Templates(SendgridStreamMetadataPagination):
     data_field = "result"
 
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token=next_page_token, **kwargs)
+        if not next_page_token:
+            params["generations"] = "legacy,dynamic"
+        return params
+
     @staticmethod
     def initial_path() -> str:
-        return "templates?generations=legacy,dynamic"
+        return "templates"
 
 
 class GlobalSuppressions(SendgridStreamOffsetPagination):
-    data_field = None
-
     def path(self, **kwargs) -> str:
         return "suppression/unsubscribes"
 
 
 class SuppressionGroups(SendgridStream):
-    data_field = None
-
     def path(self, **kwargs) -> str:
         return "asm/groups"
 
 
 class SuppressionGroupMembers(SendgridStreamOffsetPagination):
-    data_field = None
-
     def path(self, **kwargs) -> str:
         return "asm/suppressions"
 
 
 class Blocks(SendgridStreamOffsetPagination):
-    data_field = None
-
     def path(self, **kwargs) -> str:
         return "suppression/blocks"
 
 
 class Bounces(SendgridStream):
-    data_field = None
-
     def path(self, **kwargs) -> str:
         return "suppression/bounces"
 
 
 class InvalidEmails(SendgridStreamOffsetPagination):
-    data_field = None
-
     def path(self, **kwargs) -> str:
         return "suppression/invalid_emails"
 
 
 class SpamReports(SendgridStreamOffsetPagination):
-    data_field = None
-
     def path(self, **kwargs) -> str:
         return "suppression/spam_reports"
