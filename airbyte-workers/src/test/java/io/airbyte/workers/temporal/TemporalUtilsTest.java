@@ -140,7 +140,7 @@ public class TemporalUtilsTest {
 
     class Activity1Impl implements Activity1 {
 
-      private static final Logger LOGGER = LoggerFactory.getLogger(io.airbyte.workers.temporal.TestWorkflow.Activity1Impl.class);
+      private static final Logger LOGGER = LoggerFactory.getLogger(TestWorkflow.Activity1Impl.class);
       private static final String ACTIVITY1 = "activity1";
 
       private final VoidCallable callable;

@@ -3,5 +3,5 @@
   "name": "Klaviyo",
   "dockerRepository": "airbyte/source-klaviyo",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-klaviyo"
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/klaviyo"
 }
