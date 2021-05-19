@@ -1,10 +1,13 @@
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
   Route,
   Switch,
 } from "react-router-dom";
+import { FormattedMessage } from "react-intl";
+
+import config from "config";
 
 import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
@@ -13,16 +16,17 @@ import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
 import AdminPage from "./AdminPage";
 import SettingsPage from "./SettingsPage";
-import LoadingPage from "../components/LoadingPage";
-import MainView from "../components/MainView";
-import config from "../config";
-import useSegment from "../components/hooks/useSegment";
-import { AnalyticsService } from "../core/analytics/AnalyticsService";
-import useRouter from "../components/hooks/useRouterHook";
-import SupportChat from "../components/SupportChat";
-import useWorkspace from "../components/hooks/services/useWorkspaceHook";
-import SingletonCard from "../components/SingletonCard";
-import { FormattedMessage } from "react-intl";
+import LoadingPage from "components/LoadingPage";
+import MainView from "components/MainView";
+import SupportChat from "components/SupportChat";
+import SingletonCard from "components/SingletonCard";
+
+import useSegment from "components/hooks/useSegment";
+import useRouter from "components/hooks/useRouterHook";
+import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import { HealthService } from "core/health/HealthService";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -146,9 +150,39 @@ const OnboardingsRoutes = () => {
     </Switch>
   );
 };
+const healthService = new HealthService();
+
+function useApiHealthPoll() {
+  const [, setHasError] = useState(null);
+  const {
+    registerNotification,
+    unregisterAllNotifications,
+  } = useNotificationService();
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        await healthService.health();
+      } catch (e) {
+        setHasError(e);
+        registerNotification({
+          id: 1,
+          onClose: () => {
+            unregisterAllNotifications();
+          },
+          title: "",
+          isError: true,
+        });
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [registerNotification]);
+}
 
 export const Routing: React.FC = () => {
   useSegment(config.segment.token);
+  useApiHealthPoll();
 
   const { workspace } = useWorkspace();
 

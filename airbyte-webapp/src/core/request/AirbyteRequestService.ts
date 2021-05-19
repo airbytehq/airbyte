@@ -10,7 +10,8 @@ abstract class AirbyteRequestService {
     body?: Readonly<Record<string, unknown> | Array<unknown> | string>,
     options?: Partial<RequestInit>
   ): Promise<Response> {
-    const response = await fetch(url, {
+    const path = `${this.rootUrl}${url}`;
+    const response = await fetch(path, {
       method: "POST",
       body: body ? JSON.stringify(body) : undefined,
       ...options,
