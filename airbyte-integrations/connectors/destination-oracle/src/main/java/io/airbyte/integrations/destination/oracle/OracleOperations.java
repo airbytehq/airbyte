@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.mssql;
+package io.airbyte.integrations.destination.oracle;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -31,7 +31,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
 
-public class SqlServerOperations implements SqlOperations {
+public class OracleOperations implements SqlOperations {
 
   @Override
   public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
@@ -54,7 +54,7 @@ public class SqlServerOperations implements SqlOperations {
             + "CREATE TABLE %s.%s ( \n"
             + "%s VARCHAR(64) PRIMARY KEY,\n"
             + "%s VARCHAR(MAX),\n"
-            + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET()\n"
+            + "%s TIMESTAMP WITH TIME ZONE DEFAULT SYSDATETIMEOFFSET()\n"
             + ");\n",
         schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
