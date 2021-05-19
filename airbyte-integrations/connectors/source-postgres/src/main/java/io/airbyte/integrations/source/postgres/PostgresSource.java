@@ -220,6 +220,10 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
     if (isCdc(config)) {
+      // todo (cgardens) - this is a hack to make sure this flag get set properly. when we consolidate our
+      // CDC logic, we should figure out a way to add this more ergonomically into the AbstractJdbcSource.
+      stateManager.setIsCdc(true);
+
       // State works differently in CDC than it does in convention incremental. The state is written to an
       // offset file that debezium reads from. Then once all records are replicated, we read back that
       // offset file (which will have been updated by debezium) and set it in the state. There is no
