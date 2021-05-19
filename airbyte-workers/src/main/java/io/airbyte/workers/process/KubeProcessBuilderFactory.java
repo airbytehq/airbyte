@@ -119,7 +119,6 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
   }
 
   public static void main(String[] args) throws IOException, ApiException, InterruptedException {
-    // TODO: This pod sometimes errors once on start up. Why?
     var PORT = 9000;
     String IP = null;
     var destPodName = "destination-listen-and-echo";
@@ -134,7 +133,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
         .filter(pod -> pod.getMetadata().getName().equals(destPodName)).collect(Collectors.toSet());
     if (podSet.size() == 0) {
       LOGGER.info("Pod does not exist");
-      Pod destPod = client.pods().create(destPodDef);
+      Pod destPod = client.pods().create(destPodDef); // watch command?
       LOGGER.info("Created pod: {}, waiting for it to be ready", destPod);
       client.resource(destPod).waitUntilReady(1, TimeUnit.MINUTES);
       LOGGER.info("Dest Pod ready");
@@ -166,9 +165,9 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
     out.print("Hello!");
     out.close();
 
-    client.pods().delete(destPodDef);
-    // TODO: Why does this wait not work?
-    client.resource(destPodDef).waitUntilCondition(pod -> !pod.getStatus().getPhase().equals("Terminating"), 1, TimeUnit.MINUTES);
+//    client.pods().delete(destPodDef);
+//    // TODO: Why does this wait not work?
+//    client.resource(destPodDef).waitUntilCondition(pod -> !pod.getStatus().getPhase().equals("Terminating"), 1, TimeUnit.MINUTES);
     client.close();
   }
 
