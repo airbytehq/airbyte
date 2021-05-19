@@ -35,7 +35,7 @@ setup(
         "slack-sdk==3.0.0",
         "airbyte-protocol",
         "base-singer",
-        "base-python"
+        "base-python",
     ],
     packages=find_packages(),
     package_data={"": ["*.json"]},
