@@ -140,25 +140,11 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       LOGGER.info("Dest Pod ready");
     }
 
-    // TODO: Why does this not work?
-    //    LOGGER.info(destPod.getStatus().getPodIP());
-    //    destPod = client.resource(destPod).get();
-    //    LOGGER.info("Status: {}", destPod.getStatus());
-    //    LOGGER.info("IP: {}", destPod.getStatus().getPodIP());
-    //    IP = destPod.getStatus().getPodIP();
-
-    // TODO: Assign labels to pods to narrow the search.
-    PodList pods = client.pods().inNamespace("default").list();
-    for (Pod p : pods.getItems()) {
-      LOGGER.info(p.getMetadata().getName());
-      LOGGER.info(p.getStatus().getPodIP());
-      // Filter by pod and retrieve IP.
-      if (p.getMetadata().getName().equals(destPodName)) {
-        LOGGER.info("Found IP!");
-        IP = p.getStatus().getPodIP();
-        break;
-      }
-    }
+    Pod destPod = client.pods().inNamespace("default").withName(destPodName).get();
+    LOGGER.info("Found IP!");
+    LOGGER.info("Status: {}", destPod.getStatus());
+    LOGGER.info("IP: {}", destPod.getStatus().getPodIP());
+    IP = destPod.getStatus().getPodIP();
 
     // Send something!
     var clientSocket = new Socket(IP, PORT);
