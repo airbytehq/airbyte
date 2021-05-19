@@ -86,6 +86,7 @@
     * [Local CSV](integrations/destinations/local-csv.md)
     * [Local JSON](integrations/destinations/local-json.md)
     * [MeiliSearch](integrations/destinations/meilisearch.md)
+    * [MSSQL](integrations/destinations/mssql.md)
     * [MySQL](integrations/destinations/mysql.md)
     * [Postgres](integrations/destinations/postgres.md)
     * [Redshift](integrations/destinations/redshift.md)
