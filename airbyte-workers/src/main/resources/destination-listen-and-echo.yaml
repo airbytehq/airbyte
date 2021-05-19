@@ -4,6 +4,7 @@ metadata:
   name: destination-listen-and-echo
   namespace: default
 spec:
+  restartPolicy: Never
   containers:
   - name: destination-listen-and-echo
     image: airbyte/destination-listen-and-echo:dev
