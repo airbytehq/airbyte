@@ -51,6 +51,7 @@
     * [Greenhouse](integrations/sources/greenhouse.md)
     * [HTTP Request](integrations/sources/http-request.md)
     * [Hubspot](integrations/sources/hubspot.md)
+    * [Klaviyo](integrations/sources/klaviyo.md)
     * [Instagram](integrations/sources/instagram.md)
     * [Intercom](integrations/sources/intercom.md)
     * [Iterable](integrations/sources/iterable.md)
