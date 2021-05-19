@@ -32,6 +32,14 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.Configuration;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodList;
+import io.kubernetes.client.util.Config;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -93,6 +101,17 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       return new ProcessBuilder(cmd);
     } catch (Exception e) {
       throw new WorkerException(e.getMessage());
+    }
+  }
+
+  public static void main(String[] args) throws IOException, ApiException {
+    ApiClient client = Config.defaultClient();
+    Configuration.setDefaultApiClient(client);
+
+    CoreV1Api api = new CoreV1Api();
+    V1PodList list = api.listPodForAllNamespaces(null, null, null, null, null, null, null, null, null);
+    for (V1Pod item : list.getItems()) {
+      LOGGER.info(item.getMetadata().getName());
     }
   }
 
