@@ -43,9 +43,9 @@ class AlwaysWorksStream(HttpStream):
         self._limit = limit
 
     # Ignored Functions
-    def path(self, stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None) -> str:
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return "unused"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -98,4 +98,4 @@ class SourceAlwaysWorks(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [AlwaysWorksStream(config['limit'])]
+        return [AlwaysWorksStream(config["limit"])]
