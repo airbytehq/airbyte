@@ -46,7 +46,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
         # checking if REPORT syncing will be called for manager account
         # https://developers.google.com/adwords/api/docs/common-errors#ReportDefinitionError.CUSTOMER_SERVING_TYPE_REPORT_MISMATCH
         try:
-            customer_ids = config["customer_ids"]
+            customer_ids = config["customer_ids"].split(",")
             oauth2_client = oauth2.GoogleRefreshTokenClient(
                 config["oauth_client_id"], config["oauth_client_secret"], config["refresh_token"]
             )
@@ -85,7 +85,7 @@ class SourceGoogleAdwordsSinger(SingerSource):
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
         # singer catalog that attempts to pull a stream ("accounts") that should always exists, though it may be empty.
         try:
-            customer_ids = config["customer_ids"]
+            customer_ids = config["customer_ids"].split(",")
             for customer_id in customer_ids:
                 oauth2_client = oauth2.GoogleRefreshTokenClient(
                     config["oauth_client_id"], config["oauth_client_secret"], config["refresh_token"]
@@ -162,4 +162,5 @@ class SourceGoogleAdwordsSinger(SingerSource):
         # required property in the singer tap, but seems like an implementation detail of stitch
         # https://github.com/singer-io/tap-adwords/blob/cf0c1ff7dae8503f97173a15cf8d78bf975069f8/tap_adwords/__init__.py#L963-L969
         raw_config["user_agent"] = "unknown"
+        raw_config["customer_ids"] = ",".join(raw_config["customer_ids"])
         return raw_config
