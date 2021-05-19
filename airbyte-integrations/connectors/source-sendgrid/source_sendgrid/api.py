@@ -158,8 +158,7 @@ class Templates(SendgridStreamMetadataPagination):
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
-        if not next_page_token:
-            params["generations"] = "legacy,dynamic"
+        params["generations"] = "legacy,dynamic"
         return params
 
     @staticmethod
