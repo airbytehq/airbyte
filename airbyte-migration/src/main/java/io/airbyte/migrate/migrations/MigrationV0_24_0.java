@@ -47,12 +47,13 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_24_0.class);
 
-  private static final ResourceId STANDARD_SYNC_RESOURCE_ID =
-      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
-  private static final ResourceId STANDARD_SYNC_SCHEDULE_RESOURCE_ID =
-      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_SCHEDULE");
+  protected static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId
+      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
+  protected static final ResourceId STANDARD_SYNC_SCHEDULE_RESOURCE_ID = ResourceId
+      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_SCHEDULE");
 
   private static final String MIGRATION_VERSION = "0.24.0-alpha";
+  private static final Path CONFIG_PATH = Path.of("migrations/migrationV0_24_0");
 
   private final Migration previousMigration;
 
@@ -71,15 +72,15 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
     final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(
         previousMigration.getOutputSchema());
     outputSchema.remove(STANDARD_SYNC_SCHEDULE_RESOURCE_ID);
-    outputSchema.put(STANDARD_SYNC_RESOURCE_ID, MigrationUtils
-        .getSchemaFromResourcePath(Path.of("migrations/migrationV0_24_0"),
-            STANDARD_SYNC_RESOURCE_ID));
+    outputSchema.put(
+        STANDARD_SYNC_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(CONFIG_PATH, STANDARD_SYNC_RESOURCE_ID));
     return outputSchema;
   }
 
   @Override
   public void migrate(Map<ResourceId, Stream<JsonNode>> inputData,
-                      Map<ResourceId, Consumer<JsonNode>> outputData) {
+      Map<ResourceId, Consumer<JsonNode>> outputData) {
     // Create a map from connection id to standard sync schedule nodes
     // to "join" the schedule onto the standard sync node later.
     final Map<String, JsonNode> connectionToScheduleNodes = inputData
@@ -103,9 +104,15 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
                 "No standard sync schedule config exists for connection {}, will default to manual sync",
                 connectionId);
             standardSync.set("manual", Jsons.jsonNode(true));
-          } else {
-            standardSync.set("manual", syncSchedule.get("manual"));
-            standardSync.set("schedule", syncSchedule.get("schedule"));
+            return;
+          }
+
+          final JsonNode manual = syncSchedule.get("manual");
+          standardSync.set("manual", manual);
+
+          final JsonNode schedule = syncSchedule.get("schedule");
+          if (schedule != null && !manual.asBoolean()) {
+            standardSync.set("schedule", schedule);
           }
         }
 
