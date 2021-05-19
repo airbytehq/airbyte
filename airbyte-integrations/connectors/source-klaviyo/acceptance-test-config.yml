@@ -2,7 +2,8 @@
 # for more information about how to configure these tests
 connector_image: airbyte/source-klaviyo:dev
 tests:
-    - spec_path: "integration_tests/spec.json"
+  spec:
+    - spec_path: "source_klaviyo/spec.json"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
