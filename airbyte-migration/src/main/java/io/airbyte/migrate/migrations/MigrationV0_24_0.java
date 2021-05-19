@@ -41,7 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Merge StandardSyncSchedule into StandardSync.
+ * 1. Merge StandardSyncSchedule into StandardSync.
+ * 2. Remove StandardSyncSchedule.
  */
 public class MigrationV0_24_0 extends BaseMigration implements Migration {
 
@@ -70,6 +71,7 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
   public Map<ResourceId, JsonNode> getOutputSchema() {
     final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(
         previousMigration.getOutputSchema());
+    outputSchema.remove(STANDARD_SYNC_SCHEDULE_RESOURCE_ID);
     outputSchema.put(STANDARD_SYNC_RESOURCE_ID, MigrationUtils
         .getSchemaFromResourcePath(Path.of("migrations/migrationV0_24_0"),
             STANDARD_SYNC_RESOURCE_ID));
