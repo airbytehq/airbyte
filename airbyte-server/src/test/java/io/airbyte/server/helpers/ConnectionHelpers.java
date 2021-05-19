@@ -53,6 +53,8 @@ public class ConnectionHelpers {
 
   private static final String STREAM_NAME = "users-data";
   private static final String FIELD_NAME = "id";
+  private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
+  private static final long BASIC_SCHEDULE_UNITS = 1L;
 
   public static StandardSync generateSyncWithSourceId(UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();
@@ -87,14 +89,14 @@ public class ConnectionHelpers {
 
   public static ConnectionSchedule generateBasicConnectionSchedule() {
     return new ConnectionSchedule()
-        .timeUnit(ConnectionSchedule.TimeUnitEnum.DAYS)
-        .units(1L);
+        .timeUnit(ConnectionSchedule.TimeUnitEnum.fromValue(BASIC_SCHEDULE_TIME_UNIT))
+        .units(BASIC_SCHEDULE_UNITS);
   }
 
   public static Schedule generateBasicSchedule() {
     return new Schedule()
-        .withTimeUnit(TimeUnit.DAYS)
-        .withUnits(1L);
+        .withTimeUnit(TimeUnit.fromValue(BASIC_SCHEDULE_TIME_UNIT))
+        .withUnits(BASIC_SCHEDULE_UNITS);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(UUID connectionId,

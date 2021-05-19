@@ -114,6 +114,10 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
           if (schedule != null && !manual.asBoolean()) {
             standardSync.set("schedule", schedule);
           }
+
+          LOGGER.info(
+              "Schedule added to standard sync config for connection {} (manual: {}, schedule: {})",
+              connectionId, manual, schedule);
         }
 
         final Consumer<JsonNode> outputConsumer = outputData.get(inputEntry.getKey());
