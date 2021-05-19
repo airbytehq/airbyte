@@ -21,6 +21,7 @@ import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
 import NormalizationBlock from "./components/NormalizationBlock";
 import SectionTitle from "./components/SectionTitle";
+import TransformationBlock from "./components/TransformationBlock";
 import { Normalisation } from "./types";
 
 const FormContainer = styled(Form)`
@@ -199,21 +200,20 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             onChangeSchema={setNewSchema}
             additionalControl={additionalSchemaControl}
           />
-          <div>
-            <SectionTitle>
-              <FormattedMessage id="form.normalizationTransformation" />
-            </SectionTitle>
-            <Field name="normalization">
-              {({ field }: FieldProps<string>) => (
-                <NormalizationBlock
-                  {...field}
-                  onClick={(value: string) =>
-                    setFieldValue("normalization", value)
-                  }
-                />
-              )}
-            </Field>
-          </div>
+          <SectionTitle>
+            <FormattedMessage id="form.normalizationTransformation" />
+          </SectionTitle>
+          <Field name="normalization">
+            {({ field }: FieldProps<string>) => (
+              <NormalizationBlock
+                {...field}
+                onClick={(value: string) =>
+                  setFieldValue("normalization", value)
+                }
+              />
+            )}
+          </Field>
+          <TransformationBlock />
           {!isEditMode ? (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}

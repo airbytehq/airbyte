@@ -95,6 +95,9 @@
   "form.rawData": "Raw data - no normalization",
   "form.basicNormalization": "Basic normalization - ",
   "form.basicNormalization.message": "Map the JSON object to the types and format native to the destination. <lnk>Learn more</lnk>",
+  "form.customTransformation": "Custom transformation",
+  "form.transformationCount": "{count, plural, =0 {No custom transformation} one {{count} transformation} other {{count} transformations}}",
+  "form.addTransformation": "+ Add transformation",
 
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
