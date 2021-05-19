@@ -39,6 +39,10 @@ class RechargeStream(HttpStream, ABC):
     limit = 250
     page_num = 1
 
+    @property
+    def data_path(self):
+        return self.name
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -67,22 +71,19 @@ class RechargeStream(HttpStream, ABC):
         yield from stream_data
 
     def get_stream_data(self, response_data: Any) -> List[dict]:
-        response_data = response_data.get(self.name, [])
-
-        if isinstance(response_data, list):
-            return response_data
-        elif isinstance(response_data, dict):
-            return [response_data]
+        if self.data_path:
+            return response_data.get(self.data_path, [])
         else:
-            raise Exception(f"Unsupported type of response data for stream {self.name}")
+            return [response_data]
 
 
 class IncrementalRechargeStream(RechargeStream, ABC):
+
+    cursor_field = "created_at"
+
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
-
-    cursor_field = "created_at"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = latest_record[self.cursor_field]
@@ -168,9 +169,7 @@ class Shop(RechargeStream):
     """
 
     primary_key = ["shop", "store"]
-
-    def get_stream_data(self, response_data: Any) -> List[dict]:
-        return [response_data]
+    data_path = None
 
 
 class Subscriptions(IncrementalRechargeStream):

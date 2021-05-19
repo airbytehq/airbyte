@@ -36,20 +36,20 @@ from .api import Addresses, Charges, Collections, Customers, Discounts, Metafiel
 
 class RechargeTokenAuthenticator(TokenAuthenticator):
     def get_auth_header(self) -> Mapping[str, Any]:
-        return {self.auth_header: self._token}
+        return {"X-Recharge-Access-Token": self._token}
 
 
 class SourceRecharge(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-            auth = RechargeTokenAuthenticator(token=config["access_token"], auth_header="X-Recharge-Access-Token")
+            auth = RechargeTokenAuthenticator(token=config["access_token"])
             list(Shop(authenticator=auth).read_records(SyncMode.full_refresh))
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Recharge API with the provided credentials - {error}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = RechargeTokenAuthenticator(token=config["access_token"], auth_header="X-Recharge-Access-Token")
+        auth = RechargeTokenAuthenticator(token=config["access_token"])
         return [
             Addresses(authenticator=auth, start_date=config["start_date"]),
             Charges(authenticator=auth, start_date=config["start_date"]),
