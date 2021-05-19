@@ -184,7 +184,7 @@ def run_check_dbt_command(command: str, cwd: str) -> bool:
         "-v",
         f"{cwd}/final:/build/run/airbyte_utils/models/generated",
         "-v",
-        "/tmp/bq_keyfile.json:/tmp/bq_keyfile.json",
+        "/tmp:/tmp",
         "--network",
         "host",
         "--entrypoint",
