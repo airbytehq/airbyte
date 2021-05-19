@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-sync-worker-test
+spec:
+  containers:
+  - name: kube-sync-worker-test
+    image: airbyte/kube-sync-worker-test:dev
+    imagePullPolicy: Always

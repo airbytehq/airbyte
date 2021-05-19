@@ -1,8 +1,13 @@
 import org.jsonschema2pojo.SourceType
 
 plugins {
-    id 'java-library'
+    id 'application'
     id 'com.github.eirnym.js2p' version '1.0'
+    id 'airbyte-docker'
+}
+
+application {
+    mainClass = 'io.airbyte.workers.process.KubeProcessBuilderFactory'
 }
 
 configurations {
@@ -17,7 +22,7 @@ dependencies {
     implementation 'io.kubernetes:client-java-extended:10.0.0'
     implementation 'io.temporal:temporal-sdk:1.0.4'
     implementation 'org.apache.ant:ant:1.10.10'
-    implementation 'io.kubernetes:client-java:10.0.0'
+    implementation 'io.fabric8:kubernetes-client:5.3.1'
 
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db')
