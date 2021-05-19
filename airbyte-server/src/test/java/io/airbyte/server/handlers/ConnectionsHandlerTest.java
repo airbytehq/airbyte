@@ -96,16 +96,12 @@ class ConnectionsHandlerTest {
         .name("presto to hudi")
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
-        .schedule(ConnectionHelpers.generateBasicSchedule())
+        .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
         .syncCatalog(catalog);
 
     final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
-    final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
-        standardSync.getConnectionId(),
-        standardSync.getSourceId(),
-        standardSync.getDestinationId(),
-        standardSync.getOperationIds());
+    final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
 
     assertEquals(expectedConnectionRead, actualConnectionRead);
 

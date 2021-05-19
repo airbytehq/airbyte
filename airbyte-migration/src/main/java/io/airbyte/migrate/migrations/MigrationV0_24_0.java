@@ -40,10 +40,9 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * 1. Merge StandardSyncSchedule into StandardSync.
- * 2. Remove StandardSyncSchedule.
- */
+// This migration does the following:
+// 1. Merge StandardSyncSchedule into StandardSync.
+// 2. Remove StandardSyncSchedule.
 public class MigrationV0_24_0 extends BaseMigration implements Migration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_24_0.class);

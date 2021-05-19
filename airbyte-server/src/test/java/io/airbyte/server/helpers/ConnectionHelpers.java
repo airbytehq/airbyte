@@ -32,9 +32,12 @@ import io.airbyte.api.model.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.AirbyteStreamConfiguration;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionSchedule;
+import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.commons.text.Names;
+import io.airbyte.config.Schedule;
+import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardSync;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -63,7 +66,8 @@ public class ConnectionHelpers {
         .withSourceId(sourceId)
         .withDestinationId(UUID.randomUUID())
         .withOperationIds(List.of(UUID.randomUUID()))
-        .withManual(true);
+        .withManual(false)
+        .withSchedule(generateBasicSchedule());
   }
 
   public static StandardSync generateSyncWithDestinationId(UUID destinationId) {
@@ -81,10 +85,16 @@ public class ConnectionHelpers {
         .withManual(true);
   }
 
-  public static ConnectionSchedule generateBasicSchedule() {
+  public static ConnectionSchedule generateBasicConnectionSchedule() {
     return new ConnectionSchedule()
         .timeUnit(ConnectionSchedule.TimeUnitEnum.DAYS)
         .units(1L);
+  }
+
+  public static Schedule generateBasicSchedule() {
+    return new Schedule()
+        .withTimeUnit(TimeUnit.DAYS)
+        .withUnits(1L);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(UUID connectionId,
@@ -100,16 +110,26 @@ public class ConnectionHelpers {
         .name("presto to hudi")
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
-        .schedule(generateBasicSchedule())
+        .schedule(generateBasicConnectionSchedule())
         .syncCatalog(ConnectionHelpers.generateBasicApiCatalog());
   }
 
   public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
-    return generateExpectedConnectionRead(
+    final ConnectionRead connectionRead = generateExpectedConnectionRead(
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
         standardSync.getDestinationId(),
         standardSync.getOperationIds());
+
+    if (standardSync.getSchedule() == null) {
+      connectionRead.schedule(null);
+    } else {
+      connectionRead.schedule(new ConnectionSchedule()
+          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
+          .units(standardSync.getSchedule().getUnits()));
+    }
+
+    return connectionRead;
   }
 
   public static JsonNode generateBasicJsonSchema() {
