@@ -108,7 +108,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
     cmd.add(imageName);
     cmd.addAll(Arrays.asList(args));
 
-    LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
+    LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd));
 
     return new ProcessBuilder(cmd);
   }
