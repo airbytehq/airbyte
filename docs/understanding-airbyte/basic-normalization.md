@@ -243,6 +243,12 @@ As an example from the hubspot source, we could have the following tables with n
 | Final table name of expanded nested column on BigQuery | companies\_2e8\_property\_engag**ements\_last\_meeting\_bo**oked\_campaign | deals\_prop**erties**\_6e6\_engagements\_l**ast\_meeting\_**booked\_medium |
 | Final table name of expanded nested column on Postgres | companies\_2e8\_property\_engag**\_\_**oked\_campaign | deals\_prop\_6e6\_engagements\_l**\_\_**booked\_medium |
 
+As mentioned in the overview:
+
+- Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`
+- If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`
+- In certain pathological cases, basic normalization is required to generate large models with many columns and multiple intermediate transformation steps for a stream. This may break down the "ephemeral" materialization strategy and require the use of additional intermediate views or tables instead. As a result, you may notice additional temporary tables being generated in the destination to handle these checkpoints.
+
 Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. To do so, you can follow the following tutorial
 
 * to build a [custom SQL view]() with your own naming conventions
