@@ -215,9 +215,7 @@ class StreamProcessor(object):
 
         from_table = self.from_table
         # Transformation Pipeline for this stream
-        from_table = self.add_to_outputs(
-            self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab1"
-        )
+        from_table = self.add_to_outputs(self.generate_json_parsing_model(from_table, column_names), is_intermediate=True, suffix="ab1")
         from_table = self.add_to_outputs(
             self.generate_column_typing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab2"
         )
@@ -225,9 +223,7 @@ class StreamProcessor(object):
             self.generate_id_hashing_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab3"
         )
         if self.destination_sync_mode.value == DestinationSyncMode.append_dedup.value:
-            from_table = self.add_to_outputs(
-                self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, column_count=column_count, suffix="ab4"
-            )
+            from_table = self.add_to_outputs(self.generate_dedup_record_model(from_table, column_names), is_intermediate=True, suffix="ab4")
             where_clause = "\nwhere _airbyte_row_num = 1"
             from_table = self.add_to_outputs(
                 self.generate_scd_type_2_model(from_table, column_names) + where_clause,
@@ -592,7 +588,7 @@ from {{ from_table }}
     def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [column_names[field][0] for field in column_names]
 
-    def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int, suffix: str = "") -> str:
+    def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
         table_name = self.generate_new_table_name(is_intermediate, suffix)
         file_name = self.get_file_name(self.stream_name, schema, table_name)
