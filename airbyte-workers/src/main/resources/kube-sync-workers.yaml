@@ -3,6 +3,7 @@ kind: Pod
 metadata:
   name: kube-sync-worker-test
 spec:
+  restartPolicy: Never
   containers:
   - name: kube-sync-worker-test
     image: airbyte/kube-sync-worker-test:dev

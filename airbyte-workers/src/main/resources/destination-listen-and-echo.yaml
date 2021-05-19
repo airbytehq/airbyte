@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: destination-listen-and-echo
+  namespace: default
 spec:
   containers:
   - name: destination-listen-and-echo
