@@ -17,7 +17,8 @@
         "type": "string",
         "title": "API Key",
         "description": "The API key from your Chargebee instance",
-        "examples": "test_3yzfanAXFcmUSdWC9wQcM9OCDQJkSYoppu"
+        "examples": "test_3yzfanAXFcmUSdWC9wQcM9OCDQJkSYoppu",
+        "airbyte_secret": true
       }
     }
   }
