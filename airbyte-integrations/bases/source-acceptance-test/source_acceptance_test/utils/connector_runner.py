@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
@@ -27,7 +29,7 @@ from pathlib import Path
 from typing import Iterable, List, Mapping, Optional
 
 import docker
-from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from pydantic import ValidationError
 
 

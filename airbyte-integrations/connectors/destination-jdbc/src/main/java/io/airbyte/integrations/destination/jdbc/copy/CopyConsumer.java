@@ -31,6 +31,8 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -97,20 +99,24 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
   }
 
   @Override
-  protected void acceptTracked(AirbyteRecordMessage message) throws Exception {
-    var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message);
+  protected void acceptTracked(AirbyteMessage message) throws Exception {
+    if (message.getType() != Type.RECORD) {
+      return;
+    }
+    final AirbyteRecordMessage recordMessage = message.getRecord();
+    var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
     if (!pairToCopier.containsKey(pair)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-              Jsons.serialize(catalog), Jsons.serialize(message)));
+              Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
     }
 
     var id = UUID.randomUUID();
-    var data = Jsons.serialize(message.getData());
+    var data = Jsons.serialize(recordMessage.getData());
     if (sqlOperations.isValidData(data)) {
       // TODO Truncate json data instead of throwing whole record away?
       // or should we upload it into a special rejected record folder in s3 instead?
-      var emittedAt = Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt()));
+      var emittedAt = Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt()));
       pairToCopier.get(pair).write(id, data, emittedAt);
     } else {
       pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
@@ -132,7 +138,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
   public void closeAsOneTransaction(List<StreamCopier> streamCopiers, boolean hasFailed, JdbcDatabase db) throws Exception {
     Exception firstException = null;
     try {
-      StringBuilder mergeCopiersToFinalTableQuery = new StringBuilder();
+      List<String> queries = new ArrayList<>();
       for (var copier : streamCopiers) {
         try {
           copier.closeStagingUploader(hasFailed);
@@ -143,7 +149,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
             copier.copyStagingFileToTemporaryTable();
             var destTableName = copier.createDestinationTable();
             var mergeQuery = copier.generateMergeStatement(destTableName);
-            mergeCopiersToFinalTableQuery.append(mergeQuery);
+            queries.add(mergeQuery);
           }
         } catch (Exception e) {
           final String message = String.format("Failed to finalize copy to temp table due to: %s", e);
@@ -155,7 +161,7 @@ public class CopyConsumer<T> extends FailureTrackingAirbyteMessageConsumer {
         }
       }
       if (!hasFailed) {
-        sqlOperations.executeTransaction(db, mergeCopiersToFinalTableQuery.toString());
+        sqlOperations.executeTransaction(db, queries);
       }
     } finally {
       for (var copier : streamCopiers) {

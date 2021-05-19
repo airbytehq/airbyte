@@ -43,8 +43,7 @@
           "type": ["null", "string"]
         },
         "created": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "integer"]
         },
         "statement_description": {
           "type": ["null", "string"]
@@ -112,8 +111,7 @@
       "format": "date-time"
     },
     "created": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "integer"]
     },
     "cancel_at_period_end": {
       "type": ["null", "boolean"]

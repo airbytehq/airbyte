@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,10 +20,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import pathlib
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -32,8 +35,8 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.0.1",
-    description="Contains machinery to make it easy to write an Airbyte Connector in Python.",
+    version="0.1.3",
+    description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
     author="Airbyte",
@@ -41,42 +44,44 @@ setup(
     license="MIT",
     url="https://github.com/airbytehq/airbyte",
     classifiers=[
-            # This information is used when browsing on PyPi.
-
-            # Dev Status
-            'Development Status :: 3 - Alpha',
-
-            # Project Audience
-            'Intended Audience :: Developers',
-            'Topic :: Scientific/Engineering',
-            'Topic :: Software Development :: Libraries :: Python Modules',
-
-            'License :: OSI Approved :: MIT License',
-
-            # Python Version Support
-            'Programming Language :: Python :: 3.7',
-            'Programming Language :: Python :: 3.8',
-            'Programming Language :: Python :: 3.9',
-            'Programming Language :: Python :: 3.10',
+        # This information is used when browsing on PyPi.
+        # Dev Status
+        "Development Status :: 3 - Alpha",
+        # Project Audience
+        "Intended Audience :: Developers",
+        "Topic :: Scientific/Engineering",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "License :: OSI Approved :: MIT License",
+        # Python Version Support
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
-    keywords='airbyte connectors-development-kit cdk',
+    keywords="airbyte connector-development-kit cdk",
     project_urls={
-            'Documentation': 'https://docs.airbyte.io/',
-            'Source': 'https://github.com/airbytehq/airbyte',
-            'Tracker': 'https://github.com/airbytehq/airbyte/issues',
+        "Documentation": "https://docs.airbyte.io/",
+        "Source": "https://github.com/airbytehq/airbyte",
+        "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=[
-            "backoff",
-            "jsonschema==2.6.0",
-            "pendulum",
-            "pydantic==1.6.1",
-            "pytest",
-            "PyYAML==5.4",
-            "requests",
+        "backoff",
+        "jsonschema==2.6.0",
+        "pendulum",
+        "pydantic==1.6.2",
+        "PyYAML==5.4",
+        "requests",
     ],
-    python_requires='>=3.7.9',
+    python_requires=">=3.7.9",
+    extras_require={
+        "dev": [
+            "MyPy==0.812",
+            "pytest",
+            "pytest-cov",
+            "pytest-mock",
+        ]
+    },
     entry_points={
-            "console_scripts": ["base-python=base_python.entrypoint:main"],
+        "console_scripts": ["base-python=base_python.entrypoint:main"],
     },
 )

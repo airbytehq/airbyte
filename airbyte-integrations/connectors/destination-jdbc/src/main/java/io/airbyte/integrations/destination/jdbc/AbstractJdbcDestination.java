@@ -34,8 +34,10 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +48,18 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
+
+  protected String getDriverClass() {
+    return driverClass;
+  }
+
+  protected NamingConventionTransformer getNamingResolver() {
+    return namingResolver;
+  }
+
+  protected SqlOperations getSqlOperations() {
+    return sqlOperations;
+  }
 
   public AbstractJdbcDestination(final String driverClass,
                                  final NamingConventionTransformer namingResolver,
@@ -99,8 +113,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) {
-    return JdbcBufferedConsumerFactory.create(getDatabase(config), sqlOperations, namingResolver, config, catalog);
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(config), sqlOperations, namingResolver, config, catalog);
   }
 
 }

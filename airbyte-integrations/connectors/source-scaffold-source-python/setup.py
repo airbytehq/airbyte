@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,9 +20,19 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
+
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk",
+]
+
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "source-acceptance-test",
+]
 
 setup(
     name="source_scaffold_source_python",
@@ -29,6 +40,9 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2"],
+    install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
 )

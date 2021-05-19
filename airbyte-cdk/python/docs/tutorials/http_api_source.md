@@ -287,7 +287,7 @@ you should see some output like:
 
 It's that simple! Now the connector knows how to declare your connector's stream's schema. We declare only one stream since our source is simple, but the principle is exactly the same if you had many streams.
 
-You can also dynamically define schemas, but that's beyond the scope of this tutorial. See the [schema docs](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/docs/schemas.md) for more information. 
+You can also dynamically define schemas, but that's beyond the scope of this tutorial. See the [schema docs](../concepts/full-refresh-stream.md#defining-the-streams-schema) for more information. 
 
 ### Step 6: Read data from the API
 Describing schemas is good and all, but at some point we have to start reading data! So let's get to work. But before, let's describe what we're about to do: 
@@ -507,7 +507,7 @@ You should see that only the record from the last date is being synced! This is 
 With that, we've implemented incremental sync for our connector! 
 
 ### Step 7: Use the connector in Airbyte
-To use your connector in your own installation of Airbyte, build the docker image for your container by running `docker build . -t airbyte/source-python-http-example:dev`. Then, follow the instructions from the [building a toy source tutorial](https://docs.airbyte.io/tutorials/toy-connector#use-the-connector-in-the-airbyte-ui) for using the connector in the Airbyte UI, replacing the name as appropriate. 
+To use your connector in your own installation of Airbyte, build the docker image for your container by running `docker build . -t airbyte/source-python-http-example:dev`. Then, follow the instructions from the [building a connector the hard way tutorial](https://docs.airbyte.io/tutorials/build-a-connector-the-hard-way#use-the-connector-in-the-airbyte-ui) for using the connector in the Airbyte UI, replacing the name as appropriate. 
 
 Note: your built docker image must be accessible to the `docker` daemon running on the Airbyte node. If you're doing this tutorial locally, these instructions are sufficient. Otherwise you may need to push your Docker image to Dockerhub.
 

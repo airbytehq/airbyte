@@ -139,7 +139,7 @@ class PostgresSourceTest {
     database.close();
   }
 
-  private Database getDatabaseFromConfig(JsonNode config) {
+  private static Database getDatabaseFromConfig(JsonNode config) {
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),

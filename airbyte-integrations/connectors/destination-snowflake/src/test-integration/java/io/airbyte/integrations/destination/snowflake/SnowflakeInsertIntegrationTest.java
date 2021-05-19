@@ -60,7 +60,8 @@ public class SnowflakeInsertIntegrationTest extends TestDestination {
 
   public JsonNode getStaticConfig() {
     final JsonNode insertConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
-    Preconditions.checkArgument(!SnowflakeDestination.isCopy(insertConfig));
+    Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(insertConfig));
+    Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(insertConfig));
     return insertConfig;
   }
 

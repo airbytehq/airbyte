@@ -19,7 +19,7 @@
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
   dockerRepository: airbyte/source-github-singer
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.6
   documentationUrl: https://hub.docker.com/r/airbyte/source-github-singer
   icon: github.svg
 - sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
@@ -72,9 +72,9 @@
   icon: salesforce.svg
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
-  dockerRepository: airbyte/source-stripe-singer
-  dockerImageTag: 0.2.1
-  documentationUrl: https://hub.docker.com/r/airbyte/integration-singer-stripe-source
+  dockerRepository: airbyte/source-stripe
+  dockerImageTag: 0.1.9
+  documentationUrl: https://hub.docker.com/r/airbyte/source-stripe
   icon: stripe.svg
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   name: Mailchimp
@@ -91,7 +91,7 @@
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
   icon: facebook.svg
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
@@ -103,7 +103,7 @@
 - sourceDefinitionId: b1892b11-788d-44bd-b9ec-3a436f7b54ce
   name: Shopify
   dockerRepository: airbyte/source-shopify-singer
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-shopify-singer
   icon: shopify.svg
 - sourceDefinitionId: 9845d17a-45f1-4070-8a60-50914b1c8e2b
@@ -127,7 +127,7 @@
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   name: Freshdesk
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-freshdesk
   icon: freshdesk.svg
 - sourceDefinitionId: 396e4ca3-8a97-4b85-aa4e-c9d8c2d5f992
@@ -148,6 +148,12 @@
   dockerImageTag: 0.2.2
   documentationUrl: https://https://docs.airbyte.io/integrations/sources/greenhouse
   icon: greenhouse.svg
+- sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
+  name: Zendesk Chat
+  dockerRepository: airbyte/source-zendesk-chat
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-zendesk-chat
+  icon: zendesk.svg
 - sourceDefinitionId: d29764f8-80d7-4dd7-acbe-1a42005ee5aa
   name: Zendesk Support
   dockerRepository: airbyte/source-zendesk-support-singer
@@ -175,7 +181,7 @@
 - sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
   name: Zoom
   dockerRepository: airbyte/source-zoom-singer
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-zoom-singer
   icon: zoom.svg
 - sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
@@ -205,7 +211,7 @@
 - sourceDefinitionId: 2af123bf-0aaf-4e0d-9784-cb497f23741a
   name: Appstore
   dockerRepository: airbyte/source-appstore-singer
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-appstore-singer
   icon: appstore.svg
 - sourceDefinitionId: 487b930d-7f6a-43ce-8bac-46e6b2de0a55
@@ -242,7 +248,7 @@
 - sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   name: Smartsheets
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-smartsheets
 - sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   name: Oracle DB
@@ -264,3 +270,18 @@
   dockerRepository: airbyte/source-iterable
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-iterable
+- sourceDefinitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
+  name: PokeAPI
+  dockerRepository: airbyte/source-pokeapi
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-pokeapi
+- sourceDefinitionId: 5a1d14c2-d829-49cd-8437-1e87dc9f5368
+  name: Google Search Console
+  dockerRepository: airbyte/source-google-search-console-singer
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-google-search-console-singer
+- sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
+  name: ClickHouse
+  dockerRepository: airbyte/source-clickhouse
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-clickhouse

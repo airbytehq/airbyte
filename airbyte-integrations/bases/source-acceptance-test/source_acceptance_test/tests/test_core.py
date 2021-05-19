@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
@@ -26,7 +28,7 @@ from collections import Counter, defaultdict
 from typing import Any, List, Mapping, MutableMapping
 
 import pytest
-from airbyte_protocol import AirbyteMessage, ConnectorSpecification, Status, Type
+from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
@@ -69,17 +71,18 @@ class TestConnection(BaseTest):
 
 @pytest.mark.timeout(30)
 class TestDiscovery(BaseTest):
-    def test_discover(self, connector_config, catalog, docker_runner: ConnectorRunner):
+    def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         output = docker_runner.call_discover(config=connector_config)
         catalog_messages = [message for message in output if message.type == Type.CATALOG]
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
-        if catalog:
-            for stream1, stream2 in zip(catalog_messages[0].catalog.streams, catalog.streams):
-                assert stream1.json_schema == stream2.json_schema, f"Streams: {stream1.name} vs {stream2.name}, stream schemas should match"
-                stream1.json_schema = None
-                stream2.json_schema = None
-                assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
+        # TODO(sherifnada) return this once an input bug is fixed (test suite currently fails if this file is not provided)
+        # if catalog:
+        #     for stream1, stream2 in zip(catalog_messages[0].catalog.streams, catalog.streams):
+        #         assert stream1.json_schema == stream2.json_schema, f"Streams: {stream1.name} vs {stream2.name}, stream schemas should match"
+        #         stream1.json_schema = None
+        #         stream2.json_schema = None
+        #         assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
 
 
 @pytest.mark.timeout(300)
