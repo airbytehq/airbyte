@@ -80,7 +80,7 @@ public class MigrationV0_24_0 extends BaseMigration implements Migration {
 
   @Override
   public void migrate(Map<ResourceId, Stream<JsonNode>> inputData,
-      Map<ResourceId, Consumer<JsonNode>> outputData) {
+                      Map<ResourceId, Consumer<JsonNode>> outputData) {
     // Create a map from connection id to standard sync schedule nodes
     // to "join" the schedule onto the standard sync node later.
     final Map<String, JsonNode> connectionToScheduleNodes = inputData

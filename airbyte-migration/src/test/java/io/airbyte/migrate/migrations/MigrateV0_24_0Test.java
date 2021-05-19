@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.migrate.migrations;
 
 import static io.airbyte.migrate.migrations.MigrationV0_24_0.STANDARD_SYNC_RESOURCE_ID;
@@ -28,10 +52,10 @@ import org.junit.jupiter.api.Test;
 public class MigrateV0_24_0Test {
 
   /**
-   * The test resource directory is named differently from the main resource directory
-   * (with the extra "Test" suffix). If their names are the same, the main one will
-   * somehow be overridden by the test one. Consequently, {@link MigrationV0_24_0} cannot
-   * correctly get the new standard sync file and resolve the output schema.
+   * The test resource directory is named differently from the main resource directory (with the extra
+   * "Test" suffix). If their names are the same, the main one will somehow be overridden by the test
+   * one. Consequently, {@link MigrationV0_24_0} cannot correctly get the new standard sync file and
+   * resolve the output schema.
    */
   private static final String INPUT_CONFIG_PATH = "migrations/migrationV0_24_0Test/input_config";
   private static final String OUTPUT_CONFIG_PATH = "migrations/migrationV0_24_0Test/output_config";
@@ -56,8 +80,7 @@ public class MigrateV0_24_0Test {
         STANDARD_SYNC_RESOURCE_ID,
         getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC.yaml"),
         STANDARD_SYNC_SCHEDULE_RESOURCE_ID,
-        getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC_SCHEDULE.yaml")
-    );
+        getResourceStream(INPUT_CONFIG_PATH + "/STANDARD_SYNC_SCHEDULE.yaml"));
 
     final Map<ResourceId, ListConsumer<JsonNode>> outputConsumer = MigrationTestUtils
         .createOutputConsumer(migration.getOutputSchema().keySet());
@@ -75,4 +98,5 @@ public class MigrateV0_24_0Test {
         .collectConsumersToList(outputConsumer);
     assertEquals(expectedOutput, outputAsList);
   }
+
 }
