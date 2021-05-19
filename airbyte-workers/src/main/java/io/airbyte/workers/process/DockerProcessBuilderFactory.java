@@ -26,6 +26,7 @@ package io.airbyte.workers.process;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
@@ -78,7 +79,8 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   }
 
   @Override
-  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String... args) throws WorkerException {
+  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+      throws WorkerException {
 
     if (!checkImageExists(imageName)) {
       throw new WorkerException("Could not find image: " + imageName);
@@ -98,11 +100,15 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
             "-w",
             rebasePath(jobRoot).toString(),
             "--network",
-            networkName,
-            imageName);
+            networkName);
+    if (!Strings.isNullOrEmpty(entrypoint)) {
+      cmd.add("--entrypoint");
+      cmd.add(entrypoint);
+    }
+    cmd.add(imageName);
     cmd.addAll(Arrays.asList(args));
 
-    LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
+    LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd));
 
     return new ProcessBuilder(cmd);
   }

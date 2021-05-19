@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "components/ContentCard";
@@ -7,11 +7,11 @@ import { AnalyticsService } from "core/analytics/AnalyticsService";
 import config from "config";
 import useRouter from "components/hooks/useRouterHook";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
-import { IDataItem } from "components/DropDown/components/ListItem";
 import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
 
 type IProps = {
   onSubmit: (values: {
@@ -20,7 +20,7 @@ type IProps = {
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  dropDownData: IDataItem[];
+  destinationDefinitions: DestinationDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
   jobInfo?: JobInfo;
@@ -29,13 +29,23 @@ type IProps = {
 
 const DestinationForm: React.FC<IProps> = ({
   onSubmit,
-  dropDownData,
+  destinationDefinitions,
   error,
   hasSuccess,
   jobInfo,
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
+
+  const availableServices = useMemo(
+    () =>
+      destinationDefinitions.map((item) => ({
+        text: item.name,
+        value: item.destinationDefinitionId,
+        icon: item.icon,
+      })),
+    [destinationDefinitions]
+  );
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     location.state?.destinationDefinitionId || ""
@@ -46,7 +56,7 @@ const DestinationForm: React.FC<IProps> = ({
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
-    const connector = dropDownData.find(
+    const connector = availableServices.find(
       (item) => item.value === destinationDefinitionId
     );
 
@@ -81,7 +91,7 @@ const DestinationForm: React.FC<IProps> = ({
         onDropDownSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         formType="destination"
-        dropDownData={dropDownData}
+        availableServices={availableServices}
         specifications={
           destinationDefinitionSpecification?.connectionSpecification
         }

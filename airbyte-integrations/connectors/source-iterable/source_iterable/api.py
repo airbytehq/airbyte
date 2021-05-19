@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
@@ -28,8 +30,8 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
-from airbyte_protocol import ConfiguredAirbyteStream
-from base_python import HttpStream
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class IterableStream(HttpStream, ABC):
@@ -37,6 +39,7 @@ class IterableStream(HttpStream, ABC):
 
     # Hardcode the value because it is not returned from the API
     BACKOFF_TIME_CONSTANT = 10.0
+    primary_key = "id"
 
     def __init__(self, api_key, **kwargs):
         super().__init__(**kwargs)
@@ -126,8 +129,13 @@ class ListUsers(IterableStream):
     data_field = "getUsers"
     name = "list_users"
 
-    def path(self, parent_stream_record, **kwargs) -> str:
-        return f"lists/{self.data_field}?listId={parent_stream_record['id']}"
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        lists = Lists(api_key=self._api_key)
+        for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
+            yield {"list_id": list_record["id"]}
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         list_id = self._get_list_id(response.url)
@@ -220,13 +228,11 @@ class Templates(IterableExportStream):
     def path(self, **kwargs) -> str:
         return "templates"
 
-    def read_stream(
-        self, configured_stream: ConfiguredAirbyteStream, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for template in self.template_types:
             for message in self.message_types:
                 self.stream_params = {"templateType": template, "messageMedium": message}
-                yield from super().read_stream(configured_stream=configured_stream, stream_state=stream_state)
+                yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()

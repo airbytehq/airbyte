@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import hashlib
@@ -573,7 +575,7 @@ from {{ from_table }}
         self.add_table_to_local_registry(file_name, table_name, is_intermediate)
         file = f"{file_name}.sql"
         if is_intermediate:
-            output = os.path.join("airbyte_views", self.schema, file)
+            output = os.path.join("airbyte_ctes", self.schema, file)
         else:
             output = os.path.join("airbyte_tables", self.schema, file)
         tags = self.get_model_tags(is_intermediate)

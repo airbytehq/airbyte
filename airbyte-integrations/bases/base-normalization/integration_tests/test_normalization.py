@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
@@ -371,9 +373,17 @@ def run_check_dbt_command(command: str, cwd: str) -> bool:
             f.write(line)
             str_line = line.decode("utf-8")
             sys.stdout.write(str_line)
-            if ("ERROR" in str_line or "FAIL" in str_line or "WARNING" in str_line) and "Done." not in str_line and "PASS=" not in str_line:
-                # count lines mentionning ERROR (but ignore the one from dbt run summary)
-                error_count += 1
+            # keywords to match lines as signaling errors
+            if "ERROR" in str_line or "FAIL" in str_line or "WARNING" in str_line:
+                # exception keywords in lines to ignore as errors (such as summary or expected warnings)
+                if not (
+                    "Done." in str_line  # DBT Summary
+                    or "PASS=" in str_line  # DBT Summary
+                    or "Nothing to do." in str_line  # When no schema/data tests are setup
+                    or "Configuration paths exist in your dbt_project.yml"  # When catalog does not generate a view or cte
+                ):
+                    # count lines signaling an error/failure/warning
+                    error_count += 1
     process.wait()
     print(f"{' '.join(commands)}\n\tterminated with return code {process.returncode} with {error_count} 'ERROR' mention(s).")
     if error_count > 0:
