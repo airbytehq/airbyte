@@ -103,6 +103,7 @@ public class ConfigFileArchiverTest {
     when(configRepository.listDestinationConnection()).thenReturn(List.of(destinationConnection));
     when(configRepository.listStandardSyncs()).thenReturn(List.of(destinationSync, sourceSync));
     when(configRepository.getStandardSync(sourceSync.getConnectionId())).thenReturn(sourceSync);
+    when(configRepository.getStandardSync(destinationSync.getConnectionId())).thenReturn(destinationSync);
 
     final Path tempFolder = Files.createTempDirectory("testConfigMigration");
     configFileArchiver.exportConfigsToArchive(tempFolder);

@@ -62,7 +62,8 @@ public class ConnectionHelpers {
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(sourceId)
         .withDestinationId(UUID.randomUUID())
-        .withOperationIds(List.of(UUID.randomUUID()));
+        .withOperationIds(List.of(UUID.randomUUID()))
+        .withManual(true);
   }
 
   public static StandardSync generateSyncWithDestinationId(UUID destinationId) {
@@ -76,7 +77,8 @@ public class ConnectionHelpers {
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(UUID.randomUUID())
         .withDestinationId(destinationId)
-        .withOperationIds(List.of(UUID.randomUUID()));
+        .withOperationIds(List.of(UUID.randomUUID()))
+        .withManual(true);
   }
 
   public static ConnectionSchedule generateBasicSchedule() {
