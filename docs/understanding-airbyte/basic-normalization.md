@@ -248,3 +248,6 @@ Note that all the choices made by Normalization as described in this documentati
 * to build a [custom SQL view]() with your own naming conventions
 * to export, edit and run [custom DBT normalization](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
 
+## UI Configurations
+
+Screenshots of examples of normalization settings here

@@ -137,6 +137,7 @@
     * [Full Refresh - Append](understanding-airbyte/connections/full-refresh-append.md)
     * [Incremental Sync - Append](understanding-airbyte/connections/incremental-append.md)
     * [Incremental Sync - Deduped History](understanding-airbyte/connections/incremental-deduped-history.md)
+  * [Operations](understanding-airbyte/operations.md)
   * [High-level View](understanding-airbyte/high-level-view.md)
   * [Workers & Jobs](understanding-airbyte/jobs.md)
   * [Technical Stack](understanding-airbyte/tech-stack.md)

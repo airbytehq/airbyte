@@ -85,9 +85,9 @@ def setup_test_path(request):
     "integration_type",
     [
         "Postgres",
-        "BigQuery",
-        "Snowflake",
-        "Redshift",
+        # "BigQuery",
+        # "Snowflake",
+        # "Redshift",
     ],
 )
 def test_normalization(integration_type: str, test_resource_name: str, setup_test_path):

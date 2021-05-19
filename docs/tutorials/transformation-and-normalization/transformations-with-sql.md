@@ -6,6 +6,8 @@ This tutorial will describe how to integrate SQL based transformations with Airb
 
 This is the first part of ELT tutorial. The second part goes deeper with [connecting EL with T using DBT](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-dbt.md).
 
+# (Examples outputs are updated with Airbyte version 0.23.0-alpha from May 2021)
+
 ## First transformation step: Normalization
 
 At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT process. These steps can also be referred in Airbyte's dialect as "Source" and "Destination".
@@ -26,7 +28,7 @@ This could be useful if:
 
 1. you have different usage than analytics that could be handled with these initial data in raw JSON format. 
 2. you can implement your own Transformer \(even in a different language such as Java or in Spark for example, or another transformation tool: DBT or Dataform\) 
-3. you want to customize and change how the data is normalized with your own queries \(add deduplication logic since Airbyte is not doing it natively yet?\)
+3. you want to customize and change how the data is normalized with your own queries
 
 In order to do so, we will now describe how you can leverage the basic normalization outputs that Airbyte generates to build your own transformations if you don't want to start from scratch.
 
@@ -74,11 +76,11 @@ NORMALIZE_WORKSPACE=`docker run --rm -i -v airbyte_workspace:/data  busybox find
 
 Airbyte is internally using a specialized tool for handling transformations called DBT.
 
-It is made possible thanks to another python-based program that reads the `catalog.json` file and generates code on how to interpret and transform it.
+It is made possible thanks to another python-based program that reads the `destination_catalog.json` file and generates code on how to interpret and transform it.
 
 The final output of DBT is producing SQL files that can be run on top of the destination that you selected.
 
-Therefore, it is possible to extract these SQL files, modify them and run it yourself manually outside of Airbyte!
+Therefore, it is possible to extract these SQL files, modify them and run it yourself manually outside Airbyte!
 
 You would be able to find these at the following location inside the server's docker container:
 
@@ -89,101 +91,134 @@ You would be able to find these at the following location inside the server's do
 In order to extract them, you can run:
 
 ```bash
-docker cp airbyte-server:/tmp/workspace/${NORMALIZE_WORKSPACE}/build/run/airbyte_utils/models/generated/* models/
+#!/usr/bin/env bash
+docker cp airbyte-server:/tmp/workspace/${NORMALIZE_WORKSPACE}/build/run/airbyte_utils/models/generated/ models/
+
 find models
 ```
 
 Example Output:
 
 ```text
-covid_epidemiology.sql
+models/airbyte_tables/quarantine/covid_epidemiology_f11.sql
 ```
 
 Let's inspect the generated SQL file by running:
 
 ```bash
-cat models/covid_epidemiology.sql
+cat models/**/covid_epidemiology*.sql
 ```
 
 Example Output:
 
 ```sql
-create  table "postgres"."public"."covid_epidemiology__dbt_tmp"
+ create  table "postgres".quarantine."covid_epidemiology_f11__dbt_tmp"
   as (
-    with
-covid_epidemiology_node as (
-  select
-    _airbyte_emitted_at,
+    
+with __dbt__CTE__covid_epidemiology_ab1_558 as (
 
-    (current_timestamp at time zone 'utc')::
-    timestamp
+-- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+select
+    jsonb_extract_path_text(_airbyte_data, 'key') as "key",
+    jsonb_extract_path_text(_airbyte_data, 'date') as "date",
+    jsonb_extract_path_text(_airbyte_data, 'new_tested') as new_tested,
+    jsonb_extract_path_text(_airbyte_data, 'new_deceased') as new_deceased,
+    jsonb_extract_path_text(_airbyte_data, 'total_tested') as total_tested,
+    jsonb_extract_path_text(_airbyte_data, 'new_confirmed') as new_confirmed,
+    jsonb_extract_path_text(_airbyte_data, 'new_recovered') as new_recovered,
+    jsonb_extract_path_text(_airbyte_data, 'total_deceased') as total_deceased,
+    jsonb_extract_path_text(_airbyte_data, 'total_confirmed') as total_confirmed,
+    jsonb_extract_path_text(_airbyte_data, 'total_recovered') as total_recovered,
+    _airbyte_emitted_at
+from "postgres".quarantine._airbyte_raw_covid_epidemiology
+-- covid_epidemiology
+),  __dbt__CTE__covid_epidemiology_ab2_558 as (
 
- as _airbyte_normalized_at,
-    cast(jsonb_extract_path_text("_airbyte_data",'key') as
+-- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+select
+    cast("key" as 
     varchar
 ) as "key",
-    cast(jsonb_extract_path_text("_airbyte_data",'date') as
+    cast("date" as 
     varchar
 ) as "date",
-    cast(jsonb_extract_path_text("_airbyte_data",'new_tested') as
+    cast(new_tested as 
     float
 ) as new_tested,
-    cast(jsonb_extract_path_text("_airbyte_data",'new_deceased') as
+    cast(new_deceased as 
     float
 ) as new_deceased,
-    cast(jsonb_extract_path_text("_airbyte_data",'total_tested') as
+    cast(total_tested as 
     float
 ) as total_tested,
-    cast(jsonb_extract_path_text("_airbyte_data",'new_confirmed') as
+    cast(new_confirmed as 
     float
 ) as new_confirmed,
-    cast(jsonb_extract_path_text("_airbyte_data",'new_recovered') as
+    cast(new_recovered as 
     float
 ) as new_recovered,
-    cast(jsonb_extract_path_text("_airbyte_data",'total_deceased') as
+    cast(total_deceased as 
     float
 ) as total_deceased,
-    cast(jsonb_extract_path_text("_airbyte_data",'total_confirmed') as
+    cast(total_confirmed as 
     float
 ) as total_confirmed,
-    cast(jsonb_extract_path_text("_airbyte_data",'total_recovered') as
+    cast(total_recovered as 
     float
-) as total_recovered
-  from "postgres".public._airbyte_raw_covid_epidemiology
-),
-covid_epidemiology_with_id as (
-  select
+) as total_recovered,
+    _airbyte_emitted_at
+from __dbt__CTE__covid_epidemiology_ab1_558
+-- covid_epidemiology
+),  __dbt__CTE__covid_epidemiology_ab3_558 as (
+
+-- SQL model to build a hash column based on the values of this record
+select
     *,
     md5(cast(
-
-    coalesce(cast("key" as
+    
+    coalesce(cast("key" as 
     varchar
-), '') || '-' || coalesce(cast("date" as
+), '') || '-' || coalesce(cast("date" as 
     varchar
-), '') || '-' || coalesce(cast(new_tested as
+), '') || '-' || coalesce(cast(new_tested as 
     varchar
-), '') || '-' || coalesce(cast(new_deceased as
+), '') || '-' || coalesce(cast(new_deceased as 
     varchar
-), '') || '-' || coalesce(cast(total_tested as
+), '') || '-' || coalesce(cast(total_tested as 
     varchar
-), '') || '-' || coalesce(cast(new_confirmed as
+), '') || '-' || coalesce(cast(new_confirmed as 
     varchar
-), '') || '-' || coalesce(cast(new_recovered as
+), '') || '-' || coalesce(cast(new_recovered as 
     varchar
-), '') || '-' || coalesce(cast(total_deceased as
+), '') || '-' || coalesce(cast(total_deceased as 
     varchar
-), '') || '-' || coalesce(cast(total_confirmed as
+), '') || '-' || coalesce(cast(total_confirmed as 
     varchar
-), '') || '-' || coalesce(cast(total_recovered as
+), '') || '-' || coalesce(cast(total_recovered as 
     varchar
 ), '')
 
- as
+ as 
     varchar
 )) as _airbyte_covid_epidemiology_hashid
-    from covid_epidemiology_node
-)
-select * from covid_epidemiology_with_id
+from __dbt__CTE__covid_epidemiology_ab2_558
+-- covid_epidemiology
+)-- Final base SQL model
+select
+    "key",
+    "date",
+    new_tested,
+    new_deceased,
+    total_tested,
+    new_confirmed,
+    new_recovered,
+    total_deceased,
+    total_confirmed,
+    total_recovered,
+    _airbyte_emitted_at,
+    _airbyte_covid_epidemiology_hashid
+from __dbt__CTE__covid_epidemiology_ab3_558
+-- covid_epidemiology from "postgres".quarantine._airbyte_raw_covid_epidemiology
   );
 ```
 
