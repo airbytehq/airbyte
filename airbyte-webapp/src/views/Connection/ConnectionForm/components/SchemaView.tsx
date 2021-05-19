@@ -6,12 +6,15 @@ import TreeView from "components/TreeView";
 import { Cell, Header, LightCell } from "components/SimpleTableComponents";
 import { DestinationSyncMode, SyncSchema } from "core/domain/catalog";
 import Search from "./Search";
+import SectionTitle from "./SectionTitle";
 
 const TreeViewContainer = styled.div`
   width: 100%;
   background: ${({ theme }) => theme.greyColor0};
   margin-bottom: 29px;
   border-radius: 4px;
+  max-height: 600px;
+  overflow-y: auto;
 `;
 
 const SchemaHeader = styled(Header)`
@@ -19,11 +22,8 @@ const SchemaHeader = styled(Header)`
   margin-bottom: 5px;
 `;
 
-const SchemaTitle = styled.div`
+const SchemaTitle = styled(SectionTitle)`
   display: inline-block;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
   margin: 0 11px 13px 0;
 `;
 

@@ -19,6 +19,9 @@ import SchemaView from "./components/SchemaView";
 import EditControls from "./components/EditControls";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
+import NormalizationBlock from "./components/NormalizationBlock";
+import SectionTitle from "./components/SectionTitle";
+import { Normalisation } from "./types";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -67,6 +70,7 @@ type ConnectionFormProps = {
   additionalSchemaControl?: React.ReactNode;
   sourceIcon?: string;
   destinationIcon?: string;
+  normalization?: string;
 };
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
@@ -79,6 +83,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   schema,
   onDropDownSelect,
   frequencyValue,
+  normalization,
   prefixValue,
   isEditMode,
   successMessage,
@@ -106,6 +111,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       initialValues={{
         frequency: frequencyValue || "",
         prefix: prefixValue || "",
+        // TODO: check normalization values with api
+        normalization: normalization || Normalisation.RAW,
       }}
       validateOnBlur={true}
       validateOnChange={true}
@@ -117,6 +124,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           frequency: values.frequency,
           prefix: values.prefix,
           schema: newSchema,
+          // TODO: add normalization: values.normalization
         });
 
         if (requiresReset) {
@@ -191,6 +199,21 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             onChangeSchema={setNewSchema}
             additionalControl={additionalSchemaControl}
           />
+          <div>
+            <SectionTitle>
+              <FormattedMessage id="form.normalizationTransformation" />
+            </SectionTitle>
+            <Field name="normalization">
+              {({ field }: FieldProps<string>) => (
+                <NormalizationBlock
+                  {...field}
+                  onClick={(value: string) =>
+                    setFieldValue("normalization", value)
+                  }
+                />
+              )}
+            </Field>
+          </div>
           {!isEditMode ? (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}
