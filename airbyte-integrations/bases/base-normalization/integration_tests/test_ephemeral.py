@@ -110,9 +110,7 @@ def setup_test_dir(integration_type: str) -> str:
     """
     We prepare a clean folder to run the tests from.
     """
-    test_root_dir = (
-        f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
-    )
+    test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
     os.makedirs(test_root_dir, exist_ok=True)
     test_root_dir = tempfile.mkdtemp(dir=test_root_dir)
     temporary_folders.add(test_root_dir)

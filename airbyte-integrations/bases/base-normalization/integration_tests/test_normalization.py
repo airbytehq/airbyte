@@ -116,9 +116,7 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     if test_resource_name in git_versioned_tests:
         test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
     else:
-        test_root_dir = (
-            f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
-        )
+        test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
     shutil.rmtree(test_root_dir, ignore_errors=True)
     os.makedirs(test_root_dir)
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
