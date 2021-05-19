@@ -25,7 +25,7 @@
       "include_deleted": {
         "type": "boolean",
         "description": "Include data from deleted campaigns, ads, and adsets.",
-        "default": "false"
+        "default": false
       }
     }
   }
