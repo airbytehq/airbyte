@@ -9,7 +9,7 @@ import {
 } from "core/form/types";
 import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../serviceFormContext";
-import GroupControls from "./Property/GroupControls";
+import GroupControls from "components/GroupControls";
 import { FieldArray, useField } from "formik";
 
 const SectionContainer = styled.div`
