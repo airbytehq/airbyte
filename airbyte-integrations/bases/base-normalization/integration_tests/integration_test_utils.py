@@ -161,6 +161,7 @@ def dbt_run(test_root_dir: str):
     """
     # Perform sanity check on dbt project settings
     assert run_check_dbt_command("debug", test_root_dir)
+    assert run_check_dbt_command("deps", test_root_dir)
     final_sql_files = os.path.join(test_root_dir, "final")
     shutil.rmtree(final_sql_files, ignore_errors=True)
     # Compile dbt models files into destination sql dialect, then run the transformation queries
