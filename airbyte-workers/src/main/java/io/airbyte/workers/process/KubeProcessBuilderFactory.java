@@ -33,7 +33,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.PodList;
+import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -48,9 +50,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,33 +118,58 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
     }
   }
 
-  public static void main(String[] args) throws IOException, ApiException {
+  public static void main(String[] args) throws IOException, ApiException, InterruptedException {
+    // TODO: This pod sometimes errors once on start up. Why?
     var PORT = 9000;
     String IP = null;
+    var destPodName = "destination-listen-and-echo";
     KubernetesClient client = new DefaultKubernetesClient();
+
+    // Load spec and create the pod.
+    var stream = KubeProcessBuilderFactory.class.getClassLoader().getResourceAsStream("destination-listen-and-echo.yaml");
+    var destPodDef = client.pods().load(stream).get();
+    LOGGER.info("Loaded spec: {}", destPodDef);
+
+    var podSet = client.pods().inNamespace("default").list().getItems().stream()
+        .filter(pod -> pod.getMetadata().getName().equals(destPodName)).collect(Collectors.toSet());
+    if (podSet.size() == 0) {
+      LOGGER.info("Pod does not exist");
+      Pod destPod = client.pods().create(destPodDef);
+      LOGGER.info("Created pod: {}, waiting for it to be ready", destPod);
+      client.resource(destPod).waitUntilReady(1, TimeUnit.MINUTES);
+      LOGGER.info("Dest Pod ready");
+    }
+
+    // TODO: Why does this not work?
+    //    LOGGER.info(destPod.getStatus().getPodIP());
+    //    destPod = client.resource(destPod).get();
+    //    LOGGER.info("Status: {}", destPod.getStatus());
+    //    LOGGER.info("IP: {}", destPod.getStatus().getPodIP());
+    //    IP = destPod.getStatus().getPodIP();
+
     // TODO: Assign labels to pods to narrow the search.
     PodList pods = client.pods().inNamespace("default").list();
     for (Pod p : pods.getItems()) {
-      // TODO: filter for the actual pod.
-      // retrieve the ip
       LOGGER.info(p.getMetadata().getName());
       LOGGER.info(p.getStatus().getPodIP());
-      if (p.getMetadata().getName().equals("destination-listen-and-echo")) {
+      // Filter by pod and retrieve IP.
+      if (p.getMetadata().getName().equals(destPodName)) {
         LOGGER.info("Found IP!");
         IP = p.getStatus().getPodIP();
         break;
       }
     }
 
-    client.close();
-
-    // TODO: create the pod
+    // Send something!
     var clientSocket = new Socket(IP, PORT);
     var out = new PrintWriter(clientSocket.getOutputStream(), true);
     out.print("Hello!");
     out.close();
-    // try and connect to this ip and send something
 
+    client.pods().delete(destPodDef);
+    // TODO: Why does this wait not work?
+    client.resource(destPodDef).waitUntilCondition(pod -> !pod.getStatus().getPhase().equals("Terminating"), 1, TimeUnit.MINUTES);
+    client.close();
   }
 
 }
