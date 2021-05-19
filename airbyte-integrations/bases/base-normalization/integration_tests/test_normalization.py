@@ -31,17 +31,7 @@ import tempfile
 from typing import Any, Dict
 
 import pytest
-from integration_tests.integration_test_utils import (
-    change_current_test_dir,
-    copy_replace,
-    dbt_run,
-    generate_profile_yaml_file,
-    run_check_dbt_command,
-    run_destination_process,
-    setup_postgres_db,
-    target_schema,
-    tear_down_postgres_db,
-)
+from integration_tests.dbt_integration_test import DbtIntegrationTest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor
 
@@ -51,14 +41,16 @@ temporary_folders = set()
 # airbyte git repository.
 git_versioned_tests = ["test_primary_key_streams"]
 
+dbt_test_utils = DbtIntegrationTest()
+
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
-    change_current_test_dir(request)
-    setup_postgres_db()
+    dbt_test_utils.change_current_test_dir(request)
+    dbt_test_utils.setup_postgres_db()
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
-    tear_down_postgres_db()
+    dbt_test_utils.tear_down_postgres_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
@@ -66,7 +58,7 @@ def before_all_tests(request):
 
 @pytest.fixture
 def setup_test_path(request):
-    change_current_test_dir(request)
+    dbt_test_utils.change_current_test_dir(request)
     print(f"Running from: {pathlib.Path().absolute()}")
     print(f"Current PATH is: {os.environ['PATH']}")
     yield
@@ -96,12 +88,12 @@ def test_normalization(integration_type: str, test_resource_name: str, setup_tes
     destination_type = DestinationType.from_string(integration_type)
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type, test_resource_name)
-    destination_config = generate_profile_yaml_file(destination_type, test_root_dir)
+    destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
     # Use destination connector to create _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_resource_name, test_root_dir, destination_config)
     # Normalization step
     generate_dbt_models(destination_type, test_resource_name, test_root_dir)
-    dbt_run(test_root_dir)
+    dbt_test_utils.dbt_run(test_root_dir)
     # Run checks on Tests results
     dbt_test(destination_type, test_resource_name, test_root_dir)
     check_outputs(destination_type, test_resource_name, test_root_dir)
@@ -124,8 +116,9 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     if test_resource_name in git_versioned_tests:
         test_root_dir = f"{pathlib.Path().absolute()}/normalization_test_output/{integration_type.lower()}"
     else:
-        test_root_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_", suffix=f"_{integration_type.lower()}")
-        temporary_folders.add(test_root_dir)
+        test_root_dir = (
+            f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
+        )
     shutil.rmtree(test_root_dir, ignore_errors=True)
     os.makedirs(test_root_dir)
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
@@ -133,7 +126,7 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     shutil.copytree("../dbt-project-template", test_root_dir)
     if integration_type != "Redshift":
         # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
-        copy_replace(
+        dbt_test_utils.copy_replace(
             "../dbt-project-template/dbt_project.yml",
             os.path.join(test_root_dir, "dbt_project.yml"),
             pattern="ephemeral",
@@ -141,7 +134,7 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
         )
     else:
         # 'view' materializations on redshift are too slow, so keep it ephemeral there...
-        copy_replace("../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"))
+        dbt_test_utils.copy_replace("../dbt-project-template/dbt_project.yml", os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
 
@@ -152,13 +145,13 @@ def setup_input_raw_data(integration_type: str, test_resource_name: str, test_ro
     """
     catalog_file = os.path.join("resources", test_resource_name, "data_input", "catalog.json")
     message_file = os.path.join("resources", test_resource_name, "data_input", "messages.txt")
-    copy_replace(
+    dbt_test_utils.copy_replace(
         catalog_file,
         os.path.join(test_root_dir, "reset_catalog.json"),
         pattern='"destination_sync_mode": ".*"',
         replace_value='"destination_sync_mode": "overwrite"',
     )
-    copy_replace(catalog_file, os.path.join(test_root_dir, "destination_catalog.json"))
+    dbt_test_utils.copy_replace(catalog_file, os.path.join(test_root_dir, "destination_catalog.json"))
     config_file = os.path.join(test_root_dir, "destination_config.json")
     with open(config_file, "w") as f:
         f.write(json.dumps(destination_config))
@@ -179,9 +172,9 @@ def setup_input_raw_data(integration_type: str, test_resource_name: str, test_ro
         "--catalog",
     ]
     # Force a reset in destination raw tables
-    assert run_destination_process("", test_root_dir, commands + ["/data/reset_catalog.json"])
+    assert dbt_test_utils.run_destination_process("", test_root_dir, commands + ["/data/reset_catalog.json"])
     # Run a sync to create raw tables in destinations
-    return run_destination_process(message_file, test_root_dir, commands + ["/data/destination_catalog.json"])
+    return dbt_test_utils.run_destination_process(message_file, test_root_dir, commands + ["/data/destination_catalog.json"])
 
 
 def generate_dbt_models(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
@@ -189,7 +182,9 @@ def generate_dbt_models(destination_type: DestinationType, test_resource_name: s
     This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
     """
     catalog_processor = CatalogProcessor(os.path.join(test_root_dir, "models", "generated"), destination_type)
-    catalog_processor.process(os.path.join("resources", test_resource_name, "data_input", "catalog.json"), "_airbyte_data", target_schema)
+    catalog_processor.process(
+        os.path.join("resources", test_resource_name, "data_input", "catalog.json"), "_airbyte_data", dbt_test_utils.target_schema
+    )
 
 
 def dbt_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
@@ -214,7 +209,7 @@ def dbt_test(destination_type: DestinationType, test_resource_name: str, test_ro
         destination_type,
         replace_identifiers,
     )
-    assert run_check_dbt_command("test", test_root_dir)
+    assert dbt_test_utils.run_check_dbt_command("test", test_root_dir)
 
 
 def check_outputs(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
@@ -253,7 +248,7 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
             if pattern and replace_value:
 
                 def copy_replace_identifiers(src, dst):
-                    copy_replace(src, dst, pattern, replace_value)
+                    dbt_test_utils.copy_replace(src, dst, pattern, replace_value)
 
                 shutil.copytree(src, temp_dir + "/replace", copy_function=copy_replace_identifiers)
                 src = temp_dir + "/replace"
@@ -263,7 +258,7 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
 
 def copy_upper(src, dst):
     print(src, "->", dst)
-    copy_replace(
+    dbt_test_utils.copy_replace(
         src,
         dst,
         pattern=[
@@ -281,7 +276,7 @@ def copy_upper(src, dst):
 
 def copy_lower(src, dst):
     print(src, "->", dst)
-    copy_replace(
+    dbt_test_utils.copy_replace(
         src,
         dst,
         pattern=[
