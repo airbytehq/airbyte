@@ -1,0 +1,101 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"additionalProperties": true,
+	"properties": {
+		"data": {
+			"type": "array",
+			"properties": {
+				"account_id": {
+					"type": "integer"
+				},
+				"project_id": {
+					"type": "integer"
+				},
+				"environment_id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"execute_steps": {
+					"type": "array"
+				},
+				"dbt_version": {
+					"type": "string"
+				},
+				"triggers": {
+					"type": "object",
+					"properties": {
+						"github_webhook": {
+							"type": "boolean"
+						},
+						"schedule": {
+							"type": "boolean"
+						},
+						"custom_branch_only": {
+							"type": "boolean"
+						}
+					},
+					"settings": {
+						"type": "object",
+						"properties": {
+							"threads": {
+								"type": "integer"
+							},
+							"target_name": {
+								"type": "string"
+							}
+						},
+						"state": {
+							"type": "integer"
+						},
+						"generate_docs": {
+							"type": "boolean"
+						},
+						"schedule": {
+							"type": "object",
+							"properties": {
+								"cron": {
+									"type": "string"
+								},
+								"date": {
+									"type": "object",
+									"properties": {
+										"type": "string"
+									}
+								},
+								"time": {
+									"type": "boolean",
+									"properties": {
+										"type": "string"
+									}
+								}
+							}
+						}
+					}
+				},
+				"status": {
+					"type": "object",
+					"properties": {
+						"id": {
+							"type": "integer"
+						},
+						"code": {
+							"type": "integer"
+						},
+						"is_success": {
+							"type": "boolean"
+						},
+						"user_message": {
+							"type": "string"
+						},
+						"developer_message": {
+							"type": "string"
+						}
+					}
+				}
+			}
+		}
+	}
+}

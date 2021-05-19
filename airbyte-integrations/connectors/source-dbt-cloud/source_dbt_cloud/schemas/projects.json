@@ -1,0 +1,65 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"additionalProperties": true,
+	"properties": {
+		"data": {
+			"type": "array",
+			"properties": {
+				"id": {
+					"type": "integer"
+				},
+				"account_id": {
+					"type": "integer"
+				},
+				"connection": {
+					"type": "object"
+				},
+				"connection_id": {
+					"type": "integer"
+				},
+				"dbt_project_subdirectory": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "integer"
+				},
+				"repository": {
+					"type": "object"
+				},
+				"repository_id": {
+					"type": "integer"
+				},
+				"state": {
+					"type": "integer"
+				},
+				"created_at": {
+					"type": "string"
+				},
+				"updated_at": {
+					"type": "string"
+				}
+			}
+		},
+		"status": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "integer"
+				},
+				"code": {
+					"type": "integer"
+				},
+				"is_success": {
+					"type": "boolean"
+				},
+				"user_message": {
+					"type": "string"
+				},
+				"developer_message": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,61 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"data": {
+			"type": "array",
+			"properties": {
+				"id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"plan": {
+					"type": "string"
+				},
+				"pending_cancel": {
+					"type": "boolean"
+				},
+				"state": {
+					"type": "integer"
+				},
+				"developer_seats": {
+					"type": "integer"
+				},
+				"read_only_seats": {
+					"type": "integer"
+				},
+				"run_slots": {
+					"type": "integer"
+				},
+				"created_at": {
+					"type": "string"
+				},
+				"updated_at": {
+					"type": "string"
+				}
+			}
+		},
+		"status": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"type": "integer"
+				},
+				"code": {
+					"type": "integer"
+				},
+				"is_success": {
+					"type": "boolean"
+				},
+				"user_message": {
+					"type": "string"
+				},
+				"developer_message": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}
