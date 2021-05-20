@@ -45,8 +45,8 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -205,7 +205,7 @@ class JobTrackerTest {
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobMock(configType, jobId);
     // test when frequency is manual.
-    when(configRepository.getStandardSyncSchedule(CONNECTION_ID)).thenReturn(new StandardSyncSchedule().withManual(true));
+    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withManual(true));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
         metadata,
         ImmutableMap.of("frequency", "manual"),
@@ -213,8 +213,8 @@ class JobTrackerTest {
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackSync(job, jobState), manualMetadata);
 
     // test when frequency is scheduled.
-    when(configRepository.getStandardSyncSchedule(CONNECTION_ID))
-        .thenReturn(new StandardSyncSchedule().withManual(false).withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
+    when(configRepository.getStandardSync(CONNECTION_ID))
+        .thenReturn(new StandardSync().withManual(false).withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
     final Map<String, Object> scheduledMetadata = MoreMaps.merge(
         metadata,
         ImmutableMap.of("frequency", "1 min"),
@@ -260,7 +260,7 @@ class JobTrackerTest {
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobWithAttemptsMock(configType, jobId);
     // test when frequency is manual.
-    when(configRepository.getStandardSyncSchedule(CONNECTION_ID)).thenReturn(new StandardSyncSchedule().withManual(true));
+    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withManual(true));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
         ATTEMPT_METADATA,
         metadata,

@@ -40,7 +40,7 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -207,12 +207,12 @@ public class JobTracker {
     final Builder<String, Object> metadata = ImmutableMap.builder();
     metadata.put("connection_id", connectionId);
 
-    final StandardSyncSchedule schedule = configRepository.getStandardSyncSchedule(connectionId);
+    final StandardSync standardSync = configRepository.getStandardSync(connectionId);
     String frequencyString;
-    if (schedule.getManual()) {
+    if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
-      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(schedule.getSchedule()));
+      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
       frequencyString = intervalInMinutes + " min";
     }
     metadata.put("frequency", frequencyString);
