@@ -34,8 +34,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This migration is currently empty and is a placeholder for migrations for the next 0.19.0 release
@@ -46,8 +44,10 @@ import org.slf4j.LoggerFactory;
 public class MigrationV0_20_0 extends BaseMigration implements Migration {
 
   private static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
-  private static final ResourceId STANDARD_SOURCE_DEFINITION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION");
-  private static final ResourceId STANDARD_DESTINATION_DEFINITION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_DESTINATION_DEFINITION");
+  private static final ResourceId STANDARD_SOURCE_DEFINITION_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION");
+  private static final ResourceId STANDARD_DESTINATION_DEFINITION_RESOURCE_ID =
+      ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_DESTINATION_DEFINITION");
   private static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   private static final String MIGRATION_VERSION = "0.20.0-alpha";
