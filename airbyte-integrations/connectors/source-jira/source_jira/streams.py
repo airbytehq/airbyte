@@ -105,6 +105,7 @@ class IncrementalJiraStream(JiraStream, ABC):
         """
         pass
 
+    @abstractmethod
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent
