@@ -22,11 +22,11 @@
 # SOFTWARE.
 #
 
-import pendulum
-import requests
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import pendulum
+import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
