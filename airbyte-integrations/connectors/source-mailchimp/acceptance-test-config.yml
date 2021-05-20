@@ -13,14 +13,14 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       validate_output_from_all_streams: yes
-  incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      state_path: "integration_tests/state.json"
-      cursor_paths:
-        lists: [ "date_created" ]
-        campaigns: [ "create_time" ]
-        Email_activity: [ "timestamp" ]
+#  incremental:
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/configured_catalog.json"
+#      state_path: "integration_tests/state.json"
+#      cursor_paths:
+#        lists: [ "date_created" ]
+#        campaigns: [ "create_time" ]
+#        Email_activity: [ "timestamp" ]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
