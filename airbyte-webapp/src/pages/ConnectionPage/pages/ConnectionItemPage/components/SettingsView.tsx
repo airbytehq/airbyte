@@ -77,6 +77,8 @@ const SettingsView: React.FC<IProps> = ({
   onAfterSaveSchema,
   connectionId,
   frequencyText,
+  destinationDefinition,
+  sourceDefinition,
 }) => {
   const [isModalOpen, setIsUpdateModalOpen] = useState(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
@@ -228,6 +230,8 @@ const SettingsView: React.FC<IProps> = ({
             editSchemeMode={activeUpdatingSchemaMode}
             isLoading={isLoading}
             additionalSchemaControl={UpdateSchemaButton()}
+            destinationIcon={destinationDefinition?.icon}
+            sourceIcon={sourceDefinition?.icon}
           />
         ) : (
           <LoadingSchema />
