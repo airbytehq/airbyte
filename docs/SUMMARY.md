@@ -69,6 +69,7 @@
     * [PokéAPI](integrations/sources/pokeapi.md)
     * [Postgres](integrations/sources/postgres.md)
     * [Quickbooks](integrations/sources/quickbooks.md)
+    * [Recharge](integrations/sources/recharge.md)
     * [Recurly](integrations/sources/recurly.md)
     * [Redshift](integrations/sources/redshift.md)
     * [Salesforce](integrations/sources/salesforce.md)

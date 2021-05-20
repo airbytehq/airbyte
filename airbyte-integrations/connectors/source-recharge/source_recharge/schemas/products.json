@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "charge_interval_frequency": {
+      "type": ["null", "integer"]
+    },
+    "collection_id": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "cutoff_day_of_month": {
+      "type": ["null", "integer"]
+    },
+    "cutoff_day_of_week": {
+      "type": ["null", "integer"]
+    },
+    "discount_amount": {
+      "type": ["null", "number"]
+    },
+    "discount_type": {
+      "type": ["null", "string"]
+    },
+    "expire_after_specific_number_of_charges": {
+      "type": ["null", "integer"]
+    },
+    "handle": {
+      "type": ["null", "string"]
+    },
+    "images": {
+      "type": ["null", "object"]
+    },
+    "modifiable_properties": {
+      "type": ["null", "array"]
+    },
+    "order_day_of_month": {
+      "type": ["null", "integer"]
+    },
+    "order_day_of_week": {
+      "type": ["null", "integer"]
+    },
+    "order_interval_frequency_options": {
+      "type": ["null", "array"]
+    },
+    "order_interval_unit": {
+      "type": ["null", "string"]
+    },
+    "shopify_product_id": {
+      "type": ["null", "integer"]
+    },
+    "storefront_purchase_options": {
+      "type": ["null", "string"]
+    },
+    "subscription_defaults": {
+      "type": ["null", "object"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
