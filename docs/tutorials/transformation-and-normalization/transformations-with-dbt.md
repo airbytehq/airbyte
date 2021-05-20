@@ -40,7 +40,7 @@ python version: 3.8.8
 python path: /usr/local/bin/python
 os info: Linux-5.10.25-linuxkit-x86_64-with-glibc2.2.5
 Using profiles.yml file at ./profiles.yml
-Using dbt_project.yml file at /data/1/0/normalize/dbt_project.yml
+Using dbt_project.yml file at /data/5/0/normalize/dbt_project.yml
 
 Configuration:
   profiles.yml file [OK found and valid]
