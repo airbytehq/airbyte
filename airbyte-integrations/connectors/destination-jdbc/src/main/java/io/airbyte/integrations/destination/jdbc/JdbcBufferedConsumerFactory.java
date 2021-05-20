@@ -106,8 +106,8 @@ public class JdbcBufferedConsumerFactory {
       final String outputSchema = getOutputSchema(abStream, defaultSchemaName);
 
       final String streamName = abStream.getName();
-      final String tableName = Names.concatQuotedNames("_airbyte_raw_", namingResolver.getIdentifier(streamName));
-      String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
+      final String tableName = namingResolver.getIdentifier(Names.concatQuotedNames("_airbyte_raw_", streamName));
+      String tmpTableName = namingResolver.getIdentifier(Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", streamName));
 
       // TODO (#2948): Refactor into StandardNameTransformed , this is for MySQL destination, the table
       // names can't have more than 64 characters.
