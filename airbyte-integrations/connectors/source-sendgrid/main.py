@@ -23,14 +23,11 @@
 #
 
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="source_sendgrid",
-    description="Source implementation for Sendgrid.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=["airbyte-cdk~=0.1", "backoff", "requests", "pytest==6.1.2"],
-    package_data={"": ["*.json", "schemas/*.json"]},
-)
+from airbyte_cdk.entrypoint import launch
+from source_sendgrid import SourceSendgrid
+
+if __name__ == "__main__":
+    source = SourceSendgrid()
+    launch(source, sys.argv[1:])
