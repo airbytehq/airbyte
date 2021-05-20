@@ -57,7 +57,8 @@
               }
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -138,7 +139,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -201,7 +203,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -238,7 +241,8 @@
               "type": ["string", "null"]
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -266,7 +270,8 @@
               "type": ["array"]
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -285,7 +290,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -313,7 +319,8 @@
               "type": "integer"
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -338,7 +345,8 @@
               "type": "integer"
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -363,7 +371,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -388,7 +397,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -410,7 +420,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -432,7 +443,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
