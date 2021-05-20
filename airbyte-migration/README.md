@@ -3,18 +3,25 @@
 This module migrates configs specified in `airbyte-config` to new versions.
 
 ## Run production migration in docker
+
 ```sh
-docker run --rm -v ~/Downloads:/config airbyte/migration:0.23.0-alpha -- \
+BUILD_VERSION=$(cat .env | grep VERSION | awk -F"=" '{print $2}')
+INPUT_PATH=<path to directory containing downloaded airbyte_archive.tar.gz>
+OUTPUT_PATH=<path to where migrated archive will be written (should end in .tar.gz)>
+TARGET_VERSION=<version you are migrating to or empty for latest>
+
+docker run --rm -v ${INPUT_PATH}:/config airbyte/migration:${BUILD_VERSION} -- \
   --input /config/airbyte_archive.tar.gz \
-  --output ~/Downloads/new_airbyte_archive.tar.gz
+  --output ${OUTPUT_PATH} \
+  [ --target-version ${TARGET_VERSION} ]
 ```
 
 See [Upgrading Airbyte](https://docs.airbyte.io/tutorials/upgrading-airbyte) for details.
 
 ## Run dev migration in IDE
-Run `MigrationRunner.java` with arguments.
+Run `MigrationRunner.java` with arguments (`--input`, `--output`, `--target-version`).
 
-## Run dev migration locally
+## Run dev migration in command line
 
 Run the following command in project root:
 
