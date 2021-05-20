@@ -42,7 +42,7 @@ We're working with the Exchange Rates API, so we need to define our input schema
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Python Http Tutorial Spec",
+    "title": "Python Http Example Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],
     "additionalProperties": false,
@@ -75,7 +75,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 
-class SourcePythonHttpTutorial(AbstractSource):
+class SourcePythonHttpExample(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         accepted_currencies = {
             "USD",
