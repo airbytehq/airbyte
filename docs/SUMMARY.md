@@ -123,7 +123,7 @@
     * [Java Connectors](contributing-to-airbyte/building-new-connector/java-connectors.md)
     * [Monorepo Python Development](contributing-to-airbyte/building-new-connector/monorepo-python-development.md)
     * [Testing Connectors](contributing-to-airbyte/building-new-connector/testing-connectors.md)
-    * [Standard Source Test Suite](contributing-to-airbyte/building-new-connector/standard-source-tests.md)
+    * [Source Connector Acceptance Tests](contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
   * [Code Style](contributing-to-airbyte/code-style.md)
   * [Updating Documentation](contributing-to-airbyte/updating-documentation.md)
   * [Templates](contributing-to-airbyte/templates/README.md)
