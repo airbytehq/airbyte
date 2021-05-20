@@ -28,3 +28,4 @@ Todo:
 - Set this up for Kube
 - Use an init container to create the initial named pipe
 - Use a shared mount
+- Test message sizes / etc
