@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "Campaigns",
+        "name": "campaigns",
         "json_schema": {
           "type": "object",
           "title": "Campaign",
@@ -798,7 +798,7 @@
     },
     {
       "stream": {
-        "name": "Lists",
+        "name": "lists",
         "json_schema": {
           "type": "object",
           "title": "Subscriber List",
@@ -1313,11 +1313,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["timestamp"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "cursor_field": ["timestamp"],
       "destination_sync_mode": "append"
     }

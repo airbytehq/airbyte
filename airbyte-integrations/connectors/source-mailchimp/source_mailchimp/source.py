@@ -24,10 +24,8 @@
 import base64
 import math
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-import dateutil.parser
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -52,6 +50,7 @@ class MailChimpStream(HttpStream, ABC):
         decoded_response = response.json()
         api_data = decoded_response[self.data_field]
         if len(api_data) < self.PAGINATION:
+            self.current_offset = 0
             return {}
         else:
             self.current_offset += self.PAGINATION
@@ -71,12 +70,15 @@ class MailChimpStream(HttpStream, ABC):
             params.update(next_page_token)
         return params
 
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {}
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         yield from response_json[self.data_field]
+
+    @property
+    @abstractmethod
+    def data_field(self) -> str:
+        """the responce entry that contains useful data"""
+        pass
 
 
 class IncrementalMailChimpStream(MailChimpStream, ABC):
@@ -97,23 +99,14 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         and returning an updated state object.
         """
 
-        zero_date = datetime(1900, 1, 1)
-
         current_state = current_stream_state.get(self.cursor_field)
         latest_state = latest_record.get(self.cursor_field)
-        if not any([current_state, latest_state]):  # noqa
-            return {self.cursor_field: zero_date}
 
         if not all([current_state, latest_state]):
             nonzero_state = list(filter(bool, [current_state, latest_state]))[0]
-            if not isinstance(nonzero_state, datetime):
-                nonzero_state = dateutil.parser.isoparse(nonzero_state)
             return {self.cursor_field: nonzero_state}
+
         else:
-            if not isinstance(current_state, datetime):
-                current_state = dateutil.parser.isoparse(current_state)
-            if not isinstance(latest_state, datetime):
-                latest_state = dateutil.parser.isoparse(latest_state)
             max_value = max(latest_state, current_state)
             return {self.cursor_field: max_value}
 
@@ -123,16 +116,15 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         params = super().request_params(stream_state=stream_state, **kwargs)
         default_params = {"sort_field": self.cursor_field, "sort_dir": "ASC"}
         since_value = stream_state.get(self.cursor_field)
-        if isinstance(since_value, datetime):
-            since_value = since_value.isoformat()
-        default_params[f"since_{self.cursor_field}"] = since_value
+        if since_value:
+            default_params[f"since_{self.cursor_field}"] = since_value
         params.update(default_params)
         return params
 
 
 class Lists(IncrementalMailChimpStream):
     cursor_field = "date_created"
-    name = "Lists"
+    # name = "Lists"
     data_field = "lists"
 
     def path(self, **kwargs) -> str:
@@ -141,14 +133,14 @@ class Lists(IncrementalMailChimpStream):
 
 class Campaigns(IncrementalMailChimpStream):
     cursor_field = "create_time"
-    name = "Campaigns"
+    # name = "Campaigns"
     data_field = "campaigns"
 
     def path(self, **kwargs) -> str:
         return "campaigns"
 
 
-class EmailActivity(MailChimpStream):
+class EmailActivity(IncrementalMailChimpStream):
     cursor_field = "timestamp"
     name = "Email_activity"
     data_field = "emails"
@@ -159,17 +151,47 @@ class EmailActivity(MailChimpStream):
             yield {"campaign_id": campaign["id"]}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        campaign_id = stream_slice["campaign_id"]
-        return f"reports/{campaign_id}/email-activity"
+        self.campaign_id = stream_slice["campaign_id"]
+        return f"reports/{self.campaign_id}/email-activity"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the campaign_id and cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+
+        current_state = current_stream_state.get(self.campaign_id) if current_stream_state else None
+        latest_state = latest_record.get(self.campaign_id) if latest_record else None
+        if not any([current_state, latest_state]):  # if no state was passed
+            # constuct dict state first time
+            current_state = current_stream_state.get(self.cursor_field)
+            latest_state = latest_record.get(self.cursor_field)
+            if not all([current_state, latest_state]):
+                max_value = list(filter(bool, [current_state, latest_state]))[0]
+            else:
+                max_value = max(latest_state, current_state)
+            output = {self.campaign_id: {self.cursor_field: max_value}}
+            return output
+
+        current_campaign_state = current_state.get(self.cursor_field) if current_state else None
+        latest_campaign_state = latest_state.get(self.cursor_field) if latest_state else None
+        if not all([current_campaign_state, latest_campaign_state]):
+            nonzero_state = list(filter(bool, [current_campaign_state, latest_campaign_state]))[0]
+            output = {self.campaign_id: {self.cursor_field: nonzero_state}}
+        else:
+            max_value = max(current_campaign_state, latest_campaign_state)
+            output = {self.campaign_id: {self.cursor_field: max_value}}
+        return output
 
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        since_value = stream_state.get(self.cursor_field)
-        if since_value:
-            if isinstance(since_value, datetime):
-                since_value = since_value.isoformat()
-            params["since"] = since_value
+        params = MailChimpStream.request_params(self, stream_state=stream_state, **kwargs)
+
+        since_value_camp = stream_state.get(self.campaign_id)
+        if since_value_camp:
+            since_value = since_value_camp.get(self.cursor_field)
+            if since_value:
+                params["since"] = since_value
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -186,7 +208,7 @@ class EmailActivity(MailChimpStream):
                 yield new_record
 
 
-class HttpBasicAuthenticator(HttpAuthenticator):  # should not placed in this file but we havent it!
+class HttpBasicAuthenticator(HttpAuthenticator):  # should not be placed in this file but we havent it!
     def __init__(self, auth: Tuple[str, str]):
         self.auth = auth
 
@@ -203,7 +225,6 @@ class SourceMailchimp(AbstractSource):
         if not hasattr(self, "_client"):
             self._client = MailChimp(mc_api=config["apikey"], mc_user=config["username"])
             self.apikey = config["apikey"]
-            # MailChimpStream.url_base = self._client.base_url
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
