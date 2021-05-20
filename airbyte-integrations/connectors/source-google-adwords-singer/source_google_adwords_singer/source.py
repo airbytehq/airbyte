@@ -162,4 +162,5 @@ class SourceGoogleAdwordsSinger(SingerSource):
         # required property in the singer tap, but seems like an implementation detail of stitch
         # https://github.com/singer-io/tap-adwords/blob/cf0c1ff7dae8503f97173a15cf8d78bf975069f8/tap_adwords/__init__.py#L963-L969
         raw_config["user_agent"] = "unknown"
+        raw_config["customer_ids"] = ",".join(raw_config["customer_ids"])
         return raw_config
