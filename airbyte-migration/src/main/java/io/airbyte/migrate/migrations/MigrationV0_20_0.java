@@ -45,9 +45,10 @@ import org.slf4j.LoggerFactory;
  */
 public class MigrationV0_20_0 extends BaseMigration implements Migration {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_20_0.class);
-
   private static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
+  private static final ResourceId STANDARD_SOURCE_DEFINITION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SOURCE_DEFINITION");
+  private static final ResourceId STANDARD_DESTINATION_DEFINITION_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_DESTINATION_DEFINITION");
+  private static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId.fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
 
   private static final String MIGRATION_VERSION = "0.20.0-alpha";
 
@@ -69,6 +70,15 @@ public class MigrationV0_20_0 extends BaseMigration implements Migration {
     outputSchema.put(
         STANDARD_WORKSPACE_RESOURCE_ID,
         MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_WORKSPACE_RESOURCE_ID));
+    outputSchema.put(
+        STANDARD_SOURCE_DEFINITION_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_SOURCE_DEFINITION_RESOURCE_ID));
+    outputSchema.put(
+        STANDARD_DESTINATION_DEFINITION_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_DESTINATION_DEFINITION_RESOURCE_ID));
+    outputSchema.put(
+        STANDARD_SYNC_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(Path.of("migrations/migrationV0_20_0"), STANDARD_SYNC_RESOURCE_ID));
     return outputSchema;
   }
 
