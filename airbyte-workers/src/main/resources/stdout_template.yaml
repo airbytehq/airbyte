@@ -24,7 +24,7 @@ spec:
           mountPath: /pipes
     - name: socat
       image: alpine/socat:1.7.4.1-r1
-      command: [ 'sh', '-c', "cat /pipes/stdout | socat -d -d -d - TCP:0.0.0.0:9000" ] # todo: fix connection refused errors - tried localhost/127.0.0.1/0.0.0.0/$POD_IP
+      command: [ 'sh', '-c', "cat /pipes/stdout | socat -d -d -d - TCP:host.docker.internal:9000" ] # todo: pass in the sync worker ip
       env:
         - name: POD_IP
           valueFrom:
