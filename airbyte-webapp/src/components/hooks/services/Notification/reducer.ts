@@ -3,7 +3,9 @@ import { Notification, NotificationServiceState } from "./types";
 
 export const actions = {
   addNotification: createAction("ADD_NOTIFICATION")<Notification>(),
-  deleteNotification: createAction("DELETE_NOTIFICATION")<Notification>(),
+  deleteNotificationById: createAction("DELETE_NOTIFICATION_BY_ID")<
+    string | number
+  >(),
   clearAll: createAction("CLEAR_ALL")(),
 };
 
@@ -11,9 +13,9 @@ type Actions = ActionType<typeof actions>;
 
 function removeNotification(
   notifications: Notification[],
-  notification: Notification
+  notificationId: string | number
 ): Notification[] {
-  return notifications.filter((n) => n.id !== notification.id);
+  return notifications.filter((n) => n.id !== notificationId);
 }
 
 function findNotification(
@@ -46,7 +48,7 @@ export const notificationServiceReducer = createReducer<
     }
   )
   .handleAction(
-    actions.deleteNotification,
+    actions.deleteNotificationById,
     (state, action): NotificationServiceState => {
       const notifications = removeNotification(
         state.notifications,

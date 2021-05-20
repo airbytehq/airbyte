@@ -3,8 +3,8 @@ import React, { useContext, useEffect } from "react";
 import SingletonCard from "components/SingletonCard";
 
 import {
-  NotificationServiceApi,
   Notification,
+  NotificationServiceApi,
   NotificationServiceState,
 } from "./types";
 import useTypesafeReducer from "components/hooks/useTypesafeReducer";
@@ -17,7 +17,7 @@ const notificationServiceContext = React.createContext<NotificationServiceApi | 
 function NotificationService({ children }: { children: React.ReactNode }) {
   const [
     state,
-    { addNotification, deleteNotification, clearAll },
+    { addNotification, clearAll, deleteNotificationById },
   ] = useTypesafeReducer<NotificationServiceState, typeof actions>(
     notificationServiceReducer,
     initialState,
@@ -26,22 +26,34 @@ function NotificationService({ children }: { children: React.ReactNode }) {
 
   const notificationService: NotificationServiceApi = {
     addNotification,
-    deleteNotification,
+    deleteNotificationById,
     clearAll,
   };
+
+  const firstNotification =
+    state.notifications && state.notifications.length
+      ? state.notifications[0]
+      : null;
 
   return (
     <>
       <notificationServiceContext.Provider value={notificationService}>
         {children}
       </notificationServiceContext.Provider>
-      {state.notifications && state.notifications.length ? (
+      {firstNotification ? (
         // Show only first notification
         <SingletonCard
-          title={state.notifications[0].title}
-          text={state.notifications[0].text}
-          hasError={state.notifications[0].isError}
-          onClose={state.notifications[0].onClose}
+          title={firstNotification.title}
+          text={firstNotification.text}
+          hasError={firstNotification.isError}
+          onClose={
+            firstNotification.nonClosable
+              ? undefined
+              : () => {
+                  deleteNotificationById(firstNotification.id);
+                  firstNotification.onClose?.();
+                }
+          }
         />
       ) : null}
     </>
@@ -64,14 +76,16 @@ export const useNotificationService = (
       notificationService.addNotification(notification);
     }
     return () => {
-      if (notification) notificationService.deleteNotification(notification);
+      if (notification) {
+        notificationService.deleteNotificationById(notification.id);
+      }
     };
     // eslint-disable-next-line
   }, [notification, notificationService, ...(dependencies || [])]);
 
   return {
     registerNotification: notificationService.addNotification,
-    unregisterNotification: notificationService.deleteNotification,
+    unregisterNotificationById: notificationService.deleteNotificationById,
     unregisterAllNotifications: notificationService.clearAll,
   };
 };

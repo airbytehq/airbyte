@@ -3,12 +3,13 @@ export type Notification = {
   title: string;
   text?: string;
   isError?: boolean;
-  onClose: () => void;
+  nonClosable?: boolean;
+  onClose?: () => void;
 };
 
 export type NotificationServiceApi = {
   addNotification: (notification: Notification) => void;
-  deleteNotification: (notification: Notification) => void;
+  deleteNotificationById: (notificationId: string | number) => void;
   clearAll: () => void;
 };
 

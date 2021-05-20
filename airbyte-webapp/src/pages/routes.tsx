@@ -1,11 +1,11 @@
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Redirect,
   Route,
   Switch,
 } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 
 import config from "config";
 
@@ -19,14 +19,13 @@ import SettingsPage from "./SettingsPage";
 import LoadingPage from "components/LoadingPage";
 import MainView from "components/MainView";
 import SupportChat from "components/SupportChat";
-import SingletonCard from "components/SingletonCard";
 
 import useSegment from "components/hooks/useSegment";
 import useRouter from "components/hooks/useRouterHook";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
-import { HealthService } from "core/health/HealthService";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
+import { useApiHealthPoll } from "../components/hooks/services/Health";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -150,39 +149,10 @@ const OnboardingsRoutes = () => {
     </Switch>
   );
 };
-const healthService = new HealthService();
-
-function useApiHealthPoll() {
-  const [, setHasError] = useState(null);
-  const {
-    registerNotification,
-    unregisterAllNotifications,
-  } = useNotificationService();
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        await healthService.health();
-      } catch (e) {
-        setHasError(e);
-        registerNotification({
-          id: 1,
-          onClose: () => {
-            unregisterAllNotifications();
-          },
-          title: "",
-          isError: true,
-        });
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [registerNotification]);
-}
 
 export const Routing: React.FC = () => {
   useSegment(config.segment.token);
-  useApiHealthPoll();
+  useApiHealthPoll(config.healthCheckTimeout);
 
   const { workspace } = useWorkspace();
 
@@ -191,6 +161,18 @@ export const Routing: React.FC = () => {
       AnalyticsService.identify(workspace.customerId);
     }
   }, [workspace]);
+
+  const { formatMessage } = useIntl();
+  useNotificationService(
+    config.isDemo
+      ? {
+          id: "demo.message",
+          title: formatMessage({ id: "demo.message.title" }),
+          text: formatMessage({ id: "demo.message.body" }),
+          nonClosable: true,
+        }
+      : undefined
+  );
 
   return (
     <Router>
@@ -207,12 +189,6 @@ export const Routing: React.FC = () => {
           customerId={workspace.customerId}
           onClick={() => window.open(config.ui.slackLink, "_blank")}
         />
-        {config.isDemo && (
-          <SingletonCard
-            title={<FormattedMessage id="demo.message.title" />}
-            text={<FormattedMessage id="demo.message.body" />}
-          />
-        )}
       </Suspense>
     </Router>
   );
