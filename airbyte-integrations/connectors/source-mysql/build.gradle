@@ -21,8 +21,6 @@ dependencies {
     implementation 'io.debezium:debezium-connector-mysql:1.4.2.Final'
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    testImplementation project(":airbyte-json-validation")
-    testImplementation project(':airbyte-test-utils')
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.testcontainers:mysql:1.15.1'
 

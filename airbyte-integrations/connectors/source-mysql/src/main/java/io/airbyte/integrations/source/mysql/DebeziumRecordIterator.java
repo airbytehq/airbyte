@@ -29,16 +29,11 @@ import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.db.PgLsn;
 import io.debezium.engine.ChangeEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import org.apache.kafka.connect.data.Struct;
-import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,16 +57,16 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private static final int SLEEP_TIME_AMOUNT = 5;
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
-  // private final PgLsn targetLsn;
+  private final Optional<TargetFilePosition> targetFilePosition;
   private final Supplier<Boolean> publisherStatusSupplier;
   private final VoidCallable requestClose;
 
   public DebeziumRecordIterator(LinkedBlockingQueue<ChangeEvent<String, String>> queue,
-                                // PgLsn targetLsn,
+                                Optional<TargetFilePosition> targetFilePosition,
                                 Supplier<Boolean> publisherStatusSupplier,
                                 VoidCallable requestClose) {
     this.queue = queue;
-    // this.targetLsn = targetLsn;
+    this.targetFilePosition = targetFilePosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
     this.requestClose = requestClose;
   }
@@ -97,10 +92,10 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         continue;
       }
 
-      // if the last record matches the target lsn, it is time to tell the producer to shutdown.
-      // if (shouldSignalClose(next)) {
-      // requestClose();
-      // }
+      // if the last record matches the target file position, it is time to tell the producer to shutdown.
+      if (shouldSignalClose(next)) {
+        requestClose();
+      }
 
       return next;
     }
@@ -112,51 +107,24 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     requestClose.call();
   }
 
-  // private boolean shouldSignalClose(ChangeEvent<String, String> event) {
+  private boolean shouldSignalClose(ChangeEvent<String, String> event) {
+    if (targetFilePosition.isPresent()) {
+      String file = Jsons.deserialize(event.value()).get("source").get("file").asText();
+      int position = Jsons.deserialize(event.value()).get("source").get("pos").asInt();
+      if (file.equals(targetFilePosition.get().fileName)) {
+        if (targetFilePosition.get().position >= position) {
+          return false;
+        } else {
+          // if not snapshot or is snapshot but last record in snapshot.
+          return SnapshotMetadata.TRUE != SnapshotMetadata.valueOf(
+              Jsons.deserialize(event.value()).get("source").get("snapshot").asText()
+                  .toUpperCase());
 
-  // for mysql
-  // SnapshotMetadata.valueOf(Jsons.deserialize(next.value()).get("source").get("snapshot").asText().toUpperCase())
-  //
-  // Jsons.deserialize(next.value()).get("source").get("file")
-  //
-  // Jsons.deserialize(next.value()).get("source").get("pos")
-
-  // final PgLsn eventLsn = extractLsn(event);
-  //
-  // if (targetLsn.compareTo(eventLsn) > 0) {
-  // return false;
-  // } else {
-  // final SnapshotMetadata snapshotMetadata = getSnapshotMetadata(event);
-  // // if not snapshot or is snapshot but last record in snapshot.
-  // return SnapshotMetadata.TRUE != snapshotMetadata;
-  // }
-  // }
-
-  private SnapshotMetadata getSnapshotMetadata(ChangeEvent<String, String> event) {
-    try {
-      final Method sourceRecordMethod = event.getClass().getMethod("sourceRecord");
-      sourceRecordMethod.setAccessible(true);
-      final SourceRecord sourceRecord = (SourceRecord) sourceRecordMethod.invoke(event);
-      final String snapshot = ((Struct) sourceRecord.value()).getStruct("source").getString("snapshot");
-
-      if (snapshot == null) {
-        return null;
+        }
       }
-
-      // the snapshot field is an enum of true, false, and last.
-      return SnapshotMetadata.valueOf(snapshot.toUpperCase());
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new RuntimeException(e);
     }
-  }
+    return false;
 
-  private PgLsn extractLsn(ChangeEvent<String, String> event) {
-    return Optional.ofNullable(event.value())
-        .flatMap(value -> Optional.ofNullable(Jsons.deserialize(value).get("source")))
-        .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
-        .map(Long::parseLong)
-        .map(PgLsn::fromLong)
-        .orElseThrow(() -> new IllegalStateException("Could not find LSN"));
   }
 
   private void requestClose() {

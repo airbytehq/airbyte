@@ -181,10 +181,13 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
           offsetManager, dbHistoryStorageManager);
       publisher.start(queue);
 
+      Optional<TargetFilePosition> targetFilePosition = TargetFilePosition
+          .targetFilePosition(database);
+
       // handle state machine around pub/sub logic.
       final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator(
           queue,
-          // targetLsn,
+          targetFilePosition,
           publisher::hasClosed,
           publisher::close);
 
