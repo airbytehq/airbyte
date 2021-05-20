@@ -32,7 +32,7 @@ setup(
     install_requires=[
         "airbyte-cdk~=0.1",
         "mailchimp3==3.0.14",
-        "pytest==6.1.2",
+        "pytest~=6.1",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
     extras_require={"tests": ["pytest~=6.1"]},

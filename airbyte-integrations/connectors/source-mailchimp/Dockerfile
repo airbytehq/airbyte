@@ -9,7 +9,7 @@ COPY main.py ./
 COPY setup.py ./
 RUN pip install .
 
-ENTRYPOINT ["python", "/airbyte_integration_code_main.py"]
+ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.2.1
 LABEL io.airbyte.name=airbyte/source-mailchimp
