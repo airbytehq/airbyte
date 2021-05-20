@@ -126,31 +126,29 @@ const Table: React.FC<IProps> = ({
         {rows.map((row) => {
           prepareRow(row);
           return (
-            <>
-              <Tr
-                {...row.getRowProps()}
-                key={`table-row-${row.id}`}
-                hasClick={!!onClickRow}
-                onClick={() => onClickRow?.(row.original)}
-                erroredRows={erroredRows && !!row.original.error}
-              >
-                {
-                  // @ts-ignore needs to address proper types for table
-                  row.cells.map((cell: ICellProps, key) => {
-                    return (
-                      <Td
-                        {...cell.getCellProps()}
-                        collapse={cell.column.collapse}
-                        customWidth={cell.column.customWidth}
-                        key={`table-cell-${row.id}-${key}`}
-                      >
-                        {cell.render("Cell")}
-                      </Td>
-                    );
-                  })
-                }
-              </Tr>
-            </>
+            <Tr
+              {...row.getRowProps()}
+              key={`table-row-${row.id}`}
+              hasClick={!!onClickRow}
+              onClick={() => onClickRow?.(row.original)}
+              erroredRows={erroredRows && !!row.original.error}
+            >
+              {
+                // @ts-ignore needs to address proper types for table
+                row.cells.map((cell: ICellProps, key) => {
+                  return (
+                    <Td
+                      {...cell.getCellProps()}
+                      collapse={cell.column.collapse}
+                      customWidth={cell.column.customWidth}
+                      key={`table-cell-${row.id}-${key}`}
+                    >
+                      {cell.render("Cell")}
+                    </Td>
+                  );
+                })
+              }
+            </Tr>
           );
         })}
       </tbody>

@@ -25,6 +25,7 @@
 package io.airbyte.integrations.standardtest.destination;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,6 +39,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -52,6 +54,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.WorkerConstants;
@@ -200,6 +203,10 @@ public abstract class TestDestination {
    */
   protected boolean implementsBasicNormalization() {
     return false;
+  }
+
+  private boolean supportsDBT() {
+    return implementsBasicNormalization();
   }
 
   /**
@@ -606,6 +613,98 @@ public abstract class TestDestination {
    */
   protected int getMaxRecordValueLimit() {
     return 1000000000;
+  }
+
+  @Test
+  void testCustomDbtTransformations() throws Exception {
+    if (!supportsDBT()) {
+      return;
+    }
+
+    final JsonNode config = getConfigWithBasicNormalization();
+
+    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+        getImageName(),
+        pbf,
+        config));
+    runner.start();
+    final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
+    final OperatorDbt dbtConfig = new OperatorDbt()
+        .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
+        .withGitRepoBranch("main")
+        .withDockerImage("fishtownanalytics/dbt:0.19.1");
+    //
+    // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
+    //
+    // This dbt project transforms raw data from an app database into a customers and orders model ready
+    // for analytics.
+    // The repo is a self-contained playground dbt project, useful for testing out scripts, and
+    // communicating some of the core dbt concepts:
+    //
+    // 1. First, it tests if connection to the destination works.
+    dbtConfig.withDbtArguments("debug");
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt debug Failed.");
+    }
+    // 2. Install any dependencies packages, if any
+    dbtConfig.withDbtArguments("deps");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt deps Failed.");
+    }
+    // 3. It contains seeds that includes some (fake) raw data from a fictional app as CSVs data sets.
+    // This materializes the CSVs as tables in your target schema.
+    // Note that a typical dbt project does not require this step since dbt assumes your raw data is
+    // already in your warehouse.
+    dbtConfig.withDbtArguments("seed");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt seed Failed.");
+    }
+    // 4. Run the models:
+    // Note: If this steps fails, it might mean that you need to make small changes to the SQL in the
+    // models folder to adjust for the flavor of SQL of your target database.
+    dbtConfig.withDbtArguments("run");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt run Failed.");
+    }
+    // 5. Test the output of the models and tables have been properly populated:
+    dbtConfig.withDbtArguments("test");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt test Failed.");
+    }
+    // 6. Generate dbt documentation for the project:
+    dbtConfig.withDbtArguments("docs generate");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt docs generate Failed.");
+    }
+    runner.close();
+  }
+
+  @Test
+  void testCustomDbtTransformationsFailure() throws Exception {
+    if (!supportsDBT()) {
+      return;
+    }
+
+    final JsonNode config = getConfigWithBasicNormalization();
+
+    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+        getImageName(),
+        pbf,
+        config));
+    runner.start();
+    final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
+    final OperatorDbt dbtConfig = new OperatorDbt()
+        .withGitRepoUrl("https://github.com/fishtown-analytics/dbt-learn-demo.git")
+        .withGitRepoBranch("master")
+        .withDockerImage("fishtownanalytics/dbt:0.19.1")
+        .withDbtArguments("debug");
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt debug Failed.");
+    }
+
+    dbtConfig.withDbtArguments("test");
+    assertFalse(runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig),
+        "dbt test should fail, as we haven't run dbt run on this project yet");
   }
 
   /**

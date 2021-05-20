@@ -23,11 +23,25 @@
 #
 
 
-import sys
+from setuptools import find_packages, setup
 
-from base_python.entrypoint import launch
-from source_iterable import SourceIterable
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk~=0.1",
+]
 
-if __name__ == "__main__":
-    source = SourceIterable()
-    launch(source, sys.argv[1:])
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+]
+
+setup(
+    name="source_recharge",
+    description="Source implementation for Recharge.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=MAIN_REQUIREMENTS,
+    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
+)
