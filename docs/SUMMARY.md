@@ -33,6 +33,7 @@
 * [Connector Catalog](integrations/README.md)
   * [Sources](integrations/sources/README.md)
     * [Appstore](integrations/sources/appstore.md)
+    * [Asana](integrations/sources/asana.md)
     * [Braintree](integrations/sources/braintree.md)
     * [ClickHouse](integrations/sources/clickhouse.md)
     * [Drift](integrations/sources/drift.md)

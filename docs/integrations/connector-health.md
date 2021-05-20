@@ -4,8 +4,8 @@ Airbyte runs regular testing of all integrations to ensure we are able to proper
 
 This page shows the status of integration tests running for each connector on `master`.
 
-**Red status badges** mean the last test failed.  
-**Yellow status badges** mean the last test passed, but at least one of the last ten tests failed.  
+**Red status badges** mean the last test failed.
+**Yellow status badges** mean the last test passed, but at least one of the last ten tests failed.
 **Green status badges** mean the last ten tests were all successful.
 
 The test status badges are cached and can take 5 minutes to update.
@@ -37,6 +37,7 @@ Clicking on a status will take you to a summary of past tests that link to the G
 | HTTP Request | [![source-http-request](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-http-request%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-http-request) |  |  |
 | Hubspot | [![source-hubspot-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-hubspot%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-hubspot) | ✅ |  |
 | Klaviyo | [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-klaviyo) | | |
+| Klaviyo | [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-asana) | | |
 | Instagram | [![source-instagram](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-instagram%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-instagram) | ✅ |  |
 | Intercom | [![source-intercom-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-intercom-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-intercom-singer) |  |  |
 | Iterable | [![source-iterable](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-iterable%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-iterable) |  |  |

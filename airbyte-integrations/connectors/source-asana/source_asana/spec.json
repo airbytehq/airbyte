@@ -1,0 +1,18 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Asana Spec",
+    "type": "object",
+    "required": ["access_token"],
+    "additionalProperties": false,
+    "properties": {
+      "access_token": {
+        "type": "string",
+        "title": "Personal Access Token",
+        "description": "Asana Personal Access Token (generate yours <a href=\"https://app.asana.com/0/developer-console\">here</a>).",
+        "airbyte_secret": true
+      }
+    }
+  }
+}
