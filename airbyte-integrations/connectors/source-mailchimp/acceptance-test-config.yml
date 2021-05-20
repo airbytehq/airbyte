@@ -11,23 +11,16 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/Lists.json"
-      validate_output_from_all_streams: yes
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/Campaigns.json"
-      validate_output_from_all_streams: yes
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/Email_activity.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
       validate_output_from_all_streams: yes
   incremental:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/Lists.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      state_path: "integration_tests/state.json"
       cursor_paths:
-        charges: [ "date_created" ]
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/Campaigns.json"
-      cursor_paths:
-        charges: [ "create_time" ]
+        lists: [ "date_created" ]
+        campaigns: [ "create_time" ]
+        Email_activity: [ "timestamp" ]
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/Email_activity.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
