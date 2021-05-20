@@ -45,6 +45,12 @@ export default abstract class BaseResource extends Resource {
     } else {
       const e = new NetworkError(response);
       e.status = response.status;
+
+      // If some error returned in json, lets try to parse it
+      try {
+        const result = await response.json();
+        e.message = result.message;
+      } catch (e) {}
       throw e;
     }
   }
