@@ -79,6 +79,8 @@ public abstract class StandardSourceTest {
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
   public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
+  public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
+  public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
 
   private static final long JOB_ID = 0L;
   private static final int JOB_ATTEMPT = 0;
@@ -383,7 +385,7 @@ public abstract class StandardSourceTest {
         .collect(Collectors.toList());
   }
 
-  private ConfiguredAirbyteCatalog withSourceDefinedCursors(ConfiguredAirbyteCatalog catalog) {
+  public ConfiguredAirbyteCatalog withSourceDefinedCursors(ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getSyncMode() == INCREMENTAL
@@ -472,6 +474,8 @@ public abstract class StandardSourceTest {
   private AirbyteRecordMessage pruneCdcMetadata(AirbyteRecordMessage m) {
     final AirbyteRecordMessage clone = Jsons.clone(m);
     ((ObjectNode) clone.getData()).remove(CDC_LSN);
+    ((ObjectNode) clone.getData()).remove(CDC_LOG_FILE);
+    ((ObjectNode) clone.getData()).remove(CDC_LOG_POS);
     ((ObjectNode) clone.getData()).remove(CDC_UPDATED_AT);
     ((ObjectNode) clone.getData()).remove(CDC_DELETED_AT);
     return clone;

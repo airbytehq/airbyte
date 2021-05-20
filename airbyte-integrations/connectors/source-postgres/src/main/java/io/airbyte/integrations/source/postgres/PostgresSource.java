@@ -219,6 +219,14 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
                                                                              Map<String, TableInfoInternal> tableNameToTable,
                                                                              JdbcStateManager stateManager,
                                                                              Instant emittedAt) {
+    /**
+     * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
+     * but selects all the tables in FULL_REFRESH mode then we would still end up going through this
+     * path. We do have a check in place for debezium to make sure only tales in INCREMENTAL mode are
+     * synced {@link DebeziumRecordPublisher#getTableWhitelist(ConfiguredAirbyteCatalog)} but we should
+     * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
+     * part
+     */
     if (isCdc(config)) {
       // State works differently in CDC than it does in convention incremental. The state is written to an
       // offset file that debezium reads from. Then once all records are replicated, we read back that
