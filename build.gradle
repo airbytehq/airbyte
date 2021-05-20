@@ -189,7 +189,7 @@ subprojects {
         implementation 'com.fasterxml.jackson.core:jackson-annotations'
         implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
 
-        implementation group: 'com.google.guava', name: 'guava', version: '29.0-jre'
+        implementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
 
         implementation group: 'commons-io', name: 'commons-io', version: '2.7'
 
