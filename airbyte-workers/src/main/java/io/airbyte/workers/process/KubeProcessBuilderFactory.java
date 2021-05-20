@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
@@ -54,9 +55,12 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,13 +68,14 @@ import org.slf4j.LoggerFactory;
 public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactory.class);
+  private final String resourceName;
 
-  private static final Path WORKSPACE_MOUNT_DESTINATION = Path.of("/workspace");
+  public KubeProcessBuilderFactory() {
+    this.resourceName = null; // todo: somehow make the different types of processes configurable
+  }
 
-  private final Path workspaceRoot;
-
-  public KubeProcessBuilderFactory(Path workspaceRoot) {
-    this.workspaceRoot = workspaceRoot;
+  public KubeProcessBuilderFactory(String resourceName) {
+    this.resourceName = resourceName;
   }
 
   @Override
@@ -78,17 +83,21 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       throws WorkerException {
 
     try {
-      final String template = MoreResources.readResource("kube_runner_template.yaml");
+      final String template = MoreResources.readResource(resourceName);
 
       // used to differentiate source and destination processes with the same id and attempt
       final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
 
       ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
+      String command = getCommandFromImage(imageName);
+      LOGGER.info("Using entrypoint from image: " + command);
+
       final String rendered = template.replaceAll("JOBID", jobId)
           .replaceAll("ATTEMPTID", String.valueOf(attempt))
           .replaceAll("IMAGE", imageName)
           .replaceAll("SUFFIX", suffix)
+          .replaceAll("COMMAND", command)
           .replaceAll("ARGS", Jsons.serialize(Arrays.asList(args)))
           .replaceAll("WORKDIR", jobRoot.toString());
 
@@ -102,7 +111,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
               "kubectl",
               "run",
               "--generator=run-pod/v1",
-              "--rm",
+//              "--rm",  todo: add this back in
               "-i",
               "--pod-running-timeout=24h",
               "--image=" + imageName,
@@ -118,43 +127,66 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
     }
   }
 
-  public static void main(String[] args) throws IOException, ApiException, InterruptedException {
-    var PORT = 9000;
-    String IP = null;
-    var destPodName = "destination-listen-and-echo";
-    KubernetesClient client = new DefaultKubernetesClient();
+  // todo: this should really be cached
+  private static String getCommandFromImage(String imageName) throws IOException {
+    final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
 
-    // Load spec and create the pod.
-    var stream = KubeProcessBuilderFactory.class.getClassLoader().getResourceAsStream("destination-listen-and-echo.yaml");
-    var destPodDef = client.pods().load(stream).get();
-    LOGGER.info("Loaded spec: {}", destPodDef);
+    final String podName = "airbyte-command-fetcher-" + suffix;
 
-    var podSet = client.pods().inNamespace("default").list().getItems().stream()
-        .filter(pod -> pod.getMetadata().getName().equals(destPodName)).collect(Collectors.toSet());
-    if (podSet.size() == 0) {
-      LOGGER.info("Pod does not exist");
-      Pod destPod = client.pods().create(destPodDef); // watch command?
-      LOGGER.info("Created pod: {}, waiting for it to be ready", destPod);
-      client.resource(destPod).waitUntilReady(1, TimeUnit.MINUTES);
-      LOGGER.info("Dest Pod ready");
+    final List<String> cmd =
+            Lists.newArrayList(
+                    "kubectl",
+                    "run",
+                    "--generator=run-pod/v1",
+                    "--rm",
+                    "-i",
+                    "--pod-running-timeout=24h",
+                    "--image=" + imageName,
+                    "--command=true",
+                    "--restart=Never",
+                    podName,
+                    "--",
+                    "sh",
+                    "-c",
+                    "echo \"AIRBYTE_ENTRYPOINT=$AIRBYTE_ENTRYPOINT\"");
+
+    Process start = new ProcessBuilder(cmd).start();
+
+    try(BufferedReader reader = IOs.newBufferedReader(start.getInputStream())) {
+      String line;
+      while ((line = reader.readLine()) != null && !line.contains("AIRBYTE_ENTRYPOINT"));
+
+      if (line == null || !line.contains("AIRBYTE_ENTRYPOINT")) {
+        throw new RuntimeException("Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
+      } else {
+        String[] splits = line.split("=", 2);
+        if(splits.length == 1) {
+          throw new RuntimeException("Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
+        } else {
+          return splits[1];
+        }
+      }
     }
+  }
 
-    Pod destPod = client.pods().inNamespace("default").withName(destPodName).get();
-    LOGGER.info("Found IP!");
-    LOGGER.info("Status: {}", destPod.getStatus());
-    LOGGER.info("IP: {}", destPod.getStatus().getPodIP());
-    IP = destPod.getStatus().getPodIP();
+  public static void main(String[] args) {
+    try {
+      // todo: test this with args that are used by the process
+      Process process = new KubeProcessBuilderFactory("stdout_template.yaml")
+              .create(0L, 0, Path.of("/tmp"), "np_source:dev", null)
+              .start();
 
-    // Send something!
-    var clientSocket = new Socket(IP, PORT);
-    var out = new PrintWriter(clientSocket.getOutputStream(), true);
-    out.print("Hello!");
-    out.close();
+      // after running this main:
+      // kubectl port-forward airbyte-worker-0-0-fmave 9000:9000
+      // socat -d -d -d TCP-LISTEN:9000,bind=127.0.0.1 stdout
 
-//    client.pods().delete(destPodDef);
-//    // TODO: Why does this wait not work?
-//    client.resource(destPodDef).waitUntilCondition(pod -> !pod.getStatus().getPhase().equals("Terminating"), 1, TimeUnit.MINUTES);
-    client.close();
+      LOGGER.info("waiting...");
+      int code = process.waitFor();
+      LOGGER.info("code = " + code);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage());
+      e.printStackTrace();
+    }
   }
 
 }

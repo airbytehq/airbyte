@@ -29,3 +29,4 @@ Todo:
 - Use an init container to create the initial named pipe
 - Use a shared mount
 - Test message sizes / etc
+- Error code propagation

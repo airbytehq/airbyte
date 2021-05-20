@@ -161,7 +161,7 @@ public class SchedulerApp {
 
   private static ProcessBuilderFactory getProcessBuilderFactory(Configs configs) {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      return new KubeProcessBuilderFactory(configs.getWorkspaceRoot());
+      return new KubeProcessBuilderFactory();
     } else {
       return new DockerProcessBuilderFactory(
           configs.getWorkspaceRoot(),
