@@ -79,11 +79,8 @@ import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
-<<<<<<< HEAD
 import java.util.List;
-=======
 import java.util.Optional;
->>>>>>> c885dbba9 (test checkpointing)
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

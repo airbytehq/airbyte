@@ -25,6 +25,7 @@
 package io.airbyte.test.acceptance;
 
 import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
+import static java.lang.Thread.sleep;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -138,11 +139,7 @@ public class AcceptanceTests {
   private static PostgreSQLContainer sourcePsql;
   private static PostgreSQLContainer destinationPsql;
 
-  private final AirbyteApiClient apiClient = new AirbyteApiClient(
-      new ApiClient().setScheme("http")
-          .setHost("localhost")
-          .setPort(8001)
-          .setBasePath("/api"));
+  private AirbyteApiClient apiClient;
 
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
@@ -163,6 +160,22 @@ public class AcceptanceTests {
 
   @BeforeEach
   public void setup() throws ApiException {
+    apiClient = new AirbyteApiClient(
+        new ApiClient().setScheme("http")
+            .setHost("localhost")
+            .setPort(8001)
+            .setBasePath("/api"));
+
+    // log which connectors are being used.
+    final SourceDefinitionRead sourceDef = apiClient.getSourceDefinitionApi()
+        .getSourceDefinition(new SourceDefinitionIdRequestBody()
+            .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")));
+    final DestinationDefinitionRead destinationDef = apiClient.getDestinationDefinitionApi()
+        .getDestinationDefinition(new DestinationDefinitionIdRequestBody()
+            .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
+    LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
+    LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
+
     destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
     destinationPsql.start();
 
@@ -362,8 +375,7 @@ public class AcceptanceTests {
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
 
-    assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-        stream.getSupportedSyncModes());
+    assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
     // instead of assertFalse to avoid NPE from unboxed.
     assertNull(stream.getSourceDefinedCursor());
     assertTrue(stream.getDefaultCursorField().isEmpty());
@@ -380,6 +392,7 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertSourceAndTargetDbInSync(sourcePsql, false);
 
@@ -399,17 +412,23 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
     assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
 
     // reset back to no data.
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
+    LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
     assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
+    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
     assertSourceAndTargetDbInSync(sourcePsql, false);
   }
 
@@ -433,7 +452,7 @@ public class AcceptanceTests {
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
-    Thread.sleep(Duration.of(30, SECONDS).toMillis());
+    sleep(Duration.of(30, SECONDS).toMillis());
     assertSourceAndTargetDbInSync(sourcePsql, false);
   }
 
@@ -896,11 +915,11 @@ public class AcceptanceTests {
     JobRead job = originalJob;
     int count = 0;
     while (count < 60 && jobStatuses.contains(job.getStatus())) {
-      Thread.sleep(1000);
+      sleep(1000);
       count++;
 
       job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
-      LOGGER.info("waiting: {}", job);
+      LOGGER.info("waiting: job id: {} status: {}", job.getId(), job.getStatus());
     }
     return job;
   }
@@ -911,7 +930,7 @@ public class AcceptanceTests {
     while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
       LOGGER.info("fetching connection state. attempt: {}", count++);
       connectionState = apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId));
-      Thread.sleep(1000);
+      sleep(1000);
     }
     return connectionState;
   }
