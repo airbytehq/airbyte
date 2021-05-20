@@ -23,11 +23,24 @@
 #
 
 
-import sys
+from setuptools import find_packages, setup
 
-from base_python.entrypoint import launch
-from source_sendgrid import SourceSendgrid
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1"]
 
-if __name__ == "__main__":
-    source = SourceSendgrid()
-    launch(source, sys.argv[1:])
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "source-acceptance-test",
+]
+
+setup(
+    name="source_klaviyo",
+    description="Source implementation for Klaviyo.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=MAIN_REQUIREMENTS,
+    package_data={"": ["*.json", "schemas/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
+)

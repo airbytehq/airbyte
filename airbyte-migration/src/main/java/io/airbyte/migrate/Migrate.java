@@ -136,7 +136,8 @@ public class Migrate {
                   try {
                     jsonSchemaValidator.ensure(migration.getInputSchema().get(entry.getKey()), r);
                   } catch (JsonValidationException e) {
-                    throw new IllegalArgumentException("Input data schema does not match declared input schema.", e);
+                    throw new IllegalArgumentException(
+                        String.format("Input data schema does not match declared input schema %s.", entry.getKey().getName()), e);
                   }
                 })));
 
