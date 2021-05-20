@@ -27,7 +27,6 @@ package io.airbyte.scheduler.app;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
-import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.models.Job;
@@ -52,13 +51,13 @@ public class JobScheduler implements Runnable {
 
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
-  private final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate;
+  private final BiPredicate<Optional<Job>, StandardSync> scheduleJobPredicate;
   private final SyncJobFactory jobFactory;
 
   @VisibleForTesting
   JobScheduler(final JobPersistence jobPersistence,
                final ConfigRepository configRepository,
-               final BiPredicate<Optional<Job>, StandardSyncSchedule> scheduleJobPredicate,
+               final BiPredicate<Optional<Job>, StandardSync> scheduleJobPredicate,
                final SyncJobFactory jobFactory) {
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
@@ -94,21 +93,12 @@ public class JobScheduler implements Runnable {
 
     for (StandardSync connection : activeConnections) {
       final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connection.getConnectionId());
-      final StandardSyncSchedule standardSyncSchedule = getStandardSyncSchedule(connection);
 
-      if (scheduleJobPredicate.test(previousJobOptional, standardSyncSchedule)) {
+      if (scheduleJobPredicate.test(previousJobOptional, connection)) {
         jobFactory.create(connection.getConnectionId());
       }
     }
     LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduler: {}", activeConnections.size(), jobsScheduled.get());
-  }
-
-  private StandardSyncSchedule getStandardSyncSchedule(StandardSync connection) {
-    try {
-      return configRepository.getStandardSyncSchedule(connection.getConnectionId());
-    } catch (JsonValidationException | IOException | ConfigNotFoundException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
   }
 
   private List<StandardSync> getAllActiveConnections() {
