@@ -22,10 +22,11 @@
 # SOFTWARE.
 #
 
+import pendulum
+import requests
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -73,6 +74,33 @@ class SendgridStreamOffsetPagination(SendgridStream):
             return
         self.offset += self.limit
         return {"offset": self.offset}
+
+
+class SendgridStreamIncremental(SendgridStream):
+    pass
+
+
+class SendgridStreamIncrementalMixin(HttpStream):
+    cursor_field = "created"
+
+    def __init__(self, start_time, **kwargs):
+        super().__init__(**kwargs)
+        self._start_time = start_time
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
+
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state)
+        params.update({"start_time": self._start_time, "end_time": pendulum.now().int_timestamp})
+        return params
 
 
 class SendgridStreamMetadataPagination(SendgridStream):
@@ -166,7 +194,7 @@ class Templates(SendgridStreamMetadataPagination):
         return "templates"
 
 
-class GlobalSuppressions(SendgridStreamOffsetPagination):
+class GlobalSuppressions(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     def path(self, **kwargs) -> str:
         return "suppression/unsubscribes"
 
@@ -181,21 +209,21 @@ class SuppressionGroupMembers(SendgridStreamOffsetPagination):
         return "asm/suppressions"
 
 
-class Blocks(SendgridStreamOffsetPagination):
+class Blocks(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     def path(self, **kwargs) -> str:
         return "suppression/blocks"
 
 
-class Bounces(SendgridStream):
+class Bounces(SendgridStream, SendgridStreamIncrementalMixin):
     def path(self, **kwargs) -> str:
         return "suppression/bounces"
 
 
-class InvalidEmails(SendgridStreamOffsetPagination):
+class InvalidEmails(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     def path(self, **kwargs) -> str:
         return "suppression/invalid_emails"
 
 
-class SpamReports(SendgridStreamOffsetPagination):
+class SpamReports(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
     def path(self, **kwargs) -> str:
         return "suppression/spam_reports"

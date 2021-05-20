@@ -67,13 +67,13 @@ class SourceSendgrid(AbstractSource):
             StatsAutomations(authenticator=authenticator),
             Segments(authenticator=authenticator),
             Templates(authenticator=authenticator),
-            GlobalSuppressions(authenticator=authenticator),
+            GlobalSuppressions(authenticator=authenticator, start_time=config["start_time"]),
             SuppressionGroups(authenticator=authenticator),
             SuppressionGroupMembers(authenticator=authenticator),
-            Blocks(authenticator=authenticator),
-            Bounces(authenticator=authenticator),
-            InvalidEmails(authenticator=authenticator),
-            SpamReports(authenticator=authenticator),
+            Blocks(authenticator=authenticator, start_time=config["start_time"]),
+            Bounces(authenticator=authenticator, start_time=config["start_time"]),
+            InvalidEmails(authenticator=authenticator, start_time=config["start_time"]),
+            SpamReports(authenticator=authenticator, start_time=config["start_time"]),
         ]
 
         return streams
