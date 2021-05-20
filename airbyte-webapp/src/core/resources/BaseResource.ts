@@ -43,8 +43,11 @@ export default abstract class BaseResource extends Resource {
     if (response.status >= 200 && response.status < 300) {
       return response.status === 204 ? {} : await response.json();
     } else {
+      const result = await response.json();
+
       const e = new NetworkError(response);
       e.status = response.status;
+      e.message = result.message;
       throw e;
     }
   }
