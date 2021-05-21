@@ -245,8 +245,8 @@ As an example from the hubspot source, we could have the following tables with n
 
 As mentioned in the overview:
 
-- Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`
-- If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`
+- Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`.
+- If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`.
 - In certain pathological cases, basic normalization is required to generate large models with many columns and multiple intermediate transformation steps for a stream. This may break down the "ephemeral" materialization strategy and require the use of additional intermediate views or tables instead. As a result, you may notice additional temporary tables being generated in the destination to handle these checkpoints.
 
 Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. To do so, you can follow the following tutorial

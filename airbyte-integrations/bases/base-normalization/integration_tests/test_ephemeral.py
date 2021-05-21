@@ -25,6 +25,7 @@
 import json
 import os
 import pathlib
+import re
 import shutil
 import tempfile
 from typing import Any, Dict
@@ -59,43 +60,45 @@ def setup_test_path(request):
     os.chdir(request.config.invocation_dir)
 
 
-@pytest.mark.parametrize("column_count", [480, 490, 1000])
-@pytest.mark.parametrize(
-    "integration_type",
-    [
-        "Postgres",
-    ],
-)
-# Databases are ran in local containers, we can test more parameters as it's faster
-def test_databases(integration_type: str, column_count: int, setup_test_path):
+@pytest.mark.parametrize("column_count", [1500])
+@pytest.mark.parametrize("integration_type", list(DestinationType))
+def test_destination_supported_limits(integration_type: DestinationType, column_count: int, setup_test_path):
     run_test(integration_type, column_count)
 
 
-@pytest.mark.parametrize("column_count", [1000])
 @pytest.mark.parametrize(
-    "integration_type",
+    "integration_type, column_count, expected_exception_message",
     [
-        "BigQuery",
-        "Snowflake",
-        "Redshift",
+        ("Postgres", 1665, "target lists can have at most 1664 entries"),
+        (
+            "BigQuery",
+            2500,
+            "The view is too large.",
+        ),
+        (
+            "Snowflake",
+            2000,
+            "Operation failed because soft limit on objects of type 'Column' per table was exceeded.",
+        ),
+        ("Redshift", 1665, "target lists can have at most 1664 entries"),
     ],
 )
-def test_warehouses(integration_type: str, column_count: int, setup_test_path):
-    run_test(integration_type, column_count)
+def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
+    run_test(DestinationType.from_string(integration_type), column_count, expected_exception_message)
 
 
 def test_empty_streams(setup_test_path):
     with pytest.raises(EOFError):
-        run_test("postgres", 0)
+        run_test(DestinationType.POSTGRES, 0)
 
 
 def test_stream_with_1_airbyte_column(setup_test_path):
-    run_test("postgres", 1)
+    run_test(DestinationType.POSTGRES, 1)
 
 
-def run_test(integration_type: str, column_count: int):
+def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
     print("Testing ephemeral")
-    destination_type = DestinationType.from_string(integration_type)
+    integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
@@ -103,7 +106,20 @@ def run_test(integration_type: str, column_count: int):
     generate_dbt_models(destination_type, test_root_dir, column_count)
     # Use destination connector to create empty _airbyte_raw_* tables to use as input for the test
     assert setup_input_raw_data(integration_type, test_root_dir, destination_config)
-    dbt_test_utils.dbt_run(test_root_dir)
+    if expected_exception_message:
+        with pytest.raises(AssertionError):
+            dbt_test_utils.dbt_run(test_root_dir)
+        assert search_logs_for_pattern(test_root_dir + "/dbt_output.log", expected_exception_message)
+    else:
+        dbt_test_utils.dbt_run(test_root_dir)
+
+
+def search_logs_for_pattern(log_file: str, pattern: str):
+    with open(log_file, "r") as file:
+        for line in file:
+            if re.search(pattern, line):
+                return True
+    return False
 
 
 def setup_test_dir(integration_type: str) -> str:

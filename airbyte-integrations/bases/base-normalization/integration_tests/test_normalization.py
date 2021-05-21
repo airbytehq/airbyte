@@ -74,18 +74,10 @@ def setup_test_path(request):
         ]
     ),
 )
-@pytest.mark.parametrize(
-    "integration_type",
-    [
-        "Postgres",
-        "BigQuery",
-        "Snowflake",
-        "Redshift",
-    ],
-)
-def test_normalization(integration_type: str, test_resource_name: str, setup_test_path):
+@pytest.mark.parametrize("integration_type", list(DestinationType))
+def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     print("Testing normalization")
-    destination_type = DestinationType.from_string(integration_type)
+    integration_type = destination_type.value
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
     test_root_dir = setup_test_dir(integration_type, test_resource_name)
     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
