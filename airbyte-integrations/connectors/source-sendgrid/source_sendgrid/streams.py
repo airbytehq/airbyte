@@ -76,10 +76,6 @@ class SendgridStreamOffsetPagination(SendgridStream):
         return {"offset": self.offset}
 
 
-class SendgridStreamIncremental(SendgridStream):
-    pass
-
-
 class SendgridStreamIncrementalMixin(HttpStream):
     cursor_field = "created"
 
