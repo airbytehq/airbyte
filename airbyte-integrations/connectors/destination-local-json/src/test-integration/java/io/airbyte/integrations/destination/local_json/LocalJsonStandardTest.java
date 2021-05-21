@@ -31,14 +31,14 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.TestDestination;
+import io.airbyte.integrations.standardtest.destination.DestinationStandardTest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class LocalJsonDestinationIntegrationTest extends TestDestination {
+public class LocalJsonStandardTest extends DestinationStandardTest {
 
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
 

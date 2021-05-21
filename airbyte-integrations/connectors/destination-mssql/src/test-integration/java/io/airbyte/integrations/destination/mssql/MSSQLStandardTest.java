@@ -32,7 +32,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.TestDestination;
+import io.airbyte.integrations.standardtest.destination.DestinationStandardTest;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public class MSSQLIntegrationTest extends TestDestination {
+public class MSSQLStandardTest extends DestinationStandardTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 

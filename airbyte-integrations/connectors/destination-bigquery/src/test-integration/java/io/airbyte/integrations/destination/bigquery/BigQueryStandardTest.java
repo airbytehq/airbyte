@@ -45,7 +45,7 @@ import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.TestDestination;
+import io.airbyte.integrations.standardtest.destination.DestinationStandardTest;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,7 +60,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryStandardTest extends TestDestination {
+public class BigQueryStandardTest extends DestinationStandardTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStandardTest.class);
 

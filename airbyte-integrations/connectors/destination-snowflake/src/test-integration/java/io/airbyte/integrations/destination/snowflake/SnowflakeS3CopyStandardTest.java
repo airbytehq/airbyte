@@ -30,7 +30,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.nio.file.Path;
 
-public class SnowflakeS3CopyIntegrationTest extends SnowflakeInsertIntegrationTest {
+public class SnowflakeS3CopyStandardTest extends SnowflakeInsertStandardTest {
 
   @Override
   public JsonNode getStaticConfig() {

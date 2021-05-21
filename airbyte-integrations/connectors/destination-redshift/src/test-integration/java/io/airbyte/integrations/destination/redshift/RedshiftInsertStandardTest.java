@@ -22,22 +22,31 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.nio.file.Path;
 
-public class SnowflakeGcsCopyIntegrationTest extends SnowflakeInsertIntegrationTest {
+/**
+ * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
+ * contain S3 credentials by default, we remove these credentials.
+ */
+public class RedshiftInsertStandardTest extends RedshiftCopyStandardTest {
 
-  @Override
   public JsonNode getStaticConfig() {
-    final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_gcs_config.json")));
-    Preconditions.checkArgument(SnowflakeDestination.isGcsCopy(copyConfig));
-    Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(copyConfig));
-    return copyConfig;
+    return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));
+  }
+
+  public static JsonNode purge(JsonNode config) {
+    var original = (ObjectNode) Jsons.clone(config);
+    original.remove("s3_bucket_name");
+    original.remove("s3_bucket_region");
+    original.remove("access_key_id");
+    original.remove("secret_access_key");
+    return original;
   }
 
 }
