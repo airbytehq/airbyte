@@ -8,6 +8,7 @@ import config from "../../config";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
 import useWorkspace from "../../components/hooks/services/useWorkspaceHook";
 import styled from "styled-components";
+import HeadTitle from "components/HeadTitle";
 
 const Title = styled(H1)`
   margin-bottom: 47px;
@@ -39,6 +40,7 @@ const PreferencesPage: React.FC = () => {
 
   return (
     <PageViewContainer>
+      <HeadTitle titleId="preferences.headTitle" />
       <Title center>
         <FormattedMessage id={"preferences.title"} />
       </Title>

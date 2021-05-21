@@ -115,12 +115,6 @@ const MainViewRoutes = () => {
           <Route path={Routes.Settings}>
             <SettingsPage />
           </Route>
-          <Route path={Routes.Onboarding}>
-            <OnboardingPage />
-          </Route>
-          <Route path={Routes.Preferences}>
-            <PreferencesPage />
-          </Route>
           <Route exact path={Routes.Root}>
             <SourcesPage />
           </Route>

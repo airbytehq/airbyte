@@ -22,6 +22,7 @@ import Link from "components/Link";
 import Version from "components/Version";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div<{ big?: boolean }>`
   width: 100%;
@@ -221,6 +222,7 @@ const OnboardingPage: React.FC = () => {
 
   return (
     <Content big={currentStep === StepsTypes.SET_UP_CONNECTION}>
+      <HeadTitle titleId="onboarding.headTitle" />
       <Main>
         <Img src="/welcome.svg" height={132} />
         <MainTitle center>
