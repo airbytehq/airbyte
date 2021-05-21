@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.e2e_test.E2ETestDestination'
+    mainClass = 'io.airbyte.integrations.destination.e2e_test.TestingDestinations'
 }
 
 dependencies {

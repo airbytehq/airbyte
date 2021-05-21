@@ -41,9 +41,9 @@ import org.slf4j.LoggerFactory;
 /**
  * This source is designed to be a switch statement for our suite of highly-specific test sourcess.
  */
-public class E2ETestSource extends BaseConnector implements Source {
+public class TestingSources extends BaseConnector implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(E2ETestSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestingSources.class);
 
   private final Map<TestDestinationType, Source> sourceMap;
 
@@ -52,14 +52,14 @@ public class E2ETestSource extends BaseConnector implements Source {
     EXCEPTION_AFTER_N
   }
 
-  public E2ETestSource() {
+  public TestingSources() {
     this(ImmutableMap.<TestDestinationType, Source>builder()
         .put(TestDestinationType.INFINITE_FEED, new InfiniteFeedSource())
         .put(TestDestinationType.EXCEPTION_AFTER_N, new ExceptionAfterNSource())
         .build());
   }
 
-  public E2ETestSource(Map<TestDestinationType, Source> sourceMap) {
+  public TestingSources(Map<TestDestinationType, Source> sourceMap) {
     this.sourceMap = sourceMap;
   }
 
@@ -86,10 +86,10 @@ public class E2ETestSource extends BaseConnector implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new E2ETestSource();
-    LOGGER.info("starting source: {}", E2ETestSource.class);
+    final Source source = new TestingSources();
+    LOGGER.info("starting source: {}", TestingSources.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", E2ETestSource.class);
+    LOGGER.info("completed source: {}", TestingSources.class);
   }
 
 }

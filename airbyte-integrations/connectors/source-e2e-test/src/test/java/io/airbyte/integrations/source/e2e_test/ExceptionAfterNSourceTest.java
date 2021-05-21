@@ -25,6 +25,7 @@
 package io.airbyte.integrations.source.e2e_test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.Test;
 
 class ExceptionAfterNSourceTest {
 
+  @SuppressWarnings("Convert2MethodRef")
   @Test
   void test() {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(ExceptionAfterNSource.CATALOG);
@@ -62,6 +64,7 @@ class ExceptionAfterNSourceTest {
     assertEquals(getRecordMessage(9L).getRecord().getData(), read.next().getRecord().getData());
     assertEquals(getRecordMessage(10L).getRecord().getData(), read.next().getRecord().getData());
     assertEquals(getStateMessage(10L).getState().getData(), read.next().getState().getData());
+    assertThrows(IllegalStateException.class, () -> read.next());
   }
 
   private static AirbyteMessage getRecordMessage(long i) {

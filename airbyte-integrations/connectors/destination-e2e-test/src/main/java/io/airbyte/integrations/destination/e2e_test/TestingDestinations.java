@@ -38,9 +38,9 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class E2ETestDestination extends BaseConnector implements Destination {
+public class TestingDestinations extends BaseConnector implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(E2ETestDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestingDestinations.class);
 
   private final Map<TestDestinationType, Destination> destinationMap;
 
@@ -49,14 +49,14 @@ public class E2ETestDestination extends BaseConnector implements Destination {
     THROTTLED
   }
 
-  public E2ETestDestination() {
+  public TestingDestinations() {
     this(ImmutableMap.<TestDestinationType, Destination>builder()
         .put(TestDestinationType.LOGGING, new LoggingDestination())
         .put(TestDestinationType.THROTTLED, new ThrottledDestination())
         .build());
   }
 
-  public E2ETestDestination(Map<TestDestinationType, Destination> destinationMap) {
+  public TestingDestinations(Map<TestDestinationType, Destination> destinationMap) {
     this.destinationMap = destinationMap;
   }
 
@@ -78,10 +78,10 @@ public class E2ETestDestination extends BaseConnector implements Destination {
   }
 
   public static void main(String[] args) throws Exception {
-    final Destination destination = new E2ETestDestination();
-    LOGGER.info("starting destination: {}", E2ETestDestination.class);
+    final Destination destination = new TestingDestinations();
+    LOGGER.info("starting destination: {}", TestingDestinations.class);
     new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", E2ETestDestination.class);
+    LOGGER.info("completed destination: {}", TestingDestinations.class);
   }
 
 }
