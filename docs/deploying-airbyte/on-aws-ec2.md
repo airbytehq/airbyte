@@ -47,7 +47,7 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 ## Install environment
 
 {% hint style="info" %}
-This part assumes that you have access to a terminal on your workstation
+Note: The following commands will be entered either on your local terminal or in your ssh session on the instance terminal. The comments above each command block will indicate where to enter the commands.
 {% endhint %}
 
 * Connect to your instance
