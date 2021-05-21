@@ -13,9 +13,9 @@ spec:
           mountPath: /pipes
   containers:
     - name: destination
-      image: airbyte/np-dest:dev
+      image: IMAGE
       imagePullPolicy: Always
-      command: ["sh", "-c", "cat /pipes/stdin | /tmp/run.sh > /pipes/stdout"]
+      command: ["sh", "-c", "cat /pipes/stdin | ENTRYPOINT > /pipes/stdout"]
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes
@@ -37,9 +37,6 @@ spec:
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes
-    - name: stay-awake
-      image: alpine/socat:1.7.4.1-r1
-      command: ["sh", "-c", "sleep 10000000"]
   volumes:
     - name: airbyte-pipes
       emptyDir: {}
