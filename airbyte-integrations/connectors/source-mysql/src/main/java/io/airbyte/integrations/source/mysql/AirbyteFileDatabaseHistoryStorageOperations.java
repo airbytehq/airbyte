@@ -46,8 +46,8 @@ import org.apache.commons.io.FileUtils;
 /**
  * The purpose of this class is : to , 1. Read the contents of the file {@link #path} at the end of
  * the sync so that it can be saved in state for future syncs. Check {@link #read()} 2. Write the
- * saved content back to the file {@link #path} at the beginning of the sync so that debezium cant
- * function smoothly. Check {@link #persist(CdcState)} To under more about fine please refer
+ * saved content back to the file {@link #path} at the beginning of the sync so that debezium can
+ * function smoothly. Check {@link #persist(CdcState)} To understand more about file, please refer
  * {@link FilteredFileDatabaseHistory}
  */
 public class AirbyteFileDatabaseHistoryStorageOperations {
