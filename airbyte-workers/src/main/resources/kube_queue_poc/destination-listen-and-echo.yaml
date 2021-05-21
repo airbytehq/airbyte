@@ -6,12 +6,12 @@ metadata:
 spec:
   restartPolicy: Never
   containers:
-  - name: destination-listen-and-echo
-    image: airbyte/destination-listen-and-echo:dev
-    ports:
-      - containerPort: 9000
-    env:
-      - name: DEST_PORT
-        value: '9000'
-      - name: DEST_IP
-        value: '0.0.0.0'
+    - name: destination-listen-and-echo
+      image: airbyte/destination-listen-and-echo:dev
+      ports:
+        - containerPort: 9000
+      env:
+        - name: DEST_PORT
+          value: "9000"
+        - name: DEST_IP
+          value: "0.0.0.0"

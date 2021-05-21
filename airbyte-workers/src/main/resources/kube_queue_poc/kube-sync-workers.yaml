@@ -5,6 +5,6 @@ metadata:
 spec:
   restartPolicy: Never
   containers:
-  - name: kube-sync-worker-test
-    image: airbyte/kube-sync-worker-test:dev
-    imagePullPolicy: Always
+    - name: kube-sync-worker-test
+      image: airbyte/kube-sync-worker-test:dev
+      imagePullPolicy: Always

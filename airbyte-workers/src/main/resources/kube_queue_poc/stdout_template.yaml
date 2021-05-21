@@ -7,7 +7,7 @@ spec:
   initContainers:
     - name: init
       image: busybox:1.28
-      command: [ 'sh', '-c', "mkfifo /pipes/stdin && mkfifo /pipes/stdout" ]
+      command: ["sh", "-c", "mkfifo /pipes/stdin && mkfifo /pipes/stdout"]
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes
@@ -15,7 +15,7 @@ spec:
     - name: worker
       image: IMAGE
       workingDir: WORKDIR
-      command: [ 'sh', '-c', "COMMAND > /pipes/stdout" ]
+      command: ["sh", "-c", "COMMAND > /pipes/stdout"]
       args: ARGS
       volumeMounts:
         #        - name: airbyte-volume-workspace
@@ -24,7 +24,11 @@ spec:
           mountPath: /pipes
     - name: socat
       image: alpine/socat:1.7.4.1-r1
-      command: [ 'sh', '-c', "cat /pipes/stdout | socat -d -d -d - TCP:host.docker.internal:9000" ] # todo: pass in the sync worker ip
+      command: [
+          "sh",
+          "-c",
+          "cat /pipes/stdout | socat -d -d -d - TCP:host.docker.internal:9000",
+        ] # todo: pass in the sync worker ip
       env:
         - name: POD_IP
           valueFrom:

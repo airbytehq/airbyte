@@ -7,7 +7,7 @@ spec:
   initContainers:
     - name: init
       image: busybox:1.28
-      command: [ 'sh', '-c', "mkfifo /pipes/stdin && mkfifo /pipes/stdout" ]
+      command: ["sh", "-c", "mkfifo /pipes/stdin && mkfifo /pipes/stdout"]
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes
@@ -15,16 +15,16 @@ spec:
     - name: worker
       image: IMAGE
       workingDir: WORKDIR
-      command: [ 'sh', '-c', "cat /pipes/stdin | COMMAND > /pipes/stdout" ]
+      command: ["sh", "-c", "cat /pipes/stdin | COMMAND > /pipes/stdout"]
       args: ARGS
       volumeMounts:
-#        - name: airbyte-volume-workspace
-#          mountPath: /workspace
+        #        - name: airbyte-volume-workspace
+        #          mountPath: /workspace
         - name: airbyte-pipes
           mountPath: /pipes
     - name: socat
       image: alpine/socat:1.7.4.1-r1
-      command: [ 'sh', '-c', "socat -d -d -d - TCP-L:9001 > /pipes/stdin" ]
+      command: ["sh", "-c", "socat -d -d -d - TCP-L:9001 > /pipes/stdin"]
       env:
         - name: POD_IP
           valueFrom:
@@ -36,8 +36,8 @@ spec:
         - name: airbyte-pipes
           mountPath: /pipes
   volumes:
-#    - name: airbyte-volume-workspace
-#      persistentVolumeClaim:
-#        claimName: airbyte-volume-workspace
+    #    - name: airbyte-volume-workspace
+    #      persistentVolumeClaim:
+    #        claimName: airbyte-volume-workspace
     - name: airbyte-pipes
       emptyDir: {}
