@@ -2,7 +2,7 @@
 
 ## What is log-based incremental replication?
 
-Many common databases support writing all record changes to log files for the purpose of replication. A consumer of these log files \(such as Airbyte\) can read these logs while keeping track of the current position within the logs in order to read all record changes coming from `DELETE`/`INSERT`/`UPDATE` statements.
+Many common databases support writing all record changes to log files for the purpose of replication. A consumer of these log files (such as Airbyte) can read these logs while keeping track of the current position within the logs in order to read all record changes coming from `DELETE`/`INSERT`/`UPDATE` statements.
 
 ## Syncing
 
@@ -29,7 +29,7 @@ We add some metadata columns for CDC sources:
 
 ## Current Support
 
-* [Postgres](../integrations/sources/postgres.md)
+* [Postgres](../integrations/sources/postgres.md) (For a quick video overview of CDC on Postgres, click [here](https://www.youtube.com/watch?v=NMODvLgZvuE&ab_channel=Airbyte))
 
 ## Coming Soon
 
