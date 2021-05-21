@@ -27,7 +27,9 @@ package io.airbyte.server.version_mismatch;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.server.CorsFilter;
 import java.io.IOException;
+import java.util.Map;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -80,6 +82,10 @@ public class VersionMismatchServer {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
       var outputMap = ImmutableMap.of("error", ERROR_MESSAGE);
+
+      for (Map.Entry<String, String> entry : CorsFilter.MAP.entrySet()) {
+        response.setHeader(entry.getKey(), entry.getValue());
+      }
 
       response.setContentType("application/json");
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
