@@ -74,7 +74,7 @@ def setup_test_path(request):
         ]
     ),
 )
-@pytest.mark.parametrize("integration_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", list(DestinationType))
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     print("Testing normalization")
     integration_type = destination_type.value
@@ -114,7 +114,7 @@ def setup_test_dir(integration_type: str, test_resource_name: str) -> str:
     test_root_dir = f"{test_root_dir}/{test_resource_name}"
     print(f"Setting up test folder {test_root_dir}")
     shutil.copytree("../dbt-project-template", test_root_dir)
-    if integration_type != "Redshift":
+    if integration_type.lower() != "redshift":
         # Prefer 'view' to 'ephemeral' for tests so it's easier to debug with dbt
         dbt_test_utils.copy_replace(
             "../dbt-project-template/dbt_project.yml",
