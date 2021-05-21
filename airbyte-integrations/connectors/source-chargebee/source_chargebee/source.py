@@ -7,6 +7,7 @@ import requests
 # Chargebee
 import chargebee
 from chargebee.main import ChargeBee
+from chargebee.list_result import ListResult  # stores next_offset
 from chargebee.environment import Environment
 from chargebee.models import Subscription, Customer, Invoice
 from chargebee.api_error import (
@@ -28,10 +29,19 @@ class ChargebeeStream(Stream):
     # No support for incremetal sync across Chargebee endpoints
     supports_incremental = True
     primary_key = "id"
+    default_cursor_field = "updated_at"
+    # Referring to Chargebee's instructions to set params
+    # https://apidocs.chargebee.com/docs/api/#pagination_and_filtering
+    # Limit at 100
+    # Sort ascending by updated_at
+    params = {
+        "limit": 100,
+        "sort_by[asc]": default_cursor_field,
+    }
 
-    def __init__(self, limit):
-        self.limit = limit
-        super().__init__()    
+    def __init__(self):
+        self.next_offset = None
+        super().__init__()
 
     def read_records(
         self,
@@ -40,50 +50,84 @@ class ChargebeeStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        """
+        Override airbyte_cdk Stream's read_records method
+        """
+        # Add offset to params if found
+        # Reference for Chargebee's pagination strategy below:
+        # https://apidocs.chargebee.com/docs/api/#pagination_and_filtering
+        pagination_completed = False
+        if stream_state:
+            self.params.update(stream_state)
+        # Loop until pagination is completed
+        while not pagination_completed:
+            # Request the ListResult object from Chargebee
+            list_result = self.api.list(self.params)
+            # Read message from results
+            for message in list_result:
+                yield message._response[self.name]
+            # Get next page token
+            self.next_offset = list_result.next_offset
+            if self.next_offset:
+                self.params.update({"offset": self.next_offset})
+            else:
+                pagination_completed = True
+        
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
-        result = self.api.list({
-                "limit": self.limit,
-        })
-        for message in result:
-            yield message._response
+    def get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ):
+        """
+        Override airbyte_cdk Stream's get_updated_state method
+        to get the latest Chargebee stream state
+        """
+        # Init the current_stream_state
+        current_stream_state = current_stream_state or {}
 
-    @abstractmethod
-    def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, 
-        so any incremental stream must extend this class
-        and define a cursor field.
-        """
-        pass
+        # Get current timestamp
+        # so Stream will sync all records
+        # that have been updated before now
+        now = pendulum.now().int_timestamp
+        current_stream_state.update(
+            {
+                "update_at[before]": now,
+            }
+        )
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value 
-        in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        return {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field), 
-                current_stream_state.get(self.cursor_field, 0))
-        }
+        # Get the updated_at field from the latest record
+        # using Chargebee's Model class
+        # so Stream will sync all records
+        # that have been updated since then
+        print(latest_record)
+        latest_updated_at = latest_record.get('updated_at')
+        if latest_updated_at:
+            current_stream_state.update(
+                {
+                    "update_at[after]": latest_updated_at,
+                }
+            )
+
+        return current_stream_state
 
 
 class SubscriptionStream(ChargebeeStream):
-    name = "Subscription"
-    cursor_field = "updated_at"
+    name = "subscription"
     api = Subscription
 
 
 class CustomerStream(ChargebeeStream):
-    name = "Customer"
-    cursor_field = "updated_at"
+    name = "customer"
     api = Customer
 
+
 class InvoiceStream(ChargebeeStream):
-    name = "Invoice"
-    cursor_field = "updated_at"
+    name = "invoice"
     api = Invoice
+
 
 class SourceChargebee(AbstractSource):
     # Class variables
@@ -92,7 +136,7 @@ class SourceChargebee(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         # Configure the Chargebee Python SDK
         chargebee.configure(
-            api_key=config['site_api_token'],
+            api_key=config["site_api_token"],
             site=config["site"],
         )
         try:
@@ -110,19 +154,19 @@ class SourceChargebee(AbstractSource):
             # which are already handled by
             # Chargebee Python wrapper
             # https://github.com/chargebee/chargebee-python/blob/5346d833781de78a9eedbf9d12502f52c617c2d2/chargebee/http_request.py
-            logger.info(f"CHECK CONNECTION: Failed") # Debugging
+            logger.info(f"CHECK CONNECTION: Failed")  # Debugging
             return False, str(err)
 
     def streams(self, config) -> List[Stream]:
         # Configure the Chargebee Python SDK
         chargebee.configure(
-            api_key=config['site_api_token'],
+            api_key=config["site_api_token"],
             site=config["site"],
         )
         # Add the streams
         streams = [
-            SubscriptionStream(limit=self.LIMIT),
-            CustomerStream(limit=self.LIMIT),
-            InvoiceStream(limit=self.LIMIT),
+            SubscriptionStream(),
+            CustomerStream(),
+            InvoiceStream(),
         ]
         return streams
