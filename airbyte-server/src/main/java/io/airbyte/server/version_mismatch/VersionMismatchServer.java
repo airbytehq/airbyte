@@ -102,7 +102,7 @@ public class VersionMismatchServer {
       response.getWriter().println(Jsons.serialize(outputMap));
     }
 
-    private void addCorsHeaders(HttpServletResponse response){
+    private void addCorsHeaders(HttpServletResponse response) {
       for (Map.Entry<String, String> entry : CorsFilter.MAP.entrySet()) {
         response.setHeader(entry.getKey(), entry.getValue());
       }
