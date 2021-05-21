@@ -26,6 +26,7 @@ package io.airbyte.commons.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,13 @@ class MoreListsTest {
     ints.add(2);
     ints.add(null);
     assertEquals(Optional.empty(), MoreLists.last(ints));
+  }
+
+  @Test
+  void testReverse() {
+    final ArrayList<Integer> originalList = Lists.newArrayList(1, 2, 3);
+    assertEquals(List.of(3, 2, 1), MoreLists.reverse(originalList));
+    assertEquals(List.of(1, 2, 3), originalList);
   }
 
 }
