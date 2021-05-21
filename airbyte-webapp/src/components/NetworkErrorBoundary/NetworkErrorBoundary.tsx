@@ -15,6 +15,7 @@ class NetworkErrorBoundary extends React.Component<
     message: string;
     status?: number;
   }): { unReachServer: boolean } {
+    console.log(error);
     // Update state so the next render will show the fallback UI.
     return { unReachServer: error.message === "Failed to fetch" };
   }
