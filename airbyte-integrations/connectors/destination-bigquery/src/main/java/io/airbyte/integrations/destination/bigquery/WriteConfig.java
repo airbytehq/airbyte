@@ -22,16 +22,40 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.buffered_stream_consumer;
+package io.airbyte.integrations.destination.bigquery;
 
-import io.airbyte.commons.functional.CheckedBiConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.util.List;
+import com.google.cloud.bigquery.JobInfo.WriteDisposition;
+import com.google.cloud.bigquery.TableDataWriteChannel;
+import com.google.cloud.bigquery.TableId;
 
-public interface RecordWriter extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>, Exception> {
+class WriteConfig {
 
-  @Override
-  void accept(AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) throws Exception;
+  private final TableId table;
+  private final TableId tmpTable;
+  private final TableDataWriteChannel writer;
+  private final WriteDisposition syncMode;
+
+  WriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer, WriteDisposition syncMode) {
+    this.table = table;
+    this.tmpTable = tmpTable;
+    this.writer = writer;
+    this.syncMode = syncMode;
+  }
+
+  public TableId getTable() {
+    return table;
+  }
+
+  public TableId getTmpTable() {
+    return tmpTable;
+  }
+
+  public TableDataWriteChannel getWriter() {
+    return writer;
+  }
+
+  public WriteDisposition getSyncMode() {
+    return syncMode;
+  }
 
 }
