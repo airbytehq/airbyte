@@ -158,7 +158,7 @@ public class KubeProcessBuilderFactoryPOC {
         LOGGER.info("Accepted connection!");
         var input = socket.getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        while(!reader.ready())
+//        while(!reader.ready())
         while (true) {
           final var line = reader.readLine();
           if (line == null) break;
@@ -198,8 +198,9 @@ public class KubeProcessBuilderFactoryPOC {
     LOGGER.info("Loaded spec");
 
     // TODO: 1) The container image needs to line up with the actual spec. 2) Why isn't this working?
-    //var containers = destPodDef.getSpec().getContainers();
-    //getCommandFromImage(containers.get(0).getImage());
+//    var containers = destPodDef.getSpec().getContainers();
+//    System.out.println(containers.get(0));
+//    getCommandFromImage(containers.get(0).getImage());
 
     // Start a listening server for the Destination to connect to.
     startListeningOnPort(9001);
@@ -211,7 +212,11 @@ public class KubeProcessBuilderFactoryPOC {
     // Send something!
     var socketToDestStdIo = new Socket(destPodIp, PORT);
     var toDest = new PrintWriter(socketToDestStdIo.getOutputStream(), true);
-    toDest.print("Hello!");
+    toDest.println("Hello!");
+    toDest.println("a!");
+    toDest.println("b!");
+    toDest.println("c!");
+    toDest.println("d!");
     toDest.close();
 
     KUBE_CLIENT.pods().delete(destPodDef);

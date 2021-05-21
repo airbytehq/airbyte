@@ -13,15 +13,15 @@ spec:
           mountPath: /pipes
   containers:
     - name: destination
-      image: airbyte/destination-listen-and-echo:dev
+      image: airbyte/np-dest:dev
       imagePullPolicy: Always
-      command: ["sh", "-c", "cat /pipes/stdin | ./listen-and-echo.sh > /pipes/stdout"]
+      command: ["sh", "-c", "cat /pipes/stdin | /tmp/run.sh > /pipes/stdout"]
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes
     - name: socat-port-to-destination-in
       image: alpine/socat:1.7.4.1-r1
-      command: ["sh", "-c", "socat -d -d -d - TCP-L:9001 > /pipes/stdin"]
+      command: ["sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > /pipes/stdin"]
       ports:
         - containerPort: 9001
       volumeMounts:
@@ -37,6 +37,9 @@ spec:
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes
+    - name: stay-awake
+      image: alpine/socat:1.7.4.1-r1
+      command: ["sh", "-c", "sleep 10000000"]
   volumes:
     - name: airbyte-pipes
       emptyDir: {}
