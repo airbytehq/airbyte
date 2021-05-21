@@ -1,75 +1,129 @@
-# Introduction
+# Mailchimp Source
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI) ![License](https://img.shields.io/github/license/airbytehq/airbyte)
+This is the repository for the Mailchimp source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/mailchimp).
 
-![](docs/.gitbook/assets/airbyte_horizontal_color_white-background.svg)
+## Local development
 
-**Data integration made simple, secure and extensible.**  
-The new open-source standard to sync data from applications, APIs & databases to warehouses, lakes & other destinations.
+### Prerequisites
+**To iterate on this connector, make sure to complete this prerequisites section.**
 
-[![](docs/.gitbook/assets/deploy-locally.svg)](docs/deploying-airbyte/local-deployment.md) [![](docs/.gitbook/assets/deploy-on-aws.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy-on-gcp.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md)
-
-![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines.png)
-
-Airbyte is on a mission to make data integration pipelines a commodity.
-
-* **Maintenance-free connectors you can use in minutes**. Just authenticate your sources and warehouse, and get connectors that adapt to schema and API changes for you.
-* **Building new connectors made trivial.** We make it very easy to add new connectors that you need, using the language of your choice, by offering scheduling and orchestration. 
-* Designed to **cover the long tail of connectors and needs**. Benefit from the community's battle-tested connectors and adapt them to your specific needs.
-* **Your data stays in your cloud**. Have full control over your data, and the costs of your data transfers. 
-* **No more security compliance process** to go through as Airbyte is self-hosted. 
-* **No more pricing indexed on volume**, as cloud-based solutions offer. 
-
-Here's a list of our [connectors with their health status](docs/integrations/connector-health.md).
-
-## Quick start
-
-```bash
-git clone https://github.com/airbytehq/airbyte.git
-cd airbyte
-docker-compose up
+#### Build & Activate Virtual Environment and install dependencies
+From this connector directory, create a virtual environment:
+```
+python -m venv .venv
 ```
 
-Now visit [http://localhost:8000](http://localhost:8000)
+This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
+development environment of choice. To activate it from the terminal, run:
+```
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
-Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md) showing you how to load data from an API into a file, all on your computer.
+Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
+used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
+If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
+should work as you expect.
 
-## Features
+#### Building via Gradle
+You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
 
-* **Built for extensibility**: Adapt an existing connector to your needs or build a new one with ease.
-* **Optional normalized schemas**: Entirely customizable, start with raw data or from some suggestion of normalized data.
-* **Full-grade scheduler**: Automate your replications with the frequency you need.
-* **Real-time monitoring**: We log all errors in full detail to help you understand.
-* **Incremental updates**: Automated replications are based on incremental updates to reduce your data transfer costs.
-* **Manual full refresh**: Sometimes, you need to re-sync all your data to start again.
-* **Debugging autonomy**: Modify and debug pipelines as you see fit, without waiting.
+To build using Gradle, from the Airbyte repository root, run:
+```
+./gradlew :airbyte-integrations:connectors:source-mailchimp:build
+```
 
-[See more on our website.](https://airbyte.io/features/)
+#### Create credentials
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/mailchimp)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_mailchimp/spec.json` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
+See `sample_files/sample_config.json` for a sample config file.
 
-## Contributing
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source mailchimp test creds`
+and place them into `secrets/config.json`.
 
-We love contributions to Airbyte, big or small.
+### Locally running the connector
+```
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+```
 
-See our [Contributing guide](docs/contributing-to-airbyte/) on how to get started. Not sure where to start? We’ve listed some [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to start with. You can also [book a free, no-pressure pairing session](https://calendly.com/michel-airbyte/contribution-1-1) with one of our core contributors.
+### Locally running the connector docker image
 
-**Note that you are able to create connectors using the language you want, as Airbyte connections run as Docker containers.**
+#### Build
+First, make sure you build the latest Docker image:
+```
+docker build . -t airbyte/source-mailchimp:dev
+```
 
-**Also, we will never ask you to maintain your connector. The goal is that the Airbyte team and the community helps maintain it, let's call it crowdsourced maintenance!**
+You can also build the connector image via Gradle:
+```
+./gradlew :airbyte-integrations:connectors:source-mailchimp:airbyteDocker
+```
+When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
+the Dockerfile.
 
-## Community support
+#### Run
+Then run any of the connector commands as follows:
+```
+docker run --rm airbyte/source-mailchimp:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-mailchimp:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-mailchimp:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-mailchimp:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+```
+## Testing
+   Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+First install test dependencies into your virtual environment:
+```
+pip install .[tests]
+```
+### Unit Tests
+To run unit tests locally, from the connector directory run:
+```
+python -m pytest unit_tests
+```
 
-For general help using Airbyte, please refer to the official Airbyte documentation. For additional help, you can use one of these channels to ask a question:
+### Integration Tests
+There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all source connectors) and custom integration tests (which are specific to this connector).
+#### Custom Integration tests
+Place custom tests inside `integration_tests/` folder, then, from the connector root, run
+```
+python -m pytest integration_tests
+```
+#### Acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](source-acceptance-tests.md) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+To run your integration tests with acceptance tests, from the connector root, run
+```
+python -m pytest integration_tests -p integration_tests.acceptance
+```
+To run your integration tests with docker
 
-* [Slack](https://slack.airbyte.io) \(For live discussion with the Community and Airbyte team\)
-* [GitHub](https://github.com/airbytehq/airbyte) \(Bug reports, Contributions\)
-* [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
-* [Weekly office hours](https://airbyte.io/weekly-office-hours/) \(Live informal 30-minute video call sessions with the Airbyte team\)
+### Using gradle to run tests
+All commands should be run from airbyte project root.
+To run unittest run:
+```
+./gradlew :airbyte-integrations:connectors:source-mailchimp:unitTest
+```
+To run acceptance and custom integration tests run:
+```
+./gradlew :airbyte-integrations:connectors:source-mailchimp:IntegrationTest
+```
 
-## Roadmap
+## Dependency Management
+All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
+We split dependencies between two groups, dependencies that are:
+* required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
+* required for the testing need to go to `TEST_REQUIREMENTS` list
 
-Check out our [roadmap](docs/project-overview/roadmap.md) to get informed on what we are currently working on, and what we have in mind for the next weeks, months and years.
-
-## License
-
-Airbyte is licensed under the MIT license. See the [LICENSE](docs/project-overview/license.md) file for licensing information.
-
+### Publishing a new version of the connector
+You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+1. Make sure your changes are passing unit and integration tests
+1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
+1. Create a Pull Request
+1. Pat yourself on the back for being an awesome contributor
+1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master
