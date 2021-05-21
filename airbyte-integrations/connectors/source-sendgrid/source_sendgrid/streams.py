@@ -79,7 +79,7 @@ class SendgridStreamOffsetPagination(SendgridStream):
 class SendgridStreamIncrementalMixin(HttpStream):
     cursor_field = "created"
 
-    def __init__(self, start_time, **kwargs):
+    def __init__(self, start_time: int, **kwargs):
         super().__init__(**kwargs)
         self._start_time = start_time
 
