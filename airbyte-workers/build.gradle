@@ -7,7 +7,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.workers.process.KubeProcessBuilderFactory'
+    mainClass = 'io.airbyte.workers.process.KubeProcessBuilderFactoryPOC'
 }
 
 configurations {

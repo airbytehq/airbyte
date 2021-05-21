@@ -33,7 +33,9 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -42,7 +44,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KubeProcessBuilderFactoryPOC {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactoryPOC.class);
+
+  private static final KubernetesClient KUBE_CLIENT = new DefaultKubernetesClient();
+  private static final int PORT = 9000;
 
   // todo: this should really be cached
   private static String getCommandFromImage(String imageName) throws IOException {
@@ -87,48 +93,32 @@ public class KubeProcessBuilderFactoryPOC {
     }
   }
 
-  public static void main(String[] args) throws InterruptedException, IOException {
-    // try {
-    // // todo: test this with args that are used by the process
-    // Process process = new KubeProcessBuilderFactory("stdout_template.yaml")
-    // .create(0L, 0, Path.of("/tmp"), "np_source:dev", null)
-    // .start();
-    //
-    // process.getOutputStream().write(100);
-    // process.getInputStream().read();
-    //
-    // // after running this main:
-    // // kubectl port-forward airbyte-worker-0-0-fmave 9000:9000
-    // // socat -d -d -d TCP-LISTEN:9000,bind=127.0.0.1 stdout
-    //
-    // LOGGER.info("waiting...");
-    // int code = process.waitFor();
-    // LOGGER.info("code = " + code);
-    // } catch (Exception e) {
-    // LOGGER.error(e.getMessage());
-    // e.printStackTrace();
-    // }
+  private static void createPodAndWaitTillReady(String imageId) {}
 
-    var PORT = 9000;
-    String IP = null;
-    var destPodName = "destination-listen-and-echo";
-    KubernetesClient client = new DefaultKubernetesClient();
+  private static void saveJaredWork() {
+    try {
+      // todo: test this with args that are used by the process
+      Process process = new KubeProcessBuilderFactory(Path.of("stdout_template.yaml"))
+          .create(0L, 0, Path.of("/tmp"), "np_source:dev", null)
+          .start();
 
-    // Load spec and create the pod.
-    var stream = KubeProcessBuilderFactory.class.getClassLoader().getResourceAsStream("destination-listen-and-echo.yaml");
-    var destPodDef = client.pods().load(stream).get();
-    LOGGER.info("Loaded spec: {}", destPodDef);
+      process.getOutputStream().write(100);
+      process.getInputStream().read();
 
-    var podSet = client.pods().inNamespace("default").list().getItems().stream()
-        .filter(pod -> pod.getMetadata().getName().equals(destPodName)).collect(Collectors.toSet());
-    if (podSet.size() == 0) {
-      LOGGER.info("Pod does not exist");
-      Pod destPod = client.pods().create(destPodDef);
-      LOGGER.info("Created pod: {}, waiting for it to be ready", destPod);
-      client.resource(destPod).waitUntilReady(1, TimeUnit.MINUTES);
-      LOGGER.info("Dest Pod ready");
+      // after running this main:
+      // kubectl port-forward airbyte-worker-0-0-fmave 9000:9000
+      // socat -d -d -d TCP-LISTEN:9000,bind=127.0.0.1 stdout
+
+      LOGGER.info("waiting...");
+      int code = process.waitFor();
+      LOGGER.info("code = " + code);
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage());
+      e.printStackTrace();
     }
+  }
 
+  private static String getPodIP(String podName) {
     // TODO: Why does this not work?
     // LOGGER.info(destPod.getStatus().getPodIP());
     // destPod = client.resource(destPod).get();
@@ -137,28 +127,58 @@ public class KubeProcessBuilderFactoryPOC {
     // IP = destPod.getStatus().getPodIP();
 
     // TODO: Assign labels to pods to narrow the search.
-    PodList pods = client.pods().inNamespace("default").list();
+    PodList pods = KUBE_CLIENT.pods().inNamespace("default").list();
     for (Pod p : pods.getItems()) {
       LOGGER.info(p.getMetadata().getName());
       LOGGER.info(p.getStatus().getPodIP());
       // Filter by pod and retrieve IP.
-      if (p.getMetadata().getName().equals(destPodName)) {
+      if (p.getMetadata().getName().equals(podName)) {
         LOGGER.info("Found IP!");
-        IP = p.getStatus().getPodIP();
-        break;
+        return p.getStatus().getPodIP();
       }
     }
 
+    return null;
+  }
+
+  private static void createIfNotExisting(String podName, Pod def) throws InterruptedException {
+    LOGGER.info("Checking pod: {}", podName);
+    var podSet = KUBE_CLIENT.pods().inNamespace("default").list().getItems().stream()
+        .filter(pod -> pod.getMetadata().getName().equals(podName)).collect(Collectors.toSet());
+    if (podSet.size() == 0) {
+      LOGGER.info("Pod {} does not exist", podName);
+      Pod destPod = KUBE_CLIENT.pods().create(def);
+      LOGGER.info("Created pod: {}, waiting for it to be ready", destPod);
+      KUBE_CLIENT.resource(destPod).waitUntilReady(1, TimeUnit.MINUTES);
+      LOGGER.info("Pod {} ready", podName);
+    }
+  }
+
+  public static void main(String[] args) throws InterruptedException, IOException {
+    String myIp = InetAddress.getLocalHost().getHostAddress();
+    LOGGER.info("Kube sync worker ip: {}", myIp);
+
+    var destPodName = "destination-listen-and-echo";
+
+    // Load spec and create the pod.
+    var stream = KubeProcessBuilderFactoryPOC.class.getClassLoader().getResourceAsStream("kube_queue_poc/destination-listen-and-echo.yaml");
+    var destPodDef = KUBE_CLIENT.pods().load(stream).get();
+    LOGGER.info("Loaded spec: {}", destPodDef);
+
+    createIfNotExisting(destPodName, destPodDef);
+    String destPodIp = getPodIP(destPodName);
+    LOGGER.info("Dest pod ip: {}", destPodIp);
+
     // Send something!
-    var clientSocket = new Socket(IP, PORT);
+    var clientSocket = new Socket(destPodIp, PORT);
     var out = new PrintWriter(clientSocket.getOutputStream(), true);
     out.print("Hello!");
     out.close();
 
-    client.pods().delete(destPodDef);
+    KUBE_CLIENT.pods().delete(destPodDef);
     // TODO: Why does this wait not work?
-    client.resource(destPodDef).waitUntilCondition(pod -> !pod.getStatus().getPhase().equals("Terminating"), 1, TimeUnit.MINUTES);
-    client.close();
+    KUBE_CLIENT.resource(destPodDef).waitUntilCondition(pod -> !pod.getStatus().getPhase().equals("Terminating"), 1, TimeUnit.MINUTES);
+    KUBE_CLIENT.close();
   }
 
 }
