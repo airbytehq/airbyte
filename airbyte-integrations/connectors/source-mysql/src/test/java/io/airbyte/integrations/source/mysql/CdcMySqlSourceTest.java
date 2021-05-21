@@ -61,6 +61,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,7 +70,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,7 +90,7 @@ public class CdcMySqlSourceTest {
   private static final String COL_ID = "id";
   private static final String COL_MAKE_ID = "make_id";
   private static final String COL_MODEL = "model";
-  private static final String dbName = MODELS_SCHEMA;
+  private static final String DB_NAME = MODELS_SCHEMA;
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -117,107 +117,151 @@ public class CdcMySqlSourceTest {
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 15, COL_MAKE_ID, 2, COL_MODEL, "A 220")),
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 16, COL_MAKE_ID, 2, COL_MODEL, "E 350")));
 
-  private static MySQLContainer<?> container;
-
+  private MySQLContainer<?> container;
   private Database database;
   private MySqlSource source;
-
-  @AfterEach
-  public void tearDown() {
-    container.close();
-    container.stop();
-  }
+  private JsonNode config;
 
   @BeforeEach
-  public void setup() throws Exception {
+  public void setup() {
+    init();
+    revokeAllPermissions();
+    grantCorrectPermissions();
+    createAndPopulateTables();
+  }
+
+  private void init() {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     source = new MySqlSource();
-    final JsonNode config = getConfig(container, dbName);
-    database = getDatabaseFromConfig(config);
-    database.query(ctx -> {
-      ctx.execute("CREATE DATABASE " + MODELS_SCHEMA + ";");
-      ctx.execute(String
-          .format("CREATE TABLE %s.%s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
-              MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
+    database = Databases.createDatabase(
+        "root",
+        "test",
+        String.format("jdbc:mysql://%s:%s",
+            container.getHost(),
+            container.getFirstMappedPort()),
+        DRIVER_CLASS,
+        SQLDialect.MYSQL);
 
-      for (JsonNode recordJson : MODEL_RECORDS) {
-        writeModelRecord(ctx, recordJson);
-      }
-
-      return null;
-    });
-    /**
-     * This database and table is not part of Airbyte sync. It is being created just to make sure the
-     * databases not being synced by Airbyte are not causing issues with our debezium logic
-     */
-    database.query(ctx -> {
-      ctx.execute("CREATE DATABASE " + MODELS_SCHEMA + "_random" + ";");
-      ctx.execute(String
-          .format("CREATE TABLE %s.%s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
-              MODELS_SCHEMA + "_random", MODELS_STREAM_NAME + "_random", COL_ID + "_random",
-              COL_MAKE_ID + "_random",
-              COL_MODEL + "_random", COL_ID + "_random"));
-
-      final List<JsonNode> MODEL_RECORDS_RANDOM = ImmutableList.of(
-          Jsons
-              .jsonNode(ImmutableMap
-                  .of(COL_ID + "_random", 11000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
-                      "Fiesta-random")),
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID + "_random", 12000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
-                  "Focus-random")),
-          Jsons
-              .jsonNode(ImmutableMap
-                  .of(COL_ID + "_random", 13000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
-                      "Ranger-random")),
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID + "_random", 14000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
-                  "GLA-random")),
-          Jsons.jsonNode(ImmutableMap
-              .of(COL_ID + "_random", 15000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
-                  "A 220-random")),
-          Jsons
-              .jsonNode(ImmutableMap
-                  .of(COL_ID + "_random", 16000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
-                      "E 350-random")));
-      for (JsonNode recordJson : MODEL_RECORDS_RANDOM) {
-        writeRecords(ctx, recordJson, MODELS_SCHEMA + "_random", MODELS_STREAM_NAME + "_random",
-            COL_ID + "_random", COL_MAKE_ID + "_random", COL_MODEL + "_random");
-      }
-
-      return null;
-    });
-  }
-
-  private JsonNode getConfig(MySQLContainer<?> db, String dbName) {
-
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", "root")
-        .put("password", "test")
+    config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("database", CdcMySqlSourceTest.DB_NAME)
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .put("replication_method", "CDC")
         .build());
   }
 
-  private Database getDatabaseFromConfig(JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asText()),
-        DRIVER_CLASS,
-        SQLDialect.MYSQL);
+  private void revokeAllPermissions() {
+    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
+  }
+
+  private void grantCorrectPermissions() {
+    executeQuery(
+        "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
+            + container.getUsername() + "@'%';");
+  }
+
+  private void executeQuery(String query) {
+    try {
+      database.query(
+          ctx -> ctx
+              .execute(query));
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void createAndPopulateTables() {
+    createAndPopulateActualTable();
+    createAndPopulateRandomTable();
+  }
+
+  private void createAndPopulateActualTable() {
+    executeQuery("CREATE DATABASE " + MODELS_SCHEMA + ";");
+    executeQuery(String
+        .format("CREATE TABLE %s.%s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
+            MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
+    for (JsonNode recordJson : MODEL_RECORDS) {
+      writeModelRecord(recordJson);
+    }
+  }
+
+  /**
+   * This database and table is not part of Airbyte sync. It is being created just to make sure the
+   * databases not being synced by Airbyte are not causing issues with our debezium logic
+   */
+  private void createAndPopulateRandomTable() {
+    executeQuery("CREATE DATABASE " + MODELS_SCHEMA + "_random" + ";");
+    executeQuery(String
+        .format("CREATE TABLE %s.%s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
+            MODELS_SCHEMA + "_random", MODELS_STREAM_NAME + "_random", COL_ID + "_random",
+            COL_MAKE_ID + "_random",
+            COL_MODEL + "_random", COL_ID + "_random"));
+    final List<JsonNode> MODEL_RECORDS_RANDOM = ImmutableList.of(
+        Jsons
+            .jsonNode(ImmutableMap
+                .of(COL_ID + "_random", 11000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
+                    "Fiesta-random")),
+        Jsons.jsonNode(ImmutableMap
+            .of(COL_ID + "_random", 12000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
+                "Focus-random")),
+        Jsons
+            .jsonNode(ImmutableMap
+                .of(COL_ID + "_random", 13000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
+                    "Ranger-random")),
+        Jsons.jsonNode(ImmutableMap
+            .of(COL_ID + "_random", 14000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
+                "GLA-random")),
+        Jsons.jsonNode(ImmutableMap
+            .of(COL_ID + "_random", 15000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
+                "A 220-random")),
+        Jsons
+            .jsonNode(ImmutableMap
+                .of(COL_ID + "_random", 16000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
+                    "E 350-random")));
+    for (JsonNode recordJson : MODEL_RECORDS_RANDOM) {
+      writeRecords(recordJson, MODELS_SCHEMA + "_random", MODELS_STREAM_NAME + "_random",
+          COL_ID + "_random", COL_MAKE_ID + "_random", COL_MODEL + "_random");
+    }
+  }
+
+  private void writeModelRecord(JsonNode recordJson) {
+    writeRecords(recordJson, CdcMySqlSourceTest.MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID,
+        COL_MAKE_ID,
+        COL_MODEL);
+  }
+
+  private void writeRecords(
+                            JsonNode recordJson,
+                            String dbName,
+                            String streamName,
+                            String idCol,
+                            String makeIdCol,
+                            String modelCol) {
+    executeQuery(
+        String.format("INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
+            idCol, makeIdCol, modelCol,
+            recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
+            recordJson.get(modelCol).asText()));
+  }
+
+  @AfterEach
+  public void tearDown() {
+    try {
+      database.close();
+      container.close();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Test
   @DisplayName("On the first sync, produce returns records that exist in the database.")
   void testExistingData() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, null);
+        .read(config, CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
 
     final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
@@ -232,22 +276,19 @@ public class CdcMySqlSourceTest {
   @DisplayName("When a record is deleted, produces a deletion record.")
   void testDelete() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read1 = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, null);
+        .read(config, CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
 
     assertExpectedStateMessages(stateMessages1);
 
-    database.query(ctx -> {
-      ctx.execute(String
-          .format("DELETE FROM %s.%s WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID,
-              11));
-      return null;
-    });
+    executeQuery(String
+        .format("DELETE FROM %s.%s WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID,
+            11));
 
     final JsonNode state = stateMessages1.get(0).getData();
     final AutoCloseableIterator<AirbyteMessage> read2 = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, state);
+        .read(config, CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
     final List<AirbyteRecordMessage> recordMessages2 = new ArrayList<>(
         extractRecordMessages(actualRecords2));
@@ -266,22 +307,19 @@ public class CdcMySqlSourceTest {
   void testUpdate() throws Exception {
     final String updatedModel = "Explorer";
     final AutoCloseableIterator<AirbyteMessage> read1 = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, null);
+        .read(config, CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
 
     assertExpectedStateMessages(stateMessages1);
 
-    database.query(ctx -> {
-      ctx.execute(String
-          .format("UPDATE %s.%s SET %s = '%s' WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME,
-              COL_MODEL, updatedModel, COL_ID, 11));
-      return null;
-    });
+    executeQuery(String
+        .format("UPDATE %s.%s SET %s = '%s' WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME,
+            COL_MODEL, updatedModel, COL_ID, 11));
 
     final JsonNode state = stateMessages1.get(0).getData();
     final AutoCloseableIterator<AirbyteMessage> read2 = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, state);
+        .read(config, CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
     final List<AirbyteRecordMessage> recordMessages2 = new ArrayList<>(
         extractRecordMessages(actualRecords2));
@@ -304,20 +342,17 @@ public class CdcMySqlSourceTest {
     final int recordsToCreate = 20;
     final int[] recordsCreated = {0};
     // first batch of records. 20 created here and 6 created in setup method.
-    database.query(ctx -> {
-      while (recordsCreated[0] < recordsToCreate) {
-        final JsonNode record =
-            Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, 100 + recordsCreated[0], COL_MAKE_ID, 1, COL_MODEL,
-                    "F-" + recordsCreated[0]));
-        writeModelRecord(ctx, record);
-        recordsCreated[0]++;
-      }
-      return null;
-    });
+    while (recordsCreated[0] < recordsToCreate) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 100 + recordsCreated[0], COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated[0]));
+      writeModelRecord(record);
+      recordsCreated[0]++;
+    }
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, null);
+        .read(config, CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
@@ -328,21 +363,18 @@ public class CdcMySqlSourceTest {
 
     // second batch of records again 20 being created
     recordsCreated[0] = 0;
-    database.query(ctx -> {
-      while (recordsCreated[0] < recordsToCreate) {
-        final JsonNode record =
-            Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, 200 + recordsCreated[0], COL_MAKE_ID, 1, COL_MODEL,
-                    "F-" + recordsCreated[0]));
-        writeModelRecord(ctx, record);
-        recordsCreated[0]++;
-      }
-      return null;
-    });
+    while (recordsCreated[0] < recordsToCreate) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 200 + recordsCreated[0], COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated[0]));
+      writeModelRecord(record);
+      recordsCreated[0]++;
+    }
 
     final JsonNode state = stateAfterFirstBatch.get(0).getData();
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, state);
+        .read(config, CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
 
@@ -401,17 +433,14 @@ public class CdcMySqlSourceTest {
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
 
-    database.query(ctx -> {
-      ctx.execute(String
-          .format("CREATE TABLE %s.%s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
-              MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
+    executeQuery(String
+        .format("CREATE TABLE %s.%s(%s INTEGER, %s INTEGER, %s VARCHAR(200), PRIMARY KEY (%s));",
+            MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID, COL_MAKE_ID, COL_MODEL, COL_ID));
 
-      for (JsonNode recordJson : MODEL_RECORDS_2) {
-        writeRecords(ctx, recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME + "_2");
-      }
-
-      return null;
-    });
+    for (JsonNode recordJson : MODEL_RECORDS_2) {
+      writeRecords(recordJson, CdcMySqlSourceTest.MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID,
+          COL_MAKE_ID, COL_MODEL);
+    }
 
     ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
         .withStream(CatalogHelpers.createAirbyteStream(
@@ -420,7 +449,8 @@ public class CdcMySqlSourceTest {
             Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_MAKE_ID, JsonSchemaPrimitive.NUMBER),
             Field.of(COL_MODEL, JsonSchemaPrimitive.STRING))
-            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSupportedSyncModes(
+                Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
     airbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
 
@@ -429,7 +459,7 @@ public class CdcMySqlSourceTest {
     configuredCatalog.withStreams(streams);
 
     final AutoCloseableIterator<AirbyteMessage> read1 = source
-        .read(getConfig(container, dbName), configuredCatalog, null);
+        .read(config, configuredCatalog, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
 
     final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
@@ -445,14 +475,11 @@ public class CdcMySqlSourceTest {
 
     final JsonNode puntoRecord = Jsons
         .jsonNode(ImmutableMap.of(COL_ID, 100, COL_MAKE_ID, 3, COL_MODEL, "Punto"));
-    database.query(ctx -> {
-      writeModelRecord(ctx, puntoRecord);
-      return null;
-    });
+    writeModelRecord(puntoRecord);
 
     final JsonNode state = extractStateMessages(actualRecords1).get(0).getData();
     final AutoCloseableIterator<AirbyteMessage> read2 = source
-        .read(getConfig(container, dbName), configuredCatalog, state);
+        .read(config, configuredCatalog, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
@@ -471,13 +498,10 @@ public class CdcMySqlSourceTest {
   @DisplayName("When no records exist, no records are returned.")
   void testNoData() throws Exception {
 
-    database.query(ctx -> {
-      ctx.execute(String.format("DELETE FROM %s.%s", MODELS_SCHEMA, MODELS_STREAM_NAME));
-      return null;
-    });
+    executeQuery(String.format("DELETE FROM %s.%s", MODELS_SCHEMA, MODELS_STREAM_NAME));
 
     final AutoCloseableIterator<AirbyteMessage> read = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, null);
+        .read(config, CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
 
     final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
@@ -491,12 +515,12 @@ public class CdcMySqlSourceTest {
   @DisplayName("When no changes have been made to the database since the previous sync, no records are returned.")
   void testNoDataOnSecondSync() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read1 = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, null);
+        .read(config, CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     final JsonNode state = extractStateMessages(actualRecords1).get(0).getData();
 
     final AutoCloseableIterator<AirbyteMessage> read2 = source
-        .read(getConfig(container, dbName), CONFIGURED_CATALOG, state);
+        .read(config, CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
@@ -508,7 +532,7 @@ public class CdcMySqlSourceTest {
 
   @Test
   void testCheck() {
-    final AirbyteConnectionStatus status = source.check(getConfig(container, dbName));
+    final AirbyteConnectionStatus status = source.check(config);
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
@@ -516,12 +540,9 @@ public class CdcMySqlSourceTest {
   void testDiscover() throws Exception {
     final AirbyteCatalog expectedCatalog = Jsons.clone(CATALOG);
 
-    database.query(ctx -> {
-      ctx.execute(String
-          .format("CREATE TABLE %s.%s(%s INTEGER, %s INTEGER, %s VARCHAR(200));",
-              MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID, COL_MAKE_ID, COL_MODEL));
-      return null;
-    });
+    executeQuery(String
+        .format("CREATE TABLE %s.%s(%s INTEGER, %s INTEGER, %s VARCHAR(200));",
+            MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID, COL_MAKE_ID, COL_MODEL));
 
     List<AirbyteStream> streams = expectedCatalog.getStreams();
     // stream with PK
@@ -541,7 +562,7 @@ public class CdcMySqlSourceTest {
     streams.add(streamWithoutPK);
     expectedCatalog.withStreams(streams);
 
-    final AirbyteCatalog actualCatalog = source.discover(getConfig(container, dbName));
+    final AirbyteCatalog actualCatalog = source.discover(config);
 
     assertEquals(
         expectedCatalog.getStreams().stream().sorted(Comparator.comparing(AirbyteStream::getName))
@@ -562,27 +583,6 @@ public class CdcMySqlSourceTest {
     properties.set(CDC_DELETED_AT, numberType);
 
     return stream;
-  }
-
-  private void writeModelRecord(DSLContext ctx, JsonNode recordJson) {
-    writeRecords(ctx, recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME);
-  }
-
-  private void writeRecords(DSLContext ctx, JsonNode recordJson, String dbName, String streamName) {
-    writeRecords(ctx, recordJson, dbName, streamName, COL_ID, COL_MAKE_ID, COL_MODEL);
-  }
-
-  private void writeRecords(DSLContext ctx,
-                            JsonNode recordJson,
-                            String dbName,
-                            String streamName,
-                            String idCol,
-                            String makeIdCol,
-                            String modelCol) {
-    ctx.execute(
-        String.format("INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName, idCol, makeIdCol, modelCol,
-            recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
-            recordJson.get(modelCol).asText()));
   }
 
   private Set<AirbyteRecordMessage> extractRecordMessages(List<AirbyteMessage> messages) {

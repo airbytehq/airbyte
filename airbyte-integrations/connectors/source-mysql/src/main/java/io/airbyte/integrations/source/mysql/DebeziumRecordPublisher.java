@@ -25,7 +25,6 @@
 package io.airbyte.integrations.source.mysql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
@@ -182,19 +181,18 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     }
 
     // table selection
-    final String tableWhitelist = getTableWhitelist(catalog);
+    final String tableWhitelist = getTableWhitelist(catalog, config);
     props.setProperty("table.include.list", tableWhitelist);
     props.setProperty("database.include.list", config.get("database").asText());
 
     return props;
   }
 
-  @VisibleForTesting
-  protected static String getTableWhitelist(ConfiguredAirbyteCatalog catalog) {
+  private static String getTableWhitelist(ConfiguredAirbyteCatalog catalog, JsonNode config) {
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)
-        .map(stream -> stream.getNamespace() + "." + stream.getName())
+        .map(stream -> config.get("database").asText() + "." + stream.getName())
         // debezium needs commas escaped to split properly
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));

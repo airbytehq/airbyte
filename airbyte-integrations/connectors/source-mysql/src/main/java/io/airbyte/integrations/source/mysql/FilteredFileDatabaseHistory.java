@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.relational.history.AbstractDatabaseHistory;
 import io.debezium.relational.history.DatabaseHistoryException;
@@ -36,6 +38,24 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
+/**
+ * MySQL Debezium connector monitors the database schema evolution over the time and stores the data
+ * in database history file. Without this file we can't fetch the records from binlog. We need to
+ * save the contents of the file. Debezium by default uses
+ * {@link io.debezium.relational.history.FileDatabaseHistory} class to write the schema information
+ * in the file. The problem is that the Debezium tracks the schema evolution of all the tables in
+ * all the databases, because of that the file content can grow. In order to make sure that debezium
+ * tracks only the schema of the tables that are present in the database that Airbyte is syncing, we
+ * created this class. In the method {@link #storeRecord(HistoryRecord)}, we introduced a check to
+ * make sure only those records are being saved whose database name matches the database Airbyte is
+ * syncing. We tell debezium to use this class by passing it as property in debezium engine. Look
+ * for "database.history" property in
+ * {@link DebeziumRecordPublisher#getDebeziumProperties(JsonNode, ConfiguredAirbyteCatalog, AirbyteFileOffsetBackingStore)}
+ * Ideally {@link FilteredFileDatabaseHistory} should have extended
+ * {@link io.debezium.relational.history.FileDatabaseHistory} and overridden the
+ * {@link #storeRecord(HistoryRecord)} method but {@link FilteredFileDatabaseHistory} is a final
+ * class and can not be inherited
+ */
 public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
 
   private final FileDatabaseHistory fileDatabaseHistory;
@@ -45,6 +65,14 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
     this.fileDatabaseHistory = new FileDatabaseHistory();
   }
 
+  /**
+   * Ideally the databaseName should have been initialized in the constructor of the class. But since
+   * we supply the class name to debezium and it uses reflection to construct the object of the class,
+   * we can't pass in the databaseName as a parameter to the constructor. That's why we had to take
+   * the static approach.
+   *
+   * @param databaseName Name of the database that the connector is syncing
+   */
   static void setDatabaseName(String databaseName) {
     if (FilteredFileDatabaseHistory.databaseName == null) {
       FilteredFileDatabaseHistory.databaseName = databaseName;
@@ -79,6 +107,11 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
         return;
       }
 
+      /**
+       * We are using reflection because the method
+       * {@link io.debezium.relational.history.FileDatabaseHistory#storeRecord(HistoryRecord)} is
+       * protected and can not be accessed from here
+       */
       final Method storeRecordMethod = fileDatabaseHistory.getClass()
           .getDeclaredMethod("storeRecord", record.getClass());
       storeRecordMethod.setAccessible(true);
@@ -91,13 +124,18 @@ public class FilteredFileDatabaseHistory extends AbstractDatabaseHistory {
   @Override
   public void stop() {
     fileDatabaseHistory.stop();
-    // this is mainly for tests
+    // this is just for tests
     databaseName = null;
   }
 
   @Override
   protected void recoverRecords(Consumer<HistoryRecord> records) {
     try {
+      /**
+       * We are using reflection because the method
+       * {@link io.debezium.relational.history.FileDatabaseHistory#recoverRecords(Consumer)} is protected
+       * and can not be accessed from here
+       */
       final Method recoverRecords = fileDatabaseHistory.getClass()
           .getDeclaredMethod("recoverRecords", Consumer.class);
       recoverRecords.setAccessible(true);

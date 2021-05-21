@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.DRIVER_CLASS;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -87,7 +85,8 @@ public class CdcMySqlStandardTest extends StandardSourceTest {
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -98,7 +97,8 @@ public class CdcMySqlStandardTest extends StandardSourceTest {
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -112,7 +112,7 @@ public class CdcMySqlStandardTest extends StandardSourceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(TestDestinationEnv testEnv) {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
@@ -120,32 +120,51 @@ public class CdcMySqlStandardTest extends StandardSourceTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
-        .put("username", "root")
-        .put("password", "test")
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .put("replication_method", "CDC")
         .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
+    revokeAllPermissions();
+    grantCorrectPermissions();
+    createAndPopulateTables();
+  }
+
+  private void createAndPopulateTables() {
+    executeQuery("CREATE TABLE id_and_name(id INTEGER PRIMARY KEY, name VARCHAR(200));");
+    executeQuery(
+        "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+    executeQuery("CREATE TABLE starships(id INTEGER PRIMARY KEY, name VARCHAR(200));");
+    executeQuery(
+        "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+  }
+
+  private void revokeAllPermissions() {
+    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
+  }
+
+  private void grantCorrectPermissions() {
+    executeQuery(
+        "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
+            + container.getUsername() + "@'%';");
+  }
+
+  private void executeQuery(String query) {
+    try (Database database = Databases.createDatabase(
+        "root",
+        "test",
         String.format("jdbc:mysql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        DRIVER_CLASS,
-        SQLDialect.MYSQL);
-
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER PRIMARY KEY, name VARCHAR(200));");
-      ctx.fetch(
-          "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER PRIMARY KEY, name VARCHAR(200));");
-      ctx.fetch(
-          "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
-
-    database.close();
+            container.getHost(),
+            container.getFirstMappedPort(),
+            container.getDatabaseName()),
+        MySqlSource.DRIVER_CLASS,
+        SQLDialect.MYSQL)) {
+      database.query(
+          ctx -> ctx
+              .execute(query));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
