@@ -25,6 +25,7 @@
 package io.airbyte.server;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HttpHeaders;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -33,14 +34,10 @@ import javax.ws.rs.container.ContainerResponseFilter;
 // https://medium.com/@Leejjon_net/how-to-allow-cross-origin-requests-in-a-jax-rs-microservice-d2a6aa2df484
 public class CorsFilter implements ContainerResponseFilter {
 
-  public static final String ALLOW_ORIGIN = "Access-Control-Allow-Origin";
-  public static final String ALLOW_HEADERS = "Access-Control-Allow-Headers";
-  public static final String ALLOW_METHODS = "Access-Control-Allow-Methods";
-
   public static final ImmutableMap<String, String> MAP = ImmutableMap.of(
-      ALLOW_ORIGIN, "*",
-      ALLOW_HEADERS, "Origin, Content-Type, Accept, Content-Encoding",
-      ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+      HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*",
+      HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "Origin, Content-Type, Accept, Content-Encoding",
+      HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS, HEAD");
 
   @Override
   public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {

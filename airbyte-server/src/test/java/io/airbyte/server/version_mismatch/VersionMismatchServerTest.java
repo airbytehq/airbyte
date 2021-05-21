@@ -26,7 +26,7 @@ package io.airbyte.server.version_mismatch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.server.CorsFilter;
+import com.google.common.net.HttpHeaders;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URI;
@@ -78,9 +78,9 @@ public class VersionMismatchServerTest {
 
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR_500, http.getResponseCode());
 
-    assertEquals(http.getHeaderField(CorsFilter.ALLOW_ORIGIN), "*");
-    assertEquals(http.getHeaderField(CorsFilter.ALLOW_HEADERS), "Origin, Content-Type, Accept, Content-Encoding");
-    assertEquals(http.getHeaderField(CorsFilter.ALLOW_METHODS), "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+    assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), "*");
+    assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), "Origin, Content-Type, Accept, Content-Encoding");
+    assertEquals(http.getHeaderField(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS), "GET, POST, PUT, DELETE, OPTIONS, HEAD");
   }
 
 }
