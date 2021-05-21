@@ -14,7 +14,7 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 
 ## 05/18/2021
 
-1 new destination: **MSSQL** (doc coming soon)
+1 new destination: [**MSSQL**](https://docs.airbyte.io/integrations/destinations/mssql)
 
 1 new source: [**ClickHouse**](https://docs.airbyte.io/integrations/sources/clickhouse)
 
