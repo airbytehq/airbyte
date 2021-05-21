@@ -22,16 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.snowflake;
+package io.airbyte.integrations.destination.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.Database;
+import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationStandardTest;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -39,18 +38,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jooq.JSONFormat;
+import org.jooq.JSONFormat.RecordFormat;
 
-public class SnowflakeInsertStandardTest extends DestinationStandardTest {
+/**
+ * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
+ * credentials contain S3 credentials - this automatically causes COPY to be selected.
+ */
+public class RedshiftCopyDestinationStandardTest extends DestinationStandardTest {
 
+  private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   // config from which to create / delete schemas.
   private JsonNode baseConfig;
   // config which refers to the schema that the test is being run in.
   private JsonNode config;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final RedshiftSQLNameTransformer namingResolver = new RedshiftSQLNameTransformer();
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-snowflake:dev";
+    return "airbyte/destination-redshift:dev";
   }
 
   @Override
@@ -59,10 +65,7 @@ public class SnowflakeInsertStandardTest extends DestinationStandardTest {
   }
 
   public JsonNode getStaticConfig() {
-    final JsonNode insertConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
-    Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(insertConfig));
-    Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(insertConfig));
-    return insertConfig;
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
@@ -74,9 +77,9 @@ public class SnowflakeInsertStandardTest extends DestinationStandardTest {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
+        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
@@ -93,14 +96,11 @@ public class SnowflakeInsertStandardTest extends DestinationStandardTest {
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
-    String schema = namingResolver.getIdentifier(namespace);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
-    // use quoted names
-    // if (!tableName.startsWith("\"")) {
-    // // Currently, Normalization always quote tables identifiers
-    // tableName = "\"" + tableName + "\"";
-    // }
-    return retrieveRecordsFromTable(tableName, schema);
+    if (!tableName.startsWith("\"")) {
+      // Currently, Normalization always quote tables identifiers
+      tableName = "\"" + tableName + "\"";
+    }
+    return retrieveRecordsFromTable(tableName, namespace);
   }
 
   @Override
@@ -116,11 +116,14 @@ public class SnowflakeInsertStandardTest extends DestinationStandardTest {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws SQLException, InterruptedException {
-    return SnowflakeDatabase.getDatabase(getConfig()).bufferedResultSetQuery(
-        connection -> connection.createStatement()
-            .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT)),
-        JdbcUtils::rowToJson);
+  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
+    return getDatabase().query(
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .map(r -> r.formatJSON(JSON_FORMAT))
+            .map(Jsons::deserialize)
+            .collect(Collectors.toList()));
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
@@ -128,10 +131,8 @@ public class SnowflakeInsertStandardTest extends DestinationStandardTest {
   protected void setup(TestDestinationEnv testEnv) throws Exception {
     final String schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5));
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
-
     baseConfig = getStaticConfig();
-    SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
-
+    getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
     final JsonNode configForSchema = Jsons.clone(baseConfig);
     ((ObjectNode) configForSchema).put("schema", schemaName);
     config = configForSchema;
@@ -139,8 +140,29 @@ public class SnowflakeInsertStandardTest extends DestinationStandardTest {
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
-    SnowflakeDatabase.getDatabase(baseConfig).execute(createSchemaQuery);
+    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText());
+    getDatabase().query(ctx -> ctx.execute(dropSchemaQuery));
+  }
+
+  private Database getDatabase() {
+    return Databases.createDatabase(
+        baseConfig.get("username").asText(),
+        baseConfig.get("password").asText(),
+        String.format("jdbc:redshift://%s:%s/%s",
+            baseConfig.get("host").asText(),
+            baseConfig.get("port").asText(),
+            baseConfig.get("database").asText()),
+        "com.amazon.redshift.jdbc.Driver", null);
+  }
+
+  @Override
+  protected boolean implementsRecordSizeLimitChecks() {
+    return true;
+  }
+
+  @Override
+  protected int getMaxRecordValueLimit() {
+    return RedshiftSqlOperations.REDSHIFT_VARCHAR_MAX_BYTE_SIZE;
   }
 
 }

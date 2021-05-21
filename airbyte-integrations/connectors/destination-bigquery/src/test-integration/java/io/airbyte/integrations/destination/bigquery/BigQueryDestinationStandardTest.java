@@ -60,9 +60,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryStandardTest extends DestinationStandardTest {
+public class BigQueryDestinationStandardTest extends DestinationStandardTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStandardTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationStandardTest.class);
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 

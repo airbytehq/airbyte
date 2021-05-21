@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.postgres;
+package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -39,47 +39,47 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class PostgresStandardTest extends DestinationStandardTest {
+public class JdbcDestinationStandardTest extends DestinationStandardTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private PostgreSQLContainer<?> db;
-  private ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-postgres:dev";
+    return "airbyte/destination-jdbc:dev";
   }
 
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
-        .put("ssl", false)
+        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+            db.getHost(),
+            db.getFirstMappedPort(),
+            db.getDatabaseName()))
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
         .put("username", db.getUsername())
         .put("password", "wrong password")
         .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
-        .put("ssl", false)
+        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+            db.getHost(),
+            db.getFirstMappedPort(),
+            db.getDatabaseName()))
         .build());
   }
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
@@ -87,25 +87,18 @@ public class PostgresStandardTest extends DestinationStandardTest {
 
   @Override
   protected boolean implementsBasicNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean implementsNamespaces() {
-    return true;
+    return false;
   }
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
-    // use quoted names
-    // if (!tableName.startsWith("\"")) {
-    // // Currently, Normalization always quote tables identifiers
-    // //tableName = "\"" + tableName + "\"";
-    // }
-    return retrieveRecordsFromTable(tableName, namespace);
+    if (!tableName.startsWith("\"")) {
+      // Currently, Normalization always quote tables identifiers
+      tableName = "\"" + tableName + "\"";
+    }
+    return retrieveRecordsFromTable(tableName, namingResolver.getIdentifier(namespace));
   }
 
   @Override
@@ -121,11 +114,11 @@ public class PostgresStandardTest extends DestinationStandardTest {
     return result;
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
+  private List<JsonNode> retrieveRecordsFromTable(String tableName, String schema) throws SQLException {
     return Databases.createPostgresDatabase(db.getUsername(), db.getPassword(),
         db.getJdbcUrl()).query(
             ctx -> ctx
-                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                 .stream()
                 .map(r -> r.formatJSON(JSON_FORMAT))
                 .map(Jsons::deserialize)

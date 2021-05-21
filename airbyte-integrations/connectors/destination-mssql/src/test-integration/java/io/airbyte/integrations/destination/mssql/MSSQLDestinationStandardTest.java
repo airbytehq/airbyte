@@ -43,9 +43,8 @@ import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.utility.DockerImageName;
 
-public class MSSQLStandardTestSSL extends DestinationStandardTest {
+public class MSSQLDestinationStandardTest extends DestinationStandardTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
@@ -66,7 +65,6 @@ public class MSSQLStandardTestSSL extends DestinationStandardTest {
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schema", "testSchema")
-        .put("ssl_method", "encrypted_trust_server_certificate")
         .build());
   }
 
@@ -109,12 +107,6 @@ public class MSSQLStandardTestSSL extends DestinationStandardTest {
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
-    // use quoted names
-    // if (!tableName.startsWith("\"")) {
-    // // Currently, Normalization always quote tables identifiers
-    // //tableName = "\"" + tableName + "\"";
-    // }
     return retrieveRecordsFromTable(tableName, namespace);
   }
 
@@ -147,8 +139,7 @@ public class MSSQLStandardTestSSL extends DestinationStandardTest {
 
   @BeforeAll
   protected static void init() {
-    db = new MSSQLServerContainer<>(DockerImageName.parse("airbyte/mssql_ssltest:dev").asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-        .acceptLicense();
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     db.start();
   }
 

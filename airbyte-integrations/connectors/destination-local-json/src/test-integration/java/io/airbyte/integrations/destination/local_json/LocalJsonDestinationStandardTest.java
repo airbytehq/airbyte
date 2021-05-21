@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class LocalJsonStandardTest extends DestinationStandardTest {
+public class LocalJsonDestinationStandardTest extends DestinationStandardTest {
 
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
 

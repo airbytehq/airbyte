@@ -42,7 +42,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
-public class CsvStandardTest extends DestinationStandardTest {
+public class CsvDestinationStandardTest extends DestinationStandardTest {
 
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
 

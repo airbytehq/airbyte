@@ -40,7 +40,7 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySQLStandardTest extends DestinationStandardTest {
+public class MySQLDestinationStandardTest extends DestinationStandardTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
