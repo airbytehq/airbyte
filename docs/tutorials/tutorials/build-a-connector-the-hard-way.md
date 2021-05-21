@@ -1,10 +1,10 @@
 ---
-description: Building a toy source connector to illustrate Airbyte's main concepts
+description: Building a source connector without using any helpers to learn the Airbyte Specification for sources
 ---
 
-# Building a Toy Connector
+# Building a Source Connector: The Hard Way
 
-This tutorial walks you through building a simple Airbyte source to demonstrate the following concepts in Action:
+This tutorial walks you through building a simple Airbyte source without using any helpers to demonstrate the following concepts in Action:
 
 * [The Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](beginners-guide-to-catalog.md)
@@ -13,7 +13,7 @@ This tutorial walks you through building a simple Airbyte source to demonstrate 
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
 
-We intentionally don't use helper libraries provided by Airbyte so that this tutorial is self-contained. If you were building a "real" source, you'll want to use the helper modules provided by Airbyte. We'll mention those at the very end. For now, let's get started.
+**This tutorial is meant for those interested in learning how the Airbyte Specification works in detail, not for creating production connectors**. We intentionally don't use helper libraries provided by Airbyte so that this tutorial is self-contained. If you were building a "real" source, you'll want to use the helper modules such as the [Connector Development Kit](../../../airbyte-cdk/python/docs/tutorials/README.md).
 
 This tutorial can be done entirely on your local workstation.
 
@@ -1058,10 +1058,8 @@ Armed with the knowledge you gained in this guide, here are some places you can 
 This section is not yet complete and will be completed soon. Please reach out to us on [Slack](https://slack.airbyte.io) or [Github](https://github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.
 
 ### Incremental sync
+Follow the [next tutorial](./adding-incremental-sync.md) to implement incremental sync. 
 
-### Contributing the connector
-
-### Language specific helpers
-
-#### Python
-
+### Connector Development Kit
+Like we mention at the beginning of the tutorial, this guide is meant more for understanding than as a blueprint for implementing production connectors. See the [Connector Development Kit](../../../airbyte-cdk/python/docs/tutorials/README.md) for the frameworks you should use to build production-ready connectors. 
+/

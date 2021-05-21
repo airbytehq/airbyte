@@ -66,7 +66,7 @@ const ConnectorServiceTypeControl: React.FC<{ property: FormBaseItem }> = ({
       {/*{field.value && includeInstruction && (*/}
       {/*  <Instruction*/}
       {/*    serviceId={field.value}*/}
-      {/*    dropDownData={dropDownData}*/}
+      {/*    availableServices={availableServices}*/}
       {/*    documentationUrl={documentationUrl}*/}
       {/*  />*/}
       {/*)}*/}

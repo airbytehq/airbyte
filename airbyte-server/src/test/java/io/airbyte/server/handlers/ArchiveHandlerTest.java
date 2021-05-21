@@ -57,7 +57,6 @@ public class ArchiveHandlerTest {
     verify(configRepository, never()).writeSourceConnection(any());
     verify(configRepository, never()).writeDestinationConnection(any());
     verify(configRepository, never()).writeStandardSync(any());
-    verify(configRepository, never()).writeStandardSchedule(any());
     verify(configRepository, never()).writeStandardSyncOperation(any());
   }
 

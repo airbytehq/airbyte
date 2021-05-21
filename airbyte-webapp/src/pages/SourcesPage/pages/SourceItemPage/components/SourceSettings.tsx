@@ -15,7 +15,6 @@ import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
-import ImageBlock from "../../../../../components/ImageBlock";
 
 const Content = styled.div`
   max-width: 813px;
@@ -100,11 +99,11 @@ const SourceSettings: React.FC<IProps> = ({
           isEditMode
           onSubmit={onSubmit}
           formType="source"
-          dropDownData={[
+          availableServices={[
             {
               value: currentSource.sourceDefinitionId,
               text: currentSource.sourceName,
-              img: <ImageBlock img={sourceDefinition.icon} />,
+              icon: sourceDefinition.icon,
             },
           ]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}

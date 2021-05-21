@@ -24,13 +24,14 @@ export type IProps = {
 
 const Content = styled.div`
   width: 585px;
-  padding: 19px 41px 36px 36px;
+  padding: 19px 41px 30px 36px;
 `;
 
 const ButtonContent = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 40px;
 `;
 
 const ButtonWithMargin = styled(Button)`
@@ -76,6 +77,7 @@ const ErrorBlock = styled.div`
   font-size: 12px;
   line-height: 18px;
   color: ${({ theme }) => theme.darkPrimaryColor};
+  max-width: 320px;
 `;
 
 const ErrorText = styled.div`
@@ -211,9 +213,7 @@ const CreateConnectorModal: React.FC<IProps> = ({
                 {errorMessage ? (
                   <ErrorBlock>
                     <Error />
-                    <ErrorText>
-                      <FormattedMessage id={errorMessage} />
-                    </ErrorText>
+                    <ErrorText>{errorMessage}</ErrorText>
                   </ErrorBlock>
                 ) : (
                   <div />

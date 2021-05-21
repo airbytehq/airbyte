@@ -2110,6 +2110,8 @@ components:
       properties:
         gitRepoUrl:
           type: string
+        gitRepoBranch:
+          type: string
         dockerImage:
           type: string
         dbtArguments:

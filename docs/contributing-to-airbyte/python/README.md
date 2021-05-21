@@ -16,6 +16,7 @@ Generate an empty connector using the code generator. First clone the Airbyte re
 
 ```text
 cd airbyte-integrations/connector-templates/generator
+npm install
 npm run generate
 ```
 

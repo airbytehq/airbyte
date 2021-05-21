@@ -51,14 +51,14 @@ class AirbyteIntegrationLauncherTest {
   void spec() throws WorkerException {
     launcher.spec(JOB_ROOT);
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, "spec");
+    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null, "spec");
   }
 
   @Test
   void check() throws WorkerException {
     launcher.check(JOB_ROOT, "config");
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE,
+    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null,
         "check",
         "--config", "config");
   }
@@ -67,7 +67,7 @@ class AirbyteIntegrationLauncherTest {
   void discover() throws WorkerException {
     launcher.discover(JOB_ROOT, "config");
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE,
+    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null,
         "discover",
         "--config", "config");
   }
@@ -76,7 +76,7 @@ class AirbyteIntegrationLauncherTest {
   void read() throws WorkerException {
     launcher.read(JOB_ROOT, "config", "catalog", "state");
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE,
+    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null,
         Lists.newArrayList(
             "read",
             "--config", "config",
@@ -88,7 +88,7 @@ class AirbyteIntegrationLauncherTest {
   void write() throws WorkerException {
     launcher.write(JOB_ROOT, "config", "catalog");
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE,
+    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null,
         "write",
         "--config", "config",
         "--catalog", "catalog");

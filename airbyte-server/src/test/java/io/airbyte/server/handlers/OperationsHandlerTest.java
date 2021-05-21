@@ -114,7 +114,8 @@ class OperationsHandlerTest {
         .operatorConfiguration(new OperatorConfiguration()
             .operatorType(OperatorType.DBT)
             .dbt(new OperatorDbt()
-                .gitRepoUrl("git_repo")
+                .gitRepoUrl("git_repo_url")
+                .gitRepoBranch("git_repo_branch")
                 .dockerImage("docker")
                 .dbtArguments("--full-refresh")));
 
@@ -123,7 +124,8 @@ class OperationsHandlerTest {
         .withName(standardSyncOperation.getName())
         .withOperatorType(io.airbyte.config.StandardSyncOperation.OperatorType.DBT)
         .withOperatorDbt(new io.airbyte.config.OperatorDbt()
-            .withGitRepoUrl("git_repo")
+            .withGitRepoUrl("git_repo_url")
+            .withGitRepoBranch("git_repo_branch")
             .withDockerImage("docker")
             .withDbtArguments("--full-refresh"))
         .withOperatorNormalization(null)
@@ -140,7 +142,8 @@ class OperationsHandlerTest {
         .operatorConfiguration(new OperatorConfiguration()
             .operatorType(OperatorType.DBT)
             .dbt(new OperatorDbt()
-                .gitRepoUrl("git_repo")
+                .gitRepoUrl("git_repo_url")
+                .gitRepoBranch("git_repo_branch")
                 .dockerImage("docker")
                 .dbtArguments("--full-refresh")));
 

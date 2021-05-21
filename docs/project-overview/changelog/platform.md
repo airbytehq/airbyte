@@ -10,6 +10,13 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 * We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
+## [05-18-2021 - 0.23.0](https://github.com/airbytehq/airbyte/releases/tag/v0.23.0-alpha)
+
+* Documentation to deploy locally on Windows is now available ([#3425](https://github.com/airbytehq/airbyte/pull/3425))
+* Connector icons are now displayed in the UI
+* Restart core containers if they fail automatically ([#3423](https://github.com/airbytehq/airbyte/pull/3423))
+* Progress on supporting custom transformation using dbt. More updates on this soon!
+
 ## [05-11-2021 - 0.22.3](https://github.com/airbytehq/airbyte/releases/tag/v0.22.3-alpha)
 
 * Bump K8s deployment version to latest stable version, thanks to [Coetzee van Staden](https://github.com/coetzeevs)

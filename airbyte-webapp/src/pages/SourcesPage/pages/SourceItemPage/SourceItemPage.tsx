@@ -25,7 +25,6 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationsDefinitionResource from "core/resources/DestinationDefinition";
 import { getIcon } from "utils/imageUtils";
-import ImageBlock from "components/ImageBlock";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -83,10 +82,10 @@ const SourceItemPage: React.FC = () => {
         return {
           text: item.name,
           value: item.destinationId,
-          img: <ImageBlock img={destinationDef?.icon} />,
+          img: destinationDef?.icon,
         };
       }),
-    [destinations]
+    [destinations, destinationDefinitions]
   );
 
   const onSelect = (data: { value: string }) => {
