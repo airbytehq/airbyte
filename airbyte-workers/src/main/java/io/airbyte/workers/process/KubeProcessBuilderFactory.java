@@ -35,6 +35,7 @@ import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,8 +52,15 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
     this.workspaceRoot = workspaceRoot;
   }
 
+  // todo: support env var passthrough
   @Override
-  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+  public ProcessBuilder create(String jobId,
+                               int attempt,
+                               final Path jobRoot,
+                               final String imageName,
+                               final String entrypoint,
+                               final Map<String, String> envVars,
+                               final String... args)
       throws WorkerException {
 
     try {

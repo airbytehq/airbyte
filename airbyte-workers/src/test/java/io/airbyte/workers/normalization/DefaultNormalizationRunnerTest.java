@@ -25,12 +25,15 @@
 package io.airbyte.workers.normalization;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
@@ -42,6 +45,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class DefaultNormalizationRunnerTest {
 
@@ -64,11 +68,20 @@ class DefaultNormalizationRunnerTest {
     config = mock(JsonNode.class);
     catalog = mock(ConfiguredAirbyteCatalog.class);
 
-    when(pbf.create(JOB_ID, JOB_ATTEMPT, jobRoot, DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME, null, "run",
-        "--integration-type", "bigquery",
-        "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
-            .thenReturn(processBuilder);
+    when(pbf.create(
+        eq(JOB_ID),
+        eq(JOB_ATTEMPT),
+        eq(jobRoot),
+        eq(DefaultNormalizationRunner.NORMALIZATION_IMAGE_NAME),
+        Mockito.isNull(),
+        anyMap(),
+        eq("run"),
+        eq("--integration-type"),
+        eq("bigquery"),
+        eq("--config"),
+        eq(WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME),
+        eq("--catalog"),
+        eq(WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))).thenReturn(processBuilder);
     when(processBuilder.start()).thenReturn(process);
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
@@ -76,7 +89,7 @@ class DefaultNormalizationRunnerTest {
 
   @Test
   void test() throws Exception {
-    final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, pbf);
+    final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, pbf, new EnvConfigs());
 
     when(process.exitValue()).thenReturn(0);
 
@@ -87,7 +100,7 @@ class DefaultNormalizationRunnerTest {
   public void testClose() throws Exception {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
-    final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, pbf);
+    final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, pbf, new EnvConfigs());
     runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog);
     runner.close();
 
@@ -98,7 +111,7 @@ class DefaultNormalizationRunnerTest {
   public void testFailure() {
     doThrow(new RuntimeException()).when(process).exitValue();
 
-    final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, pbf);
+    final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, pbf, new EnvConfigs());
     assertThrows(RuntimeException.class, () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog));
 
     verify(process).destroy();

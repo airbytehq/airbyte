@@ -26,7 +26,9 @@ package io.airbyte.workers.process;
 
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public interface ProcessBuilderFactory {
 
@@ -43,8 +45,19 @@ public interface ProcessBuilderFactory {
    * @return the ProcessBuilder object to run the process
    * @throws WorkerException
    */
-  ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
+  ProcessBuilder create(String jobId,
+                        int attempt,
+                        final Path jobPath,
+                        final String imageName,
+                        final String entrypoint,
+                        final Map<String, String> envVars,
+                        final String... args)
       throws WorkerException;
+
+  default ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
+      throws WorkerException {
+    return create(jobId, attempt, jobPath, imageName, entrypoint, Collections.emptyMap(), args);
+  }
 
   default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
       throws WorkerException {

@@ -26,6 +26,7 @@ package io.airbyte.workers.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.normalization.NormalizationRunner.NoOpNormalizationRunner;
 import io.airbyte.workers.process.ProcessBuilderFactory;
@@ -50,7 +51,7 @@ public class NormalizationRunnerFactory {
     final String imageNameWithoutTag = imageName.split(":")[0];
 
     if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), pbf);
+      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), pbf, new EnvConfigs());
     } else {
       throw new IllegalStateException(
           String.format("Requested normalization for %s, but it is not included in the normalization mapping.", imageName));

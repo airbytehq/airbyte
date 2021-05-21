@@ -62,6 +62,8 @@ public interface Configs {
 
   String getTemporalHost();
 
+  String getBasicNormalizationHashMethod();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

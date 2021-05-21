@@ -53,6 +53,7 @@ public class EnvConfigs implements Configs {
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
+  public static final String BASIC_NORMALIZATION_HASH_METHOD = "BASIC_NORMALIZATION_HASH_METHOD";
 
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
@@ -164,6 +165,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getTemporalHost() {
     return getEnvOrDefault(TEMPORAL_HOST, "airbyte-temporal:7233");
+  }
+
+  @Override
+  public String getBasicNormalizationHashMethod() {
+    return getEnvOrDefault(BASIC_NORMALIZATION_HASH_METHOD, "sha1-3");
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {

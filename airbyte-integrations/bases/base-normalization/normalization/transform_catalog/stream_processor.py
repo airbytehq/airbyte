@@ -779,9 +779,12 @@ def hash_json_path(json_path: List[str]) -> str:
 
 
 def hash_name(input: str) -> str:
-    h = hashlib.sha1()
-    h.update(input.encode("utf-8"))
-    return h.hexdigest()[:3]
+    if os.getenv("BASIC_NORMALIZATION_HASH_METHOD") == "none":
+        return ""
+    else:
+        h = hashlib.sha1()
+        h.update(input.encode("utf-8"))
+        return h.hexdigest()[:3]
 
 
 def get_table_name(name_transformer: DestinationNameTransformer, parent: str, child: str, suffix: str, json_path: List[str]) -> str:
