@@ -22,6 +22,19 @@ spec:
 #          mountPath: /workspace
         - name: airbyte-pipes
           mountPath: /pipes
+    - name: socat
+      image: alpine/socat:1.7.4.1-r1
+      command: [ 'sh', '-c', "socat -d -d -d - TCP-L:9001 > /pipes/stdin" ]
+      env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+      ports:
+        - containerPort: 9000
+      volumeMounts:
+        - name: airbyte-pipes
+          mountPath: /pipes
   volumes:
 #    - name: airbyte-volume-workspace
 #      persistentVolumeClaim:

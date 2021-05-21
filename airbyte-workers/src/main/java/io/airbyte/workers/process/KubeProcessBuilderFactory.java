@@ -176,6 +176,9 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
               .create(0L, 0, Path.of("/tmp"), "np_source:dev", null)
               .start();
 
+      process.getOutputStream().write(100);
+      process.getInputStream().read();
+
       // after running this main:
       // kubectl port-forward airbyte-worker-0-0-fmave 9000:9000
       // socat -d -d -d TCP-LISTEN:9000,bind=127.0.0.1 stdout
