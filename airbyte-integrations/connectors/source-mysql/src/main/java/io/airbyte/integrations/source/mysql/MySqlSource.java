@@ -52,8 +52,8 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
         config.get("database").asText()));
     // see MySqlJdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
     jdbc_url.append("?useCursorFetch=true");
-    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").isEmpty()) {
-      jdbc_url.append("&").append(config.get("jdbc_url_params"));
+    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
+      jdbc_url.append("&").append(config.get("jdbc_url_params").asText());
     }
     ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())

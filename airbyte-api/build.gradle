@@ -101,7 +101,7 @@ task generateApiDocs(type: GenerateTask) {
     ]
 
     doLast {
-        def target = file(rootProject.file("docs/api/generated-api-html"))
+        def target = file(rootProject.file("docs/reference/api/generated-api-html"))
         delete target
         mkdir target
         copy {

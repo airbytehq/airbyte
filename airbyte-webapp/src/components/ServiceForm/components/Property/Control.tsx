@@ -47,6 +47,7 @@ const Control: React.FC<IProps> = ({
         name={name}
         render={(arrayHelpers) => (
           <TagInput
+            name={name}
             value={(field.value || []).map((value: string, id: number) => ({
               id,
               value,
@@ -68,6 +69,7 @@ const Control: React.FC<IProps> = ({
         : undefined;
     return (
       <Multiselect
+        name={name}
         placeholder={placeholder}
         data={data}
         onChange={(dataItems) => form.setValue(dataItems)}

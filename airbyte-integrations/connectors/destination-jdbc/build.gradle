@@ -9,9 +9,17 @@ application {
 }
 
 dependencies {
+    implementation 'com.google.cloud:google-cloud-storage:1.113.16'
+    implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
+
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
+
+    implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'org.apache.commons:commons-csv:1.4'
+    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
     testImplementation "org.testcontainers:postgresql:1.15.1"
 

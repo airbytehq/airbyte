@@ -7,10 +7,9 @@ description:
   of state.json)
 type: object
 required:
-  - jobId
+  - status
   - recordsSynced
   - bytesSynced
-  - status
   - startTime
   - endTime
 additionalProperties: false

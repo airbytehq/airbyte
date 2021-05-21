@@ -34,6 +34,7 @@ Note that depending on the credentials you enter, you may only be able to sync s
 | :--- | :--- | :--- |
 | Full Refresh Sync | no |  |
 | Incremental Sync | yes |  |
+| Namespaces | No |  |
 
 ### Performance considerations
 

@@ -34,6 +34,7 @@ import io.airbyte.commons.string.Strings;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
+import java.util.stream.Collectors;
 import me.andrz.jackson.JsonContext;
 import me.andrz.jackson.JsonReferenceException;
 import me.andrz.jackson.JsonReferenceProcessor;
@@ -52,7 +53,15 @@ public class JsonSchemaValidator {
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
   }
 
-  public Set<ValidationMessage> validate(JsonNode schemaJson, JsonNode objectJson) {
+  public Set<String> validate(JsonNode schemaJson, JsonNode objectJson) {
+    return validateInternal(schemaJson, objectJson)
+        .stream()
+        .map(ValidationMessage::getMessage)
+        .collect(Collectors.toSet());
+  }
+
+  // keep this internal as it returns a type specific to the wrapped library.
+  private Set<ValidationMessage> validateInternal(JsonNode schemaJson, JsonNode objectJson) {
     Preconditions.checkNotNull(schemaJson);
     Preconditions.checkNotNull(objectJson);
 
@@ -61,7 +70,7 @@ public class JsonSchemaValidator {
   }
 
   public boolean test(JsonNode schemaJson, JsonNode objectJson) {
-    Set<ValidationMessage> validationMessages = validate(schemaJson, objectJson);
+    Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
 
     if (!validationMessages.isEmpty()) {
       LOGGER.info("JSON schema validation failed. \nerrors: {}", Strings.join(validationMessages, ", "));
@@ -71,7 +80,7 @@ public class JsonSchemaValidator {
   }
 
   public void ensure(JsonNode schemaJson, JsonNode objectJson) throws JsonValidationException {
-    final Set<ValidationMessage> validationMessages = validate(schemaJson, objectJson);
+    final Set<ValidationMessage> validationMessages = validateInternal(schemaJson, objectJson);
     if (validationMessages.isEmpty()) {
       return;
     }
@@ -81,6 +90,14 @@ public class JsonSchemaValidator {
         Strings.join(validationMessages, ", "),
         schemaJson.toPrettyString(),
         objectJson.toPrettyString()));
+  }
+
+  public void ensureAsRuntime(JsonNode schemaJson, JsonNode objectJson) {
+    try {
+      ensure(schemaJson, objectJson);
+    } catch (JsonValidationException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static JsonReferenceProcessor getProcessor() {

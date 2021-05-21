@@ -54,6 +54,7 @@ const ConditionSection: React.FC<{
               })
             }
             value={currentlySelectedCondition}
+            name={formField.path}
           />
         </>
       }
@@ -85,6 +86,7 @@ const ArraySection: React.FC<{
 
   return (
     <GroupControls
+      name={path}
       key={`form-variable-fields-${formField?.fieldKey}`}
       title={formField.title || formField.fieldKey}
       description={formField.description}

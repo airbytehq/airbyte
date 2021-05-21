@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "create_date": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "departments": {
+      "items": {
+        "type": ["integer"]
+      },
+      "type": ["null", "array"]
+    },
+    "display_name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "enabled": {
+      "type": ["null", "boolean"]
+    },
+    "enabled_departments": {
+      "type": ["null", "array"]
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["integer"]
+    },
+    "last_login": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "login_count": {
+      "type": ["null", "integer"]
+    },
+    "role_id": {
+      "type": ["null", "integer"]
+    },
+    "roles": {
+      "properties": {
+        "administrator": {
+          "type": ["boolean"]
+        },
+        "owner": {
+          "type": ["boolean"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "scope": {
+      "type": ["null", "string"]
+    },
+    "skills": {
+      "items": {
+        "type": "integer"
+      },
+      "type": ["null", "array"]
+    }
+  }
+}

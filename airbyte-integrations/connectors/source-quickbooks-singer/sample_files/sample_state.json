@@ -1,0 +1,16 @@
+{
+  "bookmarks": {
+    "accounts": {
+      "LastUpdatedTime": "2021-04-16T22:59:57-07:00"
+    },
+    "bill_payments": {
+      "LastUpdatedTime": "2021-02-14T12:56:17-08:00"
+    },
+    "bills": {
+      "LastUpdatedTime": "2021-02-14T13:10:36-08:00"
+    },
+    "credit_memos": {
+      "LastUpdatedTime": "2021-02-13T12:51:28-08:00"
+    }
+  }
+}

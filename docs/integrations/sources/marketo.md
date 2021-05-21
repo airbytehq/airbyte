@@ -25,6 +25,7 @@ This connector can be used to sync the following tables from Marketo:
 | `int`, `long` | `number` |  |
 | `object` | `object` |  |
 | `string` | `string` | \`\` |
+| Namespaces | No |  |
 
 ### Features
 

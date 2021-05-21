@@ -53,6 +53,8 @@ import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
+import io.airbyte.api.model.OperationRead;
+import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
@@ -93,22 +95,26 @@ import org.junit.jupiter.api.Test;
 class WebBackendConnectionsHandlerTest {
 
   private ConnectionsHandler connectionsHandler;
+  private OperationsHandler operationsHandler;
   private SchedulerHandler schedulerHandler;
   private WebBackendConnectionsHandler wbHandler;
 
   private SourceRead sourceRead;
   private ConnectionRead connectionRead;
+  private OperationReadList operationReadList;
   private WbConnectionRead expected;
   private WbConnectionRead expectedWithNewSchema;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     connectionsHandler = mock(ConnectionsHandler.class);
+    operationsHandler = mock(OperationsHandler.class);
     SourceHandler sourceHandler = mock(SourceHandler.class);
     DestinationHandler destinationHandler = mock(DestinationHandler.class);
     JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     schedulerHandler = mock(SchedulerHandler.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler);
+    wbHandler = new WebBackendConnectionsHandler(connectionsHandler, sourceHandler, destinationHandler, jobHistoryHandler, schedulerHandler,
+        operationsHandler);
 
     final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSource();
     SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
@@ -120,6 +126,10 @@ class WebBackendConnectionsHandlerTest {
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
     connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    operationReadList = new OperationReadList()
+        .operations(List.of(new OperationRead()
+            .operationId(connectionRead.getOperationIds().get(0))
+            .name("Test Operation")));
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
     sourceIdRequestBody.setSourceId(connectionRead.getSourceId());
@@ -158,6 +168,7 @@ class WebBackendConnectionsHandlerTest {
         .connectionId(connectionRead.getConnectionId())
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
+        .operationIds(connectionRead.getOperationIds())
         .name(connectionRead.getName())
         .prefix(connectionRead.getPrefix())
         .syncCatalog(connectionRead.getSyncCatalog())
@@ -165,6 +176,7 @@ class WebBackendConnectionsHandlerTest {
         .schedule(connectionRead.getSchedule())
         .source(sourceRead)
         .destination(destinationRead)
+        .operations(operationReadList)
         .latestSyncJobCreatedAt(now.getEpochSecond())
         .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false);
@@ -180,6 +192,7 @@ class WebBackendConnectionsHandlerTest {
         .connectionId(expected.getConnectionId())
         .sourceId(expected.getSourceId())
         .destinationId(expected.getDestinationId())
+        .operationIds(expected.getOperationIds())
         .name(expected.getName())
         .prefix(expected.getPrefix())
         .syncCatalog(modifiedCatalog)
@@ -187,6 +200,7 @@ class WebBackendConnectionsHandlerTest {
         .schedule(expected.getSchedule())
         .source(expected.getSource())
         .destination(expected.getDestination())
+        .operations(expected.getOperations())
         .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
         .latestSyncJobStatus(expected.getLatestSyncJobStatus())
         .isSyncing(expected.getIsSyncing());
@@ -201,7 +215,10 @@ class WebBackendConnectionsHandlerTest {
 
     final ConnectionReadList connectionReadList = new ConnectionReadList();
     connectionReadList.setConnections(Collections.singletonList(connectionRead));
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
+    connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
     when(connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)).thenReturn(connectionReadList);
+    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
     final WbConnectionReadList wbConnectionReadList = wbHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody);
     assertEquals(1, wbConnectionReadList.getConnections().size());
@@ -217,6 +234,7 @@ class WebBackendConnectionsHandlerTest {
     webBackendConnectionRequestBody.setConnectionId(connectionRead.getConnectionId());
 
     when(connectionsHandler.getConnection(connectionIdRequestBody)).thenReturn(connectionRead);
+    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
     final WbConnectionRead wbConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionRequestBody);
 
@@ -233,6 +251,7 @@ class WebBackendConnectionsHandlerTest {
     webBackendConnectionIdRequestBody.setWithRefreshedCatalog(true);
 
     when(connectionsHandler.getConnection(connectionIdRequestBody)).thenReturn(connectionRead);
+    when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
     final WbConnectionRead wbConnectionRead = wbHandler.webBackendGetConnection(webBackendConnectionIdRequestBody);
 
@@ -249,9 +268,11 @@ class WebBackendConnectionsHandlerTest {
 
     final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(TimeUnitEnum.MINUTES);
 
+    final UUID newOperationId = UUID.randomUUID();
     final WebBackendConnectionUpdate input = new WebBackendConnectionUpdate()
         .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
+        .operationIds(List.of(newOperationId))
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .syncCatalog(catalog)
@@ -260,6 +281,7 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionUpdate expected = new ConnectionUpdate()
         .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
+        .operationIds(List.of(newOperationId))
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .syncCatalog(catalog);
@@ -271,7 +293,7 @@ class WebBackendConnectionsHandlerTest {
 
   @Test
   public void testForCompleteness() {
-    final Set<String> handledMethods = Set.of("schedule", "connectionId", "syncCatalog", "prefix", "status");
+    final Set<String> handledMethods = Set.of("schedule", "connectionId", "syncCatalog", "prefix", "status", "operationIds");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
@@ -279,8 +301,10 @@ class WebBackendConnectionsHandlerTest {
         .collect(Collectors.toSet());
 
     final String message =
-        "If this test is failing, it means you added a field to ConnectionUpdate. Congratulations, but you're not done yet. You should update WebBackendConnectionsHandler::extractConnectionUpdate and ensure that the field is tested in testExtractConnectionUpdate. Then you can add the field name here to make this test pass.";
-
+        "If this test is failing, it means you added a field to ConnectionUpdate!\nCongratulations, but you're not done yet...\n"
+            + "\tYou should update WebBackendConnectionsHandler::toConnectionUpdate\n"
+            + "\tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate\n"
+            + "Then you can add the field name here to make this test pass. Cheers!";
     assertEquals(handledMethods, methods, message);
   }
 

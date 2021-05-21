@@ -39,7 +39,7 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
   @Override
   public Response toResponse(Throwable e) {
-    LOGGER.debug("Uncaught exception", e);
+    LOGGER.error("Uncaught exception", e);
     return Response.status(500)
         .entity(Jsons.serialize(ImmutableMap.of("message", "internal server error")))
         .type("application/json")

@@ -16,7 +16,7 @@ const StyledDropDown = styled(DropDown)`
 `;
 
 const SyncSettingsCell: React.FC<DropdownProps> = (props) => (
-  <Cell>
+  <Cell flex={1.5}>
     <DropDownContainer>
       <StyledDropDown {...props} fullText withBorder />
     </DropDownContainer>

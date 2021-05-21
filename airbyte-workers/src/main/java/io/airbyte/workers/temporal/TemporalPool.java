@@ -27,6 +27,9 @@ package io.airbyte.workers.temporal;
 import static java.util.stream.Collectors.toSet;
 
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
+import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivityImpl;
 import io.temporal.api.namespace.v1.NamespaceInfo;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.api.workflowservice.v1.ListNamespacesRequest;
@@ -71,19 +74,31 @@ public class TemporalPool implements Runnable {
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
     discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(pbf, workspaceRoot));
 
-    Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name());
+    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name());
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
-    syncWorker.registerActivitiesImplementations(new SyncWorkflow.SyncActivityImpl(pbf, workspaceRoot));
+    syncWorker.registerActivitiesImplementations(
+        new ReplicationActivityImpl(pbf, workspaceRoot),
+        new NormalizationActivityImpl(pbf, workspaceRoot),
+        new DbtTransformationActivityImpl(pbf, workspaceRoot));
 
     factory.start();
   }
 
-  private void waitForTemporalServerAndLog() {
+  protected void waitForTemporalServerAndLog() {
     LOGGER.info("Waiting for temporal server...");
 
-    while (!getNamespaces(temporalService).contains("default")) {
+    boolean temporalStatus = false;
+
+    while (!temporalStatus) {
       LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
       wait(2);
+
+      try {
+        temporalStatus = getNamespaces(temporalService).contains("default");
+      } catch (Exception e) {
+        // Ignore the exception because this likely means that the Temporal service is still initializing.
+        LOGGER.warn("Ignoring exception while trying to request Temporal namespaces:", e);
+      }
     }
 
     // sometimes it takes a few additional seconds for workflow queue listening to be available
@@ -100,7 +115,7 @@ public class TemporalPool implements Runnable {
     }
   }
 
-  private static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
+  protected static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
     return temporalService.blockingStub()
         .listNamespaces(ListNamespacesRequest.newBuilder().build())
         .getNamespacesList()

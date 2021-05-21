@@ -1,12 +1,16 @@
 import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useResource } from "rest-hooks";
 
 import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
-import FrequencyForm from "views/Connector/FrequencyForm";
+import ConnectionForm from "views/Connection/ConnectionForm";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
+import Button from "components/Button";
 
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
@@ -19,6 +23,9 @@ import { SyncSchema } from "core/domain/catalog";
 
 import useConnection from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
+import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -29,10 +36,15 @@ const SkipButton = styled.div`
   }
 `;
 
+const TryArrow = styled(FontAwesomeIcon)`
+  margin: 0 10px -1px 0;
+  font-size: 14px;
+`;
+
 type IProps = {
   additionBottomControls?: React.ReactNode;
-  source?: Source;
-  destination?: Destination;
+  source: Source;
+  destination: Destination;
   afterSubmitConnection?: () => void;
 };
 
@@ -50,6 +62,42 @@ const CreateConnectionContent: React.FC<IProps> = ({
     schemaErrorStatus,
     onDiscoverSchema,
   } = useDiscoverSchema(source?.sourceId);
+
+  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: source.sourceDefinitionId,
+  });
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    {
+      destinationDefinitionId: destination.destinationDefinitionId,
+    }
+  );
+
+  const {
+    isLoading: loadingDestination,
+  } = useDestinationDefinitionSpecificationLoad(
+    destination?.destinationDefinitionId
+  );
+
+  if (isLoading || loadingDestination) {
+    return (
+      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+        <LoadingSchema />
+      </ContentCard>
+    );
+  }
+
+  if (schemaErrorStatus) {
+    return (
+      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
+        <TryAfterErrorBlock
+          onClick={onDiscoverSchema}
+          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
+        />
+        <JobsLogItem jobInfo={schemaErrorStatus?.response} />
+      </ContentCard>
+    );
+  }
 
   const onSubmitConnectionStep = async (values: {
     frequency: string;
@@ -96,37 +144,29 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
   };
 
-  if (isLoading) {
+  const RefreshSchemaButton = () => {
     return (
-      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
-        <LoadingSchema />
-      </ContentCard>
+      <Button onClick={onDiscoverSchema} type="button">
+        <TryArrow icon={faRedoAlt} />
+        <FormattedMessage id="connection.refreshSchema" />
+      </Button>
     );
-  }
-
-  if (schemaErrorStatus) {
-    return (
-      <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
-        <TryAfterErrorBlock
-          onClick={onDiscoverSchema}
-          additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
-        />
-        <JobsLogItem jobInfo={schemaErrorStatus?.response} />
-      </ContentCard>
-    );
-  }
+  };
 
   return (
     <ContentCard title={<FormattedMessage id="onboarding.setConnection" />}>
       <Suspense fallback={<LoadingSchema />}>
-        <FrequencyForm
+        <ConnectionForm
           additionBottomControls={additionBottomControls}
           onDropDownSelect={onSelectFrequency}
+          additionalSchemaControl={RefreshSchemaButton()}
           onSubmit={onSubmitConnectionStep}
           errorMessage={createFormErrorMessage({ status: errorStatusRequest })}
           schema={schema}
           source={source}
           destination={destination}
+          sourceIcon={sourceDefinition?.icon}
+          destinationIcon={destinationDefinition?.icon}
         />
       </Suspense>
     </ContentCard>

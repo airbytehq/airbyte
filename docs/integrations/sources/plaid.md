@@ -18,6 +18,7 @@ Output streams:
 | Incremental - Append Sync | Coming soon |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 

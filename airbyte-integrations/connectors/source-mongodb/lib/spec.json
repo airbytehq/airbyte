@@ -50,6 +50,20 @@
         "default": "admin",
         "examples": ["admin"],
         "order": 5
+      },
+      "replica_set": {
+        "title": "Replica Set",
+        "type": "string",
+        "description": "The name of the set to filter servers by, when connecting to a replica set (Under this condition, the 'TLS connection' value automatically becomes 'true')",
+        "default": "",
+        "order": 6
+      },
+      "ssl": {
+        "title": "TLS connection",
+        "type": "boolean",
+        "description": "If this switch is enabled, TLS connections will be used to connect to MongoDB.",
+        "default": false,
+        "order": 7
       }
     }
   }

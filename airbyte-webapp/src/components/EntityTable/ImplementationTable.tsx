@@ -42,7 +42,11 @@ const ImplementationTable: React.FC<IProps> = ({
         Header: <FormattedMessage id="tables.connector" />,
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
-          <ConnectorCell value={cell.value} enabled={row.original.enabled} />
+          <ConnectorCell
+            value={cell.value}
+            enabled={row.original.enabled}
+            img={row.original.connectorIcon}
+          />
         ),
       },
       {

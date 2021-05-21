@@ -33,6 +33,7 @@ Several output streams are available from this source:
 | Incremental Sync | Yes |
 | Replicate Incremental Deletes | No |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 

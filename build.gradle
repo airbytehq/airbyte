@@ -2,6 +2,7 @@ plugins {
     id 'base'
     id 'pmd'
     id 'com.diffplug.spotless' version '5.7.0'
+    id 'com.github.hierynomus.license' version '0.15.0'
 }
 
 repositories {
@@ -15,27 +16,42 @@ if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
 }
 
-def createLicenseWith = { File license, String startComment, String endComment, String lineComment ->
+def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
+    /*
+    In java, we don't have a second linter/styling tool other than spotless so it doesn't really
+    matter if we write a newline or not for startComment/endComment.
+
+    However, in python, we are using black that double-checks and reformats the code.
+    Thus, writing an extra empty newline (not removed by trimTrailingWhitespace() is actually a
+    big deal and would be reformatted (removed) because of black's specs.
+    */
     def tmp = File.createTempFile('tmp', '.tmp')
     tmp.withWriter {
         def w = it
-        w.writeLine(startComment)
+        if (startComment.length() > 0 || !isPython) {
+            w.writeLine(startComment)
+        }
         license.eachLine {
             w << lineComment
             w.writeLine(it)
         }
-        w.writeLine(endComment)
+        if (endComment.length() > 0 || !isPython) {
+            w.writeLine(endComment)
+        }
         w.writeLine("")
+        if (isPython) {
+            w.writeLine("")
+        }
     }
     return tmp
 }
 
 def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '"""', '"""', "")
+    return createLicenseWith(license, '', '', '', true)
 }
 
 def createJavaLicenseWith = { license ->
-    return createLicenseWith(license, '/*', ' */', " * ")
+    return createLicenseWith(license, '/*', ' */', ' * ', false)
 }
 
 // We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a
@@ -50,6 +66,9 @@ def createSpotlessTarget = { pattern ->
         '*.egg-info',
         'build',
         'dbt-project-template',
+        'dbt_data_tests',
+        'dbt_schema_tests',
+        'normalization_test_output',
         'tools',
         'secrets'
     ]
@@ -58,7 +77,7 @@ def createSpotlessTarget = { pattern ->
         excludes.add("airbyte-integrations/connectors")
     }
 
-    return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect {"**/${it}"})
+    return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect { "**/${it}" })
 }
 
 spotless {
@@ -80,11 +99,6 @@ spotless {
         target createSpotlessTarget('**/*.sql')
 
         dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
-    }
-    python {
-        target createSpotlessTarget('**/*.py')
-
-        licenseHeaderFile createPythonLicenseWith(rootProject.file('LICENSE')), '(from|import|def|#)'
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
@@ -191,10 +205,10 @@ subprojects {
         implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30' //JCL bridge
         implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.30' // log4j1.2 bridge
 
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
-        testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
+        testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.9.0'
     }
 }
 
@@ -220,6 +234,32 @@ task('format') {
     dependsOn generate
     dependsOn spotlessApply
     dependsOn subprojects.collect { it.getTasksByName('airbytePythonFormat', true) }
+}
+
+// add licenses for python projects.
+subprojects {
+    def pythonFormatTask = project.tasks.findByName('blackFormat')
+
+    if(pythonFormatTask != null) {
+        apply plugin: "com.github.hierynomus.license"
+        task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
+            header = createPythonLicenseWith(rootProject.file('LICENSE'))
+            source = fileTree(dir: projectDir)
+                    .include("**/*.py")
+                    .exclude(".venv/**/*.py")
+                    .exclude("**/__init__.py")
+            strictCheck = true
+        }
+        def licenseTask = project.tasks.findByName('licenseFormatPython')
+        blackFormat.dependsOn licenseTask
+        isortFormat.dependsOn licenseTask
+        flakeCheck.dependsOn licenseTask
+
+        def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
+        if(generateFilesTask != null) {
+            licenseTask.dependsOn generateFilesTask
+        }
+    }
 }
 
 // produce reproducible archives

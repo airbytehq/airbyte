@@ -45,6 +45,7 @@ import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
+import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
@@ -74,17 +75,20 @@ public class WebBackendConnectionsHandler {
   private final DestinationHandler destinationHandler;
   private final JobHistoryHandler jobHistoryHandler;
   private final SchedulerHandler schedulerHandler;
+  private final OperationsHandler operationsHandler;
 
   public WebBackendConnectionsHandler(final ConnectionsHandler connectionsHandler,
                                       final SourceHandler sourceHandler,
                                       final DestinationHandler destinationHandler,
                                       final JobHistoryHandler jobHistoryHandler,
-                                      final SchedulerHandler schedulerHandler) {
+                                      final SchedulerHandler schedulerHandler,
+                                      final OperationsHandler operationsHandler) {
     this.connectionsHandler = connectionsHandler;
     this.sourceHandler = sourceHandler;
     this.destinationHandler = destinationHandler;
     this.jobHistoryHandler = jobHistoryHandler;
     this.schedulerHandler = schedulerHandler;
+    this.operationsHandler = operationsHandler;
   }
 
   public WbConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -100,7 +104,8 @@ public class WebBackendConnectionsHandler {
   private WbConnectionRead buildWbConnectionRead(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead);
     final DestinationRead destination = getDestinationRead(connectionRead);
-    final WbConnectionRead wbConnectionRead = getWbConnectionRead(connectionRead, source, destination);
+    final OperationReadList operations = getOperationReadList(connectionRead);
+    final WbConnectionRead wbConnectionRead = getWbConnectionRead(connectionRead, source, destination, operations);
 
     final JobReadList syncJobReadList = getSyncJobs(connectionRead);
     Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
@@ -119,18 +124,28 @@ public class WebBackendConnectionsHandler {
     return destinationHandler.getDestination(destinationIdRequestBody);
   }
 
-  private WbConnectionRead getWbConnectionRead(ConnectionRead connectionRead, SourceRead source, DestinationRead destination) {
+  private OperationReadList getOperationReadList(ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
+    return operationsHandler.listOperationsForConnection(connectionIdRequestBody);
+  }
+
+  private WbConnectionRead getWbConnectionRead(ConnectionRead connectionRead,
+                                               SourceRead source,
+                                               DestinationRead destination,
+                                               OperationReadList operations) {
     return new WbConnectionRead()
         .connectionId(connectionRead.getConnectionId())
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
+        .operationIds(connectionRead.getOperationIds())
         .name(connectionRead.getName())
         .prefix(connectionRead.getPrefix())
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
         .source(source)
-        .destination(destination);
+        .destination(destination)
+        .operations(operations);
   }
 
   private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
@@ -242,6 +257,7 @@ public class WebBackendConnectionsHandler {
 
     connectionUpdate.setPrefix(webBackendConnectionUpdate.getPrefix());
     connectionUpdate.setConnectionId(webBackendConnectionUpdate.getConnectionId());
+    connectionUpdate.setOperationIds(webBackendConnectionUpdate.getOperationIds());
     connectionUpdate.setSchedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.setStatus(webBackendConnectionUpdate.getStatus());
     connectionUpdate.setSyncCatalog(webBackendConnectionUpdate.getSyncCatalog());

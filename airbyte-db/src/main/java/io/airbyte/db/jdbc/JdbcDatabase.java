@@ -50,6 +50,17 @@ public interface JdbcDatabase extends AutoCloseable {
     execute(connection -> connection.createStatement().execute(sql));
   }
 
+  default void executeWithinTransaction(List<String> queries) throws SQLException {
+    execute(connection -> {
+      connection.setAutoCommit(false);
+      for (String s : queries) {
+        connection.createStatement().execute(s);
+      }
+      connection.commit();
+      connection.setAutoCommit(true);
+    });
+  }
+
   /**
    * Use a connection to create a {@link ResultSet} and map it into a list. The entire
    * {@link ResultSet} will be buffered in memory before the list is returned. The caller does not

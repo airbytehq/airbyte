@@ -4,13 +4,10 @@ import { FormattedMessage } from "react-intl";
 import ContentCard from "components/ContentCard";
 import ServiceForm from "components/ServiceForm";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import { Source } from "core/resources/Source";
 
 import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
 
 import usePrepareDropdownLists from "./usePrepareDropdownLists";
-
-import { IDataItem } from "components/DropDown/components/ListItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
@@ -18,14 +15,13 @@ import SkipOnboardingButton from "./SkipOnboardingButton";
 import { ConnectionConfiguration } from "core/domain/connection";
 
 type IProps = {
-  source?: Source;
   onSubmit: (values: {
     name: string;
     serviceType: string;
     sourceDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  dropDownData: IDataItem[];
+  dropDownData: { value: string; text: string; icon: string }[];
   hasSuccess?: boolean;
   error?: null | { message?: string; status?: number };
   jobInfo?: JobInfo;
@@ -37,13 +33,10 @@ const SourceStep: React.FC<IProps> = ({
   dropDownData,
   hasSuccess,
   error,
-  source,
   jobInfo,
   afterSelectConnector,
 }) => {
-  const [sourceDefinitionId, setSourceDefinitionId] = useState(
-    source?.sourceDefinitionId || ""
-  );
+  const [sourceDefinitionId, setSourceDefinitionId] = useState("");
   const {
     sourceDefinitionSpecification,
     isLoading,
@@ -85,13 +78,12 @@ const SourceStep: React.FC<IProps> = ({
         onDropDownSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         formType="source"
-        dropDownData={dropDownData}
+        availableServices={dropDownData}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         specifications={sourceDefinitionSpecification?.connectionSpecification}
         documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         isLoading={isLoading}
-        formValues={source}
       />
       <JobsLogItem jobInfo={jobInfo} />
     </ContentCard>

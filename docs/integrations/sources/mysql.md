@@ -19,7 +19,12 @@ MySQL data types are mapped to the following data types when synchronizing data:
 | `date` | string |  |
 | `datetime` | string |  |
 | `enum` | string |  |
-| `numeric` | string | includes integer, etc |
+| `tinyint` | number |  |
+| `smallint` | number |  |
+| `mediumint` | number |  |
+| `int` | number |  |
+| `bigint` | number |  |
+| `numeric` | number |  |
 | `string` | string |  |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
@@ -28,14 +33,15 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 ### Features
 
-| Feature | Supported |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| Replicate Incremental Deletes | Coming soon |
-| Logical Replication \(WAL\) | Coming soon |
-| SSL Support | Yes |
-| SSH Tunnel Connection | Coming soon |
+| Feature | Supported | Notes |
+| :--- | :--- | :--- |
+| Full Refresh Sync | Yes |  |
+| Incremental - Append Sync | Yes |  |
+| Replicate Incremental Deletes | Coming soon |  |
+| Logical Replication \(WAL\) | Coming soon |  |
+| SSL Support | Yes |  |
+| SSH Tunnel Connection | Coming soon |  |
+| Namespaces | Yes | Enabled by default |
 
 ## Getting started
 

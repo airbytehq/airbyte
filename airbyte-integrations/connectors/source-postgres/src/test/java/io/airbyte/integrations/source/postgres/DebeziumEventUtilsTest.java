@@ -41,7 +41,7 @@ class DebeziumEventUtilsTest {
 
   @Test
   public void testConvertChangeEvent() throws IOException {
-    final String stream = "public.names";
+    final String stream = "names";
     final Instant emittedAt = Instant.now();
     ChangeEvent<String, String> insertChangeEvent = mockChangeEvent("insert_change_event.json");
     ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
@@ -73,6 +73,7 @@ class DebeziumEventUtilsTest {
 
     final AirbyteRecordMessage recordMessage = new AirbyteRecordMessage()
         .withStream(stream)
+        .withNamespace("public")
         .withData(Jsons.deserialize(data))
         .withEmittedAt(emittedAt.toEpochMilli());
 

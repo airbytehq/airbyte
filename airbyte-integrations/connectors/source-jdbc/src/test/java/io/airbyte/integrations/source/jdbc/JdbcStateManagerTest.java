@@ -27,6 +27,7 @@ package io.airbyte.integrations.source.jdbc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.jdbc.JdbcStateManager.CursorInfo;
 import io.airbyte.integrations.source.jdbc.models.JdbcState;
 import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
@@ -43,8 +44,11 @@ import org.testcontainers.shaded.com.google.common.collect.Lists;
 
 class JdbcStateManagerTest {
 
+  private static final String NAMESPACE = "public";
   private static final String STREAM_NAME1 = "cars";
+  private static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR1 = new AirbyteStreamNameNamespacePair(STREAM_NAME1, NAMESPACE);
   private static final String STREAM_NAME2 = "bicycles";
+  private static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR2 = new AirbyteStreamNameNamespacePair(STREAM_NAME2, NAMESPACE);
   private static final String STREAM_NAME3 = "stationary_bicycles";
   private static final String CURSOR_FIELD1 = "year";
   private static final String CURSOR_FIELD2 = "generation";
@@ -52,44 +56,47 @@ class JdbcStateManagerTest {
 
   @Test
   void testCreateCursorInfoCatalogAndStateSameCursorField() {
-    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(STREAM_NAME1, getState(CURSOR_FIELD1, CURSOR), getCatalog(CURSOR_FIELD1));
+    final CursorInfo actual =
+        JdbcStateManager.createCursorInfoForStream(NAME_NAMESPACE_PAIR1, getState(CURSOR_FIELD1, CURSOR), getCatalog(CURSOR_FIELD1));
     assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, CURSOR_FIELD1, CURSOR), actual);
   }
 
   @Test
   void testCreateCursorInfoCatalogAndStateSameCursorFieldButNoCursor() {
-    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(STREAM_NAME1, getState(CURSOR_FIELD1, null), getCatalog(CURSOR_FIELD1));
+    final CursorInfo actual =
+        JdbcStateManager.createCursorInfoForStream(NAME_NAMESPACE_PAIR1, getState(CURSOR_FIELD1, null), getCatalog(CURSOR_FIELD1));
     assertEquals(new CursorInfo(CURSOR_FIELD1, null, CURSOR_FIELD1, null), actual);
   }
 
   @Test
   void testCreateCursorInfoCatalogAndStateChangeInCursorFieldName() {
-    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(STREAM_NAME1, getState(CURSOR_FIELD1, CURSOR), getCatalog(CURSOR_FIELD2));
+    final CursorInfo actual =
+        JdbcStateManager.createCursorInfoForStream(NAME_NAMESPACE_PAIR1, getState(CURSOR_FIELD1, CURSOR), getCatalog(CURSOR_FIELD2));
     assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, CURSOR_FIELD2, null), actual);
   }
 
   @Test
   void testCreateCursorInfoCatalogAndNoState() {
-    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(STREAM_NAME1, Optional.empty(), getCatalog(CURSOR_FIELD1));
+    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(NAME_NAMESPACE_PAIR1, Optional.empty(), getCatalog(CURSOR_FIELD1));
     assertEquals(new CursorInfo(null, null, CURSOR_FIELD1, null), actual);
   }
 
   @Test
   void testCreateCursorInfoStateAndNoCatalog() {
-    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(STREAM_NAME1, getState(CURSOR_FIELD1, CURSOR), Optional.empty());
+    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(NAME_NAMESPACE_PAIR1, getState(CURSOR_FIELD1, CURSOR), Optional.empty());
     assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, null, null), actual);
   }
 
   // this is what full refresh looks like.
   @Test
   void testCreateCursorInfoNoCatalogAndNoState() {
-    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(STREAM_NAME1, Optional.empty(), Optional.empty());
+    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(NAME_NAMESPACE_PAIR1, Optional.empty(), Optional.empty());
     assertEquals(new CursorInfo(null, null, null, null), actual);
   }
 
   @Test
   void testCreateCursorInfoStateAndCatalogButNoCursorField() {
-    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(STREAM_NAME1, getState(CURSOR_FIELD1, CURSOR), getCatalog(null));
+    final CursorInfo actual = JdbcStateManager.createCursorInfoForStream(NAME_NAMESPACE_PAIR1, getState(CURSOR_FIELD1, CURSOR), getCatalog(null));
     assertEquals(new CursorInfo(CURSOR_FIELD1, CURSOR, null, null), actual);
   }
 
@@ -110,28 +117,29 @@ class JdbcStateManagerTest {
   @Test
   void testGetters() {
     final JdbcState state = new JdbcState().withStreams(Lists.newArrayList(
-        new JdbcStreamState().withStreamName(STREAM_NAME1).withCursorField(Lists.newArrayList(CURSOR_FIELD1)).withCursor(CURSOR),
-        new JdbcStreamState().withStreamName(STREAM_NAME2)));
+        new JdbcStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(Lists.newArrayList(CURSOR_FIELD1))
+            .withCursor(CURSOR),
+        new JdbcStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE)));
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(Lists.newArrayList(
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1))
+                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE))
                 .withCursorField(Lists.newArrayList(CURSOR_FIELD1)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2))));
+                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE))));
 
     final JdbcStateManager stateManager = new JdbcStateManager(state, catalog);
 
-    assertEquals(Optional.of(CURSOR_FIELD1), stateManager.getOriginalCursorField(STREAM_NAME1));
-    assertEquals(Optional.of(CURSOR), stateManager.getOriginalCursor(STREAM_NAME1));
-    assertEquals(Optional.of(CURSOR_FIELD1), stateManager.getCursorField(STREAM_NAME1));
-    assertEquals(Optional.of(CURSOR), stateManager.getCursor(STREAM_NAME1));
+    assertEquals(Optional.of(CURSOR_FIELD1), stateManager.getOriginalCursorField(NAME_NAMESPACE_PAIR1));
+    assertEquals(Optional.of(CURSOR), stateManager.getOriginalCursor(NAME_NAMESPACE_PAIR1));
+    assertEquals(Optional.of(CURSOR_FIELD1), stateManager.getCursorField(NAME_NAMESPACE_PAIR1));
+    assertEquals(Optional.of(CURSOR), stateManager.getCursor(NAME_NAMESPACE_PAIR1));
 
-    assertEquals(Optional.empty(), stateManager.getOriginalCursorField(STREAM_NAME2));
-    assertEquals(Optional.empty(), stateManager.getOriginalCursor(STREAM_NAME2));
-    assertEquals(Optional.empty(), stateManager.getCursorField(STREAM_NAME2));
-    assertEquals(Optional.empty(), stateManager.getCursor(STREAM_NAME2));
+    assertEquals(Optional.empty(), stateManager.getOriginalCursorField(NAME_NAMESPACE_PAIR2));
+    assertEquals(Optional.empty(), stateManager.getOriginalCursor(NAME_NAMESPACE_PAIR2));
+    assertEquals(Optional.empty(), stateManager.getCursorField(NAME_NAMESPACE_PAIR2));
+    assertEquals(Optional.empty(), stateManager.getCursor(NAME_NAMESPACE_PAIR2));
   }
 
   @Test
@@ -139,34 +147,38 @@ class JdbcStateManagerTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(Lists.newArrayList(
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1))
+                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE))
                 .withCursorField(Lists.newArrayList(CURSOR_FIELD1)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2))
+                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE))
                 .withCursorField(Lists.newArrayList(CURSOR_FIELD2)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME3))));
+                .withStream(new AirbyteStream().withName(STREAM_NAME3).withNamespace(NAMESPACE))));
 
     final JdbcStateManager stateManager = new JdbcStateManager(new JdbcState(), catalog);
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(new JdbcState().withStreams(Lists
             .newArrayList(
-                new JdbcStreamState().withStreamName(STREAM_NAME1).withCursorField(Lists.newArrayList(CURSOR_FIELD1)).withCursor("a"),
-                new JdbcStreamState().withStreamName(STREAM_NAME2).withCursorField(Lists.newArrayList(CURSOR_FIELD2)),
-                new JdbcStreamState().withStreamName(STREAM_NAME3))
+                new JdbcStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(Lists.newArrayList(CURSOR_FIELD1))
+                    .withCursor("a"),
+                new JdbcStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(Lists.newArrayList(CURSOR_FIELD2)),
+                new JdbcStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
             .stream().sorted(Comparator.comparing(JdbcStreamState::getStreamName)).collect(Collectors.toList()))
             .withCdc(false)));
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(STREAM_NAME1, "a");
+    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
     final AirbyteStateMessage expectedSecondEmission = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(new JdbcState().withStreams(Lists
-            .newArrayList(new JdbcStreamState().withStreamName(STREAM_NAME1).withCursorField(Lists.newArrayList(CURSOR_FIELD1)).withCursor("a"),
-                new JdbcStreamState().withStreamName(STREAM_NAME2).withCursorField(Lists.newArrayList(CURSOR_FIELD2)).withCursor("b"),
-                new JdbcStreamState().withStreamName(STREAM_NAME3))
+            .newArrayList(
+                new JdbcStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(Lists.newArrayList(CURSOR_FIELD1))
+                    .withCursor("a"),
+                new JdbcStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE).withCursorField(Lists.newArrayList(CURSOR_FIELD2))
+                    .withCursor("b"),
+                new JdbcStreamState().withStreamName(STREAM_NAME3).withStreamNamespace(NAMESPACE))
             .stream().sorted(Comparator.comparing(JdbcStreamState::getStreamName)).collect(Collectors.toList()))
             .withCdc(false)));
-    final AirbyteStateMessage actualSecondEmission = stateManager.updateAndEmit(STREAM_NAME2, "b");
+    final AirbyteStateMessage actualSecondEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR2, "b");
     assertEquals(expectedSecondEmission, actualSecondEmission);
   }
 
@@ -175,21 +187,22 @@ class JdbcStateManagerTest {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
         .withStreams(Lists.newArrayList(
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME1))
+                .withStream(new AirbyteStream().withName(STREAM_NAME1).withNamespace(NAMESPACE))
                 .withCursorField(Lists.newArrayList(CURSOR_FIELD1)),
             new ConfiguredAirbyteStream()
-                .withStream(new AirbyteStream().withName(STREAM_NAME2))));
+                .withStream(new AirbyteStream().withName(STREAM_NAME2).withNamespace(NAMESPACE))));
     final JdbcStateManager stateManager = new JdbcStateManager(new JdbcState(), catalog);
 
     final AirbyteStateMessage expectedFirstEmission = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(new JdbcState().withStreams(Lists
             .newArrayList(
-                new JdbcStreamState().withStreamName(STREAM_NAME1).withCursorField(Lists.newArrayList(CURSOR_FIELD1)).withCursor("a"),
-                new JdbcStreamState().withStreamName(STREAM_NAME2))
+                new JdbcStreamState().withStreamName(STREAM_NAME1).withStreamNamespace(NAMESPACE).withCursorField(Lists.newArrayList(CURSOR_FIELD1))
+                    .withCursor("a"),
+                new JdbcStreamState().withStreamName(STREAM_NAME2).withStreamNamespace(NAMESPACE))
             .stream().sorted(Comparator.comparing(JdbcStreamState::getStreamName)).collect(Collectors.toList()))
             .withCdc(false)));
 
-    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(STREAM_NAME1, "a");
+    final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expectedFirstEmission, actualFirstEmission);
   }
 

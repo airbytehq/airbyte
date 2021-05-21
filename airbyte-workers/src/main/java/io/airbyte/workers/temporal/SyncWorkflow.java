@@ -24,12 +24,23 @@
 
 package io.airbyte.workers.temporal;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.AirbyteConfigValidator;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.DefaultSyncWorker;
+import io.airbyte.workers.DbtTransformationRunner;
+import io.airbyte.workers.DbtTransformationWorker;
+import io.airbyte.workers.DefaultNormalizationWorker;
+import io.airbyte.workers.DefaultReplicationWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
@@ -66,53 +77,101 @@ public interface SyncWorkflow {
 
   class WorkflowImpl implements SyncWorkflow {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowImpl.class);
+
     private final ActivityOptions options = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofDays(3))
         .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
         .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
 
-    private final SyncActivity activity = Workflow.newActivityStub(SyncActivity.class, options);
+    private final ReplicationActivity replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, options);
+    private final NormalizationActivity normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, options);
+    private final DbtTransformationActivity dbtTransformationActivity = Workflow.newActivityStub(DbtTransformationActivity.class, options);
 
     @Override
     public StandardSyncOutput run(JobRunConfig jobRunConfig,
                                   IntegrationLauncherConfig sourceLauncherConfig,
                                   IntegrationLauncherConfig destinationLauncherConfig,
                                   StandardSyncInput syncInput) {
-      return activity.run(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+      final StandardSyncOutput run = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+
+      if (syncInput.getOperationSequence() != null && !syncInput.getOperationSequence().isEmpty()) {
+        for (StandardSyncOperation standardSyncOperation : syncInput.getOperationSequence()) {
+          if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
+            final NormalizationInput normalizationInput = new NormalizationInput()
+                .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+                .withCatalog(run.getOutputCatalog());
+
+            normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
+          } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
+            final OperatorDbtInput operatorDbtInput = new OperatorDbtInput()
+                .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+                .withOperatorDbt(standardSyncOperation.getOperatorDbt());
+
+            dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, operatorDbtInput);
+          } else {
+            final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
+            LOGGER.error(message);
+            throw new IllegalArgumentException(message);
+          }
+        }
+      } else {
+        // TODO chris: Normalization operations should be defined at connection level in the
+        // operationSequence of StandardSyncInput. We keep this code for backward compatibility until we
+        // fully migrate normalization settings from destination to connection level
+        final NormalizationInput normalizationInput = new NormalizationInput()
+            .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+            .withCatalog(run.getOutputCatalog());
+
+        normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
+      }
+
+      return run;
     }
 
   }
 
   @ActivityInterface
-  interface SyncActivity {
+  interface ReplicationActivity {
 
     @ActivityMethod
-    StandardSyncOutput run(JobRunConfig jobRunConfig,
-                           IntegrationLauncherConfig sourceLauncherConfig,
-                           IntegrationLauncherConfig destinationLauncherConfig,
-                           StandardSyncInput syncInput);
+    StandardSyncOutput replicate(JobRunConfig jobRunConfig,
+                                 IntegrationLauncherConfig sourceLauncherConfig,
+                                 IntegrationLauncherConfig destinationLauncherConfig,
+                                 StandardSyncInput syncInput);
 
   }
 
-  class SyncActivityImpl implements SyncActivity {
+  class ReplicationActivityImpl implements ReplicationActivity {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SyncActivityImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationActivityImpl.class);
 
     private final ProcessBuilderFactory pbf;
     private final Path workspaceRoot;
+    private final AirbyteConfigValidator validator;
 
-    public SyncActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
-      this.pbf = pbf;
-      this.workspaceRoot = workspaceRoot;
+    public ReplicationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+      this(pbf, workspaceRoot, new AirbyteConfigValidator());
     }
 
-    public StandardSyncOutput run(JobRunConfig jobRunConfig,
-                                  IntegrationLauncherConfig sourceLauncherConfig,
-                                  IntegrationLauncherConfig destinationLauncherConfig,
-                                  StandardSyncInput syncInput) {
+    @VisibleForTesting
+    ReplicationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigValidator validator) {
+      this.pbf = pbf;
+      this.workspaceRoot = workspaceRoot;
+      this.validator = validator;
+    }
 
-      final Supplier<StandardSyncInput> inputSupplier = () -> syncInput;
+    @Override
+    public StandardSyncOutput replicate(JobRunConfig jobRunConfig,
+                                        IntegrationLauncherConfig sourceLauncherConfig,
+                                        IntegrationLauncherConfig destinationLauncherConfig,
+                                        StandardSyncInput syncInput) {
+
+      final Supplier<StandardSyncInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.STANDARD_SYNC_INPUT, Jsons.jsonNode(syncInput));
+        return syncInput;
+      };
 
       final TemporalAttemptExecution<StandardSyncInput, StandardSyncOutput> temporalAttemptExecution = new TemporalAttemptExecution<>(
           workspaceRoot,
@@ -146,18 +205,138 @@ public interface SyncWorkflow {
             sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB) ? new EmptyAirbyteSource()
                 : new DefaultAirbyteSource(sourceLauncher);
 
-        return new DefaultSyncWorker(
+        return new DefaultReplicationWorker(
             jobRunConfig.getJobId(),
             Math.toIntExact(jobRunConfig.getAttemptId()),
             airbyteSource,
             new NamespacingMapper(syncInput.getPrefix()),
             new DefaultAirbyteDestination(destinationLauncher),
-            new AirbyteMessageTracker(),
-            NormalizationRunnerFactory.create(
-                destinationLauncherConfig.getDockerImage(),
-                pbf,
-                syncInput.getDestinationConfiguration()));
+            new AirbyteMessageTracker());
       };
+    }
+
+  }
+
+  @ActivityInterface
+  interface NormalizationActivity {
+
+    @ActivityMethod
+    Void normalize(JobRunConfig jobRunConfig,
+                   IntegrationLauncherConfig destinationLauncherConfig,
+                   NormalizationInput input);
+
+  }
+
+  class NormalizationActivityImpl implements NormalizationActivity {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationActivityImpl.class);
+
+    private final ProcessBuilderFactory pbf;
+    private final Path workspaceRoot;
+    private final AirbyteConfigValidator validator;
+
+    public NormalizationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+      this(pbf, workspaceRoot, new AirbyteConfigValidator());
+    }
+
+    @VisibleForTesting
+    NormalizationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigValidator validator) {
+      this.pbf = pbf;
+      this.workspaceRoot = workspaceRoot;
+      this.validator = validator;
+    }
+
+    @Override
+    public Void normalize(JobRunConfig jobRunConfig,
+                          IntegrationLauncherConfig destinationLauncherConfig,
+                          NormalizationInput input) {
+
+      final Supplier<NormalizationInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(input));
+        return input;
+      };
+
+      final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
+          workspaceRoot,
+          jobRunConfig,
+          getWorkerFactory(destinationLauncherConfig, jobRunConfig, input),
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler());
+
+      return temporalAttemptExecution.get();
+    }
+
+    private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                          JobRunConfig jobRunConfig,
+                                                                                          NormalizationInput normalizationInput) {
+      return () -> new DefaultNormalizationWorker(
+          jobRunConfig.getJobId(),
+          Math.toIntExact(jobRunConfig.getAttemptId()),
+          NormalizationRunnerFactory.create(
+              destinationLauncherConfig.getDockerImage(),
+              pbf,
+              normalizationInput.getDestinationConfiguration()));
+    }
+
+  }
+
+  @ActivityInterface
+  interface DbtTransformationActivity {
+
+    @ActivityMethod
+    Void run(JobRunConfig jobRunConfig,
+             IntegrationLauncherConfig destinationLauncherConfig,
+             OperatorDbtInput input);
+
+  }
+
+  class DbtTransformationActivityImpl implements DbtTransformationActivity {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationActivityImpl.class);
+
+    private final ProcessBuilderFactory pbf;
+    private final Path workspaceRoot;
+    private final AirbyteConfigValidator validator;
+
+    public DbtTransformationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot) {
+      this(pbf, workspaceRoot, new AirbyteConfigValidator());
+    }
+
+    @VisibleForTesting
+    DbtTransformationActivityImpl(ProcessBuilderFactory pbf, Path workspaceRoot, AirbyteConfigValidator validator) {
+      this.pbf = pbf;
+      this.workspaceRoot = workspaceRoot;
+      this.validator = validator;
+    }
+
+    @Override
+    public Void run(JobRunConfig jobRunConfig, IntegrationLauncherConfig destinationLauncherConfig, OperatorDbtInput input) {
+
+      final Supplier<OperatorDbtInput> inputSupplier = () -> {
+        validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(input));
+        return input;
+      };
+
+      final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
+          workspaceRoot,
+          jobRunConfig,
+          getWorkerFactory(destinationLauncherConfig, jobRunConfig, input),
+          inputSupplier,
+          new CancellationHandler.TemporalCancellationHandler());
+
+      return temporalAttemptExecution.get();
+    }
+
+    private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
+                                                                                        JobRunConfig jobRunConfig,
+                                                                                        OperatorDbtInput operatorDbtInput) {
+      return () -> new DbtTransformationWorker(
+          jobRunConfig.getJobId(),
+          Math.toIntExact(jobRunConfig.getAttemptId()),
+          new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+              destinationLauncherConfig.getDockerImage(),
+              pbf,
+              operatorDbtInput.getDestinationConfiguration())));
     }
 
   }

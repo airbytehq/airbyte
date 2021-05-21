@@ -52,6 +52,7 @@ public class PostgresSpecTest {
       + "\"database\" : \"postgres_db\",  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
+      + "\"ssl\" : true, "
       + "\"replication_method\" : {    \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\"  }"
       + "}";
   private static JsonNode schema;

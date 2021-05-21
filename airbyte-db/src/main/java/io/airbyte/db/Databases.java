@@ -28,6 +28,7 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
+import java.util.Optional;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
 
@@ -39,6 +40,10 @@ public class Databases {
 
   public static JdbcDatabase createRedshiftDatabase(String username, String password, String jdbcConnectionString) {
     return createJdbcDatabase(username, password, jdbcConnectionString, "com.amazon.redshift.jdbc.Driver");
+  }
+
+  public static Database createSqlServerDatabase(String username, String password, String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "com.microsoft.sqlserver.jdbc.SQLServerDriver", SQLDialect.DEFAULT);
   }
 
   public static Database createDatabase(final String username,
@@ -60,6 +65,17 @@ public class Databases {
     return new DefaultJdbcDatabase(connectionPool);
   }
 
+  public static JdbcDatabase createJdbcDatabase(final String username,
+                                                final String password,
+                                                final String jdbcConnectionString,
+                                                final String driverClassName,
+                                                final String connectionProperties) {
+    final BasicDataSource connectionPool =
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.of(connectionProperties));
+
+    return new DefaultJdbcDatabase(connectionPool);
+  }
+
   public static JdbcDatabase createStreamingJdbcDatabase(final String username,
                                                          final String password,
                                                          final String jdbcConnectionString,
@@ -75,11 +91,21 @@ public class Databases {
                                                        final String password,
                                                        final String jdbcConnectionString,
                                                        final String driverClassName) {
+    return createBasicDataSource(username, password, jdbcConnectionString, driverClassName,
+        Optional.empty());
+  }
+
+  private static BasicDataSource createBasicDataSource(final String username,
+                                                       final String password,
+                                                       final String jdbcConnectionString,
+                                                       final String driverClassName,
+                                                       final Optional<String> connectionProperties) {
     final BasicDataSource connectionPool = new BasicDataSource();
     connectionPool.setDriverClassName(driverClassName);
     connectionPool.setUsername(username);
     connectionPool.setPassword(password);
     connectionPool.setUrl(jdbcConnectionString);
+    connectionProperties.ifPresent(connectionPool::setConnectionProperties);
     return connectionPool;
   }
 

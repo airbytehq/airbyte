@@ -44,6 +44,7 @@ Some APIs aren't supported in v1.0, e.g. channel messages and channel messages r
 | Incremental Sync | Coming soon |  |
 | Replicate Incremental Deletes | Coming soon |  |
 | SSL connection | Yes |  |
+| Namespaces | No |  |
 
 ### Performance considerations
 

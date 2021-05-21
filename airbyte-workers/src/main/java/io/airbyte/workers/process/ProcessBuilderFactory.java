@@ -30,19 +30,40 @@ import java.util.List;
 
 public interface ProcessBuilderFactory {
 
-  ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final String... args) throws WorkerException;
+  /**
+   * Creates a ProcessBuilder to run a program in a new Process.
+   *
+   * @param jobId job Id
+   * @param attempt attempt Id
+   * @param jobPath Workspace directory to run the process from
+   * @param imageName Docker image name to start the process from
+   * @param entrypoint If not null, the default entrypoint program of the docker image can be changed
+   *        by this argument
+   * @param args arguments to pass to the docker image being run in the new process
+   * @return the ProcessBuilder object to run the process
+   * @throws WorkerException
+   */
+  ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
+      throws WorkerException;
 
-  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String... args) throws WorkerException {
-    return create(String.valueOf(jobId), attempt, jobPath, imageName, args);
-  }
-
-  default ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final List<String> args)
+  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
       throws WorkerException {
-    return create(jobId, attempt, jobPath, imageName, args.toArray(new String[0]));
+    return create(String.valueOf(jobId), attempt, jobPath, imageName, entrypoint, args);
   }
 
-  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final List<String> args) throws WorkerException {
-    return create(String.valueOf(jobId), attempt, jobPath, imageName, args);
+  default ProcessBuilder create(String jobId,
+                                int attempt,
+                                final Path jobPath,
+                                final String imageName,
+                                final String entrypoint,
+                                final List<String> args)
+      throws WorkerException {
+    return create(jobId, attempt, jobPath, imageName, entrypoint, args.toArray(new String[0]));
+  }
+
+  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final List<String> args)
+      throws WorkerException {
+    return create(String.valueOf(jobId), attempt, jobPath, imageName, entrypoint, args);
   }
 
 }

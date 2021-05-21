@@ -36,6 +36,7 @@ This connector outputs the following streams:
 | Full Refresh Sync | Yes |
 | Incremental - Append Sync | Partially \(not all streams\) |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 

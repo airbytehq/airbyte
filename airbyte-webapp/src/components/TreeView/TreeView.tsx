@@ -1,11 +1,17 @@
 import React, { useCallback, useMemo } from "react";
 
 import { TreeViewSection } from "./components/TreeViewSection";
-import { SyncSchema, AirbyteStreamConfiguration } from "core/domain/catalog";
+import {
+  SyncSchema,
+  AirbyteStreamConfiguration,
+  DestinationSyncMode,
+  AirbyteStream,
+} from "core/domain/catalog";
 
 type IProps = {
   filter?: string;
   schema: SyncSchema;
+  destinationSupportedSyncModes: DestinationSyncMode[];
   onChangeSchema: (schema: SyncSchema) => void;
 };
 
@@ -16,7 +22,12 @@ function compareByName<T extends { name: string }>(o1: T, o2: T): -1 | 0 | 1 {
   return o1.name > o2.name ? 1 : -1;
 }
 
-const TreeView: React.FC<IProps> = ({ schema, onChangeSchema, filter }) => {
+const TreeView: React.FC<IProps> = ({
+  schema,
+  destinationSupportedSyncModes,
+  onChangeSchema,
+  filter,
+}) => {
   const filteringSchema = useMemo(() => {
     return filter
       ? {
@@ -27,10 +38,10 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema, filter }) => {
       : schema;
   }, [filter, schema]);
 
-  const onUpdateItem = useCallback(
-    (streamId: string, newStream: Partial<AirbyteStreamConfiguration>) => {
+  const onUpdateStream = useCallback(
+    (stream: AirbyteStream, newStream: Partial<AirbyteStreamConfiguration>) => {
       const newSchema = schema.streams.map((streamNode) => {
-        return streamNode.stream.name === streamId
+        return streamNode.stream === stream
           ? {
               ...streamNode,
               config: { ...streamNode.config, ...newStream },
@@ -57,9 +68,12 @@ const TreeView: React.FC<IProps> = ({ schema, onChangeSchema, filter }) => {
     <>
       {sortedSchema.streams.map((streamNode) => (
         <TreeViewSection
-          key={streamNode.stream.name}
+          key={`${
+            streamNode.stream.namespace ? streamNode.stream.namespace + "/" : ""
+          }${streamNode.stream.name}`}
           streamNode={streamNode}
-          updateItem={onUpdateItem}
+          destinationSupportedSyncModes={destinationSupportedSyncModes}
+          updateStream={onUpdateStream}
         />
       ))}
     </>

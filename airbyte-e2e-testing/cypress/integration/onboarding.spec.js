@@ -3,9 +3,7 @@ describe("Onboarding actions", () => {
     cy.visit("/");
     cy.url().should("include", `${Cypress.config().baseUrl}/preferences`);
 
-    cy.fillEmail("test-email-onboarding@test-onboarding-domain.com");
-    cy.get("input[name=securityUpdates]").parent().click();
-
+    // cy.fillEmail("");
     cy.submit();
 
     cy.url().should("include", `${Cypress.config().baseUrl}/onboarding`);

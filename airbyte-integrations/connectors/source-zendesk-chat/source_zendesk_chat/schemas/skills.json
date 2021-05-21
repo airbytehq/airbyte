@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": ["null", "string"]
+    },
+    "enabled": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["integer"]
+    },
+    "members": {
+      "items": {
+        "type": "integer"
+      },
+      "type": ["null", "array"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    }
+  }
+}

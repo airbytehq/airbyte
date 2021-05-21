@@ -52,7 +52,7 @@ definitions:
       - emitted_at
     properties:
       stream:
-        description: "the name of the stream for this record"
+        description: "the name of this record's stream"
         type: string
       data:
         description: "the record data"
@@ -61,6 +61,9 @@ definitions:
       emitted_at:
         description: "when the data was emitted from the source. epoch in millisecond."
         type: integer
+      namespace:
+        description: "the namespace of this record's stream"
+        type: string
   AirbyteStateMessage:
     type: object
     additionalProperties: true

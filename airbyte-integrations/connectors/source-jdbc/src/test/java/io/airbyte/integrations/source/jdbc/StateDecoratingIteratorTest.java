@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -47,7 +48,9 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 class StateDecoratingIteratorTest {
 
+  private static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "shoes";
+  private static final AirbyteStreamNameNamespacePair NAME_NAMESPACE_PAIR = new AirbyteStreamNameNamespacePair(STREAM_NAME, NAMESPACE);
   private static final String UUID_FIELD_NAME = "ascending_inventory_uuid";
   private static final AirbyteMessage RECORD_MESSAGE1 = new AirbyteMessage()
       .withType(Type.RECORD)
@@ -67,20 +70,20 @@ class StateDecoratingIteratorTest {
     messageIterator = MoreIterators.of(RECORD_MESSAGE1, RECORD_MESSAGE2);
     stateManager = mock(JdbcStateManager.class);
     stateMessage = mock(AirbyteStateMessage.class);
-    when(stateManager.getOriginalCursorField(STREAM_NAME)).thenReturn(Optional.empty());
-    when(stateManager.getOriginalCursor(STREAM_NAME)).thenReturn(Optional.empty());
-    when(stateManager.getCursorField(STREAM_NAME)).thenReturn(Optional.empty());
-    when(stateManager.getCursor(STREAM_NAME)).thenReturn(Optional.empty());
+    when(stateManager.getOriginalCursorField(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
+    when(stateManager.getOriginalCursor(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
+    when(stateManager.getCursorField(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
+    when(stateManager.getCursor(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
   }
 
   @Test
   void testWithoutInitialCursor() {
-    when(stateManager.updateAndEmit(STREAM_NAME, "def")).thenReturn(stateMessage);
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, "def")).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         messageIterator,
         stateManager,
-        STREAM_NAME,
+        NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
         null,
         JsonSchemaPrimitive.STRING);
@@ -93,12 +96,12 @@ class StateDecoratingIteratorTest {
 
   @Test
   void testWithInitialCursor() {
-    when(stateManager.updateAndEmit(STREAM_NAME, "xyz")).thenReturn(stateMessage);
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, "xyz")).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         messageIterator,
         stateManager,
-        STREAM_NAME,
+        NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
         "xyz",
         JsonSchemaPrimitive.STRING);
@@ -115,12 +118,12 @@ class StateDecoratingIteratorTest {
     ((ObjectNode) recordMessage.getRecord().getData()).remove(UUID_FIELD_NAME);
     final Iterator<AirbyteMessage> messageStream = MoreIterators.of(recordMessage);
 
-    when(stateManager.updateAndEmit(STREAM_NAME, "xyz")).thenReturn(stateMessage);
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, "xyz")).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         messageStream,
         stateManager,
-        STREAM_NAME,
+        NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
         null,
         JsonSchemaPrimitive.STRING);
@@ -133,12 +136,12 @@ class StateDecoratingIteratorTest {
 
   @Test
   void testEmptyStream() {
-    when(stateManager.updateAndEmit(STREAM_NAME, null)).thenReturn(stateMessage);
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, null)).thenReturn(stateMessage);
 
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         Collections.emptyIterator(),
         stateManager,
-        STREAM_NAME,
+        NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
         null,
         JsonSchemaPrimitive.STRING);

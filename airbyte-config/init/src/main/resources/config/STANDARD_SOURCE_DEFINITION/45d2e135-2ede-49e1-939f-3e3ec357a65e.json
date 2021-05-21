@@ -1,0 +1,7 @@
+{
+  "sourceDefinitionId": "45d2e135-2ede-49e1-939f-3e3ec357a65e",
+  "name": "Recharge",
+  "dockerRepository": "airbyte/source-recharge",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-recharge"
+}

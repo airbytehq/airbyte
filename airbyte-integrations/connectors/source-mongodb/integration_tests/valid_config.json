@@ -4,5 +4,6 @@
   "database": "sample_analytics",
   "user": "user",
   "password": "password",
-  "auth_source": "admin"
+  "auth_source": "admin",
+  "ssl": false
 }

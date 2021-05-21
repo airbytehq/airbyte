@@ -25,10 +25,12 @@
 package io.airbyte.integrations.standardtest.destination;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -37,6 +39,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -51,6 +54,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.WorkerConstants;
@@ -72,6 +76,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
@@ -152,6 +157,13 @@ public abstract class TestDestination {
   }
 
   /**
+   * Override to return true if a destination implements namespaces and should be tested as such.
+   */
+  protected boolean implementsNamespaces() {
+    return false;
+  }
+
+  /**
    * Detects if a destination implements append mode from the spec.json that should include
    * 'supportsIncremental' = true
    *
@@ -190,6 +202,18 @@ public abstract class TestDestination {
    * @return - a boolean.
    */
   protected boolean implementsBasicNormalization() {
+    return false;
+  }
+
+  private boolean supportsDBT() {
+    return implementsBasicNormalization();
+  }
+
+  /**
+   * Override to return true if a destination implements size limits on record size (then destination
+   * should redefine getMaxRecordValueLimit() too)
+   */
+  protected boolean implementsRecordSizeLimitChecks() {
     return false;
   }
 
@@ -314,10 +338,43 @@ public abstract class TestDestination {
     runSync(config, firstSyncMessages, configuredCatalog);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+        .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getName())
+            .withEmittedAt(Instant.now().toEpochMilli())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 1)
+                .put("currency", "USD")
                 .put("date", "2020-03-31T00:00:00Z")
+                .put("HKD", 10)
+                .put("NZD", 700)
+                .build()))));
+
+    runSync(config, secondSyncMessages, configuredCatalog);
+    final String defaultSchema = getDefaultSchema(config);
+    retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
+  }
+
+  /**
+   * Tests that we are able to read over special characters properly when processing line breaks in
+   * destinations.
+   */
+  @Test
+  public void testLineBreakCharacters() throws Exception {
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final JsonNode config = getConfig();
+
+    final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(catalog.getStreams().get(0).getName())
+            .withEmittedAt(Instant.now().toEpochMilli())
+            .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 1)
+                .put("currency", "USD\u2028")
+                .put("date", "2020-03-\n31T00:00:00Z\r")
                 .put("HKD", 10)
                 .put("NZD", 700)
                 .build()))));
@@ -352,9 +409,13 @@ public abstract class TestDestination {
     runSync(config, firstSyncMessages, configuredCatalog);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
+        .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getName())
+            .withEmittedAt(Instant.now().toEpochMilli())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 1)
+                .put("currency", "USD")
                 .put("date", "2020-03-31T00:00:00Z")
                 .put("HKD", 10)
                 .put("NZD", 700)
@@ -415,7 +476,7 @@ public abstract class TestDestination {
       s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
       s.withCursorField(Collections.emptyList());
       // use composite primary key of various types (string, float)
-      s.withPrimaryKey(List.of(List.of("currency"), List.of("date"), List.of("NZD")));
+      s.withPrimaryKey(List.of(List.of("id"), List.of("currency"), List.of("date"), List.of("NZD")));
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
@@ -430,6 +491,7 @@ public abstract class TestDestination {
                 .withStream(catalog.getStreams().get(0).getName())
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 2)
                     .put("currency", "EUR")
                     .put("date", "2020-09-01T00:00:00Z")
                     .put("HKD", 10.5)
@@ -441,6 +503,7 @@ public abstract class TestDestination {
                 .withStream(catalog.getStreams().get(0).getName())
                 .withEmittedAt(Instant.now().toEpochMilli() + 100L)
                 .withData(Jsons.jsonNode(ImmutableMap.builder()
+                    .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-09-01T00:00:00Z")
                     .put("HKD", 5.4)
@@ -456,7 +519,8 @@ public abstract class TestDestination {
         .stream()
         .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
         .collect(Collectors.toMap(
-            message -> message.getRecord().getData().get("currency").asText() +
+            message -> message.getRecord().getData().get("id").asText() +
+                message.getRecord().getData().get("currency").asText() +
                 message.getRecord().getData().get("date").asText() +
                 message.getRecord().getData().get("NZD").asText(),
             message -> message,
@@ -467,7 +531,8 @@ public abstract class TestDestination {
         .stream()
         .filter(message -> message.getType() == Type.RECORD && message.getRecord() != null)
         .filter(message -> {
-          final String key = message.getRecord().getData().get("currency").asText() +
+          final String key = message.getRecord().getData().get("id").asText() +
+              message.getRecord().getData().get("currency").asText() +
               message.getRecord().getData().get("date").asText() +
               message.getRecord().getData().get("NZD").asText();
           return message.getRecord().getEmittedAt().equals(latestMessagesOnly.get(key).getRecord().getEmittedAt());
@@ -479,8 +544,179 @@ public abstract class TestDestination {
     assertSameMessages(expectedMessages, actualMessages, true);
   }
 
+  /**
+   * This test is running a sync using the exchange rate catalog and messages. However it also
+   * generates and adds two extra messages with big records (near the destination limit as defined by
+   * getMaxValueLengthLimit()
+   *
+   * The first big message should be small enough to fit into the destination while the second message
+   * would be too big and fails to replicate.
+   */
+  @Test
+  void testSyncVeryBigRecords() throws Exception {
+    if (!implementsRecordSizeLimitChecks()) {
+      return;
+    }
+
+    final AirbyteCatalog catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    // Add a big message that barely fits into the limits of the destination
+    messages.add(new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(catalog.getStreams().get(0).getName())
+            .withEmittedAt(Instant.now().toEpochMilli())
+            .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 3)
+                // remove enough characters from max limit to fit the other columns and json characters
+                .put("currency", generateBigString(-150))
+                .put("date", "2020-10-10T00:00:00Z")
+                .put("HKD", 10.5)
+                .put("NZD", 1.14)
+                .build()))));
+    // Add a big message that does not fit into the limits of the destination
+    final AirbyteMessage bigMessage = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(catalog.getStreams().get(0).getName())
+            .withEmittedAt(Instant.now().toEpochMilli())
+            .withData(Jsons.jsonNode(ImmutableMap.builder()
+                .put("id", 3)
+                .put("currency", generateBigString(0))
+                .put("date", "2020-10-10T00:00:00Z")
+                .put("HKD", 10.5)
+                .put("NZD", 1.14)
+                .build())));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    final List<AirbyteMessage> allMessages = new ArrayList<>();
+    allMessages.add(bigMessage);
+    allMessages.addAll(messages);
+    runSync(config, allMessages, configuredCatalog);
+    retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
+  }
+
+  private String generateBigString(int addExtraCharacters) {
+    final int length = getMaxRecordValueLimit() + addExtraCharacters;
+    return new Random()
+        .ints('a', 'z' + 1)
+        .limit(length)
+        .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+        .toString();
+  }
+
+  /**
+   * @return the max limit length allowed for values in the destination.
+   */
+  protected int getMaxRecordValueLimit() {
+    return 1000000000;
+  }
+
+  @Test
+  void testCustomDbtTransformations() throws Exception {
+    if (!supportsDBT()) {
+      return;
+    }
+
+    final JsonNode config = getConfigWithBasicNormalization();
+
+    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+        getImageName(),
+        pbf,
+        config));
+    runner.start();
+    final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
+    final OperatorDbt dbtConfig = new OperatorDbt()
+        .withGitRepoUrl("https://github.com/fishtown-analytics/jaffle_shop.git")
+        .withGitRepoBranch("main")
+        .withDockerImage("fishtownanalytics/dbt:0.19.1");
+    //
+    // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
+    //
+    // This dbt project transforms raw data from an app database into a customers and orders model ready
+    // for analytics.
+    // The repo is a self-contained playground dbt project, useful for testing out scripts, and
+    // communicating some of the core dbt concepts:
+    //
+    // 1. First, it tests if connection to the destination works.
+    dbtConfig.withDbtArguments("debug");
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt debug Failed.");
+    }
+    // 2. Install any dependencies packages, if any
+    dbtConfig.withDbtArguments("deps");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt deps Failed.");
+    }
+    // 3. It contains seeds that includes some (fake) raw data from a fictional app as CSVs data sets.
+    // This materializes the CSVs as tables in your target schema.
+    // Note that a typical dbt project does not require this step since dbt assumes your raw data is
+    // already in your warehouse.
+    dbtConfig.withDbtArguments("seed");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt seed Failed.");
+    }
+    // 4. Run the models:
+    // Note: If this steps fails, it might mean that you need to make small changes to the SQL in the
+    // models folder to adjust for the flavor of SQL of your target database.
+    dbtConfig.withDbtArguments("run");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt run Failed.");
+    }
+    // 5. Test the output of the models and tables have been properly populated:
+    dbtConfig.withDbtArguments("test");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt test Failed.");
+    }
+    // 6. Generate dbt documentation for the project:
+    dbtConfig.withDbtArguments("docs generate");
+    if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt docs generate Failed.");
+    }
+    runner.close();
+  }
+
+  @Test
+  void testCustomDbtTransformationsFailure() throws Exception {
+    if (!supportsDBT()) {
+      return;
+    }
+
+    final JsonNode config = getConfigWithBasicNormalization();
+
+    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+        getImageName(),
+        pbf,
+        config));
+    runner.start();
+    final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
+    final OperatorDbt dbtConfig = new OperatorDbt()
+        .withGitRepoUrl("https://github.com/fishtown-analytics/dbt-learn-demo.git")
+        .withGitRepoBranch("master")
+        .withDockerImage("fishtownanalytics/dbt:0.19.1")
+        .withDbtArguments("debug");
+    if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig)) {
+      throw new WorkerException("dbt debug Failed.");
+    }
+
+    dbtConfig.withDbtArguments("test");
+    assertFalse(runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, dbtConfig),
+        "dbt test should fail, as we haven't run dbt run on this project yet");
+  }
+
+  /**
+   * Verify the destination uses the namespace field if it is set.
+   */
   @Test
   void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
+    if (!implementsNamespaces()) {
+      return;
+    }
+
+    // TODO(davin): make these tests part of the catalog file.
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final String namespace = "sourcenamespace";
@@ -489,11 +725,69 @@ public abstract class TestDestination {
 
     final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    messages.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace);
+          }
+        });
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
     runSync(config, messages, configuredCatalog);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
+  }
+
+  /**
+   * Verify a destination is able to write tables with the same name to different namespaces.
+   */
+  @Test
+  void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
+    if (!implementsNamespaces()) {
+      return;
+    }
+
+    // TODO(davin): make these tests part of the catalog file.
+    final var catalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    final var namespace1 = "sourcenamespace";
+    catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
+
+    final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
+    final var namespace2 = "diff_source_namespace";
+    final var mapper = new ObjectMapper();
+    for (AirbyteStream stream : catalog.getStreams()) {
+      var clonedStream = mapper.readValue(mapper.writeValueAsString(stream), AirbyteStream.class);
+      clonedStream.setNamespace(namespace2);
+      diffNamespaceStreams.add(clonedStream);
+    }
+    catalog.getStreams().addAll(diffNamespaceStreams);
+
+    final var configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
+    final var ns1Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    ns1Msgs.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace1);
+          }
+        });
+    final var ns2Msgs = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+    ns2Msgs.forEach(
+        message -> {
+          if (message.getRecord() != null) {
+            message.getRecord().setNamespace(namespace2);
+          }
+        });
+    final var allMessages = new ArrayList<>(ns1Msgs);
+    allMessages.addAll(ns2Msgs);
+
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+    runSync(config, allMessages, configuredCatalog);
+    retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
@@ -538,13 +832,12 @@ public abstract class TestDestination {
 
   private void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema) throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
-
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
       List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema)
           .stream()
-          .map(data -> new AirbyteRecordMessage().withStream(streamName).withData(data))
+          .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data))
           .collect(Collectors.toList());
       actualMessages.addAll(msgList);
     }

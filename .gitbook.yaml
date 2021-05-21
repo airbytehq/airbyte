@@ -3,3 +3,36 @@ root: ./docs/
 structure:
   readme: ../README.md
   summary: SUMMARY.md
+
+redirects:
+  architecture/cdc: ./understanding-airbyte/cdc.md
+  architecture/catalog: ./understanding-airbyte/catalog.md
+  architecture/airbyte-specification: ./understanding-airbyte/airbyte-specification.md
+  architecture/basic-normalization: ./understanding-airbyte/basic-normalization.md
+  architecture/connections: ./understanding-airbyte/connections.md
+  architecture/connections/full-refresh-overwrite: ./understanding-airbyte/connections/full-refresh-overwrite.md
+  architecture/connections/full-refresh-append: ./understanding-airbyte/connections/full-refresh-append.md
+  architecture/connections/incremental-append: ./understanding-airbyte/connections/incremental-append.md
+  architecture/https://docs.airbyte.io/understanding-airbyte/connections/incremental-deduped-history: ./understanding-airbyte/https://docs.airbyte.io/understanding-airbyte/connections/incremental-deduped-history.md
+  architecture/high-level-view: ./understanding-airbyte/high-level-view.md
+  architecture/jobs: ./understanding-airbyte/jobs.md
+  architecture/tech-stack: ./understanding-airbyte/tech-stack.md
+  architecture/namespaces: ./understanding-airbyte/namespaces.md
+  architecture: ./understanding-airbyte.md
+  roadmap: ./project-overview/roadmap.md
+  changelog: ./project-overview/changelog.md
+  changelog/platform: ./project-overview/changelog/platform.md
+  changelog/connectors: ./project-overview/changelog/connectors.md
+  license: ./project-overview/license.md
+  tutorials/postgres-replication: ./examples/postgres-replication.md
+  tutorials/build-a-slack-activity-dashboard: ./examples/build-a-slack-activity-dashboard.md
+  tutorials/zoom-activity-dashboard: ./examples/zoom-activity-dashboard.md
+  tutorials/slack-history: ./examples/slack-history.md
+  tutorials/beginners-guide-to-catalog: ./tutorials/tutorials/beginners-guide-to-catalog.md
+  tutorials/toy-connector: ./tutorials/tutorials/build-a-connector-the-hard-way.md
+  tutorials/build-a-connector-the-hard-way: ./tutorials/tutorials/build-a-connector-the-hard-way.md
+  tutorials/adding-incremental-sync: ./tutorials/tutorials/adding-incremental-sync.md
+  tutorials/building-a-python-source: ./tutorials/tutorials/building-a-python-source.md
+  tutorials/transformations-with-sql: ./tutorials/transformation-and-normalization/transformations-with-sql.md
+  tutorials/transformations-with-dbt: ./tutorials/transformation-and-normalization/transformations-with-dbt.md
+  contributing-to-airbyte/cdk-tutorial-alpha: ./contributing-to-airbyte/python/README.md

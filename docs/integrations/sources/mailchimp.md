@@ -26,6 +26,7 @@ Please [create a Github issue](https://github.com/airbytehq/airbyte/issues/new/c
 | Incremental Sync | Coming soon |  |
 | Replicate Incremental Deletes | Coming soon |  |
 | SSL connection | Yes | Enabled by default |
+| Namespaces | No |  |
 
 ### Performance considerations
 

@@ -38,6 +38,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,7 +105,7 @@ class DefaultConfigPersistenceTest {
         .withConnectionId(UUID_1)
         .withSourceId(UUID.randomUUID())
         .withDestinationId(UUID.randomUUID())
-        .withStatus(StandardSync.Status.ACTIVE);
+        .withOperationIds(List.of(UUID.randomUUID()));
 
     configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), standardSync);
 

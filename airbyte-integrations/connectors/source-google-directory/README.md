@@ -62,7 +62,7 @@ python -m pytest unit_tests
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/google-directory:dev
+docker build . -t airbyte/source-google-directory:dev
 ```
 
 You can also build the connector image via Gradle:

@@ -27,11 +27,13 @@ package io.airbyte.scheduler.client;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,14 +56,16 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
                                       DestinationConnection destination,
                                       StandardSync standardSync,
                                       String sourceDockerImage,
-                                      String destinationDockerImage)
+                                      String destinationDockerImage,
+                                      List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
     final Optional<Long> jobIdOptional = jobCreator.createSyncJob(
         source,
         destination,
         standardSync,
         sourceDockerImage,
-        destinationDockerImage);
+        destinationDockerImage,
+        standardSyncOperations);
 
     long jobId = jobIdOptional.isEmpty()
         ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()
@@ -73,9 +77,11 @@ public class DefaultSchedulerJobClient implements SchedulerJobClient {
   @Override
   public Job createOrGetActiveResetConnectionJob(DestinationConnection destination,
                                                  StandardSync standardSync,
-                                                 String destinationDockerImage)
+                                                 String destinationDockerImage,
+                                                 List<StandardSyncOperation> standardSyncOperations)
       throws IOException {
-    final Optional<Long> jobIdOptional = jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage);
+    final Optional<Long> jobIdOptional =
+        jobCreator.createResetConnectionJob(destination, standardSync, destinationDockerImage, standardSyncOperations);
 
     long jobId = jobIdOptional.isEmpty()
         ? jobPersistence.getLastReplicationJob(standardSync.getConnectionId()).orElseThrow(() -> new RuntimeException("No job available")).getId()

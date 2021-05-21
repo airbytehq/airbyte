@@ -5,6 +5,7 @@ import { MultiselectProps as WidgetMultiselectProps } from "react-widgets/lib/Mu
 type MultiselectProps = {
   disabled?: boolean;
   error?: boolean;
+  name?: string;
 } & WidgetMultiselectProps;
 
 const Multiselect = styled(ReactMultiselect)<MultiselectProps>`

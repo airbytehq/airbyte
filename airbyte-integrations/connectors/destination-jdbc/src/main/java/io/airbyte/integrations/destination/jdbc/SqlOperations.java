@@ -26,7 +26,7 @@ package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import java.util.stream.Stream;
+import java.util.List;
 
 // todo (cgardens) - is it necessary to expose so much configurability in this interface. review if
 // we can narrow the surface area.
@@ -84,7 +84,7 @@ public interface SqlOperations {
    * @param tableName name of table
    * @throws Exception exception
    */
-  void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
+  void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
 
   /**
    * Query to copy all records from source table to destination table. Both tables must be in the
@@ -103,6 +103,18 @@ public interface SqlOperations {
    * @param queries queries to execute
    * @throws Exception exception
    */
-  void executeTransaction(JdbcDatabase database, String queries) throws Exception;
+  void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception;
+
+  /**
+   * Check if the data record is valid and ok to be written to destination
+   */
+  boolean isValidData(final String data);
+
+  /**
+   * Denotes whether the destination has the concept of schema or not
+   *
+   * @return true if the destination supports schema (ex: Postgres), false if it doesn't(MySQL)
+   */
+  boolean isSchemaRequired();
 
 }

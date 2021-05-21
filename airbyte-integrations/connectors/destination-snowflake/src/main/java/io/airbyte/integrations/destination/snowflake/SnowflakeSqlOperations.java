@@ -32,8 +32,6 @@ import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,9 +52,7 @@ class SnowflakeSqlOperations extends DefaultSqlOperations implements SqlOperatio
   }
 
   @Override
-  public void insertRecords(JdbcDatabase database, Stream<AirbyteRecordMessage> recordsStream, String schemaName, String tableName)
-      throws SQLException {
-    final List<AirbyteRecordMessage> records = recordsStream.collect(Collectors.toList());
+  public void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
 
     // snowflake query syntax:

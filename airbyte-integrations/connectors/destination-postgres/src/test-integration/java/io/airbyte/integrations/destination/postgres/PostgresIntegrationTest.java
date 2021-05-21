@@ -60,6 +60,7 @@ public class PostgresIntegrationTest extends TestDestination {
         .put("schema", "public")
         .put("port", db.getFirstMappedPort())
         .put("database", db.getDatabaseName())
+        .put("ssl", false)
         .build());
   }
 
@@ -72,6 +73,7 @@ public class PostgresIntegrationTest extends TestDestination {
         .put("schema", "public")
         .put("port", db.getFirstMappedPort())
         .put("database", db.getDatabaseName())
+        .put("ssl", false)
         .build());
   }
 
@@ -85,6 +87,11 @@ public class PostgresIntegrationTest extends TestDestination {
 
   @Override
   protected boolean implementsBasicNormalization() {
+    return true;
+  }
+
+  @Override
+  protected boolean implementsNamespaces() {
     return true;
   }
 

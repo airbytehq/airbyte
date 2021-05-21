@@ -1,0 +1,66 @@
+{
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "startAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "endedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "templateId": {
+      "type": ["null", "integer"]
+    },
+    "messageMedium": {
+      "type": ["null", "string"]
+    },
+    "createdByUserId": {
+      "type": ["null", "string"]
+    },
+    "updatedByUserId": {
+      "type": ["null", "string"]
+    },
+    "campaignState": {
+      "type": ["null", "string"]
+    },
+    "listIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "suppressionListIds": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "sendSize": {
+      "type": ["null", "number"]
+    },
+    "recurringCampaignId": {
+      "type": ["null", "number"]
+    },
+    "workflowId": {
+      "type": ["null", "number"]
+    },
+    "labels": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "type": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

@@ -97,6 +97,7 @@ class ConnectionsHandlerTest {
     final ConnectionCreate connectionCreate = new ConnectionCreate()
         .sourceId(standardSync.getSourceId())
         .destinationId(standardSync.getDestinationId())
+        .operationIds(standardSync.getOperationIds())
         .name("presto to hudi")
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
@@ -108,7 +109,8 @@ class ConnectionsHandlerTest {
     final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
-        standardSync.getDestinationId());
+        standardSync.getDestinationId(),
+        standardSync.getOperationIds());
 
     assertEquals(expectedConnectionRead, actualConnectionRead);
 
@@ -158,7 +160,8 @@ class ConnectionsHandlerTest {
     final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
-        standardSync.getDestinationId())
+        standardSync.getDestinationId(),
+        standardSync.getOperationIds())
         .schedule(null)
         .syncCatalog(catalog)
         .status(ConnectionStatus.INACTIVE);
@@ -209,11 +212,13 @@ class ConnectionsHandlerTest {
     final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
-        standardSync.getDestinationId());
+        standardSync.getDestinationId(),
+        standardSync.getOperationIds());
 
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
         .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
+        .operationIds(connectionRead.getOperationIds())
         .status(ConnectionStatus.DEPRECATED)
         .syncCatalog(connectionRead.getSyncCatalog())
         .schedule(connectionRead.getSchedule());

@@ -44,6 +44,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -136,6 +137,10 @@ class BigQueryDestinationTest {
         .getService();
 
     final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
+    MESSAGE_USERS1.getRecord().setNamespace(datasetId);
+    MESSAGE_USERS2.getRecord().setNamespace(datasetId);
+    MESSAGE_TASKS1.getRecord().setNamespace(datasetId);
+    MESSAGE_TASKS2.getRecord().setNamespace(datasetId);
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
@@ -218,7 +223,7 @@ class BigQueryDestinationTest {
   @Test
   void testWriteSuccess() throws Exception {
     final BigQueryDestination destination = new BigQueryDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -250,7 +255,7 @@ class BigQueryDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog));
+    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);

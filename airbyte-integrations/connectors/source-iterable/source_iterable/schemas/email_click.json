@@ -1,0 +1,61 @@
+{
+  "properties": {
+    "country": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "campaignId": {
+      "type": ["null", "integer"]
+    },
+    "itblInternal": {
+      "type": ["null", "object"],
+      "properties": {
+        "documentCreatedAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "documentUpdatedAt": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "ip": {
+      "type": ["null", "string"]
+    },
+    "contentId": {
+      "type": ["null", "integer"]
+    },
+    "userAgentDevice": {
+      "type": ["null", "string"]
+    },
+    "messageId": {
+      "type": ["null", "string"]
+    },
+    "hrefIndex": {
+      "type": ["null", "integer"]
+    },
+    "userAgent": {
+      "type": ["null", "string"]
+    },
+    "templateId": {
+      "type": ["null", "integer"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "region": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

@@ -18,6 +18,7 @@ It contains one stream: `data`. That stream will contain one record which is the
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental Sync | Coming soon |
+| Namespaces | No |
 
 ### Getting started
 

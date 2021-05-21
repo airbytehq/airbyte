@@ -8,6 +8,10 @@ For information about how to use this connector within Airbyte, see [the documen
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
+#### Connector-Specific Dependencies
+
+For this connector, you will need Rust, as it is a prerequisite for running `pip install cryptography`. You can do this with the recommended installation pattern noted [here](https://www.rust-lang.org/tools/install) on the Rust website.
+
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```
@@ -72,6 +76,7 @@ In order to run integrations tests in this connector, you need:
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source file test creds`
 and place them into `secrets/config.json`.
 
+
 ### Locally running the connector
 ```
 python main_dev.py spec
@@ -91,7 +96,7 @@ python -m pytest unit_tests
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/file:dev
+docker build . -t airbyte/source-file:dev
 ```
 
 You can also build the connector image via Gradle:

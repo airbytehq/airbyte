@@ -18,6 +18,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Incremental Sync | Coming soon |
 | Replicate Incremental Deletes | Coming soon |
 | SSL connection | Yes |
+| Namespaces | No |
 
 ### Performance considerations
 

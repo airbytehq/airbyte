@@ -73,7 +73,14 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                                   CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                                   Supplier<INPUT> inputSupplier,
                                   CancellationHandler cancellationHandler) {
-    this(workspaceRoot, jobRunConfig, workerSupplier, inputSupplier, WorkerUtils::setJobMdc, Files::createDirectories, cancellationHandler,
+    this(
+        workspaceRoot,
+        jobRunConfig,
+        workerSupplier,
+        inputSupplier,
+        WorkerUtils::setJobMdc,
+        Files::createDirectories,
+        cancellationHandler,
         () -> Activity.getExecutionContext().getInfo().getWorkflowId());
   }
 
@@ -113,6 +120,9 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       final Thread workerThread = getWorkerThread(worker, outputFuture);
       final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
       final Runnable cancellationChecker = getCancellationChecker(worker, workerThread, outputFuture);
+
+      // check once first that we are not already cancelled. if we are, don't start!
+      cancellationChecker.run();
 
       workerThread.start();
       scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);

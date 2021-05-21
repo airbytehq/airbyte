@@ -25,6 +25,7 @@ Currencies are `number` and the date is a `string`.
 | :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental - Append Sync | Yes |
+| Namespaces | No |
 
 ### Getting started
 
