@@ -42,14 +42,13 @@ import org.slf4j.LoggerFactory;
 public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactory.class);
-  private final String resourceName;
 
-  public KubeProcessBuilderFactory() {
-    this.resourceName = null; // todo: somehow make the different types of processes configurable
-  }
+  private static final Path WORKSPACE_MOUNT_DESTINATION = Path.of("/workspace");
 
-  public KubeProcessBuilderFactory(String resourceName) {
-    this.resourceName = resourceName;
+  private final Path workspaceRoot;
+
+  public KubeProcessBuilderFactory(Path workspaceRoot) {
+    this.workspaceRoot = workspaceRoot;
   }
 
   @Override
@@ -57,21 +56,17 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       throws WorkerException {
 
     try {
-      final String template = MoreResources.readResource(resourceName);
+      final String template = MoreResources.readResource("kube_runner_template.yaml");
 
       // used to differentiate source and destination processes with the same id and attempt
       final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
 
       ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
-      String command = getCommandFromImage(imageName);
-      LOGGER.info("Using entrypoint from image: " + command);
-
       final String rendered = template.replaceAll("JOBID", jobId)
           .replaceAll("ATTEMPTID", String.valueOf(attempt))
           .replaceAll("IMAGE", imageName)
           .replaceAll("SUFFIX", suffix)
-          .replaceAll("COMMAND", command)
           .replaceAll("ARGS", Jsons.serialize(Arrays.asList(args)))
           .replaceAll("WORKDIR", jobRoot.toString());
 
@@ -85,7 +80,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
               "kubectl",
               "run",
               "--generator=run-pod/v1",
-              // "--rm", todo: add this back in
+              "--rm",
               "-i",
               "--pod-running-timeout=24h",
               "--image=" + imageName,
