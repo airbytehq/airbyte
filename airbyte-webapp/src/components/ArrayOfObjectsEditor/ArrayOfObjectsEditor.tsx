@@ -22,11 +22,16 @@ const SmallButton = styled(Button)`
   padding: 6px 8px 7px;
 `;
 
+const Content = styled.div`
+  margin-bottom: 20px;
+`;
+
 type ArrayOfObjectsEditorProps = {
   items: { name: string }[];
   children?: React.ReactNode;
   mainTitle?: React.ReactNode;
   addButtonText?: React.ReactNode;
+  doneButtonText?: React.ReactNode;
   onStartEdit: (n: number) => void;
   onCancelEdit: () => void;
   onDone: () => void;
@@ -44,6 +49,7 @@ const ArrayOfObjectsEditor: React.FC<ArrayOfObjectsEditorProps> = ({
   children,
   mainTitle,
   addButtonText,
+  doneButtonText,
 }) => {
   const onAddItem = React.useCallback(() => onStartEdit(items.length), [
     onStartEdit,
@@ -60,7 +66,7 @@ const ArrayOfObjectsEditor: React.FC<ArrayOfObjectsEditorProps> = ({
 
   if (isEditMode) {
     return (
-      <>
+      <Content>
         {typeof children === "function" ? children() : children}
         <ButtonContainer>
           <SmallButton onClick={onCancelEdit} type="button" secondary>
@@ -71,15 +77,15 @@ const ArrayOfObjectsEditor: React.FC<ArrayOfObjectsEditorProps> = ({
             type="button"
             data-test-id="done-button"
           >
-            <FormattedMessage id="form.done" />
+            {doneButtonText || <FormattedMessage id="form.done" />}
           </SmallButton>
         </ButtonContainer>
-      </>
+      </Content>
     );
   }
 
   return (
-    <>
+    <Content>
       <EditorHeader
         itemsCount={items.length}
         onAddItem={onAddItem}
@@ -99,7 +105,7 @@ const ArrayOfObjectsEditor: React.FC<ArrayOfObjectsEditorProps> = ({
           ))}
         </ItemsList>
       ) : null}
-    </>
+    </Content>
   );
 };
 

@@ -112,6 +112,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       initialValues={{
         frequency: frequencyValue || "",
         prefix: prefixValue || "",
+        // TODO: fix
+        transformations: [],
         // TODO: check normalization values with api
         normalization: normalization || Normalisation.RAW,
       }}
