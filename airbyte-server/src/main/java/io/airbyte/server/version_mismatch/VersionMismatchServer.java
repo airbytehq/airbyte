@@ -80,6 +80,18 @@ public class VersionMismatchServer {
     // this error message should be overwritten before any requests are served
     public static String ERROR_MESSAGE = "Versions don't match!";
 
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      var outputMap = ImmutableMap.of("error", ERROR_MESSAGE);
+
+      for (Map.Entry<String, String> entry : CorsFilter.MAP.entrySet()) {
+        response.setHeader(entry.getKey(), entry.getValue());
+      }
+
+      response.setContentType("application/json");
+      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      response.getWriter().println(Jsons.serialize(outputMap));
+    }
+
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
       var outputMap = ImmutableMap.of("error", ERROR_MESSAGE);
 
@@ -90,6 +102,12 @@ public class VersionMismatchServer {
       response.setContentType("application/json");
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       response.getWriter().println(Jsons.serialize(outputMap));
+    }
+
+    public void doOptions(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      for (Map.Entry<String, String> entry : CorsFilter.MAP.entrySet()) {
+        response.setHeader(entry.getKey(), entry.getValue());
+      }
     }
 
   }
