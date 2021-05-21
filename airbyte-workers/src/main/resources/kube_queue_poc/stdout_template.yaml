@@ -28,7 +28,7 @@ spec:
           "sh",
           "-c",
           "cat /pipes/stdout | socat -d -d -d - TCP:host.docker.internal:9000",
-        ] # todo: pass in the sync worker ip
+        ]
       env:
         - name: POD_IP
           valueFrom:

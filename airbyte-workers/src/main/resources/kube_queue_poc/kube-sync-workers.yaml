@@ -8,3 +8,8 @@ spec:
     - name: kube-sync-worker-test
       image: airbyte/kube-sync-worker-test:dev
       imagePullPolicy: Always
+      ports:
+        - containerPort: 9000
+          name: source-port
+        - containerPort: 9001
+          name: dest-port

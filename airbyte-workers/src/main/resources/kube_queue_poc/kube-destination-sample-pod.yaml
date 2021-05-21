@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: airbyte-worker-JOBID-ATTEMPTID-SUFFIX
+  name: kube-destination-sample
 spec:
   restartPolicy: Never
   initContainers:
@@ -12,32 +12,31 @@ spec:
         - name: airbyte-pipes
           mountPath: /pipes
   containers:
-    - name: worker
-      image: IMAGE
-      workingDir: WORKDIR
-      command: ["sh", "-c", "cat /pipes/stdin | COMMAND > /pipes/stdout"]
-      args: ARGS
+    - name: destination
+      image: airbyte/destination-listen-and-echo:dev
+      imagePullPolicy: Always
+      command: ["sh", "-c", "cat /pipes/stdin | ./listen-and-echo.sh > /pipes/stdout"]
       volumeMounts:
-        #        - name: airbyte-volume-workspace
-        #          mountPath: /workspace
         - name: airbyte-pipes
           mountPath: /pipes
-    - name: socat
+    - name: socat-port-to-destination-in
       image: alpine/socat:1.7.4.1-r1
       command: ["sh", "-c", "socat -d -d -d - TCP-L:9001 > /pipes/stdin"]
-      env:
-        - name: POD_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
       ports:
         - containerPort: 9001
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes
+    - name: destination-out-to-socat-port
+      image: alpine/socat:1.7.4.1-r1
+      command: [
+          "sh",
+          "-c",
+          "cat /pipes/stdout | socat -d -d -d - TCP:10.104.0.57:9001",
+      ]
+      volumeMounts:
+        - name: airbyte-pipes
+          mountPath: /pipes
   volumes:
-    #    - name: airbyte-volume-workspace
-    #      persistentVolumeClaim:
-    #        claimName: airbyte-volume-workspace
     - name: airbyte-pipes
       emptyDir: {}

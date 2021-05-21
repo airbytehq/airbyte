@@ -2,6 +2,9 @@ FROM openjdk:14.0.2-slim
 
 WORKDIR /airbyte
 
+# Just so we can run kubectl for now.
+COPY --from=lachlanevenson/k8s-kubectl:v1.10.3 /usr/local/bin/kubectl /usr/local/bin/kubectl
+
 COPY build/distributions/airbyte-workers*.tar airbyte-workers.tar
 
 RUN tar xf airbyte-workers.tar --strip-components=1
