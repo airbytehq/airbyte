@@ -5,11 +5,13 @@ import styled from "styled-components";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
+import { StepMenuItem } from "components/StepsMenu/StepsMenu";
 import LoadingPage from "components/LoadingPage";
 import SourcesView from "./components/SourcesView";
 import DestinationsView from "./components/DestinationsView";
 import CreateConnector from "./components/CreateConnector";
 import ConfigurationView from "./components/ConfigurationView";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div`
   padding-top: 4px;
@@ -24,18 +26,21 @@ enum StepsTypes {
 }
 
 const AdminPage: React.FC = () => {
-  const steps = [
+  const steps: StepMenuItem[] = [
     {
       id: StepsTypes.SOURCES,
       name: <FormattedMessage id="admin.sources" />,
+      headTitle: <HeadTitle titleId="admin.sourcesHeadTitle" />,
     },
     {
       id: StepsTypes.DESTINATIONS,
       name: <FormattedMessage id="admin.destinations" />,
+      headTitle: <HeadTitle titleId="admin.destinationsHeadTitle" />,
     },
     {
       id: StepsTypes.CONFIGURATION,
       name: <FormattedMessage id="admin.configuration" />,
+      headTitle: <HeadTitle titleId="admin.configurationHeadTitle" />,
     },
   ];
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.SOURCES);
@@ -54,7 +59,8 @@ const AdminPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      title={
+      headTitle={<HeadTitle titleId="sidebar.admin" />}
+      pageTitle={
         <PageTitle
           withLine
           title={<FormattedMessage id="sidebar.admin" />}

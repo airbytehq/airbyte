@@ -183,6 +183,7 @@
 
   "connection.warningUpdateSchema": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch.",
   "connection.fromTo": "{source} → {destination}",
+  "connection.itemTitle": "Connection | {source} → {destination}",
   "connection.connectionSettings": "Connection settings",
   "connection.testsPassed": "All connection tests passed",
   "connection.testsFailed": "The connection tests failed.",
@@ -244,8 +245,13 @@
   "tables.connectionDeleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
 
   "admin.destinations": "Destinations",
+  "admin.destinationsHeadTitle": "Admin | Destinations",
+  "admin.destinationItemTitle": "Destination | {destination}",
   "admin.sources": "Sources",
+  "admin.sourcesHeadTitle": "Admin | Sources",
+  "admin.sourceItemTitle": "Source | {source}",
   "admin.configuration": "Configuration",
+  "admin.configurationHeadTitle": "Admin | Configuration",
   "admin.exportConfiguration": "Export Configuration",
   "admin.importConfiguration": "Import Configuration",
   "admin.export": "Export",

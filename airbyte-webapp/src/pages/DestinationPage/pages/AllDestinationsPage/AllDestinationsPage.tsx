@@ -12,6 +12,7 @@ import config from "config";
 import ContentCard from "components/ContentCard";
 import EmptyResource from "components/EmptyResourceBlock";
 import DestinationResource from "core/resources/Destination";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -29,6 +30,7 @@ const AllDestinationsPage: React.FC = () => {
 
   return (
     <>
+      <HeadTitle titleId="admin.destinations" />
       <PageTitle
         title={<FormattedMessage id="admin.destinations" />}
         endComponent={
