@@ -48,7 +48,10 @@ class AsanaStream(HttpStream, ABC):
             return {"offset": next_page["offset"]}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
         # Asana pagination could be from 1 to 100.
@@ -89,46 +92,51 @@ class AsanaStream(HttpStream, ABC):
         yield from response_json.get("data", [])  # Asana puts records in a container array "data"
 
 
-class AsanaStreamWorkspacePagination(AsanaStream, ABC):
+class WorkspaceRelatedStream(AsanaStream, ABC):
     """
     Few streams (Projects, Tags and Users) require passing required `workspace` argument in request.
     So this is basically the whole point of this class - to pass `workspace` argument in request.
     """
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params["workspace"] = stream_slice["workspace_gid"]
+        return params
 
-    def read_records(
+    def stream_slices(
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         workspaces_stream = Workspaces(authenticator=self.authenticator)
-        for workspace in workspaces_stream.read_records(sync_mode=SyncMode.full_refresh):
-            stream_state = stream_state or dict()
-            pagination_complete = False
+        workspaces_slices = workspaces_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for workspace_slice in workspaces_slices:
+            for workspace in workspaces_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=workspace_slice):
+                yield {"workspace_gid": workspace["gid"]}
 
-            next_page_token = None
-            while not pagination_complete:
-                request_headers = self.request_headers(
-                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-                )
-                request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-                request = self._create_prepared_request(
-                    path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                    params=dict(request_params, workspace=workspace["gid"]),
-                    json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                )
 
-                response = self._send_request(request)
-                yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
+class ProjectRelatedStream(AsanaStream, ABC):
+    """
+    Few streams (Sections and Tasks) depends on `project gid`: Sections as a part of url and Tasks as `projects`
+    argument in request.
+    """
 
-                next_page_token = self.next_page_token(response)
-                if not next_page_token:
-                    pagination_complete = True
-
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        projects_stream = Projects(authenticator=self.authenticator)
+        projects_slices = projects_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for project_slice in projects_slices:
+            for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=project_slice):
+                yield {"project_gid": project["gid"]}
 
 
 class CustomFields(AsanaStream):
@@ -136,26 +144,26 @@ class CustomFields(AsanaStream):
         workspace_gid = stream_slice["workspace_gid"]
         return f"workspaces/{workspace_gid}/custom_fields"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         workspaces_stream = Workspaces(authenticator=self.authenticator)
         for workspace in workspaces_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"workspace_gid": workspace["gid"]}, **kwargs)
+            yield {"workspace_gid": workspace["gid"]}
 
 
-class Projects(AsanaStreamWorkspacePagination):
+class Projects(WorkspaceRelatedStream):
     def path(self, **kwargs) -> str:
         return "projects"
 
 
-class Sections(AsanaStream):
+class Sections(ProjectRelatedStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         project_gid = stream_slice["project_gid"]
         return f"projects/{project_gid}/sections"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator)
-        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_gid": project["gid"]}, **kwargs)
 
 
 class Stories(AsanaStream):
@@ -163,33 +171,36 @@ class Stories(AsanaStream):
         task_gid = stream_slice["task_gid"]
         return f"tasks/{task_gid}/stories"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         tasks_stream = Tasks(authenticator=self.authenticator)
-        for task in tasks_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"task_gid": task["gid"]}, **kwargs)
+        tasks_slices = tasks_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for task_slice in tasks_slices:
+            for task in tasks_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=task_slice):
+                yield {"task_gid": task["gid"]}
 
 
-class Tags(AsanaStreamWorkspacePagination):
+class Tags(WorkspaceRelatedStream):
     def path(self, **kwargs) -> str:
         return "tags"
 
 
-class Tasks(AsanaStream):
+class Tasks(ProjectRelatedStream):
     def path(self, **kwargs) -> str:
         return "tasks"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator)
-        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_gid": project["gid"]}, **kwargs)
-
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-        params.update({"project": stream_slice["project_gid"]})
-
+        params["project"] = stream_slice["project_gid"]
         return params
 
     def _handle_object_type(self, prop: str, value: dict) -> str:
@@ -208,10 +219,17 @@ class Teams(AsanaStream):
         workspace_gid = stream_slice["workspace_gid"]
         return f"organizations/{workspace_gid}/teams"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         workspaces_stream = Workspaces(authenticator=self.authenticator)
-        for workspace in workspaces_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"workspace_gid": workspace["gid"]}, **kwargs)
+        workspaces_slices = workspaces_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for workspace_slice in workspaces_slices:
+            for workspace in workspaces_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=workspace_slice):
+                yield {"workspace_gid": workspace["gid"]}
 
 
 class TeamMemberships(AsanaStream):
@@ -219,13 +237,20 @@ class TeamMemberships(AsanaStream):
         team_gid = stream_slice["team_gid"]
         return f"teams/{team_gid}/team_memberships"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         teams_stream = Teams(authenticator=self.authenticator)
-        for team in teams_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"team_gid": team["gid"]}, **kwargs)
+        teams_slices = teams_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for team_slice in teams_slices:
+            for team in teams_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=team_slice):
+                yield {"team_gid": team["gid"]}
 
 
-class Users(AsanaStreamWorkspacePagination):
+class Users(WorkspaceRelatedStream):
     def path(self, **kwargs) -> str:
         return "users"
 
