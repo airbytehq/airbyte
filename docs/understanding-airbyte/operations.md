@@ -1,6 +1,6 @@
 # Sync Operations
 
-As part of the [connections](connections/README.md) settings, it is possible to add optional operations to a sync.
+Airbyte [connections](connections/README.md) support configuring additional transformations that execute after the sync.
 
 Here is the list and descriptions of possible (and future) operations:
 

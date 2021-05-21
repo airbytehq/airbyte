@@ -13,7 +13,6 @@ This tutorial is the second part of the previous tutorial [Connecting EL with T 
 The tool in charge of transformation behind the scenes is actually called [DBT](https://blog.getdbt.com/what--exactly--is-dbt-/) \(Data Build Tool\).
 
 Before generating the SQL files as we've seen previously, Airbyte is setting up internally a Docker image where DBT is installed, and automatically generates a DBT project which is created as specified in the [dbt projet documentation page](https://docs.getdbt.com/docs/building-a-dbt-project/projects) with the right credentials for the target destination. The DBT models are then run afterward, thanks to [DBT CLI](https://docs.getdbt.com/dbt-cli/cli-overview).
-m
 However, for now, let's see how to interact with the DBT tool.
 
 ### Validate dbt project settings
@@ -244,5 +243,4 @@ Screenshots of examples of normalization settings for my private git repo here
 
 ## Going further
 
-However, if you have ideas on what to do with DBT from this point on, we would be glad to hear your feedbacks and ideas. Thank you!
-
+Let us know if you have any feedback or suggestions. Thank you!

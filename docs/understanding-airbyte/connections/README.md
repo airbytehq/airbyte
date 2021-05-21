@@ -9,21 +9,20 @@ A connection is a configuration for syncing data between a source and a destinat
 
 ## Sync modes
 
-Note that Sync mode names are generally composed of two parts on purpose. This is because Source and Destination connectors are decoupled from each other.
-One is responsible for reading, and the other for writing.
+A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides 4 different sync modes to account for various use cases. To minimise confusion, a mode's behavior is reflected in its name. The easiest way to understand Airbyte's sync modes is to understand how the modes are named.
 
-1. The first part of the sync mode name denotes how source connectors work:
+1.  The first part of the name denotes how the source connector reads data from the source:
   
-  * Incremental: Read only the last records in the source since last read operation during a previous sync
-      * Method 1: comparing to a cursor value
-      * Method 2: using [CDC](../cdc.md), only available for certain limited number of sources that can support it.
-  * Full Refresh: Read everything in the source
+  * Incremental: Read records added to the source since the last sync job.
+      * Method 1: Using a cursor. Generally supported by all sources.
+      * Method 2: Method 2: Using change data capture. Only supported by some sources. See [CDC](../cdc.md) for more info.
+  * Full Refresh: Read everything in the source.
 
-2. The second part of the sync mode name denotes how destination connectors work, regardless of how the source is producing data:
+2. The second part of the sync mode name denotes how the destination connector writes data. This is not affected by how the source connector produced the data:
 
-  * Overwrite: Delete and then write over data in the destination that already exists
-  * Append: Write by adding data to existing tables in the destination
-  * Deduped History: Write by adding data to existing tables in the destination to keep a history of changes. The final table is produced by deduplicating the intermediate ones using a primary key.
+  * Overwrite: Delete and then overwrite existing data in the destination.
+  * Append: Write by adding data to existing tables in the destination.
+  * Deduped History: Write by first adding data to existing tables in the destination to keep a history of changes. The final table is produced by de-duplicating the intermediate ones using a primary key.
 
 A sync mode is therefore, a combination of a source and destination mode together. The UI exposes the following options, whenever both source and destination connectors are capable to support it for the corresponding stream:
 * [Full Refresh Overwrite](full-refresh-overwrite.md): Sync the whole stream and replace data in destination by overwriting it.
@@ -63,7 +62,7 @@ On top of this replication, Airbyte provides the option to enable or disable an 
 
 ### Custom sync operations
 
-Further operations can be included in a sync on top of Airbyte basic normalization (or even to replace it completely). Potential applications are:
+Further operations can be included in a sync on top of Airbyte basic normalization (or even to replace it completely). See operations.md.
 
 - Customized normalization to better fit the requirements of your own business context.
 - Business transformations from a technical data representation into a more logical and business oriented data structure. This can facilitate usage by end-users, non-technical, executives for Business Intelligence dashboard and report.

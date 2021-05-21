@@ -26,9 +26,9 @@ Anyway, it is possible to short-circuit this process \(no vendor lock-in\) and h
 
 This could be useful if:
 
-1. you have different usage than analytics that could be handled with these initial data in raw JSON format. 
-2. you can implement your own Transformer \(even in a different language such as Java or in Spark for example, or another transformation tool: DBT or Dataform\) 
-3. you want to customize and change how the data is normalized with your own queries
+1. You have different usage than analytics that could be handled with these initial data in raw JSON format. 
+2. You can implement your own Transformer \(even in a different language such as Java or in Spark for example, or another transformation tool: DBT or Dataform\).
+3. You want to customize and change how the data is normalized with your own queries.
 
 In order to do so, we will now describe how you can leverage the basic normalization outputs that Airbyte generates to build your own transformations if you don't want to start from scratch.
 
@@ -76,7 +76,7 @@ NORMALIZE_WORKSPACE=`docker run --rm -i -v airbyte_workspace:/data  busybox find
 
 Airbyte is internally using a specialized tool for handling transformations called DBT.
 
-It is made possible thanks to another python-based program that reads the `destination_catalog.json` file and generates code on how to interpret and transform it.
+An Airbyte Python module reads the `destination_catalog.json` file and  generates DBT code interpreting and transforming the raw data.
 
 The final output of DBT is producing SQL files that can be run on top of the destination that you selected.
 
@@ -314,4 +314,3 @@ create view "postgres"."public"."covid_epidemiology" as (
 Then you can run in your preferred SQL editor or tool!
 
 If you are familiar with DBT or want to learn more about it, you can continue with the following [tutorial using DBT](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-dbt.md)...
-
