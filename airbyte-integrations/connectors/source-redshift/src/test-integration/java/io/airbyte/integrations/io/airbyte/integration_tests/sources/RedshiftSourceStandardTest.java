@@ -32,7 +32,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
-import io.airbyte.integrations.standardtest.source.StandardSourceTest;
+import io.airbyte.integrations.standardtest.source.SourceStandardTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 
-public class RedshiftStandardSourceTest extends StandardSourceTest {
+public class RedshiftSourceStandardTest extends SourceStandardTest {
 
   // This test case expects an active redshift cluster that is useable from outside of vpc
   private JsonNode config;

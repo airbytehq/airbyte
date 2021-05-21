@@ -45,9 +45,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
-class OracleJdbcStandardSourceTest extends JdbcSourceStandardTest {
+class OracleJdbcSourceStandardTest extends JdbcSourceStandardTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcStandardSourceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcSourceStandardTest.class);
   private static OracleContainer ORACLE_DB;
 
   @BeforeAll

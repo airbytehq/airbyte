@@ -31,7 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.StandardSourceTest;
+import io.airbyte.integrations.standardtest.source.SourceStandardTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -50,7 +50,7 @@ import org.testcontainers.utility.MountableFile;
 // todo (cgardens) - Sanity check that when configured for CDC that postgres performs like any other
 // incremental source. As we have more sources support CDC we will find a more reusable way of doing
 // this, but for now this is a solid sanity check.
-public class CdcPostgresSourceStandardTest extends StandardSourceTest {
+public class CdcPostgresSourceStandardTest extends SourceStandardTest {
 
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String STREAM_NAME = "public.id_and_name";
