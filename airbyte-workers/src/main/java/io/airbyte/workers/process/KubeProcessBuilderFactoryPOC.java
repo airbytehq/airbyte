@@ -38,8 +38,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KubeProcessBuilderFactoryPOC {
+  private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactoryPOC.class);
 
   // todo: this should really be cached
   private static String getCommandFromImage(String imageName) throws IOException {
