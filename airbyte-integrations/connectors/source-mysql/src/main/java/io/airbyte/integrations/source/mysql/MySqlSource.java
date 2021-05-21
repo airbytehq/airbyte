@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.source.mysql.AirbyteSchemaHistoryStorage.initializeDBHistory;
+import static io.airbyte.integrations.source.mysql.AirbyteFileOffsetBackingStore.initializeState;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,9 +51,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -173,12 +172,10 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       LOGGER.info("using CDC: {}", true);
       // TODO: Figure out how to set the isCDC of stateManager to true. Its always false
       final AirbyteFileOffsetBackingStore offsetManager = initializeState(stateManager);
-      AirbyteFileDatabaseHistoryStorageOperations dbHistoryStorageManager = initializeDBHistory(
-          stateManager);
+      AirbyteSchemaHistoryStorage schemaHistoryManager = initializeDBHistory(stateManager);
       FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
       final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(config, catalog,
-          offsetManager, dbHistoryStorageManager);
+      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(config, catalog, offsetManager, schemaHistoryManager);
       publisher.start(queue);
 
       Optional<TargetFilePosition> targetFilePosition = TargetFilePosition
@@ -201,7 +198,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       // have been produced)
       final Supplier<AirbyteMessage> stateMessageSupplier = () -> {
         Map<String, String> offset = offsetManager.readMap();
-        String dbHistory = dbHistoryStorageManager.read();
+        String dbHistory = schemaHistoryManager.read();
 
         Map<String, Object> state = new HashMap<>();
         state.put(MYSQL_CDC_OFFSET, offset);
@@ -235,36 +232,6 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       return super.getIncrementalIterators(config, database, catalog, tableNameToTable, stateManager,
           emittedAt);
     }
-  }
-
-  private AirbyteFileOffsetBackingStore initializeState(JdbcStateManager stateManager) {
-    final Path cdcWorkingDir;
-    try {
-      cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset");
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
-
-    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(
-        cdcOffsetFilePath);
-    offsetManager.persist(stateManager.getCdcStateManager().getCdcState());
-    return offsetManager;
-  }
-
-  private AirbyteFileDatabaseHistoryStorageOperations initializeDBHistory(
-                                                                          JdbcStateManager stateManager) {
-    final Path dbHistoryWorkingDir;
-    try {
-      dbHistoryWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-db-history");
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    final Path dbHistoryFilePath = dbHistoryWorkingDir.resolve("dbhistory.dat");
-
-    final AirbyteFileDatabaseHistoryStorageOperations dbHistoryStorageManager = new AirbyteFileDatabaseHistoryStorageOperations(dbHistoryFilePath);
-    dbHistoryStorageManager.persist(stateManager.getCdcStateManager().getCdcState());
-    return dbHistoryStorageManager;
   }
 
   @Override

@@ -54,7 +54,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
   private final AirbyteFileOffsetBackingStore offsetManager;
-  private final AirbyteFileDatabaseHistoryStorageOperations airbyteFileDatabaseHistoryStorageOperations;
+  private final AirbyteSchemaHistoryStorage schemaHistoryManager;
 
   private final AtomicBoolean hasClosed;
   private final AtomicBoolean isClosing;
@@ -64,11 +64,11 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   public DebeziumRecordPublisher(JsonNode config,
                                  ConfiguredAirbyteCatalog catalog,
                                  AirbyteFileOffsetBackingStore offsetManager,
-                                 AirbyteFileDatabaseHistoryStorageOperations airbyteFileDatabaseHistoryStorageOperations) {
+                                 AirbyteSchemaHistoryStorage schemaHistoryManager) {
     this.config = config;
     this.catalog = catalog;
     this.offsetManager = offsetManager;
-    this.airbyteFileDatabaseHistoryStorageOperations = airbyteFileDatabaseHistoryStorageOperations;
+    this.schemaHistoryManager = schemaHistoryManager;
     this.hasClosed = new AtomicBoolean(false);
     this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();
@@ -157,7 +157,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("database.history",
         "io.airbyte.integrations.source.mysql.FilteredFileDatabaseHistory");
     props.setProperty("database.history.file.filename",
-        airbyteFileDatabaseHistoryStorageOperations.getPath().toString());
+        schemaHistoryManager.getPath().toString());
 
     // https://debezium.io/documentation/reference/configuration/avro.html
     props.setProperty("key.converter.schemas.enable", "false");

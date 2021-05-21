@@ -68,11 +68,6 @@ public class CdcMySqlStandardTest extends StandardSourceTest {
   }
 
   @Override
-  public ConfiguredAirbyteCatalog withSourceDefinedCursors(ConfiguredAirbyteCatalog catalog) {
-    return catalog;
-  }
-
-  @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()

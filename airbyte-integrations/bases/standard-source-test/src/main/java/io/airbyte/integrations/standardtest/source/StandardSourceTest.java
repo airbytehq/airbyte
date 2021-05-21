@@ -385,7 +385,7 @@ public abstract class StandardSourceTest {
         .collect(Collectors.toList());
   }
 
-  public ConfiguredAirbyteCatalog withSourceDefinedCursors(ConfiguredAirbyteCatalog catalog) {
+  private ConfiguredAirbyteCatalog withSourceDefinedCursors(ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getSyncMode() == INCREMENTAL

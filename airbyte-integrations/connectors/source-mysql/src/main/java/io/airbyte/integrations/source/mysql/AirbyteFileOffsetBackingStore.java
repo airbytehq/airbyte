@@ -29,6 +29,7 @@ import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_CDC_OFFSET;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.jdbc.JdbcStateManager;
 import io.airbyte.integrations.source.jdbc.models.CdcState;
 import java.io.EOFException;
 import java.io.IOException;
@@ -157,6 +158,21 @@ public class AirbyteFileOffsetBackingStore {
     } catch (IOException e) {
       throw new ConnectException(e);
     }
+  }
+
+  static AirbyteFileOffsetBackingStore initializeState(JdbcStateManager stateManager) {
+    final Path cdcWorkingDir;
+    try {
+      cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
+
+    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(
+        cdcOffsetFilePath);
+    offsetManager.persist(stateManager.getCdcStateManager().getCdcState());
+    return offsetManager;
   }
 
 }

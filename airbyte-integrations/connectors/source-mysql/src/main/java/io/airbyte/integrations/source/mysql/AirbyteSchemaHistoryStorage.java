@@ -27,6 +27,7 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.jdbc.JdbcStateManager;
 import io.airbyte.integrations.source.jdbc.models.CdcState;
 import io.debezium.document.Document;
 import io.debezium.document.DocumentReader;
@@ -47,17 +48,17 @@ import org.apache.commons.io.FileUtils;
  * The purpose of this class is : to , 1. Read the contents of the file {@link #path} at the end of
  * the sync so that it can be saved in state for future syncs. Check {@link #read()} 2. Write the
  * saved content back to the file {@link #path} at the beginning of the sync so that debezium can
- * function smoothly. Check {@link #persist(CdcState)} To understand more about file, please refer
+ * function smoothly. Check {@link #persist(CdcState)}. To understand more about file, please refer
  * {@link FilteredFileDatabaseHistory}
  */
-public class AirbyteFileDatabaseHistoryStorageOperations {
+public class AirbyteSchemaHistoryStorage {
 
   private final Path path;
   private static final Charset UTF8 = StandardCharsets.UTF_8;
   private final DocumentReader reader = DocumentReader.defaultReader();
   private final DocumentWriter writer = DocumentWriter.defaultWriter();
 
-  public AirbyteFileDatabaseHistoryStorageOperations(final Path path) {
+  public AirbyteSchemaHistoryStorage(final Path path) {
     this.path = path;
   }
 
@@ -67,7 +68,7 @@ public class AirbyteFileDatabaseHistoryStorageOperations {
 
   /**
    * This implementation is is kind of similar to
-   * {@link io.debezium.relational.history.FileDatabaseHistory#recoverRecords(Consumer)} ()}
+   * {@link io.debezium.relational.history.FileDatabaseHistory#recoverRecords(Consumer)}
    */
   public String read() {
     StringBuilder fileAsString = new StringBuilder();
@@ -105,7 +106,7 @@ public class AirbyteFileDatabaseHistoryStorageOperations {
         }
       }
     } catch (IOException e) {
-      throw new RuntimeException(
+      throw new IllegalStateException(
           "Unable to create history file at " + path + ": " + e.getMessage(), e);
     }
   }
@@ -149,6 +150,20 @@ public class AirbyteFileDatabaseHistoryStorageOperations {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  static AirbyteSchemaHistoryStorage initializeDBHistory(JdbcStateManager stateManager) {
+    final Path dbHistoryWorkingDir;
+    try {
+      dbHistoryWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-db-history");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    final Path dbHistoryFilePath = dbHistoryWorkingDir.resolve("dbhistory.dat");
+
+    final AirbyteSchemaHistoryStorage schemaHistoryManager = new AirbyteSchemaHistoryStorage(dbHistoryFilePath);
+    schemaHistoryManager.persist(stateManager.getCdcStateManager().getCdcState());
+    return schemaHistoryManager;
   }
 
 }
