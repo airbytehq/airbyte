@@ -4,7 +4,7 @@
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using specialized transformation tool: DBT.
 
-This tutorial is the second part of the previous tutorial [Connecting EL with T using SQL](transformations-with-sql.md).
+This tutorial is the second part of the previous tutorial [Connecting EL with T using SQL](transformations-with-sql.md). Next, we'll wrap-up with a third part on submitting transformations back in Airbyte: [connecting EL with T in Airbyte](transformations-with-airbyte.md).
 
 (Example outputs are updated with Airbyte version 0.23.0-alpha from May 2021)
 
@@ -211,6 +211,6 @@ Completed successfully
 Done. PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1
 ```
 
-## Going further
+Now, that you've exported the generated normalization models, you can decide to edit and tweak them differently...
 
-Let us know if you have any feedback or suggestions. Thank you!
+If you want to know how to push your modifications back to Airbyte and use your updated dbt project during Airbyte syncs, you can continue with the following [tutorial on importing transformations into Airbyte](transformations-with-airbyte.md)...

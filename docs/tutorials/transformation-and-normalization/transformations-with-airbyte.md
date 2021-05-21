@@ -1,4 +1,15 @@
-### Hooking up a custom dbt project to Airbyte syncs
+# Transformations with Airbyte \(Part 3/3\)
+
+## Overview
+
+This tutorial will describe how to push a custom dbt transformation project back to Airbyte to use during syncs.
+
+This tutorial is the last part of the tutorial serie on transformations after [Connecting EL with T using SQL](transformations-with-sql.md) and 
+[connecting EL with T using DBT](transformations-with-dbt.md).
+
+(Example outputs are updated with Airbyte version 0.23.0-alpha from May 2021)
+
+## Transformations with Airbyte
 
 After replication of data from a source connector (Extract) to a destination connector (Load), multiple optional transformations steps can now be applied as part of an Airbyte Sync. Possible transformations are:
 
