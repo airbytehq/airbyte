@@ -99,7 +99,7 @@ columns in a catalog, this may throw exceptions and fail. This test ensures that
 
 For example, known limitations that are now supported were:
 - Ephemeral materialization with some generated models break with more than 490 columns with "maximum recursion depth exceeded", we now automatically switch to a little more scalable mode when generating dbt models by using views materialization.
-- The tests are currently checking that at least a reasonably large number (1600) of columns can complete successfully.
+- The tests are currently checking that at least a reasonably large number (1500) of columns can complete successfully.
 
 However, limits on the destination still exists and can break for higher number of columns...
 
