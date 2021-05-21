@@ -32,7 +32,7 @@ spec:
       command: [
           "sh",
           "-c",
-          "cat /pipes/stdout | socat -d -d -d - TCP:10.104.0.57:9001",
+          "cat /pipes/stdout | socat -d -d -d - TCP:WORKER_IP:9001",
       ]
       volumeMounts:
         - name: airbyte-pipes
