@@ -9,18 +9,18 @@ A connection is a configuration for syncing data between a source and a destinat
 
 ## Sync modes
 
-A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides 4 different sync modes to account for various use cases. To minimise confusion, a mode's behavior is reflected in its name. The easiest way to understand Airbyte's sync modes is to understand how the modes are named.
+A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides different sync modes to account for various use cases. To minimise confusion, a mode's behavior is reflected in its name. The easiest way to understand Airbyte's sync modes is to understand how the modes are named.
 
 1.  The first part of the name denotes how the source connector reads data from the source:
   
   * Incremental: Read records added to the source since the last sync job.
       * Method 1: Using a cursor. Generally supported by all sources.
-      * Method 2: Method 2: Using change data capture. Only supported by some sources. See [CDC](../cdc.md) for more info.
+      * Method 2: Using change data capture. Only supported by some sources. See [CDC](../cdc.md) for more info.
   * Full Refresh: Read everything in the source.
 
 2. The second part of the sync mode name denotes how the destination connector writes data. This is not affected by how the source connector produced the data:
 
-  * Overwrite: Delete and then overwrite existing data in the destination.
+  * Overwrite: Overwrite by first deleting existing data in the destination.
   * Append: Write by adding data to existing tables in the destination.
   * Deduped History: Write by first adding data to existing tables in the destination to keep a history of changes. The final table is produced by de-duplicating the intermediate ones using a primary key.
 
@@ -62,11 +62,5 @@ On top of this replication, Airbyte provides the option to enable or disable an 
 
 ### Custom sync operations
 
-Further operations can be included in a sync on top of Airbyte basic normalization (or even to replace it completely). See operations.md.
-
-- Customized normalization to better fit the requirements of your own business context.
-- Business transformations from a technical data representation into a more logical and business oriented data structure. This can facilitate usage by end-users, non-technical, executives for Business Intelligence dashboard and report.
-- Data Quality, performance optimization, alerting and monitoring etc
-- Integration with other tools from your data stack (orchestration, data visualization, etc)
-
+Further operations can be included in a sync on top of Airbyte basic normalization (or even to replace it completely).
 See [operations](../operations.md) for more details.

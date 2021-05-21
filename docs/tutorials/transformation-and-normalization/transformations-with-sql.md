@@ -1,4 +1,4 @@
-# Transformations with SQL \(Part 1/2\)
+# Transformations with SQL \(Part 1/3\)
 
 ## Overview
 

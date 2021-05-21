@@ -1,10 +1,15 @@
 # Sync Operations
 
-Airbyte [connections](connections/README.md) support configuring additional transformations that execute after the sync.
+Airbyte [connections](connections/README.md) support configuring additional transformations that execute after the sync. Useful applications could be:
 
-Here is the list and descriptions of possible (and future) operations:
+- Customized normalization to better fit the requirements of your own business context.
+- Business transformations from a technical data representation into a more logical and business oriented data structure. This can facilitate usage by end-users, non-technical, executives for Business Intelligence dashboard and report.
+- Data Quality, performance optimization, alerting and monitoring etc
+- Integration with other tools from your data stack (orchestration, data visualization, etc)
 
-## dbt transformations
+## Supported Operations
+
+### dbt transformations
 
 #### - git repository url:
 A url to a git repository to (shallow) clone the latest dbt project code from.
@@ -35,19 +40,11 @@ A typical value for this field would be "run" and the actual command invoked wou
 
 However, dbt allows much more control on what to run, select a subset of models etc. You can find the [dbt reference docs](https://docs.getdbt.com/reference/dbt-commands) describing this set of available commands.
 
-## Docker/Script operations
+## Future Operations
 
-Coming soon!
-
-## Webhook operations
-
-Coming soon!
-
-## Airflow operations
-
-To schedule and manage more advanced and complicated sequences of operations in your sync workflow, it would be more adequate to switch to a proper orchestration specialized tool such as Airflow.
-
-Coming soon!
+* Docker/Script operations: Execute a generic script in a custom docker container.
+* Webhook operations: Trigger API or hooks from other providers.
+* Airflow operations: To schedule and manage more advanced and complicated sequences of operations in your sync workflow, it would be more adequate to switch to a proper orchestration specialized tool such as Airflow.
 
 ## Going further
 
