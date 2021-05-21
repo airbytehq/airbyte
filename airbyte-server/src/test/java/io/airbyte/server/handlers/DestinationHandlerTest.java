@@ -99,19 +99,23 @@ class DestinationHandlerTest {
         .withName("db2")
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")
-        .withDocumentationUrl("https://wikipedia.org");;
+        .withDocumentationUrl("https://wikipedia.org");
+
     imageName =
         DockerUtils.getTaggedImageName(standardDestinationDefinition.getDockerRepository(), standardDestinationDefinition.getDockerImageTag());
 
     destinationDefinitionIdRequestBody =
         new DestinationDefinitionIdRequestBody().destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId());
+
     connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
+
     destinationDefinitionSpecificationRead = new DestinationDefinitionSpecificationRead()
         .connectionSpecification(connectorSpecification.getConnectionSpecification())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .documentationUrl(connectorSpecification.getDocumentationUrl().toString());
 
     destinationConnection = DestinationHelpers.generateDestination(standardDestinationDefinition.getDestinationDefinitionId());
+
     destinationHandler =
         new DestinationHandler(configRepository, validator, specFetcher, connectionsHandler, uuidGenerator, secretsProcessor, configurationUpdate);
   }
@@ -198,7 +202,7 @@ class DestinationHandlerTest {
 
     when(secretsProcessor
         .copySecrets(destinationConnection.getConfiguration(), newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
-            .thenReturn(newConfiguration);
+        .thenReturn(newConfiguration);
     when(secretsProcessor.maskSecrets(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification()))
         .thenReturn(newConfiguration);
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
@@ -214,19 +218,14 @@ class DestinationHandlerTest {
 
     final DestinationRead actualDestinationRead = destinationHandler.updateDestination(destinationUpdate);
 
-    DestinationRead expectedDestinationRead = new DestinationRead()
-        .name(expectedDestinationConnection.getName())
-        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
-        .workspaceId(destinationConnection.getWorkspaceId())
-        .destinationId(destinationConnection.getDestinationId())
-        .connectionConfiguration(newConfiguration)
-        .destinationName(standardDestinationDefinition.getName());
+    final DestinationRead expectedDestinationRead = DestinationHelpers
+        .getDestinationRead(expectedDestinationConnection, standardDestinationDefinition).connectionConfiguration(newConfiguration);
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
-    verify(configRepository).writeDestinationConnection(expectedDestinationConnection);
-    verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), destinationConnection.getConfiguration());
     verify(secretsProcessor).maskSecrets(newConfiguration, destinationDefinitionSpecificationRead.getConnectionSpecification());
+    verify(configRepository).writeDestinationConnection(expectedDestinationConnection);
+    verify(validator).ensure(destinationDefinitionSpecificationRead.getConnectionSpecification(), newConfiguration);
   }
 
   @Test

@@ -98,8 +98,11 @@ class SourceHandlerTest {
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org");
+
     imageName = DockerUtils.getTaggedImageName(standardSourceDefinition.getDockerRepository(), standardSourceDefinition.getDockerImageTag());
+
     connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
+
     sourceDefinitionSpecificationRead = new SourceDefinitionSpecificationRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
         .connectionSpecification(connectorSpecification.getConnectionSpecification())
