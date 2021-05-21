@@ -81,30 +81,28 @@ public class VersionMismatchServer {
     public static String ERROR_MESSAGE = "Versions don't match!";
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-      var outputMap = ImmutableMap.of("error", ERROR_MESSAGE);
-
-      for (Map.Entry<String, String> entry : CorsFilter.MAP.entrySet()) {
-        response.setHeader(entry.getKey(), entry.getValue());
-      }
-
-      response.setContentType("application/json");
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      response.getWriter().println(Jsons.serialize(outputMap));
+      this.serveDefaultRequest(response);
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      this.serveDefaultRequest(response);
+    }
+
+    public void doOptions(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      this.addCorsHeaders(response);
+    }
+
+    private void serveDefaultRequest(HttpServletResponse response) throws IOException {
       var outputMap = ImmutableMap.of("error", ERROR_MESSAGE);
 
-      for (Map.Entry<String, String> entry : CorsFilter.MAP.entrySet()) {
-        response.setHeader(entry.getKey(), entry.getValue());
-      }
+      this.addCorsHeaders(response);
 
       response.setContentType("application/json");
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       response.getWriter().println(Jsons.serialize(outputMap));
     }
 
-    public void doOptions(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void addCorsHeaders(HttpServletResponse response){
       for (Map.Entry<String, String> entry : CorsFilter.MAP.entrySet()) {
         response.setHeader(entry.getKey(), entry.getValue());
       }
