@@ -101,6 +101,16 @@ public class WebBackendConnectionsHandler {
     return new WbConnectionReadList().connections(reads);
   }
 
+  public WbConnectionReadList webBackendPaginateConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody, Integer limit, Integer offset)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final List<WbConnectionRead> reads = Lists.newArrayList();
+    for (ConnectionRead connection : connectionsHandler.paginateConnectionsForWorkspace(workspaceIdRequestBody, limit, offset).getConnections()) {
+      reads.add(buildWbConnectionRead(connection));
+    }
+    return new WbConnectionReadList().connections(reads);
+  }
+
   private WbConnectionRead buildWbConnectionRead(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead);
     final DestinationRead destination = getDestinationRead(connectionRead);
