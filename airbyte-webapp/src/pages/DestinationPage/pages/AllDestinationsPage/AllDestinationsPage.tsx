@@ -30,7 +30,7 @@ const AllDestinationsPage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle titleId="admin.destinations" />
+      <HeadTitle titles={[{ id: "admin.destinations" }]} />
       <PageTitle
         title={<FormattedMessage id="admin.destinations" />}
         endComponent={

@@ -132,11 +132,16 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
     <MainPageWithScroll
       headTitle={
         <HeadTitle
-          titleId="connection.itemHeadTitle"
-          titleValues={{
-            source: connection.source?.name,
-            destination: connection.destination?.name,
-          }}
+          titles={[
+            { id: "sidebar.connections" },
+            {
+              id: "connection.fromTo",
+              values: {
+                source: connection.source?.name,
+                destination: connection.destination?.name,
+              },
+            },
+          ]}
         />
       }
       pageTitle={

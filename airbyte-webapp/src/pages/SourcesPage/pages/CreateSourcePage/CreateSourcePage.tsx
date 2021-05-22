@@ -53,7 +53,7 @@ const CreateSourcePage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle titleId="sources.newSourceTitle" />
+      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <PageTitle
         withLine
         title={<FormattedMessage id="sources.newSourceTitle" />}

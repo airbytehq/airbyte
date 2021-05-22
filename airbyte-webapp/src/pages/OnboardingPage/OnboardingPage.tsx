@@ -222,7 +222,7 @@ const OnboardingPage: React.FC = () => {
 
   return (
     <Content big={currentStep === StepsTypes.SET_UP_CONNECTION}>
-      <HeadTitle titleId="onboarding.headTitle" />
+      <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
       <Main>
         <Img src="/welcome.svg" height={132} />
         <MainTitle center>

@@ -40,7 +40,7 @@ const PreferencesPage: React.FC = () => {
 
   return (
     <PageViewContainer>
-      <HeadTitle titleId="preferences.headTitle" />
+      <HeadTitle titles={[{ id: "preferences.headTitle" }]} />
       <Title center>
         <FormattedMessage id={"preferences.title"} />
       </Title>

@@ -16,7 +16,7 @@ const Content = styled.div`
 const SettingsPage: React.FC = () => {
   return (
     <MainPageWithScroll
-      headTitle={<HeadTitle titleId="sidebar.settings" />}
+      headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
       pageTitle={
         <PageTitle
           withLine

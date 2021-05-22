@@ -56,7 +56,7 @@ const CreateDestinationPage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle titleId="destinations.newDestinationTitle" />
+      <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
       <PageTitle
         withLine
         title={<FormattedMessage id="destinations.newDestinationTitle" />}

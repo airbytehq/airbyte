@@ -28,7 +28,7 @@ const AllSourcesPage: React.FC = () => {
   const onCreateSource = () => push(`${Routes.Source}${Routes.SourceNew}`);
   return (
     <>
-      <HeadTitle titleId="admin.sources" />
+      <HeadTitle titles={[{ id: "admin.sources" }]} />
       <PageTitle
         title={<FormattedMessage id="sidebar.sources" />}
         endComponent={

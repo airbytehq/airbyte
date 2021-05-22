@@ -157,8 +157,7 @@ const DestinationItemPage: React.FC = () => {
     <MainPageWithScroll
       headTitle={
         <HeadTitle
-          titleId="admin.destinationItemTitle"
-          titleValues={{ destination: destination.name }}
+          titles={[{ id: "admin.destinations" }, { title: destination.name }]}
         />
       }
       pageTitle={

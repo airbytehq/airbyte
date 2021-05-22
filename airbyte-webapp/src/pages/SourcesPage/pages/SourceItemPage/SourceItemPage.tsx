@@ -142,10 +142,7 @@ const SourceItemPage: React.FC = () => {
   return (
     <MainPageWithScroll
       headTitle={
-        <HeadTitle
-          titleId="admin.sourceItemTitle"
-          titleValues={{ source: source.name }}
-        />
+        <HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />
       }
       pageTitle={
         <PageTitle

@@ -194,7 +194,7 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
 
   return (
     <MainPageWithScroll
-      headTitle={<HeadTitle titleId={titleId()} />}
+      headTitle={<HeadTitle titles={[{ id: titleId() }]} />}
       pageTitle={
         <PageTitle
           withLine

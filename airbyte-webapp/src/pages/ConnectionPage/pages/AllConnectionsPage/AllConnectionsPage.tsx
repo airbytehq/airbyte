@@ -33,7 +33,7 @@ const AllConnectionsPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      headTitle={<HeadTitle titleId="sidebar.connections" />}
+      headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
       pageTitle={
         <PageTitle
           title={<FormattedMessage id="sidebar.connections" />}

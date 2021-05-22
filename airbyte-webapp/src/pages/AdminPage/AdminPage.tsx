@@ -30,17 +30,29 @@ const AdminPage: React.FC = () => {
     {
       id: StepsTypes.SOURCES,
       name: <FormattedMessage id="admin.sources" />,
-      headTitle: <HeadTitle titleId="admin.sourcesHeadTitle" />,
+      headTitle: (
+        <HeadTitle
+          titles={[{ id: "sidebar.admin" }, { id: "admin.sources" }]}
+        />
+      ),
     },
     {
       id: StepsTypes.DESTINATIONS,
       name: <FormattedMessage id="admin.destinations" />,
-      headTitle: <HeadTitle titleId="admin.destinationsHeadTitle" />,
+      headTitle: (
+        <HeadTitle
+          titles={[{ id: "sidebar.admin" }, { id: "admin.destinations" }]}
+        />
+      ),
     },
     {
       id: StepsTypes.CONFIGURATION,
       name: <FormattedMessage id="admin.configuration" />,
-      headTitle: <HeadTitle titleId="admin.configurationHeadTitle" />,
+      headTitle: (
+        <HeadTitle
+          titles={[{ id: "sidebar.admin" }, { id: "admin.configuration" }]}
+        />
+      ),
     },
   ];
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.SOURCES);
@@ -59,7 +71,7 @@ const AdminPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      headTitle={<HeadTitle titleId="sidebar.admin" />}
+      headTitle={<HeadTitle titles={[{ id: "sidebar.admin" }]} />}
       pageTitle={
         <PageTitle
           withLine
