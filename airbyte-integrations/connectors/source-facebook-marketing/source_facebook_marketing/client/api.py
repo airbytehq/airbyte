@@ -26,12 +26,13 @@
 import time
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
+from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence, Iterable
 
 import backoff
 import pendulum as pendulum
 from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
 from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.api import FacebookResponse, FacebookRequest
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
 from .common import JobTimeoutException, deep_merge, retry_pattern
@@ -85,7 +86,7 @@ class StreamAPI(ABC):
         for i in range(0, len(filt_values), sub_list_length):
             yield {
                 "filtering": [
-                    {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value": filt_values[i : i + sub_list_length]},
+                    {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value": filt_values[i: i + sub_list_length]},
                 ],
             }
 
@@ -170,40 +171,44 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
+def batch(iterable: Sequence, size: int = 1):
+    total_size = len(iterable)
+    for ndx in range(0, total_size, size):
+        yield iterable[ndx:min(ndx + size, total_size)]
+
+
 class AdCreativeAPI(StreamAPI):
     """AdCreative is not an iterable stream as it uses the batch endpoint
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
     """
 
     entity_prefix = "adcreative"
-    BATCH_SIZE = 50
+    batch_size = 50
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        # Create the initial batch
-        api_batch = self._api._api.new_batch()
+        # get pending requests for each creative
+        requests = [creative.api_get(fields=fields, pending=True) for creative in self.read(getter=self._get_creatives)]
+        for requests_batch in batch(requests, size=self.batch_size):
+            yield from self.execute_in_batch(requests_batch)
+
+    @backoff_policy
+    def execute_in_batch(self, requests: Iterable[FacebookRequest]) -> Sequence[MutableMapping[str, Any]]:
         records = []
 
-        def success(response):
+        def success(response: FacebookResponse):
             records.append(response.json())
 
-        def failure(response):
+        def failure(response: FacebookResponse):
+            x_rate_header = "X-Business-Use-Case-Usage"
+            print(response.headers)
             raise response.error()
 
-        # This loop syncs minimal AdCreative objects
-        for i, creative in enumerate(self.read(getter=self._get_creatives), start=1):
-            # Execute and create a new batch for every BATCH_SIZE added
-            if i % self.BATCH_SIZE == 0:
-                api_batch.execute()
-                api_batch = self._api._api.new_batch()
-                yield from records
-                records[:] = []
-
-            # Add a call to the batch with the full object
-            creative.api_get(fields=fields, batch=api_batch, success=success, failure=failure)
-
-        # Ensure the final batch is executed
+        api_batch = self._api._api.new_batch()
+        for request in requests:
+            api_batch.add_request(request, success=success, failure=failure)
         api_batch.execute()
-        yield from records
+
+        return records
 
     @backoff_policy
     def _get_creatives(self, params: Mapping[str, Any]) -> Iterator:
