@@ -83,6 +83,7 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
   private static final Logger LOGGER = LoggerFactory.getLogger(MeiliSearchDestination.class);
 
   private static final int MAX_BATCH_SIZE = 10000;
+
   public static final String AB_PK_COLUMN = "_ab_pk";
 
   @Override
