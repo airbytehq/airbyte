@@ -70,7 +70,6 @@ import org.slf4j.LoggerFactory;
 public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
-  private static final int BATCH_SIZE = 10000;
 
   private final VoidCallable onStart;
   private final RecordWriter recordWriter;
@@ -81,6 +80,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final CheckedFunction<String, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
+  private final int queueBatchSize;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -93,8 +93,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 RecordWriter recordWriter,
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
-                                CheckedFunction<String, Boolean, Exception> isValidRecord) {
+                                CheckedFunction<String, Boolean, Exception> isValidRecord,
+                                int queueBatchSize) {
     this.outputRecordCollector = outputRecordCollector;
+    this.queueBatchSize = queueBatchSize;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
@@ -103,7 +105,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.catalog = catalog;
     this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
-    this.buffer = new ArrayList<>(BATCH_SIZE);
+    this.buffer = new ArrayList<>(queueBatchSize);
 
     this.pairToIgnoredRecordCount = new HashMap<>();
   }
@@ -140,7 +142,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
       buffer.add(message);
 
-      if (buffer.size() == BATCH_SIZE) {
+      if (buffer.size() == queueBatchSize) {
         flushQueueToDestination();
       }
     } else if (message.getType() == Type.STATE) {
