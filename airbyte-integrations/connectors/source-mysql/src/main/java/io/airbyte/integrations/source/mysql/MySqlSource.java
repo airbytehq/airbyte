@@ -24,8 +24,8 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.mysql.AirbyteSchemaHistoryStorage.initializeDBHistory;
 import static io.airbyte.integrations.source.mysql.AirbyteFileOffsetBackingStore.initializeState;
+import static io.airbyte.integrations.source.mysql.AirbyteSchemaHistoryStorage.initializeDBHistory;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
