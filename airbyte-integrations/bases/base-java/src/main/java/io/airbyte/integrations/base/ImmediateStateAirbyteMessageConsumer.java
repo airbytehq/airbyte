@@ -44,8 +44,6 @@ public abstract class ImmediateStateAirbyteMessageConsumer extends FailureTracki
     this.outputRecordCollector = outputRecordCollector;
   }
 
-  protected abstract void acceptTracked(AirbyteMessage msg) throws Exception;
-
   @Override
   public void accept(AirbyteMessage message) throws Exception {
     if (message.getType() == Type.STATE) {
@@ -53,5 +51,7 @@ public abstract class ImmediateStateAirbyteMessageConsumer extends FailureTracki
     }
     super.accept(message);
   }
+
+  public abstract void onState() throws Exception;
 
 }

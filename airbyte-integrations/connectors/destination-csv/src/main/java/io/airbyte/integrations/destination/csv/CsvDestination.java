@@ -224,6 +224,13 @@ public class CsvDestination implements Destination {
       }
     }
 
+    @Override
+    public void onState() throws Exception {
+      for (WriteConfig writeConfig : writeConfigs.values()) {
+        writeConfig.getWriter().flush();
+      }
+    }
+
   }
 
   private static class WriteConfig {
