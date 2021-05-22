@@ -44,7 +44,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 /**
- * Runs the standard tests in the source-jdbc test module. We want this module to run these tests
+ * Runs the acceptance tests in the source-jdbc test module. We want this module to run these tests
  * itself as a sanity check. The trade off here is that this class is duplicated from the one used
  * in source-postgres.
  */

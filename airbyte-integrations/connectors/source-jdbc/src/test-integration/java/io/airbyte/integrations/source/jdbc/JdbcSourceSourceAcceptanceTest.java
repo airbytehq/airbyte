@@ -43,9 +43,9 @@ import java.util.List;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
- * The name here intentionally is a little weird to avoid conflicting with { @link JdbcSourceAcceptanceTest}
- * This class is running { @link SourceAcceptanceTest } for the { @link JdbcSource }. { @link JdbcSourceAcceptanceTest} is the
- * base class for JDBC sources.
+ * The name here intentionally is a little weird to avoid conflicting with { @link
+ * JdbcSourceAcceptanceTest} This class is running { @link SourceAcceptanceTest } for the { @link
+ * JdbcSource }. { @link JdbcSourceAcceptanceTest} is the base class for JDBC sources.
  */
 public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
 
