@@ -33,21 +33,20 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class MailChimpStream(HttpStream, ABC):
     url_base = "https://us2.api.mailchimp.com/3.0/"
     primary_key = "id"
-    PAGINATION = 100
+    page_size = 100
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # self.url_base = url_base #but `us2` can differ as {ds} in docs
         self.current_offset = 0
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
         api_data = decoded_response[self.data_field]
-        if len(api_data) < self.PAGINATION:
+        if len(api_data) < self.page_size:
             self.current_offset = 0
             return {}
         else:
-            self.current_offset += self.PAGINATION
+            self.current_offset += self.page_size
             return {"offset": self.current_offset}
 
     def request_params(
@@ -57,7 +56,7 @@ class MailChimpStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
-        params = {"count": self.PAGINATION}
+        params = {"count": self.page_size}
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
@@ -97,7 +96,6 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         return {self.cursor_field: max(latest_state, current_state)}
 
     def request_params(self, stream_state=None, **kwargs):
-
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         default_params = {"sort_field": self.cursor_field, "sort_dir": "ASC"}
@@ -126,7 +124,6 @@ class Campaigns(IncrementalMailChimpStream):
 
 class EmailActivity(IncrementalMailChimpStream):
     cursor_field = "timestamp"
-    name = "Email_activity"
     data_field = "emails"
 
     def stream_slices(self, **kwargs):
@@ -135,29 +132,32 @@ class EmailActivity(IncrementalMailChimpStream):
             yield {"campaign_id": campaign["id"]}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        self.campaign_id = stream_slice["campaign_id"]
-        return f"reports/{self.campaign_id}/email-activity"
+        campaign_id = stream_slice["campaign_id"]
+        return f"reports/{campaign_id}/email-activity"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the campaign_id and cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-
+        campaign_id = latest_record.get("campaign_id")
         latest_cursor_value = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.campaign_id) if current_stream_state else None
+        current_stream_state = current_stream_state or {}
+        current_state = current_stream_state.get(campaign_id) if current_stream_state else None
         if current_state:
             current_state = current_state.get(self.cursor_field)
         current_state_value = current_state or latest_cursor_value
         max_value = max(current_state_value, latest_cursor_value)
-        output = {self.campaign_id: {self.cursor_field: max_value}}
-        return output
+        new_value = {self.cursor_field: max_value}
 
-    def request_params(self, stream_state=None, **kwargs):
+        current_stream_state[campaign_id] = new_value
+        return current_stream_state
+
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         params = MailChimpStream.request_params(self, stream_state=stream_state, **kwargs)
 
-        since_value_camp = stream_state.get(self.campaign_id)
+        since_value_camp = stream_state.get(stream_slice["campaign_id"])
         if since_value_camp:
             since_value = since_value_camp.get(self.cursor_field)
             if since_value:

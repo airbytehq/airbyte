@@ -1165,7 +1165,7 @@
     },
     {
       "stream": {
-        "name": "Email_activity",
+        "name": "email_activity",
         "json_schema": {
           "type": "object",
           "title": "Email Activity",
