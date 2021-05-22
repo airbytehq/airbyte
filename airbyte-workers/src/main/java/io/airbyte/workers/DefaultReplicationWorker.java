@@ -80,7 +80,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.hasFailed = new AtomicBoolean(false);
   }
 
-  @SuppressWarnings("OptionalIsPresent")
   @Override
   public ReplicationOutput run(StandardSyncInput syncInput, Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
@@ -106,41 +105,17 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         destination.start(destinationConfig, jobRoot);
         source.start(sourceConfig, jobRoot);
 
-        final Runnable replicationThread = () -> {
-          try {
-            while (!cancelled.get() && !source.isFinished()) {
-              final Optional<AirbyteMessage> messageOptional = source.attemptRead();
-              if (messageOptional.isPresent()) {
-                final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
+        final Future<?> destinationOutputThreadFuture = executorService.submit(getDestinationOutputRunnable(
+            destination,
+            cancelled,
+            destinationMessageTracker));
 
-                LOGGER.info("record in DefaultReplicationWorker: {}", message);
-
-                sourceMessageTracker.accept(message);
-                destination.accept(message);
-              }
-            }
-            destination.notifyEndOfStream();
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
-        };
-
-        final Runnable destinationOutputThread = () -> {
-          try {
-            while (!cancelled.get() && !destination.isFinished()) {
-              final Optional<AirbyteMessage> messageOptional = destination.attemptRead();
-              if (messageOptional.isPresent()) {
-                LOGGER.info("state in DefaultReplicationWorker from Destination: {}", messageOptional.get());
-                destinationMessageTracker.accept(messageOptional.get());
-              }
-            }
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
-        };
-
-        final Future<?> destinationOutputThreadFuture = executorService.submit(destinationOutputThread);
-        final Future<?> replicationThreadFuture = executorService.submit(replicationThread);
+        final Future<?> replicationThreadFuture = executorService.submit(getReplicationRunnable(
+            source,
+            destination,
+            cancelled,
+            mapper,
+            sourceMessageTracker));
 
         LOGGER.info("Waiting for source thread to join.");
         replicationThreadFuture.get();
@@ -194,6 +169,49 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       throw new WorkerException("Sync failed", e);
     }
 
+  }
+
+  private static Runnable getReplicationRunnable(Source<AirbyteMessage> source,
+                                                 Destination<AirbyteMessage> destination,
+                                                 AtomicBoolean cancelled,
+                                                 Mapper<AirbyteMessage> mapper,
+                                                 MessageTracker<AirbyteMessage> sourceMessageTracker) {
+    return () -> {
+      try {
+        while (!cancelled.get() && !source.isFinished()) {
+          final Optional<AirbyteMessage> messageOptional = source.attemptRead();
+          if (messageOptional.isPresent()) {
+            final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
+
+            LOGGER.info("record in DefaultReplicationWorker: {}", message);
+
+            sourceMessageTracker.accept(message);
+            destination.accept(message);
+          }
+        }
+        destination.notifyEndOfStream();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    };
+  }
+
+  private static Runnable getDestinationOutputRunnable(Destination<AirbyteMessage> destination,
+                                                       AtomicBoolean cancelled,
+                                                       MessageTracker<AirbyteMessage> destinationMessageTracker) {
+    return () -> {
+      try {
+        while (!cancelled.get() && !destination.isFinished()) {
+          final Optional<AirbyteMessage> messageOptional = destination.attemptRead();
+          if (messageOptional.isPresent()) {
+            LOGGER.info("state in DefaultReplicationWorker from Destination: {}", messageOptional.get());
+            destinationMessageTracker.accept(messageOptional.get());
+          }
+        }
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    };
   }
 
   @Override
