@@ -30,8 +30,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.ImmediateStateAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -148,7 +148,7 @@ public class LocalJsonDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class JsonConsumer extends ImmediateStateAirbyteMessageConsumer {
+  private static class JsonConsumer extends CommitOnStateAirbyteMessageConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
@@ -185,6 +185,13 @@ public class LocalJsonDestination implements Destination {
           JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
           JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData())));
       writer.write(System.lineSeparator());
+    }
+
+    @Override
+    public void commit() throws Exception {
+      for (WriteConfig writeConfig : writeConfigs.values()) {
+        writeConfig.getWriter().flush();
+      }
     }
 
     @Override

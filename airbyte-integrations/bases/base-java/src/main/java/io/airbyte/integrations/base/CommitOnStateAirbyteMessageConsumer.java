@@ -31,27 +31,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Minimal abstract class intended to handle the case where a destination commits record messages as
- * it receives them. In these cases, the destination can simply emit the the state message
- * immediately.
+ * Minimal abstract class intended to handle the case where the destination can commit records every
+ * time a state message appears. This class does that commit and then immediately emits the state
+ * message. This should only be used in cases when the commit is relatively cheap. immediately.
  */
-public abstract class ImmediateStateAirbyteMessageConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
+public abstract class CommitOnStateAirbyteMessageConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ImmediateStateAirbyteMessageConsumer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CommitOnStateAirbyteMessageConsumer.class);
+
   private final Consumer<AirbyteMessage> outputRecordCollector;
 
-  public ImmediateStateAirbyteMessageConsumer(Consumer<AirbyteMessage> outputRecordCollector) {
+  public CommitOnStateAirbyteMessageConsumer(Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
   }
 
   @Override
   public void accept(AirbyteMessage message) throws Exception {
     if (message.getType() == Type.STATE) {
+      commit();
       outputRecordCollector.accept(message);
     }
     super.accept(message);
   }
 
-  public abstract void onState() throws Exception;
+  public abstract void commit() throws Exception;
 
 }

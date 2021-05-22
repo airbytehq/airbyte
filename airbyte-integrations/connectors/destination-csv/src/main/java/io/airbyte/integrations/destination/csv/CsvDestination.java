@@ -29,8 +29,8 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.ImmediateStateAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -153,7 +153,7 @@ public class CsvDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class CsvConsumer extends ImmediateStateAirbyteMessageConsumer {
+  private static class CsvConsumer extends CommitOnStateAirbyteMessageConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
@@ -192,6 +192,13 @@ public class CsvDestination implements Destination {
     }
 
     @Override
+    public void commit() throws Exception {
+      for (WriteConfig writeConfig : writeConfigs.values()) {
+        writeConfig.getWriter().flush();
+      }
+    }
+
+    @Override
     protected void close(boolean hasFailed) throws IOException {
       LOGGER.info("finalizing consumer.");
 
@@ -221,13 +228,6 @@ public class CsvDestination implements Destination {
         for (final WriteConfig writeConfig : writeConfigs.values()) {
           Files.deleteIfExists(writeConfig.getTmpPath());
         }
-      }
-    }
-
-    @Override
-    public void onState() throws Exception {
-      for (WriteConfig writeConfig : writeConfigs.values()) {
-        writeConfig.getWriter().flush();
       }
     }
 
