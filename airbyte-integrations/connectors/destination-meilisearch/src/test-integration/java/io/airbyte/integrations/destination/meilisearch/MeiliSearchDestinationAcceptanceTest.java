@@ -33,7 +33,7 @@ import com.meilisearch.sdk.Index;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.text.Names;
-import io.airbyte.integrations.standardtest.destination.DestinationStandardTest;
+import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class MeiliSearchDestinationStandardTest extends DestinationStandardTest {
+public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Integer DEFAULT_MEILI_SEARCH_PORT = 7700;
   private static final Integer EXPOSED_PORT = 7701;

@@ -87,12 +87,12 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class DestinationStandardTest {
+public abstract class DestinationAcceptanceTest {
 
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationStandardTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationAcceptanceTest.class);
 
   private TestDestinationEnv testEnv;
 
@@ -290,7 +290,7 @@ public abstract class DestinationStandardTest {
 
   /**
    * Verify that when given valid credentials, that check connection returns a success response.
-   * Assume that the {@link DestinationStandardTest#getConfig()} is valid.
+   * Assume that the {@link DestinationAcceptanceTest#getConfig()} is valid.
    */
   @Test
   public void testCheckConnection() throws Exception {
@@ -299,7 +299,7 @@ public abstract class DestinationStandardTest {
 
   /**
    * Verify that when given invalid credentials, that check connection returns a failed response.
-   * Assume that the {@link DestinationStandardTest#getFailCheckConfig()} is invalid.
+   * Assume that the {@link DestinationAcceptanceTest#getFailCheckConfig()} is invalid.
    */
   @Test
   public void testCheckConnectionInvalidCredentials() throws Exception {

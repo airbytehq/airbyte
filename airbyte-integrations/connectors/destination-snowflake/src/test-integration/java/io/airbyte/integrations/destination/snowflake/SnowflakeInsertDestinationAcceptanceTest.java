@@ -32,7 +32,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationStandardTest;
+import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 
-public class SnowflakeInsertDestinationStandardTest extends DestinationStandardTest {
+public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   // config from which to create / delete schemas.
   private JsonNode baseConfig;

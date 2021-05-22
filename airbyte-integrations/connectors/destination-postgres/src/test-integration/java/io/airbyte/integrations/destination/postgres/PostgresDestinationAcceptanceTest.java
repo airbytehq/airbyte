@@ -30,7 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationStandardTest;
+import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class PostgresDestinationStandardTest extends DestinationStandardTest {
+public class PostgresDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 

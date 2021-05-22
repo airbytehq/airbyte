@@ -31,7 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.standardtest.destination.DestinationStandardTest;
+import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ import org.jooq.JSONFormat.RecordFormat;
  * Integration test testing {@link RedshiftCopyS3Destination}. The default Redshift integration test
  * credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
-public class RedshiftCopyDestinationStandardTest extends DestinationStandardTest {
+public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   // config from which to create / delete schemas.

@@ -30,13 +30,13 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.nio.file.Path;
 
-public class SnowflakeGcsCopyDestinationStandardTest extends SnowflakeInsertDestinationStandardTest {
+public class SnowflakeS3CopyDestinationAcceptanceTest extends SnowflakeInsertDestinationAcceptanceTest {
 
   @Override
   public JsonNode getStaticConfig() {
-    final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_gcs_config.json")));
-    Preconditions.checkArgument(SnowflakeDestination.isGcsCopy(copyConfig));
-    Preconditions.checkArgument(!SnowflakeDestination.isS3Copy(copyConfig));
+    final JsonNode copyConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_s3_config.json")));
+    Preconditions.checkArgument(SnowflakeDestination.isS3Copy(copyConfig));
+    Preconditions.checkArgument(!SnowflakeDestination.isGcsCopy(copyConfig));
     return copyConfig;
   }
 

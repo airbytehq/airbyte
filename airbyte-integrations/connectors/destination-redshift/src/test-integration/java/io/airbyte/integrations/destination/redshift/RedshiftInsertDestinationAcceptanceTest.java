@@ -34,7 +34,7 @@ import java.nio.file.Path;
  * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
  * contain S3 credentials by default, we remove these credentials.
  */
-public class RedshiftInsertDestinationStandardTest extends RedshiftCopyDestinationStandardTest {
+public class RedshiftInsertDestinationAcceptanceTest extends RedshiftCopyDestinationAcceptanceTest {
 
   public JsonNode getStaticConfig() {
     return purge(Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json"))));

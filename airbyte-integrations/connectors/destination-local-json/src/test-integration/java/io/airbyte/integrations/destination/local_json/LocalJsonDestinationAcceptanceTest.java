@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.csv;
+package io.airbyte.integrations.destination.local_json;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -31,29 +31,25 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationStandardTest;
-import java.io.FileReader;
+import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 
-public class CsvDestinationStandardTest extends DestinationStandardTest {
+public class LocalJsonDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-csv:dev";
+    return "airbyte/destination-local-json:dev";
   }
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
+    return Jsons.jsonNode(ImmutableMap.of("destination_path", RELATIVE_PATH.toString()));
   }
 
   // todo (cgardens) - it would be great if we could find a configuration here that failed. the
@@ -76,20 +72,15 @@ public class CsvDestinationStandardTest extends DestinationStandardTest {
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception {
     final List<Path> allOutputs = Files.list(testEnv.getLocalRoot().resolve(RELATIVE_PATH)).collect(Collectors.toList());
-    final Optional<Path> streamOutput =
-        allOutputs.stream().filter(path -> path.getFileName().toString().contains(new StandardNameTransformer().getRawTableName(streamName)))
-            .findFirst();
+    final Optional<Path> streamOutput = allOutputs.stream()
+        .filter(path -> path.getFileName().toString().contains(new StandardNameTransformer().getRawTableName(streamName)))
+        .findFirst();
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
 
-    final FileReader in = new FileReader(streamOutput.get().toFile());
-    final Iterable<CSVRecord> records = CSVFormat.DEFAULT
-        .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
-        .withFirstRecordAsHeader()
-        .parse(in);
-
-    return StreamSupport.stream(records.spliterator(), false)
-        .map(record -> Jsons.deserialize(record.toMap().get(JavaBaseConstants.COLUMN_NAME_DATA)))
+    return Files.readAllLines(streamOutput.get()).stream()
+        .map(Jsons::deserialize)
+        .map(o -> o.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
