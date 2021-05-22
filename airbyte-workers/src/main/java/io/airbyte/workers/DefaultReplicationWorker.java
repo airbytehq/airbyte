@@ -153,6 +153,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .withReplicationAttemptSummary(summary)
           .withOutputCatalog(destinationConfig.getCatalog());
 
+      if (sourceMessageTracker.getOutputState().isPresent()) {
+        LOGGER.info("Source output at least one state message");
+      } else {
+        LOGGER.info("Source did not output any state messages");
+      }
+
       if (destinationMessageTracker.getOutputState().isPresent()) {
         LOGGER.info("State capture: Updated state to: {}", destinationMessageTracker.getOutputState());
         final State state = destinationMessageTracker.getOutputState().get();
