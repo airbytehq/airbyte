@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.mysql;
+package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -31,7 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.SourceStandardTest;
+import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -44,19 +44,26 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
-public class MySqlSourceStandardTest extends SourceStandardTest {
+// todo (cgardens) - Sanity check that when configured for CDC that postgres performs like any other
+// incremental source. As we have more sources support CDC we will find a more reusable way of doing
+// this, but for now this is a solid sanity check.
+public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String STREAM_NAME = "id_and_name";
+  private static final String SLOT_NAME_BASE = "debezium_slot";
+  private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
-  private MySQLContainer<?> container;
+  private PostgreSQLContainer<?> container;
   private JsonNode config;
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    container = new MySQLContainer<>("mysql:8.0");
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
+        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -65,23 +72,25 @@ public class MySqlSourceStandardTest extends SourceStandardTest {
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
+        .put("replication_method", ImmutableMap.of("replication_slot", SLOT_NAME_BASE))
         .build());
 
     final Database database = Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
+        String.format("jdbc:postgresql://%s:%s/%s",
             config.get("host").asText(),
             config.get("port").asText(),
             config.get("database").asText()),
-        "com.mysql.cj.jdbc.Driver",
-        SQLDialect.MYSQL);
+        "org.postgresql.Driver",
+        SQLDialect.POSTGRES);
 
     database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+      ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
+      ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+      ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
       return null;
     });
 
@@ -95,7 +104,7 @@ public class MySqlSourceStandardTest extends SourceStandardTest {
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-mysql:dev";
+    return "airbyte/source-postgres:dev";
   }
 
   @Override
@@ -116,7 +125,7 @@ public class MySqlSourceStandardTest extends SourceStandardTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
+                STREAM_NAME,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -125,7 +134,7 @@ public class MySqlSourceStandardTest extends SourceStandardTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
+                STREAM_NAME2,
                 Field.of("id", JsonSchemaPrimitive.NUMBER),
                 Field.of("name", JsonSchemaPrimitive.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));

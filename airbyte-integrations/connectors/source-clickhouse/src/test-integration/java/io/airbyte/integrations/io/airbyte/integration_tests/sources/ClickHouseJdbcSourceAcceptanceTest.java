@@ -29,14 +29,14 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
+import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.sql.SQLException;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.ClickHouseContainer;
 
-public class ClickHouseJdbcStandardSourceTest extends JdbcSourceStandardTest {
+public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "default";
   private ClickHouseContainer db;

@@ -31,14 +31,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
+import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-public class MssqlJdbcSourceStandardTest extends JdbcSourceStandardTest {
+public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static MSSQLServerContainer<?> dbContainer;
   private static JdbcDatabase database;

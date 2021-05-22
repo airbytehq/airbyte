@@ -30,7 +30,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.SourceStandardTest;
+import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -43,11 +43,11 @@ import java.util.List;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
- * The name here intentionally is a little weird to avoid conflicting with JdbcSourceStandardTest.
- * This class is running "SourceStandardTest"s for the JdbcSource. JdbcSourceStandardTest is the
+ * The name here intentionally is a little weird to avoid conflicting with { @link JdbcSourceAcceptanceTest}
+ * This class is running { @link SourceAcceptanceTest } for the { @link JdbcSource }. { @link JdbcSourceAcceptanceTest} is the
  * base class for JDBC sources.
  */
-public class JdbcSourceSourceStandardTest extends SourceStandardTest {
+public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";

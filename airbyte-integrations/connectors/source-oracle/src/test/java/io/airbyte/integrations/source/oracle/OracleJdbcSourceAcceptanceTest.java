@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
+import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -45,9 +45,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
-class OracleJdbcSourceStandardTest extends JdbcSourceStandardTest {
+class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcSourceStandardTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcSourceAcceptanceTest.class);
   private static OracleContainer ORACLE_DB;
 
   @BeforeAll

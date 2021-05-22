@@ -22,32 +22,50 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.io.airbyte.integration_tests.sources;
+package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceStandardTest;
-import io.airbyte.integrations.source.redshift.RedshiftSource;
-import java.nio.file.Path;
-import java.sql.SQLException;
-import org.junit.jupiter.api.AfterEach;
+import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
-// Run as part of integration tests, instead of unit tests, because there is no test container for
-// Redshift.
-class RedshiftJdbcStandardSourceTest extends JdbcSourceStandardTest {
+class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+
+  private static PostgreSQLContainer<?> PSQL_DB;
 
   private JsonNode config;
 
-  private static JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+  @BeforeAll
+  static void init() {
+    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
+    PSQL_DB.start();
   }
 
   @BeforeEach
   public void setup() throws Exception {
-    config = getStaticConfig();
+    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+
+    config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", PSQL_DB.getHost())
+        .put("port", PSQL_DB.getFirstMappedPort())
+        .put("database", dbName)
+        .put("username", PSQL_DB.getUsername())
+        .put("password", PSQL_DB.getPassword())
+        .put("ssl", false)
+        .build());
+
+    final String initScriptName = "init_" + dbName.concat(".sql");
+    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     super.setup();
   }
@@ -59,7 +77,7 @@ class RedshiftJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
   @Override
   public AbstractJdbcSource getSource() {
-    return new RedshiftSource();
+    return new PostgresSource();
   }
 
   @Override
@@ -69,12 +87,12 @@ class RedshiftJdbcStandardSourceTest extends JdbcSourceStandardTest {
 
   @Override
   public String getDriverClass() {
-    return RedshiftSource.DRIVER_CLASS;
+    return PostgresSource.DRIVER_CLASS;
   }
 
-  @AfterEach
-  public void tearDownRedshift() throws SQLException {
-    super.tearDown();
+  @AfterAll
+  static void cleanUp() {
+    PSQL_DB.close();
   }
 
 }

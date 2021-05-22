@@ -74,7 +74,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SourceStandardTest {
+public abstract class SourceAcceptanceTest {
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
@@ -83,7 +83,7 @@ public abstract class SourceStandardTest {
   private static final long JOB_ID = 0L;
   private static final int JOB_ATTEMPT = 0;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SourceStandardTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SourceAcceptanceTest.class);
 
   private TestDestinationEnv testEnv;
 

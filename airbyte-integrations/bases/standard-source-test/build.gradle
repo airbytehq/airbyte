@@ -46,7 +46,7 @@ task generateSourceTestDocs(type: Javadoc) {
     destinationDir = javadocOutputDir
 
     doLast {
-        def className = "SourceStandardTest" // this can be made into a list once we have multiple standard tests, and can also be used for destinations
+        def className = "SourceAcceptanceTest" // this can be made into a list once we have multiple standard tests, and can also be used for destinations
         def pathInPackage = getFullPath(className)
         def stdSrcTest = project.file("${javadocOutputDir}/${pathInPackage}.html").readLines().join("\n")
         def methodList = Jsoup.parse(stdSrcTest).body().select("section.methodDetails>ul>li>section")
@@ -74,5 +74,5 @@ task generateSourceTestDocs(type: Javadoc) {
 project.build.dependsOn(generateSourceTestDocs)
 
 application {
-    mainClass = 'io.airbyte.integrations.standardtest.source.PythonSourceStandardTest'
+    mainClass = 'io.airbyte.integrations.standardtest.source.PythonSourceAcceptanceTest'
 }

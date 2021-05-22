@@ -47,9 +47,9 @@ import org.slf4j.LoggerFactory;
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
  * also add the ability to execute arbitrary scripts in the next version.
  */
-public class PythonSourceStandardTest extends SourceStandardTest {
+public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PythonSourceStandardTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PythonSourceAcceptanceTest.class);
   private static final String OUTPUT_FILENAME = "output.json";
 
   public static String IMAGE_NAME;
