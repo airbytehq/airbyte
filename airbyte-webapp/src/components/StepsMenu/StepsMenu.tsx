@@ -12,7 +12,7 @@ export type StepMenuItem = {
 
 type IProps = {
   lightMode?: boolean;
-  data: Array<StepMenuItem>;
+  data: StepMenuItem[];
   activeStep?: string;
   onSelect?: (id: string) => void;
 };

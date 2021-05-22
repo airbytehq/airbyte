@@ -16,7 +16,7 @@ import SourceDefinitionResource, {
 import { SourceResource } from "core/resources/Source";
 import UpgradeAllButton from "./UpgradeAllButton";
 import useNotification from "components/hooks/services/useNotification";
-import HeadTitle from "../../../components/HeadTitle";
+import HeadTitle from "components/HeadTitle";
 
 const SourcesView: React.FC = () => {
   const [successUpdate, setSuccessUpdate] = useState(false);

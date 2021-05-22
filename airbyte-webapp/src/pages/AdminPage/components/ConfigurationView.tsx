@@ -11,7 +11,7 @@ import ImportConfigurationModal from "./ImportConfigurationModal";
 import DeploymentService from "core/resources/DeploymentService";
 import LogsContent from "./LogsContent";
 import LoadingButton from "components/Button/LoadingButton";
-import HeadTitle from "../../../components/HeadTitle";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div`
   max-width: 813px;
