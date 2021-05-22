@@ -31,7 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.base.ImmediateStateAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -120,7 +120,7 @@ public class LocalJsonDestination implements Destination {
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(writer, tmpPath, finalPath));
     }
 
-    return new JsonConsumer(writeConfigs, catalog);
+    return new JsonConsumer(writeConfigs, catalog, outputRecordCollector);
   }
 
   /**
@@ -148,12 +148,13 @@ public class LocalJsonDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class JsonConsumer extends FailureTrackingAirbyteMessageConsumer {
+  private static class JsonConsumer extends ImmediateStateAirbyteMessageConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public JsonConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
+    public JsonConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+      super(outputRecordCollector);
       LOGGER.info("initializing consumer.");
       this.catalog = catalog;
       this.writeConfigs = writeConfigs;
