@@ -8,7 +8,6 @@ export type StepMenuItem = {
   name: string | React.ReactNode;
   status?: string;
   onSelect?: () => void;
-  headTitle?: React.ReactNode;
 };
 
 type IProps = {
@@ -42,7 +41,6 @@ const StepsMenu: React.FC<IProps> = ({
           {...item}
           onClick={item.onSelect || onSelect}
           isActive={activeStep === item.id}
-          headTitle={item.headTitle}
         />
       ))}
     </Content>

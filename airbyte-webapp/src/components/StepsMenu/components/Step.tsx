@@ -11,7 +11,6 @@ type IProps = {
   isActive?: boolean;
   num: number;
   status?: string;
-  headTitle?: React.ReactNode;
 };
 
 const StepView = styled.div<{
@@ -66,7 +65,6 @@ const Step: React.FC<IProps> = ({
   num,
   lightMode,
   status,
-  headTitle,
 }) => {
   const onItemClickItem = () => {
     if (onClick) {
@@ -82,7 +80,6 @@ const Step: React.FC<IProps> = ({
       isActive={isActive}
       lightMode={lightMode}
     >
-      {isActive && headTitle}
       {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
       {status ? <StatusIcon success={status !== Status.FAILED} /> : null}
       {name}

@@ -30,29 +30,14 @@ const AdminPage: React.FC = () => {
     {
       id: StepsTypes.SOURCES,
       name: <FormattedMessage id="admin.sources" />,
-      headTitle: (
-        <HeadTitle
-          titles={[{ id: "sidebar.admin" }, { id: "admin.sources" }]}
-        />
-      ),
     },
     {
       id: StepsTypes.DESTINATIONS,
       name: <FormattedMessage id="admin.destinations" />,
-      headTitle: (
-        <HeadTitle
-          titles={[{ id: "sidebar.admin" }, { id: "admin.destinations" }]}
-        />
-      ),
     },
     {
       id: StepsTypes.CONFIGURATION,
       name: <FormattedMessage id="admin.configuration" />,
-      headTitle: (
-        <HeadTitle
-          titles={[{ id: "sidebar.admin" }, { id: "admin.configuration" }]}
-        />
-      ),
     },
   ];
   const [currentStep, setCurrentStep] = useState<string>(StepsTypes.SOURCES);
