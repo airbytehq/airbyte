@@ -9,7 +9,7 @@ import { theme } from "./theme";
 
 import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
-import NetworkErrorBoundary from "./components/NetworkErrorBoundary";
+import ApiErrorBoundary from "./components/NetworkErrorBoundary";
 import NotificationService from "components/hooks/services/Notification";
 
 const App: React.FC = () => {
@@ -20,11 +20,11 @@ const App: React.FC = () => {
         <IntlProvider locale="en" messages={en}>
           <CacheProvider>
             <Suspense fallback={<LoadingPage />}>
-              <NetworkErrorBoundary>
+              <ApiErrorBoundary>
                 <NotificationService>
                   <Routing />
                 </NotificationService>
-              </NetworkErrorBoundary>
+              </ApiErrorBoundary>
             </Suspense>
           </CacheProvider>
         </IntlProvider>

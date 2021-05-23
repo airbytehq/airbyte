@@ -34,7 +34,7 @@ const SourcesView: React.FC = () => {
     SourceDefinitionResource.updateShape()
   );
 
-  const { hasNewSourceVersion } = useConnector();
+  const { hasNewSourceVersion, updateAllSourceVersions } = useConnector();
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
   const onUpdateVersion = useCallback(
@@ -142,8 +142,6 @@ const SourcesView: React.FC = () => {
 
     return Array.from(sourceDefinitionMap.values());
   }, [sources, sourceDefinitions]);
-
-  const { updateAllSourceVersions } = useConnector();
 
   const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
     setSuccessUpdate(false);

@@ -1,5 +1,4 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import ContentCard from "components/ContentCard";
@@ -12,16 +11,16 @@ const Content = styled(ContentCard)`
   padding: 50px 15px;
 `;
 
-const ServerIsStarting: React.FC = () => {
+const ErrorOccurredView: React.FC<{ message: React.ReactNode }> = ({
+  message,
+}) => {
   return (
     <BaseClearView>
       <Content>
-        <H4 center>
-          <FormattedMessage id="webapp.cannotReachServer" />
-        </H4>
+        <H4 center>{message}</H4>
       </Content>
     </BaseClearView>
   );
 };
 
-export default ServerIsStarting;
+export { ErrorOccurredView };

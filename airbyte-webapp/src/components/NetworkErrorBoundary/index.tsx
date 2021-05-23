@@ -1,3 +1,3 @@
-import NetworkErrorBoundary from "./NetworkErrorBoundary";
+import ApiErrorBoundary from "./ApiErrorBoundary";
 
-export default NetworkErrorBoundary;
+export default ApiErrorBoundary;
