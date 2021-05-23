@@ -101,6 +101,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     destination.destinationDefinitionId
   );
   const dropdownData = useFrequencyDropdownData();
+  //TODO: add real action
+  const onTransformationDone = () => null;
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
@@ -215,7 +217,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               />
             )}
           </Field>
-          <TransformationBlock />
+          <TransformationBlock onDone={onTransformationDone} />
           {!isEditMode ? (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}

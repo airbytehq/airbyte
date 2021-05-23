@@ -1,5 +1,4 @@
-import React from "react";
-// import styled from "styled-components";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { FieldArray, useField } from "formik";
 
@@ -7,7 +6,13 @@ import GroupControls from "components/GroupControls";
 import ArrayOfObjectsEditor from "components/ArrayOfObjectsEditor";
 import TransformationItem from "./TransformationItem";
 
-const TransformationBlock: React.FC = () => {
+type TransformationBlockProps = {
+  onDone: () => void;
+};
+const TransformationBlock: React.FC<TransformationBlockProps> = ({
+  onDone,
+}) => {
+  const [isEditMode, setIsEditMode] = useState(false);
   //TODO: add real data
   const [field, ,] = useField("transformations");
   const transformations = field.value ?? [];
@@ -28,11 +33,10 @@ const TransformationBlock: React.FC = () => {
             addButtonText={<FormattedMessage id="form.addTransformation" />}
             doneButtonText={<FormattedMessage id="form.saveTransformation" />}
             onRemove={arrayHelpers.remove}
-            // TODO: add real actions
-            onStartEdit={() => console.log("onStartEdit")}
-            onCancelEdit={() => console.log("onCancelEdit")}
-            onDone={() => console.log("onDone")}
-            isEditMode
+            onStartEdit={() => setIsEditMode(true)}
+            onCancelEdit={() => setIsEditMode(false)}
+            isEditMode={isEditMode}
+            onDone={onDone}
           >
             {() => <TransformationItem />}
           </ArrayOfObjectsEditor>
