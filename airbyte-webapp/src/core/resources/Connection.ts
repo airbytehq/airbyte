@@ -33,6 +33,7 @@ export interface Connection {
   latestSyncJobCreatedAt?: number | null;
   isSyncing?: boolean;
   latestSyncJobStatus: string | null;
+  operationIds: string[];
 }
 
 export default class ConnectionResource
@@ -52,6 +53,7 @@ export default class ConnectionResource
   readonly latestSyncJobStatus: string | null = null;
   readonly syncCatalog: SyncSchema = { streams: [] };
   readonly isSyncing: boolean = false;
+  readonly operationIds: string[] = [];
 
   pk(): string {
     return this.connectionId?.toString();
