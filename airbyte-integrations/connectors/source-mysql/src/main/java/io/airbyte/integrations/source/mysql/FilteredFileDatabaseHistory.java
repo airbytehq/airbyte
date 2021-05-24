@@ -40,7 +40,7 @@ import java.util.function.Consumer;
 
 /**
  * MySQL Debezium connector monitors the database schema evolution over the time and stores the data
- * in database history file. Without this file we can't fetch the records from binlog. We need to
+ * in a database history file. Without this file we can't fetch the records from binlog. We need to
  * save the contents of the file. Debezium by default uses
  * {@link io.debezium.relational.history.FileDatabaseHistory} class to write the schema information
  * in the file. The problem is that the Debezium tracks the schema evolution of all the tables in

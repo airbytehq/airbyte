@@ -38,15 +38,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The record iterator is the consumer (in the producer / consumer relationship with debezium) is
+ * The record iterator is the consumer (in the producer / consumer relationship with debezium)
  * responsible for 1. making sure every record produced by the record publisher is processed 2.
  * signalling to the record publisher when it is time for it to stop producing records. It emits
  * this signal either when the publisher had not produced a new record for a long time or when it
  * has processed at least all of the records that were present in the database when the source was
  * started. Because the publisher might publish more records between the consumer sending this
- * signal and the publisher acutally shutting down, the consumer must stay alive as long as the
- * publisher is not closed or if there are any new records for it to process (even if the publisher
- * is closed).
+ * signal and the publisher actually shutting down, the consumer must stay alive as long as the
+ * publisher is not closed. Even after the publisher is closed, the consumer will finish processing
+ * any produced records before closing.
  */
 public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String, String>>
     implements AutoCloseableIterator<ChangeEvent<String, String>> {
@@ -108,23 +108,24 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   }
 
   private boolean shouldSignalClose(ChangeEvent<String, String> event) {
-    if (targetFilePosition.isPresent()) {
-      String file = Jsons.deserialize(event.value()).get("source").get("file").asText();
-      int position = Jsons.deserialize(event.value()).get("source").get("pos").asInt();
-      if (file.equals(targetFilePosition.get().fileName)) {
-        if (targetFilePosition.get().position >= position) {
-          return false;
-        } else {
-          // if not snapshot or is snapshot but last record in snapshot.
-          return SnapshotMetadata.TRUE != SnapshotMetadata.valueOf(
-              Jsons.deserialize(event.value()).get("source").get("snapshot").asText()
-                  .toUpperCase());
-
-        }
-      }
+    if (targetFilePosition.isEmpty()) {
+      return false;
     }
-    return false;
 
+    String file = Jsons.deserialize(event.value()).get("source").get("file").asText();
+    int position = Jsons.deserialize(event.value()).get("source").get("pos").asInt();
+    if (!file.equals(targetFilePosition.get().fileName)) {
+      return false;
+    }
+
+    if (targetFilePosition.get().position >= position) {
+      return false;
+    }
+
+    // if not snapshot or is snapshot but last record in snapshot.
+    return SnapshotMetadata.TRUE != SnapshotMetadata.valueOf(
+        Jsons.deserialize(event.value()).get("source").get("snapshot").asText()
+            .toUpperCase());
   }
 
   private void requestClose() {

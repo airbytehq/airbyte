@@ -209,14 +209,12 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   private static boolean isCdc(JsonNode config) {
-    final boolean isCdc = config.hasNonNull("replication_method")
+    return config.hasNonNull("replication_method")
         && ReplicationMethod.valueOf(config.get("replication_method").asText())
             .equals(ReplicationMethod.CDC);
-
-    return isCdc;
   }
 
-  static boolean shouldUseCDC(ConfiguredAirbyteCatalog catalog) {
+  private static boolean shouldUseCDC(ConfiguredAirbyteCatalog catalog) {
     Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
         .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
     return any.isPresent();
