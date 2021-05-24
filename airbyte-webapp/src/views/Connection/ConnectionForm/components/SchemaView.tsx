@@ -73,10 +73,6 @@ const SchemaView: React.FC<SchemaViewProps> = ({
     onChangeSchema({ streams: newSchema });
   }, [hasSelectedItem, onChangeSchema, schema.streams, searchString]);
 
-  const onSearch = useCallback((value: string) => {
-    setSearchString(value);
-  }, []);
-
   return (
     <>
       <div>
@@ -89,7 +85,7 @@ const SchemaView: React.FC<SchemaViewProps> = ({
         <Cell flex={2}>
           <Search
             onCheckAll={onCheckAll}
-            onSearch={onSearch}
+            onSearch={setSearchString}
             hasSelectedItem={hasSelectedItem}
           />
         </Cell>

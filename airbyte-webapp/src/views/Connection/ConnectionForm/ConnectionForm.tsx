@@ -4,7 +4,12 @@ import styled from "styled-components";
 import * as yup from "yup";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import { SyncSchema } from "core/domain/catalog";
+import {
+  AirbyteStreamConfiguration,
+  DestinationSyncMode,
+  SyncMode,
+  SyncSchema,
+} from "core/domain/catalog";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
 import ResetDataModal from "components/ResetDataModal";
@@ -41,6 +46,40 @@ const ConnectorLabel = styled(ControlLabels)`
 const connectionValidationSchema = yup.object().shape({
   frequency: yup.string().required("form.empty.error"),
   prefix: yup.string(),
+  schema: yup.object({
+    streams: yup.array().of(
+      yup.object({
+        config: yup.object().test({
+          name: "undefined",
+          message: "undefined",
+          test: function (value: AirbyteStreamConfiguration) {
+            if (!value.selected) {
+              return true;
+            }
+            if (DestinationSyncMode.Dedupted === value.destinationSyncMode) {
+              if (value.primaryKey.length === 0) {
+                return this.createError({
+                  message: "connectionForm.primaryKey.required",
+                });
+              }
+            }
+
+            if (SyncMode.Incremental === value.syncMode) {
+              if (
+                !this.parent.stream.sourceDefinedCursor &&
+                value.cursorField.length === 0
+              ) {
+                return this.createError({
+                  message: "connectionForm.cursorField.required",
+                });
+              }
+            }
+            return true;
+          },
+        }),
+      })
+    ),
+  }),
 });
 
 type ConnectionFormProps = {
@@ -98,33 +137,32 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
-  // TODO: newSchema config should be part of formik schema
-  const [newSchema, setNewSchema] = useState(initialSchema);
 
   return (
     <Formik
       initialValues={{
         frequency: frequencyValue || "",
         prefix: prefixValue || "",
+        schema: initialSchema,
       }}
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
       onSubmit={async (values) => {
-        const requiresReset =
-          isEditMode && !equal(initialSchema, newSchema) && !editSchemeMode;
         await onSubmit({
           frequency: values.frequency,
           prefix: values.prefix,
-          schema: newSchema,
+          schema: values.schema,
         });
 
+        const requiresReset =
+          isEditMode && !equal(initialSchema, values.schema) && !editSchemeMode;
         if (requiresReset) {
           setResetModalIsOpen(true);
         }
       }}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
+      {({ isSubmitting, setFieldValue, values, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
           <ControlLabelsWithMargin>
             <ConnectorLabel
@@ -156,7 +194,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       if (onDropDownSelect) {
                         onDropDownSelect(item);
                       }
-                      setFieldValue("frequency", item.value);
+                      setFieldValue(field.name, item.value);
                     }}
                   />
                 </ConnectorLabel>
@@ -183,14 +221,18 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               </ControlLabelsWithMargin>
             )}
           </Field>
-          <SchemaView
-            schema={newSchema}
-            destinationSupportedSyncModes={
-              destDefinition.supportedDestinationSyncModes
-            }
-            onChangeSchema={setNewSchema}
-            additionalControl={additionalSchemaControl}
-          />
+          <Field name="schema">
+            {({ field }: FieldProps<SyncSchema>) => (
+              <SchemaView
+                schema={field.value}
+                onChangeSchema={(value) => setFieldValue(field.name, value)}
+                destinationSupportedSyncModes={
+                  destDefinition.supportedDestinationSyncModes
+                }
+                additionalControl={additionalSchemaControl}
+              />
+            )}
+          </Field>
           {!isEditMode ? (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}
@@ -201,10 +243,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <EditControls
                 isSubmitting={isLoading || isSubmitting}
                 isValid={isValid}
-                dirty={dirty || !equal(initialSchema, newSchema)}
+                dirty={dirty || !equal(initialSchema, values.schema)}
                 resetForm={() => {
                   resetForm();
-                  setNewSchema(initialSchema);
                   if (onCancel) {
                     onCancel();
                   }
