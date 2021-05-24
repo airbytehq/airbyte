@@ -4,9 +4,9 @@ description: Start triggering Airbyte jobs with Apache Airflow in minutes
 
 # Using Apache Airflow with the Airbyte Operator
 
-Airbyte is an official community provider in Apache Airflow project.
-The Airbyte operator allows you to trigger synchronization jobs in Apache Airflow. 
-This tutorial explains how to configure your Airflow DAG to do so.
+Airbyte is an official community provider for the Apache Airflow project. 
+The Airbyte operator allows you to trigger synchronization jobs in Apache Airflow,
+and this tutorial will walk through configuring your Airflow DAG to do so.
 
 The Airbyte Provider documentation on Airflow project can be found [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html).
 
@@ -22,9 +22,9 @@ For the purposes of this tutorial, set your Connection's **sync frequency** to *
 
 ### **Start Apache Airflow**
 
-If you don't have an Airflow instance, we recommend following this [Quick Start Apache Airflow Tutorial](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html) to set one up.
-You need to install additionally the `apache-airflow-providers-airbyte` package to use Airbyte Operator on Apache Airflow.
-You can read more about [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html)
+If you don't have an Airflow instance, we recommend following this [guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html) to set one up.
+Additionally, you will need to install the `apache-airflow-providers-airbyte` package to use Airbyte Operator on Apache Airflow.
+You can read more about it [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html)
 
 ## 2. Create a DAG in Apache Airflow to trigger your Airbyte job
 
@@ -55,7 +55,7 @@ Place the following file inside the `/dags` directory. Name this file `dag_airby
 ```python
 from airflow import DAG
 from airflow.utils.dates import days_ago
-from airflow.providers.airbyte.operator import AirbyteTriggerSyncOperator
+from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperator
 
 with DAG(dag_id='trigger_airbyte_job_example',
          default_args={'owner': 'airflow'},
@@ -98,7 +98,8 @@ If your Airflow instance has limited resources and/or is under load, setting the
 ```python
 from airflow import DAG
 from airflow.utils.dates import days_ago
-from airflow.providers.airbyte.operator import AirbyteTriggerSyncOperator
+from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperator
+from airflow.providers.airbyte.sensors.airbyte import AirbyteJobSensor 
 
 with DAG(dag_id='airbyte_trigger_job_example_async',
          default_args={'owner': 'airflow'},
