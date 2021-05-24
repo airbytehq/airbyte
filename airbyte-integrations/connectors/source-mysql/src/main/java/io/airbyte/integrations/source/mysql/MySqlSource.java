@@ -31,6 +31,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -52,6 +53,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -106,6 +108,65 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     properties.set(CDC_DELETED_AT, numberType);
 
     return stream;
+  }
+
+  @Override
+  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
+    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
+    if (isCdc(config)) {
+      checkOperations.add(database -> {
+        List<String> matchingSlots = database.resultSetQuery(connection -> {
+          final String sql = "show variables where Variable_name = 'log_bin'";
+
+          return connection.createStatement().executeQuery(sql);
+        }, resultSet -> resultSet.getString("Value")).collect(toList());
+
+        if (matchingSlots.size() != 1) {
+          throw new RuntimeException("Could not query the variable log_bin");
+        }
+
+        String logBin = matchingSlots.get(0);
+        if (!logBin.equalsIgnoreCase("ON")) {
+          throw new RuntimeException("The variable log_bin should be set to ON, but it is : " + logBin);
+        }
+      });
+
+      checkOperations.add(database -> {
+        List<String> matchingSlots = database.resultSetQuery(connection -> {
+          final String sql = "show variables where Variable_name = 'binlog_format'";
+
+          return connection.createStatement().executeQuery(sql);
+        }, resultSet -> resultSet.getString("Value")).collect(toList());
+
+        if (matchingSlots.size() != 1) {
+          throw new RuntimeException("Could not query the variable binlog_format");
+        }
+
+        String binlogFormat = matchingSlots.get(0);
+        if (!binlogFormat.equalsIgnoreCase("ROW")) {
+          throw new RuntimeException("The variable binlog_format should be set to ROW, but it is : " + binlogFormat);
+        }
+      });
+    }
+
+    checkOperations.add(database -> {
+      List<String> matchingSlots = database.resultSetQuery(connection -> {
+        final String sql = "show variables where Variable_name = 'binlog_row_image'";
+
+        return connection.createStatement().executeQuery(sql);
+      }, resultSet -> resultSet.getString("Value")).collect(toList());
+
+      if (matchingSlots.size() != 1) {
+        throw new RuntimeException("Could not query the variable binlog_row_image");
+      }
+
+      String binlogRowImage = matchingSlots.get(0);
+      if (!binlogRowImage.equalsIgnoreCase("FULL")) {
+        throw new RuntimeException("The variable binlog_row_image should be set to FULL, but it is : " + binlogRowImage);
+      }
+    });
+
+    return checkOperations;
   }
 
   @Override
