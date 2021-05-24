@@ -11,7 +11,7 @@
   "sidebar.settings": "Settings",
 
   "form.continue": "Continue",
-  "form.emailOptional": "Your email (optional)",
+  "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "This email address doesn’t seem correct.",
   "form.empty.error": "Empty field",
