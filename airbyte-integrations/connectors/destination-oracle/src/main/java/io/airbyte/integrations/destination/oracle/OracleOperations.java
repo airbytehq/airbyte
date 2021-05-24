@@ -105,12 +105,18 @@ public class OracleOperations implements SqlOperations {
 
   @Override
   public void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
-    final String query = String.format(
-        "IF EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
-            + "WHERE s.name = '%s' AND t.name = '%s') "
-            + "DROP TABLE %s.%s",
-        schemaName, tableName, schemaName, tableName);
-    database.execute(query);
+    int count = database.query(c -> {
+      PreparedStatement statement = c.prepareStatement("select count(*) \n from user_tables\n where where upper(table_name) = upper(?)");
+          statement.setString(1, tableName);
+          return statement;
+        },
+        rs -> rs.getInt(1)
+    ).findFirst().get();
+    if (count == 1)
+    {
+      final String query = String.format("DROP TABLE %s.%s", schemaName, tableName);
+      database.execute(query);
+    }
   }
 
   // truncate is DDL, not allowed here.
@@ -191,6 +197,20 @@ public class OracleOperations implements SqlOperations {
     final String s = "BEGIN\nCOMMIT;\n" + String.join(";\n", queries) + ";\nCOMMIT;\nEND;";
     System.out.println("s = " + s);
     database.execute(s);
+
+//    database.execute(connection -> {
+//      try {
+//        connection.setAutoCommit(false);
+//        connection.commit();
+//        for (String query : queries) {
+//          connection.createStatement().execute(query);
+//        }
+//        connection.commit();
+//      } catch (Exception e) {
+//        connection.rollback();
+//        connection.setAutoCommit(true);
+//      }
+//    });
   }
 
   @Override
