@@ -21,6 +21,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class KubePodProcess extends Process {
     private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
@@ -104,49 +105,65 @@ public class KubePodProcess extends Process {
 
     @Override
     public int waitFor() throws InterruptedException {
-        client.resource(podDefinition).waitUntilCondition(this::allContainersTerminal, 10, TimeUnit.DAYS);
+        client.resource(podDefinition).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
         return exitValue();
     }
 
-    private boolean allContainersTerminal(Pod pod) {
-        try {
-            for (ContainerStatus containerStatus : pod.getStatus().getContainerStatuses()) {
-                if (containerStatus.getState() == null) {
-                    return false;
-                } else {
-                    ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
-
-                    if (terminated == null) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        } catch(NullPointerException e) {
-            return true; // todo: fix this termination handling
+    private boolean isTerminal(Pod pod) {
+        if (pod.getStatus() != null) {
+            return pod.getStatus()
+                    .getContainerStatuses()
+                    .stream()
+                    .anyMatch(e -> e.getState() != null && e.getState().getTerminated() != null);
+        } else {
+            return false;
         }
     }
 
-    private int getReturnCode(Pod pod) {
-        Preconditions.checkArgument(allContainersTerminal(pod));
-
-        int statusCodeSum = 0;
-
-        for (ContainerStatus containerStatus : pod.getStatus().getContainerStatuses()) {
-            int statusCode = containerStatus.getState().getTerminated().getExitCode();
-            LOGGER.info("Termination status for container " + containerStatus.getName() + "is " + statusCode);
-            statusCodeSum += statusCode;
+    // from https://github.com/niyanchun/flink-sourcecode-learning/blob/0c3f6d67d42e0ff8828b50b2aca73d61a4c9e144/flink-kubernetes/src/main/java/org/apache/flink/kubernetes/kubeclient/resources/KubernetesPod.java
+    public String getTerminatedDiagnostics(Pod pod) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Pod terminated, container termination statuses: [");
+        if (pod.getStatus() != null) {
+            sb.append(
+                    pod.getStatus().getContainerStatuses()
+                            .stream()
+                            .filter(containerStatus -> containerStatus.getState() != null && containerStatus.getState().getTerminated() != null)
+                            .map((containerStatus) -> {
+                                final ContainerStateTerminated containerStateTerminated = containerStatus.getState().getTerminated();
+                                return String.format("%s(exitCode=%d, reason=%s, message=%s)",
+                                        containerStatus.getName(),
+                                        containerStateTerminated.getExitCode(),
+                                        containerStateTerminated.getReason(),
+                                        containerStateTerminated.getMessage());
+                            })
+                            .collect(Collectors.joining(",")));
         }
+        sb.append("]");
+        return sb.toString();
+    }
 
-        return statusCodeSum;
+    private int getReturnCode(Pod pod) {
+        Pod refreshedPod = client.pods().withName(pod.getMetadata().getName()).get(); // todo: use more robust version here
+        LOGGER.info("getTerminatedDiagnostics() = " + getTerminatedDiagnostics(refreshedPod));
+        Preconditions.checkArgument(isTerminal(refreshedPod));
+
+
+        return refreshedPod.getStatus().getContainerStatuses()
+                .stream()
+                .filter(containerStatus -> containerStatus.getState() != null && containerStatus.getState().getTerminated() != null)
+                .map(containerStatus -> {
+                    int statusCode = containerStatus.getState().getTerminated().getExitCode();
+                    LOGGER.info("Termination status for container " + containerStatus.getName() + " is " + statusCode);
+                    return statusCode;
+                })
+                .reduce(Integer::sum)
+                .orElseThrow();
     }
 
     @Override
     public int exitValue() {
-        return 0; // todo: fix npes after job has completed
-//        Pod refreshedPod = client.resource(podDefinition).get();
-//        return getReturnCode(refreshedPod);
+        return getReturnCode(podDefinition);
     }
 
     @Override

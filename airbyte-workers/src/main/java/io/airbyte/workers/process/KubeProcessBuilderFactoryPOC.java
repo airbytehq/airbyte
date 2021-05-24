@@ -198,12 +198,13 @@ public class KubeProcessBuilderFactoryPOC {
     }
     writer.close();
 
-    // todo: make waitFor actually work so we don't need to destroy after a timeout
-    Thread.sleep(5000);
-    executor.shutdown();
-    KUBE_CLIENT.close();
-    LOGGER.info("Done...");
-    System.exit(0);
+    LOGGER.info("Waiting for source...");
+    src.waitFor();
+    LOGGER.info("Waiting for destination...");
+    dest.waitFor();
+    LOGGER.info("Done!");
+
+    System.exit(0); // todo: handle executors so we don't need to kill the JVM
   }
 
 }
