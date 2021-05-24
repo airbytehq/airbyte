@@ -112,6 +112,7 @@ public class WebBackendConnectionsHandler {
   }
 
   private WbConnectionRead buildWbConnectionRead(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
+    System.out.println(connectionRead);
     final SourceRead source = getSourceRead(connectionRead);
     final DestinationRead destination = getDestinationRead(connectionRead);
     final OperationReadList operations = getOperationReadList(connectionRead);

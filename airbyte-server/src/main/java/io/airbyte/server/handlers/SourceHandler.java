@@ -160,6 +160,7 @@ public class SourceHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<SourceRead> reads = Lists.newArrayList();
     List<SourceConnection> sources = configRepository.listSourceConnection();
+
     final Integer totalConnectionsSize = sources.size();
     final Integer lastIndex = offset + limit;
 

@@ -58,9 +58,9 @@ public class SourceHelpers {
         .withTombstone(tombstone);
   }
 
-  public static List<SourceConnection> generateSources(UUID sourceDefinitionId, UUID workspaceId, int sourceLength) throws IOException {
-    List<SourceConnection> sourceConnections = new ArrayList<SourceConnection>(sourceLength);
-    for (int i=0;i < sourceLength;i++) {
+  public static List<SourceConnection> generateSources(UUID sourceDefinitionId, UUID workspaceId, int sourceCount) throws IOException {
+    List<SourceConnection> sourceConnections = new ArrayList<SourceConnection>(sourceCount);
+    for (int i=0;i < sourceCount;i++) {
       final UUID sourceId = UUID.randomUUID();
 
       final JsonNode implementationJson = getTestImplementationJson();
