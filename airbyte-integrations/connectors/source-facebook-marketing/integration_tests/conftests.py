@@ -23,30 +23,27 @@
 #
 
 
-from setuptools import find_packages, setup
+import json
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
-    "cached_property~=1.5",
-    "facebook_business~=10.0",
-    "pendulum~=1.2",
-]
+import pytest
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "requests_mock~=1.8",
-    "source-acceptance-test",
-]
 
-setup(
-    name="source_facebook_marketing",
-    description="Source implementation for Facebook Marketing.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+@pytest.fixture(scope="session", name="config")
+def config_fixture():
+    with open("secrets/config.json", "r") as config_file:
+        return json.load(config_file)
+
+
+@pytest.fixture(scope="session", name="config_with_wrong_token")
+def config_with_wrong_token_fixture(config):
+    return {**config, "access_token": "WRONG_TOKEN"}
+
+
+@pytest.fixture(scope="session", name="config_with_wrong_account")
+def config_with_wrong_account_fixture(config):
+    return {**config, "account_id": "WRONG_ACCOUNT"}
+
+
+@pytest.fixture(scope="session", name="config_with_include_deleted")
+def config_with_include_deleted_fixture(config):
+    return {**config, "include_deleted": True}

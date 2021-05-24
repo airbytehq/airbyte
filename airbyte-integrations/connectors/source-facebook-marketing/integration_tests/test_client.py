@@ -23,30 +23,20 @@
 #
 
 
-from setuptools import find_packages, setup
+import pytest
+from airbyte_cdk.models import AirbyteStream
+from source_facebook_marketing.client import Client, FacebookAPIException
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
-    "cached_property~=1.5",
-    "facebook_business~=10.0",
-    "pendulum~=1.2",
-]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "requests_mock~=1.8",
-    "source-acceptance-test",
-]
+def test__health_check_with_wrong_token(config_with_wrong_token):
+    client = Client(**config_with_wrong_token)
+    alive, error = client.health_check()
 
-setup(
-    name="source_facebook_marketing",
-    description="Source implementation for Facebook Marketing.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+    assert not alive
+    assert error == "Error: 190, Invalid OAuth access token."
+
+
+def test__campaigns_with_wrong_token(config_with_wrong_token):
+    client = Client(**config_with_wrong_token)
+    with pytest.raises(FacebookAPIException, match="Error: 190, Invalid OAuth access token"):
+        next(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))

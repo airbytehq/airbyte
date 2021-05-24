@@ -24,30 +24,16 @@
 
 
 import copy
-import json
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple, MutableMapping, Any
 
 import pytest
-from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode, Type
-from base_python import AirbyteLogger
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, AirbyteMessage, Type
 from source_facebook_marketing.source import SourceFacebookMarketing
 
 
-@pytest.fixture(scope="session", name="stream_config")
-def config_fixture():
-    with open("secrets/config.json", "r") as config_file:
-        return json.load(config_file)
-
-
-@pytest.fixture(scope="session", name="stream_config_with_include_deleted")
-def config_with_include_deleted_fixture(stream_config):
-    patched_config = copy.deepcopy(stream_config)
-    patched_config["include_deleted"] = True
-    return patched_config
-
-
 @pytest.fixture(scope="session", name="state")
-def state_fixture():
+def state_fixture() -> MutableMapping[str, MutableMapping[str, Any]]:
     return {
         "ads": {"updated_time": "2021-02-19T10:42:40-0800"},
         "adsets": {"updated_time": "2021-02-19T10:42:40-0800"},
@@ -74,18 +60,18 @@ class TestFacebookMarketingSource:
     @pytest.mark.parametrize(
         "catalog_path", ["sample_files/configured_catalog_adsinsights.json", "sample_files/configured_catalog_adcreatives.json"]
     )
-    def test_streams_outputs_records(self, catalog_path, stream_config):
+    def test_streams_outputs_records(self, catalog_path, config):
         configured_catalog = ConfiguredAirbyteCatalog.parse_file(catalog_path)
-        records, states = self._read_records(stream_config, configured_catalog)
+        records, states = self._read_records(config, configured_catalog)
 
         assert records, "should have some records returned"
         if configured_catalog.streams[0].sync_mode == SyncMode.incremental:
             assert states, "should have some states returned"
 
     @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 3), ("adsets", 1)])
-    def test_streams_with_include_deleted(self, stream_name, deleted_num, stream_config_with_include_deleted, configured_catalog):
+    def test_streams_with_include_deleted(self, stream_name, deleted_num, config_with_include_deleted, configured_catalog):
         catalog = self.slice_catalog(configured_catalog, {stream_name})
-        records, states = self._read_records(stream_config_with_include_deleted, catalog)
+        records, states = self._read_records(config_with_include_deleted, catalog)
         deleted_records = list(filter(self._deleted_record, records))
 
         assert states
@@ -94,10 +80,10 @@ class TestFacebookMarketingSource:
 
         assert len(deleted_records) == deleted_num, f"{stream_name} should have {deleted_num} deleted records returned"
 
-    def test_campaign_stream_specific_deleted_id_pulled(self, stream_config_with_include_deleted, configured_catalog):
+    def test_campaign_stream_specific_deleted_id_pulled(self, config_with_include_deleted, configured_catalog):
         specific_campaign_id = "23846541919710398"
         catalog = self.slice_catalog(configured_catalog, {"campaigns"})
-        records, _ = self._read_records(stream_config_with_include_deleted, catalog)
+        records, _ = self._read_records(config_with_include_deleted, catalog)
 
         is_specific_campaign_pulled = False
         for record in records:
@@ -109,22 +95,22 @@ class TestFacebookMarketingSource:
 
     @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 3), ("adsets", 1)])
     def test_streams_with_include_deleted_and_state(
-        self, stream_name, deleted_num, stream_config_with_include_deleted, configured_catalog, state
+        self, stream_name, deleted_num, config_with_include_deleted, configured_catalog, state
     ):
         """Should ignore state because of include_deleted enabled"""
         catalog = self.slice_catalog(configured_catalog, {stream_name})
-        records, states = self._read_records(stream_config_with_include_deleted, catalog, state=state)
+        records, states = self._read_records(config_with_include_deleted, catalog, state=state)
         deleted_records = list(filter(self._deleted_record, records))
 
         assert len(deleted_records) == deleted_num, f"{stream_name} should have {deleted_num} deleted records returned"
 
     @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 0), ("campaigns", 0), ("adsets", 0)])
     def test_streams_with_include_deleted_and_state_with_included_deleted(
-        self, stream_name, deleted_num, stream_config_with_include_deleted, configured_catalog, state_with_include_deleted
+        self, stream_name, deleted_num, config_with_include_deleted, configured_catalog, state_with_include_deleted
     ):
         """Should keep state because of include_deleted enabled previously"""
         catalog = self.slice_catalog(configured_catalog, {stream_name})
-        records, states = self._read_records(stream_config_with_include_deleted, catalog, state=state_with_include_deleted)
+        records, states = self._read_records(config_with_include_deleted, catalog, state=state_with_include_deleted)
         deleted_records = list(filter(self._deleted_record, records))
 
         assert len(deleted_records) == deleted_num, f"{stream_name} should have {deleted_num} deleted records returned"

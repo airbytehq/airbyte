@@ -24,19 +24,90 @@
 
 
 import pytest
-from airbyte_protocol import AirbyteStream
-from source_facebook_marketing.client import Client, FacebookAPIException
+# from airbyte_protocol import AirbyteStream
+from facebook_business import FacebookSession
+from source_facebook_marketing.client import Client
 
 
-def test__health_check_with_wrong_token():
-    client = Client(account_id="wrong_account", access_token="wrong_key", start_date="2019-03-03T10:00")
-    alive, error = client.health_check()
+@pytest.fixture(name="some_config")
+def some_config_fixture():
+    return {
+        "start_date": "2021-01-23T00:00:00Z",
+        "account_id": "unknown_account",
+        "access_token": "unknown_token"
+    }
 
-    assert not alive
-    assert error == "Error: 190, Invalid OAuth access token."
+
+@pytest.fixture(name="client")
+def client_fixture(some_config):
+    return Client(**some_config)
 
 
-def test__campaigns_with_wrong_token():
-    client = Client(account_id="wrong_account", access_token="wrong_key", start_date="2019-03-03T10:00")
-    with pytest.raises(FacebookAPIException, match="Error: 190, Invalid OAuth access token"):
-        next(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
+import logging
+
+# Debug logging
+# httplib.HTTPConnection.debuglevel = 1
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
+req_log = logging.getLogger('requests.packages.urllib3')
+req_log.setLevel(logging.DEBUG)
+req_log.propagate = True
+
+
+@pytest.fixture(name=fb_call_rate_response)
+def fb_call_rate_response_fixture():
+    error = {
+        "message": "(#32) Page request limit reached",
+        "type": "OAuthException",
+        "code": 32,
+        "fbtrace_id": "Fz54k3GZrio"
+    }
+
+    headers = {
+        "x-app-usage": {
+            "call_count": 28,
+            "total_time": 25,
+            "total_cputime": 25
+        }
+    }
+
+    return {
+        "json": {
+            "error": error,
+        },
+        "status_code": 429, "headers": headers
+    }
+
+
+class TestBackoff:
+    def test_limit_reached(self, requests_mock, client, fb_call_rate_response):
+        """Error once, check that we retry and not fail"""
+        responses = [
+            fb_call_rate_response,
+            {"json": [], "status_code": 200},
+        ]
+
+        url = "https://graph.facebook.com/v10.0/me/adaccounts"
+        requests_mock.register_uri("GET", url, responses)
+
+        # AirbyteStream(name="", json_schema={})
+        alive, error = client.health_check()
+
+        assert alive
+        assert not error
+
+    def test_batch_limit_reached(self, request_mock, client):
+        pass
+
+    def test_server_error(self, requests_mock, client):
+        """Error once, check that we retry and not fail"""
+        responses = [
+            {"json": {"error": "something bad"}, "status_code": 500},
+            {"json": [], "status_code": 200},
+        ]
+        requests_mock.register_uri("GET", FacebookSession.GRAPH, responses)
+
+        alive, error = client.health_check()
+
+        assert alive
+        assert not error

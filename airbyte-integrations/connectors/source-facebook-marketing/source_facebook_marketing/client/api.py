@@ -30,9 +30,10 @@ from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence, I
 
 import backoff
 import pendulum as pendulum
-from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
+# FIXME (Eugene K): use standard logger
+from airbyte_cdk.entrypoint import logger
 from facebook_business.adobjects.adreportrun import AdReportRun
-from facebook_business.api import FacebookResponse, FacebookRequest
+from facebook_business.api import FacebookResponse, FacebookRequest, FacebookAdsApiBatch
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
 from .common import JobTimeoutException, deep_merge, retry_pattern
@@ -203,7 +204,7 @@ class AdCreativeAPI(StreamAPI):
             print(response.headers)
             raise response.error()
 
-        api_batch = self._api._api.new_batch()
+        api_batch: FacebookAdsApiBatch = self._api._api.new_batch()
         for request in requests:
             api_batch.add_request(request, success=success, failure=failure)
         api_batch.execute()
