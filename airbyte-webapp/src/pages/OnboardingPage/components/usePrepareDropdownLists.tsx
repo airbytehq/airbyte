@@ -11,7 +11,7 @@ import DestinationDefinitionResource, {
 type DropDownItem = {
   text: string;
   value: string;
-  img: string;
+  icon: string;
 };
 
 const usePrepareDropdownLists = (): {
@@ -36,7 +36,7 @@ const usePrepareDropdownLists = (): {
       sourceDefinitions.map((item) => ({
         text: item.name,
         value: item.sourceDefinitionId,
-        img: "/default-logo-catalog.svg",
+        icon: item.icon,
       })),
     [sourceDefinitions]
   );
@@ -46,7 +46,7 @@ const usePrepareDropdownLists = (): {
       destinationDefinitions.map((item) => ({
         text: item.name,
         value: item.destinationDefinitionId,
-        img: "/default-logo-catalog.svg",
+        icon: item.icon,
       })),
     [destinationDefinitions]
   );

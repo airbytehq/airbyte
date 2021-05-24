@@ -36,8 +36,9 @@ Note that this new connector could just be an updated version of an existing con
 
 ## Upgrading a connector
 
-To upgrade your connector version, go to the admin panel in the left hand side of the UI, find this connector in the list, and input the latest connector version. 
+To upgrade your connector version, go to the admin panel in the left hand side of the UI, find this connector in the list, and input the latest connector version.
 
 ![](../.gitbook/assets/upgrading_connector_admin_panel.png)
 
-To browse the available connector versions, simply click on the relevant link in the `Image` column to navigate to the connector's DockerHub page. From there, simply click on the `Tags` section in the top bar. 
+To browse the available connector versions, simply click on the relevant link in the `Image` column to navigate to the connector's DockerHub page. From there, simply click on the `Tags` section in the top bar.
+

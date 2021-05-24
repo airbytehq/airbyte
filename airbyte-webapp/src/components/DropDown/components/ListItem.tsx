@@ -2,19 +2,19 @@ import React from "react";
 import styled from "styled-components";
 
 import Text from "./Text";
-import ImageBlock from "components/ImageBlock";
 
 export type IProps = {
-  item: IDataItem;
+  disabled: boolean;
+  index: number;
   fullText?: boolean;
-};
+} & IDataItem;
 
 export type IDataItem = {
   text: string;
   value: string;
   groupValue?: string;
   groupValueText?: string;
-  img?: string;
+  img?: React.ReactNode;
   primary?: boolean;
   secondary?: boolean;
 };
@@ -26,17 +26,20 @@ const ItemView = styled.div`
   align-items: center;
 `;
 
-const ListItem: React.FC<IProps> = ({ item, fullText }) => {
+const ListItem: React.FC<IProps> = ({
+  value,
+  primary,
+  secondary,
+  text,
+  img,
+  fullText,
+}) => {
   return (
-    <ItemView data-id={item.value}>
-      <Text
-        primary={item.primary}
-        secondary={item.secondary}
-        fullText={fullText}
-      >
-        {item.text}
+    <ItemView data-id={value}>
+      <Text primary={primary} secondary={secondary} fullText={fullText}>
+        {text}
       </Text>
-      {item.img ? <ImageBlock img={item.img} /> : null}
+      {img || null}
     </ItemView>
   );
 };

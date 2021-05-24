@@ -54,3 +54,4 @@ GRANT SELECT ON <database name>.* TO 'airbyte'@'%';
 You can limit this grant down to specific tables instead of the whole database. Note that to replicate data from multiple ClickHouse databases, you can re-run the command above to grant access to all the relevant schemas, but you'll need to set up multiple sources connecting to the same db on multiple schemas.
 
 Your database user should now be ready for use with Airbyte.
+

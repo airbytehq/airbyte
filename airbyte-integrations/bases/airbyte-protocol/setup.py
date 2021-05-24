@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import setuptools
@@ -31,5 +33,5 @@ setuptools.setup(
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
     package_data={"": ["models/yaml/*.yaml"]},
-    install_requires=["PyYAML==5.4", "pydantic==1.6.1"],
+    install_requires=["PyYAML==5.4", "pydantic==1.6.2"],
 )

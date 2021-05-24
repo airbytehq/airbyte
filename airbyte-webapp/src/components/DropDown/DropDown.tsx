@@ -216,8 +216,8 @@ const DropDown: React.FC<DropdownProps> = (props) => {
           <ValueInput item={item} />
         )
       }
-      itemComponent={(item) => (
-        <ListItem item={item} fullText={props.fullText} />
+      itemComponent={({ item }) => (
+        <ListItem {...item} item={item} fullText={props.fullText} />
       )}
       onSelect={props.onSelect}
       // @ts-ignore wrong typing

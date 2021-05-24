@@ -52,7 +52,8 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
   }
 
   @Override
-  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String... args) throws WorkerException {
+  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+      throws WorkerException {
 
     try {
       final String template = MoreResources.readResource("kube_runner_template.yaml");
@@ -86,7 +87,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
               "--restart=Never",
               "--overrides=" + overrides, // fails if you add quotes around the overrides string
               podName);
-
+      // TODO handle entrypoint override (to run DbtTransformationRunner for example)
       LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 
       return new ProcessBuilder(cmd);

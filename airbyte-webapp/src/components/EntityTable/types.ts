@@ -12,6 +12,7 @@ type EntityTableDataItem = {
   }[];
   enabled: boolean;
   lastSync?: number | null;
+  connectorIcon?: string;
 };
 
 type ITableDataItem = {
@@ -24,6 +25,8 @@ type ITableDataItem = {
   lastSync?: number | null;
   schedule: ScheduleProperties | null;
   lastSyncStatus: string | null;
+  connectorIcon?: string;
+  entityIcon?: string;
 };
 
 enum Status {

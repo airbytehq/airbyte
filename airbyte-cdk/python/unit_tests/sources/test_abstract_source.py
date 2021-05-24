@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from collections import defaultdict
@@ -73,13 +75,13 @@ def test_successful_check():
 
 def test_failed_check():
     """ Tests that if a source returns FALSE for the connection check the appropriate connectionStatus failure message is returned """
-    expected = AirbyteConnectionStatus(status=Status.FAILED, message="womp womp")
+    expected = AirbyteConnectionStatus(status=Status.FAILED, message="'womp womp'")
     assert expected == MockSource(check_lambda=lambda: (False, "womp womp")).check(logger, {})
 
 
 def test_raising_check():
     """ Tests that if a source raises an unexpected exception the connection check the appropriate connectionStatus failure message is returned """
-    expected = AirbyteConnectionStatus(status=Status.FAILED, message=f"{Exception('this should fail')}")
+    expected = AirbyteConnectionStatus(status=Status.FAILED, message="Exception('this should fail')")
     assert expected == MockSource(check_lambda=lambda: exec('raise Exception("this should fail")')).check(logger, {})
 
 

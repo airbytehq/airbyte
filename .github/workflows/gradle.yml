@@ -229,7 +229,7 @@ jobs:
           python-version: '3.7'
 
       - name: Build Core Docker Images and Run Tests
-        run: CORE_ONLY=true ./gradlew --no-daemon format composeBuild test -x :airbyte-webapp:test --scan
+        run: CORE_ONLY=true ./gradlew --no-daemon composeBuild test -x :airbyte-webapp:test --scan
         env:
           GIT_REVISION: ${{ github.sha }}
           CORE_ONLY: true
@@ -315,7 +315,7 @@ jobs:
 #        run: sudo apt-get install socat
 #
 #      - name: Build Core Docker Images and Run Tests
-#        run: CORE_ONLY=true ./gradlew --no-daemon format composeBuild test -x :airbyte-webapp:test --scan
+#        run: CORE_ONLY=true ./gradlew --no-daemon composeBuild test -x :airbyte-webapp:test --scan
 #        env:
 #          GIT_REVISION: ${{ github.sha }}
 #          CORE_ONLY: true

@@ -29,7 +29,7 @@ We add some metadata columns for CDC sources:
 
 ## Current Support
 
-* [Postgres](../integrations/sources/postgres.md)
+* [Postgres](../integrations/sources/postgres.md) (For a quick video overview of CDC on Postgres, click [here](https://www.youtube.com/watch?v=NMODvLgZvuE&ab_channel=Airbyte))
 
 ## Coming Soon
 

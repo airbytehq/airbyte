@@ -3,7 +3,6 @@ import styled from "styled-components";
 
 import { IDataItem } from "./ListItem";
 import Text from "./Text";
-import ImageBlock from "components/ImageBlock";
 
 export type IProps = {
   item: IDataItem;
@@ -28,8 +27,9 @@ const GroupText = styled.div`
   line-height: 11px;
 `;
 
-const Icon = styled(ImageBlock)`
+const Icon = styled.div`
   margin-right: 6px;
+  display: inline-block;
 `;
 
 const ValueInput: React.FC<IProps> = ({ item }) => {
@@ -44,7 +44,7 @@ const ValueInput: React.FC<IProps> = ({ item }) => {
 
   return (
     <ItemView>
-      {item.img ? <Icon img={item.img} /> : null}
+      {item.img ? <Icon>{item.img}</Icon> : null}
       <Text>{item.text}</Text>
     </ItemView>
   );
