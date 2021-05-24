@@ -26,7 +26,6 @@ package io.airbyte.integrations.destination.oracle;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-
 import java.time.Instant;
 
 @VisibleForTesting
@@ -44,14 +43,13 @@ public class OracleNameTransformer extends ExtendedNameTransformer {
 
   @Override
   public String getTmpTableName(String streamName) {
-    return convertStreamName("airbyte_tmp_" + streamName + "_" + Instant.now().toEpochMilli() ).substring(0, 29);
+    return convertStreamName("airbyte_tmp_" + streamName + "_" + Instant.now().toEpochMilli()).substring(0, 29);
   }
 
   @Override
   public String convertStreamName(String input) {
     String result = super.convertStreamName(input);
-    if (!result.isEmpty() && result.charAt(0) == '_')
-    {
+    if (!result.isEmpty() && result.charAt(0) == '_') {
       result = result.substring(1);
     }
     return result;

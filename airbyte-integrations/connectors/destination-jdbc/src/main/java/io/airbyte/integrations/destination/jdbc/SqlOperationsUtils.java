@@ -71,10 +71,10 @@ public class SqlOperationsUtils {
    * @throws SQLException exception
    */
   public static void insertRawRecordsInSingleQueryNoSem(String insertQueryComponent,
-                                                   String recordQueryComponent,
-                                                   JdbcDatabase jdbcDatabase,
-                                                   List<AirbyteRecordMessage> records)
-          throws SQLException {
+                                                        String recordQueryComponent,
+                                                        JdbcDatabase jdbcDatabase,
+                                                        List<AirbyteRecordMessage> records)
+      throws SQLException {
     insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
   }
 
@@ -118,4 +118,5 @@ public class SqlOperationsUtils {
       }
     });
   }
+
 }

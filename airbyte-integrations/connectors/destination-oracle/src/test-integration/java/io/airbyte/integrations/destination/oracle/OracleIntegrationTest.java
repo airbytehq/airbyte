@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
@@ -104,26 +103,27 @@ public class OracleIntegrationTest extends TestDestination {
 
     System.out.println("tmpOutput = " + tmpOutput);
     System.out.println("rawOutput = " + rawOutput);
-
+    //
     final Database database = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
-    final String query = String.format("INSERT INTO %s.%s SELECT * FROM %s.%s\n", namespace, namingResolver.getRawTableName(streamName), namespace,
-        namingResolver.getTmpTableName(streamName));
-//    String.format("BEGIN TRAN;\n" + String.join("\n", queries) + "\nCOMMIT TRAN", query);
-    final String queryInTransaction = String.format("BEGIN TRAN;\n" + query + "\nCOMMIT TRAN", query);
-
-    database.query(ctx -> ctx.execute(queryInTransaction));
-
-    final List<JsonNode> tmpOutput2 = retrieveRecordsFromTable(namingResolver.getTmpTableName(streamName), namespace);
-    final List<JsonNode> rawOutput2 = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
-    System.out.println("tmpOutput2 = " + tmpOutput2);
-    System.out.println("rawOutput2 = " + rawOutput2);
-
+    // final String query = String.format("INSERT INTO %s.%s SELECT * FROM %s.%s\n", namespace,
+    // namingResolver.getRawTableName(streamName), namespace,
+    // namingResolver.getTmpTableName(streamName));
+    //// String.format("BEGIN TRAN;\n" + String.join("\n", queries) + "\nCOMMIT TRAN", query);
+    // final String queryInTransaction = String.format("BEGIN TRAN;\n" + query + "\nCOMMIT TRAN",
+    // query);
+    //
+    // database.query(ctx -> ctx.execute(queryInTransaction));
+    //
+    // final List<JsonNode> tmpOutput2 =
+    // retrieveRecordsFromTable(namingResolver.getTmpTableName(streamName), namespace);
+    // final List<JsonNode> rawOutput2 =
+    // retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
+    // System.out.println("tmpOutput2 = " + tmpOutput2);
+    // System.out.println("rawOutput2 = " + rawOutput2);
+    //
     System.out.println("hello");
 
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
-        .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA.substring(1)).asText()))
-        .collect(Collectors.toList());
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
   }
 
   @Override
@@ -158,25 +158,38 @@ public class OracleIntegrationTest extends TestDestination {
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     final Database database = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
-    List<org.jooq.Record> result = database    .query(
-            ctx -> {
-              List<JsonNode> transactions = ctx.fetch("select SID, TYPE from V$LOCK")
-                .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList());
-              LOGGER.error(String.format("Open transactions: %d.", transactions.size()));
-              return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1)))
-                  .stream()
-                  .collect(Collectors.toList());}
-        );
+    List<org.jooq.Record> result = database.query(
+        ctx -> {
+          List<JsonNode> transactions = ctx.fetch("select SID, TYPE from V$LOCK")
+              .stream()
+              .map(r -> r.formatJSON(JSON_FORMAT))
+              .map(Jsons::deserialize)
+              .collect(Collectors.toList());
+          LOGGER.error(String.format("Open transactions: %d.", transactions.size()));
+          return ctx
+              .fetch(
+                  String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1)))
+              .stream()
+              .collect(Collectors.toList());
+        });
+
     System.out.println("result = " + result);
+    final List<JsonNode> jsonNodeStream = result
+        .stream()
+        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(Jsons::deserialize)
+        .map(r -> r.get("AIRBYTE_DATA").asText())
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
+    System.out.println("jsonNodeStream = " + jsonNodeStream);
+
     return result
-            .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
-            .map(Jsons::deserialize)
-            .collect(Collectors.toList());
+        .stream()
+        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(Jsons::deserialize)
+        .map(r -> r.get("AIRBYTE_DATA").asText())
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
   }
 
   private static Database getDatabase(JsonNode config) {
@@ -186,9 +199,9 @@ public class OracleIntegrationTest extends TestDestination {
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
-                config.get("host").asText(),
-                config.get("port").asText(),
-                config.get("sid").asText()),
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
         null);
   }
@@ -204,7 +217,8 @@ public class OracleIntegrationTest extends TestDestination {
     final Database database = getDatabase(configWithoutDbName);
     database.query(ctx -> {
       ctx.execute("alter database default tablespace users");
-      ctx.execute("declare c int; begin select count(*) into c from user_tables where upper(table_name) = upper('id_and_name'); if c = 1 then execute immediate 'drop table id_and_name'; end if; end;");
+      ctx.execute(
+          "declare c int; begin select count(*) into c from user_tables where upper(table_name) = upper('id_and_name'); if c = 1 then execute immediate 'drop table id_and_name'; end if; end;");
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born TIMESTAMP WITH TIME ZONE)");
       ctx.fetch(
           "INSERT ALL INTO id_and_name (id, name, born) VALUES (1,'picard', TIMESTAMP '2124-03-04 01:01:01') INTO id_and_name (id, name, born) VALUES  (2, 'crusher', TIMESTAMP '2124-03-04 01:01:01') INTO id_and_name (id, name, born) VALUES (3, 'vash', TIMESTAMP '2124-03-04 01:01:01') SELECT 1 FROM DUAL");
