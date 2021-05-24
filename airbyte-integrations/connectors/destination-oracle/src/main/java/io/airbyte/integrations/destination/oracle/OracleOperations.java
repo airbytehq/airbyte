@@ -223,12 +223,12 @@ public class OracleOperations implements SqlOperations {
 
   @Override
   public String copyTableQuery(String schemaName, String sourceTableName, String destinationTableName) {
-    return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, destinationTableName, schemaName, sourceTableName);
+    return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s\n", schemaName, destinationTableName, schemaName, sourceTableName);
   }
 
   @Override
   public void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception {
-    database.execute("BEGIN TRAN;\n" + String.join("\n", queries) + "\nCOMMIT TRAN;");
+    database.execute("BEGIN TRAN;\n" + String.join("\n", queries) + "\nCOMMIT TRAN");
   }
 
   @Override

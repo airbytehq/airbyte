@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.TestDestination;
@@ -98,6 +99,27 @@ public class OracleIntegrationTest extends TestDestination {
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
+    final List<JsonNode> tmpOutput = retrieveRecordsFromTable(namingResolver.getTmpTableName(streamName), namespace);
+    final List<JsonNode> rawOutput = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
+
+    System.out.println("tmpOutput = " + tmpOutput);
+    System.out.println("rawOutput = " + rawOutput);
+
+    final Database database = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+    final String query = String.format("INSERT INTO %s.%s SELECT * FROM %s.%s\n", namespace, namingResolver.getRawTableName(streamName), namespace,
+        namingResolver.getTmpTableName(streamName));
+//    String.format("BEGIN TRAN;\n" + String.join("\n", queries) + "\nCOMMIT TRAN", query);
+    final String queryInTransaction = String.format("BEGIN TRAN;\n" + query + "\nCOMMIT TRAN", query);
+
+    database.query(ctx -> ctx.execute(queryInTransaction));
+
+    final List<JsonNode> tmpOutput2 = retrieveRecordsFromTable(namingResolver.getTmpTableName(streamName), namespace);
+    final List<JsonNode> rawOutput2 = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
+    System.out.println("tmpOutput2 = " + tmpOutput2);
+    System.out.println("rawOutput2 = " + rawOutput2);
+
+    System.out.println("hello");
+
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA.substring(1)).asText()))
@@ -135,8 +157,8 @@ public class OracleIntegrationTest extends TestDestination {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
-    List<org.jooq.Record> result = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl())
-        .query(
+    final Database database = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl());
+    List<org.jooq.Record> result = database    .query(
             ctx -> {
               List<JsonNode> transactions = ctx.fetch("select SID, TYPE from V$LOCK")
                 .stream()
@@ -149,6 +171,7 @@ public class OracleIntegrationTest extends TestDestination {
                   .stream()
                   .collect(Collectors.toList());}
         );
+    System.out.println("result = " + result);
     return result
             .stream()
             .map(r -> r.formatJSON(JSON_FORMAT))
