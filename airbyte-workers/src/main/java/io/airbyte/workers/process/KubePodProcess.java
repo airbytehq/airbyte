@@ -120,32 +120,8 @@ public class KubePodProcess extends Process {
         }
     }
 
-    // from https://github.com/niyanchun/flink-sourcecode-learning/blob/0c3f6d67d42e0ff8828b50b2aca73d61a4c9e144/flink-kubernetes/src/main/java/org/apache/flink/kubernetes/kubeclient/resources/KubernetesPod.java
-    public String getTerminatedDiagnostics(Pod pod) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("Pod terminated, container termination statuses: [");
-        if (pod.getStatus() != null) {
-            sb.append(
-                    pod.getStatus().getContainerStatuses()
-                            .stream()
-                            .filter(containerStatus -> containerStatus.getState() != null && containerStatus.getState().getTerminated() != null)
-                            .map((containerStatus) -> {
-                                final ContainerStateTerminated containerStateTerminated = containerStatus.getState().getTerminated();
-                                return String.format("%s(exitCode=%d, reason=%s, message=%s)",
-                                        containerStatus.getName(),
-                                        containerStateTerminated.getExitCode(),
-                                        containerStateTerminated.getReason(),
-                                        containerStateTerminated.getMessage());
-                            })
-                            .collect(Collectors.joining(",")));
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
     private int getReturnCode(Pod pod) {
         Pod refreshedPod = client.pods().withName(pod.getMetadata().getName()).get(); // todo: use more robust version here
-        LOGGER.info("getTerminatedDiagnostics() = " + getTerminatedDiagnostics(refreshedPod));
         Preconditions.checkArgument(isTerminal(refreshedPod));
 
 
