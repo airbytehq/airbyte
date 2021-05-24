@@ -29,11 +29,12 @@ spec:
           mountPath: /pipes
     - name: relay-stdout
       image: alpine/socat:1.7.4.1-r1
-      command: [
+      command:
+        [
           "sh",
           "-c",
           "cat /pipes/stdout | socat -d -d -d - TCP:WORKER_IP:STDOUT_PORT",
-      ]
+        ]
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes

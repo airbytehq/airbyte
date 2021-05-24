@@ -24,35 +24,22 @@
 
 package io.airbyte.workers.process;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +61,7 @@ public class KubeProcessBuilderFactoryPOC {
             "kubectl",
             "run",
             "--generator=run-pod/v1",
-//            "--rm",
+            // "--rm",
             "-i",
             "--pod-running-timeout=24h",
             "--image=" + imageName,
@@ -193,7 +180,7 @@ public class KubeProcessBuilderFactoryPOC {
     PrintWriter writer = new PrintWriter(dest.getOutputStream(), true);
 
     String line;
-    while((line=reader.readLine())!=null) {
+    while ((line = reader.readLine()) != null) {
       writer.println(line);
     }
     writer.close();
