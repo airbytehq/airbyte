@@ -55,41 +55,6 @@
       "type": "string",
       "title": "Action ip address",
       "description": "The IP address recorded for the action."
-    },
-    "_links": {
-      "type": "array",
-      "title": "link types",
-      "description": "A list of link types and descriptions for the API schema documents.",
-      "items": {
-        "type": "object",
-        "properties": {
-          "rel": {
-            "type": "string",
-            "title": "Type of link",
-            "description": "As with an HTML 'rel' attribute, this describes the type of link."
-          },
-          "href": {
-            "type": "string",
-            "title": "Fully-qualified URL",
-            "description": "This property contains a fully-qualified URL that can be called to retrieve the linked resource or perform the linked action."
-          },
-          "method": {
-            "type": "string",
-            "title": "HTTP method",
-            "description": "The HTTP method that should be used when accessing the URL defined in 'href'. Possible values: 'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', or 'HEAD'."
-          },
-          "targetSchema": {
-            "type": "string",
-            "title": "URL representing the schema for GET",
-            "description": "For GETs, this is a URL representing the schema that the response should conform to."
-          },
-          "schema": {
-            "type": "string",
-            "title": "URL representing the schema for POST and PUT",
-            "description": "For HTTP methods that can receive bodies (POST and PUT), this is a URL representing the schema that the body should conform to."
-          }
-        }
-      }
     }
   }
 }
