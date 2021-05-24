@@ -49,7 +49,7 @@ public class MoreLists {
    * @param <T> type
    * @return new list with elements of original reversed.
    */
-  public static <T> List<T> reverse(List<T> list) {
+  public static <T> List<T> reversed(List<T> list) {
     final ArrayList<T> reversed = new ArrayList<>(list);
     Collections.reverse(reversed);
     return reversed;

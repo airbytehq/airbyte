@@ -49,7 +49,7 @@ class MoreListsTest {
   @Test
   void testReverse() {
     final ArrayList<Integer> originalList = Lists.newArrayList(1, 2, 3);
-    assertEquals(List.of(3, 2, 1), MoreLists.reverse(originalList));
+    assertEquals(List.of(3, 2, 1), MoreLists.reversed(originalList));
     assertEquals(List.of(1, 2, 3), originalList);
   }
 

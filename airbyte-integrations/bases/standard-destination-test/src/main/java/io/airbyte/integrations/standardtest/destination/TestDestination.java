@@ -820,16 +820,16 @@ public abstract class TestDestination {
 
   private void runSyncAndVerifyStateOutput(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog) throws Exception {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog);
-    final AirbyteMessage expectedStateMessage = MoreLists.reverse(messages)
+    final AirbyteMessage expectedStateMessage = MoreLists.reversed(messages)
         .stream()
         .filter(m -> m.getType() == Type.STATE)
-        .findAny()
+        .findFirst()
         .orElseThrow(() -> new IllegalArgumentException("All message sets used for testing should include a state record"));
 
-    final AirbyteMessage actualStateMessage = MoreLists.reverse(destinationOutput)
+    final AirbyteMessage actualStateMessage = MoreLists.reversed(destinationOutput)
         .stream()
         .filter(m -> m.getType() == Type.STATE)
-        .findAny()
+        .findFirst()
         .orElseGet(() -> {
           fail("Destination failed to output state");
           return null;
