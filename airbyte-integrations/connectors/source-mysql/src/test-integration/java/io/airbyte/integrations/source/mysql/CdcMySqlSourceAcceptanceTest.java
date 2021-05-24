@@ -31,7 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.standardtest.source.StandardSourceTest;
+import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -45,7 +45,7 @@ import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-public class CdcMySqlStandardTest extends StandardSourceTest {
+public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";

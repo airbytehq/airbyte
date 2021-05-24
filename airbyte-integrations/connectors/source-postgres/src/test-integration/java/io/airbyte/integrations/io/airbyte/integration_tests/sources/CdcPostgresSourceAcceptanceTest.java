@@ -52,7 +52,7 @@ import org.testcontainers.utility.MountableFile;
 // this, but for now this is a solid sanity check.
 /**
  * None of the tests in this class use the cdc path (run the tests and search for `using CDC: false`
- * in logs). This is exact same as {@link PostgresSourceStandardTest}
+ * in logs). This is exact same as {@link PostgresSourceAcceptanceTest}
  */
 public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
