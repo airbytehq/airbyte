@@ -7,6 +7,7 @@ import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -31,15 +33,17 @@ public class KubePodProcess extends Process {
     private final OutputStream stdin;
     private InputStream stdout;
     private final ServerSocket stdoutServerSocket;
+    private final ExecutorService executorService;
 
-    public KubePodProcess(KubernetesClient client, String podName, String image, int stdoutLocalPort) throws IOException, InterruptedException {
+    public KubePodProcess(KubernetesClient client, String podName, String image, int stdoutLocalPort, boolean usesStdin) throws IOException, InterruptedException {
         this.client = client;
 
         // allow reading stdout from pod
         LOGGER.info("Creating socket server...");
         this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
 
-        Executors.newSingleThreadExecutor().submit(() -> {
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(() -> {
             try {
                 LOGGER.info("Creating socket from server...");
                 var socket = stdoutServerSocket.accept(); // blocks until connected
@@ -51,7 +55,8 @@ public class KubePodProcess extends Process {
         });
 
         // create pod
-        var template = MoreResources.readResource("kube_queue_poc/pod-sidecar-process.yaml");
+        var templateResource =  usesStdin ? "kube_queue_poc/pod-io-template.yaml" : "kube_queue_poc/pod-o-template.yaml";
+        var template = MoreResources.readResource(templateResource);
         var rendered = template
                 .replaceAll("WORKER_IP", InetAddress.getLocalHost().getHostAddress())
                 .replaceAll("IMAGE", image)
@@ -71,9 +76,14 @@ public class KubePodProcess extends Process {
         var podIp = KubeProcessBuilderFactoryPOC.getPodIP(podName);
         LOGGER.info("Pod IP: {}", podIp);
 
-        LOGGER.info("Creating stdin socket...");
-        var socketToDestStdIo = new Socket(podIp, STDIN_REMOTE_PORT);
-        this.stdin = socketToDestStdIo.getOutputStream();
+        if(usesStdin) {
+            LOGGER.info("Creating stdin socket...");
+            var socketToDestStdIo = new Socket(podIp, STDIN_REMOTE_PORT);
+            this.stdin = socketToDestStdIo.getOutputStream();
+        } else {
+            LOGGER.info("Using null stdin output stream...");
+            this.stdin = NullOutputStream.NULL_OUTPUT_STREAM;
+        }
     }
 
     @Override
@@ -99,19 +109,23 @@ public class KubePodProcess extends Process {
     }
 
     private boolean allContainersTerminal(Pod pod) {
-        for (ContainerStatus containerStatus : pod.getStatus().getContainerStatuses()) {
-            if(containerStatus.getState() == null) {
-                return false;
-            } else {
-                ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
-
-                if(terminated == null) {
+        try {
+            for (ContainerStatus containerStatus : pod.getStatus().getContainerStatuses()) {
+                if (containerStatus.getState() == null) {
                     return false;
+                } else {
+                    ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
+
+                    if (terminated == null) {
+                        return false;
+                    }
                 }
             }
-        }
 
-        return true;
+            return true;
+        } catch(NullPointerException e) {
+            return true; // todo: fix this termination handling
+        }
     }
 
     private int getReturnCode(Pod pod) {
@@ -130,8 +144,9 @@ public class KubePodProcess extends Process {
 
     @Override
     public int exitValue() {
-        Pod refreshedPod = client.resource(podDefinition).get();
-        return getReturnCode(refreshedPod);
+        return 0; // todo: fix npes after job has completed
+//        Pod refreshedPod = client.resource(podDefinition).get();
+//        return getReturnCode(refreshedPod);
     }
 
     @Override
@@ -141,6 +156,7 @@ public class KubePodProcess extends Process {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
+            executorService.shutdown();
             client.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
         }
     }

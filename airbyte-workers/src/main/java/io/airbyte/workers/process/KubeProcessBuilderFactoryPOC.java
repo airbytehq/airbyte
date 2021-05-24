@@ -41,11 +41,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -72,7 +74,7 @@ public class KubeProcessBuilderFactoryPOC {
             "kubectl",
             "run",
             "--generator=run-pod/v1",
-            "--rm",
+//            "--rm",
             "-i",
             "--pod-running-timeout=24h",
             "--image=" + imageName,
@@ -163,13 +165,14 @@ public class KubeProcessBuilderFactoryPOC {
 
   public static void main(String[] args) throws InterruptedException, IOException {
     LOGGER.info("Launching source process...");
-    Process src = new KubePodProcess(KUBE_CLIENT, "src", "np_source:dev", 9002);
+    Process src = new KubePodProcess(KUBE_CLIENT, "src", "np_source:dev", 9002, false);
 
     LOGGER.info("Launching destination process...");
-    Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "np_dest:dev", 9003);
+    Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "np_dest:dev", 9003, true);
 
     LOGGER.info("Launching background thread to read destination lines...");
-    Executors.newSingleThreadExecutor().submit(() -> {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    executor.submit(() -> {
       BufferedReader reader = new BufferedReader(new InputStreamReader(dest.getInputStream()));
 
       while (true) {
@@ -185,13 +188,22 @@ public class KubeProcessBuilderFactoryPOC {
     });
 
     LOGGER.info("Copying source stdout to destination stdin...");
-    IOUtils.copy(src.getInputStream(), dest.getOutputStream());
 
-    LOGGER.info("Waiting for source to complete...");
-    src.waitFor();
-    LOGGER.info("Waiting for destination to complete...");
-    dest.waitFor();
+    BufferedReader reader = IOs.newBufferedReader(src.getInputStream());
+    PrintWriter writer = new PrintWriter(dest.getOutputStream(), true);
+
+    String line;
+    while((line=reader.readLine())!=null) {
+      writer.println(line);
+    }
+    writer.close();
+
+    // todo: make waitFor actually work so we don't need to destroy after a timeout
+    Thread.sleep(5000);
+    executor.shutdown();
     KUBE_CLIENT.close();
+    LOGGER.info("Done...");
+    System.exit(0);
   }
 
 }
