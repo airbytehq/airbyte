@@ -42,16 +42,25 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
 public class OracleIntegrationTest extends TestDestination {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OracleIntegrationTest.class);
 
   private static OracleContainer db;
-  private ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private ExtendedNameTransformer namingResolver = new OracleNameTransformer();
   private JsonNode configWithoutDbName;
   private JsonNode config;
+
+  @BeforeAll
+  protected static void init() {
+    db = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    db.start();
+  }
 
   @Override
   protected String getImageName() {
@@ -91,7 +100,7 @@ public class OracleIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA.substring(1)).asText()))
         .collect(Collectors.toList());
   }
 
@@ -126,23 +135,25 @@ public class OracleIntegrationTest extends TestDestination {
   }
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
-    return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
-        db.getJdbcUrl()).query(
+    List<org.jooq.Record> result = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl())
+        .query(
             ctx -> {
-              ctx.fetch(String.format("USE %s;", config.get("database")));
+              List<JsonNode> transactions = ctx.fetch("select SID, TYPE from V$LOCK")
+                .stream()
+                .map(r -> r.formatJSON(JSON_FORMAT))
+                .map(Jsons::deserialize)
+                .collect(Collectors.toList());
+              LOGGER.error(String.format("Open transactions: %d.", transactions.size()));
               return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1)))
                   .stream()
-                  .map(r -> r.formatJSON(JSON_FORMAT))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList());
-            });
-  }
-
-  @BeforeAll
-  protected static void init() {
-    db = new OracleContainer("epiclabs/docker-oracle-xe-11g");
-    db.start();
+                  .collect(Collectors.toList());}
+        );
+    return result
+            .stream()
+            .map(r -> r.formatJSON(JSON_FORMAT))
+            .map(Jsons::deserialize)
+            .collect(Collectors.toList());
   }
 
   private static Database getDatabase(JsonNode config) {
@@ -169,6 +180,7 @@ public class OracleIntegrationTest extends TestDestination {
 
     final Database database = getDatabase(configWithoutDbName);
     database.query(ctx -> {
+      ctx.execute("alter database default tablespace users");
       ctx.execute("declare c int; begin select count(*) into c from user_tables where upper(table_name) = upper('id_and_name'); if c = 1 then execute immediate 'drop table id_and_name'; end if; end;");
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born TIMESTAMP WITH TIME ZONE)");
       ctx.fetch(

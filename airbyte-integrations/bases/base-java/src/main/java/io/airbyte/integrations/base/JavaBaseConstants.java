@@ -37,5 +37,4 @@ public class JavaBaseConstants {
   public static String COLUMN_NAME_AB_ID = "_airbyte_ab_id";
   public static String COLUMN_NAME_EMITTED_AT = "_airbyte_emitted_at";
   public static String COLUMN_NAME_DATA = "_airbyte_data";
-
 }

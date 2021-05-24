@@ -40,7 +40,8 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
 
   public OracleDestination() {
-    super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations());
+    super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));
+    System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
   }
 
   @Override
