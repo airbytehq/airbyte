@@ -34,6 +34,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -48,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,13 +91,7 @@ class OracleSourceTest {
         .put("password", ORACLE_DB.getPassword())
         .build());
 
-    JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
+    JdbcDatabase database = getDatabaseFromConfig(config);
 
     database.execute(connection -> {
       connection.createStatement().execute("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS");
@@ -142,8 +138,18 @@ class OracleSourceTest {
 
   @Test
   void testReadSuccess() throws Exception {
+    JdbcDatabase database = getDatabaseFromConfig(config);
+    final List<JsonNode> jsonNodes = database
+        .bufferedResultSetQuery(c -> c.prepareStatement("SELECT * FROM TEST.id_and_name").executeQuery(), JdbcUtils::rowToJson);
+
+    System.out.println("jsonNodes = " + jsonNodes);
+
     final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new OracleSource().read(getConfig(ORACLE_DB), CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
+
+    final List<JsonNode> sourceOutput = actualMessages.stream().map(AirbyteMessage::getRecord).map(AirbyteRecordMessage::getData)
+        .collect(Collectors.toList());
+    System.out.println("sourceOutput = " + sourceOutput);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
   }
