@@ -1,0 +1,793 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {
+          "properties": {
+            "_links": {
+              "additionalProperties": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "activated": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "created": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "credentials": {
+              "properties": {
+                "password": {
+                  "properties": {
+                    "hash": {
+                      "properties": {
+                        "algorithm": {
+                          "enum": [
+                            "BCRYPT",
+                            "SHA-512",
+                            "SHA-256",
+                            "SHA-1",
+                            "MD5"
+                          ],
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "salt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "saltOrder": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "value": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "workFactor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        }
+                      },
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "hook": {
+                      "properties": {
+                        "type": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "value": {
+                      "format": "password",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "provider": {
+                  "properties": {
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "type": {
+                      "enum": [
+                        "ACTIVE_DIRECTORY",
+                        "FEDERATION",
+                        "LDAP",
+                        "OKTA",
+                        "SOCIAL",
+                        "IMPORT"
+                      ],
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "recovery_question": {
+                  "properties": {
+                    "answer": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "question": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "id": {
+              "type": "string"
+            },
+            "lastLogin": {
+              "format": "date-time",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lastUpdated": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "passwordChanged": {
+              "format": "date-time",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "profile": {
+              "properties": {
+                "city": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "costCenter": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "countryCode": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "department": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "displayName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "division": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "email": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "employeeNumber": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "firstName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "honorificPrefix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "honorificSuffix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "lastName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "locale": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "login": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "manager": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "managerId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "middleName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "mobilePhone": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "nickName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "organization": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "postalAddress": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "preferredLanguage": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "primaryPhone": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "profileUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "secondEmail": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "state": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "streetAddress": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "timezone": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "userType": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "zipCode": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "status": {
+              "enum": [
+                "ACTIVE",
+                "DEPROVISIONED",
+                "LOCKED_OUT",
+                "PASSWORD_EXPIRED",
+                "PROVISIONED",
+                "RECOVERY",
+                "STAGED",
+                "SUSPENDED"
+              ],
+              "type": "string"
+            },
+            "statusChanged": {
+              "format": "date-time",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "type": {
+              "properties": {
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "logs",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "properties": {
+              "actor": {
+                "properties": {
+                  "alternateId": {
+                    "type": ["string", "null"]
+                  },
+                  "detail": {
+                    "additionalProperties": {
+                      "type": ["object", "null"]
+                    },
+                    "type": ["object", "null"]
+                  },
+                  "displayName": {
+                    "type": ["string", "null"]
+                  },
+                  "id": {
+                    "type": ["string", "null"]
+                  },
+                  "type": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "authenticationContext": {
+                "properties": {
+                  "authenticationProvider": {
+                    "enum": [
+                      "OKTA_AUTHENTICATION_PROVIDER",
+                      "ACTIVE_DIRECTORY",
+                      "LDAP",
+                      "FEDERATION",
+                      "SOCIAL",
+                      "FACTOR_PROVIDER"
+                    ],
+                    "type": ["string", "null"]
+                  },
+                  "authenticationStep": {
+                    "type": ["integer", "null"]
+                  },
+                  "credentialProvider": {
+                    "enum": [
+                      "OKTA_AUTHENTICATION_PROVIDER",
+                      "OKTA_CREDENTIAL_PROVIDER",
+                      "RSA",
+                      "SYMANTEC",
+                      "GOOGLE",
+                      "DUO",
+                      "YUBIKEY"
+                    ],
+                    "type": ["string", "null"]
+                  },
+                  "credentialType": {
+                    "enum": [
+                      "OTP",
+                      "SMS",
+                      "PASSWORD",
+                      "ASSERTION",
+                      "IWA",
+                      "EMAIL",
+                      "OAUTH2",
+                      "JWT"
+                    ],
+                    "type": ["string", "null"]
+                  },
+                  "externalSessionId": {
+                    "type": ["string", "null"]
+                  },
+                  "interface": {
+                    "type": ["string", "null"]
+                  },
+                  "issuer": {
+                    "properties": {
+                      "id": {
+                        "type": ["string", "null"]
+                      },
+                      "type": {
+                        "type": ["string", "null"]
+                      }
+                    },
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "client": {
+                "properties": {
+                  "device": {
+                    "type": ["string", "null"]
+                  },
+                  "geographicalContext": {
+                    "properties": {
+                      "city": {
+                        "type": ["string", "null"]
+                      },
+                      "country": {
+                        "type": ["string", "null"]
+                      },
+                      "geolocation": {
+                        "properties": {
+                          "lat": {
+                            "format": "double",
+                            "type": ["number", "null"]
+                          },
+                          "lon": {
+                            "format": "double",
+                            "type": ["number", "null"]
+                          }
+                        },
+                        "type": ["object", "null"]
+                      },
+                      "postalCode": {
+                        "type": ["string", "null"]
+                      },
+                      "state": {
+                        "type": ["string", "null"]
+                      }
+                    },
+                    "type": ["object", "null"]
+                  },
+                  "id": {
+                    "type": ["string", "null"]
+                  },
+                  "ipAddress": {
+                    "type": ["string", "null"]
+                  },
+                  "userAgent": {
+                    "properties": {
+                      "browser": {
+                        "type": ["string", "null"]
+                      },
+                      "os": {
+                        "type": ["string", "null"]
+                      },
+                      "rawUserAgent": {
+                        "type": ["string", "null"]
+                      }
+                    },
+                    "type": ["object", "null"]
+                  },
+                  "zone": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "debugContext": {
+                "properties": {
+                  "debugData": {
+                    "additionalProperties": {
+                      "type": ["object", "null"]
+                    },
+                    "type": ["object", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "displayMessage": {
+                "type": ["string", "null"]
+              },
+              "eventType": {
+                "type": "string"
+              },
+              "legacyEventType": {
+                "type": ["string", "null"]
+              },
+              "outcome": {
+                "properties": {
+                  "reason": {
+                    "type": ["string", "null"]
+                  },
+                  "result": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "published": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "request": {
+                "properties": {
+                  "ipChain": {
+                    "items": {
+                      "properties": {
+                        "geographicalContext": {
+                          "properties": {
+                            "city": {
+                              "type": ["string", "null"]
+                            },
+                            "country": {
+                              "type": ["string", "null"]
+                            },
+                            "geolocation": {
+                              "properties": {
+                                "lat": {
+                                  "format": "double",
+                                  "type": ["number", "null"]
+                                },
+                                "lon": {
+                                  "format": "double",
+                                  "type": ["number", "null"]
+                                }
+                              },
+                              "type": ["object", "null"]
+                            },
+                            "postalCode": {
+                              "type": ["string", "null"]
+                            },
+                            "state": {
+                              "type": ["string", "null"]
+                            }
+                          },
+                          "type": ["object", "null"]
+                        },
+                        "ip": {
+                          "type": ["string", "null"]
+                        },
+                        "source": {
+                          "type": ["string", "null"]
+                        },
+                        "version": {
+                          "type": "string"
+                        }
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "type": ["array", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "securityContext": {
+                "properties": {
+                  "asNumber": {
+                    "type": ["integer", "null"]
+                  },
+                  "asOrg": {
+                    "type": ["string", "null"]
+                  },
+                  "domain": {
+                    "type": ["string", "null"]
+                  },
+                  "isProxy": {
+                    "type": ["boolean", "null"]
+                  },
+                  "isp": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "severity": {
+                "enum": [
+                  "DEBUG",
+                  "INFO",
+                  "WARN",
+                  "ERROR"
+                ],
+                "type": "string"
+              },
+              "target": {
+                "items": {
+                  "properties": {
+                    "alternateId": {
+                      "type": ["string", "null"]
+                    },
+                    "detailEntry": {
+                      "additionalProperties": {
+                        "type": ["object", "null"]
+                      },
+                      "type": ["object", "null"]
+                    },
+                    "displayName": {
+                      "type": ["string", "null"]
+                    },
+                    "id": {
+                      "type": ["string", "null"]
+                    },
+                    "type": {
+                      "type": ["string", "null"]
+                    }
+                  },
+                  "type": ["object", "null"]
+                },
+                "type": ["array", "null"]
+              },
+              "transaction": {
+                "properties": {
+                  "detail": {
+                    "additionalProperties": {
+                      "type": ["object", "null"]
+                    },
+                    "type": ["object", "null"]
+                  },
+                  "id": {
+                    "type": ["string", "null"]
+                  },
+                  "type": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "uuid": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "json_schema": {
+          "properties": {
+            "_links": {
+              "additionalProperties": {
+                "type": ["object", "null"]
+              },
+              "type": ["object", "null"]
+            },
+            "created": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "lastMembershipUpdated": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "lastUpdated": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "objectClass": {
+              "items": {
+                "type": ["string", "null"]
+              },
+              "type": ["array", "null"]
+            },
+            "profile": {
+              "properties": {
+                "description": {
+                  "type": ["string", "null"]
+                },
+                "name": {
+                  "type": ["string", "null"]
+                }
+              },
+              "type": "object"
+            },
+            "type": {
+              "enum": [
+                "OKTA_GROUP",
+                "APP_GROUP",
+                "BUILT_IN"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
