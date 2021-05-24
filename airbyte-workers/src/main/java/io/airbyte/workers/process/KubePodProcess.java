@@ -25,17 +25,23 @@
 package io.airbyte.workers.process;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.resources.MoreResources;
+import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.Volume;
+import io.fabric8.kubernetes.api.model.VolumeBuilder;
+import io.fabric8.kubernetes.api.model.VolumeMount;
+import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -78,21 +84,67 @@ public class KubePodProcess extends Process {
     });
 
     // create pod
-    var templateResource = usesStdin ? "kube_queue_poc/pod-io-template.yaml" : "kube_queue_poc/pod-o-template.yaml";
-    var template = MoreResources.readResource(templateResource);
-    var rendered = template
-        .replaceAll("WORKER_IP", InetAddress.getLocalHost().getHostAddress())
-        .replaceAll("IMAGE", image)
-        .replaceAll("NAME", podName)
-        .replaceAll("STDOUT_PORT", String.valueOf(stdoutLocalPort))
-        .replaceAll("ENTRYPOINT", KubeProcessBuilderFactoryPOC.getCommandFromImage(image));
-    var renderedStream = new ByteArrayInputStream(rendered.getBytes());
+    String entrypoint = KubeProcessBuilderFactoryPOC.getCommandFromImage(image);
 
-    LOGGER.info("Loading pod definition...");
-    this.podDefinition = client.pods().load(renderedStream).get();
+    Volume volume = new VolumeBuilder()
+        .withName("airbyte-pipes")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build();
+
+    VolumeMount volumeMount = new VolumeMountBuilder()
+        .withName("airbyte-pipes")
+        .withMountPath("/pipes")
+        .build();
+
+    Container initContainer = new ContainerBuilder()
+        .withName("init")
+        .withImage("busybox:1.28")
+        .withCommand("sh", "-c", usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout" : "mkfifo /pipes/stdout")
+        .withVolumeMounts(volumeMount)
+        .build();
+
+    Container main = new ContainerBuilder()
+        .withName("main")
+        .withImage(image)
+        .withCommand("sh", "-c", usesStdin ? "cat /pipes/stdin | " + entrypoint + " > /pipes/stdout" : entrypoint + " > /pipes/stdout")
+        .withVolumeMounts(volumeMount)
+        .build();
+
+    Container remoteStdin = new ContainerBuilder()
+        .withName("remote-stdin")
+        .withImage("alpine/socat:1.7.4.1-r1")
+        .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > /pipes/stdin")
+        .withVolumeMounts(volumeMount)
+        .build();
+
+    Container relayStdout = new ContainerBuilder()
+        .withName("relay-stdout")
+        .withImage("alpine/socat:1.7.4.1-r1")
+        .withCommand("sh", "-c", "cat /pipes/stdout | socat -d -d -d - TCP:" + InetAddress.getLocalHost().getHostAddress() + ":" + stdoutLocalPort)
+        .withVolumeMounts(volumeMount)
+        .build();
+
+    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout) : List.of(main, relayStdout);
+
+    Pod pod = new PodBuilder()
+        .withApiVersion("v1")
+        .withNewMetadata()
+        .withName(podName)
+        .endMetadata()
+        .withNewSpec()
+        .withRestartPolicy("Never")
+        .withInitContainers(initContainer)
+        .withContainers(containers)
+        .withVolumes(volume)
+        .endSpec()
+        .build();
 
     LOGGER.info("Creating pod...");
-    KubeProcessBuilderFactoryPOC.createIfNotExisting(podName, podDefinition);
+    this.podDefinition = client.pods().inNamespace("default").createOrReplace(pod);
+
+    LOGGER.info("Waiting until pod is ready...");
+    client.resource(podDefinition).waitUntilReady(5, TimeUnit.MINUTES);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");

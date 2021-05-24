@@ -38,8 +38,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,19 +133,6 @@ public class KubeProcessBuilderFactoryPOC {
     }
 
     return null;
-  }
-
-  public static void createIfNotExisting(String podName, Pod def) throws InterruptedException {
-    LOGGER.info("Checking pod: {}", podName);
-    var podSet = KUBE_CLIENT.pods().inNamespace("default").list().getItems().stream()
-        .filter(pod -> pod.getMetadata().getName().equals(podName)).collect(Collectors.toSet());
-    if (podSet.size() == 0) {
-      LOGGER.info("Pod {} does not exist", podName);
-      Pod destPod = KUBE_CLIENT.pods().create(def);
-      LOGGER.info("Created pod: {}, waiting for it to be ready", destPod.getMetadata().getName());
-      KUBE_CLIENT.resource(destPod).waitUntilReady(5, TimeUnit.MINUTES);
-      LOGGER.info("Pod {} ready", podName);
-    }
   }
 
   public static void main(String[] args) throws InterruptedException, IOException {
