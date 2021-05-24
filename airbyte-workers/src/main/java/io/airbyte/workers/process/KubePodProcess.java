@@ -17,42 +17,61 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class KubePodProcess extends Process {
     private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
     private static final int STDIN_REMOTE_PORT = 9001;
-    private static final int STDOUT_LOCAL_PORT = 9002;
 
     private final KubernetesClient client;
     private final Pod podDefinition;
 
     private final OutputStream stdin;
-    private final InputStream stdout;
+    private InputStream stdout;
     private final ServerSocket stdoutServerSocket;
 
-    public KubePodProcess(KubernetesClient client, String podName, String image) throws IOException, InterruptedException {
+    public KubePodProcess(KubernetesClient client, String podName, String image, int stdoutLocalPort) throws IOException, InterruptedException {
         this.client = client;
 
         // allow reading stdout from pod
-        this.stdoutServerSocket = new ServerSocket(STDOUT_LOCAL_PORT);
-        var socket = stdoutServerSocket.accept();
-        this.stdout = socket.getInputStream();
+        LOGGER.info("Creating socket server...");
+        this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
+
+        Executors.newSingleThreadExecutor().submit(() -> {
+            try {
+                LOGGER.info("Creating socket from server...");
+                var socket = stdoutServerSocket.accept(); // blocks until connected
+                LOGGER.info("Setting stdout...");
+                this.stdout = socket.getInputStream();
+            } catch (IOException e) {
+                e.printStackTrace(); // todo: propagate exception / join at the end of constructor
+            }
+        });
 
         // create pod
         var template = MoreResources.readResource("kube_queue_poc/pod-sidecar-process.yaml");
         var rendered = template
                 .replaceAll("WORKER_IP", InetAddress.getLocalHost().getHostAddress())
                 .replaceAll("IMAGE", image)
+                .replaceAll("NAME", podName)
+                .replaceAll("STDOUT_PORT", String.valueOf(stdoutLocalPort))
                 .replaceAll("ENTRYPOINT", KubeProcessBuilderFactoryPOC.getCommandFromImage(image));
         var renderedStream = new ByteArrayInputStream(rendered.getBytes());
+
+        LOGGER.info("Loading pod definition...");
         this.podDefinition = client.pods().load(renderedStream).get();
+
+        LOGGER.info("Creating pod...");
         KubeProcessBuilderFactoryPOC.createIfNotExisting(podName, podDefinition);
 
         // allow writing stdin to pod
+        LOGGER.info("Reading pod IP...");
         var podIp = KubeProcessBuilderFactoryPOC.getPodIP(podName);
         LOGGER.info("Pod IP: {}", podIp);
+
+        LOGGER.info("Creating stdin socket...");
         var socketToDestStdIo = new Socket(podIp, STDIN_REMOTE_PORT);
         this.stdin = socketToDestStdIo.getOutputStream();
     }

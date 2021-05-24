@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sync-worker
+spec:
+  restartPolicy: Never
+  containers:
+    - name: sync-worker
+      image: airbyte/worker:dev
+      # imagePullPolicy: Always -> prevents local images from working
+      ports:
+        - containerPort: 9002
+          name: source-port
+        - containerPort: 9003
+          name: dest-port

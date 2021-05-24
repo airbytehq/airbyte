@@ -12,4 +12,4 @@ RUN tar xf airbyte-workers.tar --strip-components=1
 ENTRYPOINT ["./bin/airbyte-workers"]
 
 LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/kube-sync-worker-test
+LABEL io.airbyte.name=airbyte/worker

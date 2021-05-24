@@ -38,6 +38,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -48,6 +49,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,23 +161,37 @@ public class KubeProcessBuilderFactoryPOC {
     }
   }
 
-  private static void runSampleKubeWorker() throws InterruptedException, IOException {
-    Process process = new KubePodProcess(KUBE_CLIENT, "kube-sample", "np_dest:dev");
-
-    var toDest = new PrintWriter(process.getOutputStream(), true);
-    toDest.println("Hello!");
-    toDest.println("a!");
-    toDest.println("b!");
-    toDest.println("c!");
-    toDest.println("d!");
-    toDest.close();
-
-    process.waitFor();
-    KUBE_CLIENT.close();
-  }
-
   public static void main(String[] args) throws InterruptedException, IOException {
-    runSampleKubeWorker();
+    LOGGER.info("Launching source process...");
+    Process src = new KubePodProcess(KUBE_CLIENT, "src", "np_source:dev", 9002);
+
+    LOGGER.info("Launching destination process...");
+    Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "np_dest:dev", 9003);
+
+    LOGGER.info("Launching background thread to read destination lines...");
+    Executors.newSingleThreadExecutor().submit(() -> {
+      BufferedReader reader = new BufferedReader(new InputStreamReader(dest.getInputStream()));
+
+      while (true) {
+        try {
+          String line;
+          if ((line = reader.readLine()) != null) {
+            LOGGER.info("Destination sent: {}", line);
+          }
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    });
+
+    LOGGER.info("Copying source stdout to destination stdin...");
+    IOUtils.copy(src.getInputStream(), dest.getOutputStream());
+
+    LOGGER.info("Waiting for source to complete...");
+    src.waitFor();
+    LOGGER.info("Waiting for destination to complete...");
+    dest.waitFor();
+    KUBE_CLIENT.close();
   }
 
 }

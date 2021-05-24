@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: kube-destination-sample
+  name: NAME
 spec:
   restartPolicy: Never
   initContainers:
@@ -12,14 +12,14 @@ spec:
         - name: airbyte-pipes
           mountPath: /pipes
   containers:
-    - name: destination
+    - name: main
       image: IMAGE
-      imagePullPolicy: Always
+      # imagePullPolicy: Always  -> prevents local images from working
       command: ["sh", "-c", "cat /pipes/stdin | ENTRYPOINT > /pipes/stdout"]
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes
-    - name: socat-port-to-destination-in
+    - name: remote-stdin
       image: alpine/socat:1.7.4.1-r1
       command: ["sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > /pipes/stdin"]
       ports:
@@ -27,12 +27,12 @@ spec:
       volumeMounts:
         - name: airbyte-pipes
           mountPath: /pipes
-    - name: destination-out-to-socat-port
+    - name: relay-stdout
       image: alpine/socat:1.7.4.1-r1
       command: [
           "sh",
           "-c",
-          "cat /pipes/stdout | socat -d -d -d - TCP:WORKER_IP:9001",
+          "cat /pipes/stdout | socat -d -d -d - TCP:WORKER_IP:STDOUT_PORT",
       ]
       volumeMounts:
         - name: airbyte-pipes
