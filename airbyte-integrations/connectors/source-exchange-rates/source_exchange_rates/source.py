@@ -38,26 +38,26 @@ class ExchangeRates(HttpStream):
     date_field_name = "date"
 
     # HttpStream related fields
-    url_base = "https://api.ratesapi.io/"
+    url_base = "http://api.exchangeratesapi.io/"
     cursor_field = date_field_name
     primary_key = ""
 
-    def __init__(self, base: str, start_date: DateTime):
+    def __init__(self, base: str, start_date: DateTime, access_key: str):
         super().__init__()
         self._base = base
         self._start_date = start_date
+        self.access_key = access_key
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"api/{stream_slice[self.date_field_name]}"
+        return f"v1/{stream_slice[self.date_field_name]}"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = {"base": self._base}
-        return params
+        return {"base": self._base, "access_key": self.access_key}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -95,7 +95,7 @@ def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, any]]:
 class SourceExchangeRates(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            resp = requests.get(ExchangeRates.url_base)
+            resp = requests.get(f"{ExchangeRates.url_base}v1/latest", params={"access_key": config["access_key"]})
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
             if status == 200:
@@ -105,4 +105,4 @@ class SourceExchangeRates(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [ExchangeRates(config["base"], config["start_date"])]
+        return [ExchangeRates(config["base"], config["start_date"], config["access_key"])]
