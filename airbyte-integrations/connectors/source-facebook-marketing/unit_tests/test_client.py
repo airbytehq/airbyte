@@ -28,12 +28,18 @@ import pendulum
 import pytest
 from airbyte_cdk.models import AirbyteStream
 from facebook_business import FacebookSession
+from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.client import Client
 
 
+@pytest.fixture(scope="session", name="account_id")
+def account_id_fixture():
+    return "unknown_account"
+
+
 @pytest.fixture(scope="session", name="some_config")
-def some_config_fixture():
-    return {"start_date": "2021-01-23T00:00:00Z", "account_id": "unknown_account", "access_token": "unknown_token"}
+def some_config_fixture(account_id):
+    return {"start_date": "2021-01-23T00:00:00Z", "account_id": f"{account_id}", "access_token": "unknown_token"}
 
 
 @pytest.fixture(autouse=True)
@@ -42,8 +48,9 @@ def mock_default_sleep_interval(mocker):
 
 
 @pytest.fixture(name="client")
-def client_fixture(some_config):
+def client_fixture(some_config, requests_mock, fb_account_response):
     client = Client(**some_config)
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/me/adaccounts", [fb_account_response])
     return client
 
 
@@ -63,13 +70,13 @@ def fb_call_rate_response_fixture():
 
 
 @pytest.fixture(name="fb_account_response")
-def fb_account_response_fixture():
+def fb_account_response_fixture(account_id):
     return {
         "json": {
             "data": [
                 {
-                    "account_id": "unknown_account",
-                    "id": "act_unknown_account"
+                    "account_id": account_id,
+                    "id": f"act_{account_id}",
                 }
             ],
             "paging": {
@@ -84,15 +91,15 @@ def fb_account_response_fixture():
 
 
 class TestBackoff:
-    def test_limit_reached(self, requests_mock, client, fb_call_rate_response, fb_account_response):
+    def test_limit_reached(self, requests_mock, client, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
         campaign_responses = [
             fb_call_rate_response,
-            {"json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]}, "status_code": 200},
+            {"json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]},
+             "status_code": 200},
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/me/adaccounts", [fb_account_response])
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/act_unknown_account/campaigns", campaign_responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", campaign_responses)
         requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/1/", [{"status_code": 200}])
         requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/2/", [{"status_code": 200}])
 
@@ -100,27 +107,54 @@ class TestBackoff:
 
         assert records
 
-    def test_batch_limit_reached(self, requests_mock, client, fb_call_rate_response):
+    def test_batch_limit_reached(self, requests_mock, client, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
         responses = [
             fb_call_rate_response,
-            {"json": {"data": [1, 2]}, "status_code": 200},
+            {"json": {"data": [
+                {
+                    "id": "123",
+                    "object_type": "SHARE",
+                    "status": "ACTIVE",
+                },
+                {
+                    "id": "1234",
+                    "object_type": "SHARE",
+                    "status": "ACTIVE",
+                },
+            ], "status_code": 200}}
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH, responses)
+        batch_responses = [
+            fb_call_rate_response,
+            {"json": [
+                {
+                    "body": json.dumps({"name": "creative 1"}),
+                    "code": 200,
+                },
+                {
+                    "body": json.dumps({"name": "creative 2"}),
+                    "code": 200,
+                }
+            ]}
+        ]
+
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/adcreatives", responses)
+        requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/v10.0/", batch_responses)
 
         records = list(client.read_stream(AirbyteStream(name="adcreatives", json_schema={})))
 
-        assert not records
+        assert records == [{'name': 'creative 1'}, {'name': 'creative 2'}]
 
-    def test_server_error(self, requests_mock, client, fb_account_response):
+    def test_server_error(self, requests_mock, client, account_id):
         """Error once, check that we retry and not fail"""
         responses = [
-            {"json": {"error": "something bad"}, "status_code": 500},
-            {"json": [], "status_code": 200},
+            {"json": {"error": {}}, "status_code": 500},
+            {"json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]},
+             "status_code": 200},
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/me/adaccounts", [fb_account_response])
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/act_unknown_account/campaigns", responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", responses)
 
-        list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
+        with pytest.raises(FacebookRequestError):
+            list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
