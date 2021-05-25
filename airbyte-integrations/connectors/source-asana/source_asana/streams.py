@@ -23,6 +23,7 @@
 #
 
 from __future__ import annotations
+
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Type
 
@@ -51,10 +52,7 @@ class AsanaStream(HttpStream, ABC):
             return {"offset": next_page["offset"]}
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
         params = {"limit": self.page_size}
@@ -121,11 +119,9 @@ class WorkspaceRelatedStream(AsanaStream, ABC):
     or as part of a path. The point of this class is to get `workspace_gid`. Child classes then either will insert it
     into the path or will pass it as a request parameter.
     """
+
     def stream_slices(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         workspaces_stream = Workspaces(authenticator=self.authenticator)
         for workspace in workspaces_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -137,11 +133,9 @@ class WorkspaceRequestParamsRelatedStream(WorkspaceRelatedStream, ABC):
     Few streams (Projects, Tags and Users) require passing `workspace` as request argument.
     So this is basically the whole point of this class - to pass `workspace` as request argument.
     """
+
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["workspace"] = stream_slice["workspace_gid"]
@@ -155,10 +149,7 @@ class ProjectRelatedStream(AsanaStream, ABC):
     """
 
     def stream_slices(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from self.read_slices_from_records(stream_class=Projects, slice_field="project_gid")
 
@@ -186,10 +177,7 @@ class Stories(AsanaStream):
         return f"tasks/{task_gid}/stories"
 
     def stream_slices(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid")
 
@@ -204,10 +192,7 @@ class Tasks(ProjectRelatedStream):
         return "tasks"
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["project"] = stream_slice["project_gid"]
@@ -236,10 +221,7 @@ class TeamMemberships(AsanaStream):
         return f"teams/{team_gid}/team_memberships"
 
     def stream_slices(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from self.read_slices_from_records(stream_class=Teams, slice_field="team_gid")
 

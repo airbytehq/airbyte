@@ -1,3 +1,9 @@
+- sourceDefinitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
+  name: Asana
+  dockerRepository: airbyte/source-asana
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-asana
+  icon: asana.svg
 - sourceDefinitionId: 9fed261d-d107-47fd-8c8b-323023db6e20
   name: Exchange Rates Api
   dockerRepository: airbyte/source-exchangeratesapi-singer
