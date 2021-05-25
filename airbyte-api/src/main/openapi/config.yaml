@@ -960,15 +960,15 @@ paths:
             schema:
               $ref: "#/components/schemas/OperationUpdate"
         required: true
-        responses:
-          "200":
-            description: Successful operation
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/OperationRead"
-          "422":
-            $ref: "#/components/responses/InvalidInput"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/operations/update:
     post:
       tags:
@@ -1012,22 +1012,6 @@ paths:
                 $ref: "#/components/schemas/OperationReadList"
         "404":
           description: Connection not found
-        "422":
-          $ref: "#/components/responses/InvalidInput"
-  /v1/operations/list_unassigned:
-    post:
-      tags:
-        - operation
-      summary: Returns all operations not assigned to a connection.
-      description: List operations not assigned to a connection
-      operationId: listUnassignedOperations
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OperationReadList"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/operations/get:
@@ -1179,6 +1163,27 @@ paths:
                 $ref: "#/components/schemas/WbConnectionRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/create:
+    post:
+      tags:
+        - web_backend
+      summary: Create a connection
+      operationId: webBackendCreateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/connections/update:
@@ -1982,6 +1987,15 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+    WebBackendConnectionCreate:
+      allOf:
+        - $ref: "#/components/schemas/ConnectionCreate"
+        - type: object
+          properties:
+            withCreatedOperations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OperationCreate"
     ConnectionUpdate:
       type: object
       required:
@@ -2011,7 +2025,11 @@ components:
           properties:
             withRefreshedCatalog:
               type: boolean
-            withOperations:
+            withCreatedOperations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OperationCreate"
+            withUpdatedOperations:
               type: array
               items:
                 $ref: "#/components/schemas/OperationUpdate"
