@@ -21,7 +21,7 @@ The instructions have been tested on `Debian GNU/Linux 10 (buster)`
 ## Install environment
 
 {% hint style="info" %}
-This part assumes that you have access to a terminal on your workstation
+Note: The following commands will be entered either on your local terminal or in your ssh session on the instance terminal. The comments above each command block will indicate where to enter the commands.
 {% endhint %}
 
 * Set variables in your terminal
@@ -45,7 +45,10 @@ gcloud init # Follow instructions
 
 {% tab title="Ubuntu" %}
 ```bash
-# FIXME
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+sudo apt-get install apt-transport-https ca-certificates gnupg
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+sudo apt-get update && sudo apt-get install google-cloud-sdk
 ```
 {% endtab %}
 {% endtabs %}
