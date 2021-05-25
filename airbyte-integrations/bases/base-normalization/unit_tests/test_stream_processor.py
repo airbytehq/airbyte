@@ -30,8 +30,8 @@ import pytest
 from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
-from normalization.transform_catalog.stream_processor import StreamProcessor, get_table_name
-from normalization.transform_catalog.table_name_registry import TableNameRegistry
+from normalization.transform_catalog.stream_processor import StreamProcessor
+from normalization.transform_catalog.table_name_registry import TableNameRegistry, get_nested_table_name
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -53,18 +53,18 @@ def before_tests(request):
             "abcdefghijklmnopqrstuvwxyz",
             "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
             "",
-            "abcdefghij_c86_abcdefghijklm__nopqrstuvwxyz",
+            "abcdefghij_c86_abcdefghijklmn__lmnopqrstuvwxyz",
         ),
         (
             "abcdefghijklmnopqrstuvwxyz",
             "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
             "_ab1",
-            "abcdefghij_c86_abcdefghijk__pqrstuvwxyz_ab1",
+            "abcdefghij_c86_abcdefghijkl__nopqrstuvwxyz_ab1",
         ),
         ("abcde", "fghijk", "_ab1", "abcde_c86_fghijk_ab1"),
         ("abcde", "fghijk", "ab1", "abcde_c86_fghijk_ab1"),
-        ("abcde", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcde_c86_abcdefghijklmnop__lmnopqrstuvwxyz"),
-        ("", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcdefghijklmnopqrst__fghijklmnopqrstuvwxyz"),
+        ("abcde", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcde_c86_abcdefghijklmnopq__jklmnopqrstuvwxyz"),
+        ("", "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", "", "abcdefghijklmnopqrstuv__defghijklmnopqrstuvwxyz"),
     ],
 )
 def test_get_table_name(root_table: str, base_table_name: str, suffix: str, expected: str):
@@ -82,27 +82,25 @@ def test_get_table_name(root_table: str, base_table_name: str, suffix: str, expe
     name collisions.
     """
     name_transformer = DestinationNameTransformer(DestinationType.POSTGRES)
-    name = get_table_name(name_transformer, root_table, base_table_name, suffix, ["json", "path"])
+    name = get_nested_table_name(name_transformer, root_table, base_table_name, suffix, ["json", "path"])
     assert name == expected
-    assert len(name) <= 43  # explicitly check for our max postgres length in case tests are changed in the future
+    assert len(name) <= 47  # explicitly check for our max postgres length in case tests are changed in the future
 
 
 @pytest.mark.parametrize(
-    "stream_name, is_intermediate, suffix, expected, expected_final_name",
+    "schema, stream_name, suffix, json_path, expected",
     [
-        ("stream_name", False, "", "stream_name", "stream_name"),
-        ("stream_name", False, "suffix", "stream_name_suffix", "stream_name_suffix"),
-        ("stream_name", False, "_suffix", "stream_name_suffix", "stream_name_suffix"),
-        ("stream_name", True, "suffix", "stream_name_suffix", ""),
-        ("stream_name", True, "_suffix", "stream_name_suffix", ""),
+        ("test", "stream_name", "", ["stream_name"], "stream_name"),
+        ("test", "stream_name", "suffix", ["stream_name"], "stream_name_suffix"),
+        ("test", "stream_name", "_suffix", ["stream_name"], "stream_name_suffix"),
     ],
 )
-def test_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix: str, expected: str, expected_final_name: str):
+def test_generate_new_table_name(schema: str, stream_name: str, suffix: str, json_path: List[str], expected: str):
     stream_processor = StreamProcessor.create(
         stream_name=stream_name,
         destination_type=DestinationType.POSTGRES,
         raw_schema="raw_schema",
-        schema="schema_name",
+        schema=schema,
         source_sync_mode=SyncMode.full_refresh,
         destination_sync_mode=DestinationSyncMode.append_dedup,
         cursor_field=[],
@@ -112,33 +110,28 @@ def test_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix
         tables_registry=TableNameRegistry(DestinationType.POSTGRES),
         from_table="",
     )
-    assert stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
-    assert stream_processor.final_table_name == expected_final_name
+    assert stream_processor.tables_registry.generate_new_table_name(schema, stream_name, suffix, json_path) == expected
 
 
 @pytest.mark.parametrize(
-    "stream_name, is_intermediate, suffix, expected, expected_final_name",
+    "schema, stream_name, suffix, json_path, expected",
     [
-        ("stream_name", False, "", "stream_name_485", "stream_name_485"),
-        ("stream_name", False, "suffix", "stream_name_suffix_485", "stream_name_suffix_485"),
-        ("stream_name", False, "_suffix", "stream_name_suffix_485", "stream_name_suffix_485"),
-        ("stream_name", True, "suffix", "stream_name_suffix_485", ""),
-        ("stream_name", True, "_suffix", "stream_name_suffix_485", ""),
+        ("schema_name", "stream_name", "", ["stream_name"], "stream_name_485"),
+        ("schema_name", "stream_name", "suffix", ["stream_name"], "stream_name_suffix_485"),
+        ("schema_name", "stream_name", "_suffix", ["stream_name"], "stream_name_suffix_485"),
     ],
 )
-def test_collisions_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix: str, expected: str, expected_final_name: str):
+def test_collisions_generate_new_table_name(schema: str, stream_name: str, suffix: str, json_path: List[str], expected: str):
     # fill test_registry with the same stream names as if it was already used so there would be collisions...
     test_registry = TableNameRegistry(DestinationType.POSTGRES)
     test_registry.registry["schema_name"] = dict()
     test_registry.registry["schema_name"]["stream_name"] = ""
     test_registry.registry["schema_name"]["stream_name_suffix"] = ""
-    test_registry.registry["raw_schema"] = dict()
-    test_registry.registry["raw_schema"]["stream_name_suffix"] = ""
     stream_processor = StreamProcessor.create(
         stream_name=stream_name,
         destination_type=DestinationType.POSTGRES,
         raw_schema="raw_schema",
-        schema="schema_name",
+        schema=schema,
         source_sync_mode=SyncMode.full_refresh,
         destination_sync_mode=DestinationSyncMode.append_dedup,
         cursor_field=[],
@@ -148,26 +141,23 @@ def test_collisions_generate_new_table_name(stream_name: str, is_intermediate: b
         tables_registry=test_registry,
         from_table="",
     )
-    assert stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
-    assert stream_processor.final_table_name == expected_final_name
+    assert stream_processor.tables_registry.generate_new_table_name(schema, stream_name, suffix, json_path) == expected
 
 
 @pytest.mark.parametrize(
-    "stream_name, is_intermediate, suffix, expected, expected_final_name",
+    "schema, stream_name, suffix, json_path, expected",
     [
-        ("stream_name", False, "", "stream_name_b00_child_stream", "stream_name_b00_child_stream"),
-        ("stream_name", False, "suffix", "stream_name_b00_child_stream_suffix", "stream_name_b00_child_stream_suffix"),
-        ("stream_name", False, "_suffix", "stream_name_b00_child_stream_suffix", "stream_name_b00_child_stream_suffix"),
-        ("stream_name", True, "suffix", "stream_name_b00_child_stream_suffix", ""),
-        ("stream_name", True, "_suffix", "stream_name_b00_child_stream_suffix", ""),
+        ("schema_name", "stream_name", "", ["stream_name"], "stream_name_b00_child_stream"),
+        ("schema_name", "stream_name", "suffix", ["stream_name"], "stream_name_b00_child_stream_suffix"),
+        ("schema_name", "stream_name", "_suffix", ["stream_name"], "stream_name_b00_child_stream_suffix"),
     ],
 )
-def test_nested_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix: str, expected: str, expected_final_name: str):
+def test_nested_generate_new_table_name(schema: str, stream_name: str, suffix: str, json_path: List[str], expected: str):
     stream_processor = StreamProcessor.create(
         stream_name=stream_name,
         destination_type=DestinationType.POSTGRES,
         raw_schema="raw_schema",
-        schema="schema_name",
+        schema=schema,
         source_sync_mode=SyncMode.full_refresh,
         destination_sync_mode=DestinationSyncMode.append_dedup,
         cursor_field=[],
@@ -177,16 +167,19 @@ def test_nested_generate_new_table_name(stream_name: str, is_intermediate: bool,
         tables_registry=TableNameRegistry(DestinationType.POSTGRES),
         from_table="",
     )
+    child_stream_name = "child_stream"
     nested_stream_processor = StreamProcessor.create_from_parent(
         parent=stream_processor,
-        child_name="child_stream",
+        child_name=child_stream_name,
         json_column_name="json_column_name",
         properties=dict(),
         is_nested_array=False,
         from_table="",
     )
-    assert nested_stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
-    assert nested_stream_processor.final_table_name == expected_final_name
+    assert (
+        nested_stream_processor.tables_registry.generate_new_table_name(schema, child_stream_name, suffix, json_path + [child_stream_name])
+        == expected
+    )
 
 
 @pytest.mark.parametrize(

@@ -45,9 +45,6 @@ from normalization.transform_catalog.utils import (
     jinja_call,
 )
 
-# minimum length of parent name used for nested streams
-MINIMUM_PARENT_LENGTH = 10
-
 # using too many columns breaks ephemeral materialization (somewhere between 480 and 490 columns)
 # let's use a lower value to be safely away from the limit...
 MAXIMUM_COLUMNS_TO_USE_EPHEMERAL = 450
@@ -591,9 +588,7 @@ from {{ from_table }}
 
     def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
-        table_name = self.generate_new_table_name(is_intermediate, suffix)
-        file_name = self.get_file_name(self.stream_name, schema, table_name)
-        self.local_registry.add_table(file_name, self.get_schema(is_intermediate), table_name)
+        table_name, file_name = self.local_registry.register_stream(schema, self.stream_name, suffix, self.json_path)
         file = f"{file_name}.sql"
         if is_intermediate:
             if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:
@@ -606,7 +601,10 @@ from {{ from_table }}
             output = os.path.join("airbyte_tables", self.schema, file)
         tags = self.get_model_tags(is_intermediate)
         # The alias() macro configs a model's final table name.
-        header = jinja_call(f'config(alias="{table_name}", schema="{schema}", tags=[{tags}])')
+        if file_name != table_name:
+            header = jinja_call(f'config(alias="{table_name}", schema="{schema}", tags=[{tags}])')
+        else:
+            header = jinja_call(f'config(schema="{schema}", tags=[{tags}])')
         self.sql_outputs[
             output
         ] = f"""
@@ -617,18 +615,6 @@ from {{ from_table }}
         print(f"  Generating {output} from {json_path}")
         return ref_table(file_name)
 
-    def get_file_name(self, stream_name: str, schema_name: str, table_name: str) -> str:
-        """
-        File names need to match the ref() macro returned in the ref_table function.
-        Note that dbt uses only the file names to generate internal model.
-
-        Use a hash of full schema + stream name (i.e. namespace + stream name) to dedup tables.
-        This hash avoids tables with the same name (possibly very long) and different schemas.
-        """
-        full_lower_name = schema_name + "_" + stream_name
-        full_lower_name = full_lower_name.lower()
-        return self.name_transformer.normalize_table_name(f"{table_name}_{hash_name(full_lower_name)}", False, False)
-
     def get_model_tags(self, is_intermediate: bool) -> str:
         tags = ""
         if self.parent:
@@ -638,34 +624,6 @@ from {{ from_table }}
         if is_intermediate:
             tags += "-intermediate"
         return f'"{tags}"'
-
-    def generate_new_table_name(self, is_intermediate: bool, suffix: str) -> str:
-        """
-        Generates a new table name that is not registered in the schema yet (based on normalized_stream_name())
-        """
-        new_table_name = self.normalized_stream_name()
-        schema = self.get_schema(is_intermediate)
-        if not is_intermediate and self.parent is None:
-            if suffix:
-                norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
-                new_table_name = new_table_name + norm_suffix
-        elif not self.parent:
-            new_table_name = get_table_name(self.name_transformer, "", new_table_name, suffix, self.json_path)
-        else:
-            new_table_name = get_table_name(self.name_transformer, "_".join(self.json_path[:-1]), new_table_name, suffix, self.json_path)
-        new_table_name = self.name_transformer.normalize_table_name(new_table_name, False, False)
-
-        if self.is_in_registry(schema, new_table_name):
-            # Check if new_table_name already exists. If yes, then add hash of the stream name to it
-            new_table_name = self.name_transformer.normalize_table_name(f"{new_table_name}_{hash_name(self.stream_name)}", False, False)
-            if self.is_in_registry(schema, new_table_name):
-                raise ValueError(
-                    f"Conflict: Table name {new_table_name} in schema {schema} already exists! (is there a hashing collision or duplicate streams?)"
-                )
-
-        if not is_intermediate:
-            self.final_table_name = new_table_name
-        return new_table_name
 
     def is_in_registry(self, schema: str, table_name: str) -> bool:
         """
@@ -790,47 +748,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
     return result
 
 
-def hash_json_path(json_path: List[str]) -> str:
-    return hash_name("&airbyte&".join(json_path))
-
-
 def hash_name(input: str) -> str:
     h = hashlib.sha1()
     h.update(input.encode("utf-8"))
     return h.hexdigest()[:3]
-
-
-def get_table_name(name_transformer: DestinationNameTransformer, parent: str, child: str, suffix: str, json_path: List[str]) -> str:
-    """
-    In normalization code base, we often have to deal with naming for tables, combining informations from:
-    - parent table: to denote where a table is extracted from (in case of nesting)
-    - child table: in case of nesting, the field name or the original stream name
-    - extra suffix: normalization is done in multiple transformation steps, each may need to generate separate tables,
-    so we can add a suffix to distinguish the different transformation steps of a pipeline.
-    - json path: in terms of parent and nested field names in order to reach the table currently being built
-
-    All these informations should be included (if possible) in the table naming for the user to (somehow) identify and
-    recognize what data is available there.
-    """
-    max_length = name_transformer.get_name_max_length() - 2  # less two for the underscores
-    json_path_hash = hash_json_path(json_path)
-    norm_suffix = suffix if not suffix or suffix.startswith("_") else f"_{suffix}"
-    norm_parent = parent if not parent else name_transformer.normalize_table_name(parent, False, False)
-    norm_child = name_transformer.normalize_table_name(child, False, False)
-    min_parent_length = min(MINIMUM_PARENT_LENGTH, len(norm_parent))
-
-    # no parent
-    if not parent:
-        return name_transformer.truncate_identifier_name(f"{norm_child}{norm_suffix}")
-    # if everything fits without truncation, don't truncate anything
-    elif (len(norm_parent) + len(norm_child) + len(json_path_hash) + len(norm_suffix)) < max_length:
-        return f"{norm_parent}_{json_path_hash}_{norm_child}{norm_suffix}"
-    # if everything fits except for the parent, just truncate the parent
-    elif (len(norm_child) + len(json_path_hash) + len(norm_suffix)) < (max_length - min_parent_length):
-        max_parent_length = max_length - len(norm_child) - len(json_path_hash) - len(norm_suffix)
-        return f"{norm_parent[:max_parent_length]}_{json_path_hash}_{norm_child}{norm_suffix}"
-    # otherwise first truncate parent to the minimum length and middle truncate the child
-    else:
-        norm_child_max_length = max_length - min_parent_length - len(json_path_hash) - len(norm_suffix)
-        trunc_norm_child = name_transformer.truncate_identifier_name(norm_child, norm_child_max_length)
-        return f"{norm_parent[:min_parent_length]}_{json_path_hash}_{trunc_norm_child}{norm_suffix}"
