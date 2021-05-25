@@ -230,7 +230,17 @@ public class KubePodProcess extends Process {
 
   @Override
   public int waitFor() throws InterruptedException {
+    // These are closed in the opposite order in which they are created to prevent any resource conflicts.
     client.resource(podDefinition).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+    try {
+      this.stdin.close();
+      this.stdoutServerSocket.close();
+      this.stdout.close();
+      this.executorService.shutdownNow();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
     return exitValue();
   }
 

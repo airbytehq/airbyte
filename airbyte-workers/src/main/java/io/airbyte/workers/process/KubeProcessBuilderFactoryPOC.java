@@ -25,8 +25,11 @@
 package io.airbyte.workers.process;
 
 import io.airbyte.commons.io.IOs;
+import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.utils.HttpClientUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,37 +37,19 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KubeProcessBuilderFactoryPOC {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactoryPOC.class);
-
-  private static final KubernetesClient KUBE_CLIENT = new DefaultKubernetesClient();
-
-  private static void saveJaredWork() {
-    try {
-      // todo: test this with args that are used by the process
-      Process process = new KubeProcessBuilderFactory(Path.of("stdout_template.yaml"))
-          .create(0L, 0, Path.of("/tmp"), "np_source:dev", null)
-          .start();
-
-      process.getOutputStream().write(100);
-      process.getInputStream().read();
-
-      // after running this main:
-      // kubectl port-forward airbyte-worker-0-0-fmave 9000:9000
-      // socat -d -d -d TCP-LISTEN:9000,bind=127.0.0.1 stdout
-
-      LOGGER.info("waiting...");
-      int code = process.waitFor();
-      LOGGER.info("code = " + code);
-    } catch (Exception e) {
-      LOGGER.error(e.getMessage());
-      e.printStackTrace();
-    }
-  }
+  // Explicitly create the underlying HTTP client since the Kube client has issues with closing the client. It is not clear in which library the fault
+  // lies. See https://github.com/fabric8io/kubernetes-client/issues/2403.
+  private static final Config CONFIG = new ConfigBuilder().build();
+  private static final OkHttpClient OK_HTTP_CLIENT = HttpClientUtils.createHttpClient(CONFIG);
+  private static final KubernetesClient KUBE_CLIENT = new DefaultKubernetesClient(OK_HTTP_CLIENT, CONFIG);
 
   public static void main(String[] args) throws InterruptedException, IOException {
     LOGGER.info("Launching source process...");
@@ -75,39 +60,55 @@ public class KubeProcessBuilderFactoryPOC {
 
     LOGGER.info("Launching background thread to read destination lines...");
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    executor.submit(() -> {
+    var listenTask = executor.submit(() -> {
       BufferedReader reader = new BufferedReader(new InputStreamReader(dest.getInputStream()));
-
-      while (true) {
-        try {
-          String line;
-          if ((line = reader.readLine()) != null) {
-            LOGGER.info("Destination sent: {}", line);
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
+      try {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          LOGGER.info("Destination sent: {}", line);
         }
+      } catch (IOException e) {
+        e.printStackTrace();
       }
     });
 
     LOGGER.info("Copying source stdout to destination stdin...");
 
-    BufferedReader reader = IOs.newBufferedReader(src.getInputStream());
-    PrintWriter writer = new PrintWriter(dest.getOutputStream(), true);
-
-    String line;
-    while ((line = reader.readLine()) != null) {
-      writer.println(line);
+    try (BufferedReader reader = IOs.newBufferedReader(src.getInputStream())) {
+      try (PrintWriter writer = new PrintWriter(dest.getOutputStream(), true)) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          writer.println(line);
+        }
+      }
     }
-    writer.close();
 
-    LOGGER.info("Waiting for source...");
+    LOGGER.info("Waiting for source process to terminate...");
     src.waitFor();
-    LOGGER.info("Waiting for destination...");
+    LOGGER.info("Waiting for destination process to terminate...");
     dest.waitFor();
+
+    LOGGER.info("Closing sync worker resources...");
+    listenTask.cancel(true);
+    executor.shutdownNow();
+    // TODO(Davin): Figure out why these commands are not effectively shutting down OkHTTP even though documentation suggests so. See https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/#shutdown-isnt-necessary
+    //  Instead, the pod shuts down after 5 minutes as the pool reaps the remaining idle connection after 5 minutes of inactivity, as per the default configuration.
+    OK_HTTP_CLIENT.dispatcher().executorService().shutdownNow();
+    OK_HTTP_CLIENT.connectionPool().evictAll();
+    KUBE_CLIENT.close();
+
     LOGGER.info("Done!");
 
-    System.exit(0); // todo: handle executors so we don't need to kill the JVM
+    // Debug Statements, to remove both merging.
+    LOGGER.info("src: {}", src.isAlive());
+    LOGGER.info("dest: {}", dest.isAlive());
+    LOGGER.info("executor terminated: {}", executor.isTerminated());
+    LOGGER.info("executor shutdown: {}", executor.isShutdown());
+    LOGGER.info("executor terminated: {}", executor.isTerminated());
+    LOGGER.info("ok http client pool size: {}", OK_HTTP_CLIENT.connectionPool().connectionCount());
+    LOGGER.info("ok http client pool idle size: {}", OK_HTTP_CLIENT.connectionPool().idleConnectionCount());
+    LOGGER.info("ok http executor service shutdown: {}", OK_HTTP_CLIENT.dispatcher().executorService().isShutdown());
+
   }
 
 }
