@@ -102,7 +102,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .icon(loadIcon(destination.getIcon()));
+        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
         .destinationDefinitionId(destination2.getDestinationDefinitionId())
@@ -110,7 +110,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerRepository(destination2.getDockerRepository())
         .dockerImageTag(destination2.getDockerImageTag())
         .documentationUrl(new URI(destination2.getDocumentationUrl()))
-        .icon(loadIcon(destination2.getIcon()));
+        .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()));
 
     final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationHandler.listDestinationDefinitions();
 
@@ -131,7 +131,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerRepository(destination.getDockerRepository())
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .icon(loadIcon(destination.getIcon()));
+        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
 
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
         .destinationDefinitionId(destination.getDestinationDefinitionId());
@@ -159,7 +159,7 @@ class DestinationDefinitionsHandlerTest {
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
         .destinationDefinitionId(destination.getDestinationDefinitionId())
-        .icon(loadIcon(destination.getIcon()));
+        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()));
 
     final DestinationDefinitionRead actualRead = destinationHandler.createDestinationDefinition(create);
 
@@ -210,14 +210,6 @@ class DestinationDefinitionsHandlerTest {
       assertEquals(0, destinationHandler.listLatestDestinationDefinitions().getDestinationDefinitions().size());
     }
 
-  }
-
-  private static String loadIcon(String name) {
-    try {
-      return DestinationDefinitionsHandler.loadIcon(name);
-    } catch (IOException e) {
-      return "Error";
-    }
   }
 
 }
