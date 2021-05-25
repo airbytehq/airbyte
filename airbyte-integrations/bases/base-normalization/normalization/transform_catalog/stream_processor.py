@@ -31,6 +31,7 @@ from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMo
 from jinja2 import Template
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
+from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
     is_array,
@@ -85,7 +86,7 @@ class StreamProcessor(object):
         primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
-        tables_registry: Dict[str, Dict[str, str]],
+        tables_registry: TableNameRegistry,
         from_table: str,
     ):
         """
@@ -101,14 +102,14 @@ class StreamProcessor(object):
         self.primary_key: List[List[str]] = primary_key
         self.json_column_name: str = json_column_name
         self.properties: Dict = properties
-        self.tables_registry: Dict[str, Dict[str, str]] = tables_registry
+        self.tables_registry: TableNameRegistry = tables_registry
         self.from_table: str = from_table
 
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.json_path: List[str] = [stream_name]
         self.final_table_name: str = ""
         self.sql_outputs: Dict[str, str] = {}
-        self.local_registry: Dict[str, Dict[str, str]] = {}
+        self.local_registry: TableNameRegistry = TableNameRegistry(destination_type)
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
 
@@ -160,7 +161,7 @@ class StreamProcessor(object):
         primary_key: List[List[str]],
         json_column_name: str,
         properties: Dict,
-        tables_registry: Dict[str, Dict[str, str]],
+        tables_registry: TableNameRegistry,
         from_table: str,
     ) -> "StreamProcessor":
         """
@@ -592,7 +593,7 @@ from {{ from_table }}
         schema = self.get_schema(is_intermediate)
         table_name = self.generate_new_table_name(is_intermediate, suffix)
         file_name = self.get_file_name(self.stream_name, schema, table_name)
-        self.add_table_to_local_registry(file_name, table_name, is_intermediate)
+        self.local_registry.add_table(file_name, self.get_schema(is_intermediate), table_name)
         file = f"{file_name}.sql"
         if is_intermediate:
             if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:
@@ -674,17 +675,7 @@ from {{ from_table }}
 
         Note, we avoid side-effets modifications to registries and perform only read operations here...
         """
-        return (schema in self.tables_registry and table_name in self.tables_registry[schema]) or (
-            schema in self.local_registry and table_name in self.local_registry[schema]
-        )
-
-    def add_table_to_local_registry(self, file_name: str, table_name: str, is_intermediate: bool):
-        schema = self.get_schema(is_intermediate)
-        if self.is_in_registry(schema, table_name):
-            raise KeyError(f"Duplicate table {table_name} in schema {schema}")
-        if schema not in self.local_registry:
-            self.local_registry[schema] = {}
-        self.local_registry[schema][table_name] = file_name
+        return self.tables_registry.contains(schema, table_name) or self.local_registry.contains(schema, table_name)
 
     def get_schema(self, is_intermediate: bool) -> str:
         if is_intermediate:

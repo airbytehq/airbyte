@@ -32,6 +32,7 @@ from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMo
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.stream_processor import StreamProcessor
+from normalization.transform_catalog.table_name_registry import TableNameRegistry
 
 
 class CatalogProcessor:
@@ -63,14 +64,8 @@ class CatalogProcessor:
         @param json_column_name is the column name containing the JSON Blob with the raw data
         @param default_schema is the final schema where to output the final transformed data to
         """
-        # Registry of all tables produced in each schema. Those maps to the final sql file (dbt use that as
-        # internal model and thus filename should be unique accross schema/table names):
-        # { schema_name : [ { table_name : file_name } ] }
-        tables_registry: Dict[str, Dict[str, str]] = {}
-        # Registry of source tables in each schemas
-        # { schema_name : [ table_name ] }
+        tables_registry: TableNameRegistry = TableNameRegistry(self.destination_type)
         schema_to_source_tables: Dict[str, Set[str]] = {}
-
         catalog = read_json(catalog_file)
         # print(json.dumps(catalog, separators=(",", ":")))
         substreams = []
@@ -105,7 +100,7 @@ class CatalogProcessor:
         default_schema: str,
         name_transformer: DestinationNameTransformer,
         destination_type: DestinationType,
-        tables_registry: Dict[str, Dict[str, str]],
+        tables_registry: TableNameRegistry,
     ) -> List[StreamProcessor]:
         result = []
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
@@ -162,7 +157,7 @@ class CatalogProcessor:
             result.append(stream_processor)
         return result
 
-    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Dict[str, Dict[str, str]]):
+    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: TableNameRegistry):
         """
         Handle nested stream/substream/children
         """
@@ -281,29 +276,18 @@ def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_na
         raise KeyError(f"Duplicate table {table_name} in {schema_name}")
 
 
-def add_table_to_registry(tables_registry: Dict[str, Dict[str, str]], processor: StreamProcessor) -> Dict[str, Dict[str, str]]:
+def add_table_to_registry(tables_registry: TableNameRegistry, processor: StreamProcessor) -> TableNameRegistry:
     """
     Keeps track of all schema/table names created by this catalog, regardless of their destination schema.
 
     Each StreamProcessor has its own "local" registry for schema/tables produced by the stream they are currently
-    processing. Here, we aggregate all "local" registries into a "global" one accross all streams being
+    processing. Here, we aggregate all "local" registries into a "global" one across all streams being
     processed from this catalog.
 
     @param tables_registry where all table names are recorded
     @param processor the processor that created tables as part of its process
     """
-    base_registry = tables_registry
-    new_registry = processor.local_registry
-    for schema in new_registry:
-        if len(new_registry[schema]) > 0:
-            if schema not in base_registry:
-                base_registry[schema] = {}
-            for table_name in new_registry[schema]:
-                if table_name not in base_registry[schema]:
-                    base_registry[schema][table_name] = new_registry[schema][table_name]
-                else:
-                    raise KeyError(f"Duplicate table {table_name} in schema {schema}")
-    return base_registry
+    return tables_registry.merge_table_registry(processor.local_registry)
 
 
 def output_sql_file(file: str, sql: str):

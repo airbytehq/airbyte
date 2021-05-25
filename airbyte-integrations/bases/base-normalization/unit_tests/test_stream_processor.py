@@ -31,6 +31,7 @@ from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMo
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.stream_processor import StreamProcessor, get_table_name
+from normalization.transform_catalog.table_name_registry import TableNameRegistry
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -107,8 +108,8 @@ def test_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix
         cursor_field=[],
         primary_key=[],
         json_column_name="json_column_name",
-        properties=[],
-        tables_registry=dict(),
+        properties=dict(),
+        tables_registry=TableNameRegistry(DestinationType.POSTGRES),
         from_table="",
     )
     assert stream_processor.generate_new_table_name(is_intermediate=is_intermediate, suffix=suffix) == expected
@@ -127,12 +128,12 @@ def test_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix
 )
 def test_collisions_generate_new_table_name(stream_name: str, is_intermediate: bool, suffix: str, expected: str, expected_final_name: str):
     # fill test_registry with the same stream names as if it was already used so there would be collisions...
-    test_registry = dict()
-    test_registry["schema_name"] = set()
-    test_registry["schema_name"].add("stream_name")
-    test_registry["schema_name"].add("stream_name_suffix")
-    test_registry["raw_schema"] = set()
-    test_registry["raw_schema"].add("stream_name_suffix")
+    test_registry = TableNameRegistry(DestinationType.POSTGRES)
+    test_registry.registry["schema_name"] = dict()
+    test_registry.registry["schema_name"]["stream_name"] = ""
+    test_registry.registry["schema_name"]["stream_name_suffix"] = ""
+    test_registry.registry["raw_schema"] = dict()
+    test_registry.registry["raw_schema"]["stream_name_suffix"] = ""
     stream_processor = StreamProcessor.create(
         stream_name=stream_name,
         destination_type=DestinationType.POSTGRES,
@@ -143,7 +144,7 @@ def test_collisions_generate_new_table_name(stream_name: str, is_intermediate: b
         cursor_field=[],
         primary_key=[],
         json_column_name="json_column_name",
-        properties=[],
+        properties=dict(),
         tables_registry=test_registry,
         from_table="",
     )
@@ -172,15 +173,15 @@ def test_nested_generate_new_table_name(stream_name: str, is_intermediate: bool,
         cursor_field=[],
         primary_key=[],
         json_column_name="json_column_name",
-        properties=[],
-        tables_registry=dict(),
+        properties=dict(),
+        tables_registry=TableNameRegistry(DestinationType.POSTGRES),
         from_table="",
     )
     nested_stream_processor = StreamProcessor.create_from_parent(
         parent=stream_processor,
         child_name="child_stream",
         json_column_name="json_column_name",
-        properties=[],
+        properties=dict(),
         is_nested_array=False,
         from_table="",
     )
@@ -208,8 +209,8 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
         cursor_field=cursor_field,
         primary_key=[],
         json_column_name="json_column_name",
-        properties=[],
-        tables_registry=set(),
+        properties=dict(),
+        tables_registry=TableNameRegistry(DestinationType.POSTGRES),
         from_table="",
     )
     try:
@@ -252,7 +253,7 @@ def test_primary_key(
         primary_key=primary_key,
         json_column_name="json_column_name",
         properties={key: {"type": column_type} for key in expected_primary_keys},
-        tables_registry=set(),
+        tables_registry=TableNameRegistry(DestinationType.POSTGRES),
         from_table="",
     )
     try:

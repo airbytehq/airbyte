@@ -30,6 +30,7 @@ import pytest
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor, add_table_to_registry
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
+from normalization.transform_catalog.table_name_registry import TableNameRegistry
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -87,7 +88,7 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
     (mapping per schema to all tables in that schema, mapping to the final filename)
     """
     destination_type = DestinationType.from_string(integration_type)
-    tables_registry = {}
+    tables_registry = TableNameRegistry(destination_type)
 
     substreams = []
     catalog = read_json(f"resources/{catalog_file}.json")
@@ -116,7 +117,7 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
     else:
         expected_top_level = read_json(f"resources/{catalog_file}_expected_top_level.json", apply_function)
 
-    assert tables_registry == expected_top_level
+    assert tables_registry.registry == expected_top_level
 
     # process substreams
     while substreams:
@@ -142,10 +143,10 @@ def test_stream_processor_tables_naming(integration_type: str, catalog_file: str
     # remove expected top level tables from tables_registry
     for schema in expected_top_level:
         for table in expected_top_level[schema]:
-            del tables_registry[schema][table]
-        if len(tables_registry[schema]) == 0:
-            del tables_registry[schema]
-    assert tables_registry == expected_nested
+            del tables_registry.registry[schema][table]
+        if len(tables_registry.registry[schema]) == 0:
+            del tables_registry.registry[schema]
+    assert tables_registry.registry == expected_nested
 
 
 def read_json(input_path: str, apply_function=None):
