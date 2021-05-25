@@ -52,6 +52,7 @@ public enum ConfigSchema {
   OPERATOR_DBT_INPUT("OperatorDbtInput.yaml"),
 
   STANDARD_SYNC_OUTPUT("StandardSyncOutput.yaml"),
+  REPLICATION_OUTPUT("ReplicationOutput.yaml"),
 
   STATE("State.yaml");
 
