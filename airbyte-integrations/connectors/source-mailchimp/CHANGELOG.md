@@ -1,4 +1,4 @@
 # Changelog
 
-## 0.x.y
-Start using the new Source Acceptance tests
+## 0.2.1
+CDK version (with using the new Source Acceptance tests)

@@ -46,7 +46,7 @@ class MailChimpStream(HttpStream, ABC):
         api_data = decoded_response[self.data_field]
         if len(api_data) < self.page_size:
             self.current_offset = 0
-            return {}
+            return None
         else:
             self.current_offset += self.page_size
             return {"offset": self.current_offset}
