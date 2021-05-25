@@ -34,10 +34,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +43,8 @@ import org.slf4j.LoggerFactory;
 public class KubeProcessBuilderFactoryPOC {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactoryPOC.class);
-  // Explicitly create the underlying HTTP client since the Kube client has issues with closing the client. It is not clear in which library the fault
+  // Explicitly create the underlying HTTP client since the Kube client has issues with closing the
+  // client. It is not clear in which library the fault
   // lies. See https://github.com/fabric8io/kubernetes-client/issues/2403.
   private static final Config CONFIG = new ConfigBuilder().build();
   private static final OkHttpClient OK_HTTP_CLIENT = HttpClientUtils.createHttpClient(CONFIG);
@@ -91,8 +90,11 @@ public class KubeProcessBuilderFactoryPOC {
     LOGGER.info("Closing sync worker resources...");
     listenTask.cancel(true);
     executor.shutdownNow();
-    // TODO(Davin): Figure out why these commands are not effectively shutting down OkHTTP even though documentation suggests so. See https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/#shutdown-isnt-necessary
-    //  Instead, the pod shuts down after 5 minutes as the pool reaps the remaining idle connection after 5 minutes of inactivity, as per the default configuration.
+    // TODO(Davin): Figure out why these commands are not effectively shutting down OkHTTP even though
+    // documentation suggests so. See
+    // https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/#shutdown-isnt-necessary
+    // Instead, the pod shuts down after 5 minutes as the pool reaps the remaining idle connection after
+    // 5 minutes of inactivity, as per the default configuration.
     OK_HTTP_CLIENT.dispatcher().executorService().shutdownNow();
     OK_HTTP_CLIENT.connectionPool().evictAll();
     KUBE_CLIENT.close();
