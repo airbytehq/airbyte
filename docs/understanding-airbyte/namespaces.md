@@ -10,11 +10,13 @@ An example of a namespace is the RDMS's `schema` concept. Some common use cases 
 
 The Airbyte Protocol supports namespaces and allows Sources to define namespaces, and Destinations to write to various namespaces.
 
+The most common use of namespaces is in the context of database sources and destinations. For databases, generally, a namespace is synonymous with a schema. In the Postgres source, for example, the table `public.users` would be represented in Airbyte as `{ "namespace": "public", "name" "users" }`. If replicating this into a destination that supports namespacing, by default, records from this table would be replicated into `public.users` in the destination.
+
 If a sync is conducted with a Source and Destination that both support namespaces, the source-defined namespace will be the schema in the Destination into which the data is replicated. For such syncs, data is replicated into the Destination in a layout matching the Source.
 
 All of this is automatic, and requires no additional user configuration.
 
-If the Source does not support namespaces, the data will be replicated into the Destination's default namespace.
+If the Source does not support namespaces, the data will be replicated into the Destination's default namespace. For databases, the default namespace is the schema provided in the destination configuration.
 
 If the Destination does not support namespaces, the [namespace field](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L64) is ignored.
 

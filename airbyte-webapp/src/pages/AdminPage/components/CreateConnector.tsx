@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useFetcher } from "rest-hooks";
 
 import Button from "components/Button";
@@ -31,6 +31,8 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     setErrorMessage("");
   };
 
+  const formatMessage = useIntl().formatMessage;
+
   const createSourceDefinition = useFetcher(
     SourceDefinitionResource.createShape()
   );
@@ -59,7 +61,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
         state: { sourceDefinitionId: result.sourceDefinitionId },
       });
     } catch (e) {
-      setErrorMessage("form.dockerError");
+      setErrorMessage(e.message || formatMessage({ id: "form.dockerError" }));
     }
   };
 
@@ -94,7 +96,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
         state: { destinationDefinitionId: result.destinationDefinitionId },
       });
     } catch (e) {
-      setErrorMessage("form.validationError");
+      setErrorMessage(e.message || formatMessage({ id: "form.dockerError" }));
     }
   };
 

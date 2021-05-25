@@ -84,12 +84,21 @@ public class TemporalPool implements Runnable {
     factory.start();
   }
 
-  private void waitForTemporalServerAndLog() {
+  protected void waitForTemporalServerAndLog() {
     LOGGER.info("Waiting for temporal server...");
 
-    while (!getNamespaces(temporalService).contains("default")) {
+    boolean temporalStatus = false;
+
+    while (!temporalStatus) {
       LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
       wait(2);
+
+      try {
+        temporalStatus = getNamespaces(temporalService).contains("default");
+      } catch (Exception e) {
+        // Ignore the exception because this likely means that the Temporal service is still initializing.
+        LOGGER.warn("Ignoring exception while trying to request Temporal namespaces:", e);
+      }
     }
 
     // sometimes it takes a few additional seconds for workflow queue listening to be available
@@ -106,7 +115,7 @@ public class TemporalPool implements Runnable {
     }
   }
 
-  private static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
+  protected static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
     return temporalService.blockingStub()
         .listNamespaces(ListNamespacesRequest.newBuilder().build())
         .getNamespacesList()

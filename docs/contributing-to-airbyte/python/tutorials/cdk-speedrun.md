@@ -2,7 +2,7 @@
 
 ## CDK Speedrun \(HTTP API Source Creation [Any%](https://en.wikipedia.org/wiki/Speedrun#:~:text=Any%25%2C%20or%20fastest%20completion%2C,the%20game%20to%20its%20fullest.&text=Specific%20requirements%20for%20a%20100,different%20depending%20on%20the%20game.) Route\)
 
-This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](https://github.com/airbytehq/airbyte/tree/576d932ddbd748713ad5cbeabebd3c21cd0148ad/airbyte-cdk/python/docs/cdk-tutorial-python-http.md)
+This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](./cdk-tutorial-python-http/0-getting-started.md)
 
 ## Dependencies
 
@@ -42,7 +42,7 @@ We're working with the Exchange Rates API, so we need to define our input schema
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Python Http Tutorial Spec",
+    "title": "Python Http Example Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],
     "additionalProperties": false,
@@ -75,7 +75,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 
-class SourcePythonHttpTutorial(AbstractSource):
+class SourcePythonHttpExample(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         accepted_currencies = {
             "USD",

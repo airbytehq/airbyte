@@ -24,3 +24,4 @@ export * from "./ContentCard";
 export * from "./PreferencesForm";
 export * from "./DefaultLogoCatalog";
 export * from "./ContentCard";
+export * from "./ImageBlock";

@@ -3,29 +3,34 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useResource } from "rest-hooks";
 
+import config from "config";
+import { Routes } from "pages/routes";
+
+import { ImageBlock } from "components";
 import PageTitle from "components/PageTitle";
 import useRouter from "components/hooks/useRouterHook";
-import config from "config";
 import ContentCard from "components/ContentCard";
 import EmptyResource from "components/EmptyResourceBlock";
-import ConnectionResource from "core/resources/Connection";
-import SourceResource from "core/resources/Source";
-import { Routes } from "../../../routes";
 import Breadcrumbs from "components/Breadcrumbs";
-import SourceConnectionTable from "./components/SourceConnectionTable";
-import SourceSettings from "./components/SourceSettings";
 import {
   ItemTabs,
   StepsTypes,
   TableItemTitle,
 } from "components/SourceAndDestinationsBlocks";
 import LoadingPage from "components/LoadingPage";
-import DestinationResource from "core/resources/Destination";
 import MainPageWithScroll from "components/MainPageWithScroll";
+
+import SourceConnectionTable from "./components/SourceConnectionTable";
+import SourceSettings from "./components/SourceSettings";
+
+import ConnectionResource from "core/resources/Connection";
+import SourceResource from "core/resources/Source";
+
+import DestinationResource from "core/resources/Destination";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import DestinationsDefinitionResource from "core/resources/DestinationDefinition";
 import { getIcon } from "utils/imageUtils";
-import ImageBlock from "components/ImageBlock";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -86,7 +91,7 @@ const SourceItemPage: React.FC = () => {
           img: <ImageBlock img={destinationDef?.icon} />,
         };
       }),
-    [destinations]
+    [destinations, destinationDefinitions]
   );
 
   const onSelect = (data: { value: string }) => {
@@ -141,7 +146,10 @@ const SourceItemPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      title={
+      headTitle={
+        <HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />
+      }
+      pageTitle={
         <PageTitle
           title={<Breadcrumbs data={breadcrumbsData} />}
           middleComponent={
