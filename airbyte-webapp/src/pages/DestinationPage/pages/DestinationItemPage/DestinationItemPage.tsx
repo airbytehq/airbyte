@@ -26,6 +26,7 @@ import DestinationDefinitionResource from "core/resources/DestinationDefinition"
 import { getIcon } from "utils/imageUtils";
 import ImageBlock from "components/ImageBlock";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
+import HeadTitle from "components/HeadTitle";
 
 const Content = styled(ContentCard)`
   margin: 0 32px 0 27px;
@@ -154,7 +155,12 @@ const DestinationItemPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
-      title={
+      headTitle={
+        <HeadTitle
+          titles={[{ id: "admin.destinations" }, { title: destination.name }]}
+        />
+      }
+      pageTitle={
         <PageTitle
           title={<Breadcrumbs data={breadcrumbsData} />}
           withLine
