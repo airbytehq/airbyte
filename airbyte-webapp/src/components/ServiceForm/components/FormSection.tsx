@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 
-import { DropDown, Label, ArrayOfObjectsEditor } from "components";
+import { ArrayOfObjectsEditor, DropDown, Label } from "components";
 import {
   FormBlock,
   FormConditionItem,
@@ -129,12 +129,40 @@ const ArraySection: React.FC<{
   );
 };
 
+function isNumber(a: any): a is number {
+  return typeof a === "number";
+}
+
+function OrderComparator(a: FormBlock, b: FormBlock): number {
+  const aIsNumber = isNumber(a.order);
+  const bIsNumber = isNumber(b.order);
+
+  switch (true) {
+    case aIsNumber && bIsNumber:
+      return (a.order as number) - (b.order as number);
+    case aIsNumber && !bIsNumber:
+      return -1;
+    case bIsNumber && !aIsNumber:
+      return 1;
+    default:
+      return a.fieldKey.localeCompare(b.fieldKey, undefined, { numeric: true });
+  }
+}
+
 const FormSection: React.FC<{
   blocks: FormBlock[] | FormBlock;
   path?: string;
   skipAppend?: boolean;
 }> = ({ blocks, path, skipAppend }) => {
-  const sections = Array.isArray(blocks) ? blocks : [blocks];
+  const sections = useMemo(() => {
+    const bl = [blocks].flat();
+
+    if (bl.some((b) => isNumber(b.order))) {
+      return bl.sort(OrderComparator);
+    }
+
+    return bl;
+  }, [blocks]);
   return (
     <>
       {sections.map((formField) => {
