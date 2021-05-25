@@ -9,7 +9,7 @@ A connection is a configuration for syncing data between a source and a destinat
 
 ## Sync modes
 
-A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides different sync modes to account for various use cases. To minimise confusion, a mode's behavior is reflected in its name. The easiest way to understand Airbyte's sync modes is to understand how the modes are named.
+A sync mode governs how Airbyte reads from a source and writes to a destination. Airbyte provides different sync modes to account for various use cases. To minimize confusion, a mode's behavior is reflected in its name. The easiest way to understand Airbyte's sync modes is to understand how the modes are named.
 
 1.  The first part of the name denotes how the source connector reads data from the source:
   
@@ -56,9 +56,9 @@ As described by the [Airbyte Protocol from the Airbyte Specifications](../airbyt
 
 On top of this replication, Airbyte provides the option to enable or disable an additional transformation step at the end of the sync called [basic normalization](../basic-normalization.md). This operation is:
 
-- only available for destinations that supports dbt execution.
+- only available for destinations that support dbt execution.
 - responsible for automatically generating a pipeline or a DAG of dbt transformation models to convert JSON blob objects into normalized tables.
-- running and applying these dbt models to the data written in the destination.
+- responsible for running and applying these dbt models to the data written in the destination.
 
 ### Custom sync operations
 

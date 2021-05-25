@@ -4,7 +4,7 @@
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using plain SQL queries.
 
-This is the first part of ELT tutorial. The second part goes deeper with [connecting EL with T using DBT](transformations-with-dbt.md) and then wrap-up with a third part on [connecting EL with T in Airbyte](transformations-with-airbyte.md).
+This is the first part of ELT tutorial. The second part goes deeper with [Transformations with dbt](transformations-with-dbt.md) and then wrap-up with a third part on [Transformations with Airbyte](transformations-with-airbyte.md).
 
 # (Examples outputs are updated with Airbyte version 0.23.0-alpha from May 2021)
 
@@ -26,8 +26,8 @@ Anyway, it is possible to short-circuit this process \(no vendor lock-in\) and h
 
 This could be useful if:
 
-1. You have different usage than analytics that could be handled with these initial data in raw JSON format. 
-2. You can implement your own Transformer \(even in a different language such as Java or in Spark for example, or another transformation tool: DBT or Dataform\).
+1. You have a use-case not related to analytics that could be handled with data in its raw JSON format. 
+2. You can implement your own transformer. For example, you could write them in a different language, create them in an analytics engine like Spark, or use a transformation tool such as dbt or Dataform.
 3. You want to customize and change how the data is normalized with your own queries.
 
 In order to do so, we will now describe how you can leverage the basic normalization outputs that Airbyte generates to build your own transformations if you don't want to start from scratch.
@@ -76,7 +76,7 @@ NORMALIZE_WORKSPACE=`docker run --rm -i -v airbyte_workspace:/data  busybox find
 
 Airbyte is internally using a specialized tool for handling transformations called DBT.
 
-An Airbyte Python module reads the `destination_catalog.json` file and  generates DBT code interpreting and transforming the raw data.
+The Airbyte Python module reads the `destination_catalog.json` file and generates dbt code responsible for interpreting and transforming the raw data.
 
 The final output of DBT is producing SQL files that can be run on top of the destination that you selected.
 
