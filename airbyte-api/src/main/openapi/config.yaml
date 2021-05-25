@@ -906,6 +906,27 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/operations/check:
+    post:
+      tags:
+        - operation
+      summary: Check if an operation to be created is valid
+      operationId: checkOperationCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/operations/create:
     post:
       tags:
@@ -927,6 +948,27 @@ paths:
                 $ref: "#/components/schemas/OperationRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/operations/check_for_update:
+    post:
+      tags:
+        - operation
+      summary: Check if an operation to be updated is valid
+      operationId: checkOperationUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationUpdate"
+        required: true
+        responses:
+          "200":
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/OperationRead"
+          "422":
+            $ref: "#/components/responses/InvalidInput"
   /v1/operations/update:
     post:
       tags:
@@ -970,6 +1012,22 @@ paths:
                 $ref: "#/components/schemas/OperationReadList"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/list_unassigned:
+    post:
+      tags:
+        - operation
+      summary: Returns all operations not assigned to a connection.
+      description: List operations not assigned to a connection
+      operationId: listUnassignedOperations
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationReadList"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/operations/get:
@@ -1953,6 +2011,10 @@ components:
           properties:
             withRefreshedCatalog:
               type: boolean
+            withOperations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OperationUpdate"
     ConnectionRead:
       type: object
       required:
