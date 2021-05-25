@@ -55,13 +55,9 @@ class SendgridStream(HttpStream, ABC):
 class SendgridStreamOffsetPagination(SendgridStream):
     offset = 0
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token=next_page_token, **kwargs)
+        params["limit"] = self.limit
         if next_page_token:
             params.update(**next_page_token)
         return params
