@@ -2,7 +2,7 @@
 
 ## Overview
 
-The ClickHouse source supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+The ClickHouse source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This Clickhouse source connector is built on top of the source-jdbc code base and is configured to rely on JDBC v0.3.1 standard drivers provided by ClickHouse [here](https://github.com/ClickHouse/clickhouse-jdbc) as described in ClickHouse documentation [here](https://clickhouse.tech/docs/en/interfaces/jdbc/).
 
