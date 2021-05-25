@@ -70,7 +70,7 @@ class OktaStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {
-            'limit': 200,
+            'limit': self.page_size,
             **(next_page_token or {}),
         }
 
