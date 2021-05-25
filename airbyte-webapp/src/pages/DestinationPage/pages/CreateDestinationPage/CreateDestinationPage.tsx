@@ -12,6 +12,7 @@ import useDestination from "components/hooks/services/useDestinationHook";
 import { FormPageContent } from "components/SourceAndDestinationsBlocks";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import HeadTitle from "components/HeadTitle";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
@@ -55,6 +56,7 @@ const CreateDestinationPage: React.FC = () => {
 
   return (
     <>
+      <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
       <PageTitle
         withLine
         title={<FormattedMessage id="destinations.newDestinationTitle" />}
