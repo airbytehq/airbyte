@@ -53,6 +53,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
@@ -84,7 +85,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDestination implements Destination {
+public class BigQueryDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   static final String CONFIG_DATASET_ID = "dataset_id";
@@ -100,13 +101,6 @@ public class BigQueryDestination implements Destination {
 
   public BigQueryDestination() {
     namingResolver = new StandardNameTransformer();
-  }
-
-  @Override
-  public ConnectorSpecification spec() throws IOException {
-    // return a jsonschema representation of the spec for the integration.
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
   @Override

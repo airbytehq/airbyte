@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -59,7 +60,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CsvDestination implements Destination {
+public class CsvDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
@@ -69,12 +70,6 @@ public class CsvDestination implements Destination {
 
   public CsvDestination() {
     namingResolver = new StandardNameTransformer();
-  }
-
-  @Override
-  public ConnectorSpecification spec() throws IOException {
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
   @Override
