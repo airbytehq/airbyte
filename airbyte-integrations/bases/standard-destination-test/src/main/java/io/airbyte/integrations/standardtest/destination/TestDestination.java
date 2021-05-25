@@ -382,6 +382,11 @@ public abstract class TestDestination {
     runSync(config, secondSyncMessages, configuredCatalog);
     final String defaultSchema = getDefaultSchema(config);
     retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
+    cleanup(configuredCatalog);
+  }
+
+  private void cleanup(ConfiguredAirbyteCatalog catalog) {
+    // catalog.getStreams().forEach();
   }
 
   /**
@@ -400,7 +405,7 @@ public abstract class TestDestination {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     configuredCatalog.getStreams().forEach(s -> {
       s.withSyncMode(SyncMode.INCREMENTAL);
-      s.withDestinationSyncMode(DestinationSyncMode.APPEND);
+      s.withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
@@ -408,6 +413,9 @@ public abstract class TestDestination {
     final JsonNode config = getConfig();
     runSync(config, firstSyncMessages, configuredCatalog);
 
+    configuredCatalog.getStreams().forEach(s -> {
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND);
+    });
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -800,6 +808,10 @@ public abstract class TestDestination {
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
+  protected AirbyteDestination getDestination() {
+    return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
+  }
+
   private void runSync(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog) throws Exception {
 
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
@@ -807,7 +819,7 @@ public abstract class TestDestination {
         .withCatalog(catalog)
         .withDestinationConnectionConfiguration(config);
 
-    final AirbyteDestination target = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
+    final AirbyteDestination target = getDestination();
 
     target.start(targetConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> target.accept(message)));

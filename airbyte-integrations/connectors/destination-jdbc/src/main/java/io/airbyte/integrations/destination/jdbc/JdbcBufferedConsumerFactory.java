@@ -27,7 +27,6 @@ package io.airbyte.integrations.destination.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.text.Names;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;

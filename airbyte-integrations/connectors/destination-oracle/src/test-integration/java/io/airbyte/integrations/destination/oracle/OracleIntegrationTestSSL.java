@@ -147,10 +147,10 @@ public class OracleIntegrationTestSSL extends TestDestination {
   @BeforeAll
   protected static void init() {
     /*
-    db = new OracleContainer(DockerImageName.parse("airbyte/mssql_ssltest:dev").asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-        .acceptLicense();
-    db.start();
-    */
+     * db = new
+     * OracleContainer(DockerImageName.parse("airbyte/mssql_ssltest:dev").asCompatibleSubstituteFor(
+     * "mcr.microsoft.com/mssql/server")) .acceptLicense(); db.start();
+     */
   }
 
   private static Database getDatabase(JsonNode config) {

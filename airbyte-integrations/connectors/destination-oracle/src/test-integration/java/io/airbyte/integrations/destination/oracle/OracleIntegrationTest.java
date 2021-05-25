@@ -42,14 +42,11 @@ import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
 public class OracleIntegrationTest extends TestDestination {
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
-  private static final Logger LOGGER = LoggerFactory.getLogger(OracleIntegrationTest.class);
 
   private static OracleContainer db;
   private ExtendedNameTransformer namingResolver = new OracleNameTransformer();
@@ -100,7 +97,7 @@ public class OracleIntegrationTest extends TestDestination {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA.substring(1)).asText()))
+        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA.substring(1).toUpperCase()).asText()))
         .collect(Collectors.toList());
   }
 
@@ -136,36 +133,28 @@ public class OracleIntegrationTest extends TestDestination {
 
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     List<org.jooq.Record> result = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl())
-        .query(
-            ctx -> {
-              List<JsonNode> transactions = ctx.fetch("select SID, TYPE from V$LOCK")
-                .stream()
-                .map(r -> r.formatJSON(JSON_FORMAT))
-                .map(Jsons::deserialize)
-                .collect(Collectors.toList());
-              LOGGER.error(String.format("Open transactions: %d.", transactions.size()));
-              return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1)))
-                  .stream()
-                  .collect(Collectors.toList());}
-        );
-    return result
+        .query(ctx -> ctx
+            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1)))
             .stream()
-            .map(r -> r.formatJSON(JSON_FORMAT))
-            .map(Jsons::deserialize)
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()));
+    return result
+        .stream()
+        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
   }
 
   private static Database getDatabase(JsonNode config) {
     // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
-    // constructor. at least explicitly handle it, even if the impl doesn't change.
+    // constru
+    // ctor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
         String.format("jdbc:oracle:thin:@//%s:%s/%s",
-                config.get("host").asText(),
-                config.get("port").asText(),
-                config.get("sid").asText()),
+            config.get("host").asText(),
+            config.get("port").asText(),
+            config.get("sid").asText()),
         "oracle.jdbc.driver.OracleDriver",
         null);
   }
@@ -181,7 +170,8 @@ public class OracleIntegrationTest extends TestDestination {
     final Database database = getDatabase(configWithoutDbName);
     database.query(ctx -> {
       ctx.execute("alter database default tablespace users");
-      ctx.execute("declare c int; begin select count(*) into c from user_tables where upper(table_name) = upper('id_and_name'); if c = 1 then execute immediate 'drop table id_and_name'; end if; end;");
+      ctx.execute(
+          "declare c int; begin select count(*) into c from user_tables where upper(table_name) = upper('id_and_name'); if c = 1 then execute immediate 'drop table id_and_name'; end if; end;");
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born TIMESTAMP WITH TIME ZONE)");
       ctx.fetch(
           "INSERT ALL INTO id_and_name (id, name, born) VALUES (1,'picard', TIMESTAMP '2124-03-04 01:01:01') INTO id_and_name (id, name, born) VALUES  (2, 'crusher', TIMESTAMP '2124-03-04 01:01:01') INTO id_and_name (id, name, born) VALUES (3, 'vash', TIMESTAMP '2124-03-04 01:01:01') SELECT 1 FROM DUAL");

@@ -22,44 +22,49 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.oracle;
+package io.airbyte.integrations.base;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import java.time.Instant;
+import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
+import java.nio.file.Path;
 
-@VisibleForTesting
-public class OracleNameTransformer extends ExtendedNameTransformer {
+// Simple class to host a Destination in-memory rather than spinning up a container for it.
+// For debugging and testing purposes only; not recommended to use this for real code
+public class LocalAirbyteDestination implements AirbyteDestination {
 
-  @Override
-  protected String applyDefaultCase(String input) {
-    return input.toUpperCase();
+  private Destination dest;
+  private AirbyteMessageConsumer consumer;
+
+  public LocalAirbyteDestination(Destination dest) {
+    this.dest = dest;
   }
 
   @Override
-  public String getRawTableName(String streamName) {
-    return maxStringLength(convertStreamName("airbyte_raw_" + streamName), 30);
+  public void start(StandardTargetConfig targetConfig, Path jobRoot) throws Exception {
+    consumer =
+        dest.getConsumer(targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog(), Destination::defaultOutputRecordCollector);
+    consumer.start();
   }
 
   @Override
-  public String getTmpTableName(String streamName) {
-    return maxStringLength(convertStreamName("airbyte_tmp_" + streamName + "_" + Instant.now().toEpochMilli()), 30);
-  }
-
-  private String maxStringLength(String value, Integer length) {
-    if (value.length() <= length) {
-      return value;
-    }
-    return value.substring(0, length);
+  public void accept(AirbyteMessage message) throws Exception {
+    consumer.accept(message);
   }
 
   @Override
-  public String convertStreamName(String input) {
-    String result = super.convertStreamName(input);
-    if (!result.isEmpty() && result.charAt(0) == '_') {
-      result = result.substring(1);
-    }
-    return maxStringLength(result, 30);
+  public void notifyEndOfStream() {
+    // nothing to do here
+  }
+
+  @Override
+  public void close() throws Exception {
+    consumer.close();
+  }
+
+  @Override
+  public void cancel() {
+    // nothing to do here
   }
 
 }
