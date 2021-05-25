@@ -32,7 +32,7 @@ from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): register logger a
 from facebook_business.exceptions import FacebookRequestError
 
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
-FACEBOOK_API_CALL_LIMIT_ERROR_CODES = (4, 17, 32, 613, 8000, 80004, 80003, 80002, 80005, 80006, 80001, 80008)
+FACEBOOK_API_CALL_LIMIT_ERROR_CODES = (4, 17, 32, 613, 8000, 80001, 80002, 80003, 80004, 80005, 80006, 80008)
 DEFAULT_SLEEP_INTERVAL = pendulum.Interval(minutes=1)
 
 
