@@ -200,7 +200,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         outputRecordCollector.accept(lastCommittedState);
       }
     } catch (Exception e) {
-      LOGGER.error("on close failed.");
+      LOGGER.error("on close failed.", e);
     }
   }
 
