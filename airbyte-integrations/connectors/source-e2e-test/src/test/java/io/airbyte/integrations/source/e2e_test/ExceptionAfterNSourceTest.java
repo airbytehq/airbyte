@@ -43,7 +43,6 @@ import org.junit.jupiter.api.Test;
 
 class ExceptionAfterNSourceTest {
 
-  @SuppressWarnings("Convert2MethodRef")
   @Test
   void test() {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(ExceptionAfterNSource.CATALOG);
@@ -64,7 +63,7 @@ class ExceptionAfterNSourceTest {
     assertEquals(getRecordMessage(9L).getRecord().getData(), read.next().getRecord().getData());
     assertEquals(getRecordMessage(10L).getRecord().getData(), read.next().getRecord().getData());
     assertEquals(getStateMessage(10L).getState().getData(), read.next().getState().getData());
-    assertThrows(IllegalStateException.class, () -> read.next());
+    assertThrows(IllegalStateException.class, read::next);
   }
 
   private static AirbyteMessage getRecordMessage(long i) {
