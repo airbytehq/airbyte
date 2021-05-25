@@ -284,17 +284,20 @@
           "type": "object",
           "properties": {
             "created": {
-              "type": "string"
+              "type": "integer"
             },
             "email": {
               "type": "string"
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -372,10 +375,13 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -398,10 +404,13 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -421,10 +430,13 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
     }
   ]
 }

@@ -4,12 +4,12 @@ FROM python:3.7-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
-COPY source_sendgrid ./source_sendgrid
+COPY source_asana ./source_asana
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
 
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.3
-LABEL io.airbyte.name=airbyte/source-sendgrid
+LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.name=airbyte/source-asana
