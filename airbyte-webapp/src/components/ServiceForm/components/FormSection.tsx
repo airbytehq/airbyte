@@ -129,13 +129,9 @@ const ArraySection: React.FC<{
   );
 };
 
-function isNumber(a: any): a is number {
-  return typeof a === "number";
-}
-
 function OrderComparator(a: FormBlock, b: FormBlock): number {
-  const aIsNumber = isNumber(a.order);
-  const bIsNumber = isNumber(b.order);
+  const aIsNumber = Number.isInteger(a.order);
+  const bIsNumber = Number.isInteger(b.order);
 
   switch (true) {
     case aIsNumber && bIsNumber:
@@ -157,12 +153,13 @@ const FormSection: React.FC<{
   const sections = useMemo(() => {
     const bl = [blocks].flat();
 
-    if (bl.some((b) => isNumber(b.order))) {
+    if (bl.some((b) => Number.isInteger(b.order))) {
       return bl.sort(OrderComparator);
     }
 
     return bl;
   }, [blocks]);
+
   return (
     <>
       {sections.map((formField) => {

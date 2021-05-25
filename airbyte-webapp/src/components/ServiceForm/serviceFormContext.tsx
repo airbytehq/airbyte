@@ -1,6 +1,5 @@
 import React, { useContext, useMemo } from "react";
 
-import { DropDownRow } from "components";
 import { WidgetConfigMap } from "core/form/types";
 
 type Context = {
@@ -9,7 +8,7 @@ type Context = {
   isEditMode?: boolean;
   allowChangeConnector?: boolean;
   onChangeServiceType?: (id: string) => void;
-  dropDownData: DropDownRow.IDataItem[];
+  availableServices: { value: string; text: string; icon: string }[];
   documentationUrl?: string;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
@@ -21,7 +20,7 @@ type Context = {
 
 const context: Context = {
   formType: "source",
-  dropDownData: [],
+  availableServices: [],
   widgetsInfo: {},
   setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
   unfinishedFlows: {},
@@ -39,7 +38,7 @@ const ServiceFormContextProvider: React.FC<{
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
-  dropDownData: DropDownRow.IDataItem[];
+  availableServices: { value: string; text: string; icon: string }[];
   documentationUrl?: string;
   allowChangeConnector?: boolean;
   onChangeServiceType?: (id: string) => void;
@@ -54,7 +53,7 @@ const ServiceFormContextProvider: React.FC<{
       isLoadingSchema: props.isLoadingSchema,
       isEditMode: props.isEditMode,
       onChangeServiceType: props.onChangeServiceType,
-      dropDownData: props.dropDownData,
+      availableServices: props.availableServices,
       documentationUrl: props.documentationUrl,
       unfinishedFlows: unfinishedFlows,
       addUnfinishedFlow: (path, info) =>

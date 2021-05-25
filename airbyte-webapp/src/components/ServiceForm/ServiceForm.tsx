@@ -2,8 +2,6 @@ import React, { useCallback, useMemo } from "react";
 import { Formik } from "formik";
 import { JSONSchema7 } from "json-schema";
 
-import { ImageBlock } from "components";
-
 import {
   useBuildForm,
   useBuildUiWidgets,
@@ -56,15 +54,6 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     [isLoading, specifications]
   );
 
-  const dropDownData = useMemo(
-    () =>
-      props.availableServices.map((item) => ({
-        ...item,
-        img: <ImageBlock img={item.icon} />,
-      })),
-    [props.availableServices]
-  );
-
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
   const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgets(
@@ -110,7 +99,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       allowChangeConnector={props.allowChangeConnector}
       isLoadingSchema={props.isLoading}
       onChangeServiceType={props.onDropDownSelect}
-      dropDownData={dropDownData}
+      availableServices={props.availableServices}
       documentationUrl={props.documentationUrl}
     >
       <Formik
@@ -132,8 +121,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
               }}
               formFields={formFields}
               connector={
-                dropDownData?.find((item) => item.value === values.serviceType)
-                  ?.text
+                props.availableServices.find(
+                  (item) => item.value === values.serviceType
+                )?.text
               }
             />
           </>

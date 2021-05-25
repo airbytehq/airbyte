@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useField } from "formik";
 import styled from "styled-components";
-import { DropDown, DropDownRow, ControlLabels } from "components";
+import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
 
 import { FormBaseItem } from "core/form/types";
 import { useServiceForm } from "../../serviceFormContext";
@@ -22,12 +22,18 @@ const ConnectorServiceTypeControl: React.FC<{ property: FormBaseItem }> = ({
     isEditMode,
     allowChangeConnector,
     onChangeServiceType,
-    dropDownData,
+    availableServices,
   } = useServiceForm();
 
   const sortedDropDownData = useMemo(
-    () => dropDownData.sort(DropDownRow.defaultDataItemSort),
-    [dropDownData]
+    () =>
+      availableServices
+        .map((item) => ({
+          ...item,
+          img: <ImageBlock img={item.icon} />,
+        }))
+        .sort(DropDownRow.defaultDataItemSort),
+    [availableServices]
   );
 
   const handleSelect = useCallback(
