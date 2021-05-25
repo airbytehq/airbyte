@@ -158,8 +158,12 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(newSource);
   }
 
-  public static String loadIcon(String name) throws IOException {
-    return name == null ? null : MoreResources.readResource("icons/" + name);
+  public static String loadIcon(String name) {
+    try {
+      return name == null ? null : MoreResources.readResource("icons/" + name);
+    } catch (IOException e) {
+      return null;
+    }
   }
 
 }
