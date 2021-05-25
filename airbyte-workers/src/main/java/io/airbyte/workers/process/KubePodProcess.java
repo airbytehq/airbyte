@@ -85,6 +85,7 @@ public class KubePodProcess extends Process {
 
     // create pod
     String entrypoint = KubeProcessBuilderFactoryPOC.getCommandFromImage(image);
+    LOGGER.info("Found entrypoint: {}", entrypoint);
 
     Volume volume = new VolumeBuilder()
         .withName("airbyte-pipes")

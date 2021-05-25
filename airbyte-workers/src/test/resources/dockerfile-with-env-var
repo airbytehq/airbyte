@@ -1,0 +1,3 @@
+FROM hello-world
+
+ENV AIRBYTE_ENTRYPOINT="/tmp/run.sh"

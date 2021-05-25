@@ -32,6 +32,7 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -58,7 +59,7 @@ public class KubeProcessBuilderFactoryPOC {
         Lists.newArrayList(
             "kubectl",
             "run",
-            "--generator=run-pod/v1",
+//            "--generator=run-pod/v1",
             // "--rm",
             "-i",
             "--pod-running-timeout=24h",
