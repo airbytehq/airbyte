@@ -22,35 +22,40 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.util;
+package io.airbyte.integrations.destination.bigquery;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import com.google.cloud.bigquery.JobInfo.WriteDisposition;
+import com.google.cloud.bigquery.TableDataWriteChannel;
+import com.google.cloud.bigquery.TableId;
 
-import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.junit.jupiter.api.Test;
+class WriteConfig {
 
-class MoreListsTest {
+  private final TableId table;
+  private final TableId tmpTable;
+  private final TableDataWriteChannel writer;
+  private final WriteDisposition syncMode;
 
-  @Test
-  void testLast() {
-    assertEquals(Optional.of(3), MoreLists.last(List.of(1, 2, 3)));
-    assertEquals(Optional.empty(), MoreLists.last(List.of()));
-
-    List<Integer> ints = new ArrayList<>();
-    ints.add(1);
-    ints.add(2);
-    ints.add(null);
-    assertEquals(Optional.empty(), MoreLists.last(ints));
+  WriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer, WriteDisposition syncMode) {
+    this.table = table;
+    this.tmpTable = tmpTable;
+    this.writer = writer;
+    this.syncMode = syncMode;
   }
 
-  @Test
-  void testReverse() {
-    final ArrayList<Integer> originalList = Lists.newArrayList(1, 2, 3);
-    assertEquals(List.of(3, 2, 1), MoreLists.reversed(originalList));
-    assertEquals(List.of(1, 2, 3), originalList);
+  public TableId getTable() {
+    return table;
+  }
+
+  public TableId getTmpTable() {
+    return tmpTable;
+  }
+
+  public TableDataWriteChannel getWriter() {
+    return writer;
+  }
+
+  public WriteDisposition getSyncMode() {
+    return syncMode;
   }
 
 }
