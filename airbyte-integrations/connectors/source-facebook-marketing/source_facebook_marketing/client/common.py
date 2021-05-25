@@ -33,6 +33,7 @@ from facebook_business.exceptions import FacebookRequestError
 
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 FACEBOOK_API_CALL_LIMIT_ERROR_CODES = (4, 17, 32, 613, 8000, 80004, 80003, 80002, 80005, 80006, 80001, 80008)
+DEFAULT_SLEEP_INTERVAL = pendulum.Interval(minutes=1)
 
 
 class FacebookAPIException(Exception):
@@ -50,7 +51,7 @@ def batch(iterable: Sequence, size: int = 1):
 
 
 def handle_call_rate_response(exc: FacebookRequestError) -> bool:
-    pause_time = pendulum.Interval(minutes=1)
+    pause_time = DEFAULT_SLEEP_INTERVAL
     platform_header = exc.http_headers().get("x-app-usage") or exc.http_headers().get("x-ad-account-usage")
     if platform_header:
         platform_header = json.loads(platform_header)

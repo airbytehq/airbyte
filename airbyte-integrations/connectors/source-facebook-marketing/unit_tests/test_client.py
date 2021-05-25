@@ -24,15 +24,21 @@
 
 import json
 
+import pendulum
 import pytest
 from airbyte_cdk.models import AirbyteStream
 from facebook_business import FacebookSession
 from source_facebook_marketing.client import Client
 
 
-@pytest.fixture(name="some_config")
+@pytest.fixture(scope="session", name="some_config")
 def some_config_fixture():
     return {"start_date": "2021-01-23T00:00:00Z", "account_id": "unknown_account", "access_token": "unknown_token"}
+
+
+@pytest.fixture(autouse=True)
+def mock_default_sleep_interval(mocker):
+    mocker.patch("source_facebook_marketing.client.common.DEFAULT_SLEEP_INTERVAL", return_value=pendulum.Interval(seconds=5))
 
 
 @pytest.fixture(name="client")
@@ -80,13 +86,15 @@ def fb_account_response_fixture():
 class TestBackoff:
     def test_limit_reached(self, requests_mock, client, fb_call_rate_response, fb_account_response):
         """Error once, check that we retry and not fail"""
-        responses = [
+        campaign_responses = [
             fb_call_rate_response,
-            {"json": {"data": [1, 2]}, "status_code": 200},
+            {"json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]}, "status_code": 200},
         ]
 
         requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/me/adaccounts", [fb_account_response])
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/act_unknown_account/campaigns", responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/act_unknown_account/campaigns", campaign_responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/1/", [{"status_code": 200}])
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/2/", [{"status_code": 200}])
 
         records = list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
 
@@ -105,12 +113,14 @@ class TestBackoff:
 
         assert not records
 
-    def test_server_error(self, requests_mock, client):
+    def test_server_error(self, requests_mock, client, fb_account_response):
         """Error once, check that we retry and not fail"""
         responses = [
             {"json": {"error": "something bad"}, "status_code": 500},
             {"json": [], "status_code": 200},
         ]
-        requests_mock.register_uri("GET", FacebookSession.GRAPH, responses)
+
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/me/adaccounts", [fb_account_response])
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/act_unknown_account/campaigns", responses)
 
         list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
