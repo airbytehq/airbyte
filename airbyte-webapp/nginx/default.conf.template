@@ -6,6 +6,10 @@ server {
     #charset koi8-r;
     #access_log  /var/log/nginx/host.access.log  main;
 
+    upstream api-server {
+        server $INTERNAL_API_URL;
+    }
+
     location / {
         root   /usr/share/nginx/html;
         try_files $uri $uri/ /index.html;
@@ -28,5 +32,9 @@ server {
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
         root   /usr/share/nginx/html;
+    }
+
+    location /api/ {
+        proxy_pass http://api-server;
     }
 }
