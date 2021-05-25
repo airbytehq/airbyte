@@ -392,7 +392,7 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
-    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertSourceAndTargetDbInSync(sourcePsql, false);
 
@@ -412,14 +412,14 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
 
     // reset back to no data.
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
-    LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public", STREAM_NAME));
 
@@ -427,7 +427,7 @@ public class AcceptanceTests {
     final JobInfoRead connectionSyncRead3 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
-    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertSourceAndTargetDbInSync(sourcePsql, false);
   }
@@ -925,11 +925,11 @@ public class AcceptanceTests {
   }
 
   private static ConnectionState waitForConnectionState(AirbyteApiClient apiClient, UUID connectionId) throws ApiException, InterruptedException {
-    ConnectionState connectionState = apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId));
+    ConnectionState connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     int count = 0;
     while (count < 60 && (connectionState.getState() == null || connectionState.getState().isNull())) {
       LOGGER.info("fetching connection state. attempt: {}", count++);
-      connectionState = apiClient.getConnectionApi().getConnectionState(new ConnectionIdRequestBody().connectionId(connectionId));
+      connectionState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
       sleep(1000);
     }
     return connectionState;

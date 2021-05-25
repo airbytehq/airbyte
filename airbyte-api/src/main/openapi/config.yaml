@@ -841,12 +841,12 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
-  /v1/connections/get_state:
+  /v1/state/get:
     post:
       tags:
         - connection
       summary: Fetch the current state for a connection.
-      operationId: getConnectionState
+      operationId: getState
       requestBody:
         content:
           application/json:

@@ -332,7 +332,7 @@ public class SchedulerHandler {
     return JobConverter.getJobInfoRead(job);
   }
 
-  public ConnectionState getConnectionState(ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
+  public ConnectionState getState(ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
     final Optional<State> currentState = jobPersistence.getCurrentState(connectionIdRequestBody.getConnectionId());
     LOGGER.info("currentState server: {}", currentState);
 
