@@ -39,6 +39,11 @@ class OktaStream(HttpStream, ABC):
         super().__init__(*args, **kwargs)
         # Inject custom url base to the stream
         self._url_base = url_base
+    
+    @property
+    def page_size(self) -> int:
+        # default page_size
+        return 200
 
     @property
     def url_base(self) -> str:
@@ -73,8 +78,7 @@ class OktaStream(HttpStream, ABC):
         response: requests.Response,
         **kwargs,
     ) -> Iterable[Mapping]:
-        for row in response.json():
-            yield row
+        yield from response.json()
     
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         # The rate limit resets on the timestamp indicated
