@@ -80,6 +80,18 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.hasFailed = new AtomicBoolean(false);
   }
 
+  /**
+   * Run executes two threads. The first pipes data from STDOUT of the source to STDIN of the
+   * destination. The second listen on STDOUT of the destination. The goal of this second thread is to
+   * detect when the destination emits state messages. Only state messages emitted by the destination
+   * should be treated as state that is safe to return from run. In the case when the destination
+   * emits no state, we fall back on whatever state is pass in as an argument to this method.
+   *
+   * @param syncInput all configuration for running replication
+   * @param jobRoot file root that worker is allowed to use
+   * @return output of the replication attempt (including state)
+   * @throws WorkerException
+   */
   @Override
   public ReplicationOutput run(StandardSyncInput syncInput, Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);

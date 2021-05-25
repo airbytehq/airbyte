@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.e2e_test.TestingSource'
+    mainClass = 'io.airbyte.integrations.source.e2e_test.TestingSources'
 }
 
 dependencies {
