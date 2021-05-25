@@ -103,7 +103,7 @@ class AsanaStream(HttpStream, ABC):
         response_json = response.json()
         yield from response_json.get("data", [])  # Asana puts records in a container array "data"
 
-    def read_stream(self, stream_class: Type[AsanaStream], slice_field: str) -> Iterable[Optional[Mapping[str, Any]]]:
+    def read_slices_from_records(self, stream_class: Type[AsanaStream], slice_field: str) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         General function for getting parent stream (which should be passed through `stream_class`) slice.
         Generates dicts with `gid` of parent streams.
@@ -160,7 +160,7 @@ class ProjectRelatedStream(AsanaStream, ABC):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self.read_stream(stream_class=Projects, slice_field="project_gid")
+        yield from self.read_slices_from_records(stream_class=Projects, slice_field="project_gid")
 
 
 class CustomFields(WorkspaceRelatedStream):
@@ -191,7 +191,7 @@ class Stories(AsanaStream):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self.read_stream(stream_class=Tasks, slice_field="task_gid")
+        yield from self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid")
 
 
 class Tags(WorkspaceRequestParamsRelatedStream):
@@ -241,7 +241,7 @@ class TeamMemberships(AsanaStream):
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self.read_stream(stream_class=Teams, slice_field="team_gid")
+        yield from self.read_slices_from_records(stream_class=Teams, slice_field="team_gid")
 
 
 class Users(WorkspaceRequestParamsRelatedStream):
