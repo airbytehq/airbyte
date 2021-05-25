@@ -161,7 +161,7 @@ public class SourceDefinitionsHandler {
   public static String loadIcon(String name) {
     try {
       return name == null ? null : MoreResources.readResource("icons/" + name);
-    } catch (IOException e) {
+    } catch (Exception e) {
       return null;
     }
   }
