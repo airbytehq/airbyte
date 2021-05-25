@@ -12,6 +12,7 @@ import useSource from "components/hooks/services/useSourceHook";
 import { FormPageContent } from "components/SourceAndDestinationsBlocks";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import HeadTitle from "components/HeadTitle";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
@@ -52,6 +53,7 @@ const CreateSourcePage: React.FC = () => {
 
   return (
     <>
+      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <PageTitle
         withLine
         title={<FormattedMessage id="sources.newSourceTitle" />}
