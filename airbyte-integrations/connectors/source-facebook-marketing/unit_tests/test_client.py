@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 import json
 
 import pytest
@@ -31,54 +32,61 @@ from source_facebook_marketing.client import Client
 
 @pytest.fixture(name="some_config")
 def some_config_fixture():
-    return {
-        "start_date": "2021-01-23T00:00:00Z",
-        "account_id": "unknown_account",
-        "access_token": "unknown_token"
-    }
+    return {"start_date": "2021-01-23T00:00:00Z", "account_id": "unknown_account", "access_token": "unknown_token"}
 
 
 @pytest.fixture(name="client")
-def client_fixture(some_config, mocker):
+def client_fixture(some_config):
     client = Client(**some_config)
-    mocker.patch('source_facebook_marketing.client.Client.account', new_callable=mocker.PropertyMock)
     return client
 
 
 @pytest.fixture(name="fb_call_rate_response")
 def fb_call_rate_response_fixture():
-    error = {
-        "message": "(#32) Page request limit reached",
-        "type": "OAuthException",
-        "code": 32,
-        "fbtrace_id": "Fz54k3GZrio"
-    }
+    error = {"message": "(#32) Page request limit reached", "type": "OAuthException", "code": 32, "fbtrace_id": "Fz54k3GZrio"}
 
-    headers = {
-        "x-app-usage": json.dumps({
-            "call_count": 28,
-            "total_time": 25,
-            "total_cputime": 25
-        })
-    }
+    headers = {"x-app-usage": json.dumps({"call_count": 28, "total_time": 25, "total_cputime": 25})}
 
     return {
         "json": {
             "error": error,
         },
-        "status_code": 400, "headers": headers
+        "status_code": 400,
+        "headers": headers,
+    }
+
+
+@pytest.fixture(name="fb_account_response")
+def fb_account_response_fixture():
+    return {
+        "json": {
+            "data": [
+                {
+                    "account_id": "unknown_account",
+                    "id": "act_unknown_account"
+                }
+            ],
+            "paging": {
+                "cursors": {
+                    "before": "MjM4NDYzMDYyMTcyNTAwNzEZD",
+                    "after": "MjM4NDYzMDYyMTcyNTAwNzEZD"
+                }
+            }
+        },
+        "status_code": 200,
     }
 
 
 class TestBackoff:
-    def test_limit_reached(self, requests_mock, client, fb_call_rate_response):
+    def test_limit_reached(self, requests_mock, client, fb_call_rate_response, fb_account_response):
         """Error once, check that we retry and not fail"""
         responses = [
             fb_call_rate_response,
             {"json": {"data": [1, 2]}, "status_code": 200},
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH, responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/me/adaccounts", [fb_account_response])
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/act_unknown_account/campaigns", responses)
 
         records = list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
 

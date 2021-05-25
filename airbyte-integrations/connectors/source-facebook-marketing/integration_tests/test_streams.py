@@ -24,11 +24,11 @@
 
 
 import copy
-from typing import List, Set, Tuple, MutableMapping, Any
+from typing import Any, List, MutableMapping, Set, Tuple
 
 import pytest
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, AirbyteMessage, Type
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode, Type
 from source_facebook_marketing.source import SourceFacebookMarketing
 
 
@@ -94,9 +94,7 @@ class TestFacebookMarketingSource:
         assert is_specific_campaign_pulled is True, f"campaigns stream should have a deleted campaign with id={specific_campaign_id}"
 
     @pytest.mark.parametrize("stream_name, deleted_num", [("ads", 2), ("campaigns", 3), ("adsets", 1)])
-    def test_streams_with_include_deleted_and_state(
-        self, stream_name, deleted_num, config_with_include_deleted, configured_catalog, state
-    ):
+    def test_streams_with_include_deleted_and_state(self, stream_name, deleted_num, config_with_include_deleted, configured_catalog, state):
         """Should ignore state because of include_deleted enabled"""
         catalog = self.slice_catalog(configured_catalog, {stream_name})
         records, states = self._read_records(config_with_include_deleted, catalog, state=state)

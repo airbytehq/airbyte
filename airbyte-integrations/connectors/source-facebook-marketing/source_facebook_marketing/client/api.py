@@ -26,18 +26,19 @@
 import time
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence, Iterable
+from typing import Any, Callable, Iterable, Iterator, Mapping, MutableMapping, Sequence
 
 import backoff
 import pendulum as pendulum
+
 # FIXME (Eugene K): use standard logger
 from airbyte_cdk.entrypoint import logger
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adreportrun import AdReportRun
-from facebook_business.api import FacebookResponse, FacebookRequest, FacebookAdsApiBatch
+from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from .common import JobTimeoutException, deep_merge, retry_pattern, batch
+from .common import JobTimeoutException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -88,7 +89,7 @@ class StreamAPI(ABC):
         for i in range(0, len(filt_values), sub_list_length):
             yield {
                 "filtering": [
-                    {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value": filt_values[i: i + sub_list_length]},
+                    {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value": filt_values[i : i + sub_list_length]},
                 ],
             }
 

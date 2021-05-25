@@ -21,8 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-
+import json
 import sys
 from time import sleep
 from typing import Sequence
@@ -47,22 +46,24 @@ class JobTimeoutException(Exception):
 def batch(iterable: Sequence, size: int = 1):
     total_size = len(iterable)
     for ndx in range(0, total_size, size):
-        yield iterable[ndx:min(ndx + size, total_size)]
+        yield iterable[ndx : min(ndx + size, total_size)]
 
 
 def handle_call_rate_response(exc: FacebookRequestError) -> bool:
     pause_time = pendulum.Interval(minutes=1)
-    platform_header = exc.http_headers().get('x-app-usage') or exc.http_headers().get('x-ad-account-usage')
+    platform_header = exc.http_headers().get("x-app-usage") or exc.http_headers().get("x-ad-account-usage")
     if platform_header:
-        call_count = platform_header.get('call_count') or platform_header.get('acc_id_util_pct')
+        platform_header = json.loads(platform_header)
+        call_count = platform_header.get("call_count") or platform_header.get("acc_id_util_pct")
         if call_count > 99:
             logger.info(f"Reached platform call limit: {exc}")
 
     buc_header = exc.http_headers().get("x-business-use-case-usage")
-    for endpoint in buc_header:
-        if endpoint['call_count'] > 99:
-            logger.info(f"Reached call limit on {endpoint['type']}: {exc}")
-            pause_time = max(pause_time, endpoint['estimated_time_to_regain_access'])
+    buc_header = json.loads(buc_header) if buc_header else {}
+    for business_object_id, stats in buc_header.items():
+        if stats["call_count"] > 99:
+            logger.info(f"Reached call limit on {stats['type']}: {exc}")
+            pause_time = max(pause_time, stats["estimated_time_to_regain_access"])
     logger.info(f"Sleeping for {pause_time.total_seconds()} seconds")
     sleep(pause_time.total_seconds())
 
