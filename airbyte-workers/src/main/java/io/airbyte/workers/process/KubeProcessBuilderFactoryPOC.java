@@ -32,7 +32,6 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -48,49 +47,6 @@ public class KubeProcessBuilderFactoryPOC {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactoryPOC.class);
 
   private static final KubernetesClient KUBE_CLIENT = new DefaultKubernetesClient();
-
-  // todo: this should really be cached
-  public static String getCommandFromImage(String imageName) throws IOException {
-    final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-
-    final String podName = "airbyte-command-fetcher-" + suffix;
-
-    final List<String> cmd =
-        Lists.newArrayList(
-            "kubectl",
-            "run",
-//            "--generator=run-pod/v1",
-            // "--rm",
-            "-i",
-            "--pod-running-timeout=24h",
-            "--image=" + imageName,
-            "--command=true",
-            "--restart=Never",
-            podName,
-            "--",
-            "sh",
-            "-c",
-            "echo \"AIRBYTE_ENTRYPOINT=$AIRBYTE_ENTRYPOINT\"");
-
-    Process start = new ProcessBuilder(cmd).start();
-
-    try (BufferedReader reader = IOs.newBufferedReader(start.getInputStream())) {
-      String line;
-      while ((line = reader.readLine()) != null && !line.contains("AIRBYTE_ENTRYPOINT"));
-
-      if (line == null || !line.contains("AIRBYTE_ENTRYPOINT")) {
-        throw new RuntimeException("Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
-      } else {
-        String[] splits = line.split("=", 2);
-        if (splits.length == 1) {
-          throw new RuntimeException(
-              "Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
-        } else {
-          return splits[1];
-        }
-      }
-    }
-  }
 
   private static void saveJaredWork() {
     try {

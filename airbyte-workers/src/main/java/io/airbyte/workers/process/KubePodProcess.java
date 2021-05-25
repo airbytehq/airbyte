@@ -34,6 +34,7 @@ import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +64,47 @@ public class KubePodProcess extends Process {
   private InputStream stdout;
   private final ServerSocket stdoutServerSocket;
   private final ExecutorService executorService;
+
+  // TODO(Davin): Cache this result.
+  public static String getCommandFromImage(KubernetesClient client, String imageName) throws IOException, InterruptedException {
+    final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+
+    final String podName = "airbyte-command-fetcher-" + suffix;
+
+    Container commandFetcher = new ContainerBuilder()
+        .withName("airbyte-command-fetcher")
+        .withImage(imageName)
+        .withCommand("sh", "-c", "echo \"AIRBYTE_ENTRYPOINT=$AIRBYTE_ENTRYPOINT\"")
+        .build();
+
+    Pod pod = new PodBuilder()
+        .withApiVersion("v1")
+        .withNewMetadata()
+        .withName(podName)
+        .endMetadata()
+        .withNewSpec()
+        .withRestartPolicy("Never")
+        .withContainers(commandFetcher)
+        .endSpec()
+        .build();
+    LOGGER.info("Creating pod...");
+    Pod podDefinition = client.pods().inNamespace("default").createOrReplace(pod);
+    LOGGER.info("Waiting until command fetcher pod completes...");
+    client.resource(podDefinition).waitUntilCondition(p -> p.getStatus().getPhase().equals("Succeeded"), 20, TimeUnit.SECONDS);
+
+    var logs = client.pods().inNamespace("default").withName(podName).getLog();
+    if (!logs.contains("AIRBYTE_ENTRYPOINT")) {
+      // this should not happen
+      throw new RuntimeException("Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
+    }
+
+    var envVal = logs.split("=")[1].strip();
+    if (envVal.isEmpty()) {
+      throw new RuntimeException(
+          "Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
+    }
+    return envVal;
+  }
 
   public KubePodProcess(KubernetesClient client, String podName, String image, int stdoutLocalPort, boolean usesStdin)
       throws IOException, InterruptedException {
@@ -84,7 +127,7 @@ public class KubePodProcess extends Process {
     });
 
     // create pod
-    String entrypoint = KubeProcessBuilderFactoryPOC.getCommandFromImage(image);
+    String entrypoint = getCommandFromImage(client, image);
     LOGGER.info("Found entrypoint: {}", entrypoint);
 
     Volume volume = new VolumeBuilder()
