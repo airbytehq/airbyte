@@ -28,11 +28,13 @@ Instead of cloning the repo, you can alternatively download the latest Airbyte r
 
 ## Troubleshooting
 
-**I have a MacBook with M1 chip, is it possible to run Airbyte?**
-Some users using MacBook with M1 chip are facing some problems running Airbyte.
-The problem is related with the chip and docker.
-There is some [documentation](https://docs.docker.com/docker-for-mac/apple-silicon/) on Docker website.
-If you can run Airbyte using Apple MacBook with M1, let us know, the community will appreciate it.
+**I have a Mac with the M1 chip. Is it possible to run Airbyte?**
+
+Some users using Macs with an M1 chip are facing some problems running Airbyte.
+The problem is related with the chip and Docker.  We're following the problem on this [issue](https://github.com/airbytehq/airbyte/issues/2017).
+If you can run Airbyte using Apple MacBook with the M1 chip, let us know, the community will appreciate it.
+
+**Other issues**
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../faq/technical-support.md) section in our docs for common problems.
 
