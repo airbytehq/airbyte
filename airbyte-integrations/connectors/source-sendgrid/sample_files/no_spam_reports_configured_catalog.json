@@ -284,7 +284,7 @@
           "type": "object",
           "properties": {
             "created": {
-              "type": "string"
+              "type": "integer"
             },
             "email": {
               "type": "string"
@@ -296,6 +296,7 @@
         "default_cursor_field": ["created"]
       },
       "sync_mode": "incremental",
+      "cursor_field": ["created"],
       "destination_sync_mode": "append"
     },
     {
@@ -379,6 +380,7 @@
         "default_cursor_field": ["created"]
       },
       "sync_mode": "incremental",
+      "cursor_field": ["created"],
       "destination_sync_mode": "append"
     },
     {
@@ -407,6 +409,7 @@
         "default_cursor_field": ["created"]
       },
       "sync_mode": "incremental",
+      "cursor_field": ["created"],
       "destination_sync_mode": "append"
     },
     {
@@ -432,6 +435,7 @@
         "default_cursor_field": ["created"]
       },
       "sync_mode": "incremental",
+      "cursor_field": ["created"],
       "destination_sync_mode": "append"
     }
   ]

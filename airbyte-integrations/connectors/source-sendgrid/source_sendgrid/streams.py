@@ -91,7 +91,10 @@ class SendgridStreamIncrementalMixin(HttpStream):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state)
-        params.update({"start_time": self._start_time, "end_time": pendulum.now().int_timestamp})
+        start_time = self._start_time
+        if stream_state.get(self.cursor_field):
+            start_time = stream_state[self.cursor_field]
+        params.update({"start_time": start_time, "end_time": pendulum.now().int_timestamp})
         return params
 
 
