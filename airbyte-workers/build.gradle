@@ -30,7 +30,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'
-    testImplementation 'org.testcontainers:testcontainers:1.14.3'
+    testImplementation 'org.testcontainers:testcontainers:1.15.3'
     testImplementation 'org.testcontainers:postgresql:1.15.1'
     testImplementation 'org.postgresql:postgresql:42.2.18'
 }
