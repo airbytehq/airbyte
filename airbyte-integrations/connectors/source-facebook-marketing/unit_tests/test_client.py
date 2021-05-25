@@ -79,12 +79,7 @@ def fb_account_response_fixture(account_id):
                     "id": f"act_{account_id}",
                 }
             ],
-            "paging": {
-                "cursors": {
-                    "before": "MjM4NDYzMDYyMTcyNTAwNzEZD",
-                    "after": "MjM4NDYzMDYyMTcyNTAwNzEZD"
-                }
-            }
+            "paging": {"cursors": {"before": "MjM4NDYzMDYyMTcyNTAwNzEZD", "after": "MjM4NDYzMDYyMTcyNTAwNzEZD"}},
         },
         "status_code": 200,
     }
@@ -95,8 +90,10 @@ class TestBackoff:
         """Error once, check that we retry and not fail"""
         campaign_responses = [
             fb_call_rate_response,
-            {"json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]},
-             "status_code": 200},
+            {
+                "json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]},
+                "status_code": 200,
+            },
         ]
 
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", campaign_responses)
@@ -111,47 +108,56 @@ class TestBackoff:
         """Error once, check that we retry and not fail"""
         responses = [
             fb_call_rate_response,
-            {"json": {"data": [
-                {
-                    "id": "123",
-                    "object_type": "SHARE",
-                    "status": "ACTIVE",
-                },
-                {
-                    "id": "1234",
-                    "object_type": "SHARE",
-                    "status": "ACTIVE",
-                },
-            ], "status_code": 200}}
+            {
+                "json": {
+                    "data": [
+                        {
+                            "id": "123",
+                            "object_type": "SHARE",
+                            "status": "ACTIVE",
+                        },
+                        {
+                            "id": "1234",
+                            "object_type": "SHARE",
+                            "status": "ACTIVE",
+                        },
+                    ],
+                    "status_code": 200,
+                }
+            },
         ]
 
         batch_responses = [
             fb_call_rate_response,
-            {"json": [
-                {
-                    "body": json.dumps({"name": "creative 1"}),
-                    "code": 200,
-                },
-                {
-                    "body": json.dumps({"name": "creative 2"}),
-                    "code": 200,
-                }
-            ]}
+            {
+                "json": [
+                    {
+                        "body": json.dumps({"name": "creative 1"}),
+                        "code": 200,
+                    },
+                    {
+                        "body": json.dumps({"name": "creative 2"}),
+                        "code": 200,
+                    },
+                ]
+            },
         ]
 
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/adcreatives", responses)
-        requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/v10.0/", batch_responses)
+        requests_mock.register_uri("POST", FacebookSession.GRAPH + "/v10.0/", batch_responses)
 
         records = list(client.read_stream(AirbyteStream(name="adcreatives", json_schema={})))
 
-        assert records == [{'name': 'creative 1'}, {'name': 'creative 2'}]
+        assert records == [{"name": "creative 1"}, {"name": "creative 2"}]
 
     def test_server_error(self, requests_mock, client, account_id):
         """Error once, check that we retry and not fail"""
         responses = [
             {"json": {"error": {}}, "status_code": 500},
-            {"json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]},
-             "status_code": 200},
+            {
+                "json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]},
+                "status_code": 200,
+            },
         ]
 
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", responses)
