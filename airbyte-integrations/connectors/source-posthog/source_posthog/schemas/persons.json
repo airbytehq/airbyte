@@ -1,0 +1,49 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "distinct_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "$os": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "$browser": {
+          "type": "string"
+        },
+        "company_name": {
+          "type": "string"
+        },
+        "$browser_version": {
+          "type": "integer"
+        },
+        "$initial_referrer": {
+          "type": "string"
+        },
+        "$initial_referring_domain": {
+          "type": "string"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "filters": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "math": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "order": {
+                "type": "integer"
+              },
+              "properties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "math_property": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "display": {
+          "type": "string"
+        },
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "insight": {
+          "type": "string"
+        },
+        "session": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "pagination": {
+          "type": "object"
+        }
+      }
+    },
+    "filters_hash": {
+      "type": "string"
+    },
+    "order": {
+      "type": "string"
+    },
+    "deleted": {
+      "type": "boolean"
+    },
+    "dashboard": {
+      "type": "string"
+    },
+    "layouts": {
+      "type": "object"
+    },
+    "color": {
+      "type": "string"
+    },
+    "last_refresh": {
+      "type": "string"
+    },
+    "refreshing": {
+      "type": "boolean"
+    },
+    "result": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "saved": {
+      "type": "boolean"
+    },
+    "created_by": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "distinct_id": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

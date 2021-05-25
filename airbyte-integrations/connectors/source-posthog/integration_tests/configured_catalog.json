@@ -1,0 +1,55 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "dummy1",
+        "json_schema": {
+          "type": "object",
+          "title": "",
+          "description": "",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+	{
+      "stream": {
+        "name": "dummy2",
+        "json_schema": {
+          "type": "object",
+          "title": "",
+          "description": "",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+	{
+      "stream": {
+        "name": "dummy3",
+        "json_schema": {
+          "type": "object",
+          "title": "",
+          "description": "",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

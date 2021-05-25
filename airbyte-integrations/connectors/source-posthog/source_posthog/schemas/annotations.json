@@ -1,0 +1,52 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "content": {
+      "type": "string"
+    },
+    "date_marker": {
+      "type": "string"
+    },
+    "creation_type": {
+      "type": "string"
+    },
+    "dashboard_item": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "distinct_id": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "deleted": {
+      "type": "boolean"
+    },
+    "scope": {
+      "type": "string"
+    }
+  }
+}
