@@ -21,10 +21,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
+import json
 
 import pytest
-# from airbyte_protocol import AirbyteStream
+from airbyte_cdk.models import AirbyteStream
 from facebook_business import FacebookSession
 from source_facebook_marketing.client import Client
 
@@ -39,22 +39,13 @@ def some_config_fixture():
 
 
 @pytest.fixture(name="client")
-def client_fixture(some_config):
-    return Client(**some_config)
+def client_fixture(some_config, mocker):
+    client = Client(**some_config)
+    mocker.patch('source_facebook_marketing.client.Client.account', new_callable=mocker.PropertyMock)
+    return client
 
 
-import logging
-
-# Debug logging
-# httplib.HTTPConnection.debuglevel = 1
-logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
-req_log = logging.getLogger('requests.packages.urllib3')
-req_log.setLevel(logging.DEBUG)
-req_log.propagate = True
-
-
-@pytest.fixture(name=fb_call_rate_response)
+@pytest.fixture(name="fb_call_rate_response")
 def fb_call_rate_response_fixture():
     error = {
         "message": "(#32) Page request limit reached",
@@ -64,18 +55,18 @@ def fb_call_rate_response_fixture():
     }
 
     headers = {
-        "x-app-usage": {
+        "x-app-usage": json.dumps({
             "call_count": 28,
             "total_time": 25,
             "total_cputime": 25
-        }
+        })
     }
 
     return {
         "json": {
             "error": error,
         },
-        "status_code": 429, "headers": headers
+        "status_code": 400, "headers": headers
     }
 
 
@@ -84,20 +75,27 @@ class TestBackoff:
         """Error once, check that we retry and not fail"""
         responses = [
             fb_call_rate_response,
-            {"json": [], "status_code": 200},
+            {"json": {"data": [1, 2]}, "status_code": 200},
         ]
 
-        url = "https://graph.facebook.com/v10.0/me/adaccounts"
-        requests_mock.register_uri("GET", url, responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH, responses)
 
-        # AirbyteStream(name="", json_schema={})
-        alive, error = client.health_check()
+        records = list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
 
-        assert alive
-        assert not error
+        assert records
 
-    def test_batch_limit_reached(self, request_mock, client):
-        pass
+    def test_batch_limit_reached(self, requests_mock, client, fb_call_rate_response):
+        """Error once, check that we retry and not fail"""
+        responses = [
+            fb_call_rate_response,
+            {"json": {"data": [1, 2]}, "status_code": 200},
+        ]
+
+        requests_mock.register_uri("GET", FacebookSession.GRAPH, responses)
+
+        records = list(client.read_stream(AirbyteStream(name="adcreatives", json_schema={})))
+
+        assert not records
 
     def test_server_error(self, requests_mock, client):
         """Error once, check that we retry and not fail"""
@@ -107,7 +105,4 @@ class TestBackoff:
         ]
         requests_mock.register_uri("GET", FacebookSession.GRAPH, responses)
 
-        alive, error = client.health_check()
-
-        assert alive
-        assert not error
+        list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))

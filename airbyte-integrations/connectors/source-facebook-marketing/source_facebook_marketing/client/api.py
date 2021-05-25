@@ -32,11 +32,12 @@ import backoff
 import pendulum as pendulum
 # FIXME (Eugene K): use standard logger
 from airbyte_cdk.entrypoint import logger
+from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookResponse, FacebookRequest, FacebookAdsApiBatch
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from .common import JobTimeoutException, deep_merge, retry_pattern
+from .common import JobTimeoutException, deep_merge, retry_pattern, batch
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -172,12 +173,6 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
-def batch(iterable: Sequence, size: int = 1):
-    total_size = len(iterable)
-    for ndx in range(0, total_size, size):
-        yield iterable[ndx:min(ndx + size, total_size)]
-
-
 class AdCreativeAPI(StreamAPI):
     """AdCreative is not an iterable stream as it uses the batch endpoint
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
@@ -200,8 +195,6 @@ class AdCreativeAPI(StreamAPI):
             records.append(response.json())
 
         def failure(response: FacebookResponse):
-            x_rate_header = "X-Business-Use-Case-Usage"
-            print(response.headers)
             raise response.error()
 
         api_batch: FacebookAdsApiBatch = self._api._api.new_batch()
@@ -236,7 +229,7 @@ class AdsAPI(IncrementalStreamAPI):
         return self._api.account.get_ads(params=params, fields=[self.state_pk])
 
     @backoff_policy
-    def _extend_record(self, ad, fields):
+    def _extend_record(self, ad: Ad, fields: Sequence[str]):
         return ad.api_get(fields=fields).export_all_data()
 
 

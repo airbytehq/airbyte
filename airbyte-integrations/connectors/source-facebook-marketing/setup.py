@@ -29,11 +29,11 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
     "cached_property~=1.5",
     "facebook_business~=10.0",
-    "pendulum~=1.2",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
+    "pytest-mock~=3.6",
     "requests_mock~=1.8",
     "source-acceptance-test",
 ]

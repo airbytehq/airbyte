@@ -24,12 +24,16 @@
 
 
 import sys
+from time import sleep
+from typing import Sequence
 
 import backoff
+import pendulum
 from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
 from facebook_business.exceptions import FacebookRequestError
 
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
+FACEBOOK_API_CALL_LIMIT_ERROR_CODES = (4, 17, 32, 613, 8000, 80004, 80003, 80002, 80005, 80006, 80001, 80008)
 
 
 class FacebookAPIException(Exception):
@@ -40,6 +44,31 @@ class JobTimeoutException(Exception):
     """Scheduled job timed out"""
 
 
+def batch(iterable: Sequence, size: int = 1):
+    total_size = len(iterable)
+    for ndx in range(0, total_size, size):
+        yield iterable[ndx:min(ndx + size, total_size)]
+
+
+def handle_call_rate_response(exc: FacebookRequestError) -> bool:
+    pause_time = pendulum.Interval(minutes=1)
+    platform_header = exc.http_headers().get('x-app-usage') or exc.http_headers().get('x-ad-account-usage')
+    if platform_header:
+        call_count = platform_header.get('call_count') or platform_header.get('acc_id_util_pct')
+        if call_count > 99:
+            logger.info(f"Reached platform call limit: {exc}")
+
+    buc_header = exc.http_headers().get("x-business-use-case-usage")
+    for endpoint in buc_header:
+        if endpoint['call_count'] > 99:
+            logger.info(f"Reached call limit on {endpoint['type']}: {exc}")
+            pause_time = max(pause_time, endpoint['estimated_time_to_regain_access'])
+    logger.info(f"Sleeping for {pause_time.total_seconds()} seconds")
+    sleep(pause_time.total_seconds())
+
+    return True
+
+
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
@@ -48,6 +77,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
+            if exc.api_error_code() in FACEBOOK_API_CALL_LIMIT_ERROR_CODES:
+                return handle_call_rate_response(exc)
             return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
         return False
 
