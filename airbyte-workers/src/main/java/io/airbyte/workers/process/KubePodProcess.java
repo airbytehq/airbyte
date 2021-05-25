@@ -246,7 +246,7 @@ public class KubePodProcess extends Process {
   }
 
   private int getReturnCode(Pod pod) {
-    Pod refreshedPod = client.pods().withName(pod.getMetadata().getName()).get(); // todo: use more robust version here
+    Pod refreshedPod = client.pods().inNamespace("default").withName(pod.getMetadata().getName()).get();
     Preconditions.checkArgument(isTerminal(refreshedPod));
 
     return refreshedPod.getStatus().getContainerStatuses()
