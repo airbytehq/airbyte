@@ -1,50 +1,69 @@
-"""
-MIT License
-
-Copyright (c) 2020 Airbyte
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 import json
 import random
 import string
-from typing import Optional, Mapping, Any
+from typing import Any, Mapping, Optional
 
 import requests
-
 from airbyte_cdk.models import SyncMode
-from source_jira.streams import Dashboards, Filters, FilterSharing, Groups, Issues, IssueComments, IssueFields, \
-    IssueRemoteLinks, IssueVotes, IssueWatchers, IssueWorklogs, Projects, ProjectCategories, ProjectComponents, \
-    ProjectVersions, Screens, Users, Workflows, WorkflowSchemes
+from source_jira.streams import (
+    Dashboards,
+    Filters,
+    FilterSharing,
+    Groups,
+    IssueComments,
+    IssueFields,
+    IssueRemoteLinks,
+    Issues,
+    IssueVotes,
+    IssueWatchers,
+    IssueWorklogs,
+    ProjectCategories,
+    ProjectComponents,
+    Projects,
+    ProjectVersions,
+    Screens,
+    Users,
+    Workflows,
+    WorkflowSchemes,
+)
 
 
 class GeneratorMixin:
     def get_generate_headers(self):
-        headers = {"Accept": "application/json", "Content-Type": "application/json",
-                   **self.authenticator.get_auth_header()}
+        headers = {"Accept": "application/json", "Content-Type": "application/json", **self.authenticator.get_auth_header()}
         return headers
 
-    def generate_record(self, payload: Any, stream_slice: Optional[Mapping[str, Any]] = None,):
+    def generate_record(
+        self,
+        payload: Any,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+    ):
         headers = self.get_generate_headers()
-        args = {"method": "POST", "url": self.url_base + self.path(stream_slice=stream_slice),
-                "headers": headers, "data": payload}
+        args = {"method": "POST", "url": self.url_base + self.path(stream_slice=stream_slice), "headers": headers, "data": payload}
         request = requests.Request(**args).prepare()
         self._send_request(request)
 
@@ -74,8 +93,7 @@ class FiltersGenerator(Filters, GeneratorMixin):
     def generate(self):
         for index in range(1, 20):
             payload = json.dumps(
-                {"jql": "type = Bug and resolution is empty", "name": f"Test filter {index}",
-                 "description": "Lists all open bugs"}
+                {"jql": "type = Bug and resolution is empty", "name": f"Test filter {index}", "description": "Lists all open bugs"}
             )
             self.generate_record(payload)
 
@@ -130,8 +148,7 @@ class IssuesGenerator(Issues, GeneratorMixin):
                         "description": {
                             "type": "doc",
                             "version": 1,
-                            "content": [{"type": "paragraph",
-                                         "content": [{"type": "text", "text": f"Test description {index}"}]}],
+                            "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Test description {index}"}]}],
                         },
                     }
                 }
@@ -159,10 +176,10 @@ class IssueCommentsGenerator(IssueComments, GeneratorMixin):
                                     "content": [
                                         {
                                             "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                                    "Pellentesque eget "
-                                                    "venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed "
-                                                    "semper quam "
-                                                    "laoreet nisi egestas at posuere augue semper.",
+                                            "Pellentesque eget "
+                                            "venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed "
+                                            "semper quam "
+                                            "laoreet nisi egestas at posuere augue semper.",
                                             "type": "text",
                                         }
                                     ],
@@ -263,8 +280,7 @@ class IssueWorklogsGenerator(IssueWorklogs, GeneratorMixin):
                         "comment": {
                             "type": "doc",
                             "version": 1,
-                            "content": [{"type": "paragraph",
-                                         "content": [{"text": f"I did some work here. {index}", "type": "text"}]}],
+                            "content": [{"type": "paragraph", "content": [{"text": f"I did some work here. {index}", "type": "text"}]}],
                         },
                         "started": "2021-04-15T01:48:52.747+0000",
                     }
@@ -427,9 +443,3 @@ class WorkflowSchemesGenerator(WorkflowSchemes, GeneratorMixin):
                 }
             )
             self.generate_record(payload)
-
-
-
-
-
-
