@@ -43,6 +43,7 @@ import org.junit.jupiter.api.Test;
 
 class ExceptionAfterNSourceTest {
 
+  @SuppressWarnings("Convert2MethodRef")
   @Test
   void test() {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(ExceptionAfterNSource.CATALOG);
