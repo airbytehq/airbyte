@@ -1,3 +1,7 @@
+upstream api-server {
+    server $INTERNAL_API_HOST;
+}
+
 server {
     listen       80;
     listen  [::]:80;
@@ -5,10 +9,6 @@ server {
 
     #charset koi8-r;
     #access_log  /var/log/nginx/host.access.log  main;
-
-    upstream api-server {
-        server $INTERNAL_API_URL;
-    }
 
     location / {
         root   /usr/share/nginx/html;
@@ -35,6 +35,6 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://api-server;
+        proxy_pass http://api-server/api/;
     }
 }
