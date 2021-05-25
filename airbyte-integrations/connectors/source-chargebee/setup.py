@@ -29,6 +29,8 @@ MAIN_REQUIREMENTS = [
     # according to API doc
     # https://apidocs.chargebee.com/docs/api?lang=python&prod_cat_ver=2#client_library
     "chargebee>=2,<3",
+    "backoff==1.10.0",
+    "pendulum==1.2.0",
 ]
 
 TEST_REQUIREMENTS = [

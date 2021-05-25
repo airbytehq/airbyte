@@ -3,6 +3,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+import backoff
 
 # Chargebee
 import chargebee
@@ -24,24 +25,45 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.models import AirbyteStream, SyncMode
 
+# Backoff params below
+# according to Chargebee's guidance on rate limit
+# https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits
+MAX_TRIES = 10  # arbitrary max_tries
+MAX_TIME = 90  # because Chargebee API enforce a per-minute limit
+
 
 class ChargebeeStream(Stream):
-    # No support for incremetal sync across Chargebee endpoints
     supports_incremental = True
     primary_key = "id"
     default_cursor_field = "updated_at"
-    # Referring to Chargebee's instructions to set params
+
+    # Request params below
+    # according to Chargebee's guidance on pagination
     # https://apidocs.chargebee.com/docs/api/#pagination_and_filtering
-    # Limit at 100
-    # Sort ascending by updated_at
     params = {
-        "limit": 100,
-        "sort_by[asc]": default_cursor_field,
+        "limit": 100,  # Limit at 100
+        "sort_by[asc]": default_cursor_field,  # Sort ascending by updated_at
     }
 
     def __init__(self):
         self.next_offset = None
         super().__init__()
+
+    @backoff.on_exception(
+        backoff.expo,  # Exponential back-off
+        OperationFailedError,  # Only on Chargebee's OperationFailedError
+        max_tries=MAX_TRIES,
+        max_time=MAX_TIME,
+    )
+    def _send_request(self) -> ListResult:
+        """
+        Just a wrapper to allow @backoff decorator
+        Reference: https://apidocs.chargebee.com/docs/api/#error_codes_list
+        """
+        # From Chargebee
+        # Link: https://apidocs.chargebee.com/docs/api/#api_rate_limits
+        list_result = self.api.list(self.params)
+        return list_result
 
     def read_records(
         self,
@@ -62,7 +84,8 @@ class ChargebeeStream(Stream):
         # Loop until pagination is completed
         while not pagination_completed:
             # Request the ListResult object from Chargebee
-            list_result = self.api.list(self.params)
+            # with back-off implemented through self._send_request()
+            list_result = self._send_request()
             # Read message from results
             for message in list_result:
                 yield message._response[self.name]
@@ -72,7 +95,7 @@ class ChargebeeStream(Stream):
                 self.params.update({"offset": self.next_offset})
             else:
                 pagination_completed = True
-        
+
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
@@ -103,7 +126,7 @@ class ChargebeeStream(Stream):
         # so Stream will sync all records
         # that have been updated since then
         print(latest_record)
-        latest_updated_at = latest_record.get('updated_at')
+        latest_updated_at = latest_record.get("updated_at")
         if latest_updated_at:
             current_stream_state.update(
                 {
@@ -154,7 +177,6 @@ class SourceChargebee(AbstractSource):
             # which are already handled by
             # Chargebee Python wrapper
             # https://github.com/chargebee/chargebee-python/blob/5346d833781de78a9eedbf9d12502f52c617c2d2/chargebee/http_request.py
-            logger.info(f"CHECK CONNECTION: Failed")  # Debugging
             return False, str(err)
 
     def streams(self, config) -> List[Stream]:
