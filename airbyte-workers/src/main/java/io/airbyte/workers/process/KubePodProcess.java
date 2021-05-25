@@ -34,7 +34,6 @@ import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.io.InputStream;
@@ -104,6 +103,14 @@ public class KubePodProcess extends Process {
           "Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
     }
     return envVal;
+  }
+
+  public static String getPodIP(KubernetesClient client, String podName) {
+    var pod = client.pods().inNamespace("default").withName(podName).get();
+    if (pod == null) {
+      throw new RuntimeException("Error: unable to find pod!");
+    }
+    return pod.getStatus().getPodIP();
   }
 
   public KubePodProcess(KubernetesClient client, String podName, String image, int stdoutLocalPort, boolean usesStdin)
@@ -192,7 +199,7 @@ public class KubePodProcess extends Process {
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
-    var podIp = KubeProcessBuilderFactoryPOC.getPodIP(podName);
+    var podIp = getPodIP(client, podName);
     LOGGER.info("Pod IP: {}", podIp);
 
     if (usesStdin) {

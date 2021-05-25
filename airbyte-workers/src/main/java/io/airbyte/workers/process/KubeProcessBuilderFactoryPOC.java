@@ -24,10 +24,7 @@
 
 package io.airbyte.workers.process;
 
-import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
@@ -35,10 +32,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,27 +64,6 @@ public class KubeProcessBuilderFactoryPOC {
       LOGGER.error(e.getMessage());
       e.printStackTrace();
     }
-  }
-
-  public static String getPodIP(String podName) {
-    // TODO: Why does directly searching for the pod not work?
-    // LOGGER.info(destPod.getStatus().getPodIP());
-    // destPod = client.resource(destPod).get();
-    // LOGGER.info("Status: {}", destPod.getStatus());
-    // LOGGER.info("IP: {}", destPod.getStatus().getPodIP());
-    // IP = destPod.getStatus().getPodIP();
-
-    // TODO: We could assign labels to pods to narrow the search.
-    PodList pods = KUBE_CLIENT.pods().inNamespace("default").list();
-    for (Pod p : pods.getItems()) {
-      // Filter by pod and retrieve IP.
-      if (p.getMetadata().getName().equals(podName)) {
-        LOGGER.info("Found IP!");
-        return p.getStatus().getPodIP();
-      }
-    }
-
-    return null;
   }
 
   public static void main(String[] args) throws InterruptedException, IOException {
