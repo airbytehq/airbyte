@@ -21,10 +21,11 @@
 # SOFTWARE.
 
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import pendulum
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -80,6 +81,20 @@ class HarvestStreamWithPagination(HarvestStream):
             yield record
 
 
+class HarvestStreamWithPaginationSliced(HarvestStreamWithPagination):
+    @property
+    @abstractmethod
+    def parent_stream(self) -> str:
+        """
+        :return: parent stream class
+        """
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        items = self.parent_stream(authenticator=self.authenticator)
+        for item in items.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
+            yield {"parent_id": item["id"]}
+
+
 class HarvestStreamNoPagition(HarvestStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
@@ -114,31 +129,186 @@ class Invoices(HarvestStreamWithPagination):
         return "invoices"
 
 
-class InvoiceMessages(HarvestStreamWithPagination):
+class InvoiceMessages(HarvestStreamWithPaginationSliced):
     data_field = "invoice_messages"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        invoices = Invoices(authenticator=self.authenticator)
-        for invoice in invoices.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
-            yield {"ivoice_id": invoice["id"]}
+    parent_stream = Invoices
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"invoices/{stream_slice['ivoice_id']}/messages"
+        return f"invoices/{stream_slice['parent_id']}/messages"
 
 
-class InvoicePayments(HarvestStreamWithPagination):
+class InvoicePayments(HarvestStreamWithPaginationSliced):
     data_field = "invoice_payments"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        invoices = Invoices(authenticator=self.authenticator)
-        for invoice in invoices.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
-            yield {"ivoice_id": invoice["id"]}
+    parent_stream = Invoices
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return f"invoices/{stream_slice['ivoice_id']}/payments"
+        return f"invoices/{stream_slice['parent_id']}/payments"
 
 
-# Basic incremental stream
+class InvoiceItemCategories(HarvestStreamWithPagination):
+    data_field = "invoice_item_categories"
+
+    def path(self, **kwargs) -> str:
+        return "invoice_item_categories"
+
+
+class Estimates(HarvestStreamWithPagination):
+    data_field = "estimates"
+
+    def path(self, **kwargs) -> str:
+        return "estimates"
+
+
+class EstimateMessages(HarvestStreamWithPaginationSliced):
+    data_field = "estimates"
+    parent_stream = Estimates
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"estimates/{stream_slice['parent_id']}/messages"
+
+
+class EstimateItemCategories(HarvestStreamWithPagination):
+    data_field = "estimate_item_categories"
+
+    def path(self, **kwargs) -> str:
+        return "estimate_item_categories"
+
+
+class Expenses(HarvestStreamWithPagination):
+    data_field = "expenses"
+
+    def path(self, **kwargs) -> str:
+        return "expenses"
+
+
+class ExpenseCategories(HarvestStreamWithPagination):
+    data_field = "expense_categories"
+
+    def path(self, **kwargs) -> str:
+        return "expense_categories"
+
+
+class Tasks(HarvestStreamWithPagination):
+    data_field = "tasks"
+
+    def path(self, **kwargs) -> str:
+        return "tasks"
+
+
+class TimeEntries(HarvestStreamWithPagination):
+    data_field = "time_entries"
+
+    def path(self, **kwargs) -> str:
+        return "time_entries"
+
+
+class UserAssignments(HarvestStreamWithPagination):
+    data_field = "user_assignments"
+
+    def path(self, **kwargs) -> str:
+        return "user_assignments"
+
+
+class TaskAssignments(HarvestStreamWithPagination):
+    data_field = "task_assignments"
+
+    def path(self, **kwargs) -> str:
+        return "task_assignments"
+
+class Projects(HarvestStreamWithPagination):
+    data_field = "projects"
+
+    def path(self, **kwargs) -> str:
+        return "projects"
+
+
+class Roles(HarvestStreamWithPagination):
+    data_field = "roles"
+
+    def path(self, **kwargs) -> str:
+        return "roles"
+
+
+class Users(HarvestStreamWithPagination):
+    data_field = "users"
+
+    def path(self, **kwargs) -> str:
+        return "users"
+
+
+class BillableRates(HarvestStreamWithPaginationSliced):
+    data_field = "billable_rates"
+    parent_stream = Users
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"users/{stream_slice['parent_id']}/billable_rates"
+
+
+class BillableRates(HarvestStreamWithPaginationSliced):
+    data_field = "billable_rates"
+    parent_stream = Users
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"users/{stream_slice['parent_id']}/billable_rates"
+
+
+class CostRates(HarvestStreamWithPaginationSliced):
+    data_field = "cost_rates"
+    parent_stream = Users
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"users/{stream_slice['parent_id']}/cost_rates"
+
+
+class ProjectAssignments(HarvestStreamWithPaginationSliced):
+    data_field = "project_assignments"
+    parent_stream = Users
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"users/{stream_slice['parent_id']}/project_assignments"
+
+
+class ExpensesBase(HarvestStreamWithPagination):
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        current_date = pendulum.now()
+        # `from` and `to` params are required for expenses reports calls
+        # min `from` value is current_date - 1 year
+        params.update({
+            "from": current_date.subtract(years=1).format("%Y%m%d"),
+            "to": current_date
+        })
+        return params
+
+
+class ExpensesClients(ExpensesBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/expenses/clients"
+
+
+class ExpensesProjects(ExpensesBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/expenses/projects"
+
+
+class ExpensesCategories(ExpensesBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/expenses/categories"
+
+
+class ExpensesTeam(ExpensesBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/expenses/team"
+
+
 class IncrementalHarvestStream(HarvestStream, ABC):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
@@ -235,7 +405,26 @@ class SourceHarvest(AbstractSource):
             Invoices(authenticator=auth),
             InvoiceMessages(authenticator=auth),
             InvoicePayments(authenticator=auth),
-            # Employees(authenticator=auth)
+            InvoiceItemCategories(authenticator=auth),
+            Estimates(authenticator=auth),
+            EstimateMessages(authenticator=auth),
+            EstimateItemCategories(authenticator=auth),
+            Expenses(authenticator=auth),
+            ExpenseCategories(authenticator=auth),
+            Tasks(authenticator=auth),
+            TimeEntries(authenticator=auth),
+            UserAssignments(authenticator=auth),
+            TaskAssignments(authenticator=auth),
+            Projects(authenticator=auth),
+            Roles(authenticator=auth),
+            Users(authenticator=auth),
+            BillableRates(authenticator=auth),
+            CostRates(authenticator=auth),
+            ProjectAssignments(authenticator=auth),
+            ExpensesClients(authenticator=auth),
+            ExpensesProjects(authenticator=auth),
+            ExpensesCategories(authenticator=auth),
+            ExpensesTeam(authenticator=auth),
         ]
 
         return streams
