@@ -43,10 +43,10 @@ public class KubeProcessBuilderFactoryPOC {
 
   public static void main(String[] args) throws InterruptedException, IOException {
     LOGGER.info("Launching source process...");
-    Process src = new KubePodProcess(KUBE_CLIENT, "src", "default", "np_source:dev", 9002, false);
+    Process src = new KubePodProcess(KUBE_CLIENT, "src", "default", "np_source:dev", 9002, 9003, false);
 
     LOGGER.info("Launching destination process...");
-    Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "default", "np_dest:dev", 9003, true);
+    Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "default", "np_dest:dev", 9004, 9005, true);
 
     LOGGER.info("Launching background thread to read destination lines...");
     ExecutorService executor = Executors.newSingleThreadExecutor();

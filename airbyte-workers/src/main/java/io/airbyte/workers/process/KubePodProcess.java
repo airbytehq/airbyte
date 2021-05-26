@@ -61,11 +61,14 @@ public class KubePodProcess extends Process {
 
   private final OutputStream stdin;
   private InputStream stdout;
+  private InputStream stderr;
+
   private final ServerSocket stdoutServerSocket;
+  private final ServerSocket stderrServerSocket;
   private final ExecutorService executorService;
 
   // TODO(Davin): Cache this result.
-  public static String getCommandFromImage(KubernetesClient client, String imageName, String namespace) throws IOException, InterruptedException {
+  public static String getCommandFromImage(KubernetesClient client, String imageName, String namespace) throws InterruptedException {
     final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
 
     final String podName = "airbyte-command-fetcher-" + suffix;
@@ -89,7 +92,7 @@ public class KubePodProcess extends Process {
     LOGGER.info("Creating pod...");
     Pod podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
     LOGGER.info("Waiting until command fetcher pod completes...");
-    // TODO(Davin): If a pod is not missing, this will wait for up to 2 minutes before erroring out.
+    // TODO(Davin): If a pod is not missing, this will wait for up to 2 minutes before error-ing out.
     // Figure out a better way.
     client.resource(podDefinition).waitUntilCondition(p -> p.getStatus().getPhase().equals("Succeeded"), 2, TimeUnit.MINUTES);
 
@@ -115,27 +118,21 @@ public class KubePodProcess extends Process {
     return pod.getStatus().getPodIP();
   }
 
-  public KubePodProcess(KubernetesClient client, String podName, String namespace, String image, int stdoutLocalPort, boolean usesStdin)
+  public KubePodProcess(KubernetesClient client,
+                        String podName,
+                        String namespace,
+                        String image,
+                        int stdoutLocalPort,
+                        int stderrLocalPort,
+                        boolean usesStdin)
       throws IOException, InterruptedException {
     this.client = client;
 
-    // allow reading stdout from pod
-    LOGGER.info("Creating socket server...");
-    this.stdoutServerSocket = new ServerSocket(stdoutLocalPort);
+    stdoutServerSocket = new ServerSocket(stdoutLocalPort);
+    stderrServerSocket = new ServerSocket(stderrLocalPort);
+    executorService = Executors.newFixedThreadPool(2);
+    setupStdOutAndStdErrListeners();
 
-    executorService = Executors.newSingleThreadExecutor();
-    executorService.submit(() -> {
-      try {
-        LOGGER.info("Creating socket from server...");
-        var socket = stdoutServerSocket.accept(); // blocks until connected
-        LOGGER.info("Setting stdout...");
-        this.stdout = socket.getInputStream();
-      } catch (IOException e) {
-        e.printStackTrace(); // todo: propagate exception / join at the end of constructor
-      }
-    });
-
-    // create pod
     String entrypoint = getCommandFromImage(client, image, namespace);
     LOGGER.info("Found entrypoint: {}", entrypoint);
 
@@ -153,14 +150,16 @@ public class KubePodProcess extends Process {
     Container initContainer = new ContainerBuilder()
         .withName("init")
         .withImage("busybox:1.28")
-        .withCommand("sh", "-c", usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout" : "mkfifo /pipes/stdout")
+        .withCommand("sh", "-c",
+            usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout && mkfifo /pipes/stderr" : "mkfifo /pipes/stdout && mkfifo /pipes/stderr")
         .withVolumeMounts(volumeMount)
         .build();
 
     Container main = new ContainerBuilder()
         .withName("main")
         .withImage(image)
-        .withCommand("sh", "-c", usesStdin ? "cat /pipes/stdin | " + entrypoint + " > /pipes/stdout" : entrypoint + " > /pipes/stdout")
+        .withCommand("sh", "-c",
+            usesStdin ? "cat /pipes/stdin | " + entrypoint + "2> /pipes/stderr > /pipes/stdout" : entrypoint + "2> /pipes/stderr > /pipes/stdout")
         .withVolumeMounts(volumeMount)
         .build();
 
@@ -178,7 +177,14 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(volumeMount)
         .build();
 
-    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout) : List.of(main, relayStdout);
+    Container relayStderr = new ContainerBuilder()
+        .withName("relay-stderr")
+        .withImage("alpine/socat:1.7.4.1-r1")
+        .withCommand("sh", "-c", "cat /pipes/stderr | socat -d -d -d - TCP:" + InetAddress.getLocalHost().getHostAddress() + ":" + stderrLocalPort)
+        .withVolumeMounts(volumeMount)
+        .build();
+
+    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr) : List.of(main, relayStdout, relayStderr);
 
     Pod pod = new PodBuilder()
         .withApiVersion("v1")
@@ -214,6 +220,29 @@ public class KubePodProcess extends Process {
     }
   }
 
+  private void setupStdOutAndStdErrListeners() {
+    executorService.submit(() -> {
+      try {
+        LOGGER.info("Creating stdout socket server...");
+        var socket = stdoutServerSocket.accept(); // blocks until connected
+        LOGGER.info("Setting stdout...");
+        this.stdout = socket.getInputStream();
+      } catch (IOException e) {
+        e.printStackTrace(); // todo: propagate exception / join at the end of constructor
+      }
+    });
+    executorService.submit(() -> {
+      try {
+        LOGGER.info("Creating stderr socket server...");
+        var socket = stderrServerSocket.accept(); // blocks until connected
+        LOGGER.info("Setting stderr...");
+        this.stderr = socket.getInputStream();
+      } catch (IOException e) {
+        e.printStackTrace(); // todo: propagate exception / join at the end of constructor
+      }
+    });
+  }
+
   @Override
   public OutputStream getOutputStream() {
     return this.stdin;
@@ -226,8 +255,7 @@ public class KubePodProcess extends Process {
 
   @Override
   public InputStream getErrorStream() {
-    // there is no error stream equivalent for Kube-based processes so we use a null stream here
-    return InputStream.nullInputStream();
+    return this.stderr;
   }
 
   @Override
@@ -237,8 +265,10 @@ public class KubePodProcess extends Process {
     client.resource(podDefinition).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
     try {
       this.stdin.close();
-      this.stdoutServerSocket.close();
       this.stdout.close();
+      this.stdoutServerSocket.close();
+      this.stderr.close();
+      this.stderrServerSocket.close();
     } catch (IOException e) {
       LOGGER.warn("Error while closing sockets and streams: ", e);
       throw new InterruptedException();

@@ -129,4 +129,9 @@ public class KubePodProcessTest {
 
   }
 
+  @Test
+  public void testGetStdOutLogs() {
+
+  }
+
 }
