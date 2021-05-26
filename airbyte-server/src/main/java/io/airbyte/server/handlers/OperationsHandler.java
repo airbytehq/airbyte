@@ -72,7 +72,8 @@ public class OperationsHandler {
     try {
       toStandardSyncOperation(operationCreate);
     } catch (IllegalArgumentException e) {
-      return new CheckOperationRead().status(StatusEnum.FAILED);
+      return new CheckOperationRead().status(StatusEnum.FAILED)
+          .message(e.getMessage());
     }
     return new CheckOperationRead().status(StatusEnum.SUCCEEDED);
   }
@@ -111,7 +112,8 @@ public class OperationsHandler {
       final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationUpdate.getOperationId());
       updateOperation(operationUpdate, standardSyncOperation);
     } catch (IllegalArgumentException | JsonValidationException | ConfigNotFoundException | IOException e) {
-      return new CheckOperationRead().status(StatusEnum.FAILED);
+      return new CheckOperationRead().status(StatusEnum.FAILED)
+          .message(e.getMessage());
     }
     return new CheckOperationRead().status(StatusEnum.SUCCEEDED);
   }

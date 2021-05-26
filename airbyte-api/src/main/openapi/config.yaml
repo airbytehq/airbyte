@@ -2204,8 +2204,6 @@ components:
             - failed
         message:
           type: string
-        logs:
-          $ref: "#/components/schemas/LogRead"
     # LOGS
     LogType:
       type: string
