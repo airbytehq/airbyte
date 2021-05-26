@@ -5,6 +5,7 @@ services:
   # every root service (no depends_on) should depend on init
   init:
     image: airbyte/init:${VERSION}
+    platform: linux/amd64
     container_name: init
     command: /bin/sh -c "./scripts/create_mount_directories.sh /local_parent ${HACK_LOCAL_ROOT_PARENT} ${LOCAL_ROOT}"
     environment:
@@ -14,6 +15,7 @@ services:
       - ${HACK_LOCAL_ROOT_PARENT}:/local_parent
   db:
     image: airbyte/db:${VERSION}
+    platform: linux/amd64
     container_name: airbyte-db
     restart: unless-stopped
     environment:
@@ -23,6 +25,7 @@ services:
       - db:/var/lib/postgresql/data
   seed:
     image: airbyte/seed:${VERSION}
+    platform: linux/amd64
     container_name: airbyte-data-seed
     # Pre-populate the volume if it is empty.
     # See: https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
@@ -30,6 +33,7 @@ services:
       - data:/app/seed
   scheduler:
     image: airbyte/scheduler:${VERSION}
+    platform: linux/amd64
     container_name: airbyte-scheduler
     restart: unless-stopped
     environment:
@@ -56,6 +60,7 @@ services:
       - data:${CONFIG_ROOT}
   server:
     image: airbyte/server:${VERSION}
+    platform: linux/amd64
     container_name: airbyte-server
     restart: unless-stopped
     environment:
@@ -79,6 +84,7 @@ services:
       - data:${CONFIG_ROOT}
   webapp:
     image: airbyte/webapp:${VERSION}
+    platform: linux/amd64
     container_name: airbyte-webapp
     restart: unless-stopped
     ports:
@@ -92,6 +98,7 @@ services:
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
   airbyte-temporal:
     image: temporalio/auto-setup:1.7.0
+    platform: linux/amd64
     container_name: airbyte-temporal
     restart: unless-stopped
     ports:
