@@ -56,6 +56,7 @@ import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
+import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
@@ -373,6 +374,41 @@ class WebBackendConnectionsHandlerTest {
     ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(connectionRead.getConnectionId());
     verify(schedulerHandler, times(0)).resetConnection(connectionId);
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
+  }
+
+  @Test
+  void testUpdateConnectionWithOperations() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final OperationUpdate operationUpdate = new OperationUpdate()
+        .name("Test Operation")
+        .operationId(connectionRead.getOperationIds().get(0));
+    WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+        .prefix(expected.getPrefix())
+        .connectionId(expected.getConnectionId())
+        .schedule(expected.getSchedule())
+        .status(expected.getStatus())
+        .syncCatalog(expected.getSyncCatalog())
+        .withOperations(List.of(operationUpdate));
+
+    when(connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(expected.getConnectionId()))).thenReturn(
+        new ConnectionRead()
+            .connectionId(expected.getConnectionId())
+            .operationIds(connectionRead.getOperationIds()));
+    when(connectionsHandler.updateConnection(any())).thenReturn(
+        new ConnectionRead()
+            .connectionId(expected.getConnectionId())
+            .sourceId(expected.getSourceId())
+            .destinationId(expected.getDestinationId())
+            .operationIds(connectionRead.getOperationIds())
+            .name(expected.getName())
+            .prefix(expected.getPrefix())
+            .syncCatalog(expected.getSyncCatalog())
+            .status(expected.getStatus())
+            .schedule(expected.getSchedule()));
+    when(operationsHandler.updateOperation(operationUpdate)).thenReturn(new OperationRead().operationId(operationUpdate.getOperationId()));
+    ConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnection(updateBody);
+
+    assertEquals(connectionRead.getOperationIds(), actualConnectionRead.getOperationIds());
+    verify(operationsHandler, times(1)).updateOperation(operationUpdate);
   }
 
   @Test

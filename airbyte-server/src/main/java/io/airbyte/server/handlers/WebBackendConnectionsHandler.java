@@ -277,7 +277,7 @@ public class WebBackendConnectionsHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionRead connectionRead =
         connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
-    final List<UUID> originalOperationIds = connectionRead.getOperationIds();
+    final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
     for (var operationUpdate : webBackendConnectionUpdate.getWithOperations()) {
       if (!originalOperationIds.contains(operationUpdate.getOperationId())) {
