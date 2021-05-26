@@ -73,16 +73,6 @@ In order to run integrations tests in this connector, you need:
         }
        ```
 
-1. Testing Azure Blob Storage
-   1. Create a file at `secrets/azblob.json`
-        ```
-        {
-            "storage_account": "XXXXXXX",
-            "shared_key": "XXXXXXX",
-            "sas_token": "XXXXXXX"
-        }
-       ```
-
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source file test creds`
 and place them into `secrets/config.json`.
 
