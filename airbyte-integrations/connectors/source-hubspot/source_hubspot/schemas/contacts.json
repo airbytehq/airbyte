@@ -1,0 +1,2325 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "vid": {
+      "type": ["null", "integer"]
+    },
+    "canonical-vid": {
+      "type": ["null", "integer"]
+    },
+    "merged-vids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "portal-id": {
+      "type": ["null", "integer"]
+    },
+    "is-contact": {
+      "type": ["null", "boolean"]
+    },
+    "profile-token": {
+      "type": ["null", "string"]
+    },
+    "profile-url": {
+      "type": ["null", "string"]
+    },
+    "associated-company": {
+      "type": "object",
+      "properties": {
+        "properties": {
+          "type": "object",
+          "properties": {
+            "about_us": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "closedate_timestamp_earliest_value_a2a17e6e": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "facebookfans": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "first_contact_createdate_timestamp_earliest_value_78b50eea": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "first_conversion_date_timestamp_earliest_value_61f58f2c": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "first_conversion_event_name_timestamp_earliest_value_68ddae0a": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "first_deal_created_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "founded_year": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_additional_domains": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_first_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_first_timestamp_timestamp_earliest_value_11e3a63a": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_first_touch_converting_campaign": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_first_touch_converting_campaign_timestamp_earliest_value_4757fe10": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_first_visit_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_first_visit_timestamp_timestamp_earliest_value_accc17ae": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_last_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_last_timestamp_timestamp_latest_value_4e16365a": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_last_touch_converting_campaign": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_last_touch_converting_campaign_timestamp_latest_value_81a64e30": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_last_visit_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_last_visit_timestamp_timestamp_latest_value_999a0fce": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_num_page_views": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_num_page_views_cardinality_sum_e46e85b0": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_num_visits": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_num_visits_cardinality_sum_53d952a6": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_source": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_source_data_1": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_source_data_1_timestamp_earliest_value_9b2f1fa1": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_source_data_2": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_source_data_2_timestamp_earliest_value_9b2f9400": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_analytics_source_timestamp_earliest_value_25a3a52c": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_avatar_filemanager_key": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_created_by_user_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_createdate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_ideal_customer_profile": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_is_target_account": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "boolean"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_last_booked_meeting_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_last_logged_call_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_last_open_task_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_last_sales_activity_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_last_sales_activity_timestamp": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_lastmodifieddate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_merged_object_ids": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_num_blockers": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_num_contacts_with_buying_roles": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_num_decision_makers": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_num_open_deals": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_object_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_predictivecontactscore_v2_next_max_max_d4e58c1e": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_target_account": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_target_account_probability": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_target_account_recommendation_snooze_time": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_target_account_recommendation_state": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_total_deal_value": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_updated_by_user_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_user_ids_of_all_owners": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hubspot_owner_assigneddate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "is_public": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "boolean"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "num_associated_contacts": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "num_associated_deals": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "num_conversion_events_cardinality_sum_d095f14b": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "recent_conversion_date_timestamp_latest_value_72856da1": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "recent_conversion_event_name_timestamp_latest_value_66c820bf": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "recent_deal_amount": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "recent_deal_close_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "timezone": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "total_money_raised": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "total_revenue": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "name": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "twitterhandle": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "phone": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "twitterbio": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "twitterfollowers": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "address": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "address2": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "facebook_company_page": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "city": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "linkedin_company_page": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "linkedinbio": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "state": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "googleplus_page": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "engagements_last_meeting_booked": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "engagements_last_meeting_booked_campaign": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "engagements_last_meeting_booked_medium": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "engagements_last_meeting_booked_source": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_latest_meeting_activity": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_sales_email_last_replied": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hubspot_owner_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "notes_last_contacted": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "notes_last_updated": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "notes_next_activity_date": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "num_contacted_notes": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "num_notes": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "zip": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "country": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hubspot_team_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_all_owner_ids": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "website": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "domain": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_all_team_ids": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_all_accessible_team_ids": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "numberofemployees": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "industry": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "annualrevenue": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "lifecyclestage": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_lead_status": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_parent_company_id": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "type": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "description": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "hs_num_child_companies": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "createdate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "closedate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "first_contact_createdate": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "days_to_close": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "number", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "web_technologies": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "source": {
+                  "type": ["null", "string"]
+                },
+                "sourceId": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "company-id": {
+          "type": ["null", "integer"]
+        },
+        "portal-id": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "identity-profiles": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "deleted-changed-timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "saved-at-timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "vid": {
+            "type": ["null", "integer"]
+          },
+          "identities": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "timestamp": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "value": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "list-memberships": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "internal-list-id": {
+            "type": ["null", "integer"]
+          },
+          "is-member": {
+            "type": ["null", "boolean"]
+          },
+          "static-list-id": {
+            "type": ["null", "integer"]
+          },
+          "timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "vid": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
+    "form-submissions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "conversion-id": {
+            "type": ["null", "string"]
+          },
+          "timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "form-id": {
+            "type": ["null", "string"]
+          },
+          "portal-id": {
+            "type": ["null", "integer"]
+          },
+          "page-url": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "merge-audits": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "canonical-vid": {
+            "type": ["null", "integer"]
+          },
+          "vid-to-merge": {
+            "type": ["null", "integer"]
+          },
+          "timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "user-id": {
+            "type": ["null", "integer"]
+          },
+          "num-properties-moved": {
+            "type": ["null", "integer"]
+          },
+          "merged_from_email": {
+            "type": ["null", "object"],
+            "properties": {
+              "value": {
+                "type": ["null", "string"]
+              },
+              "source-type": {
+                "type": ["null", "string"]
+              },
+              "source-id": {
+                "type": ["null", "string"]
+              },
+              "source-label": {
+                "type": ["null", "string"]
+              },
+              "source-vids": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "integer"]
+                }
+              },
+              "timestamp": {
+                "type": ["null", "integer"]
+              },
+              "selected": {
+                "type": ["null", "boolean"]
+              }
+            }
+          },
+          "merged_to_email": {
+            "type": ["null", "object"],
+            "properties": {
+              "value": {
+                "type": ["null", "string"]
+              },
+              "source-type": {
+                "type": ["null", "string"]
+              },
+              "source-id": {
+                "type": ["null", "string"]
+              },
+              "source-label": {
+                "type": ["null", "string"]
+              },
+              "timestamp": {
+                "type": ["null", "integer"]
+              },
+              "selected": {
+                "type": ["null", "boolean"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    }
+  }
+}

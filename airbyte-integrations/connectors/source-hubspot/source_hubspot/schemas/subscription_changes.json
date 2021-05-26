@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "portalId": {
+      "type": ["null", "integer"]
+    },
+    "recipient": {
+      "type": ["null", "string"]
+    },
+    "changes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "change": {
+            "type": ["null", "string"]
+          },
+          "timestamp": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "source": {
+            "type": ["null", "string"]
+          },
+          "portalId": {
+            "type": ["null", "integer"]
+          },
+          "subscriptionId": {
+            "type": ["null", "integer"]
+          },
+          "changeType": {
+            "type": ["null", "string"]
+          },
+          "causedByEvent": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "created": {
+                "type": ["null", "string"],
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
