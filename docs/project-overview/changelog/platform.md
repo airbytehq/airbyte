@@ -10,6 +10,12 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 * We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
 
+## [05-25-2021 - 0.24.0](https://github.com/airbytehq/airbyte/releases/tag/v0.24.0-alpha)
+
+* Checkpointing: Worker use destination (instead of source) for state ([#3290](https://github.com/airbytehq/airbyte/pull/3290))
+* Avoid dbt runtime exception "maximum recursion depth exceeded" in ephemeral materialization ([#3470](https://github.com/airbytehq/airbyte/pull/3470))
+
+
 ## [05-18-2021 - 0.23.0](https://github.com/airbytehq/airbyte/releases/tag/v0.23.0-alpha)
 
 * Documentation to deploy locally on Windows is now available ([#3425](https://github.com/airbytehq/airbyte/pull/3425))
