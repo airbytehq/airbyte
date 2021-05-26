@@ -36,6 +36,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,14 +46,15 @@ import org.slf4j.LoggerFactory;
 public class KubeProcessBuilderFactoryPOC {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactoryPOC.class);
-  // Explicitly create the underlying HTTP client since the Kube client has issues with closing the
-  // client. It is not clear in which library the fault
-  // lies. See https://github.com/fabric8io/kubernetes-client/issues/2403.
-  private static final Config CONFIG = new ConfigBuilder().build();
-  private static final OkHttpClient OK_HTTP_CLIENT = HttpClientUtils.createHttpClient(CONFIG);
-  private static final KubernetesClient KUBE_CLIENT = new DefaultKubernetesClient(OK_HTTP_CLIENT, CONFIG);
 
   public static void main(String[] args) throws InterruptedException, IOException {
+    // Explicitly create the underlying HTTP client since the Kube client has issues with closing the
+    // client. It is not clear in which library the fault
+    // lies. See https://github.com/fabric8io/kubernetes-client/issues/2403.
+    final Config CONFIG = new ConfigBuilder().build();
+    final OkHttpClient OK_HTTP_CLIENT = HttpClientUtilsAirbyte.createHttpClient(CONFIG);
+    final KubernetesClient KUBE_CLIENT = new DefaultKubernetesClient(OK_HTTP_CLIENT, CONFIG);
+
     LOGGER.info("Launching source process...");
     Process src = new KubePodProcess(KUBE_CLIENT, "src", "np_source:dev", 9002, false);
 
@@ -95,9 +99,10 @@ public class KubeProcessBuilderFactoryPOC {
     // https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/#shutdown-isnt-necessary
     // Instead, the pod shuts down after 5 minutes as the pool reaps the remaining idle connection after
     // 5 minutes of inactivity, as per the default configuration.
+    KUBE_CLIENT.close();
+    OK_HTTP_CLIENT.dispatcher().cancelAll();
     OK_HTTP_CLIENT.dispatcher().executorService().shutdownNow();
     OK_HTTP_CLIENT.connectionPool().evictAll();
-    KUBE_CLIENT.close();
 
     LOGGER.info("Done!");
 
