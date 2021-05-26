@@ -21,26 +21,6 @@
     "ad_id": {
       "type": ["null", "string"]
     },
-    "website_ctr": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "value": {
-            "type": ["null", "number"]
-          },
-          "action_destination": {
-            "type": ["null", "string"]
-          },
-          "action_target_id": {
-            "type": ["null", "string"]
-          },
-          "action_type": {
-            "type": ["null", "string"]
-          }
-        }
-      }
-    },
     "unique_inline_link_click_ctr": {
       "type": ["null", "number"]
     },
@@ -106,20 +86,6 @@
     "cpp": {
       "type": ["null", "number"]
     },
-    "cost_per_action_type": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "value": {
-            "type": ["null", "string"]
-          },
-          "action_type": {
-            "type": ["null", "string"]
-          }
-        }
-      }
-    },
     "unique_link_clicks_ctr": {
       "type": ["null", "number"]
     },
@@ -172,8 +138,92 @@
     "cost_per_inline_link_click": {
       "type": ["null", "number"]
     },
-    "ctr": {
-      "type": ["null", "number"]
-    }
+    "ctr": { "type": ["null", "number"] },
+    "account_currency": { "type": ["null", "string"] },
+    "activity_recency": { "type": ["null", "string"] },
+    "ad_click_actions": { "$ref": "ads_action_stats.json" },
+    "ad_format_asset": { "type": ["null", "string"] },
+    "ad_impression_actions": { "$ref": "ads_action_stats.json" },
+    "age_targeting": { "type": ["null", "string"] },
+    "attribution_setting": { "type": ["null", "string"] },
+    "auction_bid": { "type": ["null", "number"] },
+    "auction_competitiveness": { "type": ["null", "number"] },
+    "auction_max_competitor_bid": { "type": ["null", "number"] },
+    "buying_type": { "type": ["null", "string"] },
+    "catalog_segment_actions": { "$ref": "ads_action_stats.json" },
+    "catalog_segment_value": { "$ref": "ads_action_stats.json" },
+    "catalog_segment_value_mobile_purchase_roas": { "$ref": "ads_action_stats.json" },
+    "catalog_segment_value_omni_purchase_roas": { "$ref": "ads_action_stats.json" },
+    "catalog_segment_value_website_purchase_roas": { "$ref": "ads_action_stats.json" },
+    "conversion_values": { "$ref": "ads_action_stats.json" },
+    "conversions": { "$ref": "ads_action_stats.json" },
+    "converted_product_quantity": { "$ref": "ads_action_stats.json" },
+    "converted_product_value": { "$ref": "ads_action_stats.json" },
+    "cost_per_15_sec_video_view": { "$ref": "ads_action_stats.json" },
+    "cost_per_2_sec_continuous_video_view": { "$ref": "ads_action_stats.json" },
+    "cost_per_action_type": { "$ref": "ads_action_stats.json" },
+    "cost_per_ad_click": { "$ref": "ads_action_stats.json" },
+    "cost_per_conversion": { "$ref": "ads_action_stats.json" },
+    "cost_per_dda_countby_convs": { "type": ["null", "number"] },
+    "cost_per_one_thousand_ad_impression": { "$ref": "ads_action_stats.json" },
+    "cost_per_outbound_click": { "$ref": "ads_action_stats.json" },
+    "cost_per_store_visit_action": { "$ref": "ads_action_stats.json" },
+    "cost_per_thruplay": { "$ref": "ads_action_stats.json" },
+    "cost_per_unique_action_type": { "$ref": "ads_action_stats.json" },
+    "cost_per_unique_conversion": { "$ref": "ads_action_stats.json" },
+    "cost_per_unique_outbound_click": { "$ref": "ads_action_stats.json" },
+    "country": { "type": ["null", "string"] },
+    "created_time": { "type": ["null", "string"], "format": "date-time" },
+    "country": { "type": ["null", "string"] },
+    "dda_countby_convs": { "type": ["null", "number"] },
+    "device_platform": { "type": ["null", "string"] },
+    "dma": { "type": ["null", "string"] },
+    "estimated_ad_recall_rate_lower_bound": { "type": ["null", "number"] },
+    "estimated_ad_recall_rate_upper_bound": { "type": ["null", "number"] },
+    "estimated_ad_recallers_lower_bound": { "type": ["null", "number"] },
+    "estimated_ad_recallers_upper_bound": { "type": ["null", "number"] },
+    "frequency_value": { "type": ["null", "string"] },
+    "full_view_impressions": { "type": ["null", "number"] },
+    "full_view_reach": { "type": ["null", "number"] },
+    "gender_targeting": { "type": ["null", "string"] },
+    "hourly_stats_aggregated_by_advertiser_time_zone": { "type": ["null", "string"] },
+    "hourly_stats_aggregated_by_audience_time_zone": { "type": ["null", "string"] },
+    "impression_device": { "type": ["null", "string"] },
+    "instant_experience_clicks_to_open": { "type": ["null", "number"] },
+    "instant_experience_clicks_to_start": { "type": ["null", "number"] },
+    "instant_experience_outbound_clicks": { "type": ["null", "integer"] },
+    "interactive_component_tap": { "$ref": "ads_action_stats.json" },
+    "labels": { "type": ["null", "string"] },
+    "location": { "type": ["null", "string"] },
+    "mobile_app_purchase_roas": { "$ref": "ads_action_stats.json" },
+    "optimization_goal": { "type": ["null", "string"] },
+    "outbound_clicks_ctr": { "$ref": "ads_action_stats.json" },
+    "place_page_id": { "type": ["null", "string"] },
+    "place_page_name": { "type": ["null", "string"] },
+    "platform_position": { "type": ["null", "string"] },
+    "product_id": { "type": ["null", "string"] },
+    "publisher_platform": { "type": ["null", "string"] },
+    "purchase_roas": { "$ref": "ads_action_stats.json" },
+    "qualifying_question_qualify_answer_rate": { "type": ["null", "number"] },
+    "store_visit_actions": { "$ref": "ads_action_stats.json" },
+    "unique_conversions": { "$ref": "ads_action_stats.json" },
+    "unique_outbound_clicks": { "$ref": "ads_action_stats.json" },
+    "unique_outbound_clicks_ctr": { "$ref": "ads_action_stats.json" },
+    "unique_video_view_15_sec": { "$ref": "ads_action_stats.json" },
+    "updated_time": { "type": ["null", "string"], "format": "date-time" },
+    "video_15_sec_watched_actions": { "$ref": "ads_action_stats.json" },
+    "video_avg_time_watched_actions": { "$ref": "ads_action_stats.json" },
+    "video_continuous_2_sec_watched_actions": { "$ref": "ads_action_stats.json" },
+    "video_p95_watched_actions": { "$ref": "ads_action_stats.json" },
+    "video_play_actions": { "$ref": "ads_histogram_stats.json" },
+    "video_play_retention_0_to_15s_actions": { "$ref": "ads_histogram_stats.json" },
+    "video_play_retention_20_to_60s_actions": { "$ref": "ads_histogram_stats.json" },
+    "video_play_retention_graph_actions": { "$ref": "ads_histogram_stats.json" },
+    "video_time_watched_actions": { "$ref": "ads_action_stats.json" },
+    "video_p95_watched_actions": { "$ref": "ads_action_stats.json" },
+    "video_p95_watched_actions": { "$ref": "ads_action_stats.json" },
+    "website_ctr": { "$ref": "ads_action_stats.json" },
+    "website_purchase_roas": { "$ref": "ads_action_stats.json" },
+    "wish_bid": { "type": ["null", "number"] }
   }
 }
