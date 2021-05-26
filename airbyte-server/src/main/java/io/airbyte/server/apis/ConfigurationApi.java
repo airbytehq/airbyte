@@ -29,6 +29,7 @@ import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
+import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationCreate;
@@ -437,6 +438,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public OperationRead updateOperation(OperationUpdate operationUpdate) {
     return execute(() -> operationsHandler.updateOperation(operationUpdate));
+  }
+
+  @Override
+  public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
+    return execute(() -> schedulerHandler.getState(connectionIdRequestBody));
   }
 
   // SCHEDULER
