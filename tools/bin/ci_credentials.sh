@@ -49,6 +49,7 @@ write_standard_creds source-google-workspace-admin-reports "$GOOGLE_WORKSPACE_AD
 write_standard_creds source-greenhouse "$GREENHOUSE_TEST_CREDS"
 write_standard_creds source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-klaviyo "$KLAVIYO_TEST_CREDS"
+write_standard_creds source-asana "$SOURCE_ASANA_TEST_CREDS"
 write_standard_creds source-instagram "$INSTAGRAM_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-intercom-singer "$INTERCOM_INTEGRATION_TEST_CREDS"
 write_standard_creds source-iterable "$ITERABLE_INTEGRATION_TEST_CREDS"
