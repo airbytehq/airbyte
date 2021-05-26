@@ -93,8 +93,7 @@ public class KubePodProcess extends Process {
 
     var logs = client.pods().inNamespace(namespace).withName(podName).getLog();
     if (!logs.contains("AIRBYTE_ENTRYPOINT")) {
-      // this should not happen
-      throw new RuntimeException("Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
+      throw new RuntimeException("Missing AIRBYTE_ENTRYPOINT from command fetcher logs. This should not happen. Check the echo command has not been changed.");
     }
 
     var envVal = logs.split("=")[1].strip();
