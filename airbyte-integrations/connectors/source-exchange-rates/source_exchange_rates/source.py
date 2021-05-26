@@ -38,11 +38,11 @@ class ExchangeRates(HttpStream):
     date_field_name = "date"
 
     # HttpStream related fields
-    url_base = "http://api.exchangeratesapi.io/"
+    url_base = "http://api.exchangeratesapi.io/v1/"
     cursor_field = date_field_name
     primary_key = ""
 
-    def __init__(self, base: str, start_date: DateTime, access_key: str):
+    def __init__(self, base: Optional[str], start_date: DateTime, access_key: str):
         super().__init__()
         self._base = base
         self._start_date = start_date
@@ -51,13 +51,18 @@ class ExchangeRates(HttpStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"v1/{stream_slice[self.date_field_name]}"
+        return stream_slice[self.date_field_name]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {"base": self._base, "access_key": self.access_key}
+        params = {"access_key": self.access_key}
+
+        if self._base is not None:
+            params["base"] = self._base
+
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -95,7 +100,12 @@ def chunk_date_range(start_date: DateTime) -> Iterable[Mapping[str, any]]:
 class SourceExchangeRates(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            resp = requests.get(f"{ExchangeRates.url_base}v1/latest", params={"access_key": config["access_key"]})
+            params = {"access_key": config["access_key"]}
+            base = config.get("base")
+            if base is not None:
+                params["base"] = base
+
+            resp = requests.get(f"{ExchangeRates.url_base}{config['start_date']}", params=params)
             status = resp.status_code
             logger.info(f"Ping response code: {status}")
             if status == 200:
@@ -105,4 +115,4 @@ class SourceExchangeRates(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [ExchangeRates(config["base"], config["start_date"], config["access_key"])]
+        return [ExchangeRates(config.get("base"), config["start_date"], config["access_key"])]

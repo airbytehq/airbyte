@@ -4,11 +4,11 @@
 
 The exchange rates integration is a toy integration to demonstrate how Airbyte works with a very simple source.
 
-It pulls all its data from [https://ratesapi.io/](https://ratesapi.io/)
+It pulls all its data from [https://exchangeratesapi.io](https://exchangeratesapi.io)
 
 #### Output schema
 
-It contains one stream: `exchange_rate`
+It contains one stream: `exchange_rates`
 
 Each record in the stream contains many fields:
 
@@ -29,7 +29,15 @@ Currencies are `number` and the date is a `string`.
 
 ### Getting started
 
-#### Setup guide
+### Requirements
 
-Specify the reference currency and the start date when you want to collect currencies.
+* API Access Key
 
+### Setup guide
+
+In order to get an `API Access Key` please go to [this](https://manage.exchangeratesapi.io/signup/free) page and enter needed info. After registration 
+and login you will see your `API Access Key`, also you may find it [here](https://manage.exchangeratesapi.io/dashboard).
+
+If you have `free` subscription plan (you may check it [here](https://manage.exchangeratesapi.io/plan)) this means that you will have 2 limitations:
+1. 1k api calls per month.
+1. You won't be able to specify `base` parameter meaning that you will be dealing only with default base value which is EUR.
