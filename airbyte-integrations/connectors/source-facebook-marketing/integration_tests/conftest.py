@@ -23,11 +23,27 @@
 #
 
 
-import sys
+import json
 
-from base_python.entrypoint import launch
-from source_stripe_singer import SourceStripeSinger
+import pytest
 
-if __name__ == "__main__":
-    source = SourceStripeSinger()
-    launch(source, sys.argv[1:])
+
+@pytest.fixture(scope="session", name="config")
+def config_fixture():
+    with open("secrets/config.json", "r") as config_file:
+        return json.load(config_file)
+
+
+@pytest.fixture(scope="session", name="config_with_wrong_token")
+def config_with_wrong_token_fixture(config):
+    return {**config, "access_token": "WRONG_TOKEN"}
+
+
+@pytest.fixture(scope="session", name="config_with_wrong_account")
+def config_with_wrong_account_fixture(config):
+    return {**config, "account_id": "WRONG_ACCOUNT"}
+
+
+@pytest.fixture(scope="session", name="config_with_include_deleted")
+def config_with_include_deleted_fixture(config):
+    return {**config, "include_deleted": True}
