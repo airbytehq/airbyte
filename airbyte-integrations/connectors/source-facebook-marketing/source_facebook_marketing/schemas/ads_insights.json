@@ -1,168 +1,69 @@
 {
   "properties": {
-    "account_currency": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "account_id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "account_name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "action_values": {
       "$ref": "ads_action_stats.json"
     },
-    "actions": {
-      "$ref": "ads_action_stats.json"
-    },
-    "activity_recency": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "ad_click_actions": {
-      "$ref": "ads_action_stats.json"
-    },
-    "ad_format_asset": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "ad_id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
+    "actions": { "$ref": "ads_action_stats.json" },
+    "ad_click_actions": { "$ref": "ads_action_stats.json" },
+    "ad_id": { "type": ["null", "string"] },
     "ad_impression_actions": {
       "$ref": "ads_action_stats.json"
     },
     "ad_name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "adset_id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "adset_name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "age_targeting": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "attribution_setting": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "auction_bid": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "auction_competitiveness": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "auction_max_competitor_bid": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "buying_type": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "campaign_id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "campaign_name": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "canvas_avg_view_percent": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "canvas_avg_view_time": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "catalog_segment_actions": {
-      "$ref": "ads_action_stats.json"
+      "type": ["null", "number"]
     },
     "catalog_segment_value": {
       "$ref": "ads_action_stats.json"
     },
-    "catalog_segment_value_mobile_purchase_roas": {
-      "$ref": "ads_action_stats.json"
-    },
-    "catalog_segment_value_omni_purchase_roas": {
-      "$ref": "ads_action_stats.json"
-    },
-    "catalog_segment_value_website_purchase_roas": {
-      "$ref": "ads_action_stats.json"
-    },
     "clicks": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "conversion_rate_ranking": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "conversion_values": {
       "$ref": "ads_action_stats.json"
     },
     "conversions": {
-      "$ref": "ads_action_stats.json"
-    },
-    "converted_product_quantity": {
-      "$ref": "ads_action_stats.json"
-    },
-    "converted_product_value": {
       "$ref": "ads_action_stats.json"
     },
     "cost_per_15_sec_video_view": {
@@ -180,26 +81,11 @@
     "cost_per_conversion": {
       "$ref": "ads_action_stats.json"
     },
-    "cost_per_dda_countby_convs": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
     "cost_per_inline_link_click": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "cost_per_inline_post_engagement": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "cost_per_one_thousand_ad_impression": {
-      "$ref": "ads_action_stats.json"
+      "type": ["null", "number"]
     },
     "cost_per_outbound_click": {
       "$ref": "ads_action_stats.json"
@@ -214,241 +100,88 @@
       "$ref": "ads_action_stats.json"
     },
     "cost_per_unique_click": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "cost_per_unique_conversion": {
       "$ref": "ads_action_stats.json"
     },
     "cost_per_unique_inline_link_click": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "cost_per_unique_outbound_click": {
       "$ref": "ads_action_stats.json"
     },
-    "country": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "cpc": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "cpm": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "cpp": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "created_time": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ctr": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "date_start": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "date_stop": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "dda_countby_convs": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "device_platform": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "dma": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "engagement_rate_ranking": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "estimated_ad_recall_rate_lower_bound": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "estimated_ad_recall_rate_upper_bound": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "estimated_ad_recallers_lower_bound": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "estimated_ad_recallers_upper_bound": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "frequency": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "frequency_value": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "number"]
     },
     "full_view_impressions": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "full_view_reach": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "gender_targeting": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "hourly_stats_aggregated_by_advertiser_time_zone": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "hourly_stats_aggregated_by_audience_time_zone": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "impression_device": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "impressions": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "inline_link_click_ctr": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "inline_link_clicks": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "inline_post_engagement": {
-      "type": [
-        "null",
-        "integer"
-      ]
-    },
-    "instant_experience_clicks_to_open": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "instant_experience_clicks_to_start": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "instant_experience_outbound_clicks": {
-      "type": [
-        "null",
-        "integer"
-      ]
-    },
-    "interactive_component_tap": {
-      "$ref": "ads_action_stats.json"
+      "type": ["null", "integer"]
     },
     "labels": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "location": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "mobile_app_purchase_roas": {
-      "$ref": "ads_action_stats.json"
+      "type": ["null", "string"]
     },
     "objective": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "optimization_goal": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "outbound_clicks": {
       "$ref": "ads_action_stats.json"
@@ -456,107 +189,38 @@
     "outbound_clicks_ctr": {
       "$ref": "ads_action_stats.json"
     },
-    "place_page_id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "place_page_name": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "platform_position": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "product_id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "publisher_platform": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "purchase_roas": {
-      "$ref": "ads_action_stats.json"
-    },
-    "qualifying_question_qualify_answer_rate": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
     "quality_ranking": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "reach": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "social_spend": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "spend": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "store_visit_actions": {
-      "$ref": "ads_action_stats.json"
+      "type": ["null", "number"]
     },
     "unique_actions": {
       "$ref": "ads_action_stats.json"
     },
     "unique_clicks": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "unique_conversions": {
       "$ref": "ads_action_stats.json"
     },
     "unique_ctr": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "unique_inline_link_click_ctr": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "unique_inline_link_clicks": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "unique_link_clicks_ctr": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "unique_outbound_clicks": {
       "$ref": "ads_action_stats.json"
@@ -564,15 +228,9 @@
     "unique_outbound_clicks_ctr": {
       "$ref": "ads_action_stats.json"
     },
-    "unique_video_view_15_sec": {
-      "$ref": "ads_action_stats.json"
-    },
     "updated_time": {
       "format": "date-time",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "video_15_sec_watched_actions": {
       "$ref": "ads_action_stats.json"
@@ -613,27 +271,15 @@
     "video_play_retention_20_to_60s_actions": {
       "$ref": "ads_histogram_stats.json"
     },
-    "video_play_retention_graph_actions": {
-      "$ref": "ads_histogram_stats.json"
-    },
     "video_time_watched_actions": {
       "$ref": "ads_action_stats.json"
     },
     "website_ctr": {
       "$ref": "ads_action_stats.json"
     },
-    "website_purchase_roas": {
-      "$ref": "ads_action_stats.json"
-    },
     "wish_bid": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     }
   },
-  "type": [
-    "null",
-    "object"
-  ]
+  "type": ["null", "object"]
 }
