@@ -60,7 +60,6 @@ import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
-import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
@@ -461,7 +460,7 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
 
-    final JsonNode config = getConfigWithBasicNormalization();
+    final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog);
 
     String defaultSchema = getDefaultSchema(config);
@@ -496,7 +495,7 @@ public abstract class DestinationAcceptanceTest {
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    final JsonNode config = getConfigWithBasicNormalization();
+    final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
@@ -639,12 +638,11 @@ public abstract class DestinationAcceptanceTest {
       return;
     }
 
-    final JsonNode config = getConfigWithBasicNormalization();
+    final JsonNode config = getConfig();
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
         getImageName(),
-        pbf,
-        config));
+        pbf));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -703,12 +701,11 @@ public abstract class DestinationAcceptanceTest {
       return;
     }
 
-    final JsonNode config = getConfigWithBasicNormalization();
+    final JsonNode config = getConfig();
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
         getImageName(),
-        pbf,
-        config));
+        pbf));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -858,15 +855,9 @@ public abstract class DestinationAcceptanceTest {
 
     destination.close();
 
-    // skip if basic normalization is not configured to run (either not set or false).
-    if (!config.hasNonNull(WorkerConstants.BASIC_NORMALIZATION_KEY) || !config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).asBoolean()) {
-      return destinationOutput;
-    }
-
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
-        pbf,
-        targetConfig.getDestinationConnectionConfiguration());
+        pbf);
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog())) {
@@ -1004,12 +995,6 @@ public abstract class DestinationAcceptanceTest {
         ((ObjectNode) json).remove(key);
       }
     }
-  }
-
-  private JsonNode getConfigWithBasicNormalization() throws Exception {
-    final JsonNode config = getConfig();
-    ((ObjectNode) config).put(WorkerConstants.BASIC_NORMALIZATION_KEY, true);
-    return config;
   }
 
   public static class TestDestinationEnv {

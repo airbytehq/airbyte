@@ -806,18 +806,18 @@ public class AcceptanceTests {
   }
 
   private JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql, false, true, true);
+    return getDbConfig(destinationPsql, false, true);
   }
 
   private JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, true, true);
+    return getDbConfig(destinationPsql, true, true);
   }
 
   private JsonNode getDbConfig(PostgreSQLContainer psql) {
-    return getDbConfig(psql, false, false, false);
+    return getDbConfig(psql, false, false);
   }
 
-  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema, boolean withNormalization) {
+  private JsonNode getDbConfig(PostgreSQLContainer psql, boolean hiddenPassword, boolean withSchema) {
     try {
       final Map<Object, Object> dbConfig = new HashMap<>();
 
@@ -840,11 +840,6 @@ public class AcceptanceTests {
       if (withSchema) {
         dbConfig.put("schema", "public");
       }
-
-      if (withNormalization) {
-        dbConfig.put("basic_normalization", true);
-      }
-
       return Jsons.jsonNode(dbConfig);
     } catch (Exception e) {
       throw new RuntimeException(e);
