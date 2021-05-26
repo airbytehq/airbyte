@@ -27,6 +27,8 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.io.Resources;
+import io.airbyte.commons.docker.DockerUtils;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
@@ -43,20 +45,19 @@ import org.junit.jupiter.api.Test;
 public class KubePodProcessTest {
 
   private static final KubernetesClient CLIENT = new DefaultKubernetesClient();
-  private static final String ENTRYPOINT = "/tmp/run.sh";
-  private static final String TEST_IMAGE_NAME = "np_dest:dev";
+  private static final String ENTRYPOINT = "sh";
+  private static final String TEST_IMAGE_WITH_VAR_PATH = "Dockerfile.with_var";
+  private static final String TEST_IMAGE_WITH_VAR_NAME = "worker-test:with-var";
+  private static final String TEST_IMAGE_NO_VAR_PATH = "Dockerfile.no_var";
+  private static final String TEST_IMAGE_NO_VAR_NAME = "worker-test:no-var";
 
   @BeforeAll
   public static void setup() {
-    // TODO(Davin): Why does building the container ahead doesn't work?
-    // new GenericContainer(
-    // new ImageFromDockerfile(TEST_IMAGE_NAME, false)
-    // .withDockerfileFromBuilder(builder -> {
-    // builder
-    // .from("debian")
-    // .env(Map.of("AIRBYTE_ENTRYPOINT", ENTRYPOINT))
-    // .entryPoint(ENTRYPOINT)
-    // .build();})).withEnv("AIRBYTE_ENTRYPOINT", ENTRYPOINT);
+    var varDockerFile = Resources.getResource(TEST_IMAGE_WITH_VAR_PATH);
+    DockerUtils.buildImage(varDockerFile.getPath(), TEST_IMAGE_WITH_VAR_NAME);
+
+    var noVarDockerFile = Resources.getResource(TEST_IMAGE_NO_VAR_PATH);
+    DockerUtils.buildImage(noVarDockerFile.getPath(), TEST_IMAGE_NO_VAR_NAME);
   }
 
   @Nested
@@ -65,7 +66,7 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should error if image does not have the right env var set.")
     public void testGetCommandFromImageNoCommand() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, "debian", "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, TEST_IMAGE_NO_VAR_NAME, "default"));
     }
 
     @Test
@@ -77,7 +78,7 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should retrieve the right command if image has the right env var set.")
     public void testGetCommandFromImageCommandPresent() throws IOException, InterruptedException {
-      var command = KubePodProcess.getCommandFromImage(CLIENT, TEST_IMAGE_NAME, "default");
+      var command = KubePodProcess.getCommandFromImage(CLIENT, TEST_IMAGE_WITH_VAR_NAME, "default");
       assertEquals(ENTRYPOINT, command);
     }
 

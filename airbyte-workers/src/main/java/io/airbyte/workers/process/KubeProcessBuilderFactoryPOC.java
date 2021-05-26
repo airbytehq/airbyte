@@ -25,18 +25,14 @@
 package io.airbyte.workers.process;
 
 import io.airbyte.commons.io.IOs;
-import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.utils.HttpClientUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,14 +81,16 @@ public class KubeProcessBuilderFactoryPOC {
     LOGGER.info("Closing sync worker resources...");
     listenTask.cancel(true);
     executor.shutdownNow();
-    // TODO(Davin, issue-3611): Figure out why these commands are not effectively shutting down OkHTTP even though documentation suggests so. See
-    //  https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/#shutdown-isnt-necessary
-    //  Instead, the pod shuts down after 5 minutes as the pool reaps the remaining idle connection after
-    //  5 minutes of inactivity, as per the default configuration.
-    //  OK_HTTP_CLIENT.dispatcher().executorService().shutdownNow();
-    //  OK_HTTP_CLIENT.connectionPool().evictAll();
-    //  The Kube client has issues with closing the client. Since manually injecting the OkHttp client also doesn't work, it is not clear whether it's OkHTTP or the Fabric client at fault.
-    //  See https://github.com/fabric8io/kubernetes-client/issues/2403.
+    // TODO(Davin, issue-3611): Figure out why these commands are not effectively shutting down OkHTTP
+    // even though documentation suggests so. See
+    // https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/#shutdown-isnt-necessary
+    // Instead, the pod shuts down after 5 minutes as the pool reaps the remaining idle connection after
+    // 5 minutes of inactivity, as per the default configuration.
+    // OK_HTTP_CLIENT.dispatcher().executorService().shutdownNow();
+    // OK_HTTP_CLIENT.connectionPool().evictAll();
+    // The Kube client has issues with closing the client. Since manually injecting the OkHttp client
+    // also doesn't work, it is not clear whether it's OkHTTP or the Fabric client at fault.
+    // See https://github.com/fabric8io/kubernetes-client/issues/2403.
     KUBE_CLIENT.close();
     LOGGER.info("Done!");
     // Manually exit for the time being.
