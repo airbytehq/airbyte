@@ -236,10 +236,11 @@ public class KubePodProcess extends Process {
       this.stdin.close();
       this.stdoutServerSocket.close();
       this.stdout.close();
-      this.executorService.shutdownNow();
     } catch (IOException e) {
-      e.printStackTrace();
+      LOGGER.warn("Error while closing sockets and streams: ", e);
+      throw new InterruptedException();
     }
+    this.executorService.shutdownNow();
 
     return exitValue();
   }
