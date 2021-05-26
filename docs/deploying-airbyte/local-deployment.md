@@ -32,7 +32,7 @@ Instead of cloning the repo, you can alternatively download the latest Airbyte r
 
 Some users using Macs with an M1 chip are facing some problems running Airbyte.
 The problem is related with the chip and Docker. [Issue #2017](https://github.com/airbytehq/airbyte/issues/2017) was created to follow up the problem, you can subscribe to it and get updates about the resolution.
-If you can run Airbyte using Apple MacBook with the M1 chip, let us know, the community will appreciate it.
+If you can successfully run Airbyte using a MacBook with the M1 chip, let us know so that we can share the process with the community!
 
 **Other issues**
 
