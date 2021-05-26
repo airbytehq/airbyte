@@ -1,7 +1,6 @@
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
     id 'airbyte-standard-source-test-file'
 }
 
@@ -16,15 +15,3 @@ airbyteStandardSourceTestFile {
     specPath = "source_stripe_singer/spec.json"
 }
 
-dependencies {
-    integrationTestJavaImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
-    integrationTestJavaImplementation 'com.fasterxml.jackson.core:jackson-databind'
-    integrationTestJavaImplementation 'org.apache.commons:commons-text:1.9'
-    integrationTestJavaImplementation "com.stripe:stripe-java:20.6.0"
-
-    integrationTestJavaImplementation project(':airbyte-workers')
-    integrationTestJavaImplementation project(':airbyte-config:models')
-    integrationTestJavaImplementation project(':airbyte-protocol:models')
-
-    implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
-}
