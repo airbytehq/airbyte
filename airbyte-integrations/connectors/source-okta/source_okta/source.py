@@ -40,10 +40,7 @@ class OktaStream(HttpStream, ABC):
         # Inject custom url base to the stream
         self._url_base = url_base
     
-    @property
-    def page_size(self) -> int:
-        # default page_size
-        return 200
+    page_size = 200
 
     @property
     def url_base(self) -> str:
