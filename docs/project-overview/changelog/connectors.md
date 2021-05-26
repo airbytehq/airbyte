@@ -12,6 +12,22 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
 
+## 05/25/2021
+
+4 new sources: 
+* [**Asana**](https://docs.airbyte.io/integrations/sources/asana)
+* [**Klaviyo**](https://docs.airbyte.io/integrations/sources/klaviyo)
+* [**Recharge**](https://docs.airbyte.io/integrations/sources/recharge)
+* [**Tempo**](https://docs.airbyte.io/integrations/sources/tempo)
+
+Progress on connectors:
+* **CDC for MySQL** is now available!
+* **Sendgrid** source: support incremental sync, as rewritten using HTTP CDK ([#3445](https://github.com/airbytehq/airbyte/pull/3445)) 
+* **Github** source bugfix: exception when parsing null date values, use `created_at` as cursor value for issue_milestones ([#3314](https://github.com/airbytehq/airbyte/pull/3314))
+* **Slack** source bugfix: don't overwrite thread_ts in threads stream  ([#3483](https://github.com/airbytehq/airbyte/pull/3483))
+* **Facebook Marketing** source: allow configuring insights lookback window ([#3396](https://github.com/airbytehq/airbyte/pull/3396))
+* **Freshdesk** source: fix discovery ([#3591](https://github.com/airbytehq/airbyte/pull/3591))
+
 ## 05/18/2021
 
 1 new destination: [**MSSQL**](https://docs.airbyte.io/integrations/destinations/mssql)
