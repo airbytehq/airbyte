@@ -89,6 +89,8 @@ public class KubePodProcess extends Process {
     LOGGER.info("Creating pod...");
     Pod podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
     LOGGER.info("Waiting until command fetcher pod completes...");
+    // TODO(Davin): If a pod is not missing, this will wait for up to 2 minutes before erroring out.
+    // Figure out a better way.
     client.resource(podDefinition).waitUntilCondition(p -> p.getStatus().getPhase().equals("Succeeded"), 2, TimeUnit.MINUTES);
 
     var logs = client.pods().inNamespace(namespace).withName(podName).getLog();
