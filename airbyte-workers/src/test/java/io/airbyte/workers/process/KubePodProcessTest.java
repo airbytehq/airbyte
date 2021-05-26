@@ -65,19 +65,19 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should error if image does not have the right env var set.")
     public void testGetCommandFromImageNoCommand() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, "debian"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, "debian", "default"));
     }
 
     @Test
     @DisplayName("Should error if image does not exists.")
     public void testGetCommandFromImageMissingImage() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, "bad_missing_image"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, "bad_missing_image", "default"));
     }
 
     @Test
     @DisplayName("Should retrieve the right command if image has the right env var set.")
     public void testGetCommandFromImageCommandPresent() throws IOException, InterruptedException {
-      var command = KubePodProcess.getCommandFromImage(CLIENT, TEST_IMAGE_NAME);
+      var command = KubePodProcess.getCommandFromImage(CLIENT, TEST_IMAGE_NAME, "default");
       assertEquals(ENTRYPOINT, command);
     }
 
@@ -89,7 +89,7 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should error when the given pod does not exists.")
     public void testGetPodIpNoPod() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getPodIP(CLIENT, "pod-does-not-exist"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getPodIP(CLIENT, "pod-does-not-exist", "default"));
     }
 
     @Test
@@ -115,13 +115,14 @@ public class KubePodProcessTest {
           .endSpec()
           .build();
 
-      Pod pod = CLIENT.pods().inNamespace("default").createOrReplace(podDef);
+      String namespace = "default";
+      Pod pod = CLIENT.pods().inNamespace(namespace).createOrReplace(podDef);
       CLIENT.resource(pod).waitUntilReady(20, TimeUnit.SECONDS);
 
-      var ip = KubePodProcess.getPodIP(CLIENT, podName);
-      var exp = CLIENT.pods().inNamespace("default").withName(podName).get().getStatus().getPodIP();
+      var ip = KubePodProcess.getPodIP(CLIENT, podName, namespace);
+      var exp = CLIENT.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
       assertEquals(exp, ip);
-      CLIENT.resource(podDef).inNamespace("default").delete();
+      CLIENT.resource(podDef).inNamespace(namespace).delete();
     }
 
   }

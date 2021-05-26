@@ -65,7 +65,7 @@ public class KubePodProcess extends Process {
   private final ExecutorService executorService;
 
   // TODO(Davin): Cache this result.
-  public static String getCommandFromImage(KubernetesClient client, String imageName) throws IOException, InterruptedException {
+  public static String getCommandFromImage(KubernetesClient client, String imageName, String namespace) throws IOException, InterruptedException {
     final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
 
     final String podName = "airbyte-command-fetcher-" + suffix;
@@ -87,11 +87,11 @@ public class KubePodProcess extends Process {
         .endSpec()
         .build();
     LOGGER.info("Creating pod...");
-    Pod podDefinition = client.pods().inNamespace("default").createOrReplace(pod);
+    Pod podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
     LOGGER.info("Waiting until command fetcher pod completes...");
-    client.resource(podDefinition).waitUntilCondition(p -> p.getStatus().getPhase().equals("Succeeded"), 20, TimeUnit.SECONDS);
+    client.resource(podDefinition).waitUntilCondition(p -> p.getStatus().getPhase().equals("Succeeded"), 2, TimeUnit.MINUTES);
 
-    var logs = client.pods().inNamespace("default").withName(podName).getLog();
+    var logs = client.pods().inNamespace(namespace).withName(podName).getLog();
     if (!logs.contains("AIRBYTE_ENTRYPOINT")) {
       // this should not happen
       throw new RuntimeException("Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
@@ -105,15 +105,15 @@ public class KubePodProcess extends Process {
     return envVal;
   }
 
-  public static String getPodIP(KubernetesClient client, String podName) {
-    var pod = client.pods().inNamespace("default").withName(podName).get();
+  public static String getPodIP(KubernetesClient client, String podName, String namespace) {
+    var pod = client.pods().inNamespace(namespace).withName(podName).get();
     if (pod == null) {
       throw new RuntimeException("Error: unable to find pod!");
     }
     return pod.getStatus().getPodIP();
   }
 
-  public KubePodProcess(KubernetesClient client, String podName, String image, int stdoutLocalPort, boolean usesStdin)
+  public KubePodProcess(KubernetesClient client, String podName, String namespace, String image, int stdoutLocalPort, boolean usesStdin)
       throws IOException, InterruptedException {
     this.client = client;
 
@@ -134,7 +134,7 @@ public class KubePodProcess extends Process {
     });
 
     // create pod
-    String entrypoint = getCommandFromImage(client, image);
+    String entrypoint = getCommandFromImage(client, image, namespace);
     LOGGER.info("Found entrypoint: {}", entrypoint);
 
     Volume volume = new VolumeBuilder()
@@ -192,14 +192,14 @@ public class KubePodProcess extends Process {
         .build();
 
     LOGGER.info("Creating pod...");
-    this.podDefinition = client.pods().inNamespace("default").createOrReplace(pod);
+    this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
 
     LOGGER.info("Waiting until pod is ready...");
     client.resource(podDefinition).waitUntilReady(5, TimeUnit.MINUTES);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
-    var podIp = getPodIP(client, podName);
+    var podIp = getPodIP(client, podName, namespace);
     LOGGER.info("Pod IP: {}", podIp);
 
     if (usesStdin) {
@@ -257,7 +257,7 @@ public class KubePodProcess extends Process {
   }
 
   private int getReturnCode(Pod pod) {
-    Pod refreshedPod = client.pods().inNamespace("default").withName(pod.getMetadata().getName()).get();
+    Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).get();
     Preconditions.checkArgument(isTerminal(refreshedPod));
 
     return refreshedPod.getStatus().getContainerStatuses()
