@@ -79,7 +79,6 @@
     * [Slack](integrations/sources/slack.md)
     * [Smartsheets](integrations/sources/smartsheets.md)
     * [Stripe](integrations/sources/stripe.md)
-
     * [Tempo](integrations/sources/tempo.md)
     * [Twilio](integrations/sources/twilio.md)
     * [Zendesk Chat](integrations/sources/zendesk-chat.md)
