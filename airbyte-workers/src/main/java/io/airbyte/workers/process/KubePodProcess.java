@@ -25,6 +25,7 @@
 package io.airbyte.workers.process;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.string.Strings;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -46,7 +47,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,9 +69,7 @@ public class KubePodProcess extends Process {
 
   // TODO(Davin): Cache this result.
   public static String getCommandFromImage(KubernetesClient client, String imageName, String namespace) throws InterruptedException {
-    final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-
-    final String podName = "airbyte-command-fetcher-" + suffix;
+    final String podName = Strings.addRandomSuffix("airbyte-command-fetcher", 5);
 
     Container commandFetcher = new ContainerBuilder()
         .withName("airbyte-command-fetcher")
@@ -159,7 +157,7 @@ public class KubePodProcess extends Process {
         .withName("main")
         .withImage(image)
         .withCommand("sh", "-c",
-            usesStdin ? "cat /pipes/stdin | " + entrypoint + "2> /pipes/stderr > /pipes/stdout" : entrypoint + "2> /pipes/stderr > /pipes/stdout")
+            usesStdin ? "cat /pipes/stdin | " + entrypoint + " 2> /pipes/stderr > /pipes/stdout" : entrypoint + "   2> /pipes/stderr > /pipes/stdout")
         .withVolumeMounts(volumeMount)
         .build();
 

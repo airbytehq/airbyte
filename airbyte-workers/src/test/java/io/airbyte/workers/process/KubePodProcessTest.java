@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.string.Strings;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
@@ -47,18 +48,23 @@ public class KubePodProcessTest {
   private static final KubernetesClient CLIENT = new DefaultKubernetesClient();
 
   private static final String ENTRYPOINT = "sh";
+
   private static final String TEST_IMAGE_WITH_VAR_PATH = "Dockerfile.with_var";
   private static final String TEST_IMAGE_WITH_VAR_NAME = "worker-test:with-var";
+
   private static final String TEST_IMAGE_NO_VAR_PATH = "Dockerfile.no_var";
   private static final String TEST_IMAGE_NO_VAR_NAME = "worker-test:no-var";
 
+  private static final String TEST_IMAGE_PRINT_STDOUT_PATH = "Dockerfile.print_to_stdout";
+  private static final String TEST_IMAGE_PRINT_STDOUT_NAME = "worker-test:print-to-stdout";
+
   @BeforeAll
   public static void setup() {
-    var varDockerFile = Resources.getResource(TEST_IMAGE_WITH_VAR_PATH);
-    DockerUtils.buildImage(varDockerFile.getPath(), TEST_IMAGE_WITH_VAR_NAME);
+    var varDockerfile = Resources.getResource(TEST_IMAGE_WITH_VAR_PATH);
+    DockerUtils.buildImage(varDockerfile.getPath(), TEST_IMAGE_WITH_VAR_NAME);
 
-    var noVarDockerFile = Resources.getResource(TEST_IMAGE_NO_VAR_PATH);
-    DockerUtils.buildImage(noVarDockerFile.getPath(), TEST_IMAGE_NO_VAR_NAME);
+    var noVarDockerfile = Resources.getResource(TEST_IMAGE_NO_VAR_PATH);
+    DockerUtils.buildImage(noVarDockerfile.getPath(), TEST_IMAGE_NO_VAR_NAME);
   }
 
   @Nested
@@ -130,8 +136,20 @@ public class KubePodProcessTest {
   }
 
   @Test
-  public void testGetStdOutLogs() {
+  public void testGetStdOutLogs() throws IOException, InterruptedException {
+    // we need to create an image from a java class
+    var podName = Strings.addRandomSuffix("worker-test-stdout", 5);
+    var printStdoutDockerfile = Resources.getResource(TEST_IMAGE_PRINT_STDOUT_PATH);
+    DockerUtils.buildImage(printStdoutDockerfile.getPath(), TEST_IMAGE_PRINT_STDOUT_NAME);
 
+    // this needs to be run as a Kube pod so networking lines up
+    var b = new KubePodProcess(CLIENT, podName, "default", TEST_IMAGE_PRINT_STDOUT_NAME, 9000, 9001, false);
+    var c = b.getInputStream();
+    var d = c.readAllBytes();
+
+    System.out.println(new String(d));
+
+    b.waitFor();
   }
 
 }
