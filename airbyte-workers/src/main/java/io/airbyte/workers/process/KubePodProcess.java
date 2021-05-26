@@ -46,6 +46,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +64,55 @@ public class KubePodProcess extends Process {
   private final ServerSocket stdoutServerSocket;
   private final ExecutorService executorService;
 
-  public KubePodProcess(KubernetesClient client, String podName, String image, int stdoutLocalPort, boolean usesStdin)
+  // TODO(Davin): Cache this result.
+  public static String getCommandFromImage(KubernetesClient client, String imageName, String namespace) throws IOException, InterruptedException {
+    final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+
+    final String podName = "airbyte-command-fetcher-" + suffix;
+
+    Container commandFetcher = new ContainerBuilder()
+        .withName("airbyte-command-fetcher")
+        .withImage(imageName)
+        .withCommand("sh", "-c", "echo \"AIRBYTE_ENTRYPOINT=$AIRBYTE_ENTRYPOINT\"")
+        .build();
+
+    Pod pod = new PodBuilder()
+        .withApiVersion("v1")
+        .withNewMetadata()
+        .withName(podName)
+        .endMetadata()
+        .withNewSpec()
+        .withRestartPolicy("Never")
+        .withContainers(commandFetcher)
+        .endSpec()
+        .build();
+    LOGGER.info("Creating pod...");
+    Pod podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
+    LOGGER.info("Waiting until command fetcher pod completes...");
+    client.resource(podDefinition).waitUntilCondition(p -> p.getStatus().getPhase().equals("Succeeded"), 2, TimeUnit.MINUTES);
+
+    var logs = client.pods().inNamespace(namespace).withName(podName).getLog();
+    if (!logs.contains("AIRBYTE_ENTRYPOINT")) {
+      throw new RuntimeException("Missing AIRBYTE_ENTRYPOINT from command fetcher logs. This should not happen. Check the echo command has not been changed.");
+    }
+
+    var envVal = logs.split("=")[1].strip();
+    if (envVal.isEmpty()) {
+      throw new RuntimeException(
+          "Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
+    }
+    return envVal;
+  }
+
+  public static String getPodIP(KubernetesClient client, String podName, String namespace) {
+    var pod = client.pods().inNamespace(namespace).withName(podName).get();
+    if (pod == null) {
+      throw new RuntimeException("Error: unable to find pod!");
+    }
+    return pod.getStatus().getPodIP();
+  }
+
+  public KubePodProcess(KubernetesClient client, String podName, String namespace, String image, int stdoutLocalPort, boolean usesStdin)
       throws IOException, InterruptedException {
     this.client = client;
 
@@ -84,7 +133,8 @@ public class KubePodProcess extends Process {
     });
 
     // create pod
-    String entrypoint = KubeProcessBuilderFactoryPOC.getCommandFromImage(image);
+    String entrypoint = getCommandFromImage(client, image, namespace);
+    LOGGER.info("Found entrypoint: {}", entrypoint);
 
     Volume volume = new VolumeBuilder()
         .withName("airbyte-pipes")
@@ -141,14 +191,14 @@ public class KubePodProcess extends Process {
         .build();
 
     LOGGER.info("Creating pod...");
-    this.podDefinition = client.pods().inNamespace("default").createOrReplace(pod);
+    this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
 
     LOGGER.info("Waiting until pod is ready...");
     client.resource(podDefinition).waitUntilReady(5, TimeUnit.MINUTES);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
-    var podIp = KubeProcessBuilderFactoryPOC.getPodIP(podName);
+    var podIp = getPodIP(client, podName, namespace);
     LOGGER.info("Pod IP: {}", podIp);
 
     if (usesStdin) {
@@ -179,7 +229,19 @@ public class KubePodProcess extends Process {
 
   @Override
   public int waitFor() throws InterruptedException {
+    // These are closed in the opposite order in which they are created to prevent any resource
+    // conflicts.
     client.resource(podDefinition).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+    try {
+      this.stdin.close();
+      this.stdoutServerSocket.close();
+      this.stdout.close();
+    } catch (IOException e) {
+      LOGGER.warn("Error while closing sockets and streams: ", e);
+      throw new InterruptedException();
+    }
+    this.executorService.shutdownNow();
+
     return exitValue();
   }
 
@@ -195,7 +257,7 @@ public class KubePodProcess extends Process {
   }
 
   private int getReturnCode(Pod pod) {
-    Pod refreshedPod = client.pods().withName(pod.getMetadata().getName()).get(); // todo: use more robust version here
+    Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).get();
     Preconditions.checkArgument(isTerminal(refreshedPod));
 
     return refreshedPod.getStatus().getContainerStatuses()

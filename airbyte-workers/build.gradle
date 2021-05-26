@@ -8,6 +8,15 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.workers.process.KubeProcessBuilderFactoryPOC'
+    applicationDefaultJvmArgs = ['-Xmx500m',
+                                 '-XX:NativeMemoryTracking=detail',
+                                 "-Djava.rmi.server.hostname=localhost",
+                                 '-Dcom.sun.management.jmxremote=true',
+                                 '-Dcom.sun.management.jmxremote.port=6000',
+                                 "-Dcom.sun.management.jmxremote.rmi.port=6000",
+                                 '-Dcom.sun.management.jmxremote.local.only=false',
+                                 '-Dcom.sun.management.jmxremote.authenticate=false',
+                                 '-Dcom.sun.management.jmxremote.ssl=false']
 }
 
 configurations {
@@ -30,7 +39,7 @@ dependencies {
     implementation project(':airbyte-protocol:models')
 
     testImplementation 'org.mockito:mockito-inline:2.13.0'
-    testImplementation 'org.testcontainers:testcontainers:1.14.3'
+    testImplementation 'org.testcontainers:testcontainers:1.15.3'
     testImplementation 'org.testcontainers:postgresql:1.15.1'
     testImplementation 'org.postgresql:postgresql:42.2.18'
 }
