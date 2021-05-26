@@ -924,7 +924,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OperationRead"
+                $ref: "#/components/schemas/CheckOperationRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/operations/create:
@@ -966,7 +966,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OperationRead"
+                $ref: "#/components/schemas/CheckOperationRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/operations/update:
@@ -1992,7 +1992,7 @@ components:
         - $ref: "#/components/schemas/ConnectionCreate"
         - type: object
           properties:
-            withCreatedOperations:
+            withOperations:
               type: array
               items:
                 $ref: "#/components/schemas/OperationCreate"
@@ -2025,11 +2025,7 @@ components:
           properties:
             withRefreshedCatalog:
               type: boolean
-            withCreatedOperations:
-              type: array
-              items:
-                $ref: "#/components/schemas/OperationCreate"
-            withUpdatedOperations:
+            withOperations:
               type: array
               items:
                 $ref: "#/components/schemas/OperationUpdate"
@@ -2196,6 +2192,20 @@ components:
           type: string
         dbtArguments:
           type: string
+    CheckOperationRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        message:
+          type: string
+        logs:
+          $ref: "#/components/schemas/LogRead"
     # LOGS
     LogType:
       type: string

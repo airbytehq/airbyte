@@ -36,6 +36,7 @@ import io.airbyte.api.model.AirbyteCatalog;
 import io.airbyte.api.model.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.AttemptRead;
 import io.airbyte.api.model.AttemptStatus;
+import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionReadList;
@@ -62,6 +63,7 @@ import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.SynchronousJobRead;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
+import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -259,6 +261,38 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
+  public void testToConnectionCreate() throws IOException {
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
+
+    final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
+    catalog.getStreams().get(0).getStream().setName("azkaban_users");
+
+    final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(TimeUnitEnum.MINUTES);
+
+    final UUID newOperationId = UUID.randomUUID();
+    final WebBackendConnectionCreate input = new WebBackendConnectionCreate()
+        .prefix(standardSync.getPrefix())
+        .operationIds(List.of(newOperationId))
+        .status(ConnectionStatus.INACTIVE)
+        .schedule(schedule)
+        .syncCatalog(catalog);
+
+    final List<UUID> operationIds = List.of(newOperationId);
+
+    final ConnectionCreate expected = new ConnectionCreate()
+        .prefix(standardSync.getPrefix())
+        .operationIds(operationIds)
+        .status(ConnectionStatus.INACTIVE)
+        .schedule(schedule)
+        .syncCatalog(catalog);
+
+    final ConnectionCreate actual = WebBackendConnectionsHandler.toConnectionCreate(input, operationIds);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
   public void testToConnectionUpdate() throws IOException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
@@ -278,15 +312,17 @@ class WebBackendConnectionsHandlerTest {
         .syncCatalog(catalog)
         .withRefreshedCatalog(false);
 
+    final List<UUID> operationIds = List.of(newOperationId);
+
     final ConnectionUpdate expected = new ConnectionUpdate()
         .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
-        .operationIds(List.of(newOperationId))
+        .operationIds(operationIds)
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
         .syncCatalog(catalog);
 
-    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionUpdate(input);
+    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionUpdate(input, operationIds);
 
     assertEquals(expected, actual);
   }
@@ -317,6 +353,8 @@ class WebBackendConnectionsHandlerTest {
         .status(expected.getStatus())
         .syncCatalog(expected.getSyncCatalog());
 
+    when(connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(expected.getConnectionId()))).thenReturn(
+        new ConnectionRead().connectionId(expected.getConnectionId()));
     when(connectionsHandler.updateConnection(any())).thenReturn(
         new ConnectionRead()
             .connectionId(expected.getConnectionId())
@@ -347,6 +385,8 @@ class WebBackendConnectionsHandlerTest {
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .withRefreshedCatalog(true);
 
+    when(connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(expected.getConnectionId()))).thenReturn(
+        new ConnectionRead().connectionId(expected.getConnectionId()));
     when(connectionsHandler.updateConnection(any())).thenReturn(
         new ConnectionRead()
             .connectionId(expected.getConnectionId())

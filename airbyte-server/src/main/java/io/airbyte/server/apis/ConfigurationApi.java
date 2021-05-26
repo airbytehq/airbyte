@@ -25,6 +25,7 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.api.model.CheckConnectionRead;
+import io.airbyte.api.model.CheckOperationRead;
 import io.airbyte.api.model.ConnectionCreate;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.ConnectionRead;
@@ -74,6 +75,7 @@ import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.api.model.SourceUpdate;
 import io.airbyte.api.model.WbConnectionRead;
 import io.airbyte.api.model.WbConnectionReadList;
+import io.airbyte.api.model.WebBackendConnectionCreate;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceCreate;
@@ -394,6 +396,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public void deleteConnection(@Valid ConnectionIdRequestBody connectionIdRequestBody) {
     execute(() -> {
+      operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
       connectionsHandler.deleteConnection(connectionIdRequestBody);
       return null;
     });
@@ -410,6 +413,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   // Operations
+
+  @Override
+  public CheckOperationRead checkOperationCreate(OperationCreate operationCreate) {
+    return execute(() -> operationsHandler.checkCreateOperation(operationCreate));
+  }
 
   @Override
   public OperationRead createOperation(@Valid OperationCreate operationCreate) {
@@ -432,6 +440,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public OperationRead getOperation(OperationIdRequestBody operationIdRequestBody) {
     return execute(() -> operationsHandler.getOperation(operationIdRequestBody));
+  }
+
+  @Override
+  public CheckOperationRead checkOperationUpdate(OperationUpdate operationUpdate) {
+    return execute(() -> operationsHandler.checkUpdateOperation(operationUpdate));
   }
 
   @Override
@@ -509,6 +522,11 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public WbConnectionRead webBackendGetConnection(@Valid WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
     return execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
+  }
+
+  @Override
+  public ConnectionRead webBackendCreateConnection(WebBackendConnectionCreate webBackendConnectionCreate) {
+    return execute(() -> webBackendConnectionsHandler.webBackendCreateConnection(webBackendConnectionCreate));
   }
 
   @Override
