@@ -1,11 +1,5 @@
 {
   "properties": {
-    "account_currency": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "account_id": {
       "type": [
         "null",
@@ -24,20 +18,8 @@
     "actions": {
       "$ref": "ads_action_stats.json"
     },
-    "activity_recency": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "ad_click_actions": {
       "$ref": "ads_action_stats.json"
-    },
-    "ad_format_asset": {
-      "type": [
-        "null",
-        "string"
-      ]
     },
     "ad_id": {
       "type": [
@@ -67,12 +49,6 @@
       ]
     },
     "age_targeting": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "attribution_setting": {
       "type": [
         "null",
         "string"
@@ -126,19 +102,7 @@
         "number"
       ]
     },
-    "catalog_segment_actions": {
-      "$ref": "ads_action_stats.json"
-    },
     "catalog_segment_value": {
-      "$ref": "ads_action_stats.json"
-    },
-    "catalog_segment_value_mobile_purchase_roas": {
-      "$ref": "ads_action_stats.json"
-    },
-    "catalog_segment_value_omni_purchase_roas": {
-      "$ref": "ads_action_stats.json"
-    },
-    "catalog_segment_value_website_purchase_roas": {
       "$ref": "ads_action_stats.json"
     },
     "clicks": {
@@ -159,12 +123,6 @@
     "conversions": {
       "$ref": "ads_action_stats.json"
     },
-    "converted_product_quantity": {
-      "$ref": "ads_action_stats.json"
-    },
-    "converted_product_value": {
-      "$ref": "ads_action_stats.json"
-    },
     "cost_per_15_sec_video_view": {
       "$ref": "ads_action_stats.json"
     },
@@ -180,12 +138,6 @@
     "cost_per_conversion": {
       "$ref": "ads_action_stats.json"
     },
-    "cost_per_dda_countby_convs": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
     "cost_per_inline_link_click": {
       "type": [
         "null",
@@ -197,9 +149,6 @@
         "null",
         "number"
       ]
-    },
-    "cost_per_one_thousand_ad_impression": {
-      "$ref": "ads_action_stats.json"
     },
     "cost_per_outbound_click": {
       "$ref": "ads_action_stats.json"
@@ -230,12 +179,6 @@
     },
     "cost_per_unique_outbound_click": {
       "$ref": "ads_action_stats.json"
-    },
-    "country": {
-      "type": [
-        "null",
-        "string"
-      ]
     },
     "cpc": {
       "type": [
@@ -282,24 +225,6 @@
         "string"
       ]
     },
-    "dda_countby_convs": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "device_platform": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "dma": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "engagement_rate_ranking": {
       "type": [
         "null",
@@ -336,12 +261,6 @@
         "number"
       ]
     },
-    "frequency_value": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "full_view_impressions": {
       "type": [
         "null",
@@ -355,24 +274,6 @@
       ]
     },
     "gender_targeting": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "hourly_stats_aggregated_by_advertiser_time_zone": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "hourly_stats_aggregated_by_audience_time_zone": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "impression_device": {
       "type": [
         "null",
         "string"
@@ -402,27 +303,6 @@
         "integer"
       ]
     },
-    "instant_experience_clicks_to_open": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "instant_experience_clicks_to_start": {
-      "type": [
-        "null",
-        "number"
-      ]
-    },
-    "instant_experience_outbound_clicks": {
-      "type": [
-        "null",
-        "integer"
-      ]
-    },
-    "interactive_component_tap": {
-      "$ref": "ads_action_stats.json"
-    },
     "labels": {
       "type": [
         "null",
@@ -435,16 +315,7 @@
         "string"
       ]
     },
-    "mobile_app_purchase_roas": {
-      "$ref": "ads_action_stats.json"
-    },
     "objective": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "optimization_goal": {
       "type": [
         "null",
         "string"
@@ -455,45 +326,6 @@
     },
     "outbound_clicks_ctr": {
       "$ref": "ads_action_stats.json"
-    },
-    "place_page_id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "place_page_name": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "platform_position": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "product_id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "publisher_platform": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "purchase_roas": {
-      "$ref": "ads_action_stats.json"
-    },
-    "qualifying_question_qualify_answer_rate": {
-      "type": [
-        "null",
-        "number"
-      ]
     },
     "quality_ranking": {
       "type": [
@@ -518,9 +350,6 @@
         "null",
         "number"
       ]
-    },
-    "store_visit_actions": {
-      "$ref": "ads_action_stats.json"
     },
     "unique_actions": {
       "$ref": "ads_action_stats.json"
@@ -562,9 +391,6 @@
       "$ref": "ads_action_stats.json"
     },
     "unique_outbound_clicks_ctr": {
-      "$ref": "ads_action_stats.json"
-    },
-    "unique_video_view_15_sec": {
       "$ref": "ads_action_stats.json"
     },
     "updated_time": {
@@ -613,16 +439,10 @@
     "video_play_retention_20_to_60s_actions": {
       "$ref": "ads_histogram_stats.json"
     },
-    "video_play_retention_graph_actions": {
-      "$ref": "ads_histogram_stats.json"
-    },
     "video_time_watched_actions": {
       "$ref": "ads_action_stats.json"
     },
     "website_ctr": {
-      "$ref": "ads_action_stats.json"
-    },
-    "website_purchase_roas": {
       "$ref": "ads_action_stats.json"
     },
     "wish_bid": {
