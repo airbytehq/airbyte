@@ -86,6 +86,7 @@ public class MigrationV0_14_0 implements Migration {
     DESTINATION_CONNECTION,
     STANDARD_SYNC,
     STANDARD_SYNC_SCHEDULE,
+    STANDARD_SYNC_OPERATION,
   }
 
   public enum JobKeys {

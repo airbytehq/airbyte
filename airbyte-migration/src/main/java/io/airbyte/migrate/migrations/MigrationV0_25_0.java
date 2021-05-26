@@ -68,7 +68,7 @@ public class MigrationV0_25_0 extends BaseMigration implements Migration {
     return MIGRATION_VERSION;
   }
 
-  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_25_0");
+  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_25_0/airbyte-config");
 
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
