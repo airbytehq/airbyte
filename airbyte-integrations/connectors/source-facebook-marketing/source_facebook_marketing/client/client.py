@@ -26,10 +26,10 @@
 from typing import Any, Mapping, Tuple
 
 import pendulum as pendulum
-from base_python import BaseClient
 
 # FIXME (Eugene K): register logger as standard python logger
-from base_python.entrypoint import logger
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.sources.deprecated.client import BaseClient
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
