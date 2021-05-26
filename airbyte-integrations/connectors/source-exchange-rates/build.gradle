@@ -16,7 +16,7 @@ airbyteStandardSourceTestFile {
 
     // configPath points to a config file which matches the spec.json supplied above. secrets/ is gitignored by default, so place your config file
     // there (in case it contains any credentials)
-    configPath = "sample_files/config.json"
+    configPath = "secrets/config.json"
     // Note: If your source supports incremental syncing, then make sure that the catalog that is returned in the get_catalog method is configured
     // for incremental syncing (e.g. include cursor fields, etc).
     configuredCatalogPath = "sample_files/configured_catalog.json"
