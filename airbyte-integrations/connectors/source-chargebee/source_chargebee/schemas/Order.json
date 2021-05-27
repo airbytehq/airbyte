@@ -77,12 +77,10 @@
             "maxLength":50
         },
         "order_date":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "shipping_date":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "note":{
             "type":["string","null"],
@@ -132,39 +130,31 @@
             "type":["integer","null"]
         },
         "paid_on":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "shipping_cut_off_date":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "created_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "status_update_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "delivered_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "shipped_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "resource_version":{
             "type":["integer","null"]
         },
         "updated_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "cancelled_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "resent_status":{
             "type":["array","null"],

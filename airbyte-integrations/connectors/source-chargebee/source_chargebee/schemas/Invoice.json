@@ -41,12 +41,10 @@
             }
         },
         "date":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "due_date":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "net_term_days":{
             "type":["integer","null"]
@@ -80,8 +78,7 @@
             "minimum":0
         },
         "paid_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "dunning_status":{
             "type":["array","null"],
@@ -91,19 +88,16 @@
             }
         },
         "next_retry_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "voided_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "resource_version":{
             "type":["integer","null"]
         },
         "updated_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "sub_total":{
             "type":"integer",
@@ -138,8 +132,7 @@
             "type":"boolean"
         },
         "expected_payment_date":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "amount_to_collect":{
             "type":["integer","null"],

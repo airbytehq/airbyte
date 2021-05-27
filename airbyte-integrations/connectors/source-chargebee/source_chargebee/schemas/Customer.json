@@ -49,8 +49,7 @@
             "type": "integer"
         },
         "vat_number_validated_time":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "vat_number_status":{
             "type":["array", "null"],
@@ -66,8 +65,7 @@
             "type": "boolean"
         },
         "created_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "created_from_ip":{
             "type":["string","null"],
@@ -98,8 +96,7 @@
             "type": ["number", "null"]
         },
         "updated_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "locale":{
             "type":["string","null"],

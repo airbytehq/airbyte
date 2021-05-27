@@ -17,12 +17,10 @@
                             "maxLength":50
                         },
                         "start_date":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "trial_end":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "remaining_billing_cycles":{
                             "type":["integer","null"],
@@ -44,32 +42,25 @@
                             }
                         },
                         "trial_start":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "current_term_start":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "current_term_end":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "next_billing_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "created_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "started_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "activated_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "contract_term_billing_cycle_on_renewal":{
                             "type":"integer",
@@ -80,16 +71,13 @@
                             "type":["boolean", "null"]
                         },
                         "pause_date":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "resume_date":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "cancelled_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "cancel_reason":{
                             "type":"array",
@@ -106,8 +94,7 @@
                             "type":["integer","null"]
                         },
                         "updated_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "has_scheduled_advance_invoices":{
                             "type":"boolean"
@@ -136,15 +123,13 @@
                             "maxLength":33
                         },
                         "cancel_schedule_created_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "due_invoices_count":{
                             "type":["integer","null"]
                         },
                         "due_since":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "total_dues":{
                             "type":["integer","null"],
@@ -632,8 +617,7 @@
                             "type": "integer"
                         },
                         "vat_number_validated_time":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "vat_number_status":{
                             "type":["array", "null"],
@@ -649,8 +633,7 @@
                             "type": "boolean"
                         },
                         "created_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "created_from_ip":{
                             "type":["string","null"],
@@ -681,8 +664,7 @@
                             "type": ["number", "null"]
                         },
                         "updated_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "locale":{
                             "type":["string","null"],
@@ -1117,12 +1099,10 @@
                             }
                         },
                         "date":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "due_date":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "net_term_days":{
                             "type":["integer","null"]
@@ -1156,8 +1136,7 @@
                             "minimum":0
                         },
                         "paid_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "dunning_status":{
                             "type":["array","null"],
@@ -1167,19 +1146,16 @@
                             }
                         },
                         "next_retry_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "voided_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "resource_version":{
                             "type":["integer","null"]
                         },
                         "updated_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "sub_total":{
                             "type":"integer",
@@ -1214,8 +1190,7 @@
                             "type":"boolean"
                         },
                         "expected_payment_date":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "amount_to_collect":{
                             "type":["integer","null"],
@@ -1998,12 +1973,10 @@
                             "maxLength":50
                         },
                         "order_date":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "shipping_date":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "note":{
                             "type":["string","null"],
@@ -2053,39 +2026,31 @@
                             "type":["integer","null"]
                         },
                         "paid_on":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "shipping_cut_off_date":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "created_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "status_update_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "delivered_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "shipped_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "resource_version":{
                             "type":["integer","null"]
                         },
                         "updated_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "cancelled_at":{
-                            "type":["string","null"],
-                            "format":"date-time"
+                            "type":["integer","null"]
                         },
                         "resent_status":{
                             "type":["array","null"],

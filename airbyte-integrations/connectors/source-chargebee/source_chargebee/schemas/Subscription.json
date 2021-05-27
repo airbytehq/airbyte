@@ -12,12 +12,10 @@
             "maxLength":50
         },
         "start_date":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "trial_end":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "remaining_billing_cycles":{
             "type":["integer","null"],
@@ -39,32 +37,25 @@
             }
         },
         "trial_start":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "current_term_start":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "current_term_end":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "next_billing_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "created_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "started_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "activated_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "contract_term_billing_cycle_on_renewal":{
             "type":"integer",
@@ -75,16 +66,13 @@
             "type":["boolean", "null"]
         },
         "pause_date":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "resume_date":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "cancelled_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "cancel_reason":{
             "type":"array",
@@ -101,8 +89,7 @@
             "type":["integer","null"]
         },
         "updated_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "has_scheduled_advance_invoices":{
             "type":"boolean"
@@ -131,15 +118,13 @@
             "maxLength":33
         },
         "cancel_schedule_created_at":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "due_invoices_count":{
             "type":["integer","null"]
         },
         "due_since":{
-            "type":["string","null"],
-            "format":"date-time"
+            "type":["integer","null"]
         },
         "total_dues":{
             "type":["integer","null"],
