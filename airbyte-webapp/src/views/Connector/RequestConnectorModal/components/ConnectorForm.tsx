@@ -5,6 +5,7 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import { Input, ControlLabels, DropDown, Button } from "components";
+import { Values } from "../types";
 
 const Buttons = styled.div`
   width: 100%;
@@ -22,6 +23,11 @@ const ControlLabelsWithMargin = styled(ControlLabels)`
   margin-bottom: 29px;
 `;
 
+type ConnectorFormProps = {
+  onSubmit: (values: Values) => void;
+  onCancel: () => void;
+};
+
 const requestConnectorValidationSchema = yup.object().shape({
   connectorType: yup.string().required("form.empty.error"),
   name: yup.string().required("form.empty.error"),
@@ -29,7 +35,10 @@ const requestConnectorValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
 });
 
-const ConnectorForm: React.FC = () => {
+const ConnectorForm: React.FC<ConnectorFormProps> = ({
+  onSubmit,
+  onCancel,
+}) => {
   const formatMessage = useIntl().formatMessage;
 
   return (
@@ -44,7 +53,7 @@ const ConnectorForm: React.FC = () => {
       validateOnChange={true}
       validationSchema={requestConnectorValidationSchema}
       onSubmit={async (values) => {
-        console.log(values);
+        await onSubmit(values);
       }}
     >
       {({ setFieldValue }) => (
@@ -131,7 +140,7 @@ const ConnectorForm: React.FC = () => {
             )}
           </Field>
           <Buttons>
-            <Button type="button" secondary>
+            <Button type="button" secondary onClick={onCancel}>
               <FormattedMessage id="form.cancel" />
             </Button>
             <Button type="submit">

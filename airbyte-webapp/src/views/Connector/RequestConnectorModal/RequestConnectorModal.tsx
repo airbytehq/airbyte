@@ -12,10 +12,13 @@ const Content = styled.div`
 `;
 
 const RequestConnectorModal: React.FC = () => {
+  const onSubmit = () => null;
+  const onCloseModal = () => null;
+
   return (
     <Modal title={<FormattedMessage id="connector.requestConnector" />}>
       <Content>
-        <ConnectorForm />
+        <ConnectorForm onSubmit={onSubmit} onCancel={onCloseModal} />
       </Content>
     </Modal>
   );
