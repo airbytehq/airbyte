@@ -9,9 +9,15 @@
     "properties": {
       "domain": {
         "type": "string",
-        "pattern": ["(^[a-zA-Z0-9._-]*\\.looker\\.com$)|(^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*$)|(^[0-9]+(?:\\.[0-9]+){3}(:[0-9]+)?$)"],
-        "examples": ["domainname.looker.com","looker.clientname.com","123.123.124.123:8000"],
-        "description": "Domain for your Looker account, e.g. airbyte.cloud.looker.com,looker.clientname.com,ip address"
+        "pattern": [
+          "(^[a-zA-Z0-9._-]*\\.looker\\.com$)|(^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*$)|(^[0-9]+(?:\\.[0-9]+){3}(:[0-9]+)?$)"
+        ],
+        "examples": [
+          "domainname.looker.com",
+          "looker.clientname.com",
+          "123.123.124.123:9000"
+        ],
+        "description": "Domain for your Looker account, e.g. airbyte.cloud.looker.com,looker.[clientname].com,ip address"
       },
       "client_id": {
         "title": "Client ID",
