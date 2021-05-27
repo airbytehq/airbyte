@@ -193,14 +193,18 @@ def private_aws_file(aws_credentials, cloud_bucket_name, download_gcs_public_dat
     bucket.objects.all().delete()
     print(f"\nS3 Bucket {bucket_name} is now deleted")
 
-@pytest.fixture(scope="session")
-def private_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
+def azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False):
     acc_url = f"https://{azblob_credentials['storage_account']}.blob.core.windows.net"
     azblob_client = BlobServiceClient(account_url=acc_url, credential=azblob_credentials['shared_key'])
     container_name  = cloud_bucket_name
+    if public:
+        container_name += "public"
     print(f"\nUpload dataset to private azure blob container {container_name}")
     if container_name not in [cntr['name'] for cntr in azblob_client.list_containers()]:
-        azblob_client.create_container(name=container_name, metadata=None, public_access=None)
+        if public:
+            azblob_client.create_container(name=container_name, metadata=None, public_access='container')
+        else:
+            azblob_client.create_container(name=container_name, metadata=None, public_access=None)
     blob_client = azblob_client.get_blob_client(container_name, "myfile.csv")
     with open(download_gcs_public_data, "r") as f:
         blob_client.upload_blob(f.read(), blob_type='BlockBlob', overwrite=True)
@@ -209,3 +213,13 @@ def private_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_publ
 
     azblob_client.delete_container(container_name)
     print(f"\nAzure Blob Container {container_name} is now marked for deletion")
+
+@pytest.fixture(scope="session")
+def private_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
+    for yld in azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False):
+        yield yld
+
+@pytest.fixture(scope="session")
+def public_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
+    for yld in azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=True):
+        yield yld

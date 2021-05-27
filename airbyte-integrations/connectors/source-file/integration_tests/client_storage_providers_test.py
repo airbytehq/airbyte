@@ -146,6 +146,19 @@ def test__read_from_private_aws(aws_credentials, private_aws_file):
     }
     check_read(config)
 
+def test__read_from_public_azblob(azblob_credentials, public_azblob_file):
+    config = {
+        "dataset_name": "output",
+        "format": "csv",
+        "url": public_azblob_file,
+        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "provider": {
+            "storage": "AzBlob",
+            "storage_account": azblob_credentials["storage_account"]
+        },
+    }
+    check_read(config)
+
 def test__read_from_private_azblob_shared_key(azblob_credentials, private_azblob_file):
     config = {
         "dataset_name": "output",

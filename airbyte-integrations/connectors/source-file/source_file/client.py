@@ -220,12 +220,11 @@ class URLFile:
 
         if credential:
             client = BlobServiceClient(account_url=storage_acc_url, credential=credential)
-            result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client))
-        
-        # assuming anonymous public read access given no credential
         else:
-            result = smart_open.open(f"{self.storage_scheme}{self.url}")
+            # assuming anonymous public read access given no credential
+            client = BlobServiceClient(account_url=storage_acc_url)
         
+        result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client))
         return result
 
 
