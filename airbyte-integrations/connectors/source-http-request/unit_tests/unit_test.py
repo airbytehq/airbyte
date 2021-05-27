@@ -25,7 +25,18 @@
 
 import unittest
 
+from unittest.mock import patch
+
 from source_http_request import SourceHttpRequest
+
+
+class MockResponse:
+    def __init__(self, json_data, status_code):
+        self.json_data = json_data
+        self.status_code = status_code
+
+    def json(self):
+        return self.json_data
 
 
 class TestSourceHttpRequest(unittest.TestCase):
@@ -46,3 +57,35 @@ class TestSourceHttpRequest(unittest.TestCase):
             "body": {"something": "good"},
         }
         self.assertEqual(expected, actual)
+
+    def test_json_array_response(self):
+        with patch.object(
+            SourceHttpRequest,
+            attribute="_make_request",
+            return_value=MockResponse(
+                json_data=[
+                    ["foo", "bar"],
+                    ["test", 10],
+                    ["test2", 15],
+                ],
+                status_code=200,
+            ),
+        ):
+            expected = [
+                {"data": ["foo", "bar"]},
+                {"data": ["test", "10"]},
+                {"data": ["test2", "15"]},
+            ]
+            source = SourceHttpRequest()
+            results = [
+                r.record.data
+                for r in list(
+                    source.read(
+                        logger=None,
+                        state=None,
+                        catalog=None,
+                        config={},
+                    )
+                )
+            ]
+            self.assertEqual(expected, results)
