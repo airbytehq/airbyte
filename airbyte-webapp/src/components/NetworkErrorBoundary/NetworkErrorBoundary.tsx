@@ -14,9 +14,9 @@ class NetworkErrorBoundary extends React.Component<
   static getDerivedStateFromError(error: {
     message: string;
     status?: number;
-  }): { unReachServer: boolean } {
+  }): { unReachServer: boolean, status: number } {
     // Update state so the next render will show the fallback UI.
-    return { unReachServer: error.message === "Failed to fetch" };
+    return { unReachServer: error.message === "Failed to fetch", status:502 };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
