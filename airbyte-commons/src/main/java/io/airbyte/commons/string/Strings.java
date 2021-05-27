@@ -36,8 +36,8 @@ public class Strings {
         .collect(Collectors.joining(separator));
   }
 
-  public static String addRandomSuffix(String base, int suffixLength) {
-    return base + "-" + RandomStringUtils.randomAlphabetic(suffixLength).toLowerCase();
+  public static String addRandomSuffix(String base, String separator, int suffixLength) {
+    return base + separator + RandomStringUtils.randomAlphabetic(suffixLength).toLowerCase();
   }
 
 }

@@ -45,7 +45,7 @@ import org.testcontainers.shaded.com.google.common.io.Resources;
 
 public class KubePodProcessTest {
 
-  private static final KubernetesClient CLIENT = new DefaultKubernetesClient();
+  private static final KubernetesClient K8s = new DefaultKubernetesClient();
 
   private static final String ENTRYPOINT = "sh";
 
@@ -73,19 +73,19 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should error if image does not have the right env var set.")
     public void testGetCommandFromImageNoCommand() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, TEST_IMAGE_NO_VAR_NAME, "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(K8s, TEST_IMAGE_NO_VAR_NAME, "default"));
     }
 
     @Test
     @DisplayName("Should error if image does not exists.")
     public void testGetCommandFromImageMissingImage() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, "bad_missing_image", "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(K8s, "bad_missing_image", "default"));
     }
 
     @Test
     @DisplayName("Should retrieve the right command if image has the right env var set.")
     public void testGetCommandFromImageCommandPresent() throws IOException, InterruptedException {
-      var command = KubePodProcess.getCommandFromImage(CLIENT, TEST_IMAGE_WITH_VAR_NAME, "default");
+      var command = KubePodProcess.getCommandFromImage(K8s, TEST_IMAGE_WITH_VAR_NAME, "default");
       assertEquals(ENTRYPOINT, command);
     }
 
@@ -97,7 +97,7 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should error when the given pod does not exists.")
     public void testGetPodIpNoPod() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getPodIP(CLIENT, "pod-does-not-exist", "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getPodIP(K8s, "pod-does-not-exist", "default"));
     }
 
     @Test
@@ -124,13 +124,13 @@ public class KubePodProcessTest {
           .build();
 
       String namespace = "default";
-      Pod pod = CLIENT.pods().inNamespace(namespace).createOrReplace(podDef);
-      CLIENT.resource(pod).waitUntilReady(20, TimeUnit.SECONDS);
+      Pod pod = K8s.pods().inNamespace(namespace).createOrReplace(podDef);
+      K8s.resource(pod).waitUntilReady(20, TimeUnit.SECONDS);
 
-      var ip = KubePodProcess.getPodIP(CLIENT, podName, namespace);
-      var exp = CLIENT.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
+      var ip = KubePodProcess.getPodIP(K8s, podName, namespace);
+      var exp = K8s.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
       assertEquals(exp, ip);
-      CLIENT.resource(podDef).inNamespace(namespace).delete();
+      K8s.resource(podDef).inNamespace(namespace).delete();
     }
 
   }
@@ -138,18 +138,24 @@ public class KubePodProcessTest {
   @Test
   public void testGetStdOutLogs() throws IOException, InterruptedException {
     // we need to create an image from a java class
-    var podName = Strings.addRandomSuffix("worker-test-stdout", 5);
+    var podName = Strings.addRandomSuffix("worker-test-stdout", "-", 5);
     var printStdoutDockerfile = Resources.getResource(TEST_IMAGE_PRINT_STDOUT_PATH);
     DockerUtils.buildImage(printStdoutDockerfile.getPath(), TEST_IMAGE_PRINT_STDOUT_NAME);
 
     // this needs to be run as a Kube pod so networking lines up
-    var b = new KubePodProcess(CLIENT, podName, "default", TEST_IMAGE_PRINT_STDOUT_NAME, 9000, 9001, false);
+    var b = new KubePodProcess(K8s, podName, "default", TEST_IMAGE_PRINT_STDOUT_NAME, 9000, 9001, false);
     var c = b.getInputStream();
     var d = c.readAllBytes();
 
     System.out.println(new String(d));
 
     b.waitFor();
+  }
+
+  @Test
+  public void portforwardTest() {
+
+    K8s.pods().inNamespace("default").withName("").portForward();
   }
 
 }

@@ -69,7 +69,7 @@ public class KubePodProcess extends Process {
 
   // TODO(Davin): Cache this result.
   public static String getCommandFromImage(KubernetesClient client, String imageName, String namespace) throws InterruptedException {
-    final String podName = Strings.addRandomSuffix("airbyte-command-fetcher", 5);
+    final String podName = Strings.addRandomSuffix("airbyte-command-fetcher", "-", 5);
 
     Container commandFetcher = new ContainerBuilder()
         .withName("airbyte-command-fetcher")
