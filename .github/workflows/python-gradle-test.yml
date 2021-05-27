@@ -1,0 +1,29 @@
+name: python-gradle-test
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Indicates whether this is a dry-run or not. A dry-run publishes to Test PyPi. A proper run publishes to actual PyPi servers.'
+        required: false
+      comment-id:
+        description: 'The comment-id of the slash command. Used to update the comment with the status.'
+        required: false
+
+jobs:
+
+  build-cdk:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+    steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14'
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+      - name: Build CDK Package
+        run: ./gradlew --no-daemon :airbyte-cdk:python:build
