@@ -41,7 +41,7 @@
             }
         },
         "date":{
-            "type":["integer","null"]
+            "type":"integer"
         },
         "due_date":{
             "type":["integer","null"]
@@ -170,12 +170,10 @@
                         "maxLength":3
                     },
                     "date_from":{
-                        "type":"string",
-                        "format":"date-time"
+                        "type":"integer"
                     },
                     "date_to":{
-                        "type":"string",
-                        "format":"date-time"
+                        "type":"integer"
                     },
                     "quantity":{
                         "type":["integer","null"]
@@ -440,8 +438,7 @@
                         "minimum": 0
                     },
                     "applied_at":{
-                        "type":"string",
-                        "format":"date-time"
+                        "type":"integer"
                     },
                     "txn_status":{
                         "type":["array","null"],
@@ -451,8 +448,7 @@
                         }
                     },
                     "txn_date":{
-                        "type":["string","null"],
-                        "format":"date-time"
+                        "type":["integer","null"]
                     },
                     "txn_amount": {
                         "type":["integer","null"],
@@ -481,8 +477,7 @@
                         }
                     },
                     "created_at":{
-                        "type":"string",
-                        "format":"date-time"
+                        "type":["integer","null"]
                     },
                     "txn_status":{
                         "type":["array","null"],
@@ -512,8 +507,7 @@
                         "minimum": 0
                     },
                     "applied_at":{
-                        "type":"string",
-                        "format":"date-time"
+                        "type":"integer"
                     },
                     "cn_reason_code":{
                         "type":["array","null"],
@@ -527,8 +521,7 @@
                         "maxLength": 100
                     },
                     "cn_date":{
-                        "type":"string",
-                        "format":"date-time"
+                        "type":["integer","null"]
                     },
                     "cn_status":{
                         "type":["array","null"],
@@ -561,8 +554,7 @@
                         "maxLength": 100
                     },
                     "cn_date":{
-                        "type":"string",
-                        "format":"date-time"
+                        "type":["integer","null"]
                     },
                     "cn_total":{
                         "type":["integer","null"],
@@ -599,8 +591,7 @@
                         "maxLength": 100
                     },
                     "cn_date":{
-                        "type":"string",
-                        "format":"date-time"
+                        "type":["integer","null"]
                     },
                     "cn_total":{
                         "type":["integer","null"],
@@ -660,8 +651,7 @@
                         "maxLength": 50
                     },
                     "created_at":{
-                        "type":"string",
-                        "format": "date-time"
+                        "type":"integer"
                     }
                 }
             }

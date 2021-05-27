@@ -227,8 +227,7 @@
                                         "maxLength":33
                                     },
                                     "trial_end":{
-                                        "type":["string","null"],
-                                        "format": "date-time"
+                                        "type":["integer","null"]
                                     },
                                     "billing_cycles":{
                                         "type":["integer","null"],
@@ -304,8 +303,7 @@
                                         "maxLength":100
                                     },
                                     "last_charged_at":{
-                                        "type":"string",
-                                        "format":"date-time"
+                                        "type":"integer"
                                     }
                                 }
                             }
@@ -320,8 +318,7 @@
                                         "maxLength":50
                                     },
                                     "apply_till":{
-                                        "type":["string","null"],
-                                        "format":"date-time"
+                                        "type":["integer","null"]
                                     },
                                     "apply_count":{
                                         "type":"integer"
@@ -478,12 +475,10 @@
                             "type":"object",
                             "properties":{
                                 "contract_start":{
-                                    "type":"string",
-                                    "format":"date-time"
+                                    "type":"integer"
                                 },
                                 "contract_end":{
-                                    "type":"string",
-                                    "format":"date-time"
+                                    "type":"integer"
                                 },
                                 "billing_cycle":{
                                     "type":"integer",
@@ -515,8 +510,7 @@
                                     }
                                 },
                                 "created_at":{
-                                    "type":"string",
-                                    "format":"date-time"
+                                    "type":"integer"
                                 },
                                 "subscription_id":{
                                     "type":"string",
@@ -633,7 +627,7 @@
                             "type": "boolean"
                         },
                         "created_at":{
-                            "type":["integer","null"]
+                            "type":"integer"
                         },
                         "created_from_ip":{
                             "type":["string","null"],
@@ -1099,7 +1093,7 @@
                             }
                         },
                         "date":{
-                            "type":["integer","null"]
+                            "type":"integer"
                         },
                         "due_date":{
                             "type":["integer","null"]
@@ -1228,12 +1222,10 @@
                                         "maxLength":3
                                     },
                                     "date_from":{
-                                        "type":"string",
-                                        "format":"date-time"
+                                        "type":"integer"
                                     },
                                     "date_to":{
-                                        "type":"string",
-                                        "format":"date-time"
+                                        "type":"integer"
                                     },
                                     "quantity":{
                                         "type":["integer","null"]
@@ -1498,8 +1490,7 @@
                                         "minimum": 0
                                     },
                                     "applied_at":{
-                                        "type":"string",
-                                        "format":"date-time"
+                                        "type":"integer"
                                     },
                                     "txn_status":{
                                         "type":["array","null"],
@@ -1509,8 +1500,7 @@
                                         }
                                     },
                                     "txn_date":{
-                                        "type":["string","null"],
-                                        "format":"date-time"
+                                        "type":["integer","null"]
                                     },
                                     "txn_amount": {
                                         "type":["integer","null"],
@@ -1539,8 +1529,7 @@
                                         }
                                     },
                                     "created_at":{
-                                        "type":"string",
-                                        "format":"date-time"
+                                        "type":["integer","null"]
                                     },
                                     "txn_status":{
                                         "type":["array","null"],
@@ -1570,8 +1559,7 @@
                                         "minimum": 0
                                     },
                                     "applied_at":{
-                                        "type":"string",
-                                        "format":"date-time"
+                                        "type":"integer"
                                     },
                                     "cn_reason_code":{
                                         "type":["array","null"],
@@ -1585,8 +1573,7 @@
                                         "maxLength": 100
                                     },
                                     "cn_date":{
-                                        "type":"string",
-                                        "format":"date-time"
+                                        "type":["integer","null"]
                                     },
                                     "cn_status":{
                                         "type":["array","null"],
@@ -1619,8 +1606,7 @@
                                         "maxLength": 100
                                     },
                                     "cn_date":{
-                                        "type":"string",
-                                        "format":"date-time"
+                                        "type":["integer","null"]
                                     },
                                     "cn_total":{
                                         "type":["integer","null"],
@@ -1657,8 +1643,7 @@
                                         "maxLength": 100
                                     },
                                     "cn_date":{
-                                        "type":"string",
-                                        "format":"date-time"
+                                        "type":["integer","null"]
                                     },
                                     "cn_total":{
                                         "type":["integer","null"],
@@ -1718,8 +1703,7 @@
                                         "maxLength": 50
                                     },
                                     "created_at":{
-                                        "type":"string",
-                                        "format": "date-time"
+                                        "type":"integer"
                                     }
                                 }
                             }
@@ -2032,7 +2016,7 @@
                             "type":["integer","null"]
                         },
                         "created_at":{
-                            "type":["integer","null"]
+                            "type":"integer"
                         },
                         "status_update_at":{
                             "type":["integer","null"]

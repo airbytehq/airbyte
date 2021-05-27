@@ -136,7 +136,7 @@
             "type":["integer","null"]
         },
         "created_at":{
-            "type":["integer","null"]
+            "type":"integer"
         },
         "status_update_at":{
             "type":["integer","null"]

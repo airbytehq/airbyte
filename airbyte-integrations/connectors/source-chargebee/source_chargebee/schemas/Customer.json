@@ -65,7 +65,7 @@
             "type": "boolean"
         },
         "created_at":{
-            "type":["integer","null"]
+            "type":"integer"
         },
         "created_from_ip":{
             "type":["string","null"],

@@ -222,8 +222,7 @@
                         "maxLength":33
                     },
                     "trial_end":{
-                        "type":["string","null"],
-                        "format": "date-time"
+                        "type":["integer","null"]
                     },
                     "billing_cycles":{
                         "type":["integer","null"],
@@ -299,8 +298,7 @@
                         "maxLength":100
                     },
                     "last_charged_at":{
-                        "type":"string",
-                        "format":"date-time"
+                        "type":"integer"
                     }
                 }
             }
@@ -315,8 +313,7 @@
                         "maxLength":50
                     },
                     "apply_till":{
-                        "type":["string","null"],
-                        "format":"date-time"
+                        "type":["integer","null"]
                     },
                     "apply_count":{
                         "type":"integer"
@@ -461,6 +458,7 @@
                 },
                 "destination_url":{
                     "type":["string","null"],
+                    "format":"email",
                     "maxLength":250
                 },
                 "post_purchase_widget_enabled":{
@@ -472,12 +470,10 @@
             "type":"object",
             "properties":{
                 "contract_start":{
-                    "type":"string",
-                    "format":"date-time"
+                    "type":"integer"
                 },
                 "contract_end":{
-                    "type":"string",
-                    "format":"date-time"
+                    "type":"integer"
                 },
                 "billing_cycle":{
                     "type":"integer",
@@ -509,8 +505,7 @@
                     }
                 },
                 "created_at":{
-                    "type":"string",
-                    "format":"date-time"
+                    "type":"integer"
                 },
                 "subscription_id":{
                     "type":"string",
