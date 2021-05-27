@@ -63,8 +63,8 @@ public class S3Destination extends BaseConnector implements Destination {
 
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
-      ConfiguredAirbyteCatalog catalog,
-      Consumer<AirbyteMessage> outputRecordCollector) {
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector) {
     return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), catalog);
   }
 

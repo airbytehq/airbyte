@@ -38,9 +38,13 @@ public class S3DestinationConfig {
   private final S3FormatConfig formatConfig;
 
   public S3DestinationConfig(
-      String bucketName, String bucketPath, String bucketRegion,
-      String accessKeyId, String secretAccessKey, int partSize,
-      S3FormatConfig formatConfig) {
+                             String bucketName,
+                             String bucketPath,
+                             String bucketRegion,
+                             String accessKeyId,
+                             String secretAccessKey,
+                             int partSize,
+                             S3FormatConfig formatConfig) {
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
@@ -62,8 +66,7 @@ public class S3DestinationConfig {
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
         partSize,
-        S3FormatConfigs.getS3FormatConfig(config)
-    );
+        S3FormatConfigs.getS3FormatConfig(config));
   }
 
   public String getBucketName() {

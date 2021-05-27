@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.s3.csv;
 
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DATE_FORMAT;
@@ -57,7 +81,9 @@ public class S3CsvHandler implements S3Handler {
   private final CSVPrinter csvPrinter;
 
   public S3CsvHandler(S3DestinationConfig config,
-      AmazonS3 s3Client, ConfiguredAirbyteStream configuredStream, Timestamp uploadTimestamp)
+                      AmazonS3 s3Client,
+                      ConfiguredAirbyteStream configuredStream,
+                      Timestamp uploadTimestamp)
       throws IOException {
     this.config = config;
     this.formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
@@ -67,21 +93,20 @@ public class S3CsvHandler implements S3Handler {
     this.sortedHeaders = getSortedFields(configuredStream.getStream().getJsonSchema(),
         formatConfig);
 
-    // Prefix:    <namespace-if-exists>/<stream-name>
-    // Filename:  <upload-date>-<upload-millis>.csv
+    // Prefix: <namespace-if-exists>/<stream-name>
+    // Filename: <upload-date>-<upload-millis>.csv
     // Full path: <bucket-name>/<namespace-if-exists>/<stream-name>/<upload-date>-<upload-millis>.csv
     this.outputPrefix = getOutputPrefix(config.getBucketPath(), stream);
     String outputFilename = getOutputFilename(uploadTimestamp);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), outputPrefix,
-        outputFilename);
+    LOGGER.info("Full S3 path for stream '{}': {}", stream.getName(), objectKey);
 
     this.multipartUploadManager = new StreamTransferManager(config.getBucketName(), objectKey,
         s3Client)
-        .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-        .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-        .partSize(config.getPartSize());
+            .numUploadThreads(DEFAULT_UPLOAD_THREADS)
+            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
+            .partSize(config.getPartSize());
     this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
     Writer writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
     this.csvPrinter = new CSVPrinter(writer,
@@ -140,7 +165,7 @@ public class S3CsvHandler implements S3Handler {
 
   /**
    * <li>1. Create bucket if necessary.</li>
-   * <li>2. For OVERWRITE mode, delete all objects under the stream directory.</li>
+   * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
    */
   @Override
   public void initialize() {
