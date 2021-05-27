@@ -35,7 +35,6 @@ import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,7 +70,6 @@ import org.slf4j.LoggerFactory;
 public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
-  private static final int BATCH_SIZE = 10000;
 
   private final VoidCallable onStart;
   private final RecordWriter recordWriter;
@@ -81,21 +79,24 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<String, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount;
-  private final Consumer<AirbyteStateMessage> checkpointConsumer;
+  private final Consumer<AirbyteMessage> outputRecordCollector;
+  private final int queueBatchSize;
 
   private boolean hasStarted;
   private boolean hasClosed;
 
-  private AirbyteStateMessage lastCommittedState;
-  private AirbyteStateMessage pendingState;
+  private AirbyteMessage lastCommittedState;
+  private AirbyteMessage pendingState;
 
   public BufferedStreamConsumer(Consumer<AirbyteMessage> outputRecordCollector,
                                 VoidCallable onStart,
                                 RecordWriter recordWriter,
                                 CheckedConsumer<Boolean, Exception> onClose,
                                 ConfiguredAirbyteCatalog catalog,
-                                CheckedFunction<String, Boolean, Exception> isValidRecord) {
-    this.checkpointConsumer = (message) -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.STATE).withState(message));
+                                CheckedFunction<String, Boolean, Exception> isValidRecord,
+                                int queueBatchSize) {
+    this.outputRecordCollector = outputRecordCollector;
+    this.queueBatchSize = queueBatchSize;
     this.hasStarted = false;
     this.hasClosed = false;
     this.onStart = onStart;
@@ -104,7 +105,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.catalog = catalog;
     this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     this.isValidRecord = isValidRecord;
-    this.buffer = new ArrayList<>(BATCH_SIZE);
+    this.buffer = new ArrayList<>(queueBatchSize);
 
     this.pairToIgnoredRecordCount = new HashMap<>();
   }
@@ -141,11 +142,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
       buffer.add(message);
 
-      if (buffer.size() == BATCH_SIZE) {
+      if (buffer.size() == queueBatchSize) {
         flushQueueToDestination();
       }
     } else if (message.getType() == Type.STATE) {
-      pendingState = message.getState();
+      pendingState = message;
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
@@ -196,10 +197,10 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       // enable checkpointing, we will need to get feedback from onClose on whether any data was persisted
       // or not. If it was then, the state message will be emitted.
       if (!hasFailed && lastCommittedState != null) {
-        checkpointConsumer.accept(lastCommittedState);
+        outputRecordCollector.accept(lastCommittedState);
       }
     } catch (Exception e) {
-      LOGGER.error("on close failed.");
+      LOGGER.error("on close failed.", e);
     }
   }
 
