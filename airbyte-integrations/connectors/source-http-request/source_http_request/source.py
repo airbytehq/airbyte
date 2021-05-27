@@ -62,10 +62,20 @@ class SourceHttpRequest(Source):
         }
 
         # json body will be returned as the "data" stream". we can't know its schema ahead of time, so we assume it's object (i.e. valid json).
-        return AirbyteCatalog(streams=[AirbyteStream(name=SourceHttpRequest.STREAM_NAME, json_schema=json_schema)])
+        return AirbyteCatalog(
+            streams=[
+                AirbyteStream(
+                    name=SourceHttpRequest.STREAM_NAME, json_schema=json_schema
+                )
+            ]
+        )
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self,
+        logger: AirbyteLogger,
+        config: json,
+        catalog: ConfiguredAirbyteCatalog,
+        state: Dict[str, any],
     ) -> Generator[AirbyteMessage, None, None]:
         r = self._make_request(config)
         if r.status_code != 200:
@@ -73,6 +83,11 @@ class SourceHttpRequest(Source):
 
         # need to eagerly fetch the json.
         data = r.json()
+
+        if isinstance(data, list) and isinstance(data[0], list):
+            # found list of list
+            data = [{"data": records} for records in data]
+
         if not isinstance(data, list):
             data = [data]
 
@@ -80,7 +95,9 @@ class SourceHttpRequest(Source):
             yield AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
-                    stream=SourceHttpRequest.STREAM_NAME, data=record, emitted_at=int(datetime.now().timestamp()) * 1000
+                    stream=SourceHttpRequest.STREAM_NAME,
+                    data=record,
+                    emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
 
