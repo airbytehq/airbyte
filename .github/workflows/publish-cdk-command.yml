@@ -12,10 +12,13 @@ on:
 jobs:
   publish-cdk:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
     steps:
       - uses: actions/setup-python@v2
         with:
-          python-version: '3.7'
+          python-version: ${{ matrix.python-version }}
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
