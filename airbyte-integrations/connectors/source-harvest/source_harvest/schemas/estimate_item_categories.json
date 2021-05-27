@@ -8,15 +8,6 @@
     "name": {
       "type": ["null", "string"]
     },
-    "unit_name": {
-      "type": ["null", "string"]
-    },
-    "unit_price": {
-      "type": ["null", "number"]
-    },
-    "is_active": {
-      "type": ["null", "boolean"]
-    },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"

@@ -1,5 +1,77 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "contacts": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "clients": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "invoices": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "invoice_messages": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "invoice_payments": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "invoice_item_categories": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "estimates": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "estimate_messages": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "estimate_item_categories": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "expenses": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "expense_categories": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "tasks": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "time_entries": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "user_assignments": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "task_assignments": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "projects": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "roles": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "users": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "billable_rates": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "cost_rates": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "project_assignments": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "expenses_clients": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "expenses_projects": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "expenses_categories": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "expenses_team": {
+    "updated_at": "2217-06-26T21:20:07Z"
   }
 }

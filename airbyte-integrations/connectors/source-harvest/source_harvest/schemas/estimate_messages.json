@@ -5,26 +5,20 @@
     "id": {
       "type": ["null", "integer"]
     },
-    "title": {
+    "sent_by": {
       "type": ["null", "string"]
     },
-    "first_name": {
+    "sent_by_email": {
       "type": ["null", "string"]
     },
-    "last_name": {
+    "sent_from": {
       "type": ["null", "string"]
     },
-    "email": {
+    "sent_from_email": {
       "type": ["null", "string"]
     },
-    "phone_office": {
-      "type": ["null", "string"]
-    },
-    "phone_mobile": {
-      "type": ["null", "string"]
-    },
-    "fax": {
-      "type": ["null", "string"]
+    "send_me_a_copy": {
+      "type": ["null", "boolean"]
     },
     "created_at": {
       "type": ["null", "string"],
@@ -34,16 +28,17 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "client": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "name": {
-          "type": ["null", "string"]
-        }
-      }
+    "recipients": {
+      "type": ["null", "array"]
+    },
+    "event_type": {
+      "type": ["null", "string"]
+    },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "body": {
+      "type": ["null", "string"]
     }
   }
 }

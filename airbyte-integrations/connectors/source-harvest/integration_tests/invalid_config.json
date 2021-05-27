@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_token": "1111111.aa.wrong-api-token",
+  "account_id": "1111111",
+  "updated_since": "1000-06-26T21:20:07Z"
 }
