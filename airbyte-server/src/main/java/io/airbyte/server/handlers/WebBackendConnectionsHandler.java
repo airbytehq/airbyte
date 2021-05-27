@@ -47,6 +47,7 @@ import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.OperationCreate;
+import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
@@ -279,11 +280,12 @@ public class WebBackendConnectionsHandler {
         connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(webBackendConnectionUpdate.getConnectionId()));
     final List<UUID> originalOperationIds = new ArrayList<>(connectionRead.getOperationIds());
     final List<UUID> operationIds = new ArrayList<>();
-    for (var operationUpdate : webBackendConnectionUpdate.getWithOperations()) {
-      if (!originalOperationIds.contains(operationUpdate.getOperationId())) {
-        final OperationCreate operationCreate = toOperationCreate(operationUpdate);
+    for (var operationCreateOrUpdate : webBackendConnectionUpdate.getOperations()) {
+      if (operationCreateOrUpdate.getOperationId() == null || !originalOperationIds.contains(operationCreateOrUpdate.getOperationId())) {
+        final OperationCreate operationCreate = toOperationCreate(operationCreateOrUpdate);
         operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
       } else {
+        final OperationUpdate operationUpdate = toOperationUpdate(operationCreateOrUpdate);
         operationIds.add(operationsHandler.updateOperation(operationUpdate).getOperationId());
       }
     }
@@ -293,13 +295,24 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static OperationCreate toOperationCreate(OperationUpdate operationUpdate) {
+  protected static OperationCreate toOperationCreate(OperationCreateOrUpdate operationCreateOrUpdate) {
     OperationCreate operationCreate = new OperationCreate();
 
-    operationCreate.name(operationUpdate.getName());
-    operationCreate.operatorConfiguration(operationUpdate.getOperatorConfiguration());
+    operationCreate.name(operationCreateOrUpdate.getName());
+    operationCreate.operatorConfiguration(operationCreateOrUpdate.getOperatorConfiguration());
 
     return operationCreate;
+  }
+
+  @VisibleForTesting
+  protected static OperationUpdate toOperationUpdate(OperationCreateOrUpdate operationCreateOrUpdate) {
+    OperationUpdate operationUpdate = new OperationUpdate();
+
+    operationUpdate.operationId(operationCreateOrUpdate.getOperationId());
+    operationUpdate.name(operationCreateOrUpdate.getName());
+    operationUpdate.operatorConfiguration(operationCreateOrUpdate.getOperatorConfiguration());
+
+    return operationUpdate;
   }
 
   @VisibleForTesting

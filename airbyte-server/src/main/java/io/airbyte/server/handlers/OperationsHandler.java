@@ -31,6 +31,7 @@ import io.airbyte.api.model.CheckOperationRead;
 import io.airbyte.api.model.CheckOperationRead.StatusEnum;
 import io.airbyte.api.model.ConnectionIdRequestBody;
 import io.airbyte.api.model.OperationCreate;
+import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
@@ -68,9 +69,9 @@ public class OperationsHandler {
     this(configRepository, UUID::randomUUID);
   }
 
-  public CheckOperationRead checkCreateOperation(OperationCreate operationCreate) {
+  public CheckOperationRead checkOperation(OperationCreateOrUpdate operationCreateOrUpdate) {
     try {
-      toStandardSyncOperation(operationCreate);
+      toStandardSyncOperation(operationCreateOrUpdate);
     } catch (IllegalArgumentException e) {
       return new CheckOperationRead().status(StatusEnum.FAILED)
           .message(e.getMessage());
@@ -107,15 +108,25 @@ public class OperationsHandler {
     return standardSyncOperation;
   }
 
-  public CheckOperationRead checkUpdateOperation(OperationUpdate operationUpdate) {
-    try {
-      final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationUpdate.getOperationId());
-      updateOperation(operationUpdate, standardSyncOperation);
-    } catch (IllegalArgumentException | JsonValidationException | ConfigNotFoundException | IOException e) {
-      return new CheckOperationRead().status(StatusEnum.FAILED)
-          .message(e.getMessage());
+  private static StandardSyncOperation toStandardSyncOperation(OperationCreateOrUpdate operationCreate) {
+    final StandardSyncOperation standardSyncOperation = new StandardSyncOperation()
+        .withName(operationCreate.getName())
+        .withOperatorType(Enums.convertTo(operationCreate.getOperatorConfiguration().getOperatorType(), OperatorType.class))
+        .withTombstone(false);
+    if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.NORMALIZATION) {
+      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getNormalization() != null);
+      standardSyncOperation.withOperatorNormalization(new OperatorNormalization()
+          .withOption(Enums.convertTo(operationCreate.getOperatorConfiguration().getNormalization().getOption(), Option.class)));
     }
-    return new CheckOperationRead().status(StatusEnum.SUCCEEDED);
+    if (operationCreate.getOperatorConfiguration().getOperatorType() == io.airbyte.api.model.OperatorType.DBT) {
+      Preconditions.checkArgument(operationCreate.getOperatorConfiguration().getDbt() != null);
+      standardSyncOperation.withOperatorDbt(new OperatorDbt()
+          .withGitRepoUrl(operationCreate.getOperatorConfiguration().getDbt().getGitRepoUrl())
+          .withGitRepoBranch(operationCreate.getOperatorConfiguration().getDbt().getGitRepoBranch())
+          .withDockerImage(operationCreate.getOperatorConfiguration().getDbt().getDockerImage())
+          .withDbtArguments(operationCreate.getOperatorConfiguration().getDbt().getDbtArguments()));
+    }
+    return standardSyncOperation;
   }
 
   public OperationRead updateOperation(OperationUpdate operationUpdate)

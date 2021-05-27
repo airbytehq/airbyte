@@ -279,8 +279,7 @@ font-style: italic;
   </ul>
   <h4><a href="#Operation">Operation</a></h4>
   <ul>
-  <li><a href="#checkOperationCreate"><code><span class="http-method">post</span> /v1/operations/check</code></a></li>
-  <li><a href="#checkOperationUpdate"><code><span class="http-method">post</span> /v1/operations/check_for_update</code></a></li>
+  <li><a href="#checkOperation"><code><span class="http-method">post</span> /v1/operations/check</code></a></li>
   <li><a href="#createOperation"><code><span class="http-method">post</span> /v1/operations/create</code></a></li>
   <li><a href="#deleteOperation"><code><span class="http-method">post</span> /v1/operations/delete</code></a></li>
   <li><a href="#getOperation"><code><span class="http-method">post</span> /v1/operations/get</code></a></li>
@@ -2370,11 +2369,11 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="Operation">Operation</a></h1>
-  <div class="method"><a name="checkOperationCreate"/>
+  <div class="method"><a name="checkOperation"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/operations/check</code></pre></div>
-    <div class="method-summary">Check if an operation to be created is valid (<span class="nickname">checkOperationCreate</span>)</div>
+    <div class="method-summary">Check if an operation to be created is valid (<span class="nickname">checkOperation</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -2386,63 +2385,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">OperationCreate <a href="#OperationCreate">OperationCreate</a> (required)</div>
-
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
-
-    </div>  <!-- field-items -->
-
-
-
-
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#CheckOperationRead">CheckOperationRead</a>
-      
-    </div>
-
-    <!--Todo: process Response Object and its headers, schema, examples -->
-
-    <h3 class="field-label">Example data</h3>
-    <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "message" : "message",
-  "status" : "succeeded"
-}</code></pre>
-
-    <h3 class="field-label">Produces</h3>
-    This API call produces the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Responses</h3>
-    <h4 class="field-label">200</h4>
-    Successful operation
-        <a href="#CheckOperationRead">CheckOperationRead</a>
-    <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
-  </div> <!-- method -->
-  <hr/>
-  <div class="method"><a name="checkOperationUpdate"/>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/operations/check_for_update</code></pre></div>
-    <div class="method-summary">Check if an operation to be updated is valid (<span class="nickname">checkOperationUpdate</span>)</div>
-    <div class="method-notes"></div>
-
-
-    <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
-    <ul>
-      <li><code>application/json</code></li>
-    </ul>
-
-    <h3 class="field-label">Request body</h3>
-    <div class="field-items">
-      <div class="param">OperationUpdate <a href="#OperationUpdate">OperationUpdate</a> (required)</div>
+      <div class="param">OperationCreateOrUpdate <a href="#OperationCreateOrUpdate">OperationCreateOrUpdate</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -5085,6 +5028,7 @@ font-style: italic;
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
     <li><a href="#OperationCreate"><code>OperationCreate</code> - </a></li>
+    <li><a href="#OperationCreateOrUpdate"><code>OperationCreateOrUpdate</code> - </a></li>
     <li><a href="#OperationIdRequestBody"><code>OperationIdRequestBody</code> - </a></li>
     <li><a href="#OperationRead"><code>OperationRead</code> - </a></li>
     <li><a href="#OperationReadList"><code>OperationReadList</code> - </a></li>
@@ -5548,6 +5492,15 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="OperationCreateOrUpdate"><code>OperationCreateOrUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">operationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="OperationIdRequestBody"><code>OperationIdRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -5850,7 +5803,7 @@ font-style: italic;
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">withOperations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationUpdate">array[OperationUpdate]</a></span>  </div>
+<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreateOrUpdate">array[OperationCreateOrUpdate]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5858,7 +5811,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
-<div class="param">withOperations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationUpdate">array[OperationUpdate]</a></span>  </div>
+<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreateOrUpdate">array[OperationCreateOrUpdate]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

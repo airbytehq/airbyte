@@ -54,6 +54,7 @@ import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobStatus;
 import io.airbyte.api.model.JobWithAttemptsRead;
+import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
 import io.airbyte.api.model.OperationUpdate;
@@ -378,16 +379,17 @@ class WebBackendConnectionsHandlerTest {
 
   @Test
   void testUpdateConnectionWithOperations() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final OperationUpdate operationUpdate = new OperationUpdate()
+    final OperationCreateOrUpdate operationCreateOrUpdate = new OperationCreateOrUpdate()
         .name("Test Operation")
         .operationId(connectionRead.getOperationIds().get(0));
+    final OperationUpdate operationUpdate = WebBackendConnectionsHandler.toOperationUpdate(operationCreateOrUpdate);
     WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
         .prefix(expected.getPrefix())
         .connectionId(expected.getConnectionId())
         .schedule(expected.getSchedule())
         .status(expected.getStatus())
         .syncCatalog(expected.getSyncCatalog())
-        .withOperations(List.of(operationUpdate));
+        .operations(List.of(operationCreateOrUpdate));
 
     when(connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(expected.getConnectionId()))).thenReturn(
         new ConnectionRead()

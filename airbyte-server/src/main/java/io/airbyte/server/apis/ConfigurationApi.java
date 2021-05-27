@@ -54,6 +54,7 @@ import io.airbyte.api.model.LogsRequestBody;
 import io.airbyte.api.model.Notification;
 import io.airbyte.api.model.NotificationRead;
 import io.airbyte.api.model.OperationCreate;
+import io.airbyte.api.model.OperationCreateOrUpdate;
 import io.airbyte.api.model.OperationIdRequestBody;
 import io.airbyte.api.model.OperationRead;
 import io.airbyte.api.model.OperationReadList;
@@ -415,8 +416,8 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   // Operations
 
   @Override
-  public CheckOperationRead checkOperationCreate(OperationCreate operationCreate) {
-    return execute(() -> operationsHandler.checkCreateOperation(operationCreate));
+  public CheckOperationRead checkOperation(OperationCreateOrUpdate operationCreateOrUpdate) {
+    return execute(() -> operationsHandler.checkOperation(operationCreateOrUpdate));
   }
 
   @Override
@@ -440,11 +441,6 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   @Override
   public OperationRead getOperation(OperationIdRequestBody operationIdRequestBody) {
     return execute(() -> operationsHandler.getOperation(operationIdRequestBody));
-  }
-
-  @Override
-  public CheckOperationRead checkOperationUpdate(OperationUpdate operationUpdate) {
-    return execute(() -> operationsHandler.checkUpdateOperation(operationUpdate));
   }
 
   @Override

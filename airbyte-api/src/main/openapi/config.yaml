@@ -911,12 +911,12 @@ paths:
       tags:
         - operation
       summary: Check if an operation to be created is valid
-      operationId: checkOperationCreate
+      operationId: checkOperation
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OperationCreate"
+              $ref: "#/components/schemas/OperationCreateOrUpdate"
         required: true
       responses:
         "200":
@@ -946,27 +946,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OperationRead"
-        "422":
-          $ref: "#/components/responses/InvalidInput"
-  /v1/operations/check_for_update:
-    post:
-      tags:
-        - operation
-      summary: Check if an operation to be updated is valid
-      operationId: checkOperationUpdate
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/OperationUpdate"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CheckOperationRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/operations/update:
@@ -2025,10 +2004,10 @@ components:
           properties:
             withRefreshedCatalog:
               type: boolean
-            withOperations:
+            operations:
               type: array
               items:
-                $ref: "#/components/schemas/OperationUpdate"
+                $ref: "#/components/schemas/OperationCreateOrUpdate"
     ConnectionRead:
       type: object
       required:
@@ -2119,6 +2098,18 @@ components:
       type: object
       required:
         - operationId
+        - name
+        - operatorConfiguration
+      properties:
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+    OperationCreateOrUpdate:
+      type: object
+      required:
         - name
         - operatorConfiguration
       properties:
