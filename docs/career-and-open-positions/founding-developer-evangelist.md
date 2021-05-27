@@ -1,8 +1,8 @@
-# Senior Developer Advocate
+# Founding Developer Evangelist
 
 ## **About Airbyte**
 
-[Airbyte](http://airbyte.io) is the upcoming open-source standard for EL\(T\). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs.
+[Airbyte](http://airbyte.io) is the upcoming open-source standard for EL(T). We enable data teams to replicate data from applications, APIs, and databases to data warehouses, lakes, and other destinations. We believe only an open-source approach can solve the problem of data integration, as it enables us to cover the long tail of integrations while enabling teams to adapt prebuilt connectors to their needs. 
 
 Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our **[company handbook](https://handbook.airbyte.io)**, **[culture & values](https://handbook.airbyte.io/company/culture-and-values)**, **[strategy](https://handbook.airbyte.io/strategy/strategy)** and **[roadmap](../project-overview/roadmap.md)** are open to all.
 
@@ -10,20 +10,20 @@ We're backed by some of the world's [top investors](./#our-investors) and believ
 
 ## **Description**
 
-As a Senior Developer Advocate, you will own three priorities:
+As our first Developer Evangelist, you will have two focuses:
+1. **Building a content hub focused on data engineering** (and not Airbyte per se), featuring a podcast that brings thought leaders and community members into the conversation. This will be supplemented by a rich catalog of written content focused on increasing Airbyte’s share of voice in the data integration space.
+2. **Launching a meetup program around data engineering**, leveraging the content hub’s brand
 
-1. **Ensure Airbyte provides a world class contributor experience**. This can be anything from building tutorials and documentation or advocating for users to the product & engineering team to brainstorming and executing on new ideas. 
-2. **Foster & develop the Airbyte community of users and contributors**. We want our community to have such an amazing experience with Airbyte that they become our evangelists outside the company. 
-3. **Generate awareness about Airbyte**. We want Airbyte to be top of mind for anyone looking for an ELT solution, OSS or otherwise. 
-
-This is a function-founding role: you'll have a large ownership over building out Airbyte's developer advocacy program. You'll collaborate closely with the founders, the core team, and the community. You'll take on all sorts of tasks from writing sample code or setting up a swag program to shaping the vision for developer advocacy at Airbyte.
+The goal of the developer evangelism program is to make Airbyte’s content hub the best place to get thoughtful content on data engineering. As the first member of our developer evangelism team, you will work closely with the founders and our growing community team. 
 
 ## **Responsibilities**
 
-* Help us provide the most frictionless experience to our audience, by constantly improving our documentation and tutorials
-* Organize or participate in \(online or offline\) events to give Airbyte a voice
+* Own the content hub’s content production and guest list 
+* Create data engineering thought leadership posts
+* Produce a podcast with guests/outside contributors
+* Collaborate with DevRel to produce high impact content and reach mass developers
 * Lead the conversation around the latest technology advancements and best practices in the developer community 
-* Channel information back to product and engineering about your learnings from the community
+* Lead the efforts in creating an international meetup program around the content hub
 * Be a force in the community!
 
 ## **Requirements**
@@ -37,7 +37,7 @@ This is a function-founding role: you'll have a large ownership over building ou
 
 ## **Location**
 
-North America.
+Remote but compatible with US timezones.
 
 ## **We provide**
 
