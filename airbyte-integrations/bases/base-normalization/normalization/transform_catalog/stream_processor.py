@@ -23,7 +23,6 @@
 #
 
 
-import hashlib
 import os
 from typing import Dict, List, Optional, Tuple
 
@@ -106,7 +105,6 @@ class StreamProcessor(object):
         self.json_path: List[str] = [stream_name]
         self.final_table_name: str = ""
         self.sql_outputs: Dict[str, str] = {}
-        self.local_registry: TableNameRegistry = TableNameRegistry(destination_type)
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
 
@@ -193,6 +191,12 @@ class StreamProcessor(object):
             tables_registry,
             from_table,
         )
+
+    def collect_table_names(self):
+        column_names = self.extract_column_names()
+        self.tables_registry.register_table(self.get_schema(True), self.get_schema(False), self.stream_name, self.json_path)
+        for child in self.find_children_streams(self.from_table, column_names):
+            child.collect_table_names()
 
     def process(self) -> List["StreamProcessor"]:
         """
@@ -583,12 +587,14 @@ from {{ from_table }}
         )
         return sql
 
-    def list_fields(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    @staticmethod
+    def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
         return [column_names[field][0] for field in column_names]
 
     def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
-        table_name, file_name = self.local_registry.register_stream(schema, self.stream_name, suffix, self.json_path)
+        table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix)
+        file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix)
         file = f"{file_name}.sql"
         if is_intermediate:
             if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:
@@ -625,16 +631,6 @@ from {{ from_table }}
             tags += "-intermediate"
         return f'"{tags}"'
 
-    def is_in_registry(self, schema: str, table_name: str) -> bool:
-        """
-        Check if schema . table_name already exists in:
-         - "global" tables_registry: recording all produced schema/table from previously processed streams.
-         - "local" local_registry: recording all produced schema/table from the current stream being processed.
-
-        Note, we avoid side-effets modifications to registries and perform only read operations here...
-        """
-        return self.tables_registry.contains(schema, table_name) or self.local_registry.contains(schema, table_name)
-
     def get_schema(self, is_intermediate: bool) -> str:
         if is_intermediate:
             return self.raw_schema
@@ -650,16 +646,6 @@ from {{ from_table }}
         Note that it might not be the actual table name in case of collisions with other streams (see actual_table_name)...
         """
         return self.name_transformer.normalize_table_name(self.stream_name)
-
-    def actual_table_name(self) -> str:
-        """
-        Record the final actual name of the table for this stream once it is written.
-        (to be used by children stream processors that need to still refer to their actual parent table)
-        """
-        if self.final_table_name:
-            return self.final_table_name
-        else:
-            raise KeyError("Final table name is not determined yet...")
 
     def sql_table_comment(self, include_from_table: bool = False) -> str:
         result = f"-- {self.normalized_stream_name()}"
@@ -683,7 +669,7 @@ from {{ from_table }}
     def unnesting_before_query(self) -> str:
         if self.parent and self.is_nested_array:
             parent_file_name = (
-                f"'{self.get_file_name(self.parent.stream_name, self.parent.get_schema(False), self.parent.actual_table_name())}'"
+                f"'{self.tables_registry.get_file_name(self.parent.get_schema(False), self.parent.json_path, self.parent.stream_name, '')}'"
             )
             parent_stream_name = f"'{self.parent.normalized_stream_name()}'"
             quoted_field = self.name_transformer.normalize_column_name(self.stream_name, in_jinja=True)
@@ -746,9 +732,3 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
                 if child:
                     result.update(child)
     return result
-
-
-def hash_name(input: str) -> str:
-    h = hashlib.sha1()
-    h.update(input.encode("utf-8"))
-    return h.hexdigest()[:3]

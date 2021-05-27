@@ -69,23 +69,26 @@ class CatalogProcessor:
         catalog = read_json(catalog_file)
         # print(json.dumps(catalog, separators=(",", ":")))
         substreams = []
-        for stream_processor in self.build_stream_processor(
+        stream_processors = self.build_stream_processor(
             catalog=catalog,
             json_column_name=json_column_name,
             default_schema=default_schema,
             name_transformer=self.name_transformer,
             destination_type=self.destination_type,
             tables_registry=tables_registry,
-        ):
+        )
+        for stream_processor in stream_processors:
             # Check properties
             if not stream_processor.properties:
                 raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
-
+            stream_processor.collect_table_names()
+        for conflict in tables_registry.resolve_names():
+            print(f"WARN: Resolving conflict: {conflict[0]}.{conflict[1]} from '{'.'.join(conflict[2])}' into {conflict[3]}")
+        for stream_processor in stream_processors:
             raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=False)
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
             nested_processors = stream_processor.process()
-            tables_registry = add_table_to_registry(tables_registry, stream_processor)
             if nested_processors and len(nested_processors) > 0:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
@@ -111,7 +114,7 @@ class CatalogProcessor:
             if "namespace" in stream_config:
                 schema = stream_config["namespace"]
 
-            schema_name = name_transformer.normalize_schema_name(schema)
+            schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
             raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=False)
@@ -167,7 +170,6 @@ class CatalogProcessor:
             for substream in children:
                 substream.tables_registry = tables_registry
                 nested_processors = substream.process()
-                tables_registry = add_table_to_registry(tables_registry, substream)
                 if nested_processors:
                     substreams += nested_processors
                 for file in substream.sql_outputs:
@@ -274,20 +276,6 @@ def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_na
         schema_to_source_tables[schema_name].add(table_name)
     else:
         raise KeyError(f"Duplicate table {table_name} in {schema_name}")
-
-
-def add_table_to_registry(tables_registry: TableNameRegistry, processor: StreamProcessor) -> TableNameRegistry:
-    """
-    Keeps track of all schema/table names created by this catalog, regardless of their destination schema.
-
-    Each StreamProcessor has its own "local" registry for schema/tables produced by the stream they are currently
-    processing. Here, we aggregate all "local" registries into a "global" one across all streams being
-    processed from this catalog.
-
-    @param tables_registry where all table names are recorded
-    @param processor the processor that created tables as part of its process
-    """
-    return tables_registry.merge_table_registry(processor.local_registry)
 
 
 def output_sql_file(file: str, sql: str):

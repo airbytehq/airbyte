@@ -2,11 +2,14 @@
   "streams": [
     {
       "stream": {
-        "name": "postgres_has_a_64_characters_limit_to_table_names_but_other_destinations_are_fine",
+        "name": "simple stream name",
+        "namespace": "namespace",
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
-            "id": { "type": ["null", "string"] }
+            "id": {
+              "type": ["null", "string"]
+            }
           }
         },
         "supported_sync_modes": ["incremental"],
@@ -19,11 +22,22 @@
     },
     {
       "stream": {
-        "name": "postgres_has_a_64_characters_and_not_more_limit_to_table_names_but_other_destinations_are_fine",
+        "name": "simple",
+        "namespace": "namespace",
         "json_schema": {
           "type": ["null", "object"],
           "properties": {
-            "id": { "type": ["null", "string"] }
+            "id": {
+              "type": ["null", "string"]
+            },
+            "stream_name": {
+              "type": ["null", "object"],
+              "properties": {
+                "id": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
           }
         },
         "supported_sync_modes": ["incremental"],

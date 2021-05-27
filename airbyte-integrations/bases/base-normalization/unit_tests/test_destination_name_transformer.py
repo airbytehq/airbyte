@@ -183,22 +183,22 @@ def test_normalize_column_name(input_str: str, destination_type: str, expected: 
         # below the limit
         ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh", "Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh"),
         # at the limit
-        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii_Jj", "Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii_Jj"),
+        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iii", "Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iii"),
         # over the limit
-        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii_Jjjj_Kk", "Aaaa_Bbbb_Cccc_Dddd_Ee___Gggg_Hhhh_Iiii_Jjjj_Kk"),
-        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_a_very_long_name_Ffff_Gggg_Hhhh_Iiii_Jjjj_Kk", "Aaaa_Bbbb_Cccc_Dddd_Ee___Gggg_Hhhh_Iiii_Jjjj_Kk"),
-        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii_Jjjj_Kkkk", "Aaaa_Bbbb_Cccc_Dddd_Ee__ggg_Hhhh_Iiii_Jjjj_Kkkk"),
-        ("ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz_0123456789", "ABCDEFGHIJKLMNOPQRSTUV__opqrstuvwxyz_0123456789"),
+        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii", "Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii"),
+        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_a_very_long_name_Ffff_Gggg_Hhhh_Iiii", "Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii"),
+        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii_Jjjj_Kkkk", "Aaaa_Bbbb_Cccc_Dddd___g_Hhhh_Iiii_Jjjj_Kkkk"),
+        ("ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz_0123456789", "ABCDEFGHIJKLMNOPQRST__qrstuvwxyz_0123456789"),
     ],
 )
 def test_truncate_identifier(input_str: str, expected: str):
     """
     Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
-    - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii_Jjjj_Kk`
-    - `Aaaa_Bbbb_Cccc_Dddd_Eeee_a_very_long_name_Ffff_Gggg_Hhhh_Iiii_Jjjj_Kk`
+    - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
+    - `Aaaa_Bbbb_Cccc_Dddd_Eeee_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
 
     Deciding on how to truncate (in the middle) are being verified in these tests.
-    In this instance, both strings ends up as:`Aaaa_Bbbb_Cccc_Dddd_Ee___Gggg_Hhhh_Iiii_Jjjj_Kk`
+    In this instance, both strings ends up as:`Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
     and can potentially cause a collision in table names.
 
     Note that dealing with such collisions is not part of `destination_name_transformer` but of the `stream_processor`.

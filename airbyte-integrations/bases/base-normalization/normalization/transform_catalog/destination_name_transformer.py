@@ -39,8 +39,9 @@ DESTINATION_SIZE_LIMITS = {
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
 TRUNCATE_DBT_RESERVED_SIZE = 12
-# we keep 4 characters for an underscore and 3 characters hash (of the schema)
-TRUNCATE_RESERVED_SIZE = 4
+# we keep 4 characters for 1 underscore and 3 characters for suffix (_ab1, _ab2, etc)
+# we keep 4 characters for 1 underscore and 3 characters hash (of the schema)
+TRUNCATE_RESERVED_SIZE = 8
 
 
 class DestinationNameTransformer:
@@ -103,7 +104,7 @@ class DestinationNameTransformer:
         @param input_name is the identifier name to middle truncate
         @param custom_limit uses a custom length as the max instead of the destination max length
         """
-        limit = custom_limit if custom_limit > 0 else self.get_name_max_length()
+        limit = custom_limit - 1 if custom_limit > 0 else self.get_name_max_length()
 
         if limit < len(input_name):
             middle = round(limit / 2)

@@ -1,0 +1,28 @@
+{
+  "_airbyte_namespace.simple stream name.simple stream name": [
+    "_airbyte_namespace",
+    "simple_stream_name_f35",
+    "_airbyte_namespace_simple_stream_name"
+  ],
+  "_airbyte_namespace.simple.simple": [
+    "_airbyte_namespace",
+    "simple",
+    "simple"
+  ],
+  "_airbyte_namespace.simple_stream_name.stream_name": [
+    "_airbyte_namespace",
+    "simple_b94_stream_name",
+    "_airbyte_namespace_simple_stream_name"
+  ],
+  "namespace.simple stream name.simple stream name": [
+    "namespace",
+    "simple_stream_name_f35",
+    "namespace_simple_stream_name"
+  ],
+  "namespace.simple.simple": ["namespace", "simple", "simple"],
+  "namespace.simple_stream_name.stream_name": [
+    "namespace",
+    "simple_b94_stream_name",
+    "namespace_simple_stream_name"
+  ]
+}
