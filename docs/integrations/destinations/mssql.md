@@ -12,7 +12,7 @@ Each stream will be output into its own table in SQL Server. Each table will con
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in SQL Server is `VARCHAR(64)`.
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in SQL Server is `DATETIMEOFFSET(7)`.
-* `_airbyte_data`: a JSON blob representing with the event data. The column type in SQL Server is `VARCHAR(MAX)`.
+* `_airbyte_data`: a JSON blob representing with the event data. The column type in SQL Server is `NVARCHAR(MAX)`.
 
 #### Features
 
