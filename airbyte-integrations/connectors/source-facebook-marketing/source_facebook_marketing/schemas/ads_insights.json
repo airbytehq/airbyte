@@ -1,5 +1,11 @@
 {
   "properties": {
+    "account_currency": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
     "account_id": {
       "type": [
         "null",
@@ -54,6 +60,12 @@
         "string"
       ]
     },
+    "attribution_setting": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
     "auction_bid": {
       "type": [
         "null",
@@ -102,7 +114,19 @@
         "number"
       ]
     },
+    "catalog_segment_actions": {
+      "$ref": "ads_action_stats.json"
+    },
     "catalog_segment_value": {
+      "$ref": "ads_action_stats.json"
+    },
+    "catalog_segment_value_mobile_purchase_roas": {
+      "$ref": "ads_action_stats.json"
+    },
+    "catalog_segment_value_omni_purchase_roas": {
+      "$ref": "ads_action_stats.json"
+    },
+    "catalog_segment_value_website_purchase_roas": {
       "$ref": "ads_action_stats.json"
     },
     "clicks": {
@@ -123,6 +147,12 @@
     "conversions": {
       "$ref": "ads_action_stats.json"
     },
+    "converted_product_quantity": {
+      "$ref": "ads_action_stats.json"
+    },
+    "converted_product_value": {
+      "$ref": "ads_action_stats.json"
+    },
     "cost_per_15_sec_video_view": {
       "$ref": "ads_action_stats.json"
     },
@@ -137,6 +167,12 @@
     },
     "cost_per_conversion": {
       "$ref": "ads_action_stats.json"
+    },
+    "cost_per_estimated_ad_recallers": {
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "cost_per_inline_link_click": {
       "type": [
@@ -167,9 +203,6 @@
         "null",
         "number"
       ]
-    },
-    "cost_per_unique_conversion": {
-      "$ref": "ads_action_stats.json"
     },
     "cost_per_unique_inline_link_click": {
       "type": [
@@ -231,6 +264,12 @@
         "string"
       ]
     },
+    "estimated_ad_recall_rate": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
     "estimated_ad_recall_rate_lower_bound": {
       "type": [
         "null",
@@ -238,6 +277,12 @@
       ]
     },
     "estimated_ad_recall_rate_upper_bound": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "estimated_ad_recallers": {
       "type": [
         "null",
         "number"
@@ -303,6 +348,24 @@
         "integer"
       ]
     },
+    "instant_experience_clicks_to_open": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "instant_experience_clicks_to_start": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "instant_experience_outbound_clicks": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
     "labels": {
       "type": [
         "null",
@@ -315,7 +378,16 @@
         "string"
       ]
     },
+    "mobile_app_purchase_roas": {
+      "$ref": "ads_action_stats.json"
+    },
     "objective": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "optimization_goal": {
       "type": [
         "null",
         "string"
@@ -326,6 +398,15 @@
     },
     "outbound_clicks_ctr": {
       "$ref": "ads_action_stats.json"
+    },
+    "purchase_roas": {
+      "$ref": "ads_action_stats.json"
+    },
+    "qualifying_question_qualify_answer_rate": {
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "quality_ranking": {
       "type": [
@@ -351,6 +432,9 @@
         "number"
       ]
     },
+    "store_visit_actions": {
+      "$ref": "ads_action_stats.json"
+    },
     "unique_actions": {
       "$ref": "ads_action_stats.json"
     },
@@ -359,9 +443,6 @@
         "null",
         "integer"
       ]
-    },
-    "unique_conversions": {
-      "$ref": "ads_action_stats.json"
     },
     "unique_ctr": {
       "type": [
@@ -439,10 +520,16 @@
     "video_play_retention_20_to_60s_actions": {
       "$ref": "ads_histogram_stats.json"
     },
+    "video_play_retention_graph_actions": {
+      "$ref": "ads_histogram_stats.json"
+    },
     "video_time_watched_actions": {
       "$ref": "ads_action_stats.json"
     },
     "website_ctr": {
+      "$ref": "ads_action_stats.json"
+    },
+    "website_purchase_roas": {
       "$ref": "ads_action_stats.json"
     },
     "wish_bid": {
