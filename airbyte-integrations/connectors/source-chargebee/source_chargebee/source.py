@@ -9,20 +9,12 @@ import backoff
 import chargebee
 from chargebee.main import ChargeBee
 from chargebee.list_result import ListResult  # stores next_offset
-from chargebee.environment import Environment
-from chargebee.models import Subscription, Customer, Invoice
-from chargebee.api_error import (
-    APIError,
-    PaymentError,
-    InvalidRequestError,
-    OperationFailedError,
-)
+from chargebee.models import Subscription, Customer, Invoice, Order
+from chargebee.api_error import from chargebee.api_error import OperationFailedError
 
 # Airbyte
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.models import AirbyteStream, SyncMode
 
 # Backoff params below
@@ -151,6 +143,9 @@ class InvoiceStream(ChargebeeStream):
     name = "invoice"
     api = Invoice
 
+class OrderStream(ChargebeeStream):
+    name = "order"
+    api = Order
 
 class SourceChargebee(AbstractSource):
     # Class variables
@@ -190,5 +185,6 @@ class SourceChargebee(AbstractSource):
             SubscriptionStream(),
             CustomerStream(),
             InvoiceStream(),
+            OrderStream(),
         ]
         return streams
