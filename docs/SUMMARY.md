@@ -32,6 +32,7 @@
   * [On AWS ECS \(Coming Soon\)](deploying-airbyte/on-aws-ecs.md)
 * [Connector Catalog](integrations/README.md)
   * [Sources](integrations/sources/README.md)
+    * [Amplitude](integrations/sources/amplitude.md)
     * [Appstore](integrations/sources/appstore.md)
     * [Braintree](integrations/sources/braintree.md)
     * [ClickHouse](integrations/sources/clickhouse.md)
