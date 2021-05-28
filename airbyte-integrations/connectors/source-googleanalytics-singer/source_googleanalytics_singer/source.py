@@ -43,7 +43,7 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
     tap_cmd = "tap-google-analytics"
     tap_name = "Google Analytics API"
     api_error = Exception
-    reports_to_read = []
+    reports_to_read = None
 
     # can be overridden to change an input config
     def configure(self, raw_config: json, temp_dir: str) -> json:
@@ -71,10 +71,12 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
         report_definition = (
             json.loads(pkgutil.get_data("tap_google_analytics", "defaults/default_report_definition.json")) + custom_reports_data
         )
-        new_report_definition = [i for i in report_definition if i["name"] in self.reports_to_read]
+        if self.reports_to_read is not None:
+            report_definition = [i for i in report_definition if i["name"] in self.reports_to_read]
+
         custom_reports = os.path.join(temp_dir, "custom_reports.json")
         with open(custom_reports, "w") as file:
-            file.write(json.dumps(new_report_definition))
+            file.write(json.dumps(report_definition))
 
         return custom_reports
 
