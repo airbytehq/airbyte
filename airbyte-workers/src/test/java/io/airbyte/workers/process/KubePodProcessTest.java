@@ -55,9 +55,6 @@ public class KubePodProcessTest {
   private static final String TEST_IMAGE_NO_VAR_PATH = "Dockerfile.no_var";
   private static final String TEST_IMAGE_NO_VAR_NAME = "worker-test:no-var";
 
-  private static final String TEST_IMAGE_PRINT_STDOUT_PATH = "Dockerfile.print_to_stdout";
-  private static final String TEST_IMAGE_PRINT_STDOUT_NAME = "worker-test:print-to-stdout";
-
   @BeforeAll
   public static void setup() {
     var varDockerfile = Resources.getResource(TEST_IMAGE_WITH_VAR_PATH);
