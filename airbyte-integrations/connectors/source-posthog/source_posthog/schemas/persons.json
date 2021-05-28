@@ -14,33 +14,7 @@
       }
     },
     "properties": {
-      "type": "object",
-      "properties": {
-        "$os": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "$browser": {
-          "type": "string"
-        },
-        "company_name": {
-          "type": "string"
-        },
-        "$browser_version": {
-          "type": "integer"
-        },
-        "$initial_referrer": {
-          "type": "string"
-        },
-        "$initial_referring_domain": {
-          "type": "string"
-        }
-      }
+      "type": "object"
     },
     "created_at": {
       "type": "string"

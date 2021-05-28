@@ -96,6 +96,12 @@
                   "type": "string"
                 }
               },
+              "$event_type": {
+                "type": "string"
+              },
+              "$ce_version": {
+                "type": "integer"
+              },
               "token": {
                 "type": "string"
               },
@@ -116,7 +122,39 @@
           "elements": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "tag_name": {
+                  "type": "string"
+                },
+                "attr_class": {
+                  "type": "string"
+                },
+                "href": {
+                  "type": "string"
+                },
+                "attr_id": {
+                  "type": "string"
+                },
+                "nth_child": {
+                  "type": "integer"
+                },
+                "nth_of_type": {
+                  "type": "integer"
+                },
+                "attributes": {
+                  "type": "object"
+                },
+                "order": {
+                  "type": "integer"
+                }
+              }
             }
           },
           "elements_chain": {

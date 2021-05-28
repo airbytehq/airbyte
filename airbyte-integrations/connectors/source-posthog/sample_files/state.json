@@ -1,5 +1,4 @@
 {
-  "dummy1": {},
-  "dummy2": {},
-  "dummy3": {}
+  "feature_flags": { "id": 697 },
+  "cohorts": { "id": 1149 }
 }

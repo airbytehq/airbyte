@@ -2,12 +2,38 @@
   "streams": [
     {
       "stream": {
-        "name": "dummy1",
+        "name": "elements",
         "json_schema": {
           "type": "object",
-          "title": "",
-          "description": "",
-          "properties": {}
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "tag_name": {
+              "type": "string"
+            },
+            "attr_class": {
+              "type": "string"
+            },
+            "href": {
+              "type": "string"
+            },
+            "attr_id": {
+              "type": "string"
+            },
+            "nth_child": {
+              "type": "integer"
+            },
+            "nth_of_type": {
+              "type": "integer"
+            },
+            "attributes": {
+              "type": "object"
+            },
+            "order": {
+              "type": "integer"
+            }
+          }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -17,14 +43,125 @@
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
-	{
+    {
       "stream": {
-        "name": "dummy2",
+        "name": "events",
         "json_schema": {
           "type": "object",
-          "title": "",
-          "description": "",
-          "properties": {}
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "distinct_id": {
+              "type": "string"
+            },
+            "properties": {
+              "type": "object",
+              "properties": {
+                "$os": {
+                  "type": "string"
+                },
+                "$browser": {
+                  "type": "string"
+                },
+                "$device_type": {
+                  "type": "string"
+                },
+                "$current_url": {
+                  "type": "string"
+                },
+                "$host": {
+                  "type": "string"
+                },
+                "$pathname": {
+                  "type": "string"
+                },
+                "$browser_version": {
+                  "type": "integer"
+                },
+                "$screen_height": {
+                  "type": "integer"
+                },
+                "$screen_width": {
+                  "type": "integer"
+                },
+                "$lib": {
+                  "type": "string"
+                },
+                "$lib_version": {
+                  "type": "string"
+                },
+                "$insert_id": {
+                  "type": "string"
+                },
+                "$time": {
+                  "type": "number"
+                },
+                "distinct_id": {
+                  "type": "string"
+                },
+                "$device_id": {
+                  "type": "string"
+                },
+                "$initial_referrer": {
+                  "type": "string"
+                },
+                "$initial_referring_domain": {
+                  "type": "string"
+                },
+                "$referrer": {
+                  "type": "string"
+                },
+                "$referring_domain": {
+                  "type": "string"
+                },
+                "$active_feature_flags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "token": {
+                  "type": "string"
+                },
+                "$ip": {
+                  "type": "string"
+                }
+              }
+            },
+            "event": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string"
+            },
+            "person": {
+              "type": "object",
+              "properties": {
+                "is_identified": {
+                  "type": "boolean"
+                },
+                "distinct_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "properties": {
+                  "type": "object"
+                }
+              }
+            },
+            "elements": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "elements_chain": {
+              "type": "string"
+            }
+          }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -34,14 +171,901 @@
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
-	{
+    {
       "stream": {
-        "name": "dummy3",
+        "name": "sessions",
         "json_schema": {
           "type": "object",
-          "title": "",
-          "description": "",
-          "properties": {}
+          "properties": {
+            "distinct_id": {
+              "type": "string"
+            },
+            "global_session_id": {
+              "type": "integer"
+            },
+            "length": {
+              "type": "integer"
+            },
+            "start_time": {
+              "type": "string"
+            },
+            "end_time": {
+              "type": "string"
+            },
+            "event_count": {
+              "type": "integer"
+            },
+            "events": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "distinct_id": {
+                    "type": "string"
+                  },
+                  "properties": {
+                    "type": "object",
+                    "properties": {
+                      "$os": {
+                        "type": "string"
+                      },
+                      "$browser": {
+                        "type": "string"
+                      },
+                      "$device_type": {
+                        "type": "string"
+                      },
+                      "$current_url": {
+                        "type": "string"
+                      },
+                      "$host": {
+                        "type": "string"
+                      },
+                      "$pathname": {
+                        "type": "string"
+                      },
+                      "$browser_version": {
+                        "type": "integer"
+                      },
+                      "$screen_height": {
+                        "type": "integer"
+                      },
+                      "$screen_width": {
+                        "type": "integer"
+                      },
+                      "$lib": {
+                        "type": "string"
+                      },
+                      "$lib_version": {
+                        "type": "string"
+                      },
+                      "$insert_id": {
+                        "type": "string"
+                      },
+                      "$time": {
+                        "type": "number"
+                      },
+                      "distinct_id": {
+                        "type": "string"
+                      },
+                      "$device_id": {
+                        "type": "string"
+                      },
+                      "$initial_referrer": {
+                        "type": "string"
+                      },
+                      "$initial_referring_domain": {
+                        "type": "string"
+                      },
+                      "$referrer": {
+                        "type": "string"
+                      },
+                      "$referring_domain": {
+                        "type": "string"
+                      },
+                      "$active_feature_flags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "token": {
+                        "type": "string"
+                      },
+                      "$ip": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "event": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string"
+                  },
+                  "person": {
+                    "type": "string"
+                  },
+                  "elements": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "elements_chain": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "properties": {
+              "type": "object"
+            },
+            "matching_events": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "email": {
+              "type": "string"
+            },
+            "session_recordings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "viewed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "sessions_recording",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "distinct_id": {
+              "type": "string"
+            },
+            "global_session_id": {
+              "type": "integer"
+            },
+            "length": {
+              "type": "integer"
+            },
+            "start_time": {
+              "type": "string"
+            },
+            "end_time": {
+              "type": "string"
+            },
+            "event_count": {
+              "type": "integer"
+            },
+            "events": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "distinct_id": {
+                    "type": "string"
+                  },
+                  "properties": {
+                    "type": "object",
+                    "properties": {
+                      "$os": {
+                        "type": "string"
+                      },
+                      "$browser": {
+                        "type": "string"
+                      },
+                      "$device_type": {
+                        "type": "string"
+                      },
+                      "$current_url": {
+                        "type": "string"
+                      },
+                      "$host": {
+                        "type": "string"
+                      },
+                      "$pathname": {
+                        "type": "string"
+                      },
+                      "$browser_version": {
+                        "type": "integer"
+                      },
+                      "$screen_height": {
+                        "type": "integer"
+                      },
+                      "$screen_width": {
+                        "type": "integer"
+                      },
+                      "$lib": {
+                        "type": "string"
+                      },
+                      "$lib_version": {
+                        "type": "string"
+                      },
+                      "$insert_id": {
+                        "type": "string"
+                      },
+                      "$time": {
+                        "type": "number"
+                      },
+                      "distinct_id": {
+                        "type": "string"
+                      },
+                      "$device_id": {
+                        "type": "string"
+                      },
+                      "$initial_referrer": {
+                        "type": "string"
+                      },
+                      "$initial_referring_domain": {
+                        "type": "string"
+                      },
+                      "$referrer": {
+                        "type": "string"
+                      },
+                      "$referring_domain": {
+                        "type": "string"
+                      },
+                      "token": {
+                        "type": "string"
+                      },
+                      "$active_feature_flags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "$ip": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "event": {
+                    "type": "string"
+                  },
+                  "timestamp": {
+                    "type": "string"
+                  },
+                  "person": {
+                    "type": "string"
+                  },
+                  "elements": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "elements_chain": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "properties": {
+              "type": "object"
+            },
+            "matching_events": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "email": {
+              "type": "string"
+            },
+            "session_recordings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "viewed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "persons",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "distinct_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "properties": {
+              "type": "object",
+              "properties": {
+                "$os": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "$browser": {
+                  "type": "string"
+                },
+                "company_name": {
+                  "type": "string"
+                },
+                "$browser_version": {
+                  "type": "integer"
+                },
+                "$initial_referrer": {
+                  "type": "string"
+                },
+                "$initial_referring_domain": {
+                  "type": "string"
+                }
+              }
+            },
+            "created_at": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "insights",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "filters": {
+              "type": "object",
+              "properties": {
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "math": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "order": {
+                        "type": "integer"
+                      },
+                      "properties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "math_property": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "display": {
+                  "type": "string"
+                },
+                "filters": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "insight": {
+                  "type": "string"
+                },
+                "session": {
+                  "type": "string"
+                },
+                "interval": {
+                  "type": "string"
+                },
+                "pagination": {
+                  "type": "object"
+                }
+              }
+            },
+            "filters_hash": {
+              "type": "string"
+            },
+            "order": {
+              "type": "string"
+            },
+            "deleted": {
+              "type": "boolean"
+            },
+            "dashboard": {
+              "type": "string"
+            },
+            "layouts": {
+              "type": "object"
+            },
+            "color": {
+              "type": "string"
+            },
+            "last_refresh": {
+              "type": "string"
+            },
+            "refreshing": {
+              "type": "boolean"
+            },
+            "result": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "saved": {
+              "type": "boolean"
+            },
+            "created_by": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "uuid": {
+                  "type": "string"
+                },
+                "distinct_id": {
+                  "type": "string"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "trends",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "order": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "math": {
+                  "type": "string"
+                },
+                "math_property": {
+                  "type": "string"
+                },
+                "properties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "label": {
+              "type": "string"
+            },
+            "count": {
+              "type": "number"
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "labels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "days": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "insights_sessions",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "labels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "days": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "label": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer"
+            },
+            "chartLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "insights_path",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string"
+            },
+            "source_id": {
+              "type": "string"
+            },
+            "target": {
+              "type": "string"
+            },
+            "target_id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "integer"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "feature_flags",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            },
+            "rollout_percentage": {
+              "type": "integer"
+            },
+            "filters": {
+              "type": "object",
+              "properties": {
+                "properties": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "deleted": {
+              "type": "boolean"
+            },
+            "active": {
+              "type": "boolean"
+            },
+            "created_by": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "distinct_id": {
+                  "type": "string"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                }
+              }
+            },
+            "created_at": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "annotations",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "content": {
+              "type": "string"
+            },
+            "date_marker": {
+              "type": "string"
+            },
+            "creation_type": {
+              "type": "string"
+            },
+            "dashboard_item": {
+              "type": "string"
+            },
+            "created_by": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "uuid": {
+                  "type": "string"
+                },
+                "distinct_id": {
+                  "type": "string"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                }
+              }
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "deleted": {
+              "type": "boolean"
+            },
+            "scope": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "cohorts",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "groups": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "days": {
+                    "type": "string"
+                  },
+                  "action_id": {
+                    "type": "string"
+                  },
+                  "properties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        },
+                        "operator": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "deleted": {
+              "type": "boolean"
+            },
+            "is_calculating": {
+              "type": "boolean"
+            },
+            "created_by": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "uuid": {
+                  "type": "string"
+                },
+                "distinct_id": {
+                  "type": "string"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                }
+              }
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "last_calculation": {
+              "type": "string"
+            },
+            "errors_calculating": {
+              "type": "integer"
+            },
+            "count": {
+              "type": "integer"
+            },
+            "is_static": {
+              "type": "boolean"
+            }
+          }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

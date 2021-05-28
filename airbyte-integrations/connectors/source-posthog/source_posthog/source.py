@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,46 +20,106 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
-import base64
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk import AirbyteLogger
+import requests
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .streams import (
     Annotations,
     Cohorts,
     Elements,
     Events,
+    EventsSessions,
+    EventsSessionsRecording,
     FeatureFlags,
     Insights,
     InsightsPath,
     InsightsSessions,
     Persons,
-    Sessions,
-    Trends
+    Trends,
 )
 
 
-
 class SourcePosthog(AbstractSource):
+    def _read_incremental(
+        self,
+        logger: AirbyteLogger,
+        stream_instance: Stream,
+        configured_stream: ConfiguredAirbyteStream,
+        connector_state: MutableMapping[str, Any],
+    ) -> Iterator[AirbyteMessage]:
+        stream_name = configured_stream.stream.name
+        stream_state = connector_state.get(stream_name, {})
+        if stream_state:
+            logger.info(f"Setting state of {stream_name} stream to {stream_state.get(stream_name)}")
+
+        checkpoint_interval = stream_instance.state_checkpoint_interval
+        slices = stream_instance.stream_slices(
+            cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
+        )
+        for slice_ in slices:
+            record_counter = 0
+            records = stream_instance.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice=slice_,
+                stream_state=stream_state,
+                cursor_field=configured_stream.cursor_field or None,
+            )
+            for record_data in records:
+                stream_state = stream_instance.get_updated_state(stream_state, record_data)
+                if isinstance(stream_state, tuple) and stream_state[0] < 0:
+                    print("DEBUG: reach broken value, stop stream")
+                    stream_state = stream_state[1]
+                    break
+                record_counter += 1
+                yield self._as_airbyte_record(stream_name, record_data)
+
+                if checkpoint_interval and record_counter % checkpoint_interval == 0:
+                    yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
+
+            yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            raise NotImplementedError
+            session = requests.Session()
+            session.headers["Authorization"] = "Bearer %s" % config["api_key"]
+            session.headers["Content-Type"] = "application/json"
+            session.headers["User-Agent"] = "posthog-python/1.4.0"
+            url_base = "https://app.posthog.com/"
+            response = session.get(url_base + "api/user")
+            if response.status_code != 200:
+                resp_json = response.json()
+                err_message = resp_json["detail"] if "detail" in resp_json else "unknown error"
+                # raise Exception(err_message) # if we need a python traceback in the log
+                return False, err_message
+
             return True, None
         except Exception as e:
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = None
-        raise NotImplementedError
+        authenticator = TokenAuthenticator(token=config["api_key"])
         streams_ = [
-            Dummy1(authenticator=authenticator),
-            Dummy2(authenticator=authenticator),
-            Dummy3(authenticator=authenticator)]
+            Annotations(authenticator=authenticator),
+            Cohorts(authenticator=authenticator),
+            Elements(authenticator=authenticator),
+            Events(authenticator=authenticator),
+            EventsSessions(authenticator=authenticator),
+            EventsSessionsRecording(authenticator=authenticator),
+            FeatureFlags(authenticator=authenticator),
+            Insights(authenticator=authenticator),
+            InsightsPath(authenticator=authenticator),
+            InsightsSessions(authenticator=authenticator),
+            Persons(authenticator=authenticator),
+            Trends(authenticator=authenticator),
+        ]
 
         return streams_
