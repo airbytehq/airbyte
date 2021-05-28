@@ -35,11 +35,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
@@ -54,80 +54,6 @@
             },
             "distinct_id": {
               "type": "string"
-            },
-            "properties": {
-              "type": "object",
-              "properties": {
-                "$os": {
-                  "type": "string"
-                },
-                "$browser": {
-                  "type": "string"
-                },
-                "$device_type": {
-                  "type": "string"
-                },
-                "$current_url": {
-                  "type": "string"
-                },
-                "$host": {
-                  "type": "string"
-                },
-                "$pathname": {
-                  "type": "string"
-                },
-                "$browser_version": {
-                  "type": "integer"
-                },
-                "$screen_height": {
-                  "type": "integer"
-                },
-                "$screen_width": {
-                  "type": "integer"
-                },
-                "$lib": {
-                  "type": "string"
-                },
-                "$lib_version": {
-                  "type": "string"
-                },
-                "$insert_id": {
-                  "type": "string"
-                },
-                "$time": {
-                  "type": "number"
-                },
-                "distinct_id": {
-                  "type": "string"
-                },
-                "$device_id": {
-                  "type": "string"
-                },
-                "$initial_referrer": {
-                  "type": "string"
-                },
-                "$initial_referring_domain": {
-                  "type": "string"
-                },
-                "$referrer": {
-                  "type": "string"
-                },
-                "$referring_domain": {
-                  "type": "string"
-                },
-                "$active_feature_flags": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "token": {
-                  "type": "string"
-                },
-                "$ip": {
-                  "type": "string"
-                }
-              }
             },
             "event": {
               "type": "string"
@@ -165,15 +91,15 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["timestamp"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["timestamp"],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
-        "name": "sessions",
+        "name": "events_sessions",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -272,6 +198,12 @@
                           "type": "string"
                         }
                       },
+                      "$event_type": {
+                        "type": "string"
+                      },
+                      "$ce_version": {
+                        "type": "integer"
+                      },
                       "token": {
                         "type": "string"
                       },
@@ -292,7 +224,39 @@
                   "elements": {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string"
+                        },
+                        "text": {
+                          "type": "string"
+                        },
+                        "tag_name": {
+                          "type": "string"
+                        },
+                        "attr_class": {
+                          "type": "string"
+                        },
+                        "href": {
+                          "type": "string"
+                        },
+                        "attr_id": {
+                          "type": "string"
+                        },
+                        "nth_child": {
+                          "type": "integer"
+                        },
+                        "nth_of_type": {
+                          "type": "integer"
+                        },
+                        "attributes": {
+                          "type": "object"
+                        },
+                        "order": {
+                          "type": "integer"
+                        }
+                      }
                     }
                   },
                   "elements_chain": {
@@ -329,17 +293,17 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
-        "name": "sessions_recording",
+        "name": "events_sessions_recording",
         "json_schema": {
           "type": "object",
           "properties": {
@@ -495,11 +459,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
@@ -522,33 +486,7 @@
               }
             },
             "properties": {
-              "type": "object",
-              "properties": {
-                "$os": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string"
-                },
-                "$browser": {
-                  "type": "string"
-                },
-                "company_name": {
-                  "type": "string"
-                },
-                "$browser_version": {
-                  "type": "integer"
-                },
-                "$initial_referrer": {
-                  "type": "string"
-                },
-                "$initial_referring_domain": {
-                  "type": "string"
-                }
-              }
+              "type": "object"
             },
             "created_at": {
               "type": "string"
@@ -557,10 +495,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["created_at"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["created_at"],
       "destination_sync_mode": "append"
     },
     {
@@ -688,11 +626,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
@@ -757,11 +695,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
@@ -800,11 +738,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
@@ -831,11 +769,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
@@ -863,18 +801,7 @@
                 "properties": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "properties": {
-                      "key": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string"
-                      },
-                      "value": {
-                        "type": "string"
-                      }
-                    }
+                    "type": "object"
                   }
                 }
               }
@@ -909,10 +836,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["id"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["id"],
       "destination_sync_mode": "append"
     },
     {
@@ -970,11 +897,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
@@ -1004,21 +931,7 @@
                   "properties": {
                     "type": "array",
                     "items": {
-                      "type": "object",
-                      "properties": {
-                        "key": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "string"
-                        },
-                        "operator": {
-                          "type": "string"
-                        }
-                      }
+                      "type": "object"
                     }
                   }
                 }
@@ -1069,10 +982,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["id"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["id"],
       "destination_sync_mode": "append"
     }
   ]

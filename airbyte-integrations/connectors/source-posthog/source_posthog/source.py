@@ -76,7 +76,6 @@ class SourcePosthog(AbstractSource):
             for record_data in records:
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
                 if isinstance(stream_state, tuple) and stream_state[0] < 0:
-                    print("DEBUG: reach broken value, stop stream")
                     stream_state = stream_state[1]
                     break
                 record_counter += 1
