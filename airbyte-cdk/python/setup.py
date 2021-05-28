@@ -72,7 +72,7 @@ setup(
         "PyYAML==5.4",
         "requests",
     ],
-    python_requires=">=3.7.9",
+    python_requires=">=3.7.0",
     extras_require={
         "dev": [
             "MyPy==0.812",
