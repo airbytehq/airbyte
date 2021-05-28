@@ -37,11 +37,14 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.com.google.common.io.Resources;
 
+// Disabled until we start minikube on the node.
+@Disabled
 public class KubePodProcessTest {
 
   private static final KubernetesClient K8s = new DefaultKubernetesClient();
