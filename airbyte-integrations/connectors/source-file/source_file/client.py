@@ -215,7 +215,7 @@ class URLFile:
         storage_acc_url = f"https://{storage_account}.blob.core.windows.net"
         sas_token = self._provider.get("sas_token", None)
         shared_key = self._provider.get("shared_key", None)
-        # in the odd case both provided, shared_key is preferred as has permissions on entire storage account
+        # if both keys are provided, shared_key is preferred as has permissions on entire storage account
         credential = shared_key or sas_token
 
         if credential:
