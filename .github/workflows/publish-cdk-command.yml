@@ -16,6 +16,7 @@ jobs:
       - uses: gabrielfalcao/pyenv-action@v7
         with:
           default: 3.7.0
+          command: pyenv local 3.7.0
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
@@ -37,9 +38,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Build CDK Package
         run: ./gradlew --no-daemon :airbyte-cdk:python:build
-      - name: Setup version 3.7.0 for CDK
-        working-directory: 'airbyte-cdk/python/'
-        run: echo "3.7.0" > .python-version
       - name: Publish Python Package
         if: success()
         uses: mariamrf/py-package-publish-action@v1.1.0
