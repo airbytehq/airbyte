@@ -135,27 +135,4 @@ public class KubePodProcessTest {
 
   }
 
-  @Test
-  public void testGetStdOutLogs() throws IOException, InterruptedException {
-    // we need to create an image from a java class
-    var podName = Strings.addRandomSuffix("worker-test-stdout", "-", 5);
-    var printStdoutDockerfile = Resources.getResource(TEST_IMAGE_PRINT_STDOUT_PATH);
-    DockerUtils.buildImage(printStdoutDockerfile.getPath(), TEST_IMAGE_PRINT_STDOUT_NAME);
-
-    // this needs to be run as a Kube pod so networking lines up
-    var b = new KubePodProcess(K8s, podName, "default", TEST_IMAGE_PRINT_STDOUT_NAME, 9000, 9001, false);
-    var c = b.getInputStream();
-    var d = c.readAllBytes();
-
-    System.out.println(new String(d));
-
-    b.waitFor();
-  }
-
-  @Test
-  public void portforwardTest() {
-
-    K8s.pods().inNamespace("default").withName("").portForward();
-  }
-
 }
