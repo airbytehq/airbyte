@@ -11,6 +11,24 @@
     "isDeleted": {
       "type": ["null", "boolean"]
     },
+    "dealstage": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": ["null", "string"],
+          "format": "date-time"
+         },
+        "versions": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
     "associations": {
       "type": ["null", "object"],
       "properties": {
