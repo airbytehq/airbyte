@@ -40,7 +40,7 @@ from airbyte_cdk.sources import Source
 from .client import BaseClient
 
 
-class SourceAmazonMws(Source):
+class SourceAmazonSellerPartner(Source):
 
     client_class = BaseClient
 
@@ -67,20 +67,23 @@ class SourceAmazonMws(Source):
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._get_client(config)
 
-        logger.info("Starting syncing Amazon")
+        logger.info("Starting syncing Amazon Seller API")
         for configured_stream in catalog.streams:
             yield from self._read_record(logger=logger, client=client, configured_stream=configured_stream, state=state)
 
-        logger.info("Finished syncing Amazon")
+        logger.info("Finished syncing Amazon Seller API")
 
     @staticmethod
     def _read_record(
         logger: AirbyteLogger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         stream_name = configured_stream.stream.name
+        entity = client._amazon_client.fetch_entity_for_stream(stream_name)
 
         if configured_stream.sync_mode == SyncMode.full_refresh:
             state.pop(stream_name, None)
 
-        for record in client.read_reports(logger, stream_name, state=state):
-            yield record
+        if entity == "report":
+            yield from client.read_reports(logger, stream_name, state)
+        else:
+            yield from client.read_stream(logger, stream_name, state)

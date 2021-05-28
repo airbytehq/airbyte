@@ -2,6 +2,6 @@
 !Dockerfile
 !Dockerfile.test
 !main.py
-!source_amazon_mws
+!source_amazon_seller_partner
 !setup.py
 !secrets

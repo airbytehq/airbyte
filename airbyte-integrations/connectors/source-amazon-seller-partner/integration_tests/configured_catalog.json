@@ -1,0 +1,26 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "Orders",
+        "json_schema": {
+          "type": "object",
+          "title": "Orders",
+          "description": "Tab-delimited flat file report that shows all orders that were placed in the specified period. For all sellers. Can be requested.",
+          "properties": {
+            "AmazonOrderId": {
+              "type": "string",
+              "title": "amazon-order-id",
+              "description": ""
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

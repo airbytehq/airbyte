@@ -4,7 +4,7 @@ FROM python:3.7-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
-COPY source_amazon_mws ./source_amazon_mws
+COPY source_amazon_seller_partner ./source_amazon_seller_partner
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
@@ -12,4 +12,4 @@ RUN pip install .
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/source-amazon-mws
+LABEL io.airbyte.name=airbyte/source-amazon-seller-partner

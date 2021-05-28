@@ -1,7 +1,7 @@
-# Amazon Mws Source
+# Amazon Seller-Partner Source
 
-This is the repository for the Amazon Mws source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/amazon-mws).
+This is the repository for the Amazon Seller-Partner source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/amazon-seller-partner).
 
 ## Local development
 
@@ -30,16 +30,16 @@ should work as you expect.
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:source-amazon-mws:build
+./gradlew :airbyte-integrations:connectors:source-amazon-seller-partner:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/amazon-mws)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_amazon_mws/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/amazon-seller-partner)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_amazon_seller-partner/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source amazon-mws test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source amazon-seller-partner test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -55,12 +55,12 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/source-amazon-mws:dev
+docker build . -t airbyte/source-amazon-seller-partner:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:source-amazon-mws:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-amazon-seller-partner:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -68,10 +68,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/source-amazon-mws:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-amazon-mws:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-amazon-mws:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-amazon-mws:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-amazon-seller-partner:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-amazon-seller-partner:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-amazon-seller-partner:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-amazon-seller-partner:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -105,11 +105,11 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-amazon-mws:unitTest
+./gradlew :airbyte-integrations:connectors:source-amazon-seller-partner:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-amazon-mws:integrationTest
+./gradlew :airbyte-integrations:connectors:source-amazon-seller-partner:integrationTest
 ```
 
 ## Dependency Management

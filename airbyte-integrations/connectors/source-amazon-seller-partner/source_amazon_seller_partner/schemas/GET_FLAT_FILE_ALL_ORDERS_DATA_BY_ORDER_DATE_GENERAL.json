@@ -2,11 +2,11 @@
   "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
   "supported_sync_modes": ["full_refresh", "incremental"],
   "source_defined_cursor": true,
-  "default_cursor_field": ["purchase-date"],
+  "default_cursor_field": ["last-updated-date"],
   "json_schema": {
     "type": "object",
     "title": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
-    "description": "Tab-delimited flat file report that shows all orders that were placed in the specified period. For all sellers. Can be requested.",
+    "description": "All orders that were placed in the specified period.",
     "properties": {
       "amazon-order-id": {
         "type": "string",

@@ -24,8 +24,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_amazon_mws import SourceAmazonMws
+from source_amazon_seller_partner import SourceAmazonSellerPartner
 
 if __name__ == "__main__":
-    source = SourceAmazonMws()
+    source = SourceAmazonSellerPartner()
     launch(source, sys.argv[1:])
