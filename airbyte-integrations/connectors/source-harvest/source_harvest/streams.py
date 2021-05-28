@@ -29,7 +29,6 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from pendulum import Pendulum
 
 
 class HarvestStream(HttpStream, ABC):
@@ -90,7 +89,7 @@ class HarvestStreamWithPaginationSliced(HarvestStreamWithPagination):
 class HarvestStreamIncrementalMixin(HttpStream, ABC):
     cursor_field = "updated_at"
 
-    def __init__(self, updated_since: Pendulum, **kwargs):
+    def __init__(self, updated_since: pendulum.Pendulum, **kwargs):
         super().__init__(**kwargs)
         self._updated_since = updated_since
 
@@ -277,13 +276,13 @@ class ProjectAssignments(HarvestStreamWithPaginationSliced, HarvestStreamIncreme
         return f"users/{stream_slice['parent_id']}/project_assignments"
 
 
-class ExpensesBase(HarvestStreamWithPagination, HarvestStreamIncrementalMixin, ABC):
+class ExpensesBase(HarvestStreamWithPagination, ABC):
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         current_date = pendulum.now()
         # `from` and `to` params are required for expenses reports calls
         # min `from` value is current_date - 1 year
-        params.update({"from": current_date.subtract(years=1).format("%Y%m%d"), "to": current_date})
+        params.update({"from": current_date.subtract(years=1).strftime("%Y%m%d"), "to": current_date.strftime("%Y%m%d")})
         return params
 
 

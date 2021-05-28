@@ -102,10 +102,10 @@ class SourceHarvest(AbstractSource):
             BillableRates(authenticator=auth, updated_since=updated_since),
             CostRates(authenticator=auth, updated_since=updated_since),
             ProjectAssignments(authenticator=auth, updated_since=updated_since),
-            ExpensesClients(authenticator=auth, updated_since=updated_since),
-            ExpensesProjects(authenticator=auth, updated_since=updated_since),
-            ExpensesCategories(authenticator=auth, updated_since=updated_since),
-            ExpensesTeam(authenticator=auth, updated_since=updated_since),
+            ExpensesClients(authenticator=auth),
+            ExpensesProjects(authenticator=auth),
+            ExpensesCategories(authenticator=auth),
+            ExpensesTeam(authenticator=auth),
         ]
 
         return streams
