@@ -1,0 +1,18 @@
+plugins {
+    // Makes building the docker image a dependency of Gradle's "build" command. This way you could run your entire build inside a docker image
+    // via ./gradlew :airbyte-integrations:connectors:source-first_connector:build
+    id 'application'
+    id 'airbyte-docker'
+}
+
+application {
+    mainClass = 'com.main.stocker.StockerSource'
+}
+
+
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)   
+  	implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.9'
+}
+
