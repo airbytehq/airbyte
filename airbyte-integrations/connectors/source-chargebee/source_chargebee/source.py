@@ -42,7 +42,6 @@ class ChargebeeStream(Stream):
         }
         super().__init__()
 
-
     @backoff.on_exception(
         backoff.expo,  # Exponential back-off
         OperationFailedError,  # Only on Chargebee's OperationFailedError
@@ -145,17 +144,21 @@ class InvoiceStream(ChargebeeStream):
     name = "invoice"
     api = Invoice
 
+
 class OrderStream(ChargebeeStream):
     name = "order"
     api = Order
+
 
 class PlanStream(ChargebeeStream):
     name = "plan"
     api = Plan
 
+
 class AddonStream(ChargebeeStream):
     name = "addon"
     api = Addon
+
 
 class SourceChargebee(AbstractSource):
     # Class variables
