@@ -4,46 +4,25 @@
       "stream": {
         "name": "adcreatives",
         "json_schema": {
-          "type": [
-            "null",
-            "object"
-          ],
+          "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "body": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "title": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "adlabels": {
-              "type": [
-                "null",
-                "array"
-              ],
+              "type": ["null", "array"],
               "items": {
                 "type": "object",
                 "properties": {
@@ -65,332 +44,170 @@
               }
             },
             "link_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "image_crops": {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "100x72": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
-                    "type": [
-                      "null",
-                      "array"
-                    ],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     }
                   }
                 },
                 "90x160": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
-                    "type": [
-                      "null",
-                      "array"
-                    ],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     }
                   }
                 },
                 "100x100": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
-                    "type": [
-                      "null",
-                      "array"
-                    ],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     }
                   }
                 },
                 "191x100": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
-                    "type": [
-                      "null",
-                      "array"
-                    ],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     }
                   }
                 },
                 "400x150": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
-                    "type": [
-                      "null",
-                      "array"
-                    ],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     }
                   }
                 },
                 "400x500": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
-                    "type": [
-                      "null",
-                      "array"
-                    ],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     }
                   }
                 },
                 "600x360": {
-                  "type": [
-                    "null",
-                    "array"
-                  ],
+                  "type": ["null", "array"],
                   "items": {
-                    "type": [
-                      "null",
-                      "array"
-                    ],
+                    "type": ["null", "array"],
                     "items": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": ["null", "integer"]
                     }
                   }
                 }
               }
             },
             "object_story_spec": {
-              "type": [
-                "null",
-                "object"
-              ],
+              "type": ["null", "object"],
               "properties": {
                 "page_id": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "link_data": {
-                  "type": [
-                    "null",
-                    "object"
-                  ],
+                  "type": ["null", "object"],
                   "properties": {
                     "link": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "name": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "caption": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "message": {
-                      "type": [
-                        "null",
-                        "string"
-                      ]
+                      "type": ["null", "string"]
                     },
                     "image_crops": {
-                      "type": [
-                        "null",
-                        "object"
-                      ],
+                      "type": ["null", "object"],
                       "properties": {
                         "100x72": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": [
-                              "null",
-                              "array"
-                            ],
+                            "type": ["null", "array"],
                             "items": {
-                              "type": [
-                                "null",
-                                "integer"
-                              ]
+                              "type": ["null", "integer"]
                             }
                           }
                         },
                         "90x160": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": [
-                              "null",
-                              "array"
-                            ],
+                            "type": ["null", "array"],
                             "items": {
-                              "type": [
-                                "null",
-                                "integer"
-                              ]
+                              "type": ["null", "integer"]
                             }
                           }
                         },
                         "100x100": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": [
-                              "null",
-                              "array"
-                            ],
+                            "type": ["null", "array"],
                             "items": {
-                              "type": [
-                                "null",
-                                "integer"
-                              ]
+                              "type": ["null", "integer"]
                             }
                           }
                         },
                         "191x100": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": [
-                              "null",
-                              "array"
-                            ],
+                            "type": ["null", "array"],
                             "items": {
-                              "type": [
-                                "null",
-                                "integer"
-                              ]
+                              "type": ["null", "integer"]
                             }
                           }
                         },
                         "400x150": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": [
-                              "null",
-                              "array"
-                            ],
+                            "type": ["null", "array"],
                             "items": {
-                              "type": [
-                                "null",
-                                "integer"
-                              ]
+                              "type": ["null", "integer"]
                             }
                           }
                         },
                         "400x500": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": [
-                              "null",
-                              "array"
-                            ],
+                            "type": ["null", "array"],
                             "items": {
-                              "type": [
-                                "null",
-                                "integer"
-                              ]
+                              "type": ["null", "integer"]
                             }
                           }
                         },
                         "600x360": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
-                            "type": [
-                              "null",
-                              "array"
-                            ],
+                            "type": ["null", "array"],
                             "items": {
-                              "type": [
-                                "null",
-                                "integer"
-                              ]
+                              "type": ["null", "integer"]
                             }
                           }
                         }
                       }
                     },
                     "app_link_spec": {
-                      "type": [
-                        "null",
-                        "object"
-                      ],
+                      "type": ["null", "object"],
                       "properties": {
                         "ios": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
                             "type": "object",
                             "properties": {
@@ -407,10 +224,7 @@
                           }
                         },
                         "ipad": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
                             "type": "object",
                             "properties": {
@@ -427,10 +241,7 @@
                           }
                         },
                         "iphone": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
                             "type": "object",
                             "properties": {
@@ -447,10 +258,7 @@
                           }
                         },
                         "android": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": ["null", "array"],
                           "items": {
                             "type": "object",
                             "properties": {
@@ -473,10 +281,7 @@
                     }
                   },
                   "text_data": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "message": {
                         "type": "string"
@@ -484,65 +289,38 @@
                     }
                   },
                   "photo_data": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "url": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "caption": {
                         "type": "string"
                       },
                       "image_hash": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "page_welcome_message": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "branded_content_sponsor_page_id": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "branded_content_sponsor_relationship": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       }
                     }
                   },
                   "instagram_actor_id": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 }
               },
               "template_url_spec": {
-                "type": [
-                  "null",
-                  "object"
-                ],
+                "type": ["null", "object"],
                 "properties": {
                   "ios": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "url": {
                         "type": "string"
@@ -556,10 +334,7 @@
                     }
                   },
                   "web": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "url": {
                         "type": "string"
@@ -570,10 +345,7 @@
                     }
                   },
                   "ipad": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "url": {
                         "type": "string"
@@ -587,10 +359,7 @@
                     }
                   },
                   "config": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "app_id": {
                         "type": "string"
@@ -598,10 +367,7 @@
                     }
                   },
                   "iphone": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "url": {
                         "type": "string"
@@ -615,10 +381,7 @@
                     }
                   },
                   "android": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "url": {
                         "type": "string"
@@ -632,10 +395,7 @@
                     }
                   },
                   "windows_phone": {
-                    "type": [
-                      "null",
-                      "object"
-                    ],
+                    "type": ["null", "object"],
                     "properties": {
                       "url": {
                         "type": "string"
