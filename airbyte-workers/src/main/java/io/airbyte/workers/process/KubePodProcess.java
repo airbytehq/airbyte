@@ -50,6 +50,29 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The parent process starting a Kube Pod Process needs
+ * to exist within the Kube networking space. This is so the parent process can forward data into the child's stdin and read the child's stdout
+ * and stderr streams.
+ *
+ * This is made possible by:
+ * <li>
+ *   1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err.
+ * </li>
+ * <li>
+ *   2) Redirecting the stdin named pipe to the original image's entrypoint and it's output into the respective named pipes for stdout and stderr.
+ * </li>
+ * <li>
+ *   3) Each named pipe has a corresponding side car. Each side car forwards its stream accordingly using socat. e.g. stderr/stdout is forwarded to
+ *      parent process while input from the parent process is forwarded into stdin.
+ * </li>
+ * <li>
+ *   4) The parent process listens on the stdout and stederr sockets for an incoming TCP connection. It also initiates a TCP connection to the child
+ *   process aka the Kube pod on the specified stdin socket.
+ * </li>
+ *
+ * See the constructor for more information.
+ */
 public class KubePodProcess extends Process {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
