@@ -196,25 +196,32 @@ class DbtIntegrationTest(object):
         print(f"Equivalent to: dbt {command} --profiles-dir={cwd} --project-dir={cwd}")
         with open(os.path.join(cwd, "dbt_output.log"), "ab") as f:
             process = subprocess.Popen(commands, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=os.environ)
-            for line in iter(process.stdout.readline, b""):
+            for line in iter(lambda: process.stdout.readline(), b""):
                 f.write(line)
                 str_line = line.decode("utf-8")
                 sys.stdout.write(str_line)
                 # keywords to match lines as signaling errors
                 if "ERROR" in str_line or "FAIL" in str_line or "WARNING" in str_line:
                     # exception keywords in lines to ignore as errors (such as summary or expected warnings)
-                    if not (
-                        "Done." in str_line  # DBT Summary
-                        or "PASS=" in str_line  # DBT Summary
-                        or "Nothing to do." in str_line  # When no schema/data tests are setup
-                        or "Configuration paths exist in your dbt_project.yml"  # When catalog does not generate a view or cte
-                    ):
+                    is_exception = False
+                    for except_clause in [
+                        "Done.",  # DBT Summary
+                        "PASS=",  # DBT Summary
+                        "Nothing to do.",  # When no schema/data tests are setup
+                        "Configuration paths exist in your dbt_project.yml",  # When no cte / view are generated
+                    ]:
+                        if except_clause in str_line:
+                            is_exception = True
+                            break
+                    if not is_exception:
                         # count lines signaling an error/failure/warning
                         error_count += 1
         process.wait()
-        print(
-            f"{' '.join(commands)}\n\tterminated with return code {process.returncode} with {error_count} 'Error/Warning/Fail' mention(s)."
-        )
+        message = (f"{' '.join(commands)}\n\tterminated with return code {process.returncode} "
+                   f"with {error_count} 'Error/Warning/Fail' mention(s).")
+        print(message)
+        assert error_count == 0, message
+        assert process.returncode == 0, message
         if error_count > 0:
             return False
         return process.returncode == 0
