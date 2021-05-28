@@ -13,9 +13,9 @@ jobs:
   publish-cdk:
     runs-on: ubuntu-latest
     steps:
-      - uses: "gabrielfalcao/pyenv-action@v5"
+      - uses: actions/setup-python@v1
         with:
-          default: 3.7.0
+          python-version: '3.7.0'
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
@@ -35,10 +35,11 @@ jobs:
           echo "pypi_url=https://test.pypi.org/legacy/" >> $GITHUB_ENV
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-      - name: Setup py-version
-        run: pyenv local 3.7.0 && pyenv global 3.7.0
       - name: Build CDK Package
         run: ./gradlew --no-daemon :airbyte-cdk:python:build
+      - name: Setup version 3.7.0 for CDK
+        working-directory: 'airbyte-cdk/python/'
+        run: echo "3.7.0" > .python-version
       - name: Publish Python Package
         if: success()
         uses: mariamrf/py-package-publish-action@v1.1.0
