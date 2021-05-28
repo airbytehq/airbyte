@@ -22,9 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.base;
+package io.airbyte.integrations.standardtest.destination;
 
 import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import java.nio.file.Path;

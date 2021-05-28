@@ -37,20 +37,25 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import io.airbyte.integrations.standardtest.destination.LocalAirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
 
 public class OracleIntegrationTest extends DestinationAcceptanceTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(OracleIntegrationTest.class);
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
 
   private static OracleContainer db;
   private ExtendedNameTransformer namingResolver = new OracleNameTransformer();
-  private JsonNode configWithoutDbName;
   private JsonNode config;
 
   @BeforeAll
@@ -64,7 +69,12 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     return "airbyte/destination-oracle:dev";
   }
 
-  private JsonNode getConfig(OracleContainer db) {
+  @Override
+  protected AirbyteDestination getDestination() {
+    return new LocalAirbyteDestination(new OracleDestination());
+  }
+
+    private JsonNode getConfig(OracleContainer db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
@@ -89,7 +99,6 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
         .put("schema", "public")
         .put("port", db.getFirstMappedPort())
         .put("sid", db.getSid())
-        .put("ssl", false)
         .build());
   }
 
@@ -97,7 +106,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA.substring(1).toUpperCase()).asText()))
+        .map(r -> Jsons.deserialize(r.get(OracleDestination.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
@@ -134,7 +143,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   private List<JsonNode> retrieveRecordsFromTable(String tableName, String schemaName) throws SQLException {
     List<org.jooq.Record> result = Databases.createOracleDatabase(db.getUsername(), db.getPassword(), db.getJdbcUrl())
         .query(ctx -> ctx
-            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1)))
+            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT))
             .stream()
             .collect(Collectors.toList()));
     return result
@@ -146,8 +155,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
 
   private static Database getDatabase(JsonNode config) {
     // todo (cgardens) - rework this abstraction so that we do not have to pass a null into the
-    // constru
-    // ctor. at least explicitly handle it, even if the impl doesn't change.
+    // constructor. at least explicitly handle it, even if the impl doesn't change.
     return Databases.createDatabase(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -159,31 +167,51 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
         null);
   }
 
-  // how to interact with the mssql test container manually.
-  // 1. exec into mssql container (not the test container container)
-  // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
-  @Override
-  protected void setup(TestDestinationEnv testEnv) throws SQLException {
-    configWithoutDbName = getConfig(db);
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
+  private List<String> allTables;
 
-    final Database database = getDatabase(configWithoutDbName);
-    database.query(ctx -> {
-      ctx.execute("alter database default tablespace users");
-      ctx.execute(
-          "declare c int; begin select count(*) into c from user_tables where upper(table_name) = upper('id_and_name'); if c = 1 then execute immediate 'drop table id_and_name'; end if; end;");
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born TIMESTAMP WITH TIME ZONE)");
-      ctx.fetch(
-          "INSERT ALL INTO id_and_name (id, name, born) VALUES (1,'picard', TIMESTAMP '2124-03-04 01:01:01') INTO id_and_name (id, name, born) VALUES  (2, 'crusher', TIMESTAMP '2124-03-04 01:01:01') INTO id_and_name (id, name, born) VALUES (3, 'vash', TIMESTAMP '2124-03-04 01:01:01') SELECT 1 FROM DUAL");
+  private List<String> getAllTables(Database db)
+  {
+    try {
+      return db.query(ctx -> ctx.fetch("select OWNER, TABLE_NAME from ALL_TABLES where upper(TABLESPACE_NAME) = 'USERS'")
+              .stream()
+              .map(r -> String.format("%s.%s", r.get("OWNER"), r.get("TABLE_NAME")))
+              .collect(Collectors.toList()));
+    } catch (SQLException e) {
+      LOGGER.error("Error while cleaning up test.", e);
       return null;
-    });
-
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+    }
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {}
+  protected void setup(TestDestinationEnv testEnv) throws SQLException {
+    config = getConfig(db);
+
+    final Database database = getDatabase(config);
+    database.query(ctx -> {
+      ctx.execute("alter database default tablespace users");
+      return null;
+    });
+    allTables = getAllTables(database);
+  }
+
+  @Override
+  protected void tearDown(TestDestinationEnv testEnv) {
+    config = getConfig(db);
+
+    final Database database = getDatabase(config);
+    var tables = getAllTables(database);
+    tables.removeAll(allTables);
+    try {
+      for (String table : tables) {
+        database.query(ctx -> {
+          ctx.execute("drop table " + table);
+          return null;
+        });
+      }
+    } catch (SQLException e) {
+      LOGGER.error("Error while cleaning up test.", e);
+    }
+  }
 
   @AfterAll
   static void cleanUp() {

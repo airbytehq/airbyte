@@ -51,14 +51,11 @@ public class OracleOperations implements SqlOperations {
 
   @Override
   public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
-    final String query = String.format(
-        "declare userExists integer; begin select count(*) into userExists from dba_users where upper(username) = upper('%s'); " +
-            "if (userExists = 0) then " +
-            "execute immediate 'create user %s identified by %s'; " +
-            "execute immediate 'alter user %s quota unlimited on %s'; " +
-            "end if; end;",
-        schemaName, schemaName, schemaName, schemaName, tablespace);
-    database.execute(query);
+    if (database.queryInt("select count(*) from dba_users where upper(username) = upper(?)", schemaName) == 0) {
+      final String query = String.format("create user %s identified by %s quota unlimited on %s",
+              schemaName, schemaName, tablespace);
+      database.execute(query);
+    }
   }
 
   @Override
@@ -82,28 +79,8 @@ public class OracleOperations implements SqlOperations {
             + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
             + ")",
         schemaName, tableName,
-        JavaBaseConstants.COLUMN_NAME_AB_ID.substring(1), JavaBaseConstants.COLUMN_NAME_DATA.substring(1),
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1),
-        JavaBaseConstants.COLUMN_NAME_DATA.substring(1));
+        OracleDestination.COLUMN_NAME_AB_ID, OracleDestination.COLUMN_NAME_DATA, OracleDestination.COLUMN_NAME_EMITTED_AT, OracleDestination.COLUMN_NAME_DATA);
   }
-
-  /*
-   * @Override public String createTableQuery(String schemaName, String tableName) { return
-   * String.format( "declare c int; \n" +
-   * "begin\n select count(*) into c\n from user_tables\n where upper(table_name) = upper('%s');\n" +
-   * "if c = 1 then\n" + " execute immediate '\n" + "CREATE TABLE %s.%s ( \n" +
-   * "%s VARCHAR(64) PRIMARY KEY,\n" + "%s VARCHAR(MAX),\n" +
-   * "%s TIMESTAMP WITH TIME ZONE DEFAULT SYSDATETIMEOFFSET()\n" + ");';\n"
-   *
-   * + "execute immediate '\n" + "GRANT SELECT, INSERT on %s.%s to user \n" + ";';\n"
-   *
-   * + "execute immediate '\n" + "GRANT SELECT, INSERT on NONEXISTENT to user \n" + ";';\n"
-   *
-   * + "end if; end;", tableName, schemaName, tableName,
-   * JavaBaseConstants.COLUMN_NAME_AB_ID.substring(1),
-   * JavaBaseConstants.COLUMN_NAME_DATA.substring(1),
-   * JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1), schemaName, tableName); }
-   */
 
   private boolean tableExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
     Integer count = database.queryInt("select count(*) \n from all_tables\n where upper(owner) = upper(?) and upper(table_name) = upper(?)",
@@ -134,14 +111,13 @@ public class OracleOperations implements SqlOperations {
       throws Exception {
     final String tableName = String.format("%s.%s", schemaName, tempTableName);
     final String columns = String.format("(%s, %s, %s)",
-        JavaBaseConstants.COLUMN_NAME_AB_ID.substring(1),
-        JavaBaseConstants.COLUMN_NAME_DATA.substring(1),
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1));
+        OracleDestination.COLUMN_NAME_AB_ID, OracleDestination.COLUMN_NAME_DATA, OracleDestination.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, ?, ?)\n";
     insertRawRecordsInSingleQuery(tableName, columns, recordQueryComponent, database, records, UUID::randomUUID);
   }
 
-  static void insertRawRecordsInSingleQuery(String tableName,
+  // Adapted from SqlUtils.insertRawRecordsInSingleQuery to meet some needs specific to Oracle syntax
+  private static void insertRawRecordsInSingleQuery(String tableName,
                                             String columns,
                                             String recordQueryComponent,
                                             JdbcDatabase jdbcDatabase,
@@ -160,6 +136,9 @@ public class OracleOperations implements SqlOperations {
       // string. Thus there will be two loops below.
       // 1) Loop over records to build the full string.
       // 2) Loop over the records and bind the appropriate values to the string.
+      //
+      // The "SELECT 1 FROM DUAL" at the end is a formality to satisfy the needs of the Oracle syntax.
+      // (see https://stackoverflow.com/a/93724 for details)
       final StringBuilder sql = new StringBuilder("INSERT ALL ");
       records.forEach(r -> sql.append(String.format("INTO %s %s VALUES %s", tableName, columns, recordQueryComponent)));
       sql.append(" SELECT 1 FROM DUAL");

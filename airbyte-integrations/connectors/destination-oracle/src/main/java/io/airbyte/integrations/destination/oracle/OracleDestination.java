@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,10 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleDestination.class);
 
   public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+
+  public static final String COLUMN_NAME_AB_ID = JavaBaseConstants.COLUMN_NAME_AB_ID.substring(1).toUpperCase();
+  public static final String COLUMN_NAME_DATA = JavaBaseConstants.COLUMN_NAME_DATA.substring(1).toUpperCase();
+  public static final String COLUMN_NAME_EMITTED_AT = JavaBaseConstants.COLUMN_NAME_EMITTED_AT.substring(1).toUpperCase();
 
   public OracleDestination() {
     super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));

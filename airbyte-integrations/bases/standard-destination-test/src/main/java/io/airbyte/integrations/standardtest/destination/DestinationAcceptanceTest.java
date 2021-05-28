@@ -405,7 +405,7 @@ public abstract class DestinationAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     configuredCatalog.getStreams().forEach(s -> {
       s.withSyncMode(SyncMode.INCREMENTAL);
-      s.withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
+      s.withDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
