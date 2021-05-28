@@ -82,7 +82,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     destinationProcess = integrationLauncher.write(
         jobRoot,
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME).start();
+        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error);
 
