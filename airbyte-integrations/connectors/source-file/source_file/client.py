@@ -224,7 +224,7 @@ class URLFile:
             # assuming anonymous public read access given no credential
             client = BlobServiceClient(account_url=storage_acc_url)
         
-        result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client))
+        result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client), mode=mode)
         return result
 
 
