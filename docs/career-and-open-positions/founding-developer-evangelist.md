@@ -11,6 +11,7 @@ We're backed by some of the world's [top investors](./#our-investors) and believ
 ## **Description**
 
 As our first Developer Evangelist, you will have two focuses:
+
 1. **Building a content hub focused on data engineering** (and not Airbyte per se), featuring a podcast that brings thought leaders and community members into the conversation. This will be supplemented by a rich catalog of written content focused on increasing Airbyte’s share of voice in the data integration space.
 2. **Launching a meetup program around data engineering**, leveraging the content hub’s brand
 
