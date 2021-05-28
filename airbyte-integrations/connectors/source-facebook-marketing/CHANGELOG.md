@@ -8,3 +8,6 @@ Allow configuring insights lookback window (#3396)
 
 ## 0.2.6
 Fix handling call rate limit (#3525) 
+
+## 0.2.7
+Add missing fields to AdInsights streams (#3693) 
