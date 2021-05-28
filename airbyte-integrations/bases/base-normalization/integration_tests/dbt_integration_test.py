@@ -217,8 +217,10 @@ class DbtIntegrationTest(object):
                         # count lines signaling an error/failure/warning
                         error_count += 1
         process.wait()
-        message = (f"{' '.join(commands)}\n\tterminated with return code {process.returncode} "
-                   f"with {error_count} 'Error/Warning/Fail' mention(s).")
+        message = (
+            f"{' '.join(commands)}\n\tterminated with return code {process.returncode} "
+            f"with {error_count} 'Error/Warning/Fail' mention(s)."
+        )
         print(message)
         assert error_count == 0, message
         assert process.returncode == 0, message
