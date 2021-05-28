@@ -216,7 +216,7 @@ class TableNameRegistry:
         if key in self.registry:
             return self.name_transformer.normalize_schema_name(self.registry[key][0], False, False)
         else:
-            raise KeyError(f"Registry does not contain an entry for {schema} {json_path}")
+            raise KeyError(f"Registry does not contain an entry for {schema} {json_path} {stream_name}")
 
     def get_table_name(self, schema: str, json_path: List[str], stream_name: str, suffix: str):
         """
