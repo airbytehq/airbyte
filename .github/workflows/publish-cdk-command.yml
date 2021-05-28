@@ -16,7 +16,6 @@ jobs:
       - uses: gabrielfalcao/pyenv-action@v7
         with:
           default: 3.7.0
-          command: pyenv local 3.7.0
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
@@ -37,7 +36,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Build CDK Package
-        run: ./gradlew --no-daemon :airbyte-cdk:python:build
+        # By default .python-version is 3.7.9
+        run: pyenv local 3.7.0 && ./gradlew --no-daemon :airbyte-cdk:python:build
       - name: Publish Python Package
         if: success()
         uses: mariamrf/py-package-publish-action@v1.1.0
