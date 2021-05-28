@@ -32,7 +32,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -220,10 +220,10 @@ public class WorkerUtils {
     MDC.put("job_log_filename", WorkerConstants.LOG_FILENAME);
   }
 
-  // todo (cgardens) can we get this down to just passing pbf and docker image and not job id and
-  // attempt
-  public static IntegrationLauncher getIntegrationLauncher(IntegrationLauncherConfig config, ProcessBuilderFactory pbf) {
-    return new AirbyteIntegrationLauncher(config.getJobId(), Math.toIntExact(config.getAttemptId()), config.getDockerImage(), pbf);
+  // todo (cgardens) can we get this down to just passing the process factory and image and not job id
+  // and attempt
+  public static IntegrationLauncher getIntegrationLauncher(IntegrationLauncherConfig config, ProcessFactory processFactory) {
+    return new AirbyteIntegrationLauncher(config.getJobId(), Math.toIntExact(config.getAttemptId()), config.getDockerImage(), processFactory);
   }
 
 }

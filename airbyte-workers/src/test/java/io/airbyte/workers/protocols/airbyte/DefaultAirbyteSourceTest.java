@@ -101,8 +101,7 @@ class DefaultAirbyteSourceTest {
         jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        WorkerConstants.INPUT_STATE_JSON_FILENAME)
-        .start()).thenReturn(process);
+        WorkerConstants.INPUT_STATE_JSON_FILENAME)).thenReturn(process);
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
