@@ -9,13 +9,14 @@ import backoff
 import chargebee
 from chargebee.main import ChargeBee
 from chargebee.list_result import ListResult  # stores next_offset
-from chargebee.models import Subscription, Customer, Invoice, Order
-from chargebee.api_error import from chargebee.api_error import OperationFailedError
+from chargebee.models import Subscription, Customer, Invoice, Order, Plan
+from chargebee.api_error import OperationFailedError
 
 # Airbyte
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.logger import AirbyteLogger
 
 # Backoff params below
 # according to Chargebee's guidance on rate limit
@@ -28,18 +29,19 @@ class ChargebeeStream(Stream):
     supports_incremental = True
     primary_key = "id"
     default_cursor_field = "updated_at"
-
-    # Request params below
-    # according to Chargebee's guidance on pagination
-    # https://apidocs.chargebee.com/docs/api/#pagination_and_filtering
-    params = {
-        "limit": 100,  # Limit at 100
-        "sort_by[asc]": default_cursor_field,  # Sort ascending by updated_at
-    }
+    logger = AirbyteLogger()
 
     def __init__(self):
         self.next_offset = None
+        # Request params below
+        # according to Chargebee's guidance on pagination
+        # https://apidocs.chargebee.com/docs/api/#pagination_and_filtering
+        self.params = {
+            "limit": 100,  # Limit at 100
+            "sort_by[asc]": self.default_cursor_field,  # Sort ascending by updated_at
+        }
         super().__init__()
+
 
     @backoff.on_exception(
         backoff.expo,  # Exponential back-off
@@ -85,6 +87,7 @@ class ChargebeeStream(Stream):
             self.next_offset = list_result.next_offset
             if self.next_offset:
                 self.params.update({"offset": self.next_offset})
+                
             else:
                 pagination_completed = True
 
@@ -147,6 +150,10 @@ class OrderStream(ChargebeeStream):
     name = "order"
     api = Order
 
+class PlanStream(ChargebeeStream):
+    name = "plan"
+    api = Plan
+
 class SourceChargebee(AbstractSource):
     # Class variables
     LIMIT = 100
@@ -186,5 +193,6 @@ class SourceChargebee(AbstractSource):
             CustomerStream(),
             InvoiceStream(),
             OrderStream(),
+            PlanStream(),
         ]
         return streams
