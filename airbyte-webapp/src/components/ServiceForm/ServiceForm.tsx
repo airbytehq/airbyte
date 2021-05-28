@@ -23,6 +23,7 @@ type ServiceFormProps = {
   onSubmit: (values: ServiceFormValues) => void;
   onRetest?: (values: ServiceFormValues) => void;
   specifications?: JSONSchema7;
+  documentationUrl?: string;
   isLoading?: boolean;
   isEditMode?: boolean;
   allowChangeConnector?: boolean;
@@ -66,25 +67,36 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     [isLoading, specifications]
   );
 
-  const uiOverrides = {
-    name: {
-      component: (property: FormBaseItem) => (
-        <ConnectorNameControl property={property} formType={formType} />
-      ),
-    },
-    serviceType: {
-      component: (property: FormBaseItem) => (
-        <ConnectorServiceTypeControl
-          property={property}
-          formType={formType}
-          onChangeServiceType={props.onServiceSelect}
-          availableServices={props.availableServices}
-          allowChangeConnector={props.allowChangeConnector}
-          isEditMode={props.isEditMode}
-        />
-      ),
-    },
-  };
+  const uiOverrides = useMemo(
+    () => ({
+      name: {
+        component: (property: FormBaseItem) => (
+          <ConnectorNameControl property={property} formType={formType} />
+        ),
+      },
+      serviceType: {
+        component: (property: FormBaseItem) => (
+          <ConnectorServiceTypeControl
+            property={property}
+            formType={formType}
+            documentationUrl={props.documentationUrl}
+            onChangeServiceType={props.onServiceSelect}
+            availableServices={props.availableServices}
+            allowChangeConnector={props.allowChangeConnector}
+            isEditMode={props.isEditMode}
+          />
+        ),
+      },
+    }),
+    [
+      formType,
+      props.allowChangeConnector,
+      props.availableServices,
+      props.documentationUrl,
+      props.isEditMode,
+      props.onServiceSelect,
+    ]
+  );
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 

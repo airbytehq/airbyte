@@ -59,9 +59,9 @@ const useBuildUiWidgets = (
           Array.isArray(formFields) ? formFields : [formFields],
           formValues
         ),
-        overriddenWidgetState
+        merge(overriddenWidgetState, uiOverrides)
       ),
-    [formFields, formValues, overriddenWidgetState]
+    [formFields, formValues, overriddenWidgetState, uiOverrides]
   );
 
   const setUiWidgetsInfoSubState = useCallback(

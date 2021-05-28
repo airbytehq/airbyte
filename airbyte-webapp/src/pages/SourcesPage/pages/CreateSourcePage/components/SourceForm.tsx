@@ -80,6 +80,7 @@ const SourceForm: React.FC<IProps> = ({
         formType="source"
         availableServices={sourceDefinitions}
         specifications={sourceDefinitionSpecification?.connectionSpecification}
+        documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         isLoading={isLoading}

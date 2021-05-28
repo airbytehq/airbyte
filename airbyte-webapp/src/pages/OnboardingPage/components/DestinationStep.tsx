@@ -103,6 +103,9 @@ const DestinationStep: React.FC<IProps> = ({
           specifications={
             destinationDefinitionSpecification?.connectionSpecification
           }
+          documentationUrl={
+            destinationDefinitionSpecification?.documentationUrl
+          }
           isLoading={isLoading}
         />
         <JobsLogItem jobInfo={jobInfo} />

@@ -83,6 +83,7 @@ const SourceStep: React.FC<IProps> = ({
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         specifications={sourceDefinitionSpecification?.connectionSpecification}
+        documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         isLoading={isLoading}
       />
       <JobsLogItem jobInfo={jobInfo} />

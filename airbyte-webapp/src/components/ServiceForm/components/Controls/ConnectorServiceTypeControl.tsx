@@ -17,8 +17,9 @@ const DropdownLabels = styled(ControlLabels)`
 const ConnectorServiceTypeControl: React.FC<{
   property: FormBaseItem;
   formType: "source" | "destination";
-  isEditMode?: boolean;
   availableServices: (SourceDefinition | DestinationDefinition)[];
+  isEditMode?: boolean;
+  documentationUrl?: string;
   allowChangeConnector?: boolean;
   onChangeServiceType?: (id: string) => void;
 }> = ({
@@ -28,6 +29,7 @@ const ConnectorServiceTypeControl: React.FC<{
   allowChangeConnector,
   onChangeServiceType,
   availableServices,
+  documentationUrl,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
@@ -89,7 +91,12 @@ const ConnectorServiceTypeControl: React.FC<{
           onSelect={handleSelect}
         />
       </DropdownLabels>
-      {selectedService && <Instruction selectedService={selectedService} />}
+      {selectedService && documentationUrl && (
+        <Instruction
+          selectedService={selectedService}
+          documentationUrl={documentationUrl}
+        />
+      )}
     </>
   );
 };

@@ -83,6 +83,7 @@ const DestinationForm: React.FC<IProps> = ({
         specifications={
           destinationDefinitionSpecification?.connectionSpecification
         }
+        documentationUrl={destinationDefinitionSpecification?.documentationUrl}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         isLoading={isLoading}
