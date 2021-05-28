@@ -36,7 +36,6 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -100,14 +99,13 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should return the correct pod ip.")
     public void testGetPodIpGoodPod() throws InterruptedException {
-      final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
       var sleep = new ContainerBuilder()
           .withImage("busybox")
           .withName("sleep")
           .withCommand("sleep", "100000")
           .build();
 
-      var podName = "test-get-pod-good-pod-" + suffix;
+      var podName = Strings.addRandomSuffix("test-get-pod-good-pod", "-", 5);
       Pod podDef = new PodBuilder()
           .withApiVersion("v1")
           .withNewMetadata()

@@ -38,7 +38,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
 
 public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -126,7 +125,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    final String schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5));
+    final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
 
     baseConfig = getStaticConfig();
