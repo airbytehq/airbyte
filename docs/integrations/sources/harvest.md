@@ -48,7 +48,7 @@ Several output streams are available from this source:
 
 ### Performance considerations
 
-The connector is restricted by normal Hubspot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
+Harvest connector has rate limitations. See [rate limitations](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting) docs.
 
 ## Getting started
 
