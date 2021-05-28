@@ -24,7 +24,7 @@ import { SyncSettingsCell } from "./SyncSettingsCell";
 import { TreeRowWrapper } from "./TreeRowWrapper";
 import ExpandFieldCell from "./ExpandFieldCell";
 import { OverflowCell } from "./OverflowCell";
-import { equal } from "utils/objects";
+import { equal, naturalComparatorBy } from "utils/objects";
 import { Rows } from "./Rows";
 
 const StyledRadioButton = styled(RadioButton)`
@@ -71,10 +71,13 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   const isRowExpanded = has(streamId);
   const onExpand = useCallback(() => toggle(streamId), [toggle, streamId]);
 
-  const fields = useMemo(
-    () => traverseSchemaToField(stream.jsonSchema, streamId),
-    [stream, streamId]
-  );
+  const fields = useMemo(() => {
+    const traversedFields = traverseSchemaToField(stream.jsonSchema, streamId);
+
+    return traversedFields.sort(
+      naturalComparatorBy((field) => field.cleanedName)
+    );
+  }, [stream, streamId]);
 
   const onSelectSyncMode = useCallback(
     (data: DropDownRow.IDataItem) => {
