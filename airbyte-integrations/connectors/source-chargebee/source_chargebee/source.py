@@ -9,7 +9,7 @@ import backoff
 import chargebee
 from chargebee.main import ChargeBee
 from chargebee.list_result import ListResult  # stores next_offset
-from chargebee.models import Subscription, Customer, Invoice, Order, Plan
+from chargebee.models import Subscription, Customer, Invoice, Order, Plan, Addon
 from chargebee.api_error import OperationFailedError
 
 # Airbyte
@@ -153,6 +153,10 @@ class PlanStream(ChargebeeStream):
     name = "plan"
     api = Plan
 
+class AddonStream(ChargebeeStream):
+    name = "addon"
+    api = Addon
+
 class SourceChargebee(AbstractSource):
     # Class variables
     LIMIT = 100
@@ -193,5 +197,6 @@ class SourceChargebee(AbstractSource):
             InvoiceStream(),
             OrderStream(),
             PlanStream(),
+            AddonStream(),
         ]
         return streams
