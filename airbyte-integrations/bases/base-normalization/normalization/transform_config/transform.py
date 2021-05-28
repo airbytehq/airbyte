@@ -53,7 +53,8 @@ class TransformConfig:
             # move it right next to the profile.yml file for easier access.
             shutil.copy("/tmp/bq_keyfile.json", os.path.join(inputs["output_path"], "bq_keyfile.json"))
 
-    def parse(self, args):
+    @staticmethod
+    def parse(args):
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument("--config", type=str, required=True, help="path to original config")
         parser.add_argument(
@@ -88,7 +89,8 @@ class TransformConfig:
 
         return base_profile
 
-    def transform_bigquery(self, config: Dict[str, Any]):
+    @staticmethod
+    def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
         credentials_json = config["credentials_json"]
         keyfile_path = "/tmp/bq_keyfile.json"
@@ -108,7 +110,8 @@ class TransformConfig:
 
         return dbt_config
 
-    def transform_postgres(self, config: Dict[str, Any]):
+    @staticmethod
+    def transform_postgres(config: Dict[str, Any]):
         print("transform_postgres")
         # https://docs.getdbt.com/reference/warehouse-profiles/postgres-profile
         dbt_config = {
@@ -124,7 +127,8 @@ class TransformConfig:
 
         return dbt_config
 
-    def transform_redshift(self, config: Dict[str, Any]):
+    @staticmethod
+    def transform_redshift(config: Dict[str, Any]):
         print("transform_redshift")
         # https://docs.getdbt.com/reference/warehouse-profiles/redshift-profile
         dbt_config = {
@@ -139,7 +143,8 @@ class TransformConfig:
         }
         return dbt_config
 
-    def transform_snowflake(self, config: Dict[str, Any]):
+    @staticmethod
+    def transform_snowflake(config: Dict[str, Any]):
         print("transform_snowflake")
         # here account is everything before ".snowflakecomputing.com" as it can include account, region & cloud environment information)
         account = config["host"].replace(".snowflakecomputing.com", "").replace("http://", "").replace("https://", "")
@@ -160,12 +165,14 @@ class TransformConfig:
         }
         return dbt_config
 
-    def read_json_config(self, input_path: str):
+    @staticmethod
+    def read_json_config(input_path: str):
         with open(input_path, "r") as file:
             contents = file.read()
         return json.loads(contents)
 
-    def write_yaml_config(self, output_path: str, config: Dict[str, Any]):
+    @staticmethod
+    def write_yaml_config(output_path: str, config: Dict[str, Any]):
         if not os.path.exists(output_path):
             os.makedirs(output_path)
         with open(os.path.join(output_path, "profiles.yml"), "w") as fh:
