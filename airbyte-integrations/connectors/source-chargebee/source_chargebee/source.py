@@ -87,7 +87,6 @@ class ChargebeeStream(Stream):
             self.next_offset = list_result.next_offset
             if self.next_offset:
                 self.params.update({"offset": self.next_offset})
-                
             else:
                 pagination_completed = True
 
