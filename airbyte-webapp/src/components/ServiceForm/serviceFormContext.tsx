@@ -6,10 +6,6 @@ type Context = {
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
-  allowChangeConnector?: boolean;
-  onChangeServiceType?: (id: string) => void;
-  availableServices: { value: string; text: string; icon: string }[];
-  documentationUrl?: string;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
@@ -20,7 +16,6 @@ type Context = {
 
 const context: Context = {
   formType: "source",
-  availableServices: [],
   widgetsInfo: {},
   setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
   unfinishedFlows: {},
@@ -38,10 +33,6 @@ const ServiceFormContextProvider: React.FC<{
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
-  availableServices: { value: string; text: string; icon: string }[];
-  documentationUrl?: string;
-  allowChangeConnector?: boolean;
-  onChangeServiceType?: (id: string) => void;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
 }> = ({ children, widgetsInfo, setUiWidgetsInfo, ...props }) => {
   const ctx = useMemo<Context>(() => {
@@ -52,9 +43,6 @@ const ServiceFormContextProvider: React.FC<{
       formType: props.formType,
       isLoadingSchema: props.isLoadingSchema,
       isEditMode: props.isEditMode,
-      onChangeServiceType: props.onChangeServiceType,
-      availableServices: props.availableServices,
-      documentationUrl: props.documentationUrl,
       unfinishedFlows: unfinishedFlows,
       addUnfinishedFlow: (path, info) =>
         setUiWidgetsInfo("_common.unfinishedFlows", {

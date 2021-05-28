@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
+import { FieldArray, useField } from "formik";
 
 import { ArrayOfObjectsEditor, DropDown, Label } from "components";
 import {
@@ -10,7 +11,23 @@ import {
 import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../serviceFormContext";
 import GroupControls from "./Property/GroupControls";
-import { FieldArray, useField } from "formik";
+import { naturalComparator } from "utils/objects";
+
+function OrderComparator(a: FormBlock, b: FormBlock): number {
+  const aIsNumber = Number.isInteger(a.order);
+  const bIsNumber = Number.isInteger(b.order);
+
+  switch (true) {
+    case aIsNumber && bIsNumber:
+      return (a.order as number) - (b.order as number);
+    case aIsNumber && !bIsNumber:
+      return -1;
+    case bIsNumber && !aIsNumber:
+      return 1;
+    default:
+      return naturalComparator(a.fieldKey, b.fieldKey);
+  }
+}
 
 const SectionContainer = styled.div`
   margin-bottom: 27px;
@@ -128,22 +145,6 @@ const ArraySection: React.FC<{
     </GroupControls>
   );
 };
-
-function OrderComparator(a: FormBlock, b: FormBlock): number {
-  const aIsNumber = Number.isInteger(a.order);
-  const bIsNumber = Number.isInteger(b.order);
-
-  switch (true) {
-    case aIsNumber && bIsNumber:
-      return (a.order as number) - (b.order as number);
-    case aIsNumber && !bIsNumber:
-      return -1;
-    case bIsNumber && !aIsNumber:
-      return 1;
-    default:
-      return a.fieldKey.localeCompare(b.fieldKey, undefined, { numeric: true });
-  }
-}
 
 const FormSection: React.FC<{
   blocks: FormBlock[] | FormBlock;
