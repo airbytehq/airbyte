@@ -146,14 +146,6 @@ class Events(IncrementalAmplitudeStream):
             for record in file:
                 yield json.loads(record)
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        next_page_token = super().next_page_token(response)
-        if next_page_token:
-            # API returns data only when requested with a difference between 'start' and 'end' of 6 or more hours.
-            if pendulum.parse(next_page_token["start"]).add(hours=6) > pendulum.parse(next_page_token["end"]):
-                return None
-        return next_page_token
-
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -161,10 +153,11 @@ class Events(IncrementalAmplitudeStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
         params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=None)
 
-        # This endpoint returns an error if 'start' equal 'end'
-        if params["start"] >= params["end"]:
+        # API returns data only when requested with a difference between 'start' and 'end' of 6 or more hours.
+        if pendulum.parse(params["start"]).add(hours=6) > pendulum.parse(params["end"]):
             return []
         yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
