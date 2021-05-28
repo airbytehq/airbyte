@@ -141,12 +141,13 @@ class TransformConfig:
 
     def transform_snowflake(self, config: Dict[str, Any]):
         print("transform_snowflake")
-        # https://docs.getdbt.com/reference/warehouse-profiles/snowflake-profile
         # here account is everything before ".snowflakecomputing.com" as it can include account, region & cloud environment information)
+        account = config["host"].replace(".snowflakecomputing.com", "").replace("http://", "").replace("https://", "")
+        # https://docs.getdbt.com/reference/warehouse-profiles/snowflake-profile
         # snowflake coerces most of these values to uppercase, but if dbt has them as a different casing it has trouble finding the resources it needs. thus we coerce them to upper.
         dbt_config = {
             "type": "snowflake",
-            "account": config["host"].replace(".snowflakecomputing.com", ""),
+            "account": account,
             "user": config["username"].upper(),
             "password": config["password"],
             "role": config["role"].upper(),

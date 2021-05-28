@@ -97,7 +97,7 @@ class TestTransformConfig:
 
     def test_transform_snowflake(self):
         input = {
-            "host": "123abc.us-east-7.aws.snowflakecomputing.com",
+            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
             "role": "AIRBYTE_ROLE",
             "warehouse": "AIRBYTE_WAREHOUSE",
             "database": "AIRBYTE_DATABASE",
