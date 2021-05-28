@@ -37,6 +37,15 @@ jobs:
           echo Add other actions to build,
           echo test, and deploy your project.
           
+      - name: Add Failure Comment
+        if: github.event.inputs.comment-id && !success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+          
+          
   JOB2:
     if: always() 
     needs: JOB1
