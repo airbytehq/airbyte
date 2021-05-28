@@ -43,9 +43,9 @@ import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
-import io.airbyte.workers.process.DockerProcessBuilderFactory;
-import io.airbyte.workers.process.KubeProcessBuilderFactory;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.KubeProcessFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalPool;
 import io.airbyte.workers.temporal.TemporalUtils;
@@ -82,7 +82,7 @@ public class SchedulerApp {
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
 
   private final Path workspaceRoot;
-  private final ProcessBuilderFactory pbf;
+  private final ProcessFactory processFactory;
   private final JobPersistence jobPersistence;
   private final ConfigRepository configRepository;
   private final JobCleaner jobCleaner;
@@ -91,7 +91,7 @@ public class SchedulerApp {
   private final WorkflowServiceStubs temporalService;
 
   public SchedulerApp(Path workspaceRoot,
-                      ProcessBuilderFactory pbf,
+                      ProcessFactory processFactory,
                       JobPersistence jobPersistence,
                       ConfigRepository configRepository,
                       JobCleaner jobCleaner,
@@ -99,7 +99,7 @@ public class SchedulerApp {
                       TemporalClient temporalClient,
                       WorkflowServiceStubs temporalService) {
     this.workspaceRoot = workspaceRoot;
-    this.pbf = pbf;
+    this.processFactory = processFactory;
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.jobCleaner = jobCleaner;
@@ -109,7 +109,7 @@ public class SchedulerApp {
   }
 
   public void start() throws IOException {
-    final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, pbf);
+    final TemporalPool temporalPool = new TemporalPool(temporalService, workspaceRoot, processFactory);
     temporalPool.run();
 
     final ExecutorService workerThreadPool = Executors.newFixedThreadPool(MAX_WORKERS, THREAD_FACTORY);
@@ -159,11 +159,11 @@ public class SchedulerApp {
     }
   }
 
-  private static ProcessBuilderFactory getProcessBuilderFactory(Configs configs) {
+  private static ProcessFactory getProcessBuilderFactory(Configs configs) {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      return new KubeProcessBuilderFactory(configs.getWorkspaceRoot());
+      return new KubeProcessFactory(configs.getWorkspaceRoot());
     } else {
-      return new DockerProcessBuilderFactory(
+      return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
           configs.getWorkspaceDockerMount(),
           configs.getLocalDockerMount(),
@@ -192,7 +192,7 @@ public class SchedulerApp {
         configs.getDatabasePassword(),
         configs.getDatabaseUrl());
 
-    final ProcessBuilderFactory pbf = getProcessBuilderFactory(configs);
+    final ProcessFactory processFactory = getProcessBuilderFactory(configs);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(database);
     final ConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
@@ -227,7 +227,8 @@ public class SchedulerApp {
     final TemporalClient temporalClient = TemporalClient.production(temporalHost, workspaceRoot);
 
     LOGGER.info("Launching scheduler...");
-    new SchedulerApp(workspaceRoot, pbf, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient, temporalService).start();
+    new SchedulerApp(workspaceRoot, processFactory, jobPersistence, configRepository, jobCleaner, jobNotifier, temporalClient, temporalService)
+        .start();
   }
 
 }

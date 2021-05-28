@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
+import HeadTitle from "components/HeadTitle";
 import useRouter from "components/hooks/useRouterHook";
 import StepsMenu from "components/StepsMenu";
 import StatusView from "./components/StatusView";
@@ -129,7 +130,21 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
 
   return (
     <MainPageWithScroll
-      title={
+      headTitle={
+        <HeadTitle
+          titles={[
+            { id: "sidebar.connections" },
+            {
+              id: "connection.fromTo",
+              values: {
+                source: connection.source?.name,
+                destination: connection.destination?.name,
+              },
+            },
+          ]}
+        />
+      }
+      pageTitle={
         <PageTitle
           withLine
           title={

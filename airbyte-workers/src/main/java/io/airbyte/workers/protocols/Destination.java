@@ -27,6 +27,7 @@ package io.airbyte.workers.protocols;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.config.StandardTargetConfig;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public interface Destination<T> extends CheckedConsumer<T, Exception>, AutoCloseable {
 
@@ -41,5 +42,9 @@ public interface Destination<T> extends CheckedConsumer<T, Exception>, AutoClose
   void close() throws Exception;
 
   void cancel() throws Exception;
+
+  boolean isFinished();
+
+  Optional<T> attemptRead();
 
 }

@@ -15,11 +15,7 @@ required:
 additionalProperties: false
 properties:
   status:
-    type: string
-    enum:
-      - completed
-      - failed
-      - cancelled
+    "$ref": ReplicationStatus.yaml
   recordsSynced:
     type: integer
     minValue: 0
