@@ -34,24 +34,24 @@ import org.junit.jupiter.api.Test;
 
 // todo (cgardens) - these are not truly "unit" tests as they are check resources on the internet.
 // we should move them to "integration" tests, when we have facility to do so.
-class DockerProcessBuilderFactoryTest {
+class DockerProcessFactoryTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   @Test
   public void testImageExists() throws IOException, WorkerException {
-    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "pbf");
+    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
-    final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
-    assertTrue(pbf.checkImageExists("airbyte/scheduler:dev"));
+    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
+    assertTrue(processFactory.checkImageExists("airbyte/scheduler:dev"));
   }
 
   @Test
   public void testImageDoesNotExist() throws IOException, WorkerException {
-    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "pbf");
+    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
-    final DockerProcessBuilderFactory pbf = new DockerProcessBuilderFactory(workspaceRoot, "", "", "");
-    assertFalse(pbf.checkImageExists("airbyte/fake:0.1.2"));
+    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
+    assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
   }
 
 }
