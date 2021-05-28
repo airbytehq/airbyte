@@ -73,6 +73,8 @@ import org.slf4j.LoggerFactory;
  *
  * See the constructor for more information.
  */
+
+// TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
 public class KubePodProcess extends Process {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
