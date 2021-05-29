@@ -25,39 +25,16 @@
 package com.main.stocker;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collections;       
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import javax.net.ssl.HttpsURLConnection;
-
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.postgres.AirbyteCatalog;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.resources.MoreResources;
-
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.Integration;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-
-
-import java.io.UnsupportedEncodingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.sun.org.apache.xerces.internal.util.Status;
+
+import io.airbyte.integrations.source.postgres.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 
 
 public class StockerSource extends BaseConnector{
