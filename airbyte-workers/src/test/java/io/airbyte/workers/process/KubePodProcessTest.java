@@ -27,6 +27,8 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.string.Strings;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
@@ -34,29 +36,34 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.google.common.io.Resources;
 
+// Disabled until we start minikube on the node.
+@Disabled
 public class KubePodProcessTest {
 
-  private static final KubernetesClient CLIENT = new DefaultKubernetesClient();
-  private static final String ENTRYPOINT = "/tmp/run.sh";
-  private static final String TEST_IMAGE_NAME = "np_dest:dev";
+  private static final KubernetesClient K8s = new DefaultKubernetesClient();
+
+  private static final String ENTRYPOINT = "sh";
+
+  private static final String TEST_IMAGE_WITH_VAR_PATH = "Dockerfile.with_var";
+  private static final String TEST_IMAGE_WITH_VAR_NAME = "worker-test:with-var";
+
+  private static final String TEST_IMAGE_NO_VAR_PATH = "Dockerfile.no_var";
+  private static final String TEST_IMAGE_NO_VAR_NAME = "worker-test:no-var";
 
   @BeforeAll
   public static void setup() {
-    // TODO(Davin): Why does building the container ahead doesn't work?
-    // new GenericContainer(
-    // new ImageFromDockerfile(TEST_IMAGE_NAME, false)
-    // .withDockerfileFromBuilder(builder -> {
-    // builder
-    // .from("debian")
-    // .env(Map.of("AIRBYTE_ENTRYPOINT", ENTRYPOINT))
-    // .entryPoint(ENTRYPOINT)
-    // .build();})).withEnv("AIRBYTE_ENTRYPOINT", ENTRYPOINT);
+    var varDockerfile = Resources.getResource(TEST_IMAGE_WITH_VAR_PATH);
+    DockerUtils.buildImage(varDockerfile.getPath(), TEST_IMAGE_WITH_VAR_NAME);
+
+    var noVarDockerfile = Resources.getResource(TEST_IMAGE_NO_VAR_PATH);
+    DockerUtils.buildImage(noVarDockerfile.getPath(), TEST_IMAGE_NO_VAR_NAME);
   }
 
   @Nested
@@ -65,19 +72,19 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should error if image does not have the right env var set.")
     public void testGetCommandFromImageNoCommand() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, "debian", "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(K8s, TEST_IMAGE_NO_VAR_NAME, "default"));
     }
 
     @Test
     @DisplayName("Should error if image does not exists.")
     public void testGetCommandFromImageMissingImage() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(CLIENT, "bad_missing_image", "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(K8s, "bad_missing_image", "default"));
     }
 
     @Test
     @DisplayName("Should retrieve the right command if image has the right env var set.")
     public void testGetCommandFromImageCommandPresent() throws IOException, InterruptedException {
-      var command = KubePodProcess.getCommandFromImage(CLIENT, TEST_IMAGE_NAME, "default");
+      var command = KubePodProcess.getCommandFromImage(K8s, TEST_IMAGE_WITH_VAR_NAME, "default");
       assertEquals(ENTRYPOINT, command);
     }
 
@@ -89,20 +96,19 @@ public class KubePodProcessTest {
     @Test
     @DisplayName("Should error when the given pod does not exists.")
     public void testGetPodIpNoPod() {
-      assertThrows(RuntimeException.class, () -> KubePodProcess.getPodIP(CLIENT, "pod-does-not-exist", "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getPodIP(K8s, "pod-does-not-exist", "default"));
     }
 
     @Test
     @DisplayName("Should return the correct pod ip.")
     public void testGetPodIpGoodPod() throws InterruptedException {
-      final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
       var sleep = new ContainerBuilder()
           .withImage("busybox")
           .withName("sleep")
           .withCommand("sleep", "100000")
           .build();
 
-      var podName = "test-get-pod-good-pod-" + suffix;
+      var podName = Strings.addRandomSuffix("test-get-pod-good-pod", "-", 5);
       Pod podDef = new PodBuilder()
           .withApiVersion("v1")
           .withNewMetadata()
@@ -116,13 +122,13 @@ public class KubePodProcessTest {
           .build();
 
       String namespace = "default";
-      Pod pod = CLIENT.pods().inNamespace(namespace).createOrReplace(podDef);
-      CLIENT.resource(pod).waitUntilReady(20, TimeUnit.SECONDS);
+      Pod pod = K8s.pods().inNamespace(namespace).createOrReplace(podDef);
+      K8s.resource(pod).waitUntilReady(20, TimeUnit.SECONDS);
 
-      var ip = KubePodProcess.getPodIP(CLIENT, podName, namespace);
-      var exp = CLIENT.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
+      var ip = KubePodProcess.getPodIP(K8s, podName, namespace);
+      var exp = K8s.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
       assertEquals(exp, ip);
-      CLIENT.resource(podDef).inNamespace(namespace).delete();
+      K8s.resource(podDef).inNamespace(namespace).delete();
     }
 
   }

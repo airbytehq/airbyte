@@ -3,7 +3,9 @@ plugins {
 }
 
 dependencies {
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'org.apache.commons:commons-compress:1.20'
+    implementation 'com.github.docker-java:docker-java:3.2.8'
+    implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.2.8'
 
-    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.20'
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
 }
