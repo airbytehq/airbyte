@@ -89,7 +89,6 @@ def is_ssh_ready(ip, port):
 @pytest.fixture(scope="session")
 def ssh_service(docker_ip, docker_services):
     """Ensure that SSH service is up and responsive."""
-
     # `port_for` takes a container port and returns the corresponding host port
     port = docker_services.port_for("ssh", 22)
     docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port))
