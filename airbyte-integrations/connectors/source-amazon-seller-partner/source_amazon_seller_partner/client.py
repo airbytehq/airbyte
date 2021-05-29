@@ -18,7 +18,8 @@ class BaseClient:
     MAX_SLEEP_TIME = 512
     CONVERSION_WINDOW_DAYS = 14
 
-    def __init__(self, refresh_token: str, lwa_app_id: str, lwa_client_secret: str, aws_secret_key: str, aws_access_key: str, role_arn: str, start_date: str, marketplace_id: str = Marketplaces.US.marketplace_id):
+    def __init__(self, refresh_token: str, lwa_app_id: str, lwa_client_secret: str, aws_secret_key: str, aws_access_key: str, role_arn: str,
+                 start_date: str, marketplace: str = "USA"):
         self.credentials = dict(
             refresh_token=refresh_token,
             lwa_app_id=lwa_app_id,
@@ -29,11 +30,11 @@ class BaseClient:
         )
         self.start_date = start_date
         self._amazon_client = AmazonClient(
-            credentials=self.credentials, marketplace_id=marketplace_id)
+            credentials=self.credentials, marketplace=marketplace)
 
     def check_connection(self):
         updated_after = (
-            datetime.utcnow() - timedelta(days=self.CONVERSION_WINDOW_DAYS)).isoformat()
+                datetime.utcnow() - timedelta(days=self.CONVERSION_WINDOW_DAYS)).isoformat()
         self._amazon_client.fetch_orders(updated_after, 10)
 
     def get_streams(self):
@@ -112,7 +113,7 @@ class BaseClient:
             return end_date
         return self._format_date_as_string(cursor_value)
 
-    def _wait_for_report(self, logger,  amazon_client: AmazonClient, reportId: str):
+    def _wait_for_report(self, logger, amazon_client: AmazonClient, reportId: str):
         current_sleep_time = 2
         logger.info(f"Waiting for the report {reportId}")
         while True:

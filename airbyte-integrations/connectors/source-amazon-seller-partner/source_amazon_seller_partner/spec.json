@@ -18,7 +18,9 @@
       "start_date": {
         "type": "string",
         "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
-        "examples": ["2017-01-25T00:00:00Z"]
+        "examples": [
+          "2017-01-25T00:00:00Z"
+        ]
       },
       "refresh_token": {
         "type": "string",
@@ -44,9 +46,31 @@
         "type": "string",
         "description": "The role’s arn (needs permission to “Assume Role” STS)"
       },
-      "marketplace_id": {
+      "marketplace": {
         "type": "string",
-        "description": ""
+        "description": "The marketplace from which you'd like to pull data.",
+        "enum": [
+          "Australia",
+          "Brazil",
+          "Canada",
+          "Egypt",
+          "France",
+          "Germany",
+          "India",
+          "Italy",
+          "Japan",
+          "Mexico",
+          "Netherlands",
+          "Poland",
+          "Singapore",
+          "Spain",
+          "Sweden",
+          "Turkey",
+          "UAE",
+          "UK",
+          "USA"
+        ],
+        "$comment": "https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md#marketplaceid-values"
       }
     }
   }

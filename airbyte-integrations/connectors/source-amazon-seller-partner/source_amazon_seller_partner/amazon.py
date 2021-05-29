@@ -5,6 +5,28 @@ from sp_api.base import Marketplaces
 class AmazonClient:
     PAGECOUNT = 100
 
+    MARKETPLACES_TO_ID = {
+        "Australia": Marketplaces.AU,
+        "Brazil": Marketplaces.BR,
+        "Canada": Marketplaces.CA,
+        "Egypt": Marketplaces.EG,
+        "France": Marketplaces.FR,
+        "Germany": Marketplaces.DE,
+        "India": Marketplaces.IN,
+        "Italy": Marketplaces.IT,
+        "Japan": Marketplaces.JP,
+        "Mexico": Marketplaces.MX,
+        "Netherlands": Marketplaces.NL,
+        "Poland": Marketplaces.PL,
+        "Singapore": Marketplaces.SG,
+        "Spain": Marketplaces.ES,
+        "Sweden": Marketplaces.ES,
+        "Turkey": Marketplaces.TR,
+        "UAE": Marketplaces.AE,
+        "UK": Marketplaces.UK,
+        "USA": Marketplaces.US
+    }
+
     GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
     ORDERS = "Orders"
     CURSORS = {
@@ -16,10 +38,9 @@ class AmazonClient:
     _OTHER_ENTITIES = [ORDERS]
     _ENTITIES = _REPORT_ENTITIES + _OTHER_ENTITIES
 
-    def __init__(self, credentials: dict, marketplace_id: str):
+    def __init__(self, credentials: dict, marketplace: str):
         self.credentials = credentials
-        self.marketplace = list(filter(
-            lambda x: x.marketplace_id == marketplace_id, Marketplaces)).pop()
+        self.marketplace = self.MARKETPLACES_TO_ID[marketplace]
 
     def get_entities(self):
         return self._ENTITIES
