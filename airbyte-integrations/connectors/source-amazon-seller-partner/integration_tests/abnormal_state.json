@@ -1,5 +1,8 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL": {
+    "purchase-date": "2029-07-24"
+  },
+  "Orders": {
+    "LastUpdateDate": "2029-07-24"
   }
 }

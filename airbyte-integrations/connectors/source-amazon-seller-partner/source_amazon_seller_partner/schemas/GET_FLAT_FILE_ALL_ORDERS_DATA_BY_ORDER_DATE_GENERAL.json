@@ -2,7 +2,7 @@
   "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
   "supported_sync_modes": ["full_refresh", "incremental"],
   "source_defined_cursor": true,
-  "default_cursor_field": ["last-updated-date"],
+  "default_cursor_field": ["purchase-date"],
   "json_schema": {
     "type": "object",
     "title": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
@@ -23,9 +23,9 @@
         "title": "purchase-date",
         "description": ""
       },
-      "last-updated-date": {
+      "purchase-date": {
         "type": "string",
-        "title": "last-updated-date",
+        "title": "purchase-date",
         "description": ""
       },
       "order-status": {

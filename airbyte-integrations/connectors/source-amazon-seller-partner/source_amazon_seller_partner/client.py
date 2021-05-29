@@ -1,7 +1,7 @@
 import json
-from logging import log
 import time
 import pkgutil
+import dateutil
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import *
 from typing import DefaultDict, Dict, Generator
@@ -16,7 +16,7 @@ from .amazon import AmazonClient
 
 class BaseClient:
     MAX_SLEEP_TIME = 512
-    CONVERSION_WINDOW_DAYS = 14
+    CONVERSION_WINDOW_DAYS = 0
 
     def __init__(self, refresh_token: str, lwa_app_id: str, lwa_client_secret: str, aws_secret_key: str, aws_access_key: str, role_arn: str,
                  start_date: str, marketplace: str = "USA"):
@@ -34,8 +34,8 @@ class BaseClient:
 
     def check_connection(self):
         updated_after = (
-                datetime.utcnow() - timedelta(days=self.CONVERSION_WINDOW_DAYS)).isoformat()
-        self._amazon_client.fetch_orders(updated_after, 10)
+            datetime.utcnow() - timedelta(days=self.CONVERSION_WINDOW_DAYS)).isoformat()
+        self._amazon_client.fetch_orders(updated_after, 10, None)
 
     def get_streams(self):
         streams = []
@@ -50,6 +50,12 @@ class BaseClient:
             stream_name)
         cursor_value = self._get_cursor_or_none(
             state, stream_name, cursor_field) or self.start_date
+
+        if cursor_value > date.today().isoformat():
+            state[stream_name][cursor_field] = date.today().isoformat()
+            yield self._state(state)
+            return
+
         current_date = self._apply_conversion_window(cursor_value)
 
         logger.info(f"Started pulling data from {current_date}")
@@ -59,13 +65,23 @@ class BaseClient:
         while HAS_NEXT:
             logger.info(f"Pulling for page: {PAGE}")
             response = self._amazon_client.fetch_orders(
-                current_date, 10, NEXT_TOKEN)
+                current_date, self._amazon_client.PAGECOUNT, NEXT_TOKEN)
             orders = response["Orders"]
-            NEXT_TOKEN = response["NextToken"]
+            if "NextToken" in response:
+                NEXT_TOKEN = response["NextToken"]
             HAS_NEXT = True if NEXT_TOKEN else False
             PAGE = PAGE + 1
             for order in orders:
+                current_date = dateutil.parser.parse(
+                    order[cursor_field]).date().isoformat()
+                cursor_value = max(
+                    current_date, cursor_value) if cursor_value else current_date
                 yield self._record(stream=stream_name, data=order)
+
+            if cursor_value:
+                state[stream_name][cursor_field] = (date.fromisoformat(
+                    cursor_value) + relativedelta(days=1)).isoformat()
+                yield self._state(state)
 
             # Sleep for 2 seconds
             time.sleep(2)
@@ -74,6 +90,12 @@ class BaseClient:
         cursor_field = self._amazon_client.get_cursor_for_stream(stream_name)
         cursor_value = self._get_cursor_or_none(
             state, stream_name, cursor_field) or self.start_date
+
+        if cursor_value > date.today().isoformat():
+            state[stream_name][cursor_field] = date.today().isoformat()
+            yield self._state(state)
+            return
+
         current_date = cursor_value
 
         while current_date < date.today().isoformat():
@@ -109,9 +131,11 @@ class BaseClient:
             current_date = self._increase_date_by_month(current_date)
 
     def _get_cursor_state(self, cursor_value: str, end_date: str):
-        if cursor_value < end_date and end_date < date.today().isoformat():
-            return end_date
-        return self._format_date_as_string(cursor_value)
+        final_cursor_value = cursor_value
+        if end_date < date.today().isoformat():
+            final_cursor_value = end_date
+
+        return (date.fromisoformat(final_cursor_value) + relativedelta(days=1)).isoformat()
 
     def _wait_for_report(self, logger, amazon_client: AmazonClient, reportId: str):
         current_sleep_time = 2
@@ -147,10 +171,6 @@ class BaseClient:
         return records
 
     @staticmethod
-    def _format_date_as_string(current_date: str) -> str:
-        return date.fromisoformat(current_date).isoformat()
-
-    @staticmethod
     def _increase_date_by_month(current_date: str):
         return (date.fromisoformat(current_date) + relativedelta(months=1)).isoformat()
 
@@ -158,6 +178,8 @@ class BaseClient:
     def _get_date_parameters(current_date: str) -> str:
         start_date = date.fromisoformat(current_date)
         end_date = start_date + relativedelta(months=1)
+        if end_date > date.today():
+            end_date = date.today() + relativedelta(days=-1)
         return start_date.isoformat(), end_date.isoformat()
 
     @staticmethod
