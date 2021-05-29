@@ -68,7 +68,7 @@ This also presents a test coverage report.
 #### Publishing a new version to PyPi
 1. Bump the package version in `setup.py`
 2. Open a PR
-3. An Airbyte member must comment `/publish-cdk --dry-run=<true or false>`. Dry runs publish to test.pypi.org.
+3. An Airbyte member must comment `/publish-cdk dry-run=<true or false>`. Dry runs publish to test.pypi.org. Not including the `dry-run` parameter defaults to a value of `true`. 
 
 ## Coming Soon
 * Full OAuth 2.0 support (including refresh token issuing flow via UI or CLI) 

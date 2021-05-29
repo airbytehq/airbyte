@@ -17,6 +17,7 @@ import SourceResource from "core/resources/Source";
 import DestinationResource from "core/resources/Destination";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
+import HeadTitle from "components/HeadTitle";
 
 type IProps = {
   type: "source" | "destination" | "connection";
@@ -180,20 +181,24 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
           },
         ];
 
+  const titleId = () => {
+    switch (type) {
+      case "connection":
+        return "connection.newConnectionTitle";
+      case "destination":
+        return "destinations.newDestinationTitle";
+      case "source":
+        return "sources.newSourceTitle";
+    }
+  };
+
   return (
     <MainPageWithScroll
-      title={
+      headTitle={<HeadTitle titles={[{ id: titleId() }]} />}
+      pageTitle={
         <PageTitle
           withLine
-          title={
-            type === "connection" ? (
-              <FormattedMessage id="connection.newConnectionTitle" />
-            ) : type === "destination" ? (
-              <FormattedMessage id="destinations.newDestinationTitle" />
-            ) : (
-              <FormattedMessage id="sources.newSourceTitle" />
-            )
-          }
+          title={<FormattedMessage id={titleId()} />}
           middleComponent={
             <StepsMenu lightMode data={steps} activeStep={currentStep} />
           }

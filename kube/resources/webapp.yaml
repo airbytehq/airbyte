@@ -53,5 +53,10 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: IS_DEMO
+            - name: INTERNAL_API_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: INTERNAL_API_HOST
           ports:
             - containerPort: 80

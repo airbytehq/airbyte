@@ -67,8 +67,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
-      process = integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)
-          .start();
+      process = integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
