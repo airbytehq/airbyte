@@ -83,7 +83,7 @@
     },
     {
       "stream": {
-        "name": "adsets",
+        "name": "ad_sets",
         "json_schema": {
           "type": ["null", "object"],
           "properties": {

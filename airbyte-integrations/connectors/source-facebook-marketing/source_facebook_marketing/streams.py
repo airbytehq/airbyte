@@ -21,17 +21,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
-
+from datetime import datetime
 import time
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Any, Callable, Iterable, Iterator, Mapping, MutableMapping, Sequence
+from typing import Any, Callable, Iterable, Iterator, Mapping, MutableMapping, Sequence, List
 
 import backoff
 import pendulum as pendulum
+from airbyte_cdk.models import SyncMode
 
-# FIXME (Eugene K): use standard logger
 from airbyte_cdk.sources.streams import Stream
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adreportrun import AdReportRun
@@ -44,6 +43,8 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 
 
 class FBMarketingStream(Stream):
+    primary_key = "id"
+
     page_size = 100
 
     enable_deleted = False
@@ -54,6 +55,16 @@ class FBMarketingStream(Stream):
         super().__init__(**kwargs)
         self._api = api
         self._include_deleted = include_deleted if self.enable_deleted else False
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        fields = list(self.get_json_schema().get("properties", {}).keys())
+        yield from self.list(fields=fields)
 
     def _entity_status_filters(self) -> Iterator:
         """We split single request into multiple requests with few delivery_info values,
@@ -90,10 +101,8 @@ class FBMarketingStream(Stream):
         params = params or {}
         if self._include_deleted:
             for status_filter in self._entity_status_filters():
-                print("GEt with ", status_filter)
                 yield from getter(params=self._build_params(deep_merge(params, status_filter)))
         else:
-            print("GEt")
             yield from getter(params=self._build_params(params))
 
     def _build_params(self, params: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
@@ -172,7 +181,6 @@ class AdCreatives(FBMarketingStream):
     """AdCreative is not an iterable stream as it uses the batch endpoint
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
     """
-
     entity_prefix = "adcreative"
     batch_size = 50
 
@@ -192,23 +200,20 @@ class AdCreatives(FBMarketingStream):
         def failure(response: FacebookResponse):
             raise response.error()
 
-        api_batch: FacebookAdsApiBatch = self._api._api.new_batch()
+        api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
         for request in requests:
             api_batch.add_request(request, success=success, failure=failure)
-        print("execute batch of 50")
         api_batch.execute()
 
         return records
 
     @backoff_policy
     def _get_creatives(self, params: Mapping[str, Any]) -> Iterator:
-        print("get_creative")
         return self._api.account.get_ad_creatives(params=params)
 
 
 class Ads(FBMarketingIncrementalStream):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
-
     entity_prefix = "ad"
     enable_deleted = True
     state_pk = "updated_time"
@@ -287,6 +292,8 @@ class Campaigns(FBMarketingIncrementalStream):
 
 
 class AdsInsights(FBMarketingIncrementalStream):
+    primary_key = None
+
     entity_prefix = ""
     state_pk = "date_start"
 
@@ -329,11 +336,11 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     breakdowns = None
 
-    def __init__(self, *args, start_date, buffer_days, **kwargs):
+    def __init__(self, *args, start_date: datetime, buffer_days, **kwargs):
         super().__init__(*args, **kwargs)
-        self.start_date = start_date
+        self.start_date = pendulum.instance(start_date)
         self.buffer_days = buffer_days
-        self._state = start_date
+        self._state = self.start_date
 
     @staticmethod
     def _get_job_result(job, **params) -> Iterator:
@@ -357,6 +364,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             job_progress_pct = job["async_percent_completion"]
             self.logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete")
 
+            # FIXME: failed tasks???
             if job["async_status"] == "Job Completed":
                 return job
 
@@ -377,13 +385,13 @@ class AdsInsights(FBMarketingIncrementalStream):
     def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
         # Facebook freezes insight data 28 days after it was generated, which means that all data
         # from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-        buffered_start_date = self._state.subtract(days=self.buffer_days)
+        buffered_start_date = self._state - pendulum.Interval(days=self.buffer_days)
         end_date = pendulum.now()
 
         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
 
         while buffered_start_date <= end_date:
-            buffered_end_date = buffered_start_date.add(days=10)
+            buffered_end_date = buffered_start_date + pendulum.Interval(days=10)
             yield {
                 "level": self.level,
                 "action_breakdowns": self.action_breakdowns,

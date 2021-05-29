@@ -37,8 +37,10 @@ from facebook_business.adobjects import user as fb_user
 from facebook_business.exceptions import FacebookRequestError
 
 from source_facebook_marketing.common import FacebookAPIException
-from source_facebook_marketing.streams import Campaigns, AdSets, Ads, AdCreatives, AdsInsights, AdsInsightsAgeAndGender, AdsInsightsCountry, \
+from source_facebook_marketing.streams import (
+    Campaigns, AdSets, Ads, AdCreatives, AdsInsights, AdsInsightsAgeAndGender, AdsInsightsCountry,
     AdsInsightsRegion, AdsInsightsDma, AdsInsightsPlatformAndDevice
+)
 
 
 class ConnectorConfig(BaseModel):
@@ -75,12 +77,8 @@ class ConnectorConfig(BaseModel):
 
 class API:
     def __init__(self, account_id: str, access_token: str):
-        self._access_token = access_token
         self._account_id = account_id
-
-    @cached_property
-    def api(self):
-        return FacebookAdsApi.init(access_token=self._access_token)
+        self.api = FacebookAdsApi.init(access_token=access_token)
 
     @cached_property
     def account(self):

@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "adcreatives",
+        "name": "ad_creatives",
         "json_schema": {
           "properties": {
             "body": {
