@@ -78,7 +78,7 @@
         "minimum": 5,
         "maximum": 100,
         "examples": ["10"],
-        "description": "Size of each file part in MBs. Note that a larger part size results in larger memory requirement. A rule of thumb is to multiply the part size by 10 to get the memory requirement.",
+        "description": "Size of each file part in MBs.",
         "title": "Part Size (MBs)"
       },
       "format": {

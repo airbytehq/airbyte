@@ -93,9 +93,9 @@ public class S3CsvHandler implements S3Handler {
     this.sortedHeaders = getSortedFields(configuredStream.getStream().getJsonSchema(),
         formatConfig);
 
-    // Prefix: <namespace-if-exists>/<stream-name>
+    // Prefix: <bucket-path>/<namespace-if-exists>/<stream-name>
     // Filename: <upload-date>-<upload-millis>.csv
-    // Full path: <bucket-name>/<namespace-if-exists>/<stream-name>/<upload-date>-<upload-millis>.csv
+    // Full path: <bucket-name>/<bucket-path>/<namespace-if-exists>/<stream-name>/<upload-date>-<upload-millis>.csv
     this.outputPrefix = getOutputPrefix(config.getBucketPath(), stream);
     String outputFilename = getOutputFilename(uploadTimestamp);
     String objectKey = String.join("/", outputPrefix, outputFilename);
