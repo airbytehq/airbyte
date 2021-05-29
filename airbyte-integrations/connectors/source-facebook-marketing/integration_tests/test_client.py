@@ -23,34 +23,20 @@
 #
 
 
-import json
-
 import pytest
-from source_mailchimp.client import Client
+from airbyte_cdk.models import AirbyteStream
+from source_facebook_marketing.client import Client, FacebookAPIException
 
 
-class TestSourceMailchimp:
-    mailchimp_config: str = "../secrets/config.json"
+def test__health_check_with_wrong_token(config_with_wrong_token):
+    client = Client(**config_with_wrong_token)
+    alive, error = client.health_check()
 
-    @pytest.fixture()
-    def get_client(self):
-        with open(self.mailchimp_config) as json_file:
-            config = json.load(json_file)
-        client = Client(username=config["username"], apikey=config["apikey"])
-        return client
+    assert not alive
+    assert error == "Error: 190, Invalid OAuth access token."
 
-    def test_client_right_credentials(self, get_client):
-        status, error = get_client.health_check()
-        assert status
 
-    def test_client_getting_streams(self, get_client):
-        streams = get_client.get_streams()
-        assert streams
-
-    def test_client_read_lists(self, get_client):
-        lists = list(get_client.lists())
-        assert isinstance(lists, list)
-
-    def test_client_read_campaigns(self, get_client):
-        campaigns = list(get_client.campaigns())
-        assert isinstance(campaigns, list)
+def test__campaigns_with_wrong_token(config_with_wrong_token):
+    client = Client(**config_with_wrong_token)
+    with pytest.raises(FacebookAPIException, match="Error: 190, Invalid OAuth access token"):
+        next(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))

@@ -26,7 +26,7 @@ package io.airbyte.workers.temporal;
 
 import static java.util.stream.Collectors.toSet;
 
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivityImpl;
@@ -48,12 +48,12 @@ public class TemporalPool implements Runnable {
 
   private final WorkflowServiceStubs temporalService;
   private final Path workspaceRoot;
-  private final ProcessBuilderFactory pbf;
+  private final ProcessFactory processFactory;
 
-  public TemporalPool(WorkflowServiceStubs temporalService, Path workspaceRoot, ProcessBuilderFactory pbf) {
+  public TemporalPool(WorkflowServiceStubs temporalService, Path workspaceRoot, ProcessFactory processFactory) {
     this.temporalService = temporalService;
     this.workspaceRoot = workspaceRoot;
-    this.pbf = pbf;
+    this.processFactory = processFactory;
   }
 
   @Override
@@ -64,22 +64,22 @@ public class TemporalPool implements Runnable {
 
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name());
     specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
-    specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(pbf, workspaceRoot));
+    specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(processFactory, workspaceRoot));
 
     final Worker checkConnectionWorker = factory.newWorker(TemporalJobType.CHECK_CONNECTION.name());
     checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
-    checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(pbf, workspaceRoot));
+    checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(processFactory, workspaceRoot));
 
     final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name());
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
-    discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(pbf, workspaceRoot));
+    discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(processFactory, workspaceRoot));
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name());
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
-        new ReplicationActivityImpl(pbf, workspaceRoot),
-        new NormalizationActivityImpl(pbf, workspaceRoot),
-        new DbtTransformationActivityImpl(pbf, workspaceRoot));
+        new ReplicationActivityImpl(processFactory, workspaceRoot),
+        new NormalizationActivityImpl(processFactory, workspaceRoot),
+        new DbtTransformationActivityImpl(processFactory, workspaceRoot));
 
     factory.start();
   }

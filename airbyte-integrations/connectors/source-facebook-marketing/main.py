@@ -23,18 +23,11 @@
 #
 
 
-from setuptools import find_packages, setup
+import sys
 
-setup(
-    name="source_stripe_singer",
-    description="Source implementation for Stripe.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    package_data={"": ["*.json"]},
-    install_requires=[
-        "airbyte-protocol",
-        "base-singer",
-        "tap-stripe @ https://github.com/airbytehq/tap-stripe/tarball/master#egg=tap-stripe-1.4.5",
-    ],
-)
+from airbyte_cdk.entrypoint import launch
+from source_facebook_marketing import SourceFacebookMarketing
+
+if __name__ == "__main__":
+    source = SourceFacebookMarketing()
+    launch(source, sys.argv[1:])
