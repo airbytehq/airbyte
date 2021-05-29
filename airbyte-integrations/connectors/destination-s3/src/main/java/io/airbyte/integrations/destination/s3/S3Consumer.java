@@ -47,7 +47,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final S3DestinationConfig s3DestinationConfig;
   private final ConfiguredAirbyteCatalog configuredCatalog;
-  private final Map<AirbyteStreamNameNamespacePair, S3Handler> streamNameAndNamespaceToHandlers;
+  private final Map<AirbyteStreamNameNamespacePair, S3OutputFormatter> streamNameAndNamespaceToHandlers;
 
   public S3Consumer(
                     S3DestinationConfig s3DestinationConfig,
@@ -68,7 +68,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      S3Handler handler = S3Handlers.getS3Handler(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
+      S3OutputFormatter handler = S3Handlers.getS3Handler(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
       handler.initialize();
 
       AirbyteStream stream = configuredStream.getStream();
@@ -100,7 +100,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void close(boolean hasFailed) throws Exception {
-    for (S3Handler handler : streamNameAndNamespaceToHandlers.values()) {
+    for (S3OutputFormatter handler : streamNameAndNamespaceToHandlers.values()) {
       handler.close(hasFailed);
     }
   }

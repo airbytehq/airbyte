@@ -42,7 +42,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3Handler;
+import io.airbyte.integrations.destination.s3.S3OutputFormatter;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -64,9 +64,9 @@ import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class S3CsvHandler implements S3Handler {
+public class S3CsvOutputFormatter implements S3OutputFormatter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3CsvHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3CsvOutputFormatter.class);
   private static final ExtendedNameTransformer NAME_TRANSFORMER = new ExtendedNameTransformer();
 
   private final S3DestinationConfig config;
@@ -80,7 +80,7 @@ public class S3CsvHandler implements S3Handler {
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
 
-  public S3CsvHandler(S3DestinationConfig config,
+  public S3CsvOutputFormatter(S3DestinationConfig config,
                       AmazonS3 s3Client,
                       ConfiguredAirbyteStream configuredStream,
                       Timestamp uploadTimestamp)
@@ -93,14 +93,14 @@ public class S3CsvHandler implements S3Handler {
     this.sortedHeaders = getSortedFields(configuredStream.getStream().getJsonSchema(),
         formatConfig);
 
-    // Prefix: <bucket-path>/<namespace-if-exists>/<stream-name>
-    // Filename: <upload-date>-<upload-millis>.csv
-    // Full path: <bucket-name>/<bucket-path>/<namespace-if-exists>/<stream-name>/<upload-date>-<upload-millis>.csv
+    // prefix: <bucket-path>/<source-namespace-if-exists>/<stream-name>
+    // filename: <upload-date>-<upload-millis>.csv
+    // full path: <bucket-name>/<prefix>/<filename>
     this.outputPrefix = getOutputPrefix(config.getBucketPath(), stream);
     String outputFilename = getOutputFilename(uploadTimestamp);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': {}", stream.getName(), objectKey);
+    LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
 
     this.multipartUploadManager = new StreamTransferManager(config.getBucketName(), objectKey,
         s3Client)
