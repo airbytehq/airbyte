@@ -32,7 +32,7 @@ import backoff
 import pendulum as pendulum
 
 # FIXME (Eugene K): use standard logger
-from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.sources.streams import Stream
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
@@ -43,20 +43,12 @@ from .common import JobTimeoutException, batch, deep_merge, retry_pattern
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
-class StreamAPI(ABC):
-    result_return_limit = 100
+class FBMarketingStream(Stream):
+    page_size = 100
 
     enable_deleted = False
     split_deleted_filter = True
     entity_prefix = None
-
-    @property
-    def name(self):
-        """Name of the stream"""
-        stream_name = self.__class__.__name__
-        if stream_name.endswith("API"):
-            stream_name = stream_name[:-3]
-        return stream_name
 
     def __init__(self, api, include_deleted=False, **kwargs):
         super().__init__(**kwargs)
@@ -98,21 +90,27 @@ class StreamAPI(ABC):
         params = params or {}
         if self._include_deleted:
             for status_filter in self._entity_status_filters():
+                print("GEt with ", status_filter)
                 yield from getter(params=self._build_params(deep_merge(params, status_filter)))
         else:
+            print("GEt")
             yield from getter(params=self._build_params(params))
 
     def _build_params(self, params: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         params = params or {}
-        return {"limit": self.result_return_limit, **params}
+        return {"limit": self.page_size, **params}
 
     @abstractmethod
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
 
 
-class IncrementalStreamAPI(StreamAPI, ABC):
+class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     buffer_days = -1
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._state = None
 
     @property
     @abstractmethod
@@ -130,13 +128,9 @@ class IncrementalStreamAPI(StreamAPI, ABC):
     def state(self, value):
         potentially_new_records_in_the_past = self._include_deleted and not value.get("include_deleted", False)
         if potentially_new_records_in_the_past:
-            logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
         else:
             self._state = pendulum.parse(value[self.state_pk])
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._state = None
 
     def _build_params(self, params: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         """Build complete params for request"""
@@ -170,11 +164,11 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             yield record
 
         if latest_cursor:
-            logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+            self.logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
             self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
-class AdCreativeAPI(StreamAPI):
+class AdCreatives(FBMarketingStream):
     """AdCreative is not an iterable stream as it uses the batch endpoint
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
     """
@@ -201,16 +195,18 @@ class AdCreativeAPI(StreamAPI):
         api_batch: FacebookAdsApiBatch = self._api._api.new_batch()
         for request in requests:
             api_batch.add_request(request, success=success, failure=failure)
+        print("execute batch of 50")
         api_batch.execute()
 
         return records
 
     @backoff_policy
     def _get_creatives(self, params: Mapping[str, Any]) -> Iterator:
+        print("get_creative")
         return self._api.account.get_ad_creatives(params=params)
 
 
-class AdsAPI(IncrementalStreamAPI):
+class Ads(FBMarketingIncrementalStream):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
 
     entity_prefix = "ad"
@@ -234,7 +230,7 @@ class AdsAPI(IncrementalStreamAPI):
         return ad.api_get(fields=fields).export_all_data()
 
 
-class AdSetsAPI(IncrementalStreamAPI):
+class AdSets(FBMarketingIncrementalStream):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
 
     entity_prefix = "adset"
@@ -258,7 +254,7 @@ class AdSetsAPI(IncrementalStreamAPI):
         return ad_set.api_get(fields=fields).export_all_data()
 
 
-class CampaignAPI(IncrementalStreamAPI):
+class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
     enable_deleted = True
     state_pk = "updated_time"
@@ -290,7 +286,7 @@ class CampaignAPI(IncrementalStreamAPI):
         return self._api.account.get_campaigns(params={**params, **self._state_filter()}, fields=[self.state_pk])
 
 
-class AdsInsightAPI(IncrementalStreamAPI):
+class AdsInsights(FBMarketingIncrementalStream):
     entity_prefix = ""
     state_pk = "date_start"
 
@@ -331,12 +327,13 @@ class AdsInsightAPI(IncrementalStreamAPI):
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
 
-    def __init__(self, api, start_date, breakdowns=None, buffer_days=28):
-        super().__init__(api=api)
+    breakdowns = None
+
+    def __init__(self, *args, start_date, buffer_days, **kwargs):
+        super().__init__(*args, **kwargs)
         self.start_date = start_date
         self.buffer_days = buffer_days
         self._state = start_date
-        self.breakdowns = breakdowns
 
     @staticmethod
     def _get_job_result(job, **params) -> Iterator:
@@ -352,13 +349,13 @@ class AdsInsightAPI(IncrementalStreamAPI):
     def _run_job_until_completion(self, params) -> AdReportRun:
         # TODO parallelize running these jobs
         job = self._get_insights(params)
-        logger.info(f"Created AdReportRun: {job} to sync insights with breakdown {self.breakdowns}")
+        self.logger.info(f"Created AdReportRun: {job} to sync insights with breakdown {self.breakdowns}")
         start_time = pendulum.now()
         sleep_seconds = 2
         while True:
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
-            logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete")
+            self.logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete")
 
             if job["async_status"] == "Job Completed":
                 return job
@@ -372,7 +369,7 @@ class AdsInsightAPI(IncrementalStreamAPI):
                 raise JobTimeoutException(
                     f"AdReportRun {job} did not finish after {runtime.in_seconds()} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
                 )
-            logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job} to complete")
+            self.logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job} to complete")
             time.sleep(sleep_seconds)
             if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
                 sleep_seconds *= 2
@@ -386,18 +383,40 @@ class AdsInsightAPI(IncrementalStreamAPI):
         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
 
         while buffered_start_date <= end_date:
+            buffered_end_date = buffered_start_date.add(days=10)
             yield {
                 "level": self.level,
                 "action_breakdowns": self.action_breakdowns,
                 "breakdowns": self.breakdowns,
-                "limit": self.result_return_limit,
+                "limit": self.page_size,
                 "fields": fields,
                 "time_increment": self.time_increment,
                 "action_attribution_windows": self.action_attribution_windows,
-                "time_ranges": [{"since": buffered_start_date.to_date_string(), "until": buffered_start_date.to_date_string()}],
+                "time_ranges": [{"since": buffered_start_date.to_date_string(), "until": buffered_end_date.to_date_string()}],
             }
-            buffered_start_date = buffered_start_date.add(days=1)
+
+            buffered_start_date = buffered_end_date
 
     @backoff_policy
     def _get_insights(self, params) -> AdReportRun:
         return self._api.account.get_insights(params=params, is_async=True)
+
+
+class AdsInsightsAgeAndGender(AdsInsights):
+    breakdowns = ["age", "gender"]
+
+
+class AdsInsightsCountry(AdsInsights):
+    breakdowns = ["country"]
+
+
+class AdsInsightsRegion(AdsInsights):
+    breakdowns = ["region"]
+
+
+class AdsInsightsDma(AdsInsights):
+    breakdowns = ["dma"]
+
+
+class AdsInsightsPlatformAndDevice(AdsInsights):
+    breakdowns = ["publisher_platform", "platform_position", "impression_device"],
