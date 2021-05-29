@@ -33,13 +33,13 @@ MAIN_REQUIREMENTS = [
     "google-cloud-storage==1.35.0",
     "pandas==1.2.0",
     "paramiko==2.7.2",
-    "s3fs",
-    "smart-open[all]",
+    "s3fs==0.4.2",
+    "smart-open[all]==4.1.2",
     "lxml==4.6.3",
     "html5lib==1.1",
     "beautifulsoup4==4.9.3",
     "pyarrow==3.0.0",
-    "xlrd",
+    "xlrd==2.0.1",
     "openpyxl==3.0.6",
 ]
 
