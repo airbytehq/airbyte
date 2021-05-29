@@ -45,11 +45,10 @@ class AmazonClient:
     def get_entities(self):
         return self._ENTITIES
 
-    def fetch_entity_for_stream(self, stream_name: str) -> str:
+    def is_report(self, stream_name: str) -> str:
         if stream_name in self._REPORT_ENTITIES:
-            return "report"
-        else:
-            return "other"
+            return True
+        return False
 
     def get_cursor_for_stream(self, stream_name: str) -> str:
         return self.CURSORS[stream_name]

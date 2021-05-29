@@ -18,9 +18,7 @@
       "start_date": {
         "type": "string",
         "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
-        "examples": [
-          "2017-01-25T00:00:00Z"
-        ]
+        "examples": ["2017-01-25T00:00:00Z"]
       },
       "refresh_token": {
         "type": "string",

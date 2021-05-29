@@ -78,12 +78,12 @@ class SourceAmazonSellerPartner(Source):
         logger: AirbyteLogger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         stream_name = configured_stream.stream.name
-        entity = client._amazon_client.fetch_entity_for_stream(stream_name)
+        is_report = client._amazon_client.is_report(stream_name)
 
         if configured_stream.sync_mode == SyncMode.full_refresh:
             state.pop(stream_name, None)
 
-        if entity == "report":
+        if is_report:
             yield from client.read_reports(logger, stream_name, state)
         else:
             yield from client.read_stream(logger, stream_name, state)
