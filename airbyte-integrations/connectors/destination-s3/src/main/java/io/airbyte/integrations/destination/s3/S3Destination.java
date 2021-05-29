@@ -50,7 +50,7 @@ public class S3Destination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
-      S3StreamCopier.attemptWriteToPersistence(S3Config.getS3Config(config));
+      S3StreamCopier.attemptS3WriteAndDelete(S3Config.getS3Config(config));
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.error("Exception attempting to access the S3 bucket: ", e);
@@ -63,9 +63,9 @@ public class S3Destination extends BaseConnector implements Destination {
 
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
+                                            ConfiguredAirbyteCatalog configuredCatalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
-    return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), catalog);
+    return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog);
   }
 
 }

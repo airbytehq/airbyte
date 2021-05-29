@@ -46,15 +46,15 @@ import java.util.UUID;
 public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final S3DestinationConfig s3DestinationConfig;
-  private final ConfiguredAirbyteCatalog catalog;
-  private final Map<AirbyteStreamNameNamespacePair, S3Handler> pairToHandlers;
+  private final ConfiguredAirbyteCatalog configuredCatalog;
+  private final Map<AirbyteStreamNameNamespacePair, S3Handler> streamNameAndNamespaceToHandlers;
 
   public S3Consumer(
                     S3DestinationConfig s3DestinationConfig,
-                    ConfiguredAirbyteCatalog catalog) {
+                    ConfiguredAirbyteCatalog configuredCatalog) {
     this.s3DestinationConfig = s3DestinationConfig;
-    this.catalog = catalog;
-    this.pairToHandlers = new HashMap<>(catalog.getStreams().size());
+    this.configuredCatalog = configuredCatalog;
+    this.streamNameAndNamespaceToHandlers = new HashMap<>(configuredCatalog.getStreams().size());
   }
 
   @Override
@@ -67,13 +67,13 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
         .build();
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
-    for (ConfiguredAirbyteStream configuredStream : catalog.getStreams()) {
+    for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
       S3Handler handler = S3Handlers.getS3Handler(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
       handler.initialize();
 
       AirbyteStream stream = configuredStream.getStream();
-      AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      pairToHandlers.put(pair, handler);
+      AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
+      streamNameAndNamespaceToHandlers.put(streamNamePair, handler);
     }
   }
 
@@ -87,20 +87,20 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
         .fromRecordMessage(recordMessage);
 
-    if (!pairToHandlers.containsKey(pair)) {
+    if (!streamNameAndNamespaceToHandlers.containsKey(pair)) {
       throw new IllegalArgumentException(
           String.format(
               "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
-              Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
+              Jsons.serialize(configuredCatalog), Jsons.serialize(recordMessage)));
     }
 
     UUID id = UUID.randomUUID();
-    pairToHandlers.get(pair).write(id, recordMessage);
+    streamNameAndNamespaceToHandlers.get(pair).write(id, recordMessage);
   }
 
   @Override
   protected void close(boolean hasFailed) throws Exception {
-    for (S3Handler handler : pairToHandlers.values()) {
+    for (S3Handler handler : streamNameAndNamespaceToHandlers.values()) {
       handler.close(hasFailed);
     }
   }

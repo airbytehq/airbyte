@@ -64,7 +64,7 @@ public class RedshiftCopyS3Destination extends CopyDestination {
 
   @Override
   public void checkPersistence(JsonNode config) throws Exception {
-    S3StreamCopier.attemptWriteToPersistence(getS3Config(config));
+    S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
   }
 
   @Override
