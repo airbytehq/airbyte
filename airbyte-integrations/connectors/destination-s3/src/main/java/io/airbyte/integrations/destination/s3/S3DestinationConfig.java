@@ -25,7 +25,6 @@
 package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
 
 public class S3DestinationConfig {
 
@@ -34,7 +33,6 @@ public class S3DestinationConfig {
   private final String bucketRegion;
   private final String accessKeyId;
   private final String secretAccessKey;
-  private final int partSize;
   private final S3FormatConfig formatConfig;
 
   public S3DestinationConfig(
@@ -43,29 +41,22 @@ public class S3DestinationConfig {
                              String bucketRegion,
                              String accessKeyId,
                              String secretAccessKey,
-                             int partSize,
                              S3FormatConfig formatConfig) {
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
     this.accessKeyId = accessKeyId;
     this.secretAccessKey = secretAccessKey;
-    this.partSize = partSize;
     this.formatConfig = formatConfig;
   }
 
   public static S3DestinationConfig getS3DestinationConfig(JsonNode config) {
-    int partSize = S3StreamCopier.DEFAULT_PART_SIZE_MB;
-    if (config.get("part_size") != null) {
-      partSize = config.get("part_size").asInt();
-    }
     return new S3DestinationConfig(
         config.get("s3_bucket_name").asText(),
         config.get("s3_bucket_path").asText(),
         config.get("s3_bucket_region").asText(),
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
-        partSize,
         S3FormatConfigs.getS3FormatConfig(config));
   }
 
@@ -87,10 +78,6 @@ public class S3DestinationConfig {
 
   public String getSecretAccessKey() {
     return secretAccessKey;
-  }
-
-  public int getPartSize() {
-    return partSize;
   }
 
   public S3FormatConfig getFormatConfig() {

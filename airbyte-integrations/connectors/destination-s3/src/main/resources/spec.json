@@ -11,7 +11,6 @@
       "bucket_region",
       "access_key_id",
       "secret_access_key",
-      "part_size",
       "format"
     ],
     "additionalProperties": false,
@@ -72,14 +71,6 @@
         "title": "S3 Access Key",
         "airbyte_secret": true,
         "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"]
-      },
-      "part_size": {
-        "type": "integer",
-        "minimum": 5,
-        "maximum": 100,
-        "examples": ["10"],
-        "description": "Size of each file part in MBs.",
-        "title": "Part Size (MBs)"
       },
       "format": {
         "title": "Output Format",

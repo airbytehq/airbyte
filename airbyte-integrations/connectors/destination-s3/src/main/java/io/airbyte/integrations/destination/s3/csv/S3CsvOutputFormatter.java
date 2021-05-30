@@ -25,8 +25,6 @@
 package io.airbyte.integrations.destination.s3.csv;
 
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DATE_FORMAT;
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFAULT_QUEUE_CAPACITY;
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFAULT_UPLOAD_THREADS;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
@@ -42,8 +40,8 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3OutputFormatter;
-import io.airbyte.integrations.destination.s3.S3OutputFormatterFactory;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -51,7 +49,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -77,14 +74,14 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
   private final DestinationSyncMode syncMode;
   private final List<String> sortedHeaders;
   private final String outputPrefix;
-  private final StreamTransferManager multipartUploadManager;
+  private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
 
   public S3CsvOutputFormatter(S3DestinationConfig config,
-                      AmazonS3 s3Client,
-                      ConfiguredAirbyteStream configuredStream,
-                      Timestamp uploadTimestamp)
+      AmazonS3 s3Client,
+      ConfiguredAirbyteStream configuredStream,
+      Timestamp uploadTimestamp)
       throws IOException {
     this.config = config;
     this.formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
@@ -101,16 +98,23 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     String outputFilename = getOutputFilename(uploadTimestamp);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(), objectKey);
+    LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
+        objectKey);
 
-    this.multipartUploadManager = new StreamTransferManager(config.getBucketName(), objectKey,
+    // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
+    // have support for streaming multipart uploads. The alternative is first writing the entire
+    // output to disk before loading into S3. This is not feasible with large input.
+    // Data is chunked into parts during the upload. A part is sent off to a queue to be uploaded
+    // once it has reached it's configured part size.
+    // Memory consumption is queue capacity * part size = 1 * 50 = 50 MB at current configurations.
+    this.uploadManager = new StreamTransferManager(config.getBucketName(), objectKey,
         s3Client)
-            .numUploadThreads(DEFAULT_UPLOAD_THREADS)
-            .queueCapacity(DEFAULT_QUEUE_CAPACITY)
-            .partSize(config.getPartSize());
-    this.outputStream = multipartUploadManager.getMultiPartOutputStreams().get(0);
-    Writer writer = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
-    this.csvPrinter = new CSVPrinter(writer,
+        .numUploadThreads(1)
+        .queueCapacity(1)
+        .partSize(S3DestinationConstants.DEFAULT_PART_SIZE_MD);
+    // We only need one output stream as we only have one input stream. This is reasonably performant.
+    this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
+    this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
         CSVFormat.DEFAULT.withHeader(getHeaders(sortedHeaders).toArray(new String[0])));
   }
 
@@ -232,13 +236,13 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
       LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
       csvPrinter.close();
       outputStream.close();
-      multipartUploadManager.abort();
+      uploadManager.abort();
       LOGGER.warn("Upload of stream '{}' aborted.", stream.getName());
     } else {
       LOGGER.info("Uploading remaining data for stream '{}'.", stream.getName());
       csvPrinter.close();
       outputStream.close();
-      multipartUploadManager.complete();
+      uploadManager.complete();
       LOGGER.info("Upload completed for stream '{}'.", stream.getName());
     }
   }
