@@ -4,6 +4,9 @@
     "date": {
       "type": ["null", "integer"]
     },
+    "created": {
+      "type": ["null", "integer"]
+    },
     "next_payment_attempt": {
       "type": ["null", "string"],
       "format": "date-time"
@@ -69,7 +72,7 @@
     "paid": {
       "type": ["null", "boolean"]
     },
-    "discount": {
+    "discounts": {
       "type": ["null", "object"],
       "properties": {
         "end": {
@@ -127,7 +130,7 @@
               "type": ["null", "number"]
             },
             "created": {
-              "type": ["null", "number"]
+              "type": ["null", "integer"]
             }
           }
         },
