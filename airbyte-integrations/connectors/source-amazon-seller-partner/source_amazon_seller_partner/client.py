@@ -16,7 +16,7 @@ from .amazon import AmazonClient
 
 class BaseClient:
     MAX_SLEEP_TIME = 512
-    CONVERSION_WINDOW_DAYS = 0
+    CONVERSION_WINDOW_DAYS = 14
 
     def __init__(self, refresh_token: str, lwa_app_id: str, lwa_client_secret: str, aws_secret_key: str, aws_access_key: str, role_arn: str,
                  start_date: str, marketplace: str = "USA"):
@@ -35,7 +35,7 @@ class BaseClient:
     def check_connection(self):
         updated_after = (
             datetime.utcnow() - timedelta(days=self.CONVERSION_WINDOW_DAYS)).isoformat()
-        self._amazon_client.fetch_orders(updated_after, 10, None)
+        return self._amazon_client.fetch_orders(updated_after, 10, None)
 
     def get_streams(self):
         streams = []

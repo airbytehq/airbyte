@@ -22,7 +22,6 @@
 
 
 import json
-from datetime import datetime
 from typing import Dict, Generator, Mapping, DefaultDict
 
 from airbyte_cdk.logger import AirbyteLogger
