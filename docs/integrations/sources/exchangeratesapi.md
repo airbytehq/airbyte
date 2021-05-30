@@ -49,7 +49,7 @@ If you have `free` subscription plan (you may check it [here](https://manage.exc
 <details>
 
 | Version | Date       | Pull Request | Subject |
-| :------ | :---       | :-----       | :------ |
-| 0.2.0   | 2021-05-26 | [3566](https://github.com/airbytehq/airbyte/pull/3566) | Move from `api.ratesapi.io/` to `api.exchangeratesapi.io/`. Add required field `access_key` to `config.json`. |
-
+| :------ | :--------  | :-----       | :------ |
+| 0.2.0   | 2021-05-26 | [3566](https://github.com/airbytehq/airbyte/pull/3566) | Move from `api.ratesapi.io/` to `api.exchangeratesapi.io/`.  <br>Add required field `access_key` to `config.json`. |
+| 0.1.0   | 2021-04-19 | [2942](https://github.com/airbytehq/airbyte/pull/2942) | Implement Exchange API using the CDK |
 </details>
