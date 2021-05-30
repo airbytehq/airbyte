@@ -40,7 +40,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.connect.json.JsonSerializer;
+import org.apache.kafka.connect.json.JsonDeserializer;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -72,9 +72,9 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("sasl_mechanism", "PLAIN")
         .put("client_id", "test-client")
         .put("acks", "all")
-        .put("transactional_id", "")
+        .put("transactional_id", "txn-id")
         .put("transaction_timeout_ms", 60000)
-        .put("enable_idempotence", false)
+        .put("enable_idempotence", true)
         .put("compression_type", "none")
         .put("batch_size", 16384)
         .put("linger_ms", 0)
@@ -114,13 +114,14 @@ public class KafkaDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers())
         .put(ConsumerConfig.GROUP_ID_CONFIG, "test-group")
         .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
-        .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName())
+        .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName())
         .build();
     final KafkaConsumer<String, JsonNode> consumer = new KafkaConsumer<>(props);
     final List<JsonNode> records = new ArrayList<>();
 
-    consumer.poll(Duration.ofMillis(20000L)).records(TEST_TOPIC)
-        .forEach(record -> records.add(record.value()));
+    consumer.subscribe(Collections.singletonList(TEST_TOPIC));
+    consumer.poll(Duration.ofMillis(20000L)).iterator()
+        .forEachRemaining(record -> records.add(record.value()));
 
     return records;
   }

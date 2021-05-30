@@ -88,7 +88,9 @@ public class KafkaDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog catalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
-    return new KafkaRecordConsumer(KafkaDestinationConfig.getKafkaDestinationConfig(config), catalog);
+    return new KafkaRecordConsumer(KafkaDestinationConfig.getKafkaDestinationConfig(config),
+        catalog,
+        outputRecordCollector);
   }
 
   public static void main(String[] args) throws Exception {

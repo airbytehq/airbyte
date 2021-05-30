@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.kafka.clients.producer.Callback;
@@ -58,9 +59,13 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final boolean transactionalProducer;
   private final ConfiguredAirbyteCatalog catalog;
   private final Callback callback;
+  private final Consumer<AirbyteMessage> outputRecordCollector;
+
+  private AirbyteMessage lastStateMessage = null;
 
   public KafkaRecordConsumer(KafkaDestinationConfig kafkaDestinationConfig,
-                             ConfiguredAirbyteCatalog catalog) {
+                             ConfiguredAirbyteCatalog catalog,
+                             Consumer<AirbyteMessage> outputRecordCollector) {
     this.topicPattern = kafkaDestinationConfig.getTopicPattern();
     this.topicMap = new HashMap<>();
     this.producer = kafkaDestinationConfig.getProducer();
@@ -73,6 +78,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
         LOGGER.error("Error sending message to topic '{}'", metadata.topic(), exception);
       }
     };
+    this.outputRecordCollector = outputRecordCollector;
   }
 
   @Override
@@ -94,24 +100,26 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void acceptTracked(AirbyteMessage airbyteMessage) throws Exception {
-    if (airbyteMessage.getType() != AirbyteMessage.Type.RECORD) {
-      return;
-    }
+    if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
+      lastStateMessage = airbyteMessage;
+    } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
+      final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
 
-    final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
+      final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
+      final String key = UUID.randomUUID().toString();
+      final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
+          JavaBaseConstants.COLUMN_NAME_AB_ID, key,
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
+          JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData()));
+      final ProducerRecord<String, JsonNode> record = new ProducerRecord<>(topic, key, value);
 
-    final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
-    final String key = UUID.randomUUID().toString();
-    final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
-        JavaBaseConstants.COLUMN_NAME_AB_ID, key,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
-        JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData()));
-    final ProducerRecord<String, JsonNode> record = new ProducerRecord<>(topic, key, value);
-
-    if (transactionalProducer) {
-      sendRecordInTransaction(record);
+      if (transactionalProducer) {
+        sendRecordInTransaction(record);
+      } else {
+        sendRecord(record);
+      }
     } else {
-      sendRecord(record);
+      LOGGER.warn("Unexpected message: " + airbyteMessage.getType());
     }
   }
 
@@ -139,6 +147,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void close(boolean hasFailed) {
     producer.close();
+    outputRecordCollector.accept(lastStateMessage);
   }
 
 }
