@@ -425,4 +425,4 @@ class AdsInsightsDma(AdsInsights):
 
 
 class AdsInsightsPlatformAndDevice(AdsInsights):
-    breakdowns = (["publisher_platform", "platform_position", "impression_device"],)
+    breakdowns = ["publisher_platform", "platform_position", "impression_device"]
