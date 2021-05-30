@@ -47,14 +47,16 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final S3DestinationConfig s3DestinationConfig;
   private final ConfiguredAirbyteCatalog configuredCatalog;
-  private final Map<AirbyteStreamNameNamespacePair, S3OutputFormatter> streamNameAndNamespaceToHandlers;
+  private final S3OutputFormatterFactory formatterFactory;
+  private final Map<AirbyteStreamNameNamespacePair, S3OutputFormatter> streamNameAndNamespaceToFormatters;
 
-  public S3Consumer(
-                    S3DestinationConfig s3DestinationConfig,
-                    ConfiguredAirbyteCatalog configuredCatalog) {
+  public S3Consumer(S3DestinationConfig s3DestinationConfig,
+      ConfiguredAirbyteCatalog configuredCatalog,
+      S3OutputFormatterFactory formatterFactory) {
     this.s3DestinationConfig = s3DestinationConfig;
     this.configuredCatalog = configuredCatalog;
-    this.streamNameAndNamespaceToHandlers = new HashMap<>(configuredCatalog.getStreams().size());
+    this.formatterFactory = formatterFactory;
+    this.streamNameAndNamespaceToFormatters = new HashMap<>(configuredCatalog.getStreams().size());
   }
 
   @Override
@@ -68,12 +70,13 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      S3OutputFormatter handler = S3Handlers.getS3Handler(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
-      handler.initialize();
+      S3OutputFormatter formatter = formatterFactory.create(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
+      formatter.initialize();
 
       AirbyteStream stream = configuredStream.getStream();
-      AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
-      streamNameAndNamespaceToHandlers.put(streamNamePair, handler);
+      AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
+          .fromAirbyteSteam(stream);
+      streamNameAndNamespaceToFormatters.put(streamNamePair, formatter);
     }
   }
 
@@ -87,7 +90,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
         .fromRecordMessage(recordMessage);
 
-    if (!streamNameAndNamespaceToHandlers.containsKey(pair)) {
+    if (!streamNameAndNamespaceToFormatters.containsKey(pair)) {
       throw new IllegalArgumentException(
           String.format(
               "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
@@ -95,12 +98,12 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     }
 
     UUID id = UUID.randomUUID();
-    streamNameAndNamespaceToHandlers.get(pair).write(id, recordMessage);
+    streamNameAndNamespaceToFormatters.get(pair).write(id, recordMessage);
   }
 
   @Override
   protected void close(boolean hasFailed) throws Exception {
-    for (S3OutputFormatter handler : streamNameAndNamespaceToHandlers.values()) {
+    for (S3OutputFormatter handler : streamNameAndNamespaceToFormatters.values()) {
       handler.close(hasFailed);
     }
   }
