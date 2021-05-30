@@ -22,9 +22,7 @@
 # SOFTWARE.
 #
 
-import json
 import sys
-from time import sleep
 from typing import Sequence
 
 import backoff
@@ -51,27 +49,6 @@ def batch(iterable: Sequence, size: int = 1):
         yield iterable[ndx : min(ndx + size, total_size)]
 
 
-def handle_call_rate_response(exc: FacebookRequestError) -> bool:
-    pause_time = DEFAULT_SLEEP_INTERVAL
-    platform_header = exc.http_headers().get("x-app-usage") or exc.http_headers().get("x-ad-account-usage")
-    if platform_header:
-        platform_header = json.loads(platform_header)
-        call_count = platform_header.get("call_count") or platform_header.get("acc_id_util_pct")
-        if call_count > 99:
-            logger.info(f"Reached platform call limit: {exc}")
-
-    buc_header = exc.http_headers().get("x-business-use-case-usage")
-    buc_header = json.loads(buc_header) if buc_header else {}
-    for business_object_id, stats in buc_header.items():
-        if stats["call_count"] > 99:
-            logger.info(f"Reached call limit on {stats['type']}: {exc}")
-            pause_time = max(pause_time, stats["estimated_time_to_regain_access"])
-    logger.info(f"Sleeping for {pause_time.total_seconds()} seconds")
-    sleep(pause_time.total_seconds())
-
-    return True
-
-
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
@@ -80,9 +57,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
-            if exc.api_error_code() in FACEBOOK_API_CALL_LIMIT_ERROR_CODES:
-                return handle_call_rate_response(exc)
-            return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
+            call_rate_limit_error = exc.api_error_code() in FACEBOOK_API_CALL_LIMIT_ERROR_CODES
+            return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE or call_rate_limit_error
         return False
 
     return backoff.on_exception(
