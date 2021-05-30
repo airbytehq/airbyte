@@ -56,8 +56,8 @@ import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.DockerProcessBuilderFactory;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
 import java.nio.file.Files;
@@ -79,6 +79,8 @@ public abstract class SourceAcceptanceTest {
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
   public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
+  public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
+  public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
 
   private static final long JOB_ID = 0L;
   private static final int JOB_ATTEMPT = 0;
@@ -89,7 +91,7 @@ public abstract class SourceAcceptanceTest {
 
   private Path jobRoot;
   protected Path localRoot;
-  private ProcessBuilderFactory pbf;
+  private ProcessFactory processFactory;
 
   /**
    * TODO hack: Various Singer integrations use cursor fields inclusively i.e: they output records
@@ -205,7 +207,7 @@ public abstract class SourceAcceptanceTest {
 
     setup(testEnv);
 
-    pbf = new DockerProcessBuilderFactory(
+    processFactory = new DockerProcessFactory(
         workspaceRoot,
         workspaceRoot.toString(),
         localRoot.toString(),
@@ -417,17 +419,17 @@ public abstract class SourceAcceptanceTest {
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
+    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   private StandardCheckConnectionOutput runCheck() throws Exception {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
+    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
   private AirbyteCatalog runDiscover() throws Exception {
-    return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
+    return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
   }
 
@@ -442,7 +444,7 @@ public abstract class SourceAcceptanceTest {
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);
 
-    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
+    final AirbyteSource source = new DefaultAirbyteSource(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
     final List<AirbyteMessage> messages = new ArrayList<>();
     source.start(sourceConfig, jobRoot);
     while (!source.isFinished()) {
@@ -472,6 +474,8 @@ public abstract class SourceAcceptanceTest {
   private AirbyteRecordMessage pruneCdcMetadata(AirbyteRecordMessage m) {
     final AirbyteRecordMessage clone = Jsons.clone(m);
     ((ObjectNode) clone.getData()).remove(CDC_LSN);
+    ((ObjectNode) clone.getData()).remove(CDC_LOG_FILE);
+    ((ObjectNode) clone.getData()).remove(CDC_LOG_POS);
     ((ObjectNode) clone.getData()).remove(CDC_UPDATED_AT);
     ((ObjectNode) clone.getData()).remove(CDC_DELETED_AT);
     return clone;

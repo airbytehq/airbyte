@@ -1,10 +1,16 @@
 version: "3.7"
-
+#https://github.com/compose-spec/compose-spec/blob/master/spec.md#using-extensions-as-fragments
+x-logging: &default-logging
+  options:
+    max-size: "100m"
+    max-file: "5"
+  driver: json-file
 services:
   # hook in case we need to add init behavior
   # every root service (no depends_on) should depend on init
   init:
     image: airbyte/init:${VERSION}
+    logging: *default-logging
     container_name: init
     command: /bin/sh -c "./scripts/create_mount_directories.sh /local_parent ${HACK_LOCAL_ROOT_PARENT} ${LOCAL_ROOT}"
     environment:
@@ -14,6 +20,7 @@ services:
       - ${HACK_LOCAL_ROOT_PARENT}:/local_parent
   db:
     image: airbyte/db:${VERSION}
+    logging: *default-logging
     container_name: airbyte-db
     restart: unless-stopped
     environment:
@@ -30,6 +37,7 @@ services:
       - data:/app/seed
   scheduler:
     image: airbyte/scheduler:${VERSION}
+    logging: *default-logging
     container_name: airbyte-scheduler
     restart: unless-stopped
     environment:
@@ -56,6 +64,7 @@ services:
       - data:${CONFIG_ROOT}
   server:
     image: airbyte/server:${VERSION}
+    logging: *default-logging
     container_name: airbyte-server
     restart: unless-stopped
     environment:
@@ -79,6 +88,7 @@ services:
       - data:${CONFIG_ROOT}
   webapp:
     image: airbyte/webapp:${VERSION}
+    logging: *default-logging
     container_name: airbyte-webapp
     restart: unless-stopped
     ports:
@@ -90,8 +100,10 @@ services:
       - IS_DEMO=${IS_DEMO:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - INTERNAL_API_HOST=${INTERNAL_API_HOST}
   airbyte-temporal:
     image: temporalio/auto-setup:1.7.0
+    logging: *default-logging
     container_name: airbyte-temporal
     restart: unless-stopped
     ports:

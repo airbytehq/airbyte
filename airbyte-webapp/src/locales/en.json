@@ -11,7 +11,7 @@
   "sidebar.settings": "Settings",
 
   "form.continue": "Continue",
-  "form.emailOptional": "Your email (optional)",
+  "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "This email address doesn’t seem correct.",
   "form.empty.error": "Empty field",
@@ -92,6 +92,7 @@
   "form.pkSelected": "{count, plural, =0 { } one {{items}} other {# keys selected}}",
   "form.url.error": "field must be a valid URL",
 
+  "preferences.headTitle": "Preferences",
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
   "preferences.collectData": "We collect data only for product improvements, see the <docs>docs</docs>.",
@@ -102,6 +103,7 @@
   "preferences.unsubscribeAnyTime": " You can unsubscribe any time.",
   "preferences.securityUpdates": "Receive emails about security updates.",
 
+  "onboarding.headTitle": "Get Started!",
   "onboarding.title": "Let’s set up your first connection.",
   "onboarding.subtitle": "Connections are automated data pipelines that sync data from a source to a destination.",
   "onboarding.createSource": "Create a source",

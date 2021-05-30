@@ -23,10 +23,11 @@
 #
 
 
-import pytest
-from source_mailchimp.client import Client
+from airbyte_cdk.logger import AirbyteLogger
+from source_mailchimp import SourceMailchimp
 
 
 def test_client_wrong_credentials():
-    with pytest.raises(ValueError, match="The API key that you have entered is not valid"):
-        Client(username="unknown_user", apikey="wrong_key")
+    source = SourceMailchimp()
+    status, error = source.check_connection(logger=AirbyteLogger, config={"username": "Jonny", "apikey": "blah-blah"})
+    assert not status
