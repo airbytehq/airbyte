@@ -21,23 +21,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from datetime import datetime
+
 import time
 from abc import ABC, abstractmethod
+from datetime import datetime
 from functools import partial
-from typing import Any, Callable, Iterable, Iterator, Mapping, MutableMapping, Sequence, List
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Sequence
 
 import backoff
 import pendulum as pendulum
 from airbyte_cdk.models import SyncMode
-
 from airbyte_cdk.sources.streams import Stream
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from .common import JobTimeoutException, batch, deep_merge, retry_pattern, FacebookAPIException
+from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -181,6 +181,7 @@ class AdCreatives(FBMarketingStream):
     """AdCreative is not an iterable stream as it uses the batch endpoint
     doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup/adcreatives/
     """
+
     entity_prefix = "adcreative"
     batch_size = 50
 
@@ -216,6 +217,7 @@ class AdCreatives(FBMarketingStream):
 
 class Ads(FBMarketingIncrementalStream):
     """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
+
     entity_prefix = "ad"
     enable_deleted = True
     state_pk = "updated_time"
@@ -423,4 +425,4 @@ class AdsInsightsDma(AdsInsights):
 
 
 class AdsInsightsPlatformAndDevice(AdsInsights):
-    breakdowns = ["publisher_platform", "platform_position", "impression_device"],
+    breakdowns = (["publisher_platform", "platform_position", "impression_device"],)

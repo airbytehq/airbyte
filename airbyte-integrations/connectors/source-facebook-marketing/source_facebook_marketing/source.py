@@ -21,28 +21,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
+
 import json
 from datetime import datetime
 from time import sleep
-from typing import Mapping, Any, Tuple, List, Type
+from typing import Any, List, Mapping, Tuple, Type
 
 from airbyte_cdk.entrypoint import logger
-from pendulum import Interval
-from pydantic import BaseModel, Field
-from cached_property import cached_property
-
 from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-
+from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.exceptions import FacebookRequestError
-
+from pendulum import Interval
+from pydantic import BaseModel, Field
 from source_facebook_marketing.common import FacebookAPIException
 from source_facebook_marketing.streams import (
-    Campaigns, AdSets, Ads, AdCreatives, AdsInsights, AdsInsightsAgeAndGender, AdsInsightsCountry,
-    AdsInsightsRegion, AdsInsightsDma, AdsInsightsPlatformAndDevice
+    AdCreatives,
+    Ads,
+    AdSets,
+    AdsInsights,
+    AdsInsightsAgeAndGender,
+    AdsInsightsCountry,
+    AdsInsightsDma,
+    AdsInsightsPlatformAndDevice,
+    AdsInsightsRegion,
+    Campaigns,
 )
 
 
@@ -50,9 +56,7 @@ class ConnectorConfig(BaseModel):
     class Config:
         title = "Source Facebook Marketing"
 
-    account_id: str = Field(
-        description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API."
-    )
+    account_id: str = Field(description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.")
 
     access_token: str = Field(
         description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information',
@@ -65,10 +69,7 @@ class ConnectorConfig(BaseModel):
         examples=["2017-01-25T00:00:00Z"],
     )
 
-    include_deleted: bool = Field(
-        default=False,
-        description="Include data from deleted campaigns, ads, and adsets."
-    )
+    include_deleted: bool = Field(default=False, description="Include data from deleted campaigns, ads, and adsets.")
 
     insights_lookback_window: int = Field(
         default=28,
@@ -89,21 +90,21 @@ class MyFacebookAdsApi(FacebookAdsApi):
         call_count = 0
         pause_interval = Interval()
 
-        usage_header = headers.get('x-business-use-case-usage') or headers.get('x-app-usage') or headers.get('x-ad-account-usage')
+        usage_header = headers.get("x-business-use-case-usage") or headers.get("x-app-usage") or headers.get("x-ad-account-usage")
         if usage_header:
             usage_header = json.loads(usage_header)
-            call_count = usage_header.get("call_count") or usage_header.get('acc_id_util_pct') or 0
-            pause_interval = Interval(minutes=usage_header.get('estimated_time_to_regain_access', 0))
+            call_count = usage_header.get("call_count") or usage_header.get("acc_id_util_pct") or 0
+            pause_interval = Interval(minutes=usage_header.get("estimated_time_to_regain_access", 0))
 
         return call_count, pause_interval
 
     def handle_call_rate_limit(self, response, params):
-        if 'batch' in params:
+        if "batch" in params:
             max_call_count = 0
             max_pause_interval = self.pause_interval
 
             for record in response.json():
-                headers = {header['name'].lower(): header['value'] for header in record['headers']}
+                headers = {header["name"].lower(): header["value"] for header in record["headers"]}
                 call_count, pause_interval = self.parse_call_rate_header(headers)
                 max_call_count = max(max_call_count, call_count)
                 max_pause_interval = max(max_pause_interval, pause_interval)
@@ -119,14 +120,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 sleep(pause_interval.total_seconds())
 
     def call(
-            self,
-            method,
-            path,
-            params=None,
-            headers=None,
-            files=None,
-            url_override=None,
-            api_version=None,
+        self,
+        method,
+        path,
+        params=None,
+        headers=None,
+        files=None,
+        url_override=None,
+        api_version=None,
     ):
         response = super().call(method, path, params, headers, files, url_override, api_version)
         self.handle_call_rate_limit(response, params)
@@ -193,11 +194,31 @@ class SourceFacebookMarketing(AbstractSource):
             Ads(api=api, include_deleted=config.include_deleted),
             AdCreatives(api=api),
             AdsInsights(api=api, start_date=config.start_date, buffer_days=config.insights_lookback_window),
-            AdsInsightsAgeAndGender(api=api, start_date=config.start_date, buffer_days=config.insights_lookback_window, ),
-            AdsInsightsCountry(api=api, start_date=config.start_date, buffer_days=config.insights_lookback_window, ),
-            AdsInsightsRegion(api=api, start_date=config.start_date, buffer_days=config.insights_lookback_window, ),
-            AdsInsightsDma(api=api, start_date=config.start_date, buffer_days=config.insights_lookback_window, ),
-            AdsInsightsPlatformAndDevice(api=api, start_date=config.start_date, buffer_days=config.insights_lookback_window, ),
+            AdsInsightsAgeAndGender(
+                api=api,
+                start_date=config.start_date,
+                buffer_days=config.insights_lookback_window,
+            ),
+            AdsInsightsCountry(
+                api=api,
+                start_date=config.start_date,
+                buffer_days=config.insights_lookback_window,
+            ),
+            AdsInsightsRegion(
+                api=api,
+                start_date=config.start_date,
+                buffer_days=config.insights_lookback_window,
+            ),
+            AdsInsightsDma(
+                api=api,
+                start_date=config.start_date,
+                buffer_days=config.insights_lookback_window,
+            ),
+            AdsInsightsPlatformAndDevice(
+                api=api,
+                start_date=config.start_date,
+                buffer_days=config.insights_lookback_window,
+            ),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
