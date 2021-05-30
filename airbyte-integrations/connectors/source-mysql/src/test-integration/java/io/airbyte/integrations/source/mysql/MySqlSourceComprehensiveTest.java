@@ -66,8 +66,8 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
   }
 
   @Override
-  protected Database setupDatabase(JsonNode config) {
-    return Databases.createDatabase(
+  protected Database setupDatabase(JsonNode config) throws Exception {
+    final Database database = Databases.createDatabase(
             config.get("username").asText(),
             config.get("password").asText(),
             String.format("jdbc:mysql://%s:%s/%s",
@@ -76,6 +76,12 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
                     config.get("database").asText()),
             "com.mysql.cj.jdbc.Driver",
             SQLDialect.MYSQL);
+
+    // It disable strict mode in the DB and allows to insert specific values.
+    // For example, it's possible to insert date with zero values "2021-00-00"
+    database.query(ctx -> ctx.fetch("SET @@sql_mode=''"));
+
+    return database;
   }
 
   @Override
@@ -95,8 +101,165 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
 
     addDataTypeTest(
             new DataTypeTest("smallint", JsonSchemaPrimitive.NUMBER)
-                    .setCreateTablePatternSQL("CREATE TABLE %1$s(test_column %2$s zerofill);")
+                    .setFullSourceDataType("smallint zerofill")
                     .addInsertValue("1")
     );
+
+    addDataTypeTest(
+            new DataTypeTest("mediumint", JsonSchemaPrimitive.NUMBER)
+                    .addInsertValue("null")
+                    .addInsertValue("-8388608")
+                    .addInsertValue("8388607")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("mediumint", JsonSchemaPrimitive.NUMBER)
+                    .setFullSourceDataType("mediumint zerofill")
+                    .addInsertValue("1")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("int", JsonSchemaPrimitive.NUMBER)
+                    .addInsertValue("null")
+                    .addInsertValue("-2147483648")
+                    .addInsertValue("2147483647")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("int", JsonSchemaPrimitive.NUMBER)
+                    .setFullSourceDataType("int zerofill")
+                    .addInsertValue("1")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("bigint", JsonSchemaPrimitive.NUMBER)
+                    .addInsertValue("null")
+                    .addInsertValue("9223372036854775807")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("float", JsonSchemaPrimitive.NUMBER)
+                    .addInsertValue("null")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("double", JsonSchemaPrimitive.NUMBER)
+                    .addInsertValue("null")
+                    .addInsertValue("power(10, 308)")
+                    .addInsertValue("1/power(10, 45)")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("decimal", JsonSchemaPrimitive.NUMBER)
+                    .setFullSourceDataType("decimal(5,2)")
+                    .addInsertValue("null")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("bit", JsonSchemaPrimitive.NUMBER)
+                    .addInsertValue("null")
+                    .addInsertValue("1")
+                    .addInsertValue("0")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("date", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+//                    .addInsertValue("'2021-01-00'")
+//                    .addInsertValue("'2021-00-00'")
+//                    .addInsertValue("'0000-00-00'")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("datetime", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+//                    .addInsertValue("'0000-00-00 00:00:00'")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("timestamp", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("time", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+//                    .addInsertValue("'-838:59:59.000000'")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("varchar", JsonSchemaPrimitive.STRING)
+                    .setFullSourceDataType("varchar(256) character set cp1251")
+                    .addInsertValue("null")
+                    .addInsertValue("'тест'")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("varchar", JsonSchemaPrimitive.STRING)
+                    .setFullSourceDataType("varchar(256) character set utf16")
+                    .addInsertValue("null")
+                    .addInsertValue("0xfffd")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("varchar", JsonSchemaPrimitive.STRING)
+                    .setFullSourceDataType("varchar(256)")
+                    .addInsertValue("null")
+                    .addInsertValue("'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("varbinary", JsonSchemaPrimitive.STRING)
+                    .setFullSourceDataType("varbinary(256)")
+                    .addInsertValue("null")
+                    .addInsertValue("'test'")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("blob", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+                    .addInsertValue("'test'")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("mediumtext", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+                    .addInsertValue("lpad('0', 16777214, '0')")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("tinytext", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("longtext", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("text", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("json", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+                    .addInsertValue("'{\"a\" :10, \"b\": 15}'")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("point", JsonSchemaPrimitive.OBJECT)
+                    .addInsertValue("null")
+                    .addInsertValue("(ST_GeomFromText('POINT(1 1)'))")
+    );
+
+    addDataTypeTest(
+            new DataTypeTest("bool", JsonSchemaPrimitive.STRING)
+                    .addInsertValue("null")
+                    .addInsertValue("127")
+                    .addInsertValue("-128")
+    );
+
   }
 }

@@ -149,17 +149,12 @@ public abstract class SourceComprehensiveTest {
     for (DataTypeTest test : dataTypeTests) {
       database.query(ctx -> {
         ctx.fetch(test.getCreateSQL());
+        LOGGER.info("Table " + test.getName() + " is created.");
         test.getInsertSQLs().forEach(ctx::fetch);
+        LOGGER.info("Values " + test.getValues() + " are inserted into " + test.getName());
         return null;
       });
     }
-//    database.query(ctx -> {
-//      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-//      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-//      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-//      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-//      return null;
-//    });
 
     database.close();
   }
@@ -229,12 +224,14 @@ public abstract class SourceComprehensiveTest {
     private String createTablePatternSQL;
     private String insertPatternSQL;
     private long testNumber;
+    private String fullSourceDataType;
 
     public DataTypeTest(String sourceType, Field.JsonSchemaPrimitive airbyteType) {
       this.sourceType = sourceType;
       this.airbyteType = airbyteType;
       setCreateTablePatternSQL(DEFAULT_CREATE_TABLE_SQL);
       setInsertPatternSQL(DEFAULT_INSERT_SQL);
+      setFullSourceDataType(sourceType);
     }
 
     public DataTypeTest addInsertValue(String insertValue) {
@@ -268,16 +265,25 @@ public abstract class SourceComprehensiveTest {
       return this;
     }
 
-    public void setTestNumber(long testNumber) {
+    public DataTypeTest setFullSourceDataType(String fullSourceDataType) {
+      this.fullSourceDataType = fullSourceDataType;
+      return this;
+    }
+
+    private void setTestNumber(long testNumber) {
       this.testNumber = testNumber;
     }
 
     public String getCreateSQL() {
-      return String.format(createTablePatternSQL, getName(), getSourceType());
+      return String.format(createTablePatternSQL, getName(), getFullSourceDataType());
     }
 
     public List<String> getInsertSQLs() {
       return values.stream().map(value -> String.format(insertPatternSQL, getName(), value)).collect(Collectors.toList());
+    }
+
+    public String getFullSourceDataType() {
+      return fullSourceDataType;
     }
   }
 
