@@ -28,7 +28,7 @@ import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
 import java.util.List;
 
-public interface ProcessBuilderFactory {
+public interface ProcessFactory {
 
   /**
    * Creates a ProcessBuilder to run a program in a new Process.
@@ -43,27 +43,17 @@ public interface ProcessBuilderFactory {
    * @return the ProcessBuilder object to run the process
    * @throws WorkerException
    */
-  ProcessBuilder create(String jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
+  Process create(String jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
       throws WorkerException;
 
-  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
-      throws WorkerException {
-    return create(String.valueOf(jobId), attempt, jobPath, imageName, entrypoint, args);
-  }
-
-  default ProcessBuilder create(String jobId,
-                                int attempt,
-                                final Path jobPath,
-                                final String imageName,
-                                final String entrypoint,
-                                final List<String> args)
+  default Process create(String jobId,
+                         int attempt,
+                         final Path jobPath,
+                         final String imageName,
+                         final String entrypoint,
+                         final List<String> args)
       throws WorkerException {
     return create(jobId, attempt, jobPath, imageName, entrypoint, args.toArray(new String[0]));
-  }
-
-  default ProcessBuilder create(long jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final List<String> args)
-      throws WorkerException {
-    return create(String.valueOf(jobId), attempt, jobPath, imageName, entrypoint, args);
   }
 
 }

@@ -1,36 +1,31 @@
 import { useMemo, useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+import { StepType } from "./types";
 
-export enum StepsTypes {
-  CREATE_SOURCE = "create-source",
-  CREATE_DESTINATION = "create-destination",
-  SET_UP_CONNECTION = "set-up-connection",
-}
-
-const UseGetStepsConfig = (
+const useStepsConfig = (
   hasSources: boolean,
   hasDestinations: boolean,
   afterUpdateStep?: () => void
 ): {
-  currentStep: StepsTypes;
-  setCurrentStep: (step: StepsTypes) => void;
-  steps: { name: JSX.Element; id: StepsTypes }[];
+  currentStep: StepType;
+  setCurrentStep: (step: StepType) => void;
+  steps: { name: JSX.Element; id: StepType }[];
 } => {
   const getInitialStep = () => {
     if (hasSources) {
       if (hasDestinations) {
-        return StepsTypes.SET_UP_CONNECTION;
+        return StepType.SET_UP_CONNECTION;
       }
 
-      return StepsTypes.CREATE_DESTINATION;
+      return StepType.CREATE_DESTINATION;
     }
 
-    return StepsTypes.CREATE_SOURCE;
+    return StepType.CREATE_SOURCE;
   };
 
-  const [currentStep, setCurrentStep] = useState(getInitialStep());
+  const [currentStep, setCurrentStep] = useState(getInitialStep);
   const updateStep = useCallback(
-    (step: StepsTypes) => {
+    (step: StepType) => {
       setCurrentStep(step);
       if (afterUpdateStep) {
         afterUpdateStep();
@@ -42,29 +37,29 @@ const UseGetStepsConfig = (
   const steps = useMemo(
     () => [
       {
-        id: StepsTypes.CREATE_SOURCE,
+        id: StepType.CREATE_SOURCE,
         name: <FormattedMessage id="onboarding.createSource" />,
         // don't navigate by steps for now
         // onSelect: hasSources
-        //   ? () => updateStep(StepsTypes.CREATE_SOURCE)
+        //   ? () => updateStep(StepType.CREATE_SOURCE)
         //   : undefined
       },
       {
-        id: StepsTypes.CREATE_DESTINATION,
+        id: StepType.CREATE_DESTINATION,
         name: <FormattedMessage id="onboarding.createDestination" />,
         // don't navigate by steps for now
         // onSelect:
         //   hasSources || hasDestinations
-        //     ? () => updateStep(StepsTypes.CREATE_DESTINATION)
+        //     ? () => updateStep(StepType.CREATE_DESTINATION)
         //     : undefined
       },
       {
-        id: StepsTypes.SET_UP_CONNECTION,
+        id: StepType.SET_UP_CONNECTION,
         name: <FormattedMessage id="onboarding.setUpConnection" />,
         // don't navigate by steps for now
         // onSelect:
         //   hasSources && hasDestinations
-        //     ? () => updateStep(StepsTypes.SET_UP_CONNECTION)
+        //     ? () => updateStep(StepType.SET_UP_CONNECTION)
         //     : undefined
       },
     ],
@@ -78,4 +73,4 @@ const UseGetStepsConfig = (
   };
 };
 
-export default UseGetStepsConfig;
+export default useStepsConfig;

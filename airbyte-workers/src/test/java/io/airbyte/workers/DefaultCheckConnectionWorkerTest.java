@@ -74,7 +74,7 @@ public class DefaultCheckConnectionWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
-    when(integrationLauncher.check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME).start()).thenReturn(process);
+    when(integrationLauncher.check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)).thenReturn(process);
     final InputStream inputStream = mock(InputStream.class);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
