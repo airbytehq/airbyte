@@ -24,11 +24,13 @@
 
 package io.airbyte.workers.process;
 
+import io.airbyte.commons.io.IOs;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
@@ -39,13 +41,12 @@ public class KubeProcessBuilderFactoryPOC {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactoryPOC.class);
   private static final KubernetesClient KUBE_CLIENT = new DefaultKubernetesClient();
 
-  public static void main(String[] args) throws InterruptedException, IOException {
+  public static void testSyncWorkflow() throws IOException, InterruptedException {
     LOGGER.info("Launching source process...");
     Process src = new KubePodProcess(KUBE_CLIENT, "src", "default", "np_source:dev", 9002, 9003, false);
 
     LOGGER.info("Launching destination process...");
-    // Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "default", "worker-test:print-to-stdout",
-    // 9004, 9005, true);
+    Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "default", "np_dest:dev", 9004, 9005, true);
 
     LOGGER.info("Launching background thread to read destination lines...");
     ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -63,19 +64,19 @@ public class KubeProcessBuilderFactoryPOC {
 
     LOGGER.info("Copying source stdout to destination stdin...");
 
-    // try (BufferedReader reader = IOs.newBufferedReader(src.getInputStream())) {
-    // try (PrintWriter writer = new PrintWriter(dest.getOutputStream(), true)) {
-    // String line;
-    // while ((line = reader.readLine()) != null) {
-    // writer.println(line);
-    // }
-    // }
-    // }
+    try (BufferedReader reader = IOs.newBufferedReader(src.getInputStream())) {
+      try (PrintWriter writer = new PrintWriter(dest.getOutputStream(), true)) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          writer.println(line);
+        }
+      }
+    }
 
     LOGGER.info("Waiting for source process to terminate...");
-    // src.waitFor();
-    LOGGER.info("Waiting for destination process to terminate...");
     src.waitFor();
+    LOGGER.info("Waiting for destination process to terminate...");
+    dest.waitFor();
 
     LOGGER.info("Closing sync worker resources...");
     listenTask.cancel(true);
@@ -94,7 +95,10 @@ public class KubeProcessBuilderFactoryPOC {
     LOGGER.info("Done!");
     // Manually exit for the time being.
     System.exit(0);
+  }
 
+  public static void main(String[] args) throws InterruptedException, IOException {
+    testSyncWorkflow();
   }
 
 }
