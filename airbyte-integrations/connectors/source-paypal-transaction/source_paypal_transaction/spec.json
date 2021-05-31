@@ -10,7 +10,7 @@
       "client_id": {
         "title": "Client ID",
         "type": "string",
-        "description": "The Paypal Client ID for API credentials"
+        "description": "The Paypal Client ID for API credentials",
       },
       "secret": {
         "title": "Secret",
