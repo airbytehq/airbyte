@@ -85,7 +85,10 @@ class SourceGoogleAds(Source):
         search_request = client.get_type("SearchGoogleAdsStreamRequest")
         search_request.customer_id = config['customer_id']
         search_request.query = query
-        return ga_service.search_stream(search_request)
+        response = ga_service.search_stream(search_request)
+#https://github.com/googleads/google-ads-python/issues/384
+        response.service_reference = ga_service
+        return response
 
 
     field_type_dict = {
@@ -166,12 +169,20 @@ class SourceGoogleAds(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
+        stream_name = config['table_name']
 
-        # Not Implemented
+        query = config['gaql']
+        response = self._search(query, config)
 
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
-        )
+        for batch in response:
+            for row in batch.results:
+                data = {}
+                for key in batch.field_mask.paths:
+                    parts = key.split('.')
+                    obj = getattr(row, parts[0])
+                    fld = getattr(obj, parts[1])
+                    data[key] = fld
+                yield AirbyteMessage(
+                    type=Type.RECORD,
+                    record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                )
