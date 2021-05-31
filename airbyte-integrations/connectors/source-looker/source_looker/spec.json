@@ -15,7 +15,7 @@
         "examples": [
           "domainname.looker.com",
           "looker.clientname.com",
-          "123.123.124.123:9000"
+          "123.123.124.123:8000"
         ],
         "description": "Domain for your Looker account, e.g. airbyte.cloud.looker.com,looker.[clientname].com,ip address"
       },
