@@ -1,6 +1,6 @@
 FROM node:14-alpine
 
-RUN mkdir /output /sources
+RUN mkdir /connectors /sources
 WORKDIR /sources/generator
 
 RUN npm install npm@7 --silent --no-update-notifier
