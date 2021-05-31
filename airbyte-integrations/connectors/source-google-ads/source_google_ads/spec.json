@@ -6,10 +6,9 @@
     "type": "object",
     "required": [
       "developer_token",
-      "oauth_client_id",
-      "oauth_client_secret",
+      "client_id",
+      "client_secret",
       "refresh_token",
-      "start_date",
       "customer_id"
     ],
     "additionalProperties": false,
@@ -32,18 +31,6 @@
         "type": "string",
         "description": "Refresh token generated using developer_token, oauth_client_id, and oauth_client_secret. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
         "airbyte_secret": true
-      },
-      "start_date": {
-        "type": "string",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
-        "examples": ["2017-01-25T00:00:00Z"]
-      },
-      "conversion_window_days": {
-        "type": "string",
-        "description": "Define the historical replication start date. Change this setting if you want to replicate data beyond Google Ads’s default setting of 30 days.",
-        "examples": ["-30"],
-        "pattern": "^(-)?[0-9]+"
       },
       "customer_id": {
         "type": "string",
