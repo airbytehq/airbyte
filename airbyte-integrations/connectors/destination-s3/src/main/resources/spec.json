@@ -7,8 +7,9 @@
     "title": "S3 Destination Spec",
     "type": "object",
     "required": [
-      "bucket_name",
-      "bucket_region",
+      "s3_bucket_name",
+      "s3_bucket_path",
+      "s3_bucket_region",
       "access_key_id",
       "secret_access_key",
       "format"
@@ -24,7 +25,7 @@
       "s3_bucket_path": {
         "description": "Directory under the S3 bucket where data will be written.",
         "type": "string",
-        "examples": ["/data_sync/test"]
+        "examples": ["data_sync/test"]
       },
       "s3_bucket_region": {
         "title": "S3 Bucket Region",
@@ -79,7 +80,7 @@
         "oneOf": [
           {
             "title": "CSV: Comma-separated values",
-            "required": ["file_type", "flattening"],
+            "required": ["format_type", "flattening"],
             "properties": {
               "format_type": {
                 "type": "string",

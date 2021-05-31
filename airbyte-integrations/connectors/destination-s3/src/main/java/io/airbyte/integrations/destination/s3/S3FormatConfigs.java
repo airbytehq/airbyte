@@ -36,7 +36,7 @@ public class S3FormatConfigs {
     S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText());
 
     if (formatType == S3Format.CSV) {
-      Flattening flattening = Flattening.fromValue(formatConfig.get("csv_flattening").asText());
+      Flattening flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
       return new S3CsvFormatConfig(flattening);
     }
 

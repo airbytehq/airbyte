@@ -45,20 +45,23 @@ public class S3CsvFormatConfig implements S3FormatConfig {
 
     @JsonCreator
     public static Flattening fromValue(String value) {
-      for (Flattening b : Flattening.values()) {
-        if (b.value.toLowerCase(Locale.ROOT).equals(value.toLowerCase())) {
-          return b;
+      for (Flattening f : Flattening.values()) {
+        if (f.value.toLowerCase(Locale.ROOT).equals(value.toLowerCase())) {
+          return f;
         }
       }
       throw new IllegalArgumentException("Unexpected value: " + value);
+    }
+
+    public String getValue() {
+      return value;
     }
 
   }
 
   private final Flattening flattening;
 
-  public S3CsvFormatConfig(
-                           Flattening flattening) {
+  public S3CsvFormatConfig(Flattening flattening) {
     this.flattening = flattening;
   }
 
