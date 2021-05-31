@@ -73,5 +73,23 @@
   },
   "expenses_team": {
     "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "uninvoiced": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "time_clients": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "time_projects": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "time_tasks": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "time_team": {
+    "updated_at": "2217-06-26T21:20:07Z"
+  },
+  "project_budget": {
+    "updated_at": "2217-06-26T21:20:07Z"
   }
 }

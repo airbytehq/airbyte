@@ -1758,6 +1758,228 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "uninvoiced",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "client_id": {
+              "type": ["null", "integer"]
+            },
+            "client_name": {
+              "type": ["null", "string"]
+            },
+            "project_id": {
+              "type": ["null", "integer"]
+            },
+            "project_name": {
+              "type": ["null", "string"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            },
+            "total_hours": {
+              "type": ["null", "integer"]
+            },
+            "uninvoiced_hours": {
+              "type": ["null", "integer"]
+            },
+            "uninvoiced_expenses": {
+              "type": ["null", "integer"]
+            },
+            "uninvoiced_amount": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "time_clients",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "client_id": {
+              "type": ["null", "integer"]
+            },
+            "client_name": {
+              "type": ["null", "string"]
+            },
+            "total_hours": {
+              "type": ["null", "float"]
+            },
+            "billable_hours": {
+              "type": ["null", "float"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            },
+            "billable_amount": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "time_projects",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "project_id": {
+              "type": ["null", "integer"]
+            },
+            "project_name": {
+              "type": ["null", "string"]
+            },
+            "client_id": {
+              "type": ["null", "integer"]
+            },
+            "client_name": {
+              "type": ["null", "string"]
+            },
+            "total_hours": {
+              "type": ["null", "integer"]
+            },
+            "billable_hours": {
+              "type": ["null", "integer"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            },
+            "billable_amount": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "time_tasks",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": ["null", "integer"]
+            },
+            "task_name": {
+              "type": ["null", "string"]
+            },
+            "total_hours": {
+              "type": ["null", "integer"]
+            },
+            "billable_hours": {
+              "type": ["null", "integer"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            },
+            "billable_amount": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "time_team",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": ["null", "integer"]
+            },
+            "user_name": {
+              "type": ["null", "string"]
+            },
+            "is_contractor": {
+              "type": ["null", "boolean"]
+            },
+            "total_hours": {
+              "type": ["null", "float"]
+            },
+            "billable_hours": {
+              "type": ["null", "float"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            },
+            "billable_amount": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "project_budget",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "project_id": {
+              "type": ["null", "integer"]
+            },
+            "project_name": {
+              "type": ["null", "string"]
+            },
+            "client_id": {
+              "type": ["null", "integer"]
+            },
+            "client_name": {
+              "type": ["null", "string"]
+            },
+            "budget_is_monthly": {
+              "type": ["null", "boolean"]
+            },
+            "budget_by": {
+              "type": ["null", "string"]
+            },
+            "is_active": {
+              "type": ["null", "boolean"]
+            },
+            "budget": {
+              "type": ["null", "integer"]
+            },
+            "budget_spent": {
+              "type": ["null", "integer"]
+            },
+            "budget_remaining": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

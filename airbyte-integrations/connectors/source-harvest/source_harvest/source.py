@@ -49,11 +49,17 @@ from source_harvest.streams import (
     InvoicePayments,
     Invoices,
     ProjectAssignments,
+    ProjectBudget,
     Projects,
     Roles,
     TaskAssignments,
     Tasks,
+    TimeClients,
     TimeEntries,
+    TimeProjects,
+    TimeTasks,
+    TimeTeam,
+    Uninvoiced,
     UserAssignments,
     Users,
 )
@@ -106,6 +112,12 @@ class SourceHarvest(AbstractSource):
             ExpensesProjects(authenticator=auth),
             ExpensesCategories(authenticator=auth),
             ExpensesTeam(authenticator=auth),
+            Uninvoiced(authenticator=auth),
+            TimeClients(authenticator=auth),
+            TimeProjects(authenticator=auth),
+            TimeTasks(authenticator=auth),
+            TimeTeam(authenticator=auth),
+            ProjectBudget(authenticator=auth),
         ]
 
         return streams

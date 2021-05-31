@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": ["null", "integer"]
+    },
+    "client_name": {
+      "type": ["null", "string"]
+    },
+    "total_hours": {
+      "type": ["null", "float"]
+    },
+    "billable_hours": {
+      "type": ["null", "float"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "billable_amount": {
+      "type": ["null", "integer"]
+    }
+  }
+}

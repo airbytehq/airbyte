@@ -23,7 +23,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
@@ -80,16 +80,19 @@ class HarvestStreamWithPaginationSliced(HarvestStreamWithPagination):
         :return: parent stream class
         """
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        items = self.parent_stream(authenticator=self.authenticator, updated_since=self._updated_since)
-        for item in items.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+        updated_since = stream_state.get(self.cursor_field, self._updated_since)
+        items = self.parent_stream(authenticator=self.authenticator, updated_since=updated_since)
+        for item in items.read_records(sync_mode=sync_mode):
             yield {"parent_id": item["id"]}
 
 
 class HarvestStreamIncrementalMixin(HttpStream, ABC):
     cursor_field = "updated_at"
 
-    def __init__(self, updated_since: pendulum.Pendulum, **kwargs):
+    def __init__(self, updated_since: pendulum.datetime, **kwargs):
         super().__init__(**kwargs)
         self._updated_since = updated_since
 
@@ -276,7 +279,7 @@ class ProjectAssignments(HarvestStreamWithPaginationSliced, HarvestStreamIncreme
         return f"users/{stream_slice['parent_id']}/project_assignments"
 
 
-class ExpensesBase(HarvestStreamWithPagination, ABC):
+class ReportsBase(HarvestStreamWithPagination, ABC):
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         current_date = pendulum.now()
@@ -286,29 +289,71 @@ class ExpensesBase(HarvestStreamWithPagination, ABC):
         return params
 
 
-class ExpensesClients(ExpensesBase):
+class ExpensesClients(ReportsBase):
     data_field = "results"
 
     def path(self, **kwargs) -> str:
         return "reports/expenses/clients"
 
 
-class ExpensesProjects(ExpensesBase):
+class ExpensesProjects(ReportsBase):
     data_field = "results"
 
     def path(self, **kwargs) -> str:
         return "reports/expenses/projects"
 
 
-class ExpensesCategories(ExpensesBase):
+class ExpensesCategories(ReportsBase):
     data_field = "results"
 
     def path(self, **kwargs) -> str:
         return "reports/expenses/categories"
 
 
-class ExpensesTeam(ExpensesBase):
+class ExpensesTeam(ReportsBase):
     data_field = "results"
 
     def path(self, **kwargs) -> str:
         return "reports/expenses/team"
+
+
+class Uninvoiced(ReportsBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/uninvoiced"
+
+
+class TimeClients(ReportsBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/time/clients"
+
+
+class TimeProjects(ReportsBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/time/projects"
+
+
+class TimeTasks(ReportsBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/time/tasks"
+
+
+class TimeTeam(ReportsBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/time/team"
+
+
+class ProjectBudget(ReportsBase):
+    data_field = "results"
+
+    def path(self, **kwargs) -> str:
+        return "reports/project_budget"
