@@ -28,3 +28,7 @@ crash.log
 *.tfstate
 *.tfstate.backup
 *.lock.hcl
+
+#local dev
+local_dev
+.vscode
