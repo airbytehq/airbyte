@@ -43,4 +43,4 @@ const ExpandFieldCell: React.FC<ExpandFieldCellProps> = ({
   );
 };
 
-export default ExpandFieldCell;
+export { ExpandFieldCell };

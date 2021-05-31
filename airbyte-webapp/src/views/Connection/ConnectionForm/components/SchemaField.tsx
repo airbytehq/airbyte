@@ -1,10 +1,13 @@
 import React, { useCallback, useMemo, useState } from "react";
+import { setIn, useField } from "formik";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import TreeView from "components/TreeView";
+import type { DestinationSyncMode } from "core/domain/catalog";
+import { SyncSchemaStream } from "core/domain/catalog";
+
 import { Cell, Header, LightCell } from "components/SimpleTableComponents";
-import { DestinationSyncMode, SyncSchema } from "core/domain/catalog";
+import CatalogTree from "./CatalogTree";
 import Search from "./Search";
 
 const TreeViewContainer = styled.div`
@@ -29,49 +32,46 @@ const SchemaTitle = styled.div`
 
 type SchemaViewProps = {
   additionalControl?: React.ReactNode;
-  schema: SyncSchema;
-  onChangeSchema: (schema: SyncSchema) => void;
   destinationSupportedSyncModes: DestinationSyncMode[];
 };
 
-const SchemaView: React.FC<SchemaViewProps> = ({
-  schema,
+const SchemaField: React.FC<SchemaViewProps> = ({
   destinationSupportedSyncModes,
-  onChangeSchema,
   additionalControl,
 }) => {
+  const [field, , form] = useField<SyncSchemaStream[]>("schema.streams");
+  const streams = field.value;
+  const onChangeSchema = form.setValue;
   const [searchString, setSearchString] = useState("");
   const hasSelectedItem = useMemo(
     () =>
-      schema.streams.some(
+      streams.some(
         (streamNode) =>
           streamNode.config.selected &&
           streamNode.stream.name
             .toLowerCase()
             .includes(searchString.toLowerCase())
       ),
-    [schema.streams, searchString]
+    [streams, searchString]
   );
 
   const onCheckAll = useCallback(() => {
     const allSelectedValues = !hasSelectedItem;
 
-    const newSchema = schema.streams.map((streamNode) => {
+    const newSchema = streams.map((streamNode) => {
       if (
         streamNode.stream.name
           .toLowerCase()
           .includes(searchString.toLowerCase())
       ) {
-        return {
-          ...streamNode,
-          config: { ...streamNode.config, selected: allSelectedValues },
-        };
+        return setIn(streamNode, "config.selected", allSelectedValues);
       }
 
       return streamNode;
     });
-    onChangeSchema({ streams: newSchema });
-  }, [hasSelectedItem, onChangeSchema, schema.streams, searchString]);
+
+    onChangeSchema(newSchema);
+  }, [hasSelectedItem, onChangeSchema, streams, searchString]);
 
   return (
     <>
@@ -109,8 +109,8 @@ const SchemaView: React.FC<SchemaViewProps> = ({
         </LightCell>
       </SchemaHeader>
       <TreeViewContainer>
-        <TreeView
-          schema={schema}
+        <CatalogTree
+          streams={streams}
           onChangeSchema={onChangeSchema}
           destinationSupportedSyncModes={destinationSupportedSyncModes}
           filter={searchString}
@@ -120,4 +120,4 @@ const SchemaView: React.FC<SchemaViewProps> = ({
   );
 };
 
-export default SchemaView;
+export default React.memo(SchemaField);

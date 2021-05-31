@@ -9,6 +9,7 @@ import {
   DestinationSyncMode,
   SyncMode,
   SyncSchema,
+  SyncSchemaStream,
 } from "core/domain/catalog";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
@@ -20,7 +21,7 @@ import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
 
 import BottomBlock from "./components/BottomBlock";
 import Connector from "./components/Connector";
-import SchemaView from "./components/SchemaView";
+import SchemaField from "./components/SchemaField";
 import EditControls from "./components/EditControls";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
@@ -43,15 +44,23 @@ const ConnectorLabel = styled(ControlLabels)`
   vertical-align: top;
 `;
 
-const connectionValidationSchema = yup.object().shape({
+type ConnectionFormValues = {
+  frequency: string;
+  prefix: string;
+  schema: SyncSchema;
+};
+
+const connectionValidationSchema = yup.object<ConnectionFormValues>({
   frequency: yup.string().required("form.empty.error"),
   prefix: yup.string(),
-  schema: yup.object({
+  schema: yup.object<SyncSchema>({
     streams: yup.array().of(
-      yup.object({
-        config: yup.object().test({
-          name: "undefined",
-          message: "undefined",
+      yup.object<SyncSchemaStream>({
+        stream: yup.object(),
+        config: yup.object<AirbyteStreamConfiguration>().test({
+          name: "connectionSchema.config.validator",
+          // eslint-disable-next-line no-template-curly-in-string
+          message: "${path} is wrong",
           test: function (value: AirbyteStreamConfiguration) {
             if (!value.selected) {
               return true;
@@ -60,6 +69,7 @@ const connectionValidationSchema = yup.object().shape({
               if (value.primaryKey.length === 0) {
                 return this.createError({
                   message: "connectionForm.primaryKey.required",
+                  path: `${this.path}.primaryKey`,
                 });
               }
             }
@@ -71,6 +81,7 @@ const connectionValidationSchema = yup.object().shape({
               ) {
                 return this.createError({
                   message: "connectionForm.cursorField.required",
+                  path: `${this.path}.cursorField`,
                 });
               }
             }
@@ -84,11 +95,7 @@ const connectionValidationSchema = yup.object().shape({
 
 type ConnectionFormProps = {
   schema: SyncSchema;
-  onSubmit: (values: {
-    frequency: string;
-    prefix: string;
-    schema: SyncSchema;
-  }) => void;
+  onSubmit: (values: ConnectionFormValues) => void;
   className?: string;
   source: Source;
   destination: Destination;
@@ -221,18 +228,12 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               </ControlLabelsWithMargin>
             )}
           </Field>
-          <Field name="schema">
-            {({ field }: FieldProps<SyncSchema>) => (
-              <SchemaView
-                schema={field.value}
-                onChangeSchema={(value) => setFieldValue(field.name, value)}
-                destinationSupportedSyncModes={
-                  destDefinition.supportedDestinationSyncModes
-                }
-                additionalControl={additionalSchemaControl}
-              />
-            )}
-          </Field>
+          <SchemaField
+            destinationSupportedSyncModes={
+              destDefinition.supportedDestinationSyncModes
+            }
+            additionalControl={additionalSchemaControl}
+          />
           {!isEditMode ? (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}

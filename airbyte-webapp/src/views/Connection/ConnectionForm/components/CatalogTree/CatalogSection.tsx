@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo } from "react";
-import { useSet } from "react-use";
+import React, { memo, useCallback, useMemo } from "react";
+import { useToggle } from "react-use";
 import { useIntl, FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -19,13 +19,15 @@ import { DropDownRow } from "components/DropDown";
 import { CheckBox } from "components/CheckBox";
 import { RadioButton } from "components/RadioButton";
 
-import MainInfoCell from "./MainInfoCell";
-import { SyncSettingsCell } from "./SyncSettingsCell";
-import { TreeRowWrapper } from "./TreeRowWrapper";
-import ExpandFieldCell from "./ExpandFieldCell";
-import { OverflowCell } from "./OverflowCell";
+import { MainInfoCell } from "./components/MainInfoCell";
+import { SyncSettingsCell } from "./components/SyncSettingsCell";
+import { ExpandFieldCell } from "./components/ExpandFieldCell";
+import { OverflowCell } from "./components/OverflowCell";
+import { TreeRowWrapper } from "./components/TreeRowWrapper";
+import { Rows } from "./components/Rows";
+
 import { equal, naturalComparatorBy } from "utils/objects";
-import { Rows } from "./Rows";
+// import { useField } from "formik";
 
 const StyledRadioButton = styled(RadioButton)`
   vertical-align: middle;
@@ -35,7 +37,7 @@ const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
 `;
 
-const supportedModes: [SyncMode, DestinationSyncMode][] = [
+const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
   [SyncMode.FullRefresh, DestinationSyncMode.Append],
   [SyncMode.Incremental, DestinationSyncMode.Append],
@@ -43,7 +45,6 @@ const supportedModes: [SyncMode, DestinationSyncMode][] = [
 ];
 
 type TreeViewRowProps = {
-  isChild?: boolean;
   streamNode: SyncSchemaStream;
   destinationSupportedSyncModes: DestinationSyncMode[];
   updateStream: (
@@ -52,12 +53,14 @@ type TreeViewRowProps = {
   ) => void;
 };
 
-const TreeViewSection: React.FC<TreeViewRowProps> = ({
+const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   streamNode,
   updateStream,
   destinationSupportedSyncModes,
 }) => {
   const formatMessage = useIntl().formatMessage;
+  const [isRowExpanded, onExpand] = useToggle(false);
+  // const formikBag = useField(streamNode.stream.name);
   const { stream, config } = streamNode;
   const streamId = stream.name;
 
@@ -66,18 +69,6 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
       updateStream(stream, config),
     [updateStream, stream]
   );
-
-  const [, { has, toggle }] = useSet(new Set());
-  const isRowExpanded = has(streamId);
-  const onExpand = useCallback(() => toggle(streamId), [toggle, streamId]);
-
-  const fields = useMemo(() => {
-    const traversedFields = traverseSchemaToField(stream.jsonSchema, streamId);
-
-    return traversedFields.sort(
-      naturalComparatorBy((field) => field.cleanedName)
-    );
-  }, [stream, streamId]);
 
   const onSelectSyncMode = useCallback(
     (data: DropDownRow.IDataItem) => {
@@ -90,42 +81,12 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
     [updateStreamWithConfig]
   );
 
-  const onCheckBoxClick = useCallback(
+  const onSelectStream = useCallback(
     () =>
       updateStreamWithConfig({
         selected: !config.selected,
       }),
     [config, updateStreamWithConfig]
-  );
-
-  const fullData = useMemo(
-    () =>
-      supportedModes
-        .filter(
-          ([syncMode, destinationSyncMode]) =>
-            stream.supportedSyncModes.includes(syncMode) &&
-            destinationSupportedSyncModes.includes(destinationSyncMode)
-        )
-        .map(([syncMode, destinationSyncMode]) => ({
-          value: `${syncMode}.${destinationSyncMode}`,
-          text: formatMessage(
-            {
-              id: "connection.stream.syncMode",
-              defaultMessage: `${syncMode}.${destinationSyncMode}`,
-            },
-            {
-              syncMode: formatMessage({
-                id: `syncMode.${syncMode}`,
-                defaultMessage: syncMode,
-              }),
-              destinationSyncMode: formatMessage({
-                id: `destinationSyncMode.${destinationSyncMode}`,
-                defaultMessage: destinationSyncMode,
-              }),
-            }
-          ),
-        })),
-    [stream.supportedSyncModes, destinationSupportedSyncModes, formatMessage]
   );
 
   const pkPaths = useMemo(
@@ -153,8 +114,6 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
     updateStreamWithConfig({ cursorField: cursorPath });
   };
 
-  const hasChildren = fields && fields.length > 0;
-
   const hasPk = config.destinationSyncMode === DestinationSyncMode.Dedupted;
   const hasCursor = config.syncMode === SyncMode.Incremental;
   const showPk = stream.sourceDefinedPrimaryKey.length === 0;
@@ -163,12 +122,50 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   const pkKeyItems = config.primaryKey.map((k) => k.join("."));
   const selectedCursorPath = config.cursorField.join(".");
 
+  const fields = useMemo(() => {
+    const traversedFields = traverseSchemaToField(stream.jsonSchema, streamId);
+
+    return traversedFields.sort(
+      naturalComparatorBy((field) => field.cleanedName)
+    );
+  }, [stream, streamId]);
+
+  const availableSyncModes = useMemo(
+    () =>
+      SUPPORTED_MODES.filter(
+        ([syncMode, destinationSyncMode]) =>
+          stream.supportedSyncModes.includes(syncMode) &&
+          destinationSupportedSyncModes.includes(destinationSyncMode)
+      ).map(([syncMode, destinationSyncMode]) => ({
+        value: `${syncMode}.${destinationSyncMode}`,
+        text: formatMessage(
+          {
+            id: "connection.stream.syncMode",
+            defaultMessage: `${syncMode}.${destinationSyncMode}`,
+          },
+          {
+            syncMode: formatMessage({
+              id: `syncMode.${syncMode}`,
+              defaultMessage: syncMode,
+            }),
+            destinationSyncMode: formatMessage({
+              id: `destinationSyncMode.${destinationSyncMode}`,
+              defaultMessage: destinationSyncMode,
+            }),
+          }
+        ),
+      })),
+    [stream.supportedSyncModes, destinationSupportedSyncModes, formatMessage]
+  );
+
+  const hasChildren = fields && fields.length > 0;
+
   return (
     <>
       <TreeRowWrapper>
         <MainInfoCell
           label={stream.name}
-          onCheckBoxClick={onCheckBoxClick}
+          onCheckBoxClick={onSelectStream}
           onExpand={onExpand}
           isItemChecked={config.selected}
           isItemHasChildren={hasChildren}
@@ -206,11 +203,11 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
         </Cell>
         <SyncSettingsCell
           value={`${config.syncMode}.${config.destinationSyncMode}`}
-          data={fullData}
+          data={availableSyncModes}
           onSelect={onSelectSyncMode}
         />
       </TreeRowWrapper>
-      {isRowExpanded && hasChildren && fields && (
+      {isRowExpanded && hasChildren && (
         <Rows fields={fields} depth={1}>
           {(field, depth) => (
             <TreeRowWrapper depth={0}>
@@ -257,4 +254,6 @@ const TreeViewSection: React.FC<TreeViewRowProps> = ({
   );
 };
 
-export { TreeViewSection };
+const CatalogSection = memo(CatalogSectionInner);
+
+export { CatalogSection };

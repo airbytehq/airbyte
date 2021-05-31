@@ -62,7 +62,6 @@ const ErrorText = styled.div`
 
 const BottomBlock: React.FC<IProps> = ({
   isSubmitting,
-  isValid,
   dirty,
   errorMessage,
   additionBottomControls,
@@ -93,7 +92,7 @@ const BottomBlock: React.FC<IProps> = ({
       )}
       <div>
         {additionBottomControls || null}
-        <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
+        <Button type="submit" disabled={isSubmitting || !dirty}>
           <FormattedMessage id="onboarding.setUpConnection" />
         </Button>
       </div>

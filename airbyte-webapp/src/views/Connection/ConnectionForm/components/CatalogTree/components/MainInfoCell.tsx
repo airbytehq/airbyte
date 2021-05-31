@@ -83,4 +83,4 @@ const MainInfoCell: React.FC<MainInfoCellProps> = ({
   );
 };
 
-export default MainInfoCell;
+export { MainInfoCell };

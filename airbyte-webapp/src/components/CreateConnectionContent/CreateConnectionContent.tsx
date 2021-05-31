@@ -14,8 +14,6 @@ import Button from "components/Button";
 
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
-import config from "config";
-
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
@@ -134,7 +132,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
 
   const onSelectFrequency = (item: { text: string }) => {
     AnalyticsService.track("New Connection - Action", {
-      user_id: config.ui.workspaceId,
       action: "Select a frequency",
       frequency: item?.text,
       connector_source_definition: source?.sourceName,
