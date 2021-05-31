@@ -30,6 +30,22 @@ And then use it for cloning:
 
 Where `https://username:token@github.com/user/repo` is the git repository url.
 
+### Example of a private git repo used as transformations
+
+As an example, I go through my GitHub account to generate a Personal Access Token to use in Airbyte with permissions to clone my private repositories:
+
+![](../../.gitbook/assets/new-personal-token.png)
+
+This provides me with a token to use:
+
+![](../../.gitbook/assets/copy-personal-token.png)
+
+In Airbyte, I can use the git url as: `https://airbyteuser:ghp_***********ShLrG2yXGYF@github.com/airbyteuser/private-datawarehouse.git`
+
+![](../../.gitbook/assets/setup-custom-transformation.png)
+
+### Refresh models partially
+
 Since I am using a mono-repo from my organization, other team members or departments may also contribute their dbt models to this centralized location. This will give us many dbt models and sources to build our complete data warehouse...
 
 The whole warehouse is scheduled for full refresh on a different orchestration tool, or as part of the git repository CI. However, here, I want to partially refresh some small relevant tables when attaching this operation to a specific Airbyte sync, in this case, the Covid dataset.
@@ -38,4 +54,4 @@ Therefore, I can restrict the execution of models to a particular tag or folder 
 
     run --models tag:covid_api opendata.base.*
 
-Screenshots of examples of normalization settings for my private git repo here
+Now, when replications syncs are triggered by Airbyte, my custom transformations from my private git repository are also run at the end!
