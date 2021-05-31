@@ -110,7 +110,17 @@ class SourceExchangeRates(AbstractSource):
             logger.info(f"Ping response code: {status}")
             if status == 200:
                 return True, None
-            return False, resp.text
+            # When API requests is sent but the requested data is not available or the API call fails
+            # for some reason, a JSON error is returned.
+            # https://exchangeratesapi.io/documentation/#errors
+            error = resp.json().get("error")
+            code = error.get("code")
+            message = error.get("message")
+            # If code is base_currency_access_restricted, error is caused by switching base currency while using free
+            # plan
+            if code == "base_currency_access_restricted":
+                message = f"{message} (this plan doesn't support Source Currency Switching)"
+            return False, message
         except Exception as e:
             return False, e
 
