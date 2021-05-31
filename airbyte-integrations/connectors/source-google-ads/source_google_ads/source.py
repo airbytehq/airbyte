@@ -41,7 +41,6 @@ from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.errors import GoogleAdsException
 from google.oauth2.credentials import Credentials
 
-
 class SourceGoogleAds(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
@@ -60,13 +59,15 @@ class SourceGoogleAds(Source):
             ga_service = client.get_service("GoogleAdsService")
             query = """
                 SELECT
-                campaign.name
+                campaign.name,
+                metrics.impressions
                 FROM campaign
                 LIMIT 1"""
   
             search_request = client.get_type("SearchGoogleAdsStreamRequest")
             search_request.customer_id = config['customer_id']
             search_request.query = query
+            search_request.summary_row_setting = client.get_type('SummaryRowSettingEnum').SummaryRowSetting.SUMMARY_ROW_ONLY
             response = ga_service.search_stream(search_request)
 
             for batch in response:
