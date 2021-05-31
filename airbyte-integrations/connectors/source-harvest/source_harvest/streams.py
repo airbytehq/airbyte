@@ -83,7 +83,9 @@ class HarvestStreamWithPaginationSliced(HarvestStreamWithPagination):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
-        updated_since = stream_state.get(self.cursor_field, self._updated_since)
+        updated_since = self._updated_since
+        if stream_state and stream_state.get(self.cursor_field):
+            updated_since = stream_state[self.cursor_field]
         items = self.parent_stream(authenticator=self.authenticator, updated_since=updated_since)
         for item in items.read_records(sync_mode=sync_mode):
             yield {"parent_id": item["id"]}
