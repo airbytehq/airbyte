@@ -1,22 +1,22 @@
+// TODO: Construct a configured catalog that can be used for testing. Each stream's `json_schema` field should match the corresponding json schema file.
 {
   "streams": [
     {
       "stream": {
-        "name": "transactions",
+        "name": "customers",
         "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "account_number": {
+            "id": {
               "type": ["null", "string"]
             },
-            "last_refreshed_datetime": {
+            "name": {
               "type": ["null", "string"]
             },
-            "page": {
-              "type": ["null", "integer"]
-            },
-            "total_items": {
-              "type": ["null", "integer"]
+            "signup_date": {
+              "type": ["null", "string"],
+              "format": "date-time"
             }
           }
         },
@@ -29,46 +29,27 @@
       "stream": {
         "name": "employees",
         "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "account_id": {
+            "id": {
               "type": ["null", "string"]
             },
-            "as_of_time": {
+            "name": {
+              "type": ["null", "string"]
+            },
+            "years_of_service": {
+              "type": ["null", "integer"]
+            },
+            "start_date": {
               "type": ["null", "string"],
               "format": "date-time"
-            },
-            "last_refresh_time": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "balance": {
-              "type": ["object", "null"],
-              "properties": {
-                "currency": {
-                  "type": ["null", "string"]
-                },
-                "primary": {
-                  "type": ["boolean"]
-                },
-                "total_balance": {
-                  "type": ["object", "null"],
-                  "properties": {
-                    "currency_code": {
-                      "type": ["null", "string"]
-                    },
-                    "value": {
-                      "type": ["null", "string"]
-                    }
-                  }
-                }
-              }
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "append"
     }
   ]
