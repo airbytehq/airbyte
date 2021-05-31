@@ -7,6 +7,7 @@ import {
   DestinationSyncMode,
   AirbyteStream,
 } from "core/domain/catalog";
+import { naturalComparatorBy } from "utils/objects";
 
 type IProps = {
   filter?: string;
@@ -15,29 +16,12 @@ type IProps = {
   onChangeSchema: (schema: SyncSchema) => void;
 };
 
-function compareByName<T extends { name: string }>(o1: T, o2: T): -1 | 0 | 1 {
-  if (o1.name === o2.name) {
-    return 0;
-  }
-  return o1.name > o2.name ? 1 : -1;
-}
-
 const TreeView: React.FC<IProps> = ({
   schema,
   destinationSupportedSyncModes,
   onChangeSchema,
   filter,
 }) => {
-  const filteringSchema = useMemo(() => {
-    return filter
-      ? {
-          streams: schema.streams.filter((stream) =>
-            stream.stream.name.toLowerCase().includes(filter.toLowerCase())
-          ),
-        }
-      : schema;
-  }, [filter, schema]);
-
   const onUpdateStream = useCallback(
     (stream: AirbyteStream, newStream: Partial<AirbyteStreamConfiguration>) => {
       const newSchema = schema.streams.map((streamNode) => {
@@ -54,11 +38,21 @@ const TreeView: React.FC<IProps> = ({
     [schema, onChangeSchema]
   );
 
+  const filteringSchema = useMemo(() => {
+    return filter
+      ? {
+          streams: schema.streams.filter((stream) =>
+            stream.stream.name.toLowerCase().includes(filter.toLowerCase())
+          ),
+        }
+      : schema;
+  }, [filter, schema]);
+
   // TODO: there is no need to sort schema everytime. We need to do it only once as streams[].stream is const
   const sortedSchema = useMemo(
     () => ({
-      streams: filteringSchema.streams.sort((o1, o2) =>
-        compareByName(o1.stream, o2.stream)
+      streams: filteringSchema.streams.sort(
+        naturalComparatorBy((syncStream) => syncStream.stream.name)
       ),
     }),
     [filteringSchema.streams]

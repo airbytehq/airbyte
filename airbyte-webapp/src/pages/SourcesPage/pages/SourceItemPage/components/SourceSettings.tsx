@@ -99,13 +99,7 @@ const SourceSettings: React.FC<IProps> = ({
           isEditMode
           onSubmit={onSubmit}
           formType="source"
-          availableServices={[
-            {
-              value: currentSource.sourceDefinitionId,
-              text: currentSource.sourceName,
-              icon: sourceDefinition.icon,
-            },
-          ]}
+          availableServices={[sourceDefinition]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           errorMessage={errorStatusRequest?.statusMessage}
           formValues={{

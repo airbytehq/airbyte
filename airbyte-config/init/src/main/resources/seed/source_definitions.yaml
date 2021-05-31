@@ -3,7 +3,6 @@
   dockerRepository: airbyte/source-asana
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-asana
-  icon: asana.svg
 - sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   name: Exchange Rates Api
   dockerRepository: airbyte/source-exchange-rates
@@ -79,13 +78,13 @@
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.11
   documentationUrl: https://hub.docker.com/r/airbyte/source-stripe
   icon: stripe.svg
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   name: Mailchimp
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-mailchimp
   icon: mailchimp.svg
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1
