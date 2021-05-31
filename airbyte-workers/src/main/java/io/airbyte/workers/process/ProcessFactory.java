@@ -46,11 +46,6 @@ public interface ProcessFactory {
   Process create(String jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
       throws WorkerException;
 
-  default Process create(long jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final String... args)
-      throws WorkerException {
-    return create(String.valueOf(jobId), attempt, jobPath, imageName, entrypoint, args);
-  }
-
   default Process create(String jobId,
                          int attempt,
                          final Path jobPath,
@@ -59,11 +54,6 @@ public interface ProcessFactory {
                          final List<String> args)
       throws WorkerException {
     return create(jobId, attempt, jobPath, imageName, entrypoint, args.toArray(new String[0]));
-  }
-
-  default Process create(long jobId, int attempt, final Path jobPath, final String imageName, final String entrypoint, final List<String> args)
-      throws WorkerException {
-    return create(String.valueOf(jobId), attempt, jobPath, imageName, entrypoint, args);
   }
 
 }
