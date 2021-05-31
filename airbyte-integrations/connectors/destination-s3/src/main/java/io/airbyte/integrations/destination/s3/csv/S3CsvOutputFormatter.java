@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,6 +58,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,14 +115,15 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-        CSVFormat.DEFAULT.withHeader(getHeaders(sortedHeaders).toArray(new String[0])));
+        CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL)
+            .withHeader(getHeaders(sortedHeaders).toArray(new String[0])));
   }
 
   /**
    * Get a sorted field list in the json object so that this object can be iterated through with a
    * defined order later on.
    */
-  private static List<String> getSortedFields(JsonNode jsonSchema, S3CsvFormatConfig formatConfig) {
+  static List<String> getSortedFields(JsonNode jsonSchema, S3CsvFormatConfig formatConfig) {
     // When no flattening is needed, we do not care about iteration order.
     if (formatConfig.getFlattening() == Flattening.NO) {
       return Collections.emptyList();
@@ -135,7 +136,7 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
         "Unexpected flattening config: " + formatConfig.getFlattening());
   }
 
-  private static String getOutputPrefix(String bucketPath, AirbyteStream stream) {
+  static String getOutputPrefix(String bucketPath, AirbyteStream stream) {
     List<String> paths = new LinkedList<>();
 
     if (bucketPath != null) {
@@ -151,21 +152,52 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     return String.join("/", paths);
   }
 
-  private static String getOutputFilename(Timestamp timestamp) {
+  static String getOutputFilename(Timestamp timestamp) {
     return String.format("%s-%d.csv", DATE_FORMAT.format(timestamp), timestamp.getTime());
   }
 
-  private static List<String> getHeaders(List<String> sortedHeaders) {
-    if (sortedHeaders.isEmpty()) {
-      return Lists.newArrayList(JavaBaseConstants.COLUMN_NAME_AB_ID,
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-          JavaBaseConstants.COLUMN_NAME_DATA);
-    }
-
+  /**
+   * When there exists sorted headers from input stream, replace {@code
+   * JavaBaseConstants.COLUMN_NAME_DATA} with those headers.
+   */
+  static List<String> getHeaders(List<String> sortedHeaders) {
     List<String> headers = Lists.newArrayList(JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    headers.addAll(sortedHeaders);
+    if (sortedHeaders.isEmpty()) {
+      headers.add(JavaBaseConstants.COLUMN_NAME_DATA);
+    } else {
+      headers.addAll(sortedHeaders);
+    }
     return headers;
+  }
+
+  static List<String> getCsvData(S3CsvFormatConfig formatConfig, List<String> sortedHeaders,
+      JsonNode json) {
+    if (formatConfig.getFlattening() == Flattening.NO) {
+      return Collections.singletonList(Jsons.serialize(json));
+    }
+
+    if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {
+      List<String> values = new LinkedList<>();
+      for (String field : sortedHeaders) {
+        JsonNode value = json.get(field);
+        if (value.isValueNode()) {
+          // Call asText method on value nodes so that proper string
+          // representation of json values can be returned by Jackson.
+          // Otherwise, CSV printer will just call the toString method,
+          // which can be problematic (e.g. text node will have extra
+          // double quotation marks around its text value).
+          values.add(value.asText());
+        } else {
+          values.add(Jsons.serialize(value));
+        }
+      }
+
+      return values;
+    }
+
+    throw new IllegalArgumentException(
+        "Unexpected flattening config: " + formatConfig.getFlattening());
   }
 
   /**
@@ -203,31 +235,11 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
 
   @Override
   public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
-    Timestamp emittedAt = Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt()));
-
     List<Object> data = new LinkedList<>();
     data.add(id);
-    data.addAll(getCsvData(recordMessage.getData()));
-    data.add(emittedAt);
-
+    data.add(recordMessage.getEmittedAt());
+    data.addAll(getCsvData(formatConfig, sortedHeaders, recordMessage.getData()));
     csvPrinter.printRecord(data);
-  }
-
-  private List<String> getCsvData(JsonNode json) {
-    if (formatConfig.getFlattening() == Flattening.NO) {
-      return Collections.singletonList(Jsons.serialize(json));
-    }
-
-    if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {
-      List<String> values = new LinkedList<>();
-      for (String field : sortedHeaders) {
-        values.add(Jsons.serialize(json.get(field)));
-      }
-      return values;
-    }
-
-    throw new IllegalArgumentException(
-        "Unexpected flattening config: " + formatConfig.getFlattening());
   }
 
   @Override
