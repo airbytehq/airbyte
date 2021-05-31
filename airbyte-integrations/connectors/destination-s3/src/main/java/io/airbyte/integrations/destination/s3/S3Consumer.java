@@ -51,8 +51,8 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
   private final Map<AirbyteStreamNameNamespacePair, S3OutputFormatter> streamNameAndNamespaceToFormatters;
 
   public S3Consumer(S3DestinationConfig s3DestinationConfig,
-      ConfiguredAirbyteCatalog configuredCatalog,
-      S3OutputFormatterFactory formatterFactory) {
+                    ConfiguredAirbyteCatalog configuredCatalog,
+                    S3OutputFormatterFactory formatterFactory) {
     this.s3DestinationConfig = s3DestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.formatterFactory = formatterFactory;

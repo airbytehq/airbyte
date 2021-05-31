@@ -79,9 +79,9 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
   private final CSVPrinter csvPrinter;
 
   public S3CsvOutputFormatter(S3DestinationConfig config,
-      AmazonS3 s3Client,
-      ConfiguredAirbyteStream configuredStream,
-      Timestamp uploadTimestamp)
+                              AmazonS3 s3Client,
+                              ConfiguredAirbyteStream configuredStream,
+                              Timestamp uploadTimestamp)
       throws IOException {
     this.config = config;
     this.formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
@@ -109,9 +109,9 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     // Memory consumption is queue capacity * part size = 1 * 50 = 50 MB at current configurations.
     this.uploadManager = new StreamTransferManager(config.getBucketName(), objectKey,
         s3Client)
-        .numUploadThreads(1)
-        .queueCapacity(1)
-        .partSize(S3DestinationConstants.DEFAULT_PART_SIZE_MD);
+            .numUploadThreads(1)
+            .queueCapacity(1)
+            .partSize(S3DestinationConstants.DEFAULT_PART_SIZE_MD);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
@@ -171,8 +171,9 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     return headers;
   }
 
-  static List<String> getCsvData(S3CsvFormatConfig formatConfig, List<String> sortedHeaders,
-      JsonNode json) {
+  static List<String> getCsvData(S3CsvFormatConfig formatConfig,
+                                 List<String> sortedHeaders,
+                                 JsonNode json) {
     if (formatConfig.getFlattening() == Flattening.NO) {
       return Collections.singletonList(Jsons.serialize(json));
     }

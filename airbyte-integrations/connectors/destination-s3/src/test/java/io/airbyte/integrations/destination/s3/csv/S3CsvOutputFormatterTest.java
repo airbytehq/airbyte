@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.s3.csv;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,8 +74,7 @@ class S3CsvOutputFormatterTest {
   public void testGetOutputPrefix() {
     // No namespace
     assertEquals("bucket_path/stream_name", S3CsvOutputFormatter
-        .getOutputPrefix("bucket_path", new AirbyteStream().withName("stream_name"))
-    );
+        .getOutputPrefix("bucket_path", new AirbyteStream().withName("stream_name")));
 
     // With namespace
     assertEquals("bucket_path/namespace/stream_name", S3CsvOutputFormatter
@@ -65,8 +88,7 @@ class S3CsvOutputFormatterTest {
     Timestamp timestamp = new Timestamp(1471461319000L);
     assertEquals(
         "2016-08-17-1471461319000.csv",
-        S3CsvOutputFormatter.getOutputFilename(timestamp)
-    );
+        S3CsvOutputFormatter.getOutputFilename(timestamp));
   }
 
   @Test
@@ -78,8 +100,7 @@ class S3CsvOutputFormatterTest {
             JavaBaseConstants.COLUMN_NAME_AB_ID,
             JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
             JavaBaseConstants.COLUMN_NAME_DATA),
-        S3CsvOutputFormatter.getHeaders(Collections.emptyList())
-    );
+        S3CsvOutputFormatter.getHeaders(Collections.emptyList()));
 
     // With sorted headers
     assertLinesMatch(
@@ -88,8 +109,7 @@ class S3CsvOutputFormatterTest {
             JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
             "Field 1",
             "Field 2"),
-        S3CsvOutputFormatter.getHeaders(Lists.newArrayList("Field 1", "Field 2"))
-    );
+        S3CsvOutputFormatter.getHeaders(Lists.newArrayList("Field 1", "Field 2")));
   }
 
   @Test
@@ -107,15 +127,13 @@ class S3CsvOutputFormatterTest {
     assertLinesMatch(
         Collections
             .singletonList("{\"Field 4\":{\"Field 41\":15},\"Field 1\":\"A\",\"Field 3\":71,\"Field 2\":true}"),
-        S3CsvOutputFormatter.getCsvData(formatConfig1, Collections.emptyList(), json)
-    );
+        S3CsvOutputFormatter.getCsvData(formatConfig1, Collections.emptyList(), json));
     // Root level flattening
     S3CsvFormatConfig formatConfig2 = new S3CsvFormatConfig(Flattening.ROOT_LEVEL);
     assertLinesMatch(
         Lists.newArrayList("A", "true", "71", "{\"Field 41\":15}"),
         S3CsvOutputFormatter
-            .getCsvData(formatConfig2, Lists.newArrayList("Field 1", "Field 2", "Field 3", "Field 4"), json)
-    );
+            .getCsvData(formatConfig2, Lists.newArrayList("Field 1", "Field 2", "Field 3", "Field 4"), json));
   }
 
 }

@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * {@link S3OutputFormatter} is responsible for writing Airbyte stream data
- * to an S3 location in a specific format.
+ * {@link S3OutputFormatter} is responsible for writing Airbyte stream data to an S3 location in a
+ * specific format.
  */
 public interface S3OutputFormatter {
 
