@@ -12,7 +12,7 @@ If you're interested in our progress on the Airbyte platform, please read below!
 
 ## [05-25-2021 - 0.24.0](https://github.com/airbytehq/airbyte/releases/tag/v0.24.0-alpha)
 
-* Checkpointing: Worker use destination (instead of source) for state ([#3290](https://github.com/airbytehq/airbyte/pull/3290))
+* **Checkpointing for incremental syncs** that will now continue where they left off even if they fail! ([#3290](https://github.com/airbytehq/airbyte/pull/3290))
 * Avoid dbt runtime exception "maximum recursion depth exceeded" in ephemeral materialization ([#3470](https://github.com/airbytehq/airbyte/pull/3470))
 
 

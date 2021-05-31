@@ -42,9 +42,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
+public class DockerProcessFactory implements ProcessFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessBuilderFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessFactory.class);
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
   private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
@@ -56,7 +56,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   private final String networkName;
   private final Path imageExistsScriptPath;
 
-  public DockerProcessBuilderFactory(Path workspaceRoot, String workspaceMountSource, String localMountSource, String networkName) {
+  public DockerProcessFactory(Path workspaceRoot, String workspaceMountSource, String localMountSource, String networkName) {
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
@@ -79,7 +79,7 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
   }
 
   @Override
-  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+  public Process create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
       throws WorkerException {
 
     if (!checkImageExists(imageName)) {
@@ -110,7 +110,11 @@ public class DockerProcessBuilderFactory implements ProcessBuilderFactory {
 
     LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd));
 
-    return new ProcessBuilder(cmd);
+    try {
+      return new ProcessBuilder(cmd).start();
+    } catch (IOException e) {
+      throw new WorkerException(e.getMessage(), e);
+    }
   }
 
   private Path rebasePath(final Path jobRoot) {

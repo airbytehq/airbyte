@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the [Asana API](https://developers.asana.com/docs). It supports only Full Refresh syncs. The Appstore API is available for [many types of services](https://developer.apple.com/documentation/appstoreconnectapi).
+This source can sync data for the [Asana API](https://developers.asana.com/docs). It supports only Full Refresh syncs. 
 
 
 ### Output schema

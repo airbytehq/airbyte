@@ -8,7 +8,7 @@ COPY setup.py ./
 COPY pytest.ini ./
 RUN pip install .
 
-LABEL io.airbyte.version=0.1.1
+LABEL io.airbyte.version=0.1.2
 LABEL io.airbyte.name=airbyte/source-acceptance-test
 
 ENTRYPOINT ["python", "-m", "pytest", "-p", "source_acceptance_test.plugin"]
