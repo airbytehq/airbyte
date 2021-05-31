@@ -201,8 +201,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           if (messageOptional.isPresent()) {
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
 
-            LOGGER.info("record in DefaultReplicationWorker: {}", message);
-
             sourceMessageTracker.accept(message);
             destination.accept(message);
           }
