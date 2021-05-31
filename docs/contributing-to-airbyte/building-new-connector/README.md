@@ -36,8 +36,7 @@ Run the interactive generator:
 
 ```text
 cd airbyte-integrations/connector-templates/generator
-npm install
-npm run generate
+./generate.sh
 ```
 
 and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
