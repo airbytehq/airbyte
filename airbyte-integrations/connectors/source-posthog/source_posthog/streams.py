@@ -29,7 +29,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -215,13 +214,23 @@ class Cohorts(IncrementalPosthogStream):
 
 class Elements(PosthogStream):
     # cursor_field = "order"
-    data_field = "results"
+    data_field = "elements"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "element"
+        return "element/stats"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        elements = [i[self.data_field][0] for i in response_json]
+        yield from elements
 
 
 class Events(IncrementalPosthogStream):
+    """
+    CAUTION! API supports inserting custom timestamp.
+    That may break incremental since no way to sort in request params.
+    """
+
     cursor_field = "timestamp"
     data_field = "results"
 
@@ -243,30 +252,6 @@ class EventsSessions(PosthogStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "event/sessions"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        resp_json = response.json()
-        if "pagination" in resp_json and resp_json["pagination"]:
-            return resp_json["pagination"]
-
-
-class EventsSessionsRecording(PosthogStream):
-    # cursor_field = ""
-    data_field = "result"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "event/session_recording"
-
-    def stream_slices(self, **kwargs):
-        event_sessions_stream = EventsSessions(authenticator=self.authenticator)
-        for event_session in event_sessions_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"session_id": event_session["distinct_id"]}
-
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        params["session_recording_id"] = stream_slice["session_id"]
-        return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()

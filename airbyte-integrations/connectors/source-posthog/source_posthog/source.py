@@ -38,7 +38,6 @@ from .streams import (
     Elements,
     Events,
     EventsSessions,
-    EventsSessionsRecording,
     FeatureFlags,
     Insights,
     InsightsPath,
@@ -56,6 +55,14 @@ class SourcePosthog(AbstractSource):
         configured_stream: ConfiguredAirbyteStream,
         connector_state: MutableMapping[str, Any],
     ) -> Iterator[AirbyteMessage]:
+        """
+        overridden: accept stream_state both dict and tuple
+        if Tuple:
+            second element is dict state
+            first element- any - says to break a loop
+            Reason: descendant reading records, break on cursor_val <= state
+            Alternative: filter whole responce by cursor_field, not that great.
+        """
         stream_name = configured_stream.stream.name
         stream_state = connector_state.get(stream_name, {})
         if stream_state:
@@ -75,7 +82,7 @@ class SourcePosthog(AbstractSource):
             )
             for record_data in records:
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
-                if isinstance(stream_state, tuple) and stream_state[0] < 0:
+                if isinstance(stream_state, tuple):
                     stream_state = stream_state[1]
                     break
                 record_counter += 1
@@ -112,7 +119,6 @@ class SourcePosthog(AbstractSource):
             Elements(authenticator=authenticator),
             Events(authenticator=authenticator),
             EventsSessions(authenticator=authenticator),
-            EventsSessionsRecording(authenticator=authenticator),
             FeatureFlags(authenticator=authenticator),
             Insights(authenticator=authenticator),
             InsightsPath(authenticator=authenticator),
