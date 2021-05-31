@@ -67,7 +67,7 @@ class SourceGoogleAds(Source):
             search_request = client.get_type("SearchGoogleAdsStreamRequest")
             search_request.customer_id = config['customer_id']
             search_request.query = query
-            search_request.summary_row_setting = client.get_type('SummaryRowSettingEnum').SummaryRowSetting.SUMMARY_ROW_ONLY
+#            search_request.summary_row_setting = client.get_type('SummaryRowSettingEnum').SummaryRowSetting.SUMMARY_ROW_ONLY
             response = ga_service.search_stream(search_request)
 
             for batch in response:
@@ -77,6 +77,43 @@ class SourceGoogleAds(Source):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+
+    def _search(self, query, config: json):
+        client = GoogleAdsClient.load_from_dict(config)
+        ga_service = client.get_service("GoogleAdsService")
+
+        search_request = client.get_type("SearchGoogleAdsStreamRequest")
+        search_request.customer_id = config['customer_id']
+        search_request.query = query
+        return ga_service.search_stream(search_request)
+
+
+    field_type_dict = {
+        bool: "boolean",
+        int: "integer",
+        float: "number",
+        str: "string"
+    }
+
+    def extract_schema(self, response):
+        props = {}
+        json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": props,
+        }
+        for batch in response:
+            for row in batch.results:
+                for key in batch.field_mask.paths:
+                    parts = key.split('.')
+                    obj = getattr(row, parts[0])
+                    fld = getattr(obj, parts[1])
+                    typ = self.field_type_dict[type(fld)]
+                    props[key] = {'type': typ}
+                return json_schema
+
+        raise Exception("The reponse has now rows. Please modify the GAQL so that it returns at least one row") 
+
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         """
@@ -95,16 +132,14 @@ class SourceGoogleAds(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
+        query = config['gaql']
+
+        response = self._search(query, config)
+
         streams = []
 
-        stream_name = "TableName"  # Example
-        json_schema = {  # Example
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {"columnName": {"type": "string"}},
-        }
-
-        # Not Implemented
+        stream_name = config['table_name']
+        json_schema = self.extract_schema(response)
 
         streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
         return AirbyteCatalog(streams=streams)
