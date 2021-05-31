@@ -73,16 +73,10 @@ public abstract class SourceComprehensiveTest extends SourceTest {
   public void testDataTypes() throws Exception {
     ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     List<AirbyteMessage> allMessages = runRead(catalog);
-    LOGGER.info("Size: " + allMessages.size());
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
 
-    recordMessages.forEach(msg -> LOGGER.info(msg.toString()));
-
-    assertFalse(recordMessages.isEmpty(), "Expected a full refresh sync to produce records");
-
-    allMessages = runRead(catalog);
-    LOGGER.info("Size: " + allMessages.size());
-    recordMessages.forEach(msg -> LOGGER.info(msg.toString()));
+    recordMessages.forEach(msg -> LOGGER.debug(msg.toString()));
+    assertFalse(recordMessages.isEmpty(), "Expected records from source");
   }
 
   /**
@@ -97,9 +91,9 @@ public abstract class SourceComprehensiveTest extends SourceTest {
     for (DataTypeTest test : dataTypeTests) {
       database.query(ctx -> {
         ctx.fetch(test.getCreateSQL());
-        LOGGER.info("Table " + test.getName() + " is created.");
+        LOGGER.debug("Table " + test.getName() + " is created.");
         test.getInsertSQLs().forEach(ctx::fetch);
-        LOGGER.info("Values " + test.values + " are inserted into " + test.getName());
+        LOGGER.debug("Values " + test.values + " are inserted into " + test.getName());
         return null;
       });
     }
