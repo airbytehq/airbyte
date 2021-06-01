@@ -84,7 +84,7 @@ public class RedshiftCopyDestinationAcceptanceTest extends DestinationAcceptance
   }
 
   @Override
-  protected boolean implementsBasicNormalization() {
+  protected boolean supportsNormalization() {
     return true;
   }
 

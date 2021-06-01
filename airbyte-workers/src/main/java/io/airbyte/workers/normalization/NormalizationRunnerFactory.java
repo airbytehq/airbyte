@@ -25,10 +25,7 @@
 package io.airbyte.workers.normalization;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.normalization.NormalizationRunner.NoOpNormalizationRunner;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.process.ProcessBuilderFactory;
 import java.util.Map;
 
 public class NormalizationRunnerFactory {

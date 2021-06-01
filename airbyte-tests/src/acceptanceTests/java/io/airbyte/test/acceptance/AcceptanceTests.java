@@ -70,6 +70,13 @@ import io.airbyte.api.client.model.JobRead;
 import io.airbyte.api.client.model.JobStatus;
 import io.airbyte.api.client.model.LogType;
 import io.airbyte.api.client.model.LogsRequestBody;
+import io.airbyte.api.client.model.OperationCreate;
+import io.airbyte.api.client.model.OperationIdRequestBody;
+import io.airbyte.api.client.model.OperationRead;
+import io.airbyte.api.client.model.OperatorConfiguration;
+import io.airbyte.api.client.model.OperatorNormalization;
+import io.airbyte.api.client.model.OperatorNormalization.OptionEnum;
+import io.airbyte.api.client.model.OperatorType;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceDefinitionCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
@@ -144,6 +151,7 @@ public class AcceptanceTests {
   private List<UUID> sourceIds;
   private List<UUID> connectionIds;
   private List<UUID> destinationIds;
+  private List<UUID> operationIds;
 
   @BeforeAll
   public static void init() {
@@ -182,6 +190,7 @@ public class AcceptanceTests {
     sourceIds = Lists.newArrayList();
     connectionIds = Lists.newArrayList();
     destinationIds = Lists.newArrayList();
+    operationIds = Lists.newArrayList();
 
     // seed database.
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
@@ -202,6 +211,9 @@ public class AcceptanceTests {
 
     for (UUID destinationId : destinationIds) {
       deleteDestination(destinationId);
+    }
+    for (UUID operationId : operationIds) {
+      deleteOperation(operationId);
     }
   }
 
@@ -335,15 +347,18 @@ public class AcceptanceTests {
     final UUID sourceId = createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final String name = "test-connection-" + UUID.randomUUID().toString();
     final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, catalog, schedule, syncMode);
+    final ConnectionRead createdConnection = createConnection(name, sourceId, destinationId, operationId, catalog, schedule, syncMode);
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
+    assertEquals(1, createdConnection.getOperationIds().size());
+    assertEquals(operationId, createdConnection.getOperationIds().get(0));
     assertEquals(catalog, createdConnection.getSyncCatalog());
     assertEquals(schedule, createdConnection.getSchedule());
     assertEquals(name, createdConnection.getName());
@@ -355,11 +370,12 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, operationId, catalog, null, syncMode).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
@@ -372,6 +388,7 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
 
@@ -387,7 +404,7 @@ public class AcceptanceTests {
         .syncMode(syncMode)
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, operationId, catalog, null, syncMode).getConnectionId();
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -441,6 +458,7 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
 
     final ConnectionSchedule connectionSchedule = new ConnectionSchedule().units(1L).timeUnit(MINUTES);
@@ -448,7 +466,7 @@ public class AcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
-    createConnection(connectionName, sourceId, destinationId, catalog, connectionSchedule, syncMode);
+    createConnection(connectionName, sourceId, destinationId, operationId, catalog, connectionSchedule, syncMode);
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
@@ -465,12 +483,13 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
 
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, operationId, catalog, null, syncMode).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
@@ -486,12 +505,13 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
 
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, operationId, catalog, null, syncMode).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
@@ -504,6 +524,7 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.INCREMENTAL;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
@@ -512,7 +533,7 @@ public class AcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, operationId, catalog, null, syncMode).getConnectionId();
 
     // sync from start
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
@@ -575,6 +596,7 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
     final UUID destinationId = destination.getDestinationId();
+    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
 
@@ -589,7 +611,7 @@ public class AcceptanceTests {
         .syncMode(syncMode)
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, catalog, null, syncMode).getConnectionId();
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, operationId, catalog, null, syncMode).getConnectionId();
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -723,6 +745,7 @@ public class AcceptanceTests {
   private ConnectionRead createConnection(String name,
                                           UUID sourceId,
                                           UUID destinationId,
+                                          UUID operationId,
                                           AirbyteCatalog catalog,
                                           ConnectionSchedule schedule,
                                           SyncMode syncMode)
@@ -734,6 +757,7 @@ public class AcceptanceTests {
             .destinationId(destinationId)
             .syncCatalog(catalog)
             .schedule(schedule)
+            .operationIds(List.of(operationId))
             .name(name)
             .prefix(OUTPUT_NAMESPACE));
     connectionIds.add(connection.getConnectionId());
@@ -757,6 +781,19 @@ public class AcceptanceTests {
             .destinationDefinitionId(destinationDefId));
     destinationIds.add(destination.getDestinationId());
     return destination;
+  }
+
+  private OperationRead createOperation() throws ApiException {
+    OperatorConfiguration normalizationConfig = new OperatorConfiguration()
+        .operatorType(OperatorType.NORMALIZATION).normalization(new OperatorNormalization().option(
+            OptionEnum.BASIC));
+
+    OperationCreate operationCreate = new OperationCreate()
+        .name("AccTestDestination-" + UUID.randomUUID()).operatorConfiguration(normalizationConfig);
+
+    OperationRead operation = apiClient.getOperationApi().createOperation(operationCreate);
+    operationIds.add(operation.getOperationId());
+    return operation;
   }
 
   private UUID getDestinationDefId() throws ApiException {
@@ -891,6 +928,7 @@ public class AcceptanceTests {
         new ConnectionUpdate()
             .prefix(connection.getPrefix())
             .connectionId(connectionId)
+            .operationIds(connection.getOperationIds())
             .status(ConnectionStatus.DEPRECATED)
             .schedule(connection.getSchedule())
             .syncCatalog(connection.getSyncCatalog());
@@ -899,6 +937,10 @@ public class AcceptanceTests {
 
   private void deleteDestination(UUID destinationId) throws ApiException {
     apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
+  }
+
+  private void deleteOperation(UUID destinationId) throws ApiException {
+    apiClient.getOperationApi().deleteOperation(new OperationIdRequestBody().operationId(destinationId));
   }
 
   private static void waitForSuccessfulJob(JobsApi jobsApi, JobRead originalJob) throws InterruptedException, ApiException {
@@ -914,7 +956,7 @@ public class AcceptanceTests {
       count++;
 
       job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
-      LOGGER.info("waiting: job id: {} status: {}", job.getId(), job.getStatus());
+      LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());
     }
     return job;
   }

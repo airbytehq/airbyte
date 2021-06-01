@@ -86,7 +86,7 @@ public class JdbcDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected boolean implementsBasicNormalization() {
+  protected boolean supportsNormalization() {
     return false;
   }
 

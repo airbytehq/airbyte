@@ -96,11 +96,6 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   }
 
   @Override
-  protected boolean implementsBasicNormalization() {
-    return false;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
