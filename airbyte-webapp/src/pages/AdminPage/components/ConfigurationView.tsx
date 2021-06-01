@@ -3,14 +3,13 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { useAsyncFn } from "react-use";
 
-import { Button, LoadingButton } from "components/base";
+import { Button, LoadingButton } from "components";
 import ContentCard from "components/ContentCard";
 import config from "config";
 import Link from "components/Link";
 import DeploymentService from "core/resources/DeploymentService";
 import ImportConfigurationModal from "./ImportConfigurationModal";
 import LogsContent from "./LogsContent";
-import LoadingButton from "components/Button/LoadingButton";
 import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div`
