@@ -93,14 +93,14 @@ class HarvestStreamIncrementalMixin(HttpStream, ABC):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        updated_since = self._updated_since
+        updated_since = pendulum.parse(self._updated_since)
         if stream_state.get(self.cursor_field):
             updated_since = stream_state[self.cursor_field]
         params.update({"updated_since": updated_since})
         return params
 
 
-class HarvestStreamWithPaginationSliced(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
+class HarvestStreamWithPaginationSliced(HarvestStreamWithPagination):
     @property
     @abstractmethod
     def parent_stream_name(self) -> str:
@@ -131,21 +131,21 @@ class Company(HarvestStream):
         yield response.json()
 
     def path(self, **kwargs) -> str:
-        return "company"
+        return self.name
 
 
 class Invoices(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
     pass
 
 
-class InvoiceMessages(HarvestStreamWithPaginationSliced):
+class InvoiceMessages(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
     parent_stream_name = "Invoices"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"invoices/{stream_slice['parent_id']}/messages"
 
 
-class InvoicePayments(HarvestStreamWithPaginationSliced):
+class InvoicePayments(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
     parent_stream_name = "Invoices"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
@@ -160,7 +160,7 @@ class Estimates(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
     pass
 
 
-class EstimateMessages(HarvestStreamWithPaginationSliced):
+class EstimateMessages(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
     parent_stream_name = "Estimates"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
@@ -222,7 +222,7 @@ class CostRates(HarvestStreamWithPaginationSliced):
         return f"users/{stream_slice['parent_id']}/cost_rates"
 
 
-class ProjectAssignments(HarvestStreamWithPaginationSliced):
+class ProjectAssignments(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
     parent_stream_name = "Users"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:

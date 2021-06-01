@@ -53,12 +53,6 @@
   "users": {
     "updated_at": "2021-01-01T00:00:00Z"
   },
-  "billable_rates": {
-    "updated_at": "2021-01-01T00:00:00Z"
-  },
-  "cost_rates": {
-    "updated_at": "2021-01-01T00:00:00Z"
-  },
   "project_assignments": {
     "updated_at": "2021-01-01T00:00:00Z"
   },
