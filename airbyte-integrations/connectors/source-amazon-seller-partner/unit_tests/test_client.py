@@ -25,7 +25,7 @@
 from datetime import datetime
 from typing import Mapping
 
-from dateutil import relativedelta
+from dateutil.relativedelta import relativedelta
 from source_amazon_seller_partner.client import BaseClient
 
 SP_CREDENTIALS = {

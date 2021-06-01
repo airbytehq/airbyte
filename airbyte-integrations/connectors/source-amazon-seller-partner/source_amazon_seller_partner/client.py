@@ -30,7 +30,8 @@ from typing import DefaultDict, Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, Type
-from dateutil import parser, relativedelta
+from dateutil import parser
+from dateutil.relativedelta import relativedelta
 
 from .amazon import AmazonClient
 
