@@ -57,7 +57,6 @@ class DockerProcessFactoryTest {
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
   }
 
-  // todo: make sure this actually works
   @Test
   public void testFileWriting() throws IOException, WorkerException {
     Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
