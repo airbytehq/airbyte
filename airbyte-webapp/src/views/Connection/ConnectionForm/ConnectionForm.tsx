@@ -57,7 +57,8 @@ const connectionValidationSchema = yup.object<ConnectionFormValues>({
     streams: yup.array().of(
       yup.object<SyncSchemaStream>({
         stream: yup.object(),
-        config: yup.object<AirbyteStreamConfiguration>().test({
+        // @ts-ignore
+        config: yup.object().test({
           name: "connectionSchema.config.validator",
           // eslint-disable-next-line no-template-curly-in-string
           message: "${path} is wrong",
@@ -69,7 +70,7 @@ const connectionValidationSchema = yup.object<ConnectionFormValues>({
               if (value.primaryKey.length === 0) {
                 return this.createError({
                   message: "connectionForm.primaryKey.required",
-                  path: `${this.path}.primaryKey`,
+                  path: `schema.streams[${this.parent.id}].config.primaryKey`,
                 });
               }
             }
@@ -81,7 +82,7 @@ const connectionValidationSchema = yup.object<ConnectionFormValues>({
               ) {
                 return this.createError({
                   message: "connectionForm.cursorField.required",
-                  path: `${this.path}.cursorField`,
+                  path: `schema.streams[${this.parent.id}].config.cursorField`,
                 });
               }
             }

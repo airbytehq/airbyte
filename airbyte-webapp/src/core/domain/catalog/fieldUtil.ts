@@ -18,6 +18,8 @@ export function toInnerModel(
     throw e;
   }
 
+  result.catalog.streams.forEach((stream, i) => (stream.id = i.toString()));
+
   return result;
 }
 

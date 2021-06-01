@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
-import { useIntl, FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import {
@@ -27,7 +27,7 @@ import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { Rows } from "./components/Rows";
 
 import { equal, naturalComparatorBy } from "utils/objects";
-// import { useField } from "formik";
+import { getIn, useFormikContext } from "formik";
 
 const StyledRadioButton = styled(RadioButton)`
   vertical-align: middle;
@@ -35,6 +35,10 @@ const StyledRadioButton = styled(RadioButton)`
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
+`;
+
+const Section = styled.div<{ error?: boolean }>`
+  border: 1px solid ${(props) => (props.error ? "red" : "none")};
 `;
 
 const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
@@ -60,7 +64,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [isRowExpanded, onExpand] = useToggle(false);
-  // const formikBag = useField(streamNode.stream.name);
+  const { errors } = useFormikContext();
   const { stream, config } = streamNode;
   const streamId = stream.name;
 
@@ -114,10 +118,12 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
     updateStreamWithConfig({ cursorField: cursorPath });
   };
 
-  const hasPk = config.destinationSyncMode === DestinationSyncMode.Dedupted;
-  const hasCursor = config.syncMode === SyncMode.Incremental;
-  const showPk = stream.sourceDefinedPrimaryKey.length === 0;
-  const showCursor = !stream.sourceDefinedCursor;
+  const pkRequired =
+    config.destinationSyncMode === DestinationSyncMode.Dedupted;
+  const cursorRequired = config.syncMode === SyncMode.Incremental;
+  const showPkControl =
+    stream.sourceDefinedPrimaryKey.length === 0 && pkRequired;
+  const showCursorControl = !stream.sourceDefinedCursor && cursorRequired;
 
   const pkKeyItems = config.primaryKey.map((k) => k.join("."));
   const selectedCursorPath = config.cursorField.join(".");
@@ -160,8 +166,11 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const hasChildren = fields && fields.length > 0;
 
+  const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
+  const hasError = configErrors && Object.keys(configErrors).length > 0;
+
   return (
-    <>
+    <Section error={hasError}>
       <TreeRowWrapper>
         <MainInfoCell
           label={stream.name}
@@ -181,7 +190,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
         <Cell />
         <OverflowCell title={config.aliasName}>{config.aliasName}</OverflowCell>
         <Cell>
-          {hasPk && (
+          {pkRequired && (
             <ExpandFieldCell
               onExpand={onExpand}
               isItemOpen={isRowExpanded}
@@ -195,7 +204,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           )}
         </Cell>
         <Cell>
-          {hasCursor && (
+          {cursorRequired && (
             <ExpandFieldCell onExpand={onExpand} isItemOpen={isRowExpanded}>
               {config.cursorField.join(".")}
             </ExpandFieldCell>
@@ -217,7 +226,6 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
               <MainInfoCell
                 hideCheckbox={true}
                 label={field.name}
-                isItemChecked={true}
                 depth={depth}
               />
               <Cell />
@@ -226,18 +234,15 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
                 {field.cleanedName}
               </OverflowCell>
               <OverflowCell>
-                {hasPk &&
-                  showPk &&
-                  SyncSchemaFieldObject.isPrimitive(field) && (
-                    <CheckBox
-                      checked={pkPaths.has(field.name)}
-                      onClick={() => onPkSelect(field)}
-                    />
-                  )}
+                {showPkControl && SyncSchemaFieldObject.isPrimitive(field) && (
+                  <CheckBox
+                    checked={pkPaths.has(field.name)}
+                    onClick={() => onPkSelect(field)}
+                  />
+                )}
               </OverflowCell>
               <Cell>
-                {hasCursor &&
-                  showCursor &&
+                {showCursorControl &&
                   SyncSchemaFieldObject.isPrimitive(field) && (
                     <StyledRadioButton
                       checked={field.name === selectedCursorPath}
@@ -250,7 +255,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           )}
         </Rows>
       )}
-    </>
+    </Section>
   );
 };
 
