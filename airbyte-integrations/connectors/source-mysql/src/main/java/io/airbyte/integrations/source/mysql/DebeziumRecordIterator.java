@@ -53,7 +53,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
-  private static final int SLEEP_TIME_AMOUNT = 5;
+  private static final WaitTime FIRST_RECORD_WAIT_TIME_MINUTES = new WaitTime(5, TimeUnit.MINUTES);
+  private static final WaitTime SUBSEQUENT_RECORD_WAIT_TIME_SECONDS = new WaitTime(5, TimeUnit.SECONDS);
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
   private final Optional<TargetFilePosition> targetFilePosition;
@@ -80,8 +81,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        TimeUnit timeUnit = receivedFirstRecord ? TimeUnit.SECONDS : TimeUnit.MINUTES;
-        next = queue.poll(SLEEP_TIME_AMOUNT, timeUnit);
+        WaitTime waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME_SECONDS : FIRST_RECORD_WAIT_TIME_MINUTES;
+        next = queue.poll(waitTime.period, waitTime.timeUnit);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -142,6 +143,18 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     TRUE,
     FALSE,
     LAST
+  }
+
+  private static class WaitTime {
+
+    public final int period;
+    public final TimeUnit timeUnit;
+
+    public WaitTime(int period, TimeUnit timeUnit) {
+      this.period = period;
+      this.timeUnit = timeUnit;
+    }
+
   }
 
 }
