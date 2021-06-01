@@ -22,25 +22,22 @@
 # SOFTWARE.
 #
 
+# import time
+import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-
-import time
-import math
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-
-# from airbyte_cdk.models import SyncMode
-# from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.models import SyncMode
 
 
 class ShopifyStream(HttpStream, ABC):
     url_base = ""
     primary_key = "id"
-    limit = 250
+    limit = 200
 
     def __init__(self, shop: str, api_key: str, api_password: str, api_version: str, **kwargs):
         super().__init__(**kwargs)
@@ -51,15 +48,22 @@ class ShopifyStream(HttpStream, ABC):
         self.since_id = 0
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        decoded_response = response.json()[self.data_field]
-        if len(decoded_response) < self.limit:
+        decoded_response = response.json()
+        if len(decoded_response.get(self.data_field)) < self.limit:
             return None
         else:
-            self.since_id = decoded_response[-1]["id"]
-            time.sleep(2)
+            self.since_id = decoded_response.get(self.data_field)[-1]["id"]
+            # UNCOMMENT FOR DEBUG ONLY
+            # print(f"\nSINCE_ID TOKEN: {self.since_id}\n")
+            # time.sleep(5)
             return {"since_id": self.since_id}
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs
+        ) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
         params["limit"] = self.limit
         params["since_id"] = self.since_id
@@ -79,138 +83,110 @@ class ShopifyStream(HttpStream, ABC):
         """The name of the field in the response which contains the data"""
 
 
-class Customers(ShopifyStream):
-    data_field = "customers"
-
-    def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
-    #    return f"{self.url_base}/{self.data_field}.json"    
-
-class Orders(ShopifyStream):
-    data_field = "orders"
-
-    def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
-    #   return f"{self.url_base}/{self.data_field}.json"
-
-class Products(ShopifyStream):
-    data_field = "products"
-
-    def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
-
-class AbandonedCheckouts(ShopifyStream):
-    data_field = "checkouts"
-
-    def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
-
-class Metafields(ShopifyStream):
-    data_field = "metafields"
-
-    def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
-
-class CustomCollections(ShopifyStream):
-    data_field = "custom_collections"
-
-    def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
-
-class Collects(ShopifyStream):
-    data_field = "collects"
-
-    def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
-
-# class Transactions(ShopifyStream):
-#    data_field = "transactions"
-#    primary_key = "id"
-#
-#    def path(self, **kwargs) -> str:
-#        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
-
-# class OrderRefunds(ShopifyStream):
-#    data_field = "order_refunds"
-#    primary_key = "id"
-#
-#    def path(self, **kwargs) -> str:
-#        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
-
 # Basic incremental stream
 class IncrementalShopifyStream(ShopifyStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = math.inf
 
     @property
+    @abstractmethod
     def cursor_field(self) -> str:
         """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
         """
-        return []
+        pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
 
-
-class Employees(IncrementalShopifyStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
+### STREAM: customers
+class Customers(IncrementalShopifyStream):
+    data_field = "customers"
+    cursor_field = "id"
 
     def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
+### STREAM: orders
+class Orders(IncrementalShopifyStream):
+    data_field = "orders"
+    cursor_field = "id"
 
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
+    def path(self, **kwargs) -> str:
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
 
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
+### STREAM: products
+class Products(IncrementalShopifyStream):
+    data_field = "products"
+    cursor_field = "id"
 
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
+    def path(self, **kwargs) -> str:
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
 
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError("Implement stream slices or delete this method!")
+### STREAM: abandoned_checkouts > checkouts
+class AbandonedCheckouts(IncrementalShopifyStream):
+    data_field = "checkouts"
+    cursor_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+
+### STREAM: metafields
+class Metafields(IncrementalShopifyStream):
+    data_field = "metafields"
+    cursor_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+
+### STREAM: custom_collections > custom collections
+class CustomCollections(IncrementalShopifyStream):
+    data_field = "custom_collections"
+    cursor_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+
+### STREAM: collects
+class Collects(IncrementalShopifyStream):
+    data_field = "collects"
+    cursor_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+
+### STREAM: Refunds from orders
+class OrderRefunds(IncrementalShopifyStream):
+    data_field = "refunds"
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice['order_id']
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/orders/{order_id}/{self.data_field}.json"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        orders_stream = Orders(self.shop, self.api_key, self.api_password, self.api_version)
+        for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
+
+### STREAM: Refunds from orders
+class Transactions(IncrementalShopifyStream):
+    data_field = "transactions"
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice['order_id']
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/orders/{order_id}/{self.data_field}.json"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        orders_stream = Orders(self.shop, self.api_key, self.api_password, self.api_version)
+        for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
 
-# Source
+# Basic Abstraction to check the connection
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-
         # mapping config from config.json
         shop = config["shop"]
         api_key = config["api_key"]
@@ -219,7 +195,6 @@ class SourceShopify(AbstractSource):
 
         # Construct base url for checking connetion
         url = f"https://{api_key}:{api_pass}@{shop}.myshopify.com/admin/api/{api_version}/shop.json"
-
         # try to connect
         try:
             session = requests.get(url)
@@ -228,22 +203,16 @@ class SourceShopify(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+        Mapping a input config of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        # authenticator = HttpAuthenticator(config["api_key"],config["api_password"])
         args = {
             "shop": config["shop"],
             "api_key": config["api_key"],
             "api_password": config["api_password"],
             "api_version": config["api_version"],
         }
-
         return [
             Customers(**args),
             Orders(**args),
@@ -251,5 +220,7 @@ class SourceShopify(AbstractSource):
             AbandonedCheckouts(**args),
             Metafields(**args),
             CustomCollections(**args),
-            Collects(**args)
+            Collects(**args),
+            OrderRefunds(**args),
+            Transactions(**args)
         ]
