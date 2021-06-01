@@ -30,6 +30,7 @@ from typing import Any, Callable, Iterable, Iterator, Mapping, MutableMapping, S
 
 import backoff
 import pendulum as pendulum
+
 # FIXME (Eugene K): use standard logger
 from airbyte_cdk.entrypoint import logger
 from facebook_business.adobjects.ad import Ad
