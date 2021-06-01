@@ -108,11 +108,15 @@ class SourceGoogleAds(Source):
         for batch in response:
             for row in batch.results:
                 for key in batch.field_mask.paths:
-                    parts = key.split('.')
-                    obj = getattr(row, parts[0])
-                    fld = getattr(obj, parts[1])
-                    typ = self.field_type_dict[type(fld)]
-                    props[key] = {'type': typ}
+                    try:
+                        parts = key.split('.')
+                        obj = getattr(row, parts[0])
+                        fld = getattr(obj, parts[1])
+                        typ = self.field_type_dict[type(fld)]
+                        props[key] = {'type': typ}
+                    except Exception as e:
+                        raise Exception(f"The GAQL contains key '{key}', but there seems to be no information about that field. Try removing '{key}' from the GAQL")
+
                 return json_schema
 
         raise Exception("The reponse has now rows. Please modify the GAQL so that it returns at least one row") 
