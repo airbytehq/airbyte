@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       dry-run:
-        description: 'Indicates whether this is a dry-run or not. A dry-run publishes to Test PyPi. A proper run publishes to actual PyPi servers.'
+        description: 'By default dry-run publishes to Test PyPi. Use "false" to publish to actual PyPi servers.'
         required: false
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
@@ -59,7 +59,8 @@ jobs:
       - name: Publish Python Package
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:
-          python_version: '3.7.0'
+          # specify the same version as in ~/.python-version
+          python_version: '3.7.9'
           pip_version: '21.1'
           subdir: 'airbyte-cdk/python/'
         env:
