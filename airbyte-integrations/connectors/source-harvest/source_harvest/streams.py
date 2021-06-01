@@ -93,7 +93,7 @@ class HarvestStreamIncrementalMixin(HttpStream, ABC):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        updated_since = pendulum.parse(self._updated_since)
+        updated_since = self._updated_since
         if stream_state.get(self.cursor_field):
             updated_since = stream_state[self.cursor_field]
         params.update({"updated_since": updated_since})
