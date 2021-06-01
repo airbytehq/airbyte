@@ -28,7 +28,7 @@ type Config = {
     enableStorytime: boolean;
   };
   apiUrl: string;
-  healthCheckTimeout: number;
+  healthCheckInterval: number;
   isDemo: boolean;
   version?: string;
 };
@@ -62,7 +62,7 @@ const config: Config = {
     window.API_URL ||
     process.env.REACT_APP_API_URL ||
     `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
-  healthCheckTimeout: 10000,
+  healthCheckInterval: 10000,
   isDemo: window.IS_DEMO === "true",
 };
 

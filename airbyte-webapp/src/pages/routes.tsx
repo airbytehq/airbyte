@@ -152,7 +152,7 @@ const OnboardingsRoutes = () => {
 
 export const Routing: React.FC = () => {
   useSegment(config.segment.token);
-  useApiHealthPoll(config.healthCheckTimeout);
+  useApiHealthPoll(config.healthCheckInterval);
 
   const { workspace } = useWorkspace();
 
