@@ -107,6 +107,7 @@ class SourceGoogleAds(Source):
         }
         for batch in response:
             for row in batch.results:
+                error_keys = []
                 for key in batch.field_mask.paths:
                     try:
                         parts = key.split('.')
@@ -115,8 +116,10 @@ class SourceGoogleAds(Source):
                         typ = self.field_type_dict[type(fld)]
                         props[key] = {'type': typ}
                     except Exception as e:
-                        raise Exception(f"The GAQL contains key '{key}', but there seems to be no information about that field. Try removing '{key}' from the GAQL")
+                        error_keys.append(key)
 
+                if(len(error_keys)>0):
+                    raise Exception(f"The GAQL contains invalid keys, try removing them from the GAQL. Keys: {str(error_keys)}")
                 return json_schema
 
         raise Exception("The reponse has now rows. Please modify the GAQL so that it returns at least one row") 
