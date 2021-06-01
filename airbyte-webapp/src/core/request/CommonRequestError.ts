@@ -1,5 +1,7 @@
 export class CommonRequestError extends Error {
   response: Response;
+  // TODO: Add better error hierarchy
+  _status?: number;
 
   constructor(response: Response, msg?: string) {
     super(response.statusText);
@@ -8,6 +10,6 @@ export class CommonRequestError extends Error {
   }
 
   get status(): number {
-    return this.response.status;
+    return this._status || this.response.status;
   }
 }

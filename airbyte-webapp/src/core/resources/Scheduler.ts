@@ -55,11 +55,10 @@ export default class SchedulerResource
             status: result.status,
           };
 
-          const e = new CommonRequestError(result);
+          const e = new CommonRequestError(result, result.message || "");
           // Generate error with failed status and received logs
-          e.status = 400;
+          e._status = 400;
           e.response = jobInfo;
-          e.message = result.message || "";
 
           throw e;
         }
@@ -97,11 +96,10 @@ export default class SchedulerResource
             status: result.status,
           };
 
-          const e = new CommonRequestError(result);
+          const e = new CommonRequestError(result, result.message || "");
           // Generate error with failed status and received logs
-          e.status = 400;
+          e._status = 400;
           e.response = jobInfo;
-          e.message = result.message || "";
 
           throw e;
         }

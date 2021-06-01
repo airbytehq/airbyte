@@ -12,7 +12,7 @@ export function toInnerModel(
     // @ts-ignore address this case
     const e = new CommonRequestError(result);
     // Generate error with failed status and received logs
-    e.status = 400;
+    e._status = 400;
     // @ts-ignore address this case
     e.response = result.jobInfo;
     throw e;

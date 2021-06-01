@@ -102,10 +102,7 @@ export default class ConnectionResource
         );
 
         if (result.status === "failure") {
-          const e = new CommonRequestError(result);
-          e.status = result.status;
-          e.message = result.message;
-          throw e;
+          throw new CommonRequestError(result, result.message);
         }
 
         return result;
