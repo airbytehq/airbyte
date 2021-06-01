@@ -55,8 +55,8 @@ import org.slf4j.LoggerFactory;
 public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
-  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
 
+  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
   public static String WORKFLOW_ID_FILENAME = "WORKFLOW_ID";
 
   private final Path jobRoot;

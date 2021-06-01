@@ -262,6 +262,8 @@ Make sure to add your actual API key \(the private key\) instead of the placehol
 Then we'll add the `check_method`:
 
 ```python
+import requests
+
 def _call_api(endpoint, token):
     return requests.get("https://cloud.iexapis.com/v1/" + endpoint + "?token=" + token)
 

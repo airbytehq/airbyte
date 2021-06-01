@@ -53,7 +53,7 @@ public class SqlServerOperations implements SqlOperations {
             + "WHERE s.name = '%s' AND t.name = '%s') "
             + "CREATE TABLE %s.%s ( \n"
             + "%s VARCHAR(64) PRIMARY KEY,\n"
-            + "%s VARCHAR(MAX),\n"
+            + "%s NVARCHAR(MAX),\n" // Microsoft SQL Server specific: NVARCHAR can store Unicode meanwhile VARCHAR - not
             + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET()\n"
             + ");\n",
         schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA,
