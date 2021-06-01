@@ -1,0 +1,19 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.{{snakeCase name}}.{{camelCase name}}Destination'
+}
+
+dependencies {
+    implementation project(':airbyte-config:models')
+    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-integrations:bases:base-java')
+
+    // TODO: add more dependencies
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+}

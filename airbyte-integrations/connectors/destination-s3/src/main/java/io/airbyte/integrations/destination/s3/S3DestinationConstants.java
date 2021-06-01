@@ -29,7 +29,7 @@ import java.text.SimpleDateFormat;
 
 public final class S3DestinationConstants {
 
-  public static final int DEFAULT_PART_SIZE_MD = 50;
+  public static final int DEFAULT_PART_SIZE_MD = 5;
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
   private S3DestinationConstants() {}

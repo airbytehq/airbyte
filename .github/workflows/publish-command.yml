@@ -96,6 +96,7 @@ jobs:
           ZENDESK_TALK_TEST_CREDS: ${{ secrets.ZENDESK_TALK_TEST_CREDS }}
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
           PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
+          DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
       - run: |
           docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }}

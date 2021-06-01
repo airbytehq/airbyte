@@ -34,6 +34,7 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
@@ -106,7 +107,7 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     // output to disk before loading into S3. This is not feasible with large input.
     // Data is chunked into parts during the upload. A part is sent off to a queue to be uploaded
     // once it has reached it's configured part size.
-    // Memory consumption is queue capacity * part size = 1 * 50 = 50 MB at current configurations.
+    // Memory consumption is queue capacity * part size = 1 * 5 = 5 MB at current configurations.
     this.uploadManager = new StreamTransferManager(config.getBucketName(), objectKey,
         s3Client)
             .numUploadThreads(1)
@@ -115,7 +116,7 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-        CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL)
+        CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
             .withHeader(getHeaders(sortedHeaders).toArray(new String[0])));
   }
 
@@ -137,17 +138,20 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
   }
 
   static String getOutputPrefix(String bucketPath, AirbyteStream stream) {
+    return getOutputPrefix(bucketPath, stream.getNamespace(), stream.getName());
+  }
+
+  @VisibleForTesting
+  public static String getOutputPrefix(String bucketPath, String namespace, String streamName) {
     List<String> paths = new LinkedList<>();
 
     if (bucketPath != null) {
       paths.add(bucketPath);
     }
-    if (stream.getNamespace() != null) {
-      String streamNamespace = NAME_TRANSFORMER.convertStreamName(stream.getNamespace());
-      paths.add(streamNamespace);
+    if (namespace != null) {
+      paths.add(NAME_TRANSFORMER.convertStreamName(namespace));
     }
-    String streamName = NAME_TRANSFORMER.convertStreamName(stream.getName());
-    paths.add(streamName);
+    paths.add(NAME_TRANSFORMER.convertStreamName(streamName));
 
     return String.join("/", paths);
   }
@@ -182,7 +186,9 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
       List<String> values = new LinkedList<>();
       for (String field : sortedHeaders) {
         JsonNode value = json.get(field);
-        if (value.isValueNode()) {
+        if (value == null) {
+          values.add("");
+        } else if (value.isValueNode()) {
           // Call asText method on value nodes so that proper string
           // representation of json values can be returned by Jackson.
           // Otherwise, CSV printer will just call the toString method,
