@@ -26,7 +26,6 @@
 from typing import Any, Mapping, Tuple
 
 import pendulum as pendulum
-
 # FIXME (Eugene K): register logger as standard python logger
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources.deprecated.client import BaseClient
