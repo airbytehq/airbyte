@@ -23,13 +23,103 @@
 #
 
 import hashlib
-from typing import Dict, List, Sequence, Tuple
+from typing import Dict, List
 
 from normalization import DestinationType
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 
 # minimum length of parent name used for nested streams
 MINIMUM_PARENT_LENGTH = 10
+
+
+class NormalizedNameMetadata:
+    """
+    A record of names collected by the TableNameRegistry
+    """
+
+    def __init__(self, intermediate_schema: str, schema: str, json_path: List[str], stream_name: str, table_name: str):
+        self.intermediate_schema: str = intermediate_schema
+        self.schema: str = schema
+        self.json_path: List[str] = json_path
+        self.stream_name: str = stream_name
+        self.table_name: str = table_name
+
+
+class ConflictedNameMetadata:
+    """
+    A record summary of a name conflict detected and resolved in TableNameRegistry
+    """
+
+    def __init__(self, schema: str, json_path: List[str], table_name_conflict: str, table_name_resolved: str):
+        self.schema: str = schema
+        self.json_path: List[str] = json_path
+        self.table_name_conflict: str = table_name_conflict
+        self.table_name_resolved: str = table_name_resolved
+
+
+class ResolvedNameMetadata:
+    """
+    A record of name collected and resolved by the TableNameRegistry
+    """
+
+    def __init__(self, schema: str, table_name: str, file_name: str):
+        self.schema: str = schema
+        self.table_name: str = table_name
+        self.file_name: str = file_name
+
+
+class NormalizedTablesRegistry(Dict[str, List[NormalizedNameMetadata]]):
+    """
+    An intermediate registry used by TableNameRegistry to detect conflicts in table names per schema
+    """
+
+    def __init__(self, name_transformer: DestinationNameTransformer):
+        super(NormalizedTablesRegistry, self).__init__()
+        self.name_transformer = name_transformer
+
+    def add(
+        self, intermediate_schema: str, schema: str, json_path: List[str], stream_name: str, table_name: str
+    ) -> "NormalizedTablesRegistry":
+        key = self.get_table_key(schema, table_name)
+        if key not in self:
+            self[key] = []
+        self[key].append(NormalizedNameMetadata(intermediate_schema, schema, json_path, stream_name, table_name))
+        return self
+
+    def get_table_key(self, schema: str, table_name: str) -> str:
+        return (
+            f"{self.name_transformer.normalize_schema_name(schema, False, False)}."
+            f"{self.name_transformer.normalize_table_name(table_name, False, False)}"
+        )
+
+    def get_value(self, schema: str, table_name: str) -> List[NormalizedNameMetadata]:
+        return self[self.get_table_key(schema, table_name)]
+
+    def has_collisions(self, key: str) -> bool:
+        return len(self[key]) > 1
+
+
+class NormalizedFilesRegistry(Dict[str, List[NormalizedNameMetadata]]):
+    """
+    An intermediate registry used by TableNameRegistry to detect conflicts in file names
+    """
+
+    def __init__(self):
+        super(NormalizedFilesRegistry, self).__init__()
+
+    def add(
+        self, intermediate_schema: str, schema: str, json_path: List[str], stream_name: str, table_name: str
+    ) -> "NormalizedFilesRegistry":
+        if table_name not in self:
+            self[table_name] = []
+        self[table_name].append(NormalizedNameMetadata(intermediate_schema, schema, json_path, stream_name, table_name))
+        return self
+
+    def get_value(self, table_name: str) -> List[NormalizedNameMetadata]:
+        return self[table_name]
+
+    def has_collisions(self, table_name: str) -> bool:
+        return len(self[table_name]) > 1
 
 
 class TableNameRegistry:
@@ -58,13 +148,11 @@ class TableNameRegistry:
         """
         self.destination_type: DestinationType = destination_type
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
-        # all_files is a mapping of { file -> [ (intermediate_schema, schema, json_path, stream_name, table) ] }
-        self.all_files: Dict[str, List[Tuple[str, str, List[str], str, str]]] = {}
-        # all_tables is a mapping of { schema.table -> [ (intermediate_schema, schema, json_path, stream_name, table) ] }
-        self.all_tables: Dict[str, List[Tuple[str, str, List[str], str, str]]] = {}
-        # Registry is the collision free mapping of schema json_path of the stream to the names that should be used
-        # { schema.json_path.stream_name -> [schema, table, file] }
-        self.registry: Dict[str, List[str]] = {}
+        # Simple XXX registry are collecting "simple" XXX names (with potential collisions)
+        self.simple_file_registry: NormalizedFilesRegistry = NormalizedFilesRegistry()
+        self.simple_table_registry: NormalizedTablesRegistry = NormalizedTablesRegistry(self.name_transformer)
+        # Registry is the collision free (resolved) mapping of schema json_path of the stream to the names that should be used
+        self.registry: Dict[str, ResolvedNameMetadata] = {}
 
     def register_table(self, intermediate_schema: str, schema: str, stream_name: str, json_path: List[str]):
         """
@@ -77,15 +165,7 @@ class TableNameRegistry:
         intermediate_schema = self.name_transformer.normalize_schema_name(intermediate_schema, False, False)
         schema = self.name_transformer.normalize_schema_name(schema, False, False)
         table_name = self.get_simple_table_name(json_path)
-        # Record file name usage
-        if table_name not in self.all_files:
-            self.all_files[table_name] = []
-        self.all_files[table_name].append((intermediate_schema, schema, json_path, stream_name, table_name))
-        # Record schema & table name usage
-        key = self.get_table_key(schema, table_name)
-        if key not in self.all_tables:
-            self.all_tables[key] = []
-        self.all_tables[key].append((intermediate_schema, schema, json_path, stream_name, table_name))
+        self.simple_table_registry.add(intermediate_schema, schema, json_path, stream_name, table_name)
 
     def get_simple_table_name(self, json_path: List[str]) -> str:
         """
@@ -93,7 +173,12 @@ class TableNameRegistry:
         """
         return self.name_transformer.normalize_table_name("_".join(json_path))
 
-    def resolve_names(self) -> List[List[Sequence[str]]]:
+    def resolve_names(self) -> List[ConflictedNameMetadata]:
+        conflicts = self.resolve_table_names()
+        self.resolve_file_names()
+        return conflicts
+
+    def resolve_table_names(self) -> List[ConflictedNameMetadata]:
         """
         Build a collision free registry from all schema/stream_name/json_path collected so far.
         """
@@ -101,65 +186,50 @@ class TableNameRegistry:
         # deal with table name collisions within the same schema first.
         # file name should be equal to table name here
         table_count = 0
-        for key in self.all_tables:
-            values = self.all_tables[key]
-            if len(values) == 1:
+        for key in self.simple_table_registry:
+            for value in self.simple_table_registry[key]:
                 table_count += 1
-                value = values[0]
-                # no collisions
-                intermediate_schema = value[0]
-                schema = value[1]
-                json_path = value[2]
-                stream_name = value[3]
-                table_name = value[4]
-                self.registry[self.get_registry_key(intermediate_schema, json_path, stream_name)] = [
-                    intermediate_schema,
+                if self.simple_table_registry.has_collisions(key):
+                    # handle collisions with unique hashed names
+                    table_name = self.get_hashed_table_name(value.schema, value.json_path, value.stream_name, value.table_name)
+                    resolved_keys.append(ConflictedNameMetadata(value.schema, value.json_path, value.table_name, table_name))
+                else:
+                    table_name = value.table_name
+                self.registry[self.get_registry_key(value.intermediate_schema, value.json_path, value.stream_name)] = ResolvedNameMetadata(
+                    value.intermediate_schema,
                     table_name,
+                    # use table_name as file_name for now
                     table_name,
-                ]
-                self.registry[self.get_registry_key(schema, json_path, stream_name)] = [schema, table_name, table_name]
-            else:
-                # collisions
-                for value in values:
-                    table_count += 1
-                    intermediate_schema = value[0]
-                    schema = value[1]
-                    json_path = value[2]
-                    stream_name = value[3]
-                    table_name = self.get_hashed_table_name(schema, json_path, stream_name, value[4])
-                    resolved_keys.append([schema, value[4], json_path, table_name])
-                    self.registry[self.get_registry_key(intermediate_schema, json_path, stream_name)] = [
-                        intermediate_schema,
-                        table_name,
-                        table_name,
-                    ]
-                    self.registry[self.get_registry_key(schema, json_path, stream_name)] = [schema, table_name, table_name]
+                )
+                self.registry[self.get_registry_key(value.schema, value.json_path, value.stream_name)] = ResolvedNameMetadata(
+                    value.schema,
+                    table_name,
+                    # use table_name as file_name for now
+                    table_name,
+                )
+                self.simple_file_registry.add(value.intermediate_schema, value.schema, value.json_path, value.stream_name, table_name)
         registry_size = len(self.registry)
         assert (table_count * 2) == registry_size, f"Mismatched number of tables {table_count} vs {registry_size} being resolved"
+        return resolved_keys
+
+    def resolve_file_names(self):
         # deal with file name collisions across schemas and update the file name to use in the registry when necessary
         file_count = 0
-        for table_name in self.all_files:
-            values = self.all_files[table_name]
-            if len(values) > 1:
-                for value in values:
-                    file_count += 1
-                    intermediate_schema = value[0]
-                    schema = value[1]
-                    json_path = value[2]
-                    stream_name = value[3]
-                    table_name = self.registry[self.get_registry_key(schema, json_path, stream_name)][1]
-                    file_name = self.resolve_file_name(intermediate_schema, value[4])
-                    self.registry[self.get_registry_key(intermediate_schema, json_path, stream_name)] = [
-                        intermediate_schema,
-                        table_name,
-                        file_name,
-                    ]
-                    file_name = self.resolve_file_name(schema, value[4])
-                    self.registry[self.get_registry_key(schema, json_path, stream_name)] = [schema, table_name, file_name]
-            else:
+        for key in self.simple_file_registry:
+            for value in self.simple_file_registry[key]:
                 file_count += 1
+                if self.simple_file_registry.has_collisions(key):
+                    # handle collisions with unique hashed names including schema
+                    self.registry[
+                        self.get_registry_key(value.intermediate_schema, value.json_path, value.stream_name)
+                    ] = ResolvedNameMetadata(
+                        value.intermediate_schema, value.table_name, self.resolve_file_name(value.intermediate_schema, value.table_name)
+                    )
+                    self.registry[self.get_registry_key(value.schema, value.json_path, value.stream_name)] = ResolvedNameMetadata(
+                        value.schema, value.table_name, self.resolve_file_name(value.schema, value.table_name)
+                    )
+        registry_size = len(self.registry)
         assert (file_count * 2) == registry_size, f"Mismatched number of tables {file_count} vs {registry_size} being resolved"
-        return resolved_keys
 
     def get_hashed_table_name(self, schema: str, json_path: List[str], stream_name: str, table_name: str) -> str:
         """
@@ -177,13 +247,8 @@ class TableNameRegistry:
             )
         return result
 
-    def get_table_key(self, schema: str, table_name: str) -> str:
-        """
-        Build the key string used to index in all_tables field
-        """
-        return f"{self.name_transformer.normalize_schema_name(schema, False, False)}.{self.name_transformer.normalize_table_name(table_name, False, False)}"
-
-    def get_registry_key(self, schema: str, json_path: List[str], stream_name: str) -> str:
+    @staticmethod
+    def get_registry_key(schema: str, json_path: List[str], stream_name: str) -> str:
         """
         Build the key string used to index the registry
         """
@@ -196,7 +261,7 @@ class TableNameRegistry:
         When a catalog has ambiguity, we have to fallback and use schema in the file name too
         (which might increase a risk of truncate operation and thus collisions that we solve by adding a hash of the full names)
         """
-        if len(self.all_files[table_name]) == 1:
+        if len(self.simple_file_registry[table_name]) == 1:
             # no collisions on file naming
             return table_name
         else:
@@ -214,7 +279,7 @@ class TableNameRegistry:
         """
         key = self.get_registry_key(schema, json_path, stream_name)
         if key in self.registry:
-            return self.name_transformer.normalize_schema_name(self.registry[key][0], False, False)
+            return self.name_transformer.normalize_schema_name(self.registry[key].schema, False, False)
         else:
             raise KeyError(f"Registry does not contain an entry for {schema} {json_path} {stream_name}")
 
@@ -224,7 +289,7 @@ class TableNameRegistry:
         """
         key = self.get_registry_key(schema, json_path, stream_name)
         if key in self.registry:
-            table_name = self.registry[key][1]
+            table_name = self.registry[key].table_name
         else:
             raise KeyError(f"Registry does not contain an entry for {schema} {json_path} {stream_name}")
         if suffix:
@@ -239,7 +304,7 @@ class TableNameRegistry:
         """
         key = self.get_registry_key(schema, json_path, stream_name)
         if key in self.registry:
-            file_name = self.registry[key][2]
+            file_name = self.registry[key].file_name
         else:
             raise KeyError(f"Registry does not contain an entry for {schema} {json_path} {stream_name}")
         if suffix:
@@ -247,6 +312,20 @@ class TableNameRegistry:
         else:
             norm_suffix = ""
         return self.name_transformer.normalize_table_name(f"{file_name}{norm_suffix}", False, False)
+
+    def to_dict(self, apply_function=(lambda x: x)) -> Dict:
+        """
+        Converts to a pure dict to serialize as json
+        """
+        result = {}
+        for key in self.registry:
+            value = self.registry[key]
+            result[apply_function(key)] = {
+                apply_function("schema"): apply_function(value.schema),
+                apply_function("table"): apply_function(value.table_name),
+                apply_function("file"): apply_function(value.file_name),
+            }
+        return result
 
 
 def hash_json_path(json_path: List[str]) -> str:

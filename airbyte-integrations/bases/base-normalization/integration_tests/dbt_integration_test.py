@@ -101,8 +101,8 @@ class DbtIntegrationTest(object):
 
     @staticmethod
     def change_current_test_dir(request):
-        # This makes the test run whether it is executed from the tests folder
-        # (with pytest/gradle) or from the base-normalization folder (through pycharm)
+        # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
+        # or from the base-normalization folder (through pycharm)
         integration_tests_dir = os.path.join(request.fspath.dirname, "integration_tests")
         if os.path.exists(integration_tests_dir):
             os.chdir(integration_tests_dir)

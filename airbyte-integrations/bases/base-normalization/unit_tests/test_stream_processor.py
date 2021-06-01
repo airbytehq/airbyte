@@ -35,7 +35,8 @@ from normalization.transform_catalog.table_name_registry import TableNameRegistr
 
 @pytest.fixture(scope="function", autouse=True)
 def before_tests(request):
-    # This makes the test run whether it is executed from the tests folder (with pytest/gradle) or from the base-normalization folder (through pycharm)
+    # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
+    # or from the base-normalization folder (through pycharm)
     unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
     if os.path.exists(unit_tests_dir):
         os.chdir(unit_tests_dir)

@@ -83,7 +83,10 @@ class CatalogProcessor:
                 raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
             stream_processor.collect_table_names()
         for conflict in tables_registry.resolve_names():
-            print(f"WARN: Resolving conflict: {conflict[0]}.{conflict[1]} from '{'.'.join(conflict[2])}' into {conflict[3]}")
+            print(
+                f"WARN: Resolving conflict: {conflict.schema}.{conflict.table_name_conflict} "
+                f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}"
+            )
         for stream_processor in stream_processors:
             raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=False)
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
@@ -109,7 +112,8 @@ class CatalogProcessor:
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
             stream_config = get_field(configured_stream, "stream", "Invalid Stream: 'stream' is not defined in Catalog streams")
 
-            # The logic here matches the logic in JdbcBufferedConsumerFactory.java. Any modifications need to be reflected there and vice versa.
+            # The logic here matches the logic in JdbcBufferedConsumerFactory.java.
+            # Any modifications need to be reflected there and vice versa.
             schema = default_schema
             if "namespace" in stream_config:
                 schema = stream_config["namespace"]

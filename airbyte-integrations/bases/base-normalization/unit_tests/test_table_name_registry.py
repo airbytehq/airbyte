@@ -36,7 +36,8 @@ from normalization.transform_catalog.table_name_registry import TableNameRegistr
 
 @pytest.fixture(scope="function", autouse=True)
 def before_tests(request):
-    # This makes the test run whether it is executed from the tests folder (with pytest/gradle) or from the base-normalization folder (through pycharm)
+    # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
+    # or from the base-normalization folder (through pycharm)
     unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
     if os.path.exists(unit_tests_dir):
         os.chdir(unit_tests_dir)
@@ -98,13 +99,13 @@ def test_resolve_names(destination_type: DestinationType, catalog_file: str):
             raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
         stream_processor.collect_table_names()
     for conflict in tables_registry.resolve_names():
-        print(f"WARN: Resolving conflict: {conflict[0]}.{conflict[1]} from '{'.'.join(conflict[2])}' into {conflict[3]}")
-    apply_function = None
+        print(
+            f"WARN: Resolving conflict: {conflict.schema}.{conflict.table_name_conflict} "
+            f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}"
+        )
+    apply_function = identity
     if DestinationType.SNOWFLAKE.value == destination_type.value:
         apply_function = str.upper
-        for key in list(tables_registry.registry.keys()):
-            tables_registry.registry[key.upper()] = tables_registry.registry[key]
-            del tables_registry.registry[key]
     elif DestinationType.REDSHIFT.value == destination_type.value:
         apply_function = str.lower
     if os.path.exists(f"resources/{catalog_file}_expected_{integration_type.lower()}_names.json"):
@@ -112,10 +113,14 @@ def test_resolve_names(destination_type: DestinationType, catalog_file: str):
     else:
         expected_names = read_json(f"resources/{catalog_file}_expected_names.json", apply_function)
 
-    assert tables_registry.registry == expected_names
+    assert tables_registry.to_dict(apply_function) == expected_names
 
 
-def read_json(input_path: str, apply_function=None):
+def identity(x):
+    return x
+
+
+def read_json(input_path: str, apply_function=(lambda x: x)):
     with open(input_path, "r") as file:
         contents = file.read()
     if apply_function:
@@ -179,7 +184,8 @@ def test_get_simple_table_name(json_path: List[str], expected_postgres: str, exp
 )
 def test_get_nested_hashed_table_name(json_path: List[str], expected_postgres: str, expected_bigquery: str):
     """
-    Checks how to generate a unique name with strategies of combining all fields into a single table name for the user to (somehow) identify and recognize what data is available in there.
+    Checks how to generate a unique name with strategies of combining all fields into a single table name for the user to (somehow)
+    identify and recognize what data is available in there.
     A set of complicated rules are done in order to choose what parts to truncate or what to leave and handle
     name collisions.
     """
