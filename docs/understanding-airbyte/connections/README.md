@@ -13,7 +13,7 @@ A sync mode governs how Airbyte reads from a source and writes to a destination.
 
 1.  The first part of the name denotes how the source connector reads data from the source:
   
-  * Incremental: Read records added to the source since the last sync job.
+  * Incremental: Read records added to the source since the last sync job. (The first sync using Incremental is equivalent to a Full Refresh)
       * Method 1: Using a cursor. Generally supported by all sources.
       * Method 2: Using change data capture. Only supported by some sources. See [CDC](../cdc.md) for more info.
   * Full Refresh: Read everything in the source.
