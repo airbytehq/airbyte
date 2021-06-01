@@ -35,18 +35,19 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 class OktaStream(HttpStream, ABC):
+    page_size = 200
+
     def __init__(self, url_base: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Inject custom url base to the stream
         self._url_base = url_base
-    
-    page_size = 200
 
     @property
     def url_base(self) -> str:
         return self._url_base
 
-    def next_page_token(self,
+    def next_page_token(
+        self,
         response: requests.Response
     ) -> Optional[Mapping[str, Any]]:
         # Follow the next page cursor
@@ -71,12 +72,13 @@ class OktaStream(HttpStream, ABC):
             **(next_page_token or {}),
         }
 
-    def parse_response(self,
+    def parse_response(
+        self,
         response: requests.Response,
         **kwargs,
     ) -> Iterable[Mapping]:
         yield from response.json()
-    
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         # The rate limit resets on the timestamp indicated
         # https://developer.okta.com/docs/reference/rate-limits
@@ -105,7 +107,7 @@ class IncrementalOktaStream(OktaStream, ABC):
                 current_stream_state.get(self.cursor_field, lowest_date),
             )
         }
-    
+
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -142,7 +144,7 @@ class Users(IncrementalOktaStream):
 class SourceOkta(AbstractSource):
     def initialize_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
         return TokenAuthenticator(config['token'], auth_method='SSWS')
-    
+
     def get_url_base(self, config: Mapping[str, Any]) -> str:
         return parse.urljoin(config['base_url'], '/api/v1/')
 
@@ -162,7 +164,7 @@ class SourceOkta(AbstractSource):
                 return True, None
 
             return False, response.json()
-        except Exception as e:
+        except Exception:
             return False, 'Failed to authenticate with the provided credentials'
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
