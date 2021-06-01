@@ -100,7 +100,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
-        default_params = {"sort_field": self.cursor_field, "sort_dir": "ASC"}
+        default_params = {"since_id": self.cursor_field, "sort_dir": "ASC"}
         since_value = stream_state.get(self.cursor_field)
         if since_value:
             default_params[f"since_{self.cursor_field}"] = since_value
