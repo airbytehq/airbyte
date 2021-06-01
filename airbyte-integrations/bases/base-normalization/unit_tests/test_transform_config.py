@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
@@ -36,7 +38,8 @@ class TestTransformConfig:
 
     @pytest.fixture(scope="class", autouse=True)
     def before_all_tests(self, request):
-        # This makes the test run whether it is executed from the tests folder (with pytest/gradle) or from the base-normalization folder (through pycharm)
+        # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
+        # or from the base-normalization folder (through pycharm)
         unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
         if os.path.exists(unit_tests_dir):
             os.chdir(unit_tests_dir)
@@ -95,7 +98,7 @@ class TestTransformConfig:
 
     def test_transform_snowflake(self):
         input = {
-            "host": "123abc.us-east-7.aws.snowflakecomputing.com",
+            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
             "role": "AIRBYTE_ROLE",
             "warehouse": "AIRBYTE_WAREHOUSE",
             "database": "AIRBYTE_DATABASE",

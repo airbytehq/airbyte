@@ -1,4 +1,4 @@
-# Connectors
+# Connector Catalog
 
 ## Connector grades
 Airbyte uses a grading system for connectors to help users understand what to expect from a connector. There are three grades, explained below: 

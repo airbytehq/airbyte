@@ -16,6 +16,7 @@ import SourceDefinitionResource, {
 import { SourceResource } from "core/resources/Source";
 import UpgradeAllButton from "./UpgradeAllButton";
 import useNotification from "components/hooks/services/useNotification";
+import HeadTitle from "components/HeadTitle";
 
 const SourcesView: React.FC = () => {
   const [successUpdate, setSuccessUpdate] = useState(false);
@@ -72,9 +73,11 @@ const SourcesView: React.FC = () => {
         }: CellProps<{
           latestDockerImageTag: string;
           dockerImageTag: string;
+          icon?: string;
         }>) => (
           <ConnectorCell
             connectorName={cell.value}
+            img={row.original.icon}
             hasUpdate={
               row.original.latestDockerImageTag !== row.original.dockerImageTag
             }
@@ -154,6 +157,7 @@ const SourcesView: React.FC = () => {
 
   return (
     <>
+      <HeadTitle titles={[{ id: "sidebar.admin" }, { id: "admin.sources" }]} />
       {usedSourcesDefinitions.length ? (
         <Block>
           <Title bold>

@@ -65,10 +65,14 @@ type ConnectionFormProps = {
   isEditMode?: boolean;
   isLoading?: boolean;
   additionalSchemaControl?: React.ReactNode;
+  sourceIcon?: string;
+  destinationIcon?: string;
 };
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
+  sourceIcon,
+  destinationIcon,
   onReset,
   className,
   errorMessage,
@@ -128,14 +132,14 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 id: "form.sourceConnector",
               })}
             >
-              <Connector name={source.name} />
+              <Connector name={source.name} icon={sourceIcon} />
             </ConnectorLabel>
             <ConnectorLabel
               label={formatMessage({
                 id: "form.destinationConnector",
               })}
             >
-              <Connector name={destination.name} />
+              <Connector name={destination.name} icon={destinationIcon} />
             </ConnectorLabel>
             <Field name="frequency">
               {({ field }: FieldProps<string>) => (

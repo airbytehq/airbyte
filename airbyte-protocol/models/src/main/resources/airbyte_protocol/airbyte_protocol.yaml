@@ -236,6 +236,13 @@ definitions:
         description: If the connector supports incremental mode or not.
         type: boolean
       # Destination Connectors Properties
+      #Normalization is currently implemented using dbt so it requires `supportsDBT` to be true for this to be true.
+      supportsNormalization:
+        description: If the connector supports normalization or not.
+        type: boolean
+      supportsDBT:
+        description: If the connector supports DBT or not.
+        type: boolean
       supported_destination_sync_modes:
         description: List of destination sync modes supported by the connector
         type: array

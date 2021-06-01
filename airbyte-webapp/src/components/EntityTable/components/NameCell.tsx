@@ -11,6 +11,7 @@ type IProps = {
   enabled?: boolean;
   status?: string | null;
   icon?: boolean;
+  img?: string;
 };
 
 const Content = styled.div`
@@ -37,7 +38,7 @@ const Image = styled(ImageBlock)`
   margin-right: 6px;
 `;
 
-const NameCell: React.FC<IProps> = ({ value, enabled, status, icon }) => {
+const NameCell: React.FC<IProps> = ({ value, enabled, status, icon, img }) => {
   const formatMessage = useIntl().formatMessage;
   const title =
     status === Status.EMPTY
@@ -68,7 +69,7 @@ const NameCell: React.FC<IProps> = ({ value, enabled, status, icon }) => {
       ) : (
         <Space />
       )}
-      {icon && <Image small />}
+      {icon && <Image small img={img} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );

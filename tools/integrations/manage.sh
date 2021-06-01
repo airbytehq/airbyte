@@ -33,7 +33,7 @@ cmd_build() {
   ./gradlew "$(_to_gradle_path "$path" clean)"
   ./gradlew "$(_to_gradle_path "$path" build)"
 
-  [[ "$path" =~ ^airbyte-integrations/bases* ]] || ./gradlew "$(_to_gradle_path "$path" integrationTest)"
+  ./gradlew "$(_to_gradle_path "$path" integrationTest)"
 }
 
 cmd_publish() {
@@ -50,7 +50,7 @@ cmd_publish() {
   echo "image_name $image_name"
   echo "$versioned_image $versioned_image"
   echo "latest_image $latest_image"
-  
+
   docker tag "$image_name:dev" "$versioned_image"
   docker tag "$image_name:dev" "$latest_image"
 

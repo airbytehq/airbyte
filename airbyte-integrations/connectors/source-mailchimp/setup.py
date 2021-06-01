@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -30,12 +32,10 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=[
-        "airbyte-protocol",
-        "base-python",
-        "pydantic==1.6.1",
+        "airbyte-cdk~=0.1",
         "mailchimp3==3.0.14",
-        "python-dateutil==2.8.1",
-        "pytest==6.1.2",
+        "pytest~=6.1",
     ],
     package_data={"": ["*.json", "schemas/*.json"]},
+    extras_require={"tests": ["pytest~=6.1"]},
 )

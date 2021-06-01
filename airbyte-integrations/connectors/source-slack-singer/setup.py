@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -28,7 +30,13 @@ setup(
     description="Source implementation for Slack API, built on the Singer tap implementation",
     author="Airbyte",
     author_email="contact@airbyte.io",
-    install_requires=["tap-slack==1.0.0", "slack-sdk==3.0.0", "airbyte-protocol", "base-singer", "base-python"],
+    install_requires=[
+        "tap-slack @ https://github.com/airbytehq/tap-slack/tarball/v1.0.1-airbyte",
+        "slack-sdk==3.0.0",
+        "airbyte-protocol",
+        "base-singer",
+        "base-python",
+    ],
     packages=find_packages(),
     package_data={"": ["*.json"]},
 )

@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
+import { Routes } from "../../../routes";
 import PageTitle from "components/PageTitle";
 import DestinationForm from "./components/DestinationForm";
-import { Routes } from "../../../routes";
 import useRouter from "components/hooks/useRouterHook";
 import config from "config";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";
@@ -12,6 +12,7 @@ import useDestination from "components/hooks/services/useDestinationHook";
 import { FormPageContent } from "components/SourceAndDestinationsBlocks";
 import { JobInfo } from "core/resources/Scheduler";
 import { ConnectionConfiguration } from "core/domain/connection";
+import HeadTitle from "components/HeadTitle";
 
 const CreateDestinationPage: React.FC = () => {
   const { push } = useRouter();
@@ -28,16 +29,6 @@ const CreateDestinationPage: React.FC = () => {
     }
   );
   const { createDestination } = useDestination();
-
-  const destinationsDropDownData = useMemo(
-    () =>
-      destinationDefinitions.map((item) => ({
-        text: item.name,
-        value: item.destinationDefinitionId,
-        img: "/default-logo-catalog.svg",
-      })),
-    [destinationDefinitions]
-  );
 
   const onSubmitDestinationForm = async (values: {
     name: string;
@@ -65,6 +56,7 @@ const CreateDestinationPage: React.FC = () => {
 
   return (
     <>
+      <HeadTitle titles={[{ id: "destinations.newDestinationTitle" }]} />
       <PageTitle
         withLine
         title={<FormattedMessage id="destinations.newDestinationTitle" />}
@@ -73,7 +65,7 @@ const CreateDestinationPage: React.FC = () => {
         <DestinationForm
           afterSelectConnector={() => setErrorStatusRequest(null)}
           onSubmit={onSubmitDestinationForm}
-          dropDownData={destinationsDropDownData}
+          destinationDefinitions={destinationDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
           jobInfo={errorStatusRequest?.response}

@@ -14,7 +14,8 @@ The Airbyte Protocol outputs records from sources. Records from `UPDATE` stateme
 
 We add some metadata columns for CDC sources:
 
-* `ab_cdc_lsn` is the point in the log where the record was retrieved
+* `ab_cdc_lsn` (specific to postgres source) is the point in the log where the record was retrieved
+* `ab_cdc_log_file` & `ab_cdc_log_pos` (specific to mysql source) is the file name and position in the file where the record was retrieved
 * `ab_cdc_updated_at` is the timestamp for the database transaction that resulted in this record change and is present for records from `DELETE`/`INSERT`/`UPDATE` statements 
 * `ab_cdc_deleted_at` is the timestamp for the database transaction that resulted in this record change and is only present for records from `DELETE` statements
 
@@ -29,11 +30,11 @@ We add some metadata columns for CDC sources:
 
 ## Current Support
 
-* [Postgres](../integrations/sources/postgres.md)
+* [Postgres](../integrations/sources/postgres.md) (For a quick video overview of CDC on Postgres, click [here](https://www.youtube.com/watch?v=NMODvLgZvuE&ab_channel=Airbyte))
+* [MySQL](../integrations/sources/mysql.md)
 
 ## Coming Soon
 
-* [MySQL](../integrations/sources/mysql.md)
 * [SQL Server / MSSQL](../integrations/sources/mssql.md)
 * Oracle DB
 * Please [create a ticket](https://github.com/airbytehq/airbyte/issues/new/choose) if you need CDC support on another database!

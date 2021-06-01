@@ -1,7 +1,7 @@
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import ru.vyarus.gradle.plugin.python.task.PythonTask;
+import ru.vyarus.gradle.plugin.python.task.PythonTask
 
 class AirbytePythonConfiguration {
     String moduleDirectory
@@ -36,7 +36,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             module = "black"
             // the line length should match .isort.cfg
             command = ". --line-length 140"
-            dependsOn project.rootProject.spotlessPythonApply
+            dependsOn project.rootProject.licenseFormat
             dependsOn project.isortFormat
         }
 

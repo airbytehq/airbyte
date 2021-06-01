@@ -841,6 +841,29 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/state/get:
+    post:
+      tags:
+        - connection
+      summary: Fetch the current state for a connection.
+      operationId: getState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionState"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/connections/delete:
     post:
       tags:
@@ -904,6 +927,27 @@ paths:
                 $ref: "#/components/schemas/JobInfoRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/check:
+    post:
+      tags:
+        - operation
+      summary: Check if an operation to be created is valid
+      operationId: checkOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationCreateOrUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckOperationRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/operations/create:
@@ -1121,6 +1165,27 @@ paths:
                 $ref: "#/components/schemas/WbConnectionRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/create:
+    post:
+      tags:
+        - web_backend
+      summary: Create a connection
+      operationId: webBackendCreateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/connections/update:
@@ -1924,6 +1989,15 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+    WebBackendConnectionCreate:
+      allOf:
+        - $ref: "#/components/schemas/ConnectionCreate"
+        - type: object
+          properties:
+            withOperations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OperationCreate"
     ConnectionUpdate:
       type: object
       required:
@@ -1953,6 +2027,10 @@ components:
           properties:
             withRefreshedCatalog:
               type: boolean
+            operations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OperationCreateOrUpdate"
     ConnectionRead:
       type: object
       required:
@@ -2052,6 +2130,18 @@ components:
           type: string
         operatorConfiguration:
           $ref: "#/components/schemas/OperatorConfiguration"
+    OperationCreateOrUpdate:
+      type: object
+      required:
+        - name
+        - operatorConfiguration
+      properties:
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
     OperationRead:
       type: object
       required:
@@ -2110,9 +2200,23 @@ components:
       properties:
         gitRepoUrl:
           type: string
+        gitRepoBranch:
+          type: string
         dockerImage:
           type: string
         dbtArguments:
+          type: string
+    CheckOperationRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        message:
           type: string
     # LOGS
     LogType:
@@ -2424,6 +2528,17 @@ components:
           type: string
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+    ConnectionState:
+      type: object
+      required:
+        - connectionId
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        state:
+          $ref: "#/components/schemas/ConnectionStateObject"
+    ConnectionStateObject:
+      type: object
     # Web Backend
     WbConnectionRead:
       type: object

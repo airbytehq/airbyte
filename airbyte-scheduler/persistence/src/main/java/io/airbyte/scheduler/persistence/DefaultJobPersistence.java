@@ -347,14 +347,14 @@ public class DefaultJobPersistence implements JobPersistence {
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "CAST(jobs.config_type AS VARCHAR) in " + Sqls.toSqlInFragment(Job.REPLICATION_TYPES) + " AND " +
             "scope = ? AND " +
-            "CAST(jobs.status AS VARCHAR) = ? " +
-            "ORDER BY jobs.created_at DESC LIMIT 1",
-            connectionId.toString(),
-            Sqls.toSqlName(JobStatus.SUCCEEDED))
+            "output->'sync'->'state' IS NOT NULL " +
+            "ORDER BY attempts.created_at DESC LIMIT 1",
+            connectionId.toString())
         .stream()
         .findFirst()
         .flatMap(r -> getJobOptional(ctx, r.get("job_id", Long.class)))
-        .flatMap(Job::getSuccessOutput)
+        .flatMap(Job::getLastAttemptWithOutput)
+        .flatMap(Attempt::getOutput)
         .map(JobOutput::getSync)
         .map(StandardSyncOutput::getState));
   }

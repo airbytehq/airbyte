@@ -282,7 +282,7 @@ class BigQueryDestinationTest {
         .build();
 
     return StreamSupport
-        .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
+        .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
         .map(v -> v.get("TABLE_NAME").getStringValue()).collect(Collectors.toSet());
   }
 
@@ -301,10 +301,10 @@ class BigQueryDestinationTest {
         QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 
-    BigQueryDestination.executeQuery(bigquery, queryConfig);
+    BigQueryUtils.executeQuery(bigquery, queryConfig);
 
     return StreamSupport
-        .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
+        .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
         .map(v -> v.get(JavaBaseConstants.COLUMN_NAME_DATA).getStringValue())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());

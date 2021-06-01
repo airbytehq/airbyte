@@ -1,16 +1,11 @@
 import React, { useContext, useMemo } from "react";
 
-import { DropDownRow } from "components";
 import { WidgetConfigMap } from "core/form/types";
 
 type Context = {
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
-  allowChangeConnector?: boolean;
-  onChangeServiceType?: (id: string) => void;
-  dropDownData: DropDownRow.IDataItem[];
-  documentationUrl?: string;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
@@ -21,7 +16,6 @@ type Context = {
 
 const context: Context = {
   formType: "source",
-  dropDownData: [],
   widgetsInfo: {},
   setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
   unfinishedFlows: {},
@@ -39,10 +33,6 @@ const ServiceFormContextProvider: React.FC<{
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
-  dropDownData: DropDownRow.IDataItem[];
-  documentationUrl?: string;
-  allowChangeConnector?: boolean;
-  onChangeServiceType?: (id: string) => void;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
 }> = ({ children, widgetsInfo, setUiWidgetsInfo, ...props }) => {
   const ctx = useMemo<Context>(() => {
@@ -53,9 +43,6 @@ const ServiceFormContextProvider: React.FC<{
       formType: props.formType,
       isLoadingSchema: props.isLoadingSchema,
       isEditMode: props.isEditMode,
-      onChangeServiceType: props.onChangeServiceType,
-      dropDownData: props.dropDownData,
-      documentationUrl: props.documentationUrl,
       unfinishedFlows: unfinishedFlows,
       addUnfinishedFlow: (path, info) =>
         setUiWidgetsInfo("_common.unfinishedFlows", {

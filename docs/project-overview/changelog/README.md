@@ -1,8 +1,9 @@
 # Changelog
 
 Airbyte is comprised of 2 parts:
-* Core is any non-connector code. It includes the scheduler, workers, api, web app, and the Airbyte protocol. Here is the [changelog for Core](./platform.md). 
-* Connectors that run into Docker containers. Here is the [changelog for the connectors](./connectors.md). 
+
+* Core is any non-connector code. It includes the scheduler, workers, api, web app, and the Airbyte protocol. Here is the [changelog for Core](platform.md). 
+* Connectors that run into Docker containers. Here is the [changelog for the connectors](connectors.md). 
 
 ## Airbyte Core Releases
 

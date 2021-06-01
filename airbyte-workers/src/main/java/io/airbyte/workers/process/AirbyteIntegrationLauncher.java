@@ -38,56 +38,59 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final String jobId;
   private final int attempt;
   private final String imageName;
-  private final ProcessBuilderFactory pbf;
+  private final ProcessFactory processFactory;
 
-  public AirbyteIntegrationLauncher(long jobId, int attempt, final String imageName, final ProcessBuilderFactory pbf) {
-    this(String.valueOf(jobId), attempt, imageName, pbf);
+  public AirbyteIntegrationLauncher(long jobId, int attempt, final String imageName, final ProcessFactory processFactory) {
+    this(String.valueOf(jobId), attempt, imageName, processFactory);
   }
 
-  public AirbyteIntegrationLauncher(String jobId, int attempt, final String imageName, final ProcessBuilderFactory pbf) {
+  public AirbyteIntegrationLauncher(String jobId, int attempt, final String imageName, final ProcessFactory processFactory) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
-    this.pbf = pbf;
+    this.processFactory = processFactory;
   }
 
   @Override
-  public ProcessBuilder spec(final Path jobRoot) throws WorkerException {
-    return pbf.create(
+  public Process spec(final Path jobRoot) throws WorkerException {
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        null,
         "spec");
   }
 
   @Override
-  public ProcessBuilder check(final Path jobRoot, final String configFilename) throws WorkerException {
-    return pbf.create(
+  public Process check(final Path jobRoot, final String configFilename) throws WorkerException {
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        null,
         "check",
         "--config", configFilename);
   }
 
   @Override
-  public ProcessBuilder discover(final Path jobRoot, final String configFilename) throws WorkerException {
-    return pbf.create(
+  public Process discover(final Path jobRoot, final String configFilename) throws WorkerException {
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        null,
         "discover",
         "--config", configFilename);
   }
 
   @Override
-  public ProcessBuilder read(final Path jobRoot,
-                             final String configFilename,
-                             final String catalogFilename,
-                             final String stateFilename)
+  public Process read(final Path jobRoot,
+                      final String configFilename,
+                      final String catalogFilename,
+                      final String stateFilename)
       throws WorkerException {
     final List<String> arguments = Lists.newArrayList(
         "read",
@@ -99,21 +102,23 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
       arguments.add(stateFilename);
     }
 
-    return pbf.create(
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        null,
         arguments);
   }
 
   @Override
-  public ProcessBuilder write(Path jobRoot, String configFilename, String catalogFilename) throws WorkerException {
-    return pbf.create(
+  public Process write(Path jobRoot, String configFilename, String catalogFilename) throws WorkerException {
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        null,
         "write",
         "--config", configFilename,
         "--catalog", catalogFilename);
