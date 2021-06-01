@@ -25,7 +25,9 @@
 package io.airbyte.workers.process;
 
 import com.google.common.collect.Lists;
+import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.process.ProcessFactory.CreateProcessConfig;
 import java.nio.file.Path;
 import java.util.List;
 import org.slf4j.Logger;
@@ -63,10 +65,12 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public Process check(final Path jobRoot, final String configFilename) throws WorkerException {
+  public Process check(final Path jobRoot, final StandardCheckConnectionInput input, final String configFilename) throws WorkerException {
+    LOGGER.info("======= integration launcher input: {}", input);
     return processFactory.create(
         jobId,
         attempt,
+        input,
         jobRoot,
         imageName,
         null,

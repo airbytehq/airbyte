@@ -12,3 +12,14 @@ properties:
     description: Integration specific blob. Must be a valid JSON string.
     type: object
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  uuid:
+    description: Id of the connector resource. Used by the worker to retrieve connection configuration.
+    type: object
+    existingJavaType: java.util.UUID
+  connectorType:
+    description: Connector type. Used by the worker to retrieve connection configuration.
+    type: string
+# Todo(Davin): How do we make this serialisable?
+#    enum: [ "source", "destination" ]
+
+

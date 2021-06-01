@@ -31,6 +31,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -52,7 +53,7 @@ public class KubeProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+  public Process create(String jobId, int attempt, final StandardCheckConnectionInput input, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
       throws WorkerException {
 
     try {

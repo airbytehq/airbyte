@@ -36,6 +36,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.process.ProcessFactory.CreateProcessConfig;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import java.io.InputStream;
@@ -66,11 +67,14 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   @Override
   public StandardCheckConnectionOutput run(StandardCheckConnectionInput input, Path jobRoot) throws WorkerException {
 
-    final JsonNode configDotJson = input.getConnectionConfiguration();
-    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+    // Remove the standard check connection input.
+    // Remove write here.
+
+//    final JsonNode configDotJson = input.getConnectionConfiguration();
+//    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
 
     try {
-      process = integrationLauncher.check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME);
+      process = integrationLauncher.check(jobRoot, input, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
@@ -98,7 +102,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
       }
 
     } catch (Exception e) {
-      throw new WorkerException("Error while getting checking connection.");
+      throw new WorkerException("Error while getting checking connection.", e);
     }
   }
 

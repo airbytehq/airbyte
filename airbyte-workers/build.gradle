@@ -33,6 +33,7 @@ dependencies {
     implementation 'org.apache.ant:ant:1.10.10'
     implementation 'io.fabric8:kubernetes-client:5.3.1'
 
+    implementation project(':airbyte-api')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-db')
     implementation project(':airbyte-json-validation')

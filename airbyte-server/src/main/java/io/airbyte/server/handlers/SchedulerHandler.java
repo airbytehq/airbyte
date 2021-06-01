@@ -169,14 +169,19 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection updatedSource = configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getConnectionConfiguration());
 
-    final ConnectorSpecification spec = getSpecFromSourceDefinitionId(updatedSource.getSourceDefinitionId());
+    UUID srcDefId = updatedSource.getSourceDefinitionId();
+    final ConnectorSpecification spec = getSpecFromSourceDefinitionId(srcDefId);
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedSource.getConfiguration());
 
-    final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
-        .connectionConfiguration(updatedSource.getConfiguration())
-        .sourceDefinitionId(updatedSource.getSourceDefinitionId());
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(srcDefId);
+    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
 
-    return checkSourceConnectionFromSourceCreate(sourceCoreConfig);
+    final SourceConnection source = new SourceConnection()
+        .withSourceDefinitionId(srcDefId)
+        .withConfiguration(updatedSource.getConfiguration())
+        .withSourceId(sourceUpdate.getSourceId());
+
+    return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName));
   }
 
   public CheckConnectionRead checkDestinationConnectionFromDestinationId(DestinationIdRequestBody destinationIdRequestBody)

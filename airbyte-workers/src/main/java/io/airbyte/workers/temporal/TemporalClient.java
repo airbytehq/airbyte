@@ -39,12 +39,17 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.process.DockerProcessFactory;
 import io.temporal.client.WorkflowClient;
 import java.nio.file.Path;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TemporalClient {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TemporalClient.class);
 
   private final Path workspaceRoot;
   private final WorkflowClient client;
@@ -78,8 +83,13 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage());
-    final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
+    final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
+        .withConnectionConfiguration(config.getConnectionConfiguration())
+        .withUuid(config.getUuid())
+        .withConnectorType(config.getConnectorType());
+
+    LOGGER.info("===== temporal client input: {}", input);
     return execute(jobRunConfig,
         () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
   }

@@ -42,8 +42,11 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerClient {
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSynchronousSchedulerClient.class);
 
   private final TemporalClient temporalClient;
   private final JobTracker jobTracker;
@@ -55,9 +58,14 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
   @Override
   public SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(final SourceConnection source, final String dockerImage) {
+    LOGGER.info("====== synchronous client source connection: {}", source);
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(source.getConfiguration())
+        .withUuid(source.getSourceId())
+        .withConnectorType("Source")
         .withDockerImage(dockerImage);
+
+    LOGGER.info("====== synchronous scheduler client input: {}", jobCheckConnectionConfig);
 
     return execute(
         ConfigType.CHECK_CONNECTION_SOURCE,
@@ -71,6 +79,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
                                                                                                 final String dockerImage) {
     final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
         .withConnectionConfiguration(destination.getConfiguration())
+        .withUuid(destination.getDestinationId())
+        .withConnectorType("Destination")
         .withDockerImage(dockerImage);
 
     return execute(

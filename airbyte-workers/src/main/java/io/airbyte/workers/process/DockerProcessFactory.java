@@ -24,13 +24,22 @@
 
 package io.airbyte.workers.process;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.ApiClient;
+import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.DestinationIdRequestBody;
+import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -38,6 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,12 +89,20 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+  public Process create(String jobId, int attempt, StandardCheckConnectionInput input, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
       throws WorkerException {
+    // do we have to keep the job root?
+    if (input != null) {
+      LOGGER.info("=========== pinging api from inside process factory!");
+      writeConnectionConfig(input, jobRoot);
+    } else {
+      LOGGER.info("=========== not pinging api from inside process factory!");
+    }
 
     if (!checkImageExists(imageName)) {
       throw new WorkerException("Could not find image: " + imageName);
     }
+    LOGGER.info("=========== after check image exists");
 
     final List<String> cmd =
         Lists.newArrayList(
@@ -114,6 +132,33 @@ public class DockerProcessFactory implements ProcessFactory {
       return new ProcessBuilder(cmd).start();
     } catch (IOException e) {
       throw new WorkerException(e.getMessage(), e);
+    }
+  }
+
+  private void writeConnectionConfig(StandardCheckConnectionInput input, Path jobRoot) {
+    var apiClient = new AirbyteApiClient(
+        new ApiClient().setScheme("http")
+            .setHost("airbyte-server")
+            .setPort(8001)
+            .setBasePath("/api"));
+    LOGGER.info("======= Using new flow. input: {}", input);
+    JsonNode connConfig;
+    try {
+      UUID uuid = input.getUuid();
+      if (input.getConnectorType().equals("Source")) {
+        var req = new SourceIdRequestBody().sourceId(uuid);
+        connConfig =  apiClient.getSourceApi().getSource(req).getConnectionConfiguration();
+      } else {
+        var req = new DestinationIdRequestBody().destinationId(uuid);
+        connConfig =  apiClient.getDestinationApi().getDestination(req).getConnectionConfiguration();
+      }
+      LOGGER.info("=========== before writing file, conn config: {}", connConfig);
+
+      IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(connConfig));
+      LOGGER.info("=========== done writing file");
+    } catch (ApiException e) {
+      LOGGER.info("=========== error pinging api: {}", e);
+      throw new RuntimeException(e);
     }
   }
 

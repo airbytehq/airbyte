@@ -38,8 +38,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigRepository {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
 
   private final ConfigPersistence persistence;
 
@@ -159,6 +163,7 @@ public class ConfigRepository {
   }
 
   public void writeSourceConnection(final SourceConnection source) throws JsonValidationException, IOException {
+    LOGGER.info("writing source connection: {}", source);
     persistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
   }
 
