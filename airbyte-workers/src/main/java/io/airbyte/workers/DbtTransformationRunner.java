@@ -88,7 +88,7 @@ public class DbtTransformationRunner implements AutoCloseable {
       if (!dbtConfig.getDbtArguments().contains("--project-dir=")) {
         dbtArguments.add("--project-dir=/data/job/transform/git_repo/");
       }
-      process = processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), files, "/bin/bash", dbtArguments);
+      process = processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", dbtArguments);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

@@ -31,6 +31,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
@@ -43,10 +44,26 @@ public class KubeProcessBuilderFactoryPOC {
 
   public static void testSyncWorkflow() throws IOException, InterruptedException {
     LOGGER.info("Launching source process...");
-    Process src = new KubePodProcess(KUBE_CLIENT, "src", "default", "np_source:dev", 9002, 9003, false);
+    Process src = new KubePodProcess(KUBE_CLIENT,
+        "src",
+        "default",
+        "np_source:dev",
+        9002,
+        9003,
+        false,
+        Collections.emptyMap(),
+        null);
 
     LOGGER.info("Launching destination process...");
-    Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "default", "np_dest:dev", 9004, 9005, true);
+    Process dest = new KubePodProcess(KUBE_CLIENT,
+        "dest",
+        "default",
+        "np_dest:dev",
+        9004,
+        9005,
+        true,
+        Collections.emptyMap(),
+        null);
 
     LOGGER.info("Launching background thread to read destination lines...");
     ExecutorService executor = Executors.newSingleThreadExecutor();

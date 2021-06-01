@@ -90,7 +90,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private boolean runProcess(String jobId, int attempt, Path jobRoot, Map<String, String> files, final String... args) throws Exception {
     try {
-      process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, files, null, args);
+      process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, false, files, null, args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

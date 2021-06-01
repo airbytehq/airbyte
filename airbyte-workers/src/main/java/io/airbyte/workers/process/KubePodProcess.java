@@ -43,6 +43,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -145,7 +146,10 @@ public class KubePodProcess extends Process {
                         String image,
                         int stdoutLocalPort,
                         int stderrLocalPort,
-                        boolean usesStdin)
+                        boolean usesStdin,
+                        final Map<String, String> files,
+                        final String entrypointOverride,
+                        final String... args)
       throws IOException, InterruptedException {
     this.client = client;
 
@@ -154,7 +158,12 @@ public class KubePodProcess extends Process {
     executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
-    String entrypoint = getCommandFromImage(client, image, namespace);
+    for (Map.Entry<String, String> file : files.entrySet()) {
+      // todo: handle mounting these as temporary secrets
+      LOGGER.error("Skipping setting file for process: " + file.getKey());
+    }
+
+    String entrypoint = entrypointOverride == null ? getCommandFromImage(client, image, namespace) : entrypointOverride;
     LOGGER.info("Found entrypoint: {}", entrypoint);
 
     Volume volume = new VolumeBuilder()
@@ -181,6 +190,7 @@ public class KubePodProcess extends Process {
         .withImage(image)
         .withCommand("sh", "-c",
             usesStdin ? "cat /pipes/stdin | " + entrypoint + " 2> /pipes/stderr > /pipes/stdout" : entrypoint + "   2> /pipes/stderr > /pipes/stdout")
+        .withArgs(args)
         .withVolumeMounts(volumeMount)
         .build();
 

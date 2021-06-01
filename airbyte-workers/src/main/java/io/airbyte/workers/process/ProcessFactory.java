@@ -50,6 +50,7 @@ public interface ProcessFactory {
                  int attempt,
                  final Path jobPath,
                  final String imageName,
+                 final boolean usesStdin,
                  final Map<String, String> files,
                  final String entrypoint,
                  final String... args)
@@ -59,11 +60,12 @@ public interface ProcessFactory {
                          int attempt,
                          final Path jobPath,
                          final String imageName,
+                         final boolean usesStdin,
                          final Map<String, String> files,
                          final String entrypoint,
                          final List<String> args)
       throws WorkerException {
-    return create(jobId, attempt, jobPath, imageName, files, entrypoint, args.toArray(new String[0]));
+    return create(jobId, attempt, jobPath, imageName, usesStdin, files, entrypoint, args.toArray(new String[0]));
   }
 
 }
