@@ -25,12 +25,14 @@ module.exports = function (plop) {
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
+  const genericJdbcSourceInputRoot = '../source-generic-jdbc';
   const httpApiInputRoot = '../source-python-http-api';
 
   const outputDir = '../../connectors';
   const pythonSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const singerSourceOutputRoot = `${outputDir}/source-{{dashCase name}}-singer`;
   const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
+  const genericJdbcSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
 
   plop.setActionType('emitSuccess', function(answers, config, plopApi){
@@ -116,6 +118,27 @@ module.exports = function (plop) {
             },
             {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
     });
+
+  plop.setGenerator('Basic Jdbc Source', {
+    description: 'Generate a minimal Java JDBC Airbyte Source Connector.',
+    prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "mysql"'}],
+    actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: genericJdbcSourceOutputRoot,
+        base: genericJdbcSourceInputRoot,
+        templateFiles: `${genericJdbcSourceInputRoot}/**/**`,
+      },
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${genericJdbcSourceInputRoot}/.gitignore.hbs`,
+        path: `${genericJdbcSourceOutputRoot}/.gitignore`
+      },
+      {type: 'emitSuccess', outputPath: genericJdbcSourceOutputRoot}
+    ]
+  });
 
   plop.setGenerator('Generic Source', {
       description: 'Use if none of the other templates apply to your use case.',
