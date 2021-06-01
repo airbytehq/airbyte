@@ -26,7 +26,7 @@
 import math
 import urllib.parse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -49,10 +49,7 @@ class PosthogStream(HttpStream, ABC):
                 return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        mandatory_headers = {}
-        mandatory_headers["Content-Type"] = "application/json"
-        mandatory_headers["User-Agent"] = "posthog-python/1.4.0"
-        return mandatory_headers
+        return {"Content-Type": "application/json", "User-Agent": "posthog-python/1.4.0"}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -71,7 +68,6 @@ class PosthogStream(HttpStream, ABC):
     @abstractmethod
     def data_field(self) -> str:
         """the responce entry that contains useful data"""
-        pass
 
 
 class IncrementalPosthogStream(PosthogStream, ABC):
@@ -89,7 +85,6 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
-        pass
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
@@ -101,7 +96,9 @@ class IncrementalPosthogStream(PosthogStream, ABC):
             if params:
                 return params
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> Union[Mapping[str, Any], Tuple[Any, Mapping[str, Any]]]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
@@ -111,7 +108,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         latest_state = latest_record.get(self.cursor_field)  # 810->809->808
 
         if current_state and latest_state <= current_state:
-            # self.reversed_pagination["is_completed"] = True
+            # return Tuple with any first element and current state
             return (-1, self.reversed_pagination["upgrade_to"])
         if (
             self.reversed_pagination["latest_response_state"]
@@ -120,7 +117,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         ):
             return self.reversed_pagination["upgrade_to"]
 
-        return current_stream_state  # dont upgrade until complete!
+        return current_stream_state  # dont upgrade state until complete!
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -155,7 +152,6 @@ class Annotations(PosthogStream):
     we'll miss the update. So no logical way to use incremental, it will be like full_refresh.
     """
 
-    # cursor_field = ""
     data_field = "results"
 
     def path(self, **kwargs) -> str:
@@ -165,10 +161,10 @@ class Annotations(PosthogStream):
 class Cohorts(IncrementalPosthogStream):
     """
     normal ASC sorting. But without filters like `since`
-    so need to query all anyway, but may skip already written for incremental
+    So we need to query all anyway, but we may skip already written reords for incremental.
     """
 
-    cursor_field = "id"  # id aswell
+    cursor_field = "id"
     data_field = "results"
 
     def path(self, **kwargs) -> str:
@@ -213,7 +209,6 @@ class Cohorts(IncrementalPosthogStream):
 
 
 class Elements(PosthogStream):
-    # cursor_field = "order"
     data_field = "elements"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -228,7 +223,7 @@ class Elements(PosthogStream):
 class Events(IncrementalPosthogStream):
     """
     CAUTION! API supports inserting custom timestamp.
-    That may break incremental since no way to sort in request params.
+    That may break incremental since there is no way to sort in request params.
     """
 
     cursor_field = "timestamp"
@@ -247,7 +242,6 @@ class Events(IncrementalPosthogStream):
 
 
 class EventsSessions(PosthogStream):
-    # cursor_field = ""
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -260,7 +254,7 @@ class EventsSessions(PosthogStream):
 
 
 class FeatureFlags(IncrementalPosthogStream):
-    cursor_field = "id"  # or id
+    cursor_field = "id"
     data_field = "results"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -273,7 +267,6 @@ class Insights(PosthogStream):
     are ordered in a random (!) way, no DESC no ASC
     """
 
-    # cursor_field = ""
     data_field = "results"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -281,7 +274,6 @@ class Insights(PosthogStream):
 
 
 class InsightsPath(PosthogStream):
-    cursor_field = ""
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -289,7 +281,6 @@ class InsightsPath(PosthogStream):
 
 
 class InsightsSessions(PosthogStream):
-    cursor_field = ""
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -305,7 +296,6 @@ class Persons(IncrementalPosthogStream):
 
 
 class Trends(PosthogStream):
-    # cursor_field = "last_refresh"
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:

@@ -11,3 +11,4 @@ airbytePython {
 dependencies {
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
 }
+

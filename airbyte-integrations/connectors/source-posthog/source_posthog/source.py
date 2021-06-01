@@ -104,8 +104,7 @@ class SourcePosthog(AbstractSource):
             if response.status_code != 200:
                 resp_json = response.json()
                 err_message = resp_json["detail"] if "detail" in resp_json else "unknown error"
-                # raise Exception(err_message) # if we need a python traceback in the log
-                return False, err_message
+                raise Exception(err_message)  # return with a python traceback in the log
 
             return True, None
         except Exception as e:

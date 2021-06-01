@@ -4,12 +4,12 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Posthog Spec",
     "type": "object",
-    "required": ["", ""],
+    "required": ["api_key"],
     "additionalProperties": false,
     "properties": {
       "username": {
         "type": "string",
-        "description": ""
+        "description": "The apikey to work with your Posthog account within API"
       },
       "apikey": {
         "type": "string",
