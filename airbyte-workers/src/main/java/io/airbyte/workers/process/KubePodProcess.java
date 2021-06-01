@@ -124,9 +124,10 @@ public class KubePodProcess extends Process {
 
     var envVal = logs.split("=")[1].strip();
     if (envVal.isEmpty()) {
-      throw new RuntimeException(
-          "Unable to read AIRBYTE_ENTRYPOINT from the image. Make sure this environment variable is set in the Dockerfile!");
+      // default to returning default entrypoint in bases
+      return "/airbyte/base.sh";
     }
+
     return envVal;
   }
 
