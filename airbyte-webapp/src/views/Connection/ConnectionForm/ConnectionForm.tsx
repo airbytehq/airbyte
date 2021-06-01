@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import * as yup from "yup";
 import { Field, FieldProps, Form, Formik } from "formik";
 
 import { SyncSchema } from "core/domain/catalog";
@@ -15,10 +14,11 @@ import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
 
 import BottomBlock from "./components/BottomBlock";
 import Connector from "./components/Connector";
-import SchemaView from "./components/SchemaView";
+import SchemaField from "./components/SchemaField";
 import EditControls from "./components/EditControls";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
+import { ConnectionFormValues, connectionValidationSchema } from "./formConfig";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -38,18 +38,9 @@ const ConnectorLabel = styled(ControlLabels)`
   vertical-align: top;
 `;
 
-const connectionValidationSchema = yup.object().shape({
-  frequency: yup.string().required("form.empty.error"),
-  prefix: yup.string(),
-});
-
 type ConnectionFormProps = {
   schema: SyncSchema;
-  onSubmit: (values: {
-    frequency: string;
-    prefix: string;
-    schema: SyncSchema;
-  }) => void;
+  onSubmit: (values: ConnectionFormValues) => void;
   className?: string;
   source: Source;
   destination: Destination;
@@ -71,26 +62,26 @@ type ConnectionFormProps = {
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
+  onReset,
+  onCancel,
   sourceIcon,
   destinationIcon,
-  onReset,
   className,
   errorMessage,
-  schema,
   onDropDownSelect,
   frequencyValue,
   prefixValue,
   isEditMode,
   successMessage,
   additionBottomControls,
-  onCancel,
   editSchemeMode,
   isLoading,
   additionalSchemaControl,
   source,
   destination,
+  ...props
 }) => {
-  const initialSchema = useInitialSchema(schema);
+  const initialSchema = useInitialSchema(props.schema);
   const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
     destination.destinationDefinitionId
   );
@@ -98,33 +89,32 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
-  // TODO: newSchema config should be part of formik schema
-  const [newSchema, setNewSchema] = useState(initialSchema);
 
   return (
     <Formik
       initialValues={{
         frequency: frequencyValue || "",
         prefix: prefixValue || "",
+        schema: initialSchema,
       }}
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
       onSubmit={async (values) => {
-        const requiresReset =
-          isEditMode && !equal(initialSchema, newSchema) && !editSchemeMode;
-        await onSubmit({
-          frequency: values.frequency,
-          prefix: values.prefix,
-          schema: newSchema,
-        });
+        await onSubmit(
+          connectionValidationSchema.cast(values, {
+            context: { isRequest: true },
+          })
+        );
 
+        const requiresReset =
+          isEditMode && !equal(initialSchema, values.schema) && !editSchemeMode;
         if (requiresReset) {
           setResetModalIsOpen(true);
         }
       }}
     >
-      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
+      {({ isSubmitting, setFieldValue, values, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
           <ControlLabelsWithMargin>
             <ConnectorLabel
@@ -142,21 +132,22 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <Connector name={destination.name} icon={destinationIcon} />
             </ConnectorLabel>
             <Field name="frequency">
-              {({ field }: FieldProps<string>) => (
+              {({ field, meta }: FieldProps<string>) => (
                 <ConnectorLabel
-                  // error={!!fieldProps.meta.error && fieldProps.meta.touched}
+                  error={!!meta.error && meta.touched}
                   label={formatMessage({
                     id: "form.frequency",
                   })}
                 >
                   <DropDown
                     {...field}
+                    error={!!meta.error && meta.touched}
                     data={dropdownData}
                     onSelect={(item) => {
                       if (onDropDownSelect) {
                         onDropDownSelect(item);
                       }
-                      setFieldValue("frequency", item.value);
+                      setFieldValue(field.name, item.value);
                     }}
                   />
                 </ConnectorLabel>
@@ -183,12 +174,10 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               </ControlLabelsWithMargin>
             )}
           </Field>
-          <SchemaView
-            schema={newSchema}
+          <SchemaField
             destinationSupportedSyncModes={
               destDefinition.supportedDestinationSyncModes
             }
-            onChangeSchema={setNewSchema}
             additionalControl={additionalSchemaControl}
           />
           {!isEditMode ? (
@@ -201,10 +190,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <EditControls
                 isSubmitting={isLoading || isSubmitting}
                 isValid={isValid}
-                dirty={dirty || !equal(initialSchema, newSchema)}
+                dirty={dirty || !equal(initialSchema, values.schema)}
                 resetForm={() => {
                   resetForm();
-                  setNewSchema(initialSchema);
                   if (onCancel) {
                     onCancel();
                   }
@@ -229,7 +217,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               additionBottomControls={additionBottomControls}
               isSubmitting={isSubmitting}
               isValid={isValid}
-              dirty={dirty}
               errorMessage={errorMessage}
             />
           )}

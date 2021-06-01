@@ -53,7 +53,11 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
-  private static final TimeUnit SLEEP_TIME_UNIT = TimeUnit.SECONDS;
+  /**
+   * This is not private and final because we need to override in tests otherwise each test would
+   * continue to run for 5 minutes
+   */
+  static TimeUnit sleepTimeUnit = TimeUnit.MINUTES;
   private static final int SLEEP_TIME_AMOUNT = 5;
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
@@ -79,7 +83,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        next = queue.poll(SLEEP_TIME_AMOUNT, SLEEP_TIME_UNIT);
+        next = queue.poll(SLEEP_TIME_AMOUNT, sleepTimeUnit);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }

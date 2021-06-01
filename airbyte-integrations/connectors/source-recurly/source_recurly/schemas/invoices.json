@@ -68,7 +68,7 @@
       "type": "string"
     },
     "net_terms": {
-      "type": "integer"
+      "type": "number"
     },
     "address": {
       "type": "object",
@@ -171,25 +171,25 @@
       "type": "string"
     },
     "discount": {
-      "type": "integer"
+      "type": "number"
     },
     "subtotal": {
-      "type": "integer"
+      "type": "number"
     },
     "tax": {
-      "type": "integer"
+      "type": "number"
     },
     "total": {
-      "type": "integer"
+      "type": "number"
     },
     "refundable_amount": {
-      "type": "integer"
+      "type": "number"
     },
     "paid": {
-      "type": "integer"
+      "type": "number"
     },
     "balance": {
-      "type": "integer"
+      "type": "number"
     },
     "tax_info": {
       "type": "object",
@@ -201,7 +201,7 @@
           "type": "string"
         },
         "rate": {
-          "type": "integer"
+          "type": "number"
         }
       }
     },

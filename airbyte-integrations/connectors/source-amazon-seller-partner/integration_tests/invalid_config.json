@@ -1,0 +1,10 @@
+{
+  "start_date": "2021-05-27",
+  "refresh_token": "ABC",
+  "lwa_app_id": "lwa_app_id",
+  "lwa_client_secret": "lwa_client_secret",
+  "aws_access_key": "aws_access_key",
+  "aws_secret_key": "aws_secret_key",
+  "role_arn": "role_arn",
+  "marketplace": "marketplace"
+}

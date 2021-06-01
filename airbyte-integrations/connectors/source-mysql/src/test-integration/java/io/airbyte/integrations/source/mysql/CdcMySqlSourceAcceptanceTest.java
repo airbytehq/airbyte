@@ -42,6 +42,7 @@ import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -108,6 +109,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
+    DebeziumRecordIterator.sleepTimeUnit = TimeUnit.SECONDS;
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
