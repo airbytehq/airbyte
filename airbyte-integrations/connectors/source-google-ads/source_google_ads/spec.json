@@ -42,70 +42,38 @@
         ]
       },
       "streams": {
-        "$id": "#/properties/streams",
-        "type": "array",
-        "title": "The streams schema",
-        "description": "Stream mapping to GAQL",
-        "default": [
-          {
-            "name": "campaigns",
-            "gaql": "SELECT campaign.name, metrics.impressions, segments.date FROM campaign WHERE segments.date DURING LAST_7_DAYS"
-          }
-        ],
-        "examples": [
-          [
-            {
-              "name": "campaigns",
-              "gaql": "SELECT campaign.name, metrics.impressions, segments.date FROM campaign WHERE segments.date DURING LAST_7_DAYS"
-            }
-          ]
-        ],
-        "additionalItems": true,
+        "title": "The Streams",
+        "description": "The streams defined by GAQLs",
         "items": {
-          "$id": "#/properties/streams/items",
-          "anyOf": [
-            {
-              "$id": "#/properties/streams/items/anyOf/0",
-              "type": "object",
-              "title": "Stream schema",
-              "description": "Stream mapping of name to GAQL",
-              "default": {},
+          "type": "object",
+          "title": "Stream schema",
+          "description": "Stream mapping of name to GAQL",
+          "required": [
+            "name",
+            "gaql"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Stream",
+              "description": "The stream name.",
+              "default": "",
               "examples": [
-                {
-                  "name": "campaigns",
-                  "gaql": "SELECT campaign.name, metrics.impressions, segments.date FROM campaign WHERE segments.date DURING LAST_7_DAYS"
-                }
-              ],
-              "required": [
-                "name",
-                "gaql"
-              ],
-              "properties": {
-                "name": {
-                  "$id": "#/properties/streams/items/anyOf/0/properties/name",
-                  "type": "string",
-                  "title": "The name schema",
-                  "description": "The stream name.",
-                  "default": "",
-                  "examples": [
-                    "campaigns"
-                  ]
-                },
-                "gaql": {
-                  "$id": "#/properties/streams/items/anyOf/0/properties/gaql",
-                  "type": "string",
-                  "title": "The gaql schema",
-                  "description": "The GAQL search term. <a href=\"https://developers.google.com/google-ads/api/fields/v7/overview_query_builder\">Query Builder</a>",
-                  "default": "",
-                  "examples": [
-                    "SELECT campaign.name, metrics.impressions, segments.date FROM campaign WHERE segments.date DURING LAST_7_DAYS"
-                  ]
-                }
-              },
-              "additionalProperties": true
+                "campaigns"
+              ]
+            },
+            "gaql": {
+              "type": "string",
+              "title": "GAQL",
+              "description": "The GAQL search term. <a href=\"https://developers.google.com/google-ads/api/fields/v7/overview_query_builder\">Query Builder</a>",
+              "default": "",
+              "examples": [
+                "SELECT campaign.name, metrics.impressions, segments.date FROM campaign WHERE segments.date DURING LAST_7_DAYS"
+              ]
             }
-          ]
-        }
+          }
+        },
+        "type": "array"
       }
     }
   }
