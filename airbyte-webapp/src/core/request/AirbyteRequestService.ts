@@ -1,4 +1,4 @@
-import { NetworkError } from "core/request/NetworkError";
+import { CommonRequestError } from "core/request/CommonRequestError";
 import config from "config";
 import { VersionError } from "./VersionError";
 
@@ -29,25 +29,22 @@ abstract class AirbyteRequestService {
     if (response.status >= 200 && response.status < 300) {
       return response.status === 204 ? {} : await response.json();
     }
-    let result: any;
+    let resultJsonResponse: any;
 
     // If some error returned in json, lets try to parse it
     try {
-      result = await response.json();
+      resultJsonResponse = await response.json();
     } catch (e) {
-      //
+      // non json result
     }
 
-    if (result?.error) {
-      if (result.error.startsWith("Version mismatch between")) {
-        throw new VersionError(result.error);
+    if (resultJsonResponse?.error) {
+      if (resultJsonResponse.error.startsWith("Version mismatch between")) {
+        throw new VersionError(resultJsonResponse.error);
       }
     }
 
-    const e = new NetworkError(response);
-    e.status = response.status;
-    e.message = result.message;
-    throw e;
+    throw new CommonRequestError(response, resultJsonResponse.message);
   }
 }
 

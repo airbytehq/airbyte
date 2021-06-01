@@ -9,7 +9,7 @@ import { theme } from "./theme";
 
 import { Routing } from "./pages/routes";
 import LoadingPage from "./components/LoadingPage";
-import ApiErrorBoundary from "./components/NetworkErrorBoundary";
+import ApiErrorBoundary from "./components/ApiErrorBoundary";
 import NotificationService from "components/hooks/services/Notification";
 
 const App: React.FC = () => {
