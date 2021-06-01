@@ -24,6 +24,7 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -51,7 +52,7 @@ public class KubeProcessBuilderFactoryPOC {
         9002,
         9003,
         false,
-        Collections.emptyMap(),
+        ImmutableMap.of("file.txt", "testing\none\ntwo\nthree\nfour\nfive\nsix\nseven"),
         null);
 
     LOGGER.info("Launching destination process...");
@@ -85,6 +86,7 @@ public class KubeProcessBuilderFactoryPOC {
       try (PrintWriter writer = new PrintWriter(dest.getOutputStream(), true)) {
         String line;
         while ((line = reader.readLine()) != null) {
+          LOGGER.info("relaying: " + line);
           writer.println(line);
         }
       }
@@ -114,6 +116,16 @@ public class KubeProcessBuilderFactoryPOC {
     System.exit(0);
   }
 
+  /*
+  To run:
+  cd ~/code/airbyte/airbyte-workers/named_pipes/np_source
+  docker build -t np_source:dev .
+  cd ~/code/airbyte/airbyte-workers/named_pipes/np_dest
+  docker build -t np_dest:dev .
+  cd ~/code/airbyte
+  ./gradlew :airbyte-workers:airbyteDocker
+  kubectl apply -f ~/code/airbyte/airbyte-workers/src/main/resources/kube_queue_poc/launch
+   */
   public static void main(String[] args) throws InterruptedException, IOException {
     testSyncWorkflow();
   }

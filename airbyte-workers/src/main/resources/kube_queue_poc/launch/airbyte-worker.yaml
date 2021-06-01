@@ -10,10 +10,10 @@ spec:
       # imagePullPolicy: Always -> prevents local images from working
       ports:
         - containerPort: 9002
-          name: source-stdout
+          name: src-stdout
         - containerPort: 9003
-          name: source-stderr
+          name: src-stderr
         - containerPort: 9005
-          name: destination-stdout
+          name: dest-stdout
         - containerPort: 9006
-          name: destination-stderr
+          name: dest-stderr

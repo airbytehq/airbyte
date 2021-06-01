@@ -25,6 +25,7 @@
 package io.airbyte.workers.process;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.string.Strings;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -36,12 +37,17 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Path;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -158,11 +164,6 @@ public class KubePodProcess extends Process {
     executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
-    for (Map.Entry<String, String> file : files.entrySet()) {
-      // todo: handle mounting these as temporary secrets via server
-      LOGGER.error("Skipping setting file for process: " + file.getKey());
-    }
-
     String entrypoint = entrypointOverride == null ? getCommandFromImage(client, image, namespace) : entrypointOverride;
     LOGGER.info("Found entrypoint: {}", entrypoint);
 
@@ -177,11 +178,12 @@ public class KubePodProcess extends Process {
         .withMountPath("/pipes")
         .build();
 
+    // todo: wait until files are copied over instead of just sleeping 10s
     Container initContainer = new ContainerBuilder()
         .withName("init")
         .withImage("busybox:1.28")
         .withCommand("sh", "-c",
-            usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout && mkfifo /pipes/stderr" : "mkfifo /pipes/stdout && mkfifo /pipes/stderr")
+            usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 10" : "mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 10")
         .withVolumeMounts(volumeMount)
         .build();
 
@@ -233,8 +235,34 @@ public class KubePodProcess extends Process {
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
 
+    // todo: use the API to determine if the init container is ready instead of just waiting
+    LOGGER.info("Waiting before copying files...");
+    Thread.sleep(5000);
+
+    LOGGER.info("Copying files...");
+    List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
+    fileEntries.add(new AbstractMap.SimpleEntry<>("FINISHED_UPLOADING", ""));
+
+    for (Map.Entry<String, String> file : fileEntries) {
+      Path tmpFile = null;
+      try {
+        tmpFile = Path.of(IOs.writeFileToRandomTmpDir(file.getKey(), file.getValue()));
+
+        LOGGER.info("Uploading file: " + file.getKey());
+
+        client.pods().inNamespace(namespace).withName(podName).inContainer("init")
+                .file("/pipes/" + file.getKey()) // todo: actually handle paths correctly
+                .upload(tmpFile);
+
+      } finally {
+        if(tmpFile != null) {
+          tmpFile.toFile().delete();
+        }
+      }
+    }
+
     LOGGER.info("Waiting until pod is ready...");
-    client.resource(podDefinition).waitUntilReady(5, TimeUnit.MINUTES);
+    client.resource(podDefinition).waitUntilReady(30, TimeUnit.MINUTES);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
