@@ -169,7 +169,7 @@ class SourceGoogleAds(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = config['table_name']
+        stream_name = config['table_name'] #TODO Probably would be more correct to use the catalog
 
         query = config['gaql']
         response = self._search(query, config)
