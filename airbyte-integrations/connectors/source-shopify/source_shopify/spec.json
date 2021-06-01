@@ -1,0 +1,35 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Shopify Source Specifications",
+    "type": "object",
+    "required": [ "shop", "start_date", "api_password"],
+    "additionalProperties": false,
+    "properties": {
+      "shop": {
+        "type": "string",
+        "description": "The name of the shopify store. For https://EXAMPLE.myshopify.com, the shop name is 'EXAMPLE'."
+      },
+      "start_date": {
+        "type": "string",
+        "description": "The start date for data replication in the format YYYY-MM-DD."
+      },
+      "api_key": {
+        "type": "string",
+        "description": "The API KEY for a private application in Shopify shop.",
+        "airbyte_secret": true
+      },
+      "api_password": {
+        "type": "string",
+        "description": "The API PASSWORD for a private application in Shopify shop.",
+        "airbyte_secret": true
+      },
+      "api_version": {
+        "type": "string",
+        "description": "The Shopify API VERSION, Default is 2021-04",
+        "examples": ["2021-04"]
+      }
+    }
+  }
+}
