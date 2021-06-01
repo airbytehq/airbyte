@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerClient {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSynchronousSchedulerClient.class);
 
   private final TemporalClient temporalClient;

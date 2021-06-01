@@ -11,6 +11,7 @@ ENV AIRBYTE_CHECK_CMD "/airbyte/javabase.sh --check"
 ENV AIRBYTE_DISCOVER_CMD "/airbyte/javabase.sh --discover"
 ENV AIRBYTE_READ_CMD "/airbyte/javabase.sh --read"
 ENV AIRBYTE_WRITE_CMD "/airbyte/javabase.sh --write"
+ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
 
 ENTRYPOINT ["/airbyte/base.sh"]
 

@@ -39,7 +39,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.process.DockerProcessFactory;
 import io.temporal.client.WorkflowClient;
 import java.nio.file.Path;
 import java.util.UUID;

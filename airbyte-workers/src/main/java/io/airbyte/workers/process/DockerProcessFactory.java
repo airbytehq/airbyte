@@ -89,7 +89,13 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(String jobId, int attempt, StandardCheckConnectionInput input, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+  public Process create(String jobId,
+                        int attempt,
+                        StandardCheckConnectionInput input,
+                        final Path jobRoot,
+                        final String imageName,
+                        final String entrypoint,
+                        final String... args)
       throws WorkerException {
     // do we have to keep the job root?
     if (input != null) {
@@ -147,10 +153,10 @@ public class DockerProcessFactory implements ProcessFactory {
       UUID uuid = input.getUuid();
       if (input.getConnectorType().equals("Source")) {
         var req = new SourceIdRequestBody().sourceId(uuid);
-        connConfig =  apiClient.getSourceApi().getSource(req).getConnectionConfiguration();
+        connConfig = apiClient.getSourceApi().getSource(req).getConnectionConfiguration();
       } else {
         var req = new DestinationIdRequestBody().destinationId(uuid);
-        connConfig =  apiClient.getDestinationApi().getDestination(req).getConnectionConfiguration();
+        connConfig = apiClient.getDestinationApi().getDestination(req).getConnectionConfiguration();
       }
       LOGGER.info("=========== before writing file, conn config: {}", connConfig);
 

@@ -20,6 +20,6 @@ properties:
   connectorType:
     description: Connector type. Used by the worker to retrieve connection configuration.
     type: string
-# This just follows the field in StandardCheckConnectionInput.yaml.
+  # This just follows the field in StandardCheckConnectionInput.yaml.
   dockerImage:
     type: string

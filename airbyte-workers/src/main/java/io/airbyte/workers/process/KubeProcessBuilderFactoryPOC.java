@@ -24,29 +24,41 @@
 
 package io.airbyte.workers.process;
 
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.ApiClient;
+import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.SourceIdRequestBody;
 import io.airbyte.commons.io.IOs;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.Volume;
+import io.fabric8.kubernetes.api.model.VolumeBuilder;
+import io.fabric8.kubernetes.api.model.VolumeMount;
+import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KubeProcessBuilderFactoryPOC {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactoryPOC.class);
-  private static final KubernetesClient KUBE_CLIENT = new DefaultKubernetesClient();
+  public static final KubernetesClient KUBE_CLIENT = new DefaultKubernetesClient();
 
   public static void testSyncWorkflow() throws IOException, InterruptedException {
     LOGGER.info("Launching source process...");
-    Process src = new KubePodProcess(KUBE_CLIENT, "src", "default", "np_source:dev", 9002, 9003, false);
+    Process src = new KubePodProcess(KUBE_CLIENT, "src", "default", "np_source:dev", 9002, 9003, false, false, null, null);
 
     LOGGER.info("Launching destination process...");
-    Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "default", "np_dest:dev", 9004, 9005, true);
+    Process dest = new KubePodProcess(KUBE_CLIENT, "dest", "default", "np_dest:dev", 9004, 9005, true, false, null, null);
 
     LOGGER.info("Launching background thread to read destination lines...");
     ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -97,8 +109,82 @@ public class KubeProcessBuilderFactoryPOC {
     System.exit(0);
   }
 
-  public static void main(String[] args) throws InterruptedException, IOException {
-    testSyncWorkflow();
+  private static void spikeApiAndConfig() throws InterruptedException {
+    Volume configVolume = new VolumeBuilder()
+        .withName("airbyte-config")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build();
+
+    VolumeMount pipeVolumeMount = new VolumeMountBuilder()
+        .withName("airbyte-config")
+        .withMountPath("/config")
+        .build();
+
+    var ip = KubePodProcess.getPodIPFuzzyMatch(KubeProcessBuilderFactoryPOC.KUBE_CLIENT, "airbyte-server", "default");
+    LOGGER.info("server pod ip: {}", ip);
+
+    var container = KubePodProcess.writeSourceConfig(ip, UUID.fromString("2e0bb52f-30bd-4f1f-8cc6-fa0382ed66b8"), "config.json", pipeVolumeMount);
+
+    Pod pod = new PodBuilder()
+        .withApiVersion("v1")
+        .withNewMetadata()
+        .withName("test-write-config")
+        .endMetadata()
+        .withNewSpec()
+        .withRestartPolicy("Never")
+        .withContainers(container)
+        .withVolumes(configVolume)
+        .endSpec()
+        .build();
+
+    LOGGER.info("Creating pod...");
+    var podDefinition = KubeProcessBuilderFactoryPOC.KUBE_CLIENT.pods().inNamespace("default").createOrReplace(pod);
+
+    LOGGER.info("Waiting until pod is ready...");
+    KubeProcessBuilderFactoryPOC.KUBE_CLIENT.resource(podDefinition).waitUntilReady(5, TimeUnit.MINUTES);
+  }
+
+  public static void main(String[] args) throws InterruptedException, IOException, ApiException {
+    Process checkConn = new KubePodProcess(KUBE_CLIENT,
+        "check-connection",
+        "default",
+        "airbyte/source-postgres:dev",
+        9002,
+        9003,
+        false,
+        true,
+        "config.json", UUID.fromString("f0d13643-9041-4473-ace5-f4b7f66a231a"),
+        "check", "--config", "/config/config.json");
+
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    var listenTask = executor.submit(() -> {
+      BufferedReader reader = new BufferedReader(new InputStreamReader(checkConn.getInputStream()));
+      try {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          LOGGER.info("check connection output: {}", line);
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    });
+
+    var listenTaskA = executor.submit(() -> {
+      BufferedReader reader = new BufferedReader(new InputStreamReader(checkConn.getErrorStream()));
+      try {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          LOGGER.info("check connection error: {}", line);
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    });
+
+    LOGGER.info("Waiting for source process to terminate...");
+    checkConn.waitFor();
+    System.exit(0);
   }
 
 }

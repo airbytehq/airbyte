@@ -42,10 +42,15 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,13 +143,43 @@ public class KubePodProcess extends Process {
     return pod.getStatus().getPodIP();
   }
 
+  public static String getPodIPFuzzyMatch(KubernetesClient client, String prefix, String namespace) {
+    var pods = client.pods().inNamespace(namespace).list().getItems();
+    for (Pod pod : pods) {
+      if (pod.getMetadata().getName().startsWith(prefix)) {
+        return pod.getStatus().getPodIP();
+      }
+    }
+    throw new RuntimeException("Error: unable to find pod!");
+  }
+
+  public static Container writeSourceConfig(String serverIp, UUID uuid, String fileName, VolumeMount mount) {
+    var curlCmd = String.format( "\"http://%s:8001/api/v1/sources/get\""
+        + " -H \"Accept: application/json\""
+        + " -H \"Content-Type: application/json\""
+        + " -d '{\"sourceId\":\"%s\"}'", serverIp, uuid.toString());
+    var entireCmd = String.format("curl -X POST -s %s | jq .connectionConfiguration > /config/%s;", curlCmd, fileName, fileName);
+    LOGGER.info("read command: {}", entireCmd);
+
+    return new ContainerBuilder()
+        .withName("get-config")
+        .withImage("dwdraju/alpine-curl-jq:latest")
+        .withCommand("sh", "-c", entireCmd)
+        .withVolumeMounts(mount)
+        .build();
+  }
+
   public KubePodProcess(KubernetesClient client,
                         String podName,
                         String namespace,
                         String image,
                         int stdoutLocalPort,
                         int stderrLocalPort,
-                        boolean usesStdin)
+                        boolean usesStdin,
+                        boolean attachFile,
+                        String fileName,
+                        UUID uuid,
+                        String... args)
       throws IOException, InterruptedException {
     this.client = client;
 
@@ -156,52 +191,83 @@ public class KubePodProcess extends Process {
     String entrypoint = getCommandFromImage(client, image, namespace);
     LOGGER.info("Found entrypoint: {}", entrypoint);
 
-    Volume volume = new VolumeBuilder()
+    Volume pipeVolume = new VolumeBuilder()
         .withName("airbyte-pipes")
         .withNewEmptyDir()
         .endEmptyDir()
         .build();
+    List<Volume> volumes = new ArrayList<>();
+    volumes.add(pipeVolume);
 
-    VolumeMount volumeMount = new VolumeMountBuilder()
+    VolumeMount pipeVolumeMount = new VolumeMountBuilder()
         .withName("airbyte-pipes")
         .withMountPath("/pipes")
         .build();
 
-    Container initContainer = new ContainerBuilder()
-        .withName("init")
+    List<VolumeMount> mainVolumeMounts = new ArrayList<>();
+    mainVolumeMounts.add(pipeVolumeMount);
+
+    Container namedPipeInitContainer = new ContainerBuilder()
+        .withName("named-pipe-init")
         .withImage("busybox:1.28")
         .withCommand("sh", "-c",
             usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout && mkfifo /pipes/stderr" : "mkfifo /pipes/stdout && mkfifo /pipes/stderr")
-        .withVolumeMounts(volumeMount)
+        .withVolumeMounts(pipeVolumeMount)
         .build();
+    List<Container> initContainers = new ArrayList<>();
+    initContainers.add(namedPipeInitContainer);
+
+    if (attachFile) {
+      Volume configVolume = new VolumeBuilder()
+          .withName("airbyte-config")
+          .withNewEmptyDir()
+          .endEmptyDir()
+          .build();
+
+      VolumeMount configVolumeMount = new VolumeMountBuilder()
+          .withName("airbyte-config")
+          .withMountPath("/config")
+          .build();
+
+      volumes.add(configVolume);
+      mainVolumeMounts.add(configVolumeMount);
+
+      var ip = getPodIPFuzzyMatch(client, "airbyte-server", "default");
+      LOGGER.info("server pod ip: {}", ip);
+      var configInitContainer = writeSourceConfig(ip, uuid, fileName, configVolumeMount);
+      initContainers.add(configInitContainer);
+    }
+
+    var argsStr = String.join(" ", args);
+    var entrypointStr = entrypoint + " " + argsStr + " ";
 
     Container main = new ContainerBuilder()
         .withName("main")
         .withImage(image)
         .withCommand("sh", "-c",
-            usesStdin ? "cat /pipes/stdin | " + entrypoint + " 2> /pipes/stderr > /pipes/stdout" : entrypoint + "   2> /pipes/stderr > /pipes/stdout")
-        .withVolumeMounts(volumeMount)
+            usesStdin ? "cat /pipes/stdin | " + entrypointStr + " 2> /pipes/stderr > /pipes/stdout" : entrypointStr + "   2> /pipes/stderr > /pipes/stdout")
+        .withVolumeMounts(mainVolumeMounts)
         .build();
 
     Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage("alpine/socat:1.7.4.1-r1")
         .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > /pipes/stdin")
-        .withVolumeMounts(volumeMount)
+        .withVolumeMounts(pipeVolumeMount)
         .build();
 
     Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage("alpine/socat:1.7.4.1-r1")
         .withCommand("sh", "-c", "cat /pipes/stdout | socat -d -d -d - TCP:" + InetAddress.getLocalHost().getHostAddress() + ":" + stdoutLocalPort)
-        .withVolumeMounts(volumeMount)
+        .withVolumeMounts(pipeVolumeMount)
         .build();
 
     Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage("alpine/socat:1.7.4.1-r1")
         .withCommand("sh", "-c", "cat /pipes/stderr | socat -d -d -d - TCP:" + InetAddress.getLocalHost().getHostAddress() + ":" + stderrLocalPort)
-        .withVolumeMounts(volumeMount)
+        .withVolumeMounts(pipeVolumeMount)
         .build();
 
     List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr) : List.of(main, relayStdout, relayStderr);
@@ -213,9 +279,9 @@ public class KubePodProcess extends Process {
         .endMetadata()
         .withNewSpec()
         .withRestartPolicy("Never")
-        .withInitContainers(initContainer)
+        .withInitContainers(initContainers)
         .withContainers(containers)
-        .withVolumes(volume)
+        .withVolumes(volumes)
         .endSpec()
         .build();
 

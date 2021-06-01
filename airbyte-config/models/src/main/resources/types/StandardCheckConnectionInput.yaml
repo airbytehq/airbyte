@@ -22,4 +22,3 @@ properties:
 # Todo(Davin): How do we make this serialisable?
 #    enum: [ "source", "destination" ]
 
-

@@ -27,7 +27,6 @@ package io.airbyte.workers.process;
 import com.google.common.collect.Lists;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.workers.WorkerException;
-import io.airbyte.workers.process.ProcessFactory.CreateProcessConfig;
 import java.nio.file.Path;
 import java.util.List;
 import org.slf4j.Logger;

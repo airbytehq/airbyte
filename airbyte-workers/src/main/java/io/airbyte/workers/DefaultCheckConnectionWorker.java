@@ -36,7 +36,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.ProcessFactory.CreateProcessConfig;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import java.io.InputStream;
@@ -70,8 +69,9 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
     // Remove the standard check connection input.
     // Remove write here.
 
-//    final JsonNode configDotJson = input.getConnectionConfiguration();
-//    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(configDotJson));
+     final JsonNode configDotJson = input.getConnectionConfiguration();
+     IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+     Jsons.serialize(configDotJson));
 
     try {
       process = integrationLauncher.check(jobRoot, input, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME);
