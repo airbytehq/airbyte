@@ -24,6 +24,7 @@
 
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -265,8 +266,8 @@ class SourceSlack(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["api_token"])
-        default_start_date = pendulum.now().subtract(days=14)  # TODO make this configurable
-        threads_lookback_window = {"days": 7}  # TODO make this configurable
+        default_start_date = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ")
+        threads_lookback_window = {"days": config["lookback_window"]}
 
         streams = [
             Channels(authenticator=authenticator),
@@ -277,12 +278,13 @@ class SourceSlack(AbstractSource):
         ]
 
         # To sync data from channels, the bot backed by this token needs to join all those channels. This operation is idempotent.
-        # TODO make joining configurable. Also make joining archived and private channels configurable
-        logger = AirbyteLogger()
-        logger.info("joining Slack channels")
-        join_channels_stream = JoinChannelsStream(authenticator=authenticator)
-        for stream_slice in join_channels_stream.stream_slices():
-            for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
-                logger.info(message["message"])
+        # TODO Also make joining archived and private channels configurable
+        if config["join_channels"]:
+            logger = AirbyteLogger()
+            logger.info("joining Slack channels")
+            join_channels_stream = JoinChannelsStream(authenticator=authenticator)
+            for stream_slice in join_channels_stream.stream_slices():
+                for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                    logger.info(message["message"])
 
         return streams
