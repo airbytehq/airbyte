@@ -96,7 +96,6 @@
     * [Redshift](integrations/destinations/redshift.md)
     * [Snowflake](integrations/destinations/snowflake.md)
   * [Custom or New Connector](integrations/custom-connectors.md)
-  * [Connector Health](integrations/connector-health.md)
 * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)

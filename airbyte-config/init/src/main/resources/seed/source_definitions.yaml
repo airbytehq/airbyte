@@ -12,7 +12,7 @@
 - sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   name: File
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-file
   icon: file.svg
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
@@ -42,7 +42,7 @@
 - sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   name: Recurly
   dockerRepository: airbyte/source-recurly
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-recurly
   icon: recurly.svg
 - sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
@@ -66,7 +66,7 @@
 - sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   name: MySQL
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
 - sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
@@ -78,7 +78,7 @@
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.11
   documentationUrl: https://hub.docker.com/r/airbyte/source-stripe
   icon: stripe.svg
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002

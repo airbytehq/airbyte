@@ -1,4 +1,3 @@
-#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -20,11 +19,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-#
 
 
-from source_file.client import Client
+from .source import SourceAmazonSellerPartner
 
-
-def test_example_method():
-    assert Client.dtype_to_json_type("bool") == "boolean"
+__all__ = ["SourceAmazonSellerPartner"]

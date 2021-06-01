@@ -32,6 +32,8 @@ jobs:
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        with:
+          repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
@@ -48,6 +50,7 @@ jobs:
           ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
+          AZURE_STORAGE_INTEGRATION_TEST_CREDS: ${{ secrets.AZURE_STORAGE_INTEGRATION_TEST_CREDS }}
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
           BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
           DRIFT_INTEGRATION_TEST_CREDS: ${{ secrets.DRIFT_INTEGRATION_TEST_CREDS }}
