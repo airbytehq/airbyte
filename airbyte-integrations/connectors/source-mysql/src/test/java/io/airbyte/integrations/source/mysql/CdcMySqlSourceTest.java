@@ -68,6 +68,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
@@ -131,6 +132,7 @@ public class CdcMySqlSourceTest {
   }
 
   private void init() {
+    DebeziumRecordIterator.sleepTimeUnit = TimeUnit.SECONDS;
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     source = new MySqlSource();
