@@ -25,12 +25,12 @@
 package io.airbyte.integrations.standardtest.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
-import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
