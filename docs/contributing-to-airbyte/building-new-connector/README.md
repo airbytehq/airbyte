@@ -6,6 +6,11 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
+## Connector-Development Kit (CDK)
+
+You can build a source connector very quickly with the [Airbyte CDK](../python/README.md), which generates 75% of the code required for you. Currently, creating destinations isn't supported, but it will be soon.
+
+
 ## The Airbyte specification
 
 Before building a new connector, review [Airbyte's data protocol specification](../../understanding-airbyte/airbyte-specification.md).
