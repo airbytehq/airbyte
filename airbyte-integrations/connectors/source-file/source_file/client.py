@@ -33,13 +33,13 @@ import numpy as np
 import pandas as pd
 import smart_open
 from airbyte_protocol import AirbyteStream
+from azure.storage.blob import BlobServiceClient
 from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
-from azure.storage.blob import BlobServiceClient
 
 
 class ConfigurationError(Exception):
@@ -223,7 +223,7 @@ class URLFile:
         else:
             # assuming anonymous public read access given no credential
             client = BlobServiceClient(account_url=storage_acc_url)
-        
+
         result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client), mode=mode)
         return result
 
