@@ -111,10 +111,10 @@ const SettingsView: React.FC<IProps> = ({
     connection?.destination?.destinationDefinitionId ?? null
   );
 
-  const onDelete = useCallback(
-    () => deleteConnection({ connectionId: connectionId }),
-    [deleteConnection, connectionId]
-  );
+  const onDelete = useCallback(() => deleteConnection({ connectionId }), [
+    deleteConnection,
+    connectionId,
+  ]);
 
   const onReset = useCallback(() => resetConnection(connectionId), [
     resetConnection,
