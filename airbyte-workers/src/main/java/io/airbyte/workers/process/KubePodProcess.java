@@ -159,7 +159,7 @@ public class KubePodProcess extends Process {
     setupStdOutAndStdErrListeners();
 
     for (Map.Entry<String, String> file : files.entrySet()) {
-      // todo: handle mounting these as temporary secrets
+      // todo: handle mounting these as temporary secrets via server
       LOGGER.error("Skipping setting file for process: " + file.getKey());
     }
 

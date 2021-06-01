@@ -59,8 +59,8 @@ public class KubeProcessBuilderFactoryPOC {
         "dest",
         "default",
         "np_dest:dev",
-        9004,
         9005,
+        9006,
         true,
         Collections.emptyMap(),
         null);
