@@ -27,6 +27,7 @@ package io.airbyte.workers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -74,7 +75,7 @@ public class DefaultCheckConnectionWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
-    when(integrationLauncher.check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)).thenReturn(process);
+    when(integrationLauncher.check(jobRoot, any(), WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)).thenReturn(process);
     final InputStream inputStream = mock(InputStream.class);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
@@ -124,7 +125,7 @@ public class DefaultCheckConnectionWorkerTest {
 
   @Test
   public void testExceptionThrownInRun() throws WorkerException {
-    doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME);
+    doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, any(), WorkerConstants.SOURCE_CONFIG_JSON_FILENAME);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, failureStreamFactory);
     assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));

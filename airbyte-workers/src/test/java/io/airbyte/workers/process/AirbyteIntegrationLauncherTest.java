@@ -56,7 +56,7 @@ class AirbyteIntegrationLauncherTest {
 
   @Test
   void check() throws WorkerException {
-    launcher.check(JOB_ROOT, "config");
+    launcher.check(JOB_ROOT, null,"config");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null,
         "check",
