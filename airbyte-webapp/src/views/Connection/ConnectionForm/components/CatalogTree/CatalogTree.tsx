@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from "react";
-import { setIn } from "formik";
+import { FastField, setIn } from "formik";
 
-import { CatalogSection } from "./CatalogSection";
 import {
   AirbyteStream,
   AirbyteStreamConfiguration,
@@ -9,6 +8,8 @@ import {
   SyncSchemaStream,
 } from "core/domain/catalog";
 import { naturalComparatorBy } from "utils/objects";
+import { FastFieldProps } from "formik/dist/FastField";
+import { CatalogSection } from "./CatalogSection";
 
 type IProps = {
   filter?: string;
@@ -57,14 +58,17 @@ const CatalogTree: React.FC<IProps> = ({
   return (
     <>
       {filteringSchema.map((streamNode) => (
-        <CatalogSection
-          key={`${
-            streamNode.stream.namespace ? `${streamNode.stream.namespace}/` : ""
-          }${streamNode.stream.name}`}
-          streamNode={streamNode}
-          destinationSupportedSyncModes={destinationSupportedSyncModes}
-          updateStream={onUpdateStream}
-        />
+        <FastField name={`schema.streams[${streamNode.id}].config`}>
+          {({ form }: FastFieldProps) => (
+            <CatalogSection
+              key={`schema.streams[${streamNode.id}].config`}
+              errors={form.errors}
+              streamNode={streamNode}
+              destinationSupportedSyncModes={destinationSupportedSyncModes}
+              updateStream={onUpdateStream}
+            />
+          )}
+        </FastField>
       ))}
     </>
   );

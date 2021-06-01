@@ -27,7 +27,7 @@ import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { Rows } from "./components/Rows";
 
 import { equal, naturalComparatorBy } from "utils/objects";
-import { getIn, useFormikContext } from "formik";
+import { getIn } from "formik";
 
 const StyledRadioButton = styled(RadioButton)`
   vertical-align: middle;
@@ -38,7 +38,8 @@ const EmptyField = styled.span`
 `;
 
 const Section = styled.div<{ error?: boolean }>`
-  border: 1px solid ${(props) => (props.error ? "red" : "none")};
+  border: 1px solid
+    ${(props) => (props.error ? props.theme.dangerColor : "none")};
 `;
 
 const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
@@ -50,6 +51,7 @@ const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
 
 type TreeViewRowProps = {
   streamNode: SyncSchemaStream;
+  errors: any;
   destinationSupportedSyncModes: DestinationSyncMode[];
   updateStream: (
     stream: AirbyteStream,
@@ -60,11 +62,11 @@ type TreeViewRowProps = {
 const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   streamNode,
   updateStream,
+  errors,
   destinationSupportedSyncModes,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [isRowExpanded, onExpand] = useToggle(false);
-  const { errors } = useFormikContext();
   const { stream, config } = streamNode;
   const streamId = stream.name;
 
