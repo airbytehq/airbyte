@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data for the [Amazon Seller Partne API](https://github.com/amzn/selling-partner-api-docs). It supports only Incremental syncs. The Appstore API is available for [many types of services](https://developer.apple.com/documentation/appstoreconnectapi). Currently, this API supports syncing Sales and Trends reports. If you'd like to sync data from other endpoints, please create an issue on Github.
+This source can sync data for the [Amazon Seller Partner API](https://github.com/amzn/selling-partner-api-docs). It supports only Incremental syncs. The Appstore API is available for [many types of services](https://developer.apple.com/documentation/appstoreconnectapi). Currently, this API supports syncing Sales and Trends reports. If you'd like to sync data from other endpoints, please create an issue on Github.
 
 This Source Connector is based on a [Singer Tap](https://github.com/miroapp/tap-appstore).
 
