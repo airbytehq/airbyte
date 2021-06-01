@@ -142,16 +142,16 @@ class SourceGoogleAds(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
-        query = config['gaql']
-
-        response = self._search(query, config)
-
         streams = []
 
-        stream_name = config['table_name']
-        json_schema = self.extract_schema(response)
+        for stream_config in config['streams']:
+            query = stream_config['gaql']
+            stream_name = stream_config['name']
+            response = self._search(query, config)
+            json_schema = self.extract_schema(response)
+            stream = AirbyteStream(name=stream_name, json_schema=json_schema)
+            streams.append(stream)
 
-        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -176,20 +176,22 @@ class SourceGoogleAds(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = config['table_name'] #TODO Probably would be more correct to use the catalog
 
-        query = config['gaql']
-        response = self._search(query, config)
+        for stream_config in config['streams']:
+            query = stream_config['gaql']
+            stream_name = stream_config['name'] #TODO How to use the stream name from the catalog
 
-        for batch in response:
-            for row in batch.results:
-                data = {}
-                for key in batch.field_mask.paths:
-                    parts = key.split('.')
-                    obj = getattr(row, parts[0])
-                    fld = getattr(obj, parts[1])
-                    data[key] = fld
-                yield AirbyteMessage(
-                    type=Type.RECORD,
-                    record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
-                )
+            response = self._search(query, config)
+
+            for batch in response:
+                for row in batch.results:
+                    data = {}
+                    for key in batch.field_mask.paths:
+                        parts = key.split('.')
+                        obj = getattr(row, parts[0])
+                        fld = getattr(obj, parts[1])
+                        data[key] = fld
+                    yield AirbyteMessage(
+                        type=Type.RECORD,
+                        record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
+                    )

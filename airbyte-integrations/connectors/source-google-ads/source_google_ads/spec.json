@@ -2,7 +2,7 @@
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-google-adwords",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Source Google Adwords Singer Spec",
+    "title": "Source Google Ads Spec",
     "type": "object",
     "required": [
       "developer_token",
@@ -10,8 +10,7 @@
       "client_secret",
       "refresh_token",
       "customer_id",
-      "table_name",
-      "gaql"
+      "streams"
     ],
     "additionalProperties": false,
     "properties": {
@@ -38,15 +37,75 @@
         "type": "string",
         "description": "Customer ids, a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>",
         "pattern": "^[0-9]{10}$",
-        "examples": ["1234567890"]
+        "examples": [
+          "1234567890"
+        ]
       },
-      "table_name": {
-        "type": "string",
-        "description": "Name of the search result"
-      },
-      "gaql": {
-        "type": "string",
-        "description": "The GAQL search term. <a href=\"https://developers.google.com/google-ads/api/fields/v7/overview_query_builder\">Query Builder</a>"
+      "streams": {
+        "$id": "#/properties/streams",
+        "type": "array",
+        "title": "The streams schema",
+        "description": "Stream mapping to GAQL",
+        "default": [
+          {
+            "name": "campaigns",
+            "gaql": "SELECT campaign.name, metrics.impressions, segments.date FROM campaign WHERE segments.date DURING LAST_7_DAYS"
+          }
+        ],
+        "examples": [
+          [
+            {
+              "name": "campaigns",
+              "gaql": "SELECT campaign.name, metrics.impressions, segments.date FROM campaign WHERE segments.date DURING LAST_7_DAYS"
+            }
+          ]
+        ],
+        "additionalItems": true,
+        "items": {
+          "$id": "#/properties/streams/items",
+          "anyOf": [
+            {
+              "$id": "#/properties/streams/items/anyOf/0",
+              "type": "object",
+              "title": "Stream schema",
+              "description": "Stream mapping of name to GAQL",
+              "default": {},
+              "examples": [
+                {
+                  "name": "campaigns",
+                  "gaql": "SELECT campaign.name, metrics.impressions, segments.date FROM campaign WHERE segments.date DURING LAST_7_DAYS"
+                }
+              ],
+              "required": [
+                "name",
+                "gaql"
+              ],
+              "properties": {
+                "name": {
+                  "$id": "#/properties/streams/items/anyOf/0/properties/name",
+                  "type": "string",
+                  "title": "The name schema",
+                  "description": "The stream name.",
+                  "default": "",
+                  "examples": [
+                    "campaigns"
+                  ]
+                },
+                "gaql": {
+                  "$id": "#/properties/streams/items/anyOf/0/properties/gaql",
+                  "type": "string",
+                  "title": "The gaql schema",
+                  "description": "The GAQL search term. <a href=\"https://developers.google.com/google-ads/api/fields/v7/overview_query_builder\">Query Builder</a>",
+                  "default": "",
+                  "examples": [
+                    "SELECT campaign.name, metrics.impressions, segments.date FROM campaign WHERE segments.date DURING LAST_7_DAYS"
+                  ]
+                }
+              },
+              "additionalProperties": true
+            }
+          ]
+        }
       }
     }
   }
