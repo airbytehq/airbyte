@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo } from "react";
-import { FastField, setIn } from "formik";
+import React, { useCallback } from "react";
+import { Field, setIn } from "formik";
 
 import {
   AirbyteStream,
@@ -7,12 +7,10 @@ import {
   DestinationSyncMode,
   SyncSchemaStream,
 } from "core/domain/catalog";
-import { naturalComparatorBy } from "utils/objects";
 import { FastFieldProps } from "formik/dist/FastField";
 import { CatalogSection } from "./CatalogSection";
 
 type IProps = {
-  filter?: string;
   streams: SyncSchemaStream[];
   destinationSupportedSyncModes: DestinationSyncMode[];
   onChangeSchema: (schema: SyncSchemaStream[]) => void;
@@ -22,7 +20,6 @@ const CatalogTree: React.FC<IProps> = ({
   streams,
   destinationSupportedSyncModes,
   onChangeSchema,
-  filter,
 }) => {
   const onUpdateStream = useCallback(
     (stream: AirbyteStream, newStream: Partial<AirbyteStreamConfiguration>) => {
@@ -41,24 +38,10 @@ const CatalogTree: React.FC<IProps> = ({
     [streams, onChangeSchema]
   );
 
-  const sortedSchema = useMemo(
-    () =>
-      streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
-    [streams]
-  );
-
-  const filteringSchema = useMemo(() => {
-    return filter
-      ? sortedSchema.filter((stream) =>
-          stream.stream.name.toLowerCase().includes(filter.toLowerCase())
-        )
-      : sortedSchema;
-  }, [filter, sortedSchema]);
-
   return (
     <>
-      {filteringSchema.map((streamNode) => (
-        <FastField name={`schema.streams[${streamNode.id}].config`}>
+      {streams.map((streamNode) => (
+        <Field name={`schema.streams[${streamNode.id}].config`}>
           {({ form }: FastFieldProps) => (
             <CatalogSection
               key={`schema.streams[${streamNode.id}].config`}
@@ -68,7 +51,7 @@ const CatalogTree: React.FC<IProps> = ({
               updateStream={onUpdateStream}
             />
           )}
-        </FastField>
+        </Field>
       ))}
     </>
   );

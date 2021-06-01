@@ -9,6 +9,7 @@ import { SyncSchemaStream } from "core/domain/catalog";
 import { Cell, Header, LightCell } from "components/SimpleTableComponents";
 import CatalogTree from "./CatalogTree";
 import Search from "./Search";
+import { naturalComparatorBy } from "utils/objects";
 
 const TreeViewContainer = styled.div`
   width: 100%;
@@ -43,16 +44,24 @@ const SchemaField: React.FC<SchemaViewProps> = ({
   const streams = field.value;
   const onChangeSchema = form.setValue;
   const [searchString, setSearchString] = useState("");
-  const hasSelectedItem = useMemo(
+
+  const sortedSchema = useMemo(
     () =>
-      streams.some(
-        (streamNode) =>
-          streamNode.config.selected &&
-          streamNode.stream.name
-            .toLowerCase()
-            .includes(searchString.toLowerCase())
-      ),
-    [streams, searchString]
+      streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
+    [streams]
+  );
+
+  const filteredStreams = useMemo(() => {
+    return searchString
+      ? sortedSchema.filter((stream) =>
+          stream.stream.name.toLowerCase().includes(searchString.toLowerCase())
+        )
+      : sortedSchema;
+  }, [searchString, sortedSchema]);
+
+  const hasSelectedItem = useMemo(
+    () => filteredStreams.some((streamNode) => streamNode.config.selected),
+    [filteredStreams]
   );
 
   const onCheckAll = useCallback(() => {
@@ -110,10 +119,9 @@ const SchemaField: React.FC<SchemaViewProps> = ({
       </SchemaHeader>
       <TreeViewContainer>
         <CatalogTree
-          streams={streams}
+          streams={filteredStreams}
           onChangeSchema={onChangeSchema}
           destinationSupportedSyncModes={destinationSupportedSyncModes}
-          filter={searchString}
         />
       </TreeViewContainer>
     </>

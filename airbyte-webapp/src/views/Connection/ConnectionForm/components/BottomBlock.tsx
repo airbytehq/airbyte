@@ -7,7 +7,6 @@ import { Button, Spinner, StatusIcon } from "components";
 type IProps = {
   isSubmitting: boolean;
   isValid: boolean;
-  dirty: boolean;
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
 };
@@ -62,7 +61,6 @@ const ErrorText = styled.div`
 
 const BottomBlock: React.FC<IProps> = ({
   isSubmitting,
-  dirty,
   errorMessage,
   additionBottomControls,
 }) => {
@@ -92,7 +90,7 @@ const BottomBlock: React.FC<IProps> = ({
       )}
       <div>
         {additionBottomControls || null}
-        <Button type="submit" disabled={isSubmitting || !dirty}>
+        <Button type="submit" disabled={isSubmitting}>
           <FormattedMessage id="onboarding.setUpConnection" />
         </Button>
       </div>

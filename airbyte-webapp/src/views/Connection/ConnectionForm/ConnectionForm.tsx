@@ -1,16 +1,9 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import * as yup from "yup";
 import { Field, FieldProps, Form, Formik } from "formik";
 
-import {
-  AirbyteStreamConfiguration,
-  DestinationSyncMode,
-  SyncMode,
-  SyncSchema,
-  SyncSchemaStream,
-} from "core/domain/catalog";
+import { SyncSchema } from "core/domain/catalog";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
 import ResetDataModal from "components/ResetDataModal";
@@ -25,6 +18,7 @@ import SchemaField from "./components/SchemaField";
 import EditControls from "./components/EditControls";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
+import { ConnectionFormValues, connectionValidationSchema } from "./formConfig";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -43,56 +37,6 @@ const ConnectorLabel = styled(ControlLabels)`
   margin-right: 20px;
   vertical-align: top;
 `;
-
-type ConnectionFormValues = {
-  frequency: string;
-  prefix: string;
-  schema: SyncSchema;
-};
-
-const connectionValidationSchema = yup.object<ConnectionFormValues>({
-  frequency: yup.string().required("form.empty.error"),
-  prefix: yup.string(),
-  schema: yup.object<SyncSchema>({
-    streams: yup.array().of(
-      yup.object<SyncSchemaStream>({
-        stream: yup.object(),
-        // @ts-ignore
-        config: yup.object().test({
-          name: "connectionSchema.config.validator",
-          // eslint-disable-next-line no-template-curly-in-string
-          message: "${path} is wrong",
-          test: function (value: AirbyteStreamConfiguration) {
-            if (!value.selected) {
-              return true;
-            }
-            if (DestinationSyncMode.Dedupted === value.destinationSyncMode) {
-              if (value.primaryKey.length === 0) {
-                return this.createError({
-                  message: "connectionForm.primaryKey.required",
-                  path: `schema.streams[${this.parent.id}].config.primaryKey`,
-                });
-              }
-            }
-
-            if (SyncMode.Incremental === value.syncMode) {
-              if (
-                !this.parent.stream.sourceDefinedCursor &&
-                value.cursorField.length === 0
-              ) {
-                return this.createError({
-                  message: "connectionForm.cursorField.required",
-                  path: `schema.streams[${this.parent.id}].config.cursorField`,
-                });
-              }
-            }
-            return true;
-          },
-        }),
-      })
-    ),
-  }),
-});
 
 type ConnectionFormProps = {
   schema: SyncSchema;
@@ -118,26 +62,26 @@ type ConnectionFormProps = {
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
+  onReset,
+  onCancel,
   sourceIcon,
   destinationIcon,
-  onReset,
   className,
   errorMessage,
-  schema,
   onDropDownSelect,
   frequencyValue,
   prefixValue,
   isEditMode,
   successMessage,
   additionBottomControls,
-  onCancel,
   editSchemeMode,
   isLoading,
   additionalSchemaControl,
   source,
   destination,
+  ...props
 }) => {
-  const initialSchema = useInitialSchema(schema);
+  const initialSchema = useInitialSchema(props.schema);
   const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
     destination.destinationDefinitionId
   );
@@ -157,11 +101,11 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       validateOnChange={true}
       validationSchema={connectionValidationSchema}
       onSubmit={async (values) => {
-        await onSubmit({
-          frequency: values.frequency,
-          prefix: values.prefix,
-          schema: values.schema,
-        });
+        await onSubmit(
+          connectionValidationSchema.cast(values, {
+            context: { isRequest: true },
+          })
+        );
 
         const requiresReset =
           isEditMode && !equal(initialSchema, values.schema) && !editSchemeMode;
@@ -188,15 +132,16 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <Connector name={destination.name} icon={destinationIcon} />
             </ConnectorLabel>
             <Field name="frequency">
-              {({ field }: FieldProps<string>) => (
+              {({ field, meta }: FieldProps<string>) => (
                 <ConnectorLabel
-                  // error={!!fieldProps.meta.error && fieldProps.meta.touched}
+                  error={!!meta.error && meta.touched}
                   label={formatMessage({
                     id: "form.frequency",
                   })}
                 >
                   <DropDown
                     {...field}
+                    error={!!meta.error && meta.touched}
                     data={dropdownData}
                     onSelect={(item) => {
                       if (onDropDownSelect) {
@@ -272,7 +217,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               additionBottomControls={additionBottomControls}
               isSubmitting={isSubmitting}
               isValid={isValid}
-              dirty={dirty}
               errorMessage={errorMessage}
             />
           )}

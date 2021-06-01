@@ -2,6 +2,7 @@ import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
+import { getIn, FormikErrors } from "formik";
 
 import {
   AirbyteStream,
@@ -15,9 +16,7 @@ import {
 import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
 
 import { Cell } from "components/SimpleTableComponents";
-import { DropDownRow } from "components/DropDown";
-import { CheckBox } from "components/CheckBox";
-import { RadioButton } from "components/RadioButton";
+import { RadioButton, CheckBox, DropDownRow } from "components";
 
 import { MainInfoCell } from "./components/MainInfoCell";
 import { SyncSettingsCell } from "./components/SyncSettingsCell";
@@ -27,7 +26,7 @@ import { TreeRowWrapper } from "./components/TreeRowWrapper";
 import { Rows } from "./components/Rows";
 
 import { equal, naturalComparatorBy } from "utils/objects";
-import { getIn } from "formik";
+import { ConnectionFormValues, SUPPORTED_MODES } from "../../formConfig";
 
 const StyledRadioButton = styled(RadioButton)`
   vertical-align: middle;
@@ -42,16 +41,9 @@ const Section = styled.div<{ error?: boolean }>`
     ${(props) => (props.error ? props.theme.dangerColor : "none")};
 `;
 
-const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
-  [SyncMode.FullRefresh, DestinationSyncMode.Overwrite],
-  [SyncMode.FullRefresh, DestinationSyncMode.Append],
-  [SyncMode.Incremental, DestinationSyncMode.Append],
-  [SyncMode.Incremental, DestinationSyncMode.Dedupted],
-];
-
 type TreeViewRowProps = {
   streamNode: SyncSchemaStream;
-  errors: any;
+  errors: FormikErrors<ConnectionFormValues>;
   destinationSupportedSyncModes: DestinationSyncMode[];
   updateStream: (
     stream: AirbyteStream,
@@ -77,12 +69,15 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
   );
 
   const onSelectSyncMode = useCallback(
-    (data: DropDownRow.IDataItem) => {
-      const [syncMode, destinationSyncMode] = data.value.split(".") as [
-        SyncMode,
-        DestinationSyncMode
-      ];
-      updateStreamWithConfig({ syncMode, destinationSyncMode });
+    (
+      data: DropDownRow.IDataItem & {
+        rawValue: {
+          syncMode: SyncMode;
+          destinationSyncMode: DestinationSyncMode;
+        };
+      }
+    ) => {
+      updateStreamWithConfig(data.rawValue);
     },
     [updateStreamWithConfig]
   );
@@ -97,28 +92,34 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
 
   const pkPaths = useMemo(
     () => new Set(config.primaryKey.map((pkPath) => pkPath.join("."))),
-    [config]
+    [config.primaryKey]
   );
 
-  const onPkSelect = (field: SyncSchemaField) => {
-    const pkPath = field.name.split(".");
+  const onPkSelect = useCallback(
+    (field: SyncSchemaField) => {
+      const pkPath = field.name.split(".");
 
-    let newPrimaryKey: string[][];
+      let newPrimaryKey: string[][];
 
-    if (pkPaths.has(field.name)) {
-      newPrimaryKey = config.primaryKey.filter((key) => !equal(key, pkPath));
-    } else {
-      newPrimaryKey = [...config.primaryKey, pkPath];
-    }
+      if (pkPaths.has(field.name)) {
+        newPrimaryKey = config.primaryKey.filter((key) => !equal(key, pkPath));
+      } else {
+        newPrimaryKey = [...config.primaryKey, pkPath];
+      }
 
-    updateStreamWithConfig({ primaryKey: newPrimaryKey });
-  };
+      updateStreamWithConfig({ primaryKey: newPrimaryKey });
+    },
+    [config.primaryKey, pkPaths, updateStreamWithConfig]
+  );
 
-  const onCursorSelect = (field: SyncSchemaField) => {
-    const cursorPath = field.name.split(".");
+  const onCursorSelect = useCallback(
+    (field: SyncSchemaField) => {
+      const cursorPath = field.name.split(".");
 
-    updateStreamWithConfig({ cursorField: cursorPath });
-  };
+      updateStreamWithConfig({ cursorField: cursorPath });
+    },
+    [updateStreamWithConfig]
+  );
 
   const pkRequired =
     config.destinationSyncMode === DestinationSyncMode.Dedupted;
@@ -146,6 +147,7 @@ const CatalogSectionInner: React.FC<TreeViewRowProps> = ({
           destinationSupportedSyncModes.includes(destinationSyncMode)
       ).map(([syncMode, destinationSyncMode]) => ({
         value: `${syncMode}.${destinationSyncMode}`,
+        rawValue: { syncMode, destinationSyncMode },
         text: formatMessage(
           {
             id: "connection.stream.syncMode",
