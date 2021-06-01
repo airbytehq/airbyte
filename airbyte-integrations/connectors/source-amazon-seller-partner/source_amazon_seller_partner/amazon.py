@@ -22,6 +22,9 @@
 # SOFTWARE.
 #
 
+
+from typing import Optional
+
 from sp_api.api import Orders, Reports
 from sp_api.base import Marketplaces
 
@@ -66,7 +69,7 @@ class AmazonClient:
     def get_entities(self):
         return self._ENTITIES
 
-    def is_report(self, stream_name: str) -> str:
+    def is_report(self, stream_name: str) -> bool:
         if stream_name in self._REPORT_ENTITIES:
             return True
         return False
@@ -74,7 +77,7 @@ class AmazonClient:
     def get_cursor_for_stream(self, stream_name: str) -> str:
         return self.CURSORS[stream_name]
 
-    def fetch_orders(self, updated_after: str, page_size: int, next_token: str) -> any:
+    def fetch_orders(self, updated_after: str, page_size: int, next_token: Optional[str]) -> any:
         page_count = page_size or self.PAGECOUNT
         response = Orders(credentials=self.credentials, marketplace=self.marketplace).get_orders(
             LastUpdatedAfter=updated_after, MaxResultsPerPage=page_count, NextToken=next_token
