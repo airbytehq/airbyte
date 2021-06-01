@@ -35,7 +35,7 @@ from airbyte_cdk.models import SyncMode
 
 
 class ShopifyStream(HttpStream, ABC):
-    url_base = ""
+    
     primary_key = "id"
     limit = 200
 
@@ -46,6 +46,10 @@ class ShopifyStream(HttpStream, ABC):
         self.api_password = api_password
         self.api_version = api_version
         self.since_id = 0
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -59,17 +63,17 @@ class ShopifyStream(HttpStream, ABC):
             return {"since_id": self.since_id}
 
     def request_params(
-        self,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-        **kwargs
+            self,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+            **kwargs
         ) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params["limit"] = self.limit
-        params["since_id"] = self.since_id
-        if next_page_token:
-            params.update(**next_page_token)
-        return params
+            params = super().request_params(next_page_token=next_page_token, **kwargs)
+            params["limit"] = self.limit
+            params["since_id"] = self.since_id
+            if next_page_token:
+                params.update(**next_page_token)
+            return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
@@ -88,81 +92,68 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     state_checkpoint_interval = math.inf
 
     @property
-    @abstractmethod
     def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
-        and define a cursor field.
-        """
-        pass
+        return "id"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, 0))}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
 ### STREAM: customers
 class Customers(IncrementalShopifyStream):
     data_field = "customers"
-    cursor_field = "id"
 
     def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+        return f"{self.data_field}.json"
 
 ### STREAM: orders
 class Orders(IncrementalShopifyStream):
     data_field = "orders"
-    cursor_field = "id"
 
     def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+        return f"{self.data_field}.json"
 
 ### STREAM: products
 class Products(IncrementalShopifyStream):
     data_field = "products"
-    cursor_field = "id"
 
     def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+        return f"{self.data_field}.json"
 
 ### STREAM: abandoned_checkouts > checkouts
 class AbandonedCheckouts(IncrementalShopifyStream):
     data_field = "checkouts"
-    cursor_field = "id"
 
     def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+        return f"{self.data_field}.json"
 
 ### STREAM: metafields
 class Metafields(IncrementalShopifyStream):
     data_field = "metafields"
-    cursor_field = "id"
 
     def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+        return f"{self.data_field}.json"
 
 ### STREAM: custom_collections > custom collections
 class CustomCollections(IncrementalShopifyStream):
     data_field = "custom_collections"
-    cursor_field = "id"
 
     def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+        return f"{self.data_field}.json"
 
 ### STREAM: collects
 class Collects(IncrementalShopifyStream):
     data_field = "collects"
-    cursor_field = "id"
 
     def path(self, **kwargs) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/{self.data_field}.json"
+        return f"{self.data_field}.json"
 
 ### STREAM: Refunds from orders
 class OrderRefunds(IncrementalShopifyStream):
     data_field = "refunds"
-    cursor_field = "id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice['order_id']
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/orders/{order_id}/{self.data_field}.json"
+        return f"orders/{order_id}/{self.data_field}.json"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         orders_stream = Orders(self.shop, self.api_key, self.api_password, self.api_version)
@@ -172,11 +163,10 @@ class OrderRefunds(IncrementalShopifyStream):
 ### STREAM: Refunds from orders
 class Transactions(IncrementalShopifyStream):
     data_field = "transactions"
-    cursor_field = "id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         order_id = stream_slice['order_id']
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/orders/{order_id}/{self.data_field}.json"
+        return f"orders/{order_id}/{self.data_field}.json"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         orders_stream = Orders(self.shop, self.api_key, self.api_password, self.api_version)
