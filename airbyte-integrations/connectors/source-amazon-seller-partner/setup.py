@@ -23,11 +23,24 @@
 #
 
 
-import sys
+from setuptools import find_packages, setup
 
-from base_python.entrypoint import launch
-from source_mailchimp import SourceMailchimp
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "python-amazon-sp-api"]
 
-if __name__ == "__main__":
-    source = SourceMailchimp()
-    launch(source, sys.argv[1:])
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "pytest-mock",
+]
+
+setup(
+    name="source_amazon_seller_partner",
+    description="Source implementation for Amazon Seller Partner.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
+    packages=find_packages(),
+    install_requires=MAIN_REQUIREMENTS,
+    package_data={"": ["*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
+)

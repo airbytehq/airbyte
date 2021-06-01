@@ -64,8 +64,8 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.DockerProcessBuilderFactory;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
@@ -100,7 +100,7 @@ public abstract class DestinationAcceptanceTest {
 
   private Path jobRoot;
   protected Path localRoot;
-  private ProcessBuilderFactory pbf;
+  private ProcessFactory processFactory;
 
   /**
    * Name of the docker image that the tests will run against.
@@ -274,7 +274,7 @@ public abstract class DestinationAcceptanceTest {
 
     setup(testEnv);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
+    processFactory = new DockerProcessFactory(workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
   }
 
   @AfterEach
@@ -640,9 +640,9 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfig();
 
-    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+    final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
-        pbf));
+        processFactory));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -703,9 +703,9 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfig();
 
-    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+    final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
-        pbf));
+        processFactory));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -806,12 +806,12 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
+    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   private StandardCheckConnectionOutput runCheck(JsonNode config) throws WorkerException {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
+    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
@@ -842,7 +842,8 @@ public abstract class DestinationAcceptanceTest {
         .withCatalog(catalog)
         .withDestinationConnectionConfiguration(config);
 
-    final AirbyteDestination destination = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
+    final AirbyteDestination destination =
+        new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
 
     destination.start(targetConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
@@ -857,7 +858,7 @@ public abstract class DestinationAcceptanceTest {
 
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
-        pbf);
+        processFactory);
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog())) {

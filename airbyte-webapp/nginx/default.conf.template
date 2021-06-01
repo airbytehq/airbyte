@@ -1,3 +1,7 @@
+upstream api-server {
+    server $INTERNAL_API_HOST;
+}
+
 server {
     listen       80;
     listen  [::]:80;
@@ -28,5 +32,9 @@ server {
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
         root   /usr/share/nginx/html;
+    }
+
+    location /api/ {
+        proxy_pass http://api-server/api/;
     }
 }

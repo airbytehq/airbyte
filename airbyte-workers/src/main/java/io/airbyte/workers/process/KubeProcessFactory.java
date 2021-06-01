@@ -39,20 +39,20 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
+public class KubeProcessFactory implements ProcessFactory {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessBuilderFactory.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
   private static final Path WORKSPACE_MOUNT_DESTINATION = Path.of("/workspace");
 
   private final Path workspaceRoot;
 
-  public KubeProcessBuilderFactory(Path workspaceRoot) {
+  public KubeProcessFactory(Path workspaceRoot) {
     this.workspaceRoot = workspaceRoot;
   }
 
   @Override
-  public ProcessBuilder create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+  public Process create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
       throws WorkerException {
 
     try {
@@ -90,7 +90,7 @@ public class KubeProcessBuilderFactory implements ProcessBuilderFactory {
       // TODO handle entrypoint override (to run DbtTransformationRunner for example)
       LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
 
-      return new ProcessBuilder(cmd);
+      return new ProcessBuilder(cmd).start();
     } catch (Exception e) {
       throw new WorkerException(e.getMessage());
     }

@@ -30,31 +30,34 @@ import static org.mockito.Mockito.mock;
 
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.normalization.NormalizationRunner.NoOpNormalizationRunner;
+import io.airbyte.workers.process.ProcessFactory;
+import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class NormalizationRunnerFactoryTest {
 
-  private ProcessBuilderFactory pbf;
+  private ProcessFactory processFactory;
 
   @BeforeEach
   void setup() {
-    pbf = mock(ProcessBuilderFactory.class);
+    processFactory = mock(ProcessFactory.class);
   }
 
   @Test
   void testMappings() {
     assertEquals(DestinationType.BIGQUERY,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-bigquery:0.1.0", pbf)).getDestinationType());
+            "airbyte/destination-bigquery:0.1.0", processFactory)).getDestinationType());
     assertEquals(DestinationType.POSTGRES,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-postgres:0.1.0", pbf)).getDestinationType());
+            "airbyte/destination-postgres:0.1.0", processFactory)).getDestinationType());
     assertEquals(DestinationType.SNOWFLAKE,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-snowflake:0.1.0", pbf)).getDestinationType());
+            "airbyte/destination-snowflake:0.1.0", processFactory)).getDestinationType());
     assertThrows(IllegalStateException.class,
-        () -> NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", pbf));
+        () -> NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", processFactory));
   }
 
 }

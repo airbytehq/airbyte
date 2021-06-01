@@ -3,16 +3,16 @@
   dockerRepository: airbyte/source-asana
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-asana
-- sourceDefinitionId: 9fed261d-d107-47fd-8c8b-323023db6e20
+- sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   name: Exchange Rates Api
-  dockerRepository: airbyte/source-exchangeratesapi-singer
-  dockerImageTag: 0.2.2
-  documentationUrl: https://hub.docker.com/r/airbyte/source-exchangeratesapi-singer
+  dockerRepository: airbyte/source-exchange-rates
+  dockerImageTag: 0.2.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-exchange-rates
   icon: exchangeratesapi.svg
 - sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   name: File
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/r/airbyte/source-file
   icon: file.svg
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
@@ -42,7 +42,7 @@
 - sourceDefinitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
   name: Recurly
   dockerRepository: airbyte/source-recurly
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-recurly
   icon: recurly.svg
 - sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
@@ -66,7 +66,7 @@
 - sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   name: MySQL
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
 - sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
@@ -78,13 +78,13 @@
 - sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   name: Stripe
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.11
   documentationUrl: https://hub.docker.com/r/airbyte/source-stripe
   icon: stripe.svg
 - sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   name: Mailchimp
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-mailchimp
   icon: mailchimp.svg
 - sourceDefinitionId: 39f092a6-8c87-4f6f-a8d9-5cef45b7dbe1

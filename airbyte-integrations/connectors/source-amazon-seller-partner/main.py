@@ -23,8 +23,11 @@
 #
 
 
-from source_file.client import Client
+import sys
 
+from airbyte_cdk.entrypoint import launch
+from source_amazon_seller_partner import SourceAmazonSellerPartner
 
-def test_example_method():
-    assert Client.dtype_to_json_type("bool") == "boolean"
+if __name__ == "__main__":
+    source = SourceAmazonSellerPartner()
+    launch(source, sys.argv[1:])
