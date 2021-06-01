@@ -22,17 +22,6 @@
 # SOFTWARE.
 #
 
-import pytest as pytest
-from airbyte_cdk.logger import AirbyteLogger
-from source_harvest.source import SourceHarvest
 
-
-@pytest.fixture(name="wrong_credentials")
-def wrong_credentials_fixture():
-    return {"api_token": "1111111.aa.wrong-api-token", "account_id": "1111111", "updated_since": "1000-06-26T21:20:07Z"}
-
-
-def test_source_wrong_credentials(wrong_credentials):
-    source = SourceHarvest()
-    status, error = source.check_connection(logger=AirbyteLogger(), config=wrong_credentials)
-    assert not status
+def test_example_method():
+    assert True

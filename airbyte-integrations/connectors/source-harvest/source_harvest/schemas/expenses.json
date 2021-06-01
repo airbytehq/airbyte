@@ -149,8 +149,7 @@
           "type": ["null", "integer"]
         },
         "number": {
-          "type": ["null", "string"],
-          "format": "date"
+          "type": ["null", "string"]
         }
       }
     }

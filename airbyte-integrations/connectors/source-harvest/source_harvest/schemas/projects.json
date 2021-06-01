@@ -33,7 +33,8 @@
       "type": ["null", "number"]
     },
     "over_budget_notification_date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "show_budget_to_all": {
       "type": ["null", "boolean"]

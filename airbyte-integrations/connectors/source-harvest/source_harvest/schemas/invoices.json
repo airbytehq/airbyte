@@ -9,8 +9,7 @@
       "type": ["null", "string"]
     },
     "number": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "string"]
     },
     "purchase_order": {
       "type": ["null", "string"]

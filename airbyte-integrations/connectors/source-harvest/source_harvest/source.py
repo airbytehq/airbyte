@@ -26,6 +26,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -68,7 +69,7 @@ from .auth import HarvestTokenAuthenticator
 
 
 class SourceHarvest(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             auth = HarvestTokenAuthenticator(token=config["api_token"], account_id=config["account_id"])
             updated_since = pendulum.parse(config["updated_since"])
@@ -84,6 +85,7 @@ class SourceHarvest(AbstractSource):
         """
         auth = HarvestTokenAuthenticator(token=config["api_token"], account_id=config["account_id"])
         updated_since = pendulum.parse(config["updated_since"])
+        from_date = updated_since.date()
 
         streams = [
             Clients(authenticator=auth, updated_since=updated_since),
@@ -108,16 +110,16 @@ class SourceHarvest(AbstractSource):
             BillableRates(authenticator=auth, updated_since=updated_since),
             CostRates(authenticator=auth, updated_since=updated_since),
             ProjectAssignments(authenticator=auth, updated_since=updated_since),
-            ExpensesClients(authenticator=auth),
-            ExpensesProjects(authenticator=auth),
-            ExpensesCategories(authenticator=auth),
-            ExpensesTeam(authenticator=auth),
-            Uninvoiced(authenticator=auth),
-            TimeClients(authenticator=auth),
-            TimeProjects(authenticator=auth),
-            TimeTasks(authenticator=auth),
-            TimeTeam(authenticator=auth),
-            ProjectBudget(authenticator=auth),
+            ExpensesClients(authenticator=auth, from_date=from_date),
+            ExpensesProjects(authenticator=auth, from_date=from_date),
+            ExpensesCategories(authenticator=auth, from_date=from_date),
+            ExpensesTeam(authenticator=auth, from_date=from_date),
+            Uninvoiced(authenticator=auth, from_date=from_date),
+            TimeClients(authenticator=auth, from_date=from_date),
+            TimeProjects(authenticator=auth, from_date=from_date),
+            TimeTasks(authenticator=auth, from_date=from_date),
+            TimeTeam(authenticator=auth, from_date=from_date),
+            ProjectBudget(authenticator=auth, from_date=from_date),
         ]
 
         return streams

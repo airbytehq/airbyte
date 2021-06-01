@@ -43,15 +43,18 @@ class HarvestStreamWithPagination(HarvestStream):
     primary_key = "id"
 
     @property
-    @abstractmethod
     def data_field(self) -> str:
         """
         :return: Default field name to get data from response
         """
+        return self.name
+
+    def path(self, **kwargs) -> str:
+        return self.name
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
-        if stream_data["next_page"] is not None:
+        if stream_data.get("next_page"):
             return {
                 "page": stream_data["next_page"],
             }
@@ -67,28 +70,8 @@ class HarvestStreamWithPagination(HarvestStream):
         """
         :return an iterable containing each record in the response
         """
-        records = response.json()[self.data_field]
-        for record in records:
-            yield record
-
-
-class HarvestStreamWithPaginationSliced(HarvestStreamWithPagination):
-    @property
-    @abstractmethod
-    def parent_stream(self) -> HarvestStreamWithPagination:
-        """
-        :return: parent stream class
-        """
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, any]]]:
-        updated_since = self._updated_since
-        if stream_state and stream_state.get(self.cursor_field):
-            updated_since = stream_state[self.cursor_field]
-        items = self.parent_stream(authenticator=self.authenticator, updated_since=updated_since)
-        for item in items.read_records(sync_mode=sync_mode):
-            yield {"parent_id": item["id"]}
+        records = response.json().get(self.data_field, [])
+        yield from records
 
 
 class HarvestStreamIncrementalMixin(HttpStream, ABC):
@@ -109,7 +92,7 @@ class HarvestStreamIncrementalMixin(HttpStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state)
+        params = super().request_params(stream_state=stream_state, **kwargs)
         updated_since = self._updated_since
         if stream_state.get(self.cursor_field):
             updated_since = stream_state[self.cursor_field]
@@ -117,18 +100,27 @@ class HarvestStreamIncrementalMixin(HttpStream, ABC):
         return params
 
 
-class Contacts(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "contacts"
+class HarvestStreamWithPaginationSliced(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
+    @property
+    @abstractmethod
+    def parent_stream_name(self) -> str:
+        """
+        :return: parent stream class name
+        """
 
-    def path(self, **kwargs) -> str:
-        return "contacts"
+    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        parent_stream = type(self.parent_stream_name, (HarvestStreamWithPagination,), {})
+        items = parent_stream(authenticator=self.authenticator)
+        for item in items.read_records(sync_mode=sync_mode):
+            yield {"parent_id": item["id"]}
+
+
+class Contacts(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
+    pass
 
 
 class Clients(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "clients"
-
-    def path(self, **kwargs) -> str:
-        return "clients"
+    pass
 
 
 class Company(HarvestStream):
@@ -143,219 +135,162 @@ class Company(HarvestStream):
 
 
 class Invoices(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "invoices"
-
-    def path(self, **kwargs) -> str:
-        return "invoices"
+    pass
 
 
-class InvoiceMessages(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
-    data_field = "invoice_messages"
-    parent_stream = Invoices
+class InvoiceMessages(HarvestStreamWithPaginationSliced):
+    parent_stream_name = "Invoices"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"invoices/{stream_slice['parent_id']}/messages"
 
 
-class InvoicePayments(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
-    data_field = "invoice_payments"
-    parent_stream = Invoices
+class InvoicePayments(HarvestStreamWithPaginationSliced):
+    parent_stream_name = "Invoices"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"invoices/{stream_slice['parent_id']}/payments"
 
 
 class InvoiceItemCategories(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "invoice_item_categories"
-
-    def path(self, **kwargs) -> str:
-        return "invoice_item_categories"
+    pass
 
 
 class Estimates(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "estimates"
-
-    def path(self, **kwargs) -> str:
-        return "estimates"
+    pass
 
 
-class EstimateMessages(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
-    data_field = "estimate_messages"
-    parent_stream = Estimates
+class EstimateMessages(HarvestStreamWithPaginationSliced):
+    parent_stream_name = "Estimates"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"estimates/{stream_slice['parent_id']}/messages"
 
 
 class EstimateItemCategories(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "estimate_item_categories"
-
-    def path(self, **kwargs) -> str:
-        return "estimate_item_categories"
+    pass
 
 
 class Expenses(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "expenses"
-
-    def path(self, **kwargs) -> str:
-        return "expenses"
+    pass
 
 
 class ExpenseCategories(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "expense_categories"
-
-    def path(self, **kwargs) -> str:
-        return "expense_categories"
+    pass
 
 
 class Tasks(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "tasks"
-
-    def path(self, **kwargs) -> str:
-        return "tasks"
+    pass
 
 
 class TimeEntries(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "time_entries"
-
-    def path(self, **kwargs) -> str:
-        return "time_entries"
+    pass
 
 
 class UserAssignments(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "user_assignments"
-
-    def path(self, **kwargs) -> str:
-        return "user_assignments"
+    pass
 
 
 class TaskAssignments(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "task_assignments"
-
-    def path(self, **kwargs) -> str:
-        return "task_assignments"
+    pass
 
 
 class Projects(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "projects"
-
-    def path(self, **kwargs) -> str:
-        return "projects"
+    pass
 
 
 class Roles(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "roles"
-
-    def path(self, **kwargs) -> str:
-        return "roles"
+    pass
 
 
 class Users(HarvestStreamWithPagination, HarvestStreamIncrementalMixin):
-    data_field = "users"
-
     def path(self, **kwargs) -> str:
-        return "users"
+        return self.name
 
 
-class BillableRates(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
-    data_field = "billable_rates"
-    parent_stream = Users
+class BillableRates(HarvestStreamWithPaginationSliced):
+    parent_stream_name = "Users"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"users/{stream_slice['parent_id']}/billable_rates"
 
 
-class CostRates(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
-    data_field = "cost_rates"
-    parent_stream = Users
+class CostRates(HarvestStreamWithPaginationSliced):
+    parent_stream_name = "Users"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"users/{stream_slice['parent_id']}/cost_rates"
 
 
-class ProjectAssignments(HarvestStreamWithPaginationSliced, HarvestStreamIncrementalMixin):
-    data_field = "project_assignments"
-    parent_stream = Users
+class ProjectAssignments(HarvestStreamWithPaginationSliced):
+    parent_stream_name = "Users"
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"users/{stream_slice['parent_id']}/project_assignments"
 
 
 class ReportsBase(HarvestStreamWithPagination, ABC):
+    data_field = "results"
+    date_param_template = "%Y%m%d"
+
+    def __init__(self, from_date: pendulum.date = pendulum.now().date().subtract(years=1), **kwargs):
+        super().__init__(**kwargs)
+        self._from_date = from_date
+
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         current_date = pendulum.now()
         # `from` and `to` params are required for expenses reports calls
         # min `from` value is current_date - 1 year
-        params.update({"from": current_date.subtract(years=1).strftime("%Y%m%d"), "to": current_date.strftime("%Y%m%d")})
+        params.update({"from": self._from_date.strftime("%Y%m%d"), "to": current_date.strftime("%Y%m%d")})
         return params
 
 
 class ExpensesClients(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/expenses/clients"
 
 
 class ExpensesProjects(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/expenses/projects"
 
 
 class ExpensesCategories(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/expenses/categories"
 
 
 class ExpensesTeam(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/expenses/team"
 
 
 class Uninvoiced(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/uninvoiced"
 
 
 class TimeClients(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/time/clients"
 
 
 class TimeProjects(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/time/projects"
 
 
 class TimeTasks(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/time/tasks"
 
 
 class TimeTeam(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/time/team"
 
 
 class ProjectBudget(ReportsBase):
-    data_field = "results"
-
     def path(self, **kwargs) -> str:
         return "reports/project_budget"

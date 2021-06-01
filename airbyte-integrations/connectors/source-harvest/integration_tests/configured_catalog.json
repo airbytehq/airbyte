@@ -183,8 +183,7 @@
               "type": ["null", "string"]
             },
             "number": {
-              "type": ["null", "string"],
-              "format": "date"
+              "type": ["null", "string"]
             },
             "purchase_order": {
               "type": ["null", "string"]
@@ -513,12 +512,10 @@
               "type": ["null", "string"]
             },
             "number": {
-              "type": ["null", "string"],
-              "format": "date"
+              "type": ["null", "string"]
             },
             "purchase_order": {
-              "type": ["null", "string"],
-              "format": "date"
+              "type": ["null", "string"]
             },
             "amount": {
               "type": ["null", "number"]
@@ -850,8 +847,7 @@
                   "type": ["null", "integer"]
                 },
                 "number": {
-                  "type": ["null", "string"],
-                  "format": "date"
+                  "type": ["null", "string"]
                 }
               }
             }
@@ -1304,7 +1300,8 @@
               "type": ["null", "number"]
             },
             "over_budget_notification_date": {
-              "type": ["null", "string"]
+              "type": ["null", "string"],
+              "format": "date"
             },
             "show_budget_to_all": {
               "type": ["null", "boolean"]
@@ -1814,10 +1811,10 @@
               "type": ["null", "string"]
             },
             "total_hours": {
-              "type": ["null", "float"]
+              "type": ["null", "number"]
             },
             "billable_hours": {
-              "type": ["null", "float"]
+              "type": ["null", "number"]
             },
             "currency": {
               "type": ["null", "string"]
@@ -1919,10 +1916,10 @@
               "type": ["null", "boolean"]
             },
             "total_hours": {
-              "type": ["null", "float"]
+              "type": ["null", "number"]
             },
             "billable_hours": {
-              "type": ["null", "float"]
+              "type": ["null", "number"]
             },
             "currency": {
               "type": ["null", "string"]

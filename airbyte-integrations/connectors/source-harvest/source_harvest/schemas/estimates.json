@@ -9,12 +9,10 @@
       "type": ["null", "string"]
     },
     "number": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "string"]
     },
     "purchase_order": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "string"]
     },
     "amount": {
       "type": ["null", "number"]
@@ -94,33 +92,7 @@
       }
     },
     "line_items": {
-      "type": ["null", "array"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "kind": {
-          "type": ["null", "string"]
-        },
-        "description": {
-          "type": ["null", "string"]
-        },
-        "quantity": {
-          "type": ["null", "integer"]
-        },
-        "unit_price": {
-          "type": ["null", "integer"]
-        },
-        "amount": {
-          "type": ["null", "integer"]
-        },
-        "taxed": {
-          "type": ["null", "boolean"]
-        },
-        "taxed2": {
-          "type": ["null", "boolean"]
-        }
-      }
+      "type": ["null", "array"]
     }
   }
 }

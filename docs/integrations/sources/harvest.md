@@ -2,34 +2,34 @@
 
 ## Overview
 
-The Hubspot connector can be used to sync your Harvest data. It supports full refresh sync for all streams and incremental sync for all streams except of Expense Reports streams which are: Clients Report, Projects Report, Categories Report, Team Report.
+The Harvest connector can be used to sync your Harvest data. It supports full refresh sync for all streams and incremental sync for all streams except of Expense Reports streams which are: Clients Report, Projects Report, Categories Report, Team Report.
 Incremental sync is also now available for Company stream, but it always has only one record.
 
 ### Output schema
 
 Several output streams are available from this source:
 
-* [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/)
-* [Clients](https://help.getharvest.com/api-v2/clients-api/clients/clients/)
+* [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/) \(Incremental\)
+* [Clients](https://help.getharvest.com/api-v2/clients-api/clients/clients/) \(Incremental\)
 * [Company](https://help.getharvest.com/api-v2/company-api/company/company/)
-* [Invoice Messages](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-messages/)
-* [Invoice Payments](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-payments/)
-* [Invoices](https://help.getharvest.com/api-v2/invoices-api/invoices/invoices/)
-* [Invoice Item Categories](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-item-categories/)
-* [Estimate Messages](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-messages/)
-* [Estimates](https://help.getharvest.com/api-v2/estimates-api/estimates/estimates/)
-* [Estimate Item Categories](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/)
-* [Expenses](https://help.getharvest.com/api-v2/expenses-api/expenses/expenses/)
-* [Expense Categories](https://help.getharvest.com/api-v2/expenses-api/expenses/expense-categories/)
-* [Tasks](https://help.getharvest.com/api-v2/tasks-api/tasks/tasks/)
-* [Time Entries](https://help.getharvest.com/api-v2/timesheets-api/timesheets/time-entries/)
-* [Project User Assignments](https://help.getharvest.com/api-v2/projects-api/projects/user-assignments/)
-* [Project Task Assignments](https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/)
-* [Projects](https://help.getharvest.com/api-v2/projects-api/projects/projects/)
-* [Roles](https://help.getharvest.com/api-v2/roles-api/roles/roles/)
-* [User Billable Rates](https://help.getharvest.com/api-v2/users-api/users/billable-rates/)
-* [User Cost Rates](https://help.getharvest.com/api-v2/users-api/users/cost-rates/)
-* [User Project Assignments](https://help.getharvest.com/api-v2/users-api/users/project-assignments/)
+* [Invoice Messages](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-messages/) \(Incremental\)
+* [Invoice Payments](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-payments/) \(Incremental\)
+* [Invoices](https://help.getharvest.com/api-v2/invoices-api/invoices/invoices/) \(Incremental\)
+* [Invoice Item Categories](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-item-categories/) \(Incremental\)
+* [Estimate Messages](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-messages/) \(Incremental\)
+* [Estimates](https://help.getharvest.com/api-v2/estimates-api/estimates/estimates/) \(Incremental\)
+* [Estimate Item Categories](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/) \(Incremental\)
+* [Expenses](https://help.getharvest.com/api-v2/expenses-api/expenses/expenses/) \(Incremental\)
+* [Expense Categories](https://help.getharvest.com/api-v2/expenses-api/expenses/expense-categories/) \(Incremental\)
+* [Tasks](https://help.getharvest.com/api-v2/tasks-api/tasks/tasks/) \(Incremental\)
+* [Time Entries](https://help.getharvest.com/api-v2/timesheets-api/timesheets/time-entries/) \(Incremental\)
+* [Project User Assignments](https://help.getharvest.com/api-v2/projects-api/projects/user-assignments/) \(Incremental\)
+* [Project Task Assignments](https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/) \(Incremental\)
+* [Projects](https://help.getharvest.com/api-v2/projects-api/projects/projects/) \(Incremental\)
+* [Roles](https://help.getharvest.com/api-v2/roles-api/roles/roles/) \(Incremental\)
+* [User Billable Rates](https://help.getharvest.com/api-v2/users-api/users/billable-rates/) \(Incremental\)
+* [User Cost Rates](https://help.getharvest.com/api-v2/users-api/users/cost-rates/) \(Incremental\)
+* [User Project Assignments](https://help.getharvest.com/api-v2/users-api/users/project-assignments/) \(Incremental\)
 * [Expense Reports](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/)
 * [Uninvoiced Report](https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/)
 * [Time Reports](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/)

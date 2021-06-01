@@ -1,6 +1,4 @@
 *
-!Dockerfile
-!Dockerfile.test
 !main.py
 !source_harvest
 !setup.py

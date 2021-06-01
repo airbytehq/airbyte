@@ -9,10 +9,10 @@
       "type": ["null", "string"]
     },
     "total_hours": {
-      "type": ["null", "float"]
+      "type": ["null", "number"]
     },
     "billable_hours": {
-      "type": ["null", "float"]
+      "type": ["null", "number"]
     },
     "currency": {
       "type": ["null", "string"]
