@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,10 +20,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
-from typing import Dict, Generator, Mapping, DefaultDict
+from typing import DefaultDict, Dict, Generator, Mapping
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -32,7 +34,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
-    SyncMode
+    SyncMode,
 )
 from airbyte_cdk.sources import Source
 
@@ -49,7 +51,7 @@ class SourceAmazonSellerPartner(Source):
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         client = self._get_client(config)
-        logger.info(f"Checking access to Amazon SP-API")
+        logger.info("Checking access to Amazon SP-API")
         try:
             client.check_connection()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
