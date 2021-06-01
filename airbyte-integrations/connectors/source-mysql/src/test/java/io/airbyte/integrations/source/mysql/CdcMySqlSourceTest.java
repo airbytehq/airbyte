@@ -132,7 +132,6 @@ public class CdcMySqlSourceTest {
   }
 
   private void init() {
-    DebeziumRecordIterator.sleepTimeUnit = TimeUnit.SECONDS;
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     source = new MySqlSource();

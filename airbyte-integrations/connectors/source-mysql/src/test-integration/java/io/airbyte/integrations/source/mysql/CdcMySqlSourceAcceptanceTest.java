@@ -109,7 +109,6 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    DebeziumRecordIterator.sleepTimeUnit = TimeUnit.SECONDS;
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 
