@@ -1,7 +1,9 @@
 # Build statuses
 
 # Sources 
- AppsFlyer   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appsflyer-singer) 
+ Amplitude   [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amplitude) 
+ 
+ AppsFlyer   [![source-appsflyer-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appsflyer-singer) 
 
  App Store   [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appstore-singer) 
 
