@@ -25,7 +25,7 @@
 package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.io.IOs;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.tools.ant.types.Commandline;
 import org.slf4j.Logger;
@@ -76,8 +77,8 @@ public class DbtTransformationRunner implements AutoCloseable {
   }
 
   public boolean transform(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) throws Exception {
-    IOs.writeFile(jobRoot, DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"));
     try {
+      final Map<String, String> files = ImmutableMap.of(DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"));
       final List<String> dbtArguments = new ArrayList<>();
       dbtArguments.add("/data/job/transform/" + DBT_ENTRYPOINT_SH);
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
@@ -87,7 +88,7 @@ public class DbtTransformationRunner implements AutoCloseable {
       if (!dbtConfig.getDbtArguments().contains("--project-dir=")) {
         dbtArguments.add("--project-dir=/data/job/transform/git_repo/");
       }
-      process = processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), "/bin/bash", dbtArguments);
+      process = processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), files, "/bin/bash", dbtArguments);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

@@ -26,6 +26,9 @@ package io.airbyte.workers.process;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.workers.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,6 +55,20 @@ class DockerProcessFactoryTest {
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
     assertFalse(processFactory.checkImageExists("airbyte/fake:0.1.2"));
+  }
+
+  // todo: make sure this actually works
+  @Test
+  public void testFileWriting() throws IOException, WorkerException {
+    Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
+    Path jobRoot = workspaceRoot.resolve("job");
+
+    final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
+    processFactory.create("job_id", 0, jobRoot, "airbyte/scheduler:dev", ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi");
+
+    assertEquals(
+        Jsons.jsonNode(ImmutableMap.of("data", 2)),
+        Jsons.deserialize(IOs.readFile(jobRoot, "config.json")));
   }
 
 }

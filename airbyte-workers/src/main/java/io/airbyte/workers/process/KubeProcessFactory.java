@@ -35,6 +35,7 @@ import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,10 +53,21 @@ public class KubeProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+  public Process create(String jobId,
+                        int attempt,
+                        final Path jobRoot,
+                        final String imageName,
+                        final Map<String, String> files,
+                        final String entrypoint,
+                        final String... args)
       throws WorkerException {
 
     try {
+      for (Map.Entry<String, String> file : files.entrySet()) {
+        // todo: handle mounting these as temporary secrets
+        LOGGER.error("Skipping setting file for process: " + file.getKey());
+      }
+
       final String template = MoreResources.readResource("kube_runner_template.yaml");
 
       // used to differentiate source and destination processes with the same id and attempt
