@@ -46,9 +46,6 @@ class AmplitudeStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {}
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         respose_data = response.json()
         yield from respose_data.get(self.name, [])
@@ -76,7 +73,7 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
     cursor_field = "date"
     date_template = "%Y%m%d"
 
-    def __init__(self, start_date, **kwargs):
+    def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
 
