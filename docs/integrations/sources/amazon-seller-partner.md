@@ -9,6 +9,7 @@ This source can sync data for the [Amazon Seller Partner API](https://github.com
 This source is capable of syncing the following streams:
 
 * [Orders](https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md)
+* [GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reportType_string_array_values.md#order-tracking-reports)
 
 
 ### Data type mapping
