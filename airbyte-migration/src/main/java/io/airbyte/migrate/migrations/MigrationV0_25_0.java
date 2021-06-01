@@ -86,23 +86,23 @@ public class MigrationV0_25_0 extends BaseMigration implements Migration {
 
     Set<String> destinationIds = new HashSet<>();
 
-    for (final Map.Entry<ResourceId, Stream<JsonNode>> inputEntry : inputData.entrySet()) {
-      if (!inputEntry.getKey().equals(DESTINATION_CONNECTION_RESOURCE_ID)) {
-        continue;
-      }
+    inputData.getOrDefault(DESTINATION_CONNECTION_RESOURCE_ID, Stream.empty())
+        .forEach(destinationConnection -> {
+          JsonNode configuration = destinationConnection.get("configuration");
+          boolean basicNormalization = ((ObjectNode) configuration).remove("basic_normalization")
+              .asBoolean();
+          ((ObjectNode) destinationConnection).set("configuration", configuration);
+          if (basicNormalization) {
+            destinationIds.add(destinationConnection.get("destinationId").asText());
+          }
 
-      inputEntry.getValue().forEach(destinationConnection -> {
-        JsonNode configuration = destinationConnection.get("configuration");
-        boolean basicNormalization = ((ObjectNode) configuration).remove("basic_normalization").asBoolean();
-        ((ObjectNode) destinationConnection).set("configuration", configuration);
-        if (basicNormalization) {
-          destinationIds.add(destinationConnection.get("destinationId").asText());
-        }
-
-        final Consumer<JsonNode> destinationConnectionConsumer = outputData.get(inputEntry.getKey());
-        destinationConnectionConsumer.accept(destinationConnection);
-      });
-    }
+          final Consumer<JsonNode> destinationConnectionConsumer = outputData
+              .get(DESTINATION_CONNECTION_RESOURCE_ID);
+          if (destinationConnectionConsumer == null) {
+            throw new RuntimeException("Could not find consumer for DESTINATION_CONNECTION");
+          }
+          destinationConnectionConsumer.accept(destinationConnection);
+        });
 
     for (final Map.Entry<ResourceId, Stream<JsonNode>> inputEntry : inputData.entrySet()) {
       if (inputEntry.getKey().equals(DESTINATION_CONNECTION_RESOURCE_ID)) {
@@ -110,7 +110,8 @@ public class MigrationV0_25_0 extends BaseMigration implements Migration {
       }
 
       inputEntry.getValue().forEach(jsonNode -> {
-        if (inputEntry.getKey().equals(STANDARD_SYNC_RESOURCE_ID) && destinationIds.contains(jsonNode.get("destinationId").asText())) {
+        if (inputEntry.getKey().equals(STANDARD_SYNC_RESOURCE_ID) && destinationIds
+            .contains(jsonNode.get("destinationId").asText())) {
           Map<String, Object> standardSyncOperation = new LinkedHashMap<>();
           String operationId = uuid();
           standardSyncOperation.put("operationId", operationId);
@@ -123,7 +124,8 @@ public class MigrationV0_25_0 extends BaseMigration implements Migration {
           JsonNode standardSyncOperationAsJson = Jsons.jsonNode(standardSyncOperation);
           outputData.get(STANDARD_SYNC_OPERATION_RESOURCE_ID).accept(standardSyncOperationAsJson);
 
-          List<String> operationIds = Jsons.object(jsonNode.get("operationIds"), new TypeReference<List<String>>() {});
+          List<String> operationIds = Jsons
+              .object(jsonNode.get("operationIds"), new TypeReference<List<String>>() {});
           operationIds.add(operationId);
           ((ObjectNode) jsonNode).set("operationIds", Jsons.jsonNode(operationIds));
         }
