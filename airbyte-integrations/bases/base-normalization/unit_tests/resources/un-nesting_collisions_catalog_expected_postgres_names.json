@@ -15,12 +15,12 @@
     "table": "simple_b94_stream_name"
   },
   "_airbyte_other_namespace.simple_b94_stream_name.simple_b94_stream_name": {
-    "file": "_airbyte_other_namespace_simple_b94_stream_name",
+    "file": "_airbyte_other_names__e_b94_stream_name_f9d",
     "schema": "_airbyte_other_namespace",
     "table": "simple_b94_stream_name"
   },
   "_airbyte_yet_another_namespace_with_a_very_long_name.simple_b94_stream_name.simple_b94_stream_name": {
-    "file": "_airbyte_yet_another_namespace_with_a_very_long_name_simple_b94_stream_name",
+    "file": "_airbyte_yet_another__e_b94_stream_name_bae",
     "schema": "_airbyte_yet_another_namespace_with_a_very_long_name",
     "table": "simple_b94_stream_name"
   },
@@ -45,7 +45,7 @@
     "table": "simple_b94_stream_name"
   },
   "yet_another_namespace_with_a_very_long_name.simple_b94_stream_name.simple_b94_stream_name": {
-    "file": "yet_another_namespace_with_a_very_long_name_simple_b94_stream_name",
+    "file": "yet_another_namespac__e_b94_stream_name_5d1",
     "schema": "yet_another_namespace_with_a_very_long_name",
     "table": "simple_b94_stream_name"
   }
