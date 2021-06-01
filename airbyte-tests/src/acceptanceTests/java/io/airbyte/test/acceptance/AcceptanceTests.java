@@ -596,7 +596,6 @@ public class AcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
     final UUID destinationId = destination.getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
 
@@ -611,7 +610,7 @@ public class AcceptanceTests {
         .syncMode(syncMode)
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
-    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, operationId, catalog, null, syncMode).getConnectionId();
+    final UUID connectionId = createConnection(connectionName, sourceId, destinationId, null, catalog, null, syncMode).getConnectionId();
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -757,7 +756,7 @@ public class AcceptanceTests {
             .destinationId(destinationId)
             .syncCatalog(catalog)
             .schedule(schedule)
-            .operationIds(List.of(operationId))
+            .operationIds(operationId == null ? Collections.emptyList() : List.of(operationId))
             .name(name)
             .prefix(OUTPUT_NAMESPACE));
     connectionIds.add(connection.getConnectionId());
