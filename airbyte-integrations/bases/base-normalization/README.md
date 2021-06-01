@@ -31,7 +31,7 @@ dbt files.
 This class is testing the transform config functionality that converts a destination_config.json into the adequate profiles.yml file for dbt to use
 see [related dbt docs on profiles.yml](https://docs.getdbt.com/reference/profiles.yml) for more context on what it actually is.
 
-#### test_stream_processor.py and test_stream_processor_naming.py:
+#### test_stream_processor.py and test_table_name_registry.py:
 
 These unit tests functions check how each stream is converted to dbt models files.
 For example, one big focus area is around how table names are chosen.
@@ -92,6 +92,16 @@ Therefore, valid credentials files are expected to be injected in the `secrets/`
 
 This is usually automatically done by the CI thanks to the `tools/bin/ci_credentials.sh` script or you can 
 re-use the `destination_config.json` passed to destination connectors.
+
+### Integration Tests Definitions for test_ephemeral.py:
+The test here focus on benchmarking the "ephemeral" materialization mode of dbt. Depending on the number of
+columns in a catalog, this may throw exceptions and fail. This test ensures that we support reasonable number of columns in destination tables.
+
+For example, known limitations that are now supported were:
+- Ephemeral materialization with some generated models break with more than 490 columns with "maximum recursion depth exceeded", we now automatically switch to a little more scalable mode when generating dbt models by using views materialization.
+- The tests are currently checking that at least a reasonably large number (1500) of columns can complete successfully.
+
+However, limits on the destination still exists and can break for higher number of columns...
 
 ### Integration Tests Definitions for test_normalization.py:
 

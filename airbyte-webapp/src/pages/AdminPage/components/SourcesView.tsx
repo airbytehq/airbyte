@@ -16,6 +16,7 @@ import SourceDefinitionResource, {
 import { SourceResource } from "core/resources/Source";
 import UpgradeAllButton from "./UpgradeAllButton";
 import useConnector from "components/hooks/services/useConnector";
+import HeadTitle from "components/HeadTitle";
 
 const SourcesView: React.FC = () => {
   const [successUpdate, setSuccessUpdate] = useState(false);
@@ -154,6 +155,7 @@ const SourcesView: React.FC = () => {
 
   return (
     <>
+      <HeadTitle titles={[{ id: "sidebar.admin" }, { id: "admin.sources" }]} />
       {usedSourcesDefinitions.length ? (
         <Block>
           <Title bold>

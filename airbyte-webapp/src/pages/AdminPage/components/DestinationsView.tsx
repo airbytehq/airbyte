@@ -15,6 +15,7 @@ import { DestinationResource } from "core/resources/Destination";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import UpgradeAllButton from "./UpgradeAllButton";
 import useConnector from "components/hooks/services/useConnector";
+import HeadTitle from "components/HeadTitle";
 
 const DestinationsView: React.FC = () => {
   const [successUpdate, setSuccessUpdate] = useState(false);
@@ -160,6 +161,9 @@ const DestinationsView: React.FC = () => {
 
   return (
     <>
+      <HeadTitle
+        titles={[{ id: "sidebar.admin" }, { id: "admin.destinations" }]}
+      />
       {usedDestinationDefinitions.length ? (
         <Block>
           <Title bold>

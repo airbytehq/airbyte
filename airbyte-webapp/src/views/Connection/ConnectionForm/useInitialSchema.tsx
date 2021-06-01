@@ -23,7 +23,8 @@ function getDefaultCursorField(streamNode: SyncSchemaStream): string[] {
 const useInitialSchema = (schema: SyncSchema): SyncSchema => {
   const initialSchema = useMemo<SyncSchema>(
     () => ({
-      streams: schema.streams.map<SyncSchemaStream>((streamNode) => {
+      streams: schema.streams.map<SyncSchemaStream>((apiNode, id) => {
+        const streamNode: SyncSchemaStream = { ...apiNode, id: id.toString() };
         const node = !streamNode.stream.supportedSyncModes?.length
           ? {
               ...streamNode,
