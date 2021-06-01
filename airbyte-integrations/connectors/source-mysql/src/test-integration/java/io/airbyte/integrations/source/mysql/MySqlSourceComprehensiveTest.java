@@ -29,7 +29,9 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.standardtest.source.DataTypeTest;
 import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
@@ -87,85 +89,85 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
   @Override
   protected void initTests() {
     addDataTypeTest(
-            dataTypeTestBuilder("tinyint", JsonSchemaPrimitive.NUMBER)
+            DataTypeTest.builder("tinyint", JsonSchemaPrimitive.NUMBER)
                     .addInsertValue("null")
                     .addInsertValue("-128", "127")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("smallint", JsonSchemaPrimitive.NUMBER)
+            DataTypeTest.builder("smallint", JsonSchemaPrimitive.NUMBER)
                     .addInsertValue("null")
                     .addInsertValue("-32768", "32767")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("smallint", JsonSchemaPrimitive.NUMBER)
-                    .setFullSourceDataType("smallint zerofill")
+            DataTypeTest.builder("smallint", JsonSchemaPrimitive.NUMBER)
+                    .fullSourceDataType("smallint zerofill")
                     .addInsertValue("1")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("mediumint", JsonSchemaPrimitive.NUMBER)
+            DataTypeTest.builder("mediumint", JsonSchemaPrimitive.NUMBER)
                     .addInsertValue("null", "-8388608", "8388607")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("mediumint", JsonSchemaPrimitive.NUMBER)
-                    .setFullSourceDataType("mediumint zerofill")
+            DataTypeTest.builder("mediumint", JsonSchemaPrimitive.NUMBER)
+                    .fullSourceDataType("mediumint zerofill")
                     .addInsertValue("1")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("int", JsonSchemaPrimitive.NUMBER)
+            DataTypeTest.builder("int", JsonSchemaPrimitive.NUMBER)
                     .addInsertValue("null", "-2147483648", "2147483647")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("int", JsonSchemaPrimitive.NUMBER)
-                    .setFullSourceDataType("int zerofill")
+            DataTypeTest.builder("int", JsonSchemaPrimitive.NUMBER)
+                    .fullSourceDataType("int zerofill")
                     .addInsertValue("1")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("bigint", JsonSchemaPrimitive.NUMBER)
+            DataTypeTest.builder("bigint", JsonSchemaPrimitive.NUMBER)
                     .addInsertValue("null", "9223372036854775807")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("float", JsonSchemaPrimitive.NUMBER)
+            DataTypeTest.builder("float", JsonSchemaPrimitive.NUMBER)
                     .addInsertValue("null")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("double", JsonSchemaPrimitive.NUMBER)
+            DataTypeTest.builder("double", JsonSchemaPrimitive.NUMBER)
                     .addInsertValue("null", "power(10, 308)", "1/power(10, 45)")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("decimal", JsonSchemaPrimitive.NUMBER)
-                    .setFullSourceDataType("decimal(5,2)")
+            DataTypeTest.builder("decimal", JsonSchemaPrimitive.NUMBER)
+                    .fullSourceDataType("decimal(5,2)")
                     .addInsertValue("null")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("bit", JsonSchemaPrimitive.NUMBER)
+            DataTypeTest.builder("bit", JsonSchemaPrimitive.NUMBER)
                     .addInsertValue("null", "1", "0")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("date", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("date", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null")
 //                    .addInsertValue("'2021-01-00'")
 //                    .addInsertValue("'2021-00-00'")
@@ -174,97 +176,97 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("datetime", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("datetime", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null")
 //                    .addInsertValue("'0000-00-00 00:00:00'")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("timestamp", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("timestamp", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("time", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("time", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null")
 //                    .addInsertValue("'-838:59:59.000000'")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("varchar", JsonSchemaPrimitive.STRING)
-                    .setFullSourceDataType("varchar(256) character set cp1251")
+            DataTypeTest.builder("varchar", JsonSchemaPrimitive.STRING)
+                    .fullSourceDataType("varchar(256) character set cp1251")
                     .addInsertValue("null", "'тест'")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("varchar", JsonSchemaPrimitive.STRING)
-                    .setFullSourceDataType("varchar(256) character set utf16")
+            DataTypeTest.builder("varchar", JsonSchemaPrimitive.STRING)
+                    .fullSourceDataType("varchar(256) character set utf16")
                     .addInsertValue("null", "0xfffd")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("varchar", JsonSchemaPrimitive.STRING)
-                    .setFullSourceDataType("varchar(256)")
+            DataTypeTest.builder("varchar", JsonSchemaPrimitive.STRING)
+                    .fullSourceDataType("varchar(256)")
                     .addInsertValue("null", "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("varbinary", JsonSchemaPrimitive.STRING)
-                    .setFullSourceDataType("varbinary(256)")
+            DataTypeTest.builder("varbinary", JsonSchemaPrimitive.STRING)
+                    .fullSourceDataType("varbinary(256)")
                     .addInsertValue("null", "'test'")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("blob", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("blob", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null", "'test'")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("mediumtext", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("mediumtext", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null", "lpad('0', 16777214, '0')")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("tinytext", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("tinytext", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("longtext", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("longtext", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("text", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("text", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("json", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("json", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null", "'{\"a\" :10, \"b\": 15}'")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("point", JsonSchemaPrimitive.OBJECT)
+            DataTypeTest.builder("point", JsonSchemaPrimitive.OBJECT)
                     .addInsertValue("null", "(ST_GeomFromText('POINT(1 1)'))")
                     .build()
     );
 
     addDataTypeTest(
-            dataTypeTestBuilder("bool", JsonSchemaPrimitive.STRING)
+            DataTypeTest.builder("bool", JsonSchemaPrimitive.STRING)
                     .addInsertValue("null", "127", "-128")
                     .build()
     );

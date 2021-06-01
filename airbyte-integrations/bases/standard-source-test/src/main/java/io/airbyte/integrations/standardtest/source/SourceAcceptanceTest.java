@@ -53,7 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class SourceAcceptanceTest extends SourceTest{
+public abstract class SourceAcceptanceTest extends SourceAbstractTest {
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
@@ -331,7 +331,6 @@ public abstract class SourceAcceptanceTest extends SourceTest{
     }
     return false;
   }
-
 
   private void assertSameRecords(List<AirbyteRecordMessage> expected, List<AirbyteRecordMessage> actual, String message) {
     final List<AirbyteRecordMessage> prunedExpected = expected.stream().map(this::pruneEmittedAt).collect(Collectors.toList());
