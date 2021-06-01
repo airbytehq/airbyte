@@ -25,6 +25,7 @@
 
 from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
+import dateutil.parser
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, SyncMode
@@ -106,6 +107,7 @@ class SourcePosthog(AbstractSource):
                 err_message = resp_json["detail"] if "detail" in resp_json else "unknown error"
                 raise Exception(err_message)  # return with a python traceback in the log
 
+            _ = dateutil.parser.isoparse(config["start_date"])
             return True, None
         except Exception as e:
             return False, repr(e)
@@ -116,7 +118,7 @@ class SourcePosthog(AbstractSource):
             Annotations(authenticator=authenticator),
             Cohorts(authenticator=authenticator),
             Elements(authenticator=authenticator),
-            Events(authenticator=authenticator),
+            Events(start_date=config["start_date"], authenticator=authenticator),
             EventsSessions(authenticator=authenticator),
             FeatureFlags(authenticator=authenticator),
             Insights(authenticator=authenticator),

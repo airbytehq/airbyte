@@ -229,13 +229,18 @@ class Events(IncrementalPosthogStream):
     cursor_field = "timestamp"
     data_field = "results"
 
+    def __init__(self, **kwargs):
+        self.start_date = kwargs.pop("start_date", None)
+        super().__init__(**kwargs)
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "event"
 
     def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
-        since_value = stream_state.get(self.cursor_field)
+        since_value = stream_state.get(self.cursor_field) or self.start_date
+        since_value = max(since_value, self.start_date)
         if since_value:
             params["after"] = since_value
         return params

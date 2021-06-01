@@ -31,10 +31,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=[
-        "airbyte-cdk~=0.1",
-        "pytest~=6.1",
-    ],
+    install_requires=["airbyte-cdk~=0.1", "pytest~=6.1", "python-dateutil==2.8.1"],
     package_data={"": ["*.json", "schemas/*.json"]},
     extras_require={"tests": ["pytest~=6.1"]},
 )
