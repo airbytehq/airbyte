@@ -38,7 +38,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySqlSourceTests {
+public class {{pascalCase name}}SourceTests {
 
   private static final String TEST_USER = "test";
   private static final String TEST_PASSWORD = "test";
@@ -67,7 +67,7 @@ public class MySqlSourceTests {
       connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
       connection.createStatement().execute("CREATE DATABASE " + config.get("database").asText());
     }
-    AirbyteConnectionStatus check = new MySqlSource().check(config);
+    AirbyteConnectionStatus check = new {{pascalCase name}}Source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
 
     // cleanup
