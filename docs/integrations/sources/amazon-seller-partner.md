@@ -2,20 +2,14 @@
 
 ## Sync overview
 
-This source can sync data for the [Amazon Seller Partner API](https://github.com/amzn/selling-partner-api-docs). It supports only Incremental syncs. The Appstore API is available for [many types of services](https://developer.apple.com/documentation/appstoreconnectapi). Currently, this API supports syncing Sales and Trends reports. If you'd like to sync data from other endpoints, please create an issue on Github.
-
-This Source Connector is based on a [Singer Tap](https://github.com/miroapp/tap-appstore).
+This source can sync data for the [Amazon Seller Partner API](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md).
 
 ### Output schema
 
-This Source is capable of syncing the following "Sales and Trends" Streams:
+This source is capable of syncing the following streams:
 
-* [SALES](https://help.apple.com/app-store-connect/#/dev15f9508ca)
-* [SUBSCRIPTION](https://help.apple.com/app-store-connect/#/itc5dcdf6693)
-* [SUBSCRIPTION\_EVENT](https://help.apple.com/app-store-connect/#/itc0b9b9d5b2)
-* [SUBSCRIBER](https://help.apple.com/app-store-connect/#/itcf20f3392e)
+* [Orders](https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md)
 
-Note that depending on the credentials you enter, you may only be able to sync some of these reports. For example, if your app does not offer subscriptions, then it is not possible to sync subscription related reports.
 
 ### Data type mapping
 
@@ -32,29 +26,26 @@ Note that depending on the credentials you enter, you may only be able to sync s
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | no |  |
+| Full Refresh Sync | yes |  |
 | Incremental Sync | yes |  |
 | Namespaces | No |  |
 
 ### Performance considerations
 
-The connector is restricted by normal Appstore [requests limitation](https://developer.apple.com/documentation/appstoreconnectapi/identifying_rate_limits).
-
-The Appstore connector should not run into Appstore API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
-One issue that can happen is the API not having the data available for the period requested, either because you're trying to request data older than 365 days or the today's and yesterday's data was not yet made available to be requested.
+Information about rate limits you may find [here](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/usage-plans-rate-limits/Usage-Plans-and-Rate-Limits.md).
 
 ## Getting started
 
 ### Requirements
 
-* Key ID
-* Private Key The contents of the private API key file, which is in the P8 format and should start with `-----BEGIN PRIVATE KEY-----` and end with `-----END PRIVATE KEY-----`.
-* Issuer ID
-* Vendor ID Go to "Sales and Trends", then choose "Reports" from the drop-down menu in the top left. On the next screen, there'll be a drop-down menu for "Vendor". Your name and ID will be shown there. Use the numeric Vendor ID.
-* Start Date \(The date that will be used in the first sync. Apple only allows to go back 365 days from today.\) Example: `2020-11-16T00:00:00Z`
+* refresh_token
+* lwa_app_id
+* lwa_client_secret
+* AWS USER ACCESS KEY
+* AWS USER SECRET KEY
+* role_arn
 
 ### Setup guide
 
-Generate/Find all requirements using this [external article](https://leapfin.com/blog/apple-appstore-integration/).
+Information about how to get credentials you may find [here](https://github.com/amzn/selling-partner-api-docs/blob/main/guides/en-US/developer-guide/SellingPartnerApiDeveloperGuide.md).
 
