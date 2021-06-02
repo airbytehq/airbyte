@@ -11,18 +11,30 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
-#  Jira Source has a lot streams. It takes to long to sync them? which caused timeout error
-#  basic_read:
-#    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog.json"
-#      validate_output_from_all_streams: yes
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/issues_configured_catalog.json"
+      validate_output_from_all_streams: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/issue_worklogs_configured_catalog.json"
+      validate_output_from_all_streams: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/projects_configured_catalog.json"
+      validate_output_from_all_streams: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/workflows_configured_catalog.json"
+      validate_output_from_all_streams: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      validate_output_from_all_streams: yes
 #  incremental:
 #    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog.json"
+#      configured_catalog_path: "integration_tests/full_configured_catalog.json"
 #      state_path: "integration_tests/abnormal_state.json"
 #      cursor_paths:
 #        issues: ["created"]
 #        issue_worklogs: ["startedAfter"]
+#  Jira Source has a lot streams. It takes to long to sync them, which caused timeout error
 #  full_refresh:
 #    - config_path: "secrets/config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog.json"
+#      configured_catalog_path: "integration_tests/full_configured_catalog.json"
