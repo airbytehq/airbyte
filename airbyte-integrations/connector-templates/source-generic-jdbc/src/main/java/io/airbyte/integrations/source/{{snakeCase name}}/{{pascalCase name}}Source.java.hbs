@@ -25,25 +25,13 @@
 package io.airbyte.integrations.source.{{snakeCase name}};
 
 
-import static java.util.stream.Collectors.toList;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,175 +40,38 @@ public class {{pascalCase name}}Source extends AbstractJdbcSource implements Sou
 
   private static final Logger LOGGER = LoggerFactory.getLogger({{pascalCase name}}Source.class);
 
-  public static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-
+  //TODO insert your driver name. Ex: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+  static final String DRIVER_CLASS = "driver_name_here";
 
   public {{pascalCase name}}Source() {
-    super(DRIVER_CLASS, new {{pascalCase name}}JdbcStreamingQueryConfiguration());
+    // By default NoOpJdbcStreamingQueryConfiguration class is used, but may be updated. See see example MssqlJdbcStreamingQueryConfiguration
+    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration());
   }
 
-  private static AirbyteStream removeIncrementalWithoutPk(AirbyteStream stream) {
-    if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
-      stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
-    }
-
-    return stream;
-  }
-
-  private static AirbyteStream setIncrementalToSourceDefined(AirbyteStream stream) {
-    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
-      stream.setSourceDefinedCursor(true);
-    }
-
-    return stream;
-  }
-
-  // Note: in place mutation.
-  private static AirbyteStream addCdcMetadataColumns(AirbyteStream stream) {
-
-    ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-    ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
-
-    final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
-    properties.set(CDC_LOG_FILE, stringType);
-    properties.set(CDC_LOG_POS, numberType);
-    properties.set(CDC_UPDATED_AT, numberType);
-    properties.set(CDC_DELETED_AT, numberType);
-
-    return stream;
-  }
-
+  // TODO The config is based on spec.json, update according to your DB
   @Override
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
-    final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
-    if (isCdc(config)) {
-      checkOperations.add(database -> {
-        List<String> matchingSlots = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'log_bin'";
-
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-        if (matchingSlots.size() != 1) {
-          throw new RuntimeException("Could not query the variable log_bin");
-        }
-
-        String logBin = matchingSlots.get(0);
-        if (!logBin.equalsIgnoreCase("ON")) {
-          throw new RuntimeException("The variable log_bin should be set to ON, but it is : " + logBin);
-        }
-      });
-
-      checkOperations.add(database -> {
-        List<String> matchingSlots = database.resultSetQuery(connection -> {
-          final String sql = "show variables where Variable_name = 'binlog_format'";
-
-          return connection.createStatement().executeQuery(sql);
-        }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-        if (matchingSlots.size() != 1) {
-          throw new RuntimeException("Could not query the variable binlog_format");
-        }
-
-        String binlogFormat = matchingSlots.get(0);
-        if (!binlogFormat.equalsIgnoreCase("ROW")) {
-          throw new RuntimeException("The variable binlog_format should be set to ROW, but it is : " + binlogFormat);
-        }
-      });
-    }
-
-    checkOperations.add(database -> {
-      List<String> matchingSlots = database.resultSetQuery(connection -> {
-        final String sql = "show variables where Variable_name = 'binlog_row_image'";
-
-        return connection.createStatement().executeQuery(sql);
-      }, resultSet -> resultSet.getString("Value")).collect(toList());
-
-      if (matchingSlots.size() != 1) {
-        throw new RuntimeException("Could not query the variable binlog_row_image");
-      }
-
-      String binlogRowImage = matchingSlots.get(0);
-      if (!binlogRowImage.equalsIgnoreCase("FULL")) {
-        throw new RuntimeException("The variable binlog_row_image should be set to FULL, but it is : " + binlogRowImage);
-      }
-    });
-
-    return checkOperations;
+  public JsonNode toJdbcConfig(JsonNode {{camelCase name}}Config) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("username", {{camelCase name}}Config.get("username").asText())
+        .put("password", {{camelCase name}}Config.get("password").asText())
+        .put("jdbc_url", String.format("jdbc:sqlserver://%s:%s;databaseName=%s",
+    {{camelCase name}}Config.get("host").asText(),
+    {{camelCase name}}Config.get("port").asText(),
+    {{camelCase name}}Config.get("database").asText()))
+        .build());
   }
-
-  @Override
-  public AirbyteCatalog discover(JsonNode config) throws Exception {
-    AirbyteCatalog catalog = super.discover(config);
-
-    if (isCdc(config)) {
-      final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map({{pascalCase name}}Source::removeIncrementalWithoutPk)
-          .map({{pascalCase name}}Source::setIncrementalToSourceDefined)
-          .map({{pascalCase name}}Source::addCdcMetadataColumns)
-          .collect(toList());
-
-      catalog.setStreams(streams);
-    }
-
-    return catalog;
-  }
-
-  @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
-    final StringBuilder jdbc_url = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
-    // see {{pascalCase name}}JdbcStreamingQueryConfiguration for more context on why useCursorFetch=true is needed.
-    jdbc_url.append("?useCursorFetch=true");
-    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
-      jdbc_url.append("&").append(config.get("jdbc_url_params").asText());
-    }
-    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbc_url.toString());
-
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
-    }
-
-    return Jsons.jsonNode(configBuilder.build());
-  }
-
-  private static boolean isCdc(JsonNode config) {
-    return config.hasNonNull("replication_method")
-        && ReplicationMethod.valueOf(config.get("replication_method").asText())
-            .equals(ReplicationMethod.CDC);
-  }
-
-  private static boolean shouldUseCDC(ConfiguredAirbyteCatalog catalog) {
-    Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
-    return any.isPresent();
-  }
-
 
   @Override
   public Set<String> getExcludedInternalSchemas() {
-    return Set.of(
-        "information_schema",
-        "mysql",
-        "performance_schema",
-        "sys");
+    // TODO Add tables to exaclude, Ex "INFORMATION_SCHEMA", "sys", "spt_fallback_db", etc
+    return Set.of("");
   }
 
   public static void main(String[] args) throws Exception {
+    // TODO add proper source name {{pascalCase name}}Source to generator
     final Source source = new {{pascalCase name}}Source();
     LOGGER.info("starting source: {}", {{pascalCase name}}Source.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", {{pascalCase name}}Source.class);
   }
-
-  public enum ReplicationMethod {
-    STANDARD,
-    CDC
-  }
-
 }

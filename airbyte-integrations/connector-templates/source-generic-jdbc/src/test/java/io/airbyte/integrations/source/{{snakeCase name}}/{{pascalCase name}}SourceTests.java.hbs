@@ -36,13 +36,13 @@ import java.sql.DriverManager;
 import java.util.Properties;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MySQLContainer;
 
 public class {{pascalCase name}}SourceTests {
 
   private static final String TEST_USER = "test";
   private static final String TEST_PASSWORD = "test";
-  private static MySQLContainer<?> container;
+  //TODO Declare here container suitable for you DB. Ex: "private static MSSQLServerContainer<?> db;"
+  private static org.testcontainers.containers.JdbcDatabaseContainer container;
 
   private JsonNode config;
   private Database database;
@@ -50,15 +50,13 @@ public class {{pascalCase name}}SourceTests {
   @Test
   public void testSettingTimezones() throws Exception {
     // start DB
-    container = new MySQLContainer<>("mysql:8.0")
-        .withUsername(TEST_USER)
-        .withPassword(TEST_PASSWORD)
-        .withEnv("MYSQL_ROOT_HOST", "%")
-        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)
-        .withEnv("TZ", "Europe/Moscow");
+    // TODO init your container.
+    //  Ex: db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+    container = new JdbcDatabaseContainer();
+
     container.start();
     Properties properties = new Properties();
-    properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
+    properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/London"));
     DriverManager.getConnection(container.getJdbcUrl(), properties);
     String dbName = "db_" + RandomStringUtils.randomAlphabetic(10);
     config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");

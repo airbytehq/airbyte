@@ -11,21 +11,17 @@ application {
 dependencies {
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-integrations:connectors:source-jdbc')
 
-    implementation 'io.debezium:debezium-api:1.4.2.Final'
-    implementation 'io.debezium:debezium-connector-mysql:1.4.2.Final'
-    implementation 'io.debezium:debezium-embedded:1.4.2.Final'
-    implementation 'mysql:mysql-connector-java:8.0.22'
-    implementation 'org.apache.commons:commons-lang3:3.11'
+    //TODO Add jdbc driver import here. Ex: implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.testcontainers:mysql:1.15.1'
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-{{dashCase name}}')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)

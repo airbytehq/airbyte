@@ -31,28 +31,29 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
+import java.util.Optional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.junit.jupiter.api.Disabled;
 
 
-public class {{pascalCase name}}JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+@Disabled
+public class {{pascalCase name}}StressTest extends JdbcStressTest {
 
-
-
-  private static JdbcDatabaseContainer dbContainer; //TODO Add your container here instead of this one. Ex.org.testcontainers.containers.MSSQLServerContainer<?>
   private static JdbcDatabase database;
   private JsonNode config;
+  //TODO Declare here container suitable for you DB. Ex: "private static MSSQLServerContainer<?> db;"
+  private static org.testcontainers.containers.JdbcDatabaseContainer dbContainer;
 
   @BeforeAll
   static void init() {
-
     // TODO init your container.
-    //  Ex:dbContainer = new org.testcontainers.containers.MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+    //  Ex: db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     dbContainer = new JdbcDatabaseContainer();
+
     dbContainer.start();
   }
 
@@ -71,12 +72,11 @@ public class {{pascalCase name}}JdbcSourceAcceptanceTest extends JdbcSourceAccep
         String.format("jdbc:sqlserver://%s:%s",
             configWithoutDbName.get("host").asText(),
             configWithoutDbName.get("port").asInt()),
-        "add_your_driver_here"); // TODO add the driver name. Ex."com.microsoft.sqlserver.jdbc.SQLServerDriver"
+        "com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
-    database.execute(
-        ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
+    database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put("database", dbName);
@@ -85,14 +85,14 @@ public class {{pascalCase name}}JdbcSourceAcceptanceTest extends JdbcSourceAccep
   }
 
   @AfterAll
-  public static void cleanUp() throws Exception {
+  public static void tearDown() throws Exception {
     database.close();
     dbContainer.close();
   }
 
   @Override
-  public boolean supportsSchemas() {
-    return true;
+  public Optional<String> getDefaultSchemaName() {
+    return Optional.of("dbo");
   }
 
   @Override
