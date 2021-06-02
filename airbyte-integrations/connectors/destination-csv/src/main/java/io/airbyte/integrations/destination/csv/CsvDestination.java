@@ -29,8 +29,8 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -118,7 +118,7 @@ public class CsvDestination extends BaseConnector implements Destination {
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
     }
 
-    return new CsvConsumer(writeConfigs, catalog);
+    return new CsvConsumer(writeConfigs, catalog, outputRecordCollector);
   }
 
   /**
@@ -146,12 +146,13 @@ public class CsvDestination extends BaseConnector implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class CsvConsumer extends FailureTrackingAirbyteMessageConsumer {
+  private static class CsvConsumer extends CommitOnStateAirbyteMessageConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public CsvConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
+    public CsvConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+      super(outputRecordCollector);
       this.catalog = catalog;
       LOGGER.info("initializing consumer.");
 
@@ -181,6 +182,13 @@ public class CsvDestination extends BaseConnector implements Destination {
           UUID.randomUUID(),
           recordMessage.getEmittedAt(),
           Jsons.serialize(recordMessage.getData()));
+    }
+
+    @Override
+    public void commit() throws Exception {
+      for (WriteConfig writeConfig : writeConfigs.values()) {
+        writeConfig.getWriter().flush();
+      }
     }
 
     @Override

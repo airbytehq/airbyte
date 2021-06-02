@@ -1,10 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "components/ContentCard";
 import ServiceForm from "components/ServiceForm";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import config from "config";
 import useRouter from "components/hooks/useRouterHook";
 import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
 import { JobInfo } from "core/resources/Scheduler";
@@ -37,16 +36,6 @@ const SourceForm: React.FC<IProps> = ({
 }) => {
   const { location } = useRouter();
 
-  const availableServices = useMemo(
-    () =>
-      sourceDefinitions.map((item) => ({
-        text: item.name,
-        value: item.sourceDefinitionId,
-        icon: item.icon,
-      })),
-    [sourceDefinitions]
-  );
-
   const [sourceDefinitionId, setSourceDefinitionId] = useState(
     location.state?.sourceDefinitionId || ""
   );
@@ -56,8 +45,8 @@ const SourceForm: React.FC<IProps> = ({
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
-    const connector = availableServices.find(
-      (item) => item.value === sourceDefinitionId
+    const connector = sourceDefinitions.find(
+      (item) => item.sourceDefinitionId === sourceDefinitionId
     );
 
     if (afterSelectConnector) {
@@ -65,9 +54,8 @@ const SourceForm: React.FC<IProps> = ({
     }
 
     AnalyticsService.track("New Source - Action", {
-      user_id: config.ui.workspaceId,
       action: "Select a connector",
-      connector_source_definition: connector?.text,
+      connector_source_definition: connector?.name,
       connector_source_definition_id: sourceDefinitionId,
     });
   };
@@ -87,11 +75,12 @@ const SourceForm: React.FC<IProps> = ({
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
       <ServiceForm
-        onDropDownSelect={onDropDownSelect}
+        onServiceSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         formType="source"
-        availableServices={availableServices}
+        availableServices={sourceDefinitions}
         specifications={sourceDefinitionSpecification?.connectionSpecification}
+        documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         isLoading={isLoading}

@@ -32,6 +32,6 @@ import java.util.List;
 public interface RecordWriter extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>, Exception> {
 
   @Override
-  void accept(AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> recordStream) throws Exception;
+  void accept(AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) throws Exception;
 
 }
