@@ -33,17 +33,11 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3OutputFormatter;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -52,11 +46,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
@@ -73,7 +65,7 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
   private final AmazonS3 s3Client;
   private final AirbyteStream stream;
   private final DestinationSyncMode syncMode;
-  private final List<String> sortedHeaders;
+  private final CsvSheetGenerator csvSheetGenerator;
   private final String outputPrefix;
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
@@ -89,8 +81,7 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
     this.syncMode = configuredStream.getDestinationSyncMode();
-    this.sortedHeaders = getSortedFields(configuredStream.getStream().getJsonSchema(),
-        formatConfig);
+    this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(), formatConfig);
 
     // prefix: <bucket-path>/<source-namespace-if-exists>/<stream-name>
     // filename: <upload-date>-<upload-millis>.csv
@@ -117,24 +108,7 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
         CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-            .withHeader(getHeaders(sortedHeaders).toArray(new String[0])));
-  }
-
-  /**
-   * Get a sorted field list in the json object so that this object can be iterated through with a
-   * defined order later on.
-   */
-  static List<String> getSortedFields(JsonNode jsonSchema, S3CsvFormatConfig formatConfig) {
-    // When no flattening is needed, we do not care about iteration order.
-    if (formatConfig.getFlattening() == Flattening.NO) {
-      return Collections.emptyList();
-    }
-    if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {
-      return MoreIterators.toList(jsonSchema.get("properties").fieldNames())
-          .stream().sorted().collect(Collectors.toList());
-    }
-    throw new IllegalArgumentException(
-        "Unexpected flattening config: " + formatConfig.getFlattening());
+            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
   }
 
   static String getOutputPrefix(String bucketPath, AirbyteStream stream) {
@@ -158,53 +132,6 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
 
   static String getOutputFilename(Timestamp timestamp) {
     return String.format("%s_%d.csv", DATE_FORMAT.format(timestamp), timestamp.getTime());
-  }
-
-  /**
-   * When there exists sorted headers from input stream, replace {@code
-   * JavaBaseConstants.COLUMN_NAME_DATA} with those headers.
-   */
-  static List<String> getHeaders(List<String> sortedHeaders) {
-    List<String> headers = Lists.newArrayList(JavaBaseConstants.COLUMN_NAME_AB_ID,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    if (sortedHeaders.isEmpty()) {
-      headers.add(JavaBaseConstants.COLUMN_NAME_DATA);
-    } else {
-      headers.addAll(sortedHeaders);
-    }
-    return headers;
-  }
-
-  static List<String> getCsvData(S3CsvFormatConfig formatConfig,
-                                 List<String> sortedHeaders,
-                                 JsonNode json) {
-    if (formatConfig.getFlattening() == Flattening.NO) {
-      return Collections.singletonList(Jsons.serialize(json));
-    }
-
-    if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {
-      List<String> values = new LinkedList<>();
-      for (String field : sortedHeaders) {
-        JsonNode value = json.get(field);
-        if (value == null) {
-          values.add("");
-        } else if (value.isValueNode()) {
-          // Call asText method on value nodes so that proper string
-          // representation of json values can be returned by Jackson.
-          // Otherwise, CSV printer will just call the toString method,
-          // which can be problematic (e.g. text node will have extra
-          // double quotation marks around its text value).
-          values.add(value.asText());
-        } else {
-          values.add(Jsons.serialize(value));
-        }
-      }
-
-      return values;
-    }
-
-    throw new IllegalArgumentException(
-        "Unexpected flattening config: " + formatConfig.getFlattening());
   }
 
   /**
@@ -242,11 +169,7 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
 
   @Override
   public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
-    List<Object> data = new LinkedList<>();
-    data.add(id);
-    data.add(recordMessage.getEmittedAt());
-    data.addAll(getCsvData(formatConfig, sortedHeaders, recordMessage.getData()));
-    csvPrinter.printRecord(data);
+    csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
   }
 
   @Override
