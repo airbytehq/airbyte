@@ -23,8 +23,6 @@
 #
 
 import math
-
-# import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -39,7 +37,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class ShopifyStream(HttpStream, ABC):
 
     primary_key = "id"
-    limit = 200
+    limit = 250
 
     def __init__(self, shop: str, api_key: str, api_password: str, api_version: str, **kwargs):
         super().__init__(**kwargs)
@@ -59,22 +57,12 @@ class ShopifyStream(HttpStream, ABC):
             return None
         else:
             self.since_id = decoded_response.get(self.data_field)[-1]["id"]
-            # UNCOMMENT FOR DEBUG ONLY
-            # print(f"\nSINCE_ID {self.data_field}: {self.since_id}\n")
-            # time.sleep(2)
             return {"since_id": self.since_id}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        # params = super().request_params(next_page_token=next_page_token, stream_state=stream_state, **kwargs)
         params = {"limit": self.limit}
-        # params["limit"] = self.limit
-        # params["since_id"] = stream_state.get(self.cursor_field)
-        # if self.since_id <= stream_state.get(self.cursor_field, 0):
-        #    params["since_id"] = self.since_id
-        # else:
-        #    params["since_id"] = stream_state.get(self.cursor_field)
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -106,10 +94,8 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         if stream_state.get(self.cursor_field, 0) > self.since_id:
-            # print(f"STREAM HAS BIGGER VALUE: {stream_state.get(self.cursor_field)}")
             params["since_id"] = stream_state.get(self.cursor_field)
         else:
-            # print(f"STREAM HAS LOWWER VALUE OR ZERO-STATE: {stream_state.get(self.cursor_field)}")
             params["since_id"] = self.since_id
         return params
 

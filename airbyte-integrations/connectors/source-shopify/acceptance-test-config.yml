@@ -1,5 +1,3 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
-# for more information about how to configure these tests
 connector_image: airbyte/source-shopify:dev
 tests:
   spec:
@@ -14,18 +12,14 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      validate_output_from_all_streams: yes
-# TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-#      expect_records:
-#        path: "integration_tests/expected_records.txt"
-#        extra_fields: no
-#        exact_order: no
-#        extra_records: yes
-# TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-  incremental: # TODO if your connector does not implement incremental sync, remove this block
+      # Set to NO because some streams has 0 data on the source 
+      validate_output_from_all_streams: no
+  incremental: 
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       state_path: "integration_tests/abnormal_state.json"
+      cursor_paths:
+        charges: [ "id" ]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
