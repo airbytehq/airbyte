@@ -82,4 +82,6 @@ You should now have all the requirements needed to configure Kafka as a destinat
 * **Send buffer bytes**
 * **Receive buffer bytes**
 
+More info about this can be found in the [Kafka producer configs documentation site](https://kafka.apache.org/documentation/#producerconfigs).
+
 *NOTE*: Some configurations for SSL are not available yet.
