@@ -32,10 +32,9 @@ If you are building a connector in any of the following languages/frameworks, th
 
 #### Creating a connector from a template
 
-Run the interactive generator:
+From the Airbyte root run the interactive generator:
 
 ```text
-cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 

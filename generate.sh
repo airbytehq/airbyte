@@ -4,8 +4,9 @@
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+generator_path="$(pwd)/airbyte-integrations/connector-templates/generator"
 # The connectors folder relative path
-connectors_path="../../../connectors"
+connectors_path="$(pwd)/airbyte-integrations/connectors"
 # The name of the temporary folder
 tmp_folder_name="tmp_output"
 
@@ -36,6 +37,7 @@ check_and_copy_from_docker () {
   cd ./..
 }
 
+cd "$generator_path" || exit
 # Remove container if already exist
 remove_tmp
 # Build image for container from Dockerfile

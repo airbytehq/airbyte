@@ -13,7 +13,6 @@ This document is a general introduction to the CDK. Readers should have basic fa
 ## Getting started
 Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
 ```
-cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 
