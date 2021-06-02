@@ -24,7 +24,6 @@
 
 package io.airbyte.workers.process;
 
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.string.Strings;
 import io.fabric8.kubernetes.api.model.Container;
@@ -37,8 +36,6 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -230,7 +227,8 @@ public class KubePodProcess extends Process {
         .withName("init")
         .withImage("busybox:1.28")
         .withCommand("sh", "-c",
-            usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 10" : "mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 10")
+            usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 30"
+                : "mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 30")
         .withVolumeMounts(mainVolumeMounts)
         .build();
 
@@ -240,7 +238,8 @@ public class KubePodProcess extends Process {
         .withName("main")
         .withImage(image)
         .withCommand("sh", "-c",
-            usesStdin ? "cat /pipes/stdin | " + entrypointStr + " 2> /pipes/stderr > /pipes/stdout" : entrypointStr + "   2> /pipes/stderr > /pipes/stdout")
+            usesStdin ? "cat /pipes/stdin | " + entrypointStr + " 2> /pipes/stderr > /pipes/stdout"
+                : entrypointStr + "   2> /pipes/stderr > /pipes/stdout")
         .withWorkingDir("/config")
         .withVolumeMounts(mainVolumeMounts)
         .build();

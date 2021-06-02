@@ -117,14 +117,10 @@ public class KubeProcessBuilderFactoryPOC {
   }
 
   /*
-  To run:
-  cd ~/code/airbyte/airbyte-workers/named_pipes/np_source
-  docker build -t np_source:dev .
-  cd ~/code/airbyte/airbyte-workers/named_pipes/np_dest
-  docker build -t np_dest:dev .
-  cd ~/code/airbyte
-  ./gradlew :airbyte-workers:airbyteDocker
-  kubectl apply -f ~/code/airbyte/airbyte-workers/src/main/resources/kube_queue_poc/launch
+   * To run: cd ~/code/airbyte/airbyte-workers/named_pipes/np_source docker build -t np_source:dev .
+   * cd ~/code/airbyte/airbyte-workers/named_pipes/np_dest docker build -t np_dest:dev . cd
+   * ~/code/airbyte ./gradlew :airbyte-workers:airbyteDocker kubectl apply -f
+   * ~/code/airbyte/airbyte-workers/src/main/resources/kube_queue_poc/launch
    */
   public static void main(String[] args) throws InterruptedException, IOException {
     testSyncWorkflow();
