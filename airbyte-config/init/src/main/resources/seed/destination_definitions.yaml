@@ -45,3 +45,4 @@
   dockerRepository: airbyte/destination-mssql
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/destinations/mssql
+# DESTINATION DEFINITION BY CODE GENERATOR
