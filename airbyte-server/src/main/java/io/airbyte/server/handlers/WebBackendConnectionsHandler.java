@@ -53,9 +53,9 @@ import io.airbyte.api.model.OperationUpdate;
 import io.airbyte.api.model.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.WbConnectionRead;
-import io.airbyte.api.model.WbConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionCreate;
+import io.airbyte.api.model.WebBackendConnectionRead;
+import io.airbyte.api.model.WebBackendConnectionReadList;
 import io.airbyte.api.model.WebBackendConnectionRequestBody;
 import io.airbyte.api.model.WebBackendConnectionUpdate;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
@@ -97,27 +97,28 @@ public class WebBackendConnectionsHandler {
     this.operationsHandler = operationsHandler;
   }
 
-  public WbConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
+  public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
-    final List<WbConnectionRead> reads = Lists.newArrayList();
+    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
     for (ConnectionRead connection : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
-      reads.add(buildWbConnectionRead(connection));
+      reads.add(buildWebBackendConnectionRead(connection));
     }
-    return new WbConnectionReadList().connections(reads);
+    return new WebBackendConnectionReadList().connections(reads);
   }
 
-  private WbConnectionRead buildWbConnectionRead(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
+  private WebBackendConnectionRead buildWebBackendConnectionRead(ConnectionRead connectionRead)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead);
     final DestinationRead destination = getDestinationRead(connectionRead);
     final OperationReadList operations = getOperationReadList(connectionRead);
-    final WbConnectionRead wbConnectionRead = getWbConnectionRead(connectionRead, source, destination, operations);
+    final WebBackendConnectionRead WebBackendConnectionRead = getWebBackendConnectionRead(connectionRead, source, destination, operations);
 
     final JobReadList syncJobReadList = getSyncJobs(connectionRead);
     Predicate<JobRead> hasRunningJob = (JobRead job) -> !TERMINAL_STATUSES.contains(job.getStatus());
-    wbConnectionRead.setIsSyncing(syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
-    setLatestSyncJobProperties(wbConnectionRead, syncJobReadList);
-    return wbConnectionRead;
+    WebBackendConnectionRead.setIsSyncing(syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).anyMatch(hasRunningJob));
+    setLatestSyncJobProperties(WebBackendConnectionRead, syncJobReadList);
+    return WebBackendConnectionRead;
   }
 
   private SourceRead getSourceRead(ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -135,11 +136,11 @@ public class WebBackendConnectionsHandler {
     return operationsHandler.listOperationsForConnection(connectionIdRequestBody);
   }
 
-  private WbConnectionRead getWbConnectionRead(ConnectionRead connectionRead,
-                                               SourceRead source,
-                                               DestinationRead destination,
-                                               OperationReadList operations) {
-    return new WbConnectionRead()
+  private WebBackendConnectionRead getWebBackendConnectionRead(ConnectionRead connectionRead,
+                                                               SourceRead source,
+                                                               DestinationRead destination,
+                                                               OperationReadList operations) {
+    return new WebBackendConnectionRead()
         .connectionId(connectionRead.getConnectionId())
         .sourceId(connectionRead.getSourceId())
         .destinationId(connectionRead.getDestinationId())
@@ -161,15 +162,15 @@ public class WebBackendConnectionsHandler {
     return jobHistoryHandler.listJobsFor(jobListRequestBody);
   }
 
-  private void setLatestSyncJobProperties(WbConnectionRead wbConnectionRead, JobReadList syncJobReadList) {
+  private void setLatestSyncJobProperties(WebBackendConnectionRead WebBackendConnectionRead, JobReadList syncJobReadList) {
     syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst()
         .ifPresent(job -> {
-          wbConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
-          wbConnectionRead.setLatestSyncJobStatus(job.getStatus());
+          WebBackendConnectionRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
+          WebBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
         });
   }
 
-  public WbConnectionRead webBackendGetConnection(WebBackendConnectionRequestBody webBackendConnectionRequestBody)
+  public WebBackendConnectionRead webBackendGetConnection(WebBackendConnectionRequestBody webBackendConnectionRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
         .connectionId(webBackendConnectionRequestBody.getConnectionId());
@@ -187,7 +188,7 @@ public class WebBackendConnectionsHandler {
       connection.setSyncCatalog(combined);
     }
 
-    return buildWbConnectionRead(connection);
+    return buildWebBackendConnectionRead(connection);
   }
 
   @VisibleForTesting
@@ -239,14 +240,14 @@ public class WebBackendConnectionsHandler {
     return new AirbyteCatalog().streams(streams);
   }
 
-  public ConnectionRead webBackendCreateConnection(WebBackendConnectionCreate webBackendConnectionCreate)
+  public WebBackendConnectionRead webBackendCreateConnection(WebBackendConnectionCreate webBackendConnectionCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
-    return connectionsHandler.createConnection(connectionCreate);
+    return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate));
   }
 
-  public ConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate)
+  public WebBackendConnectionRead webBackendUpdateConnection(WebBackendConnectionUpdate webBackendConnectionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
@@ -261,8 +262,7 @@ public class WebBackendConnectionsHandler {
       // just create the job
       schedulerHandler.syncConnection(connectionId);
     }
-
-    return connectionRead;
+    return buildWebBackendConnectionRead(connectionRead);
   }
 
   private List<UUID> createOperations(WebBackendConnectionCreate webBackendConnectionCreate)
