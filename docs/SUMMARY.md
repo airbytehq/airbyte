@@ -64,6 +64,7 @@
     * [Mixpanel](integrations/sources/mixpanel.md)
     * [Mongo DB](integrations/sources/mongodb.md)
     * [MySQL](integrations/sources/mysql.md)
+    * [Okta](integrations/sources/okta.md)
     * [Oracle DB](integrations/sources/oracle.md)
     * [Plaid](integrations/sources/plaid.md)
     * [PokéAPI](integrations/sources/pokeapi.md)
