@@ -30,11 +30,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -60,12 +62,14 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final ConfiguredAirbyteCatalog catalog;
   private final Callback callback;
   private final Consumer<AirbyteMessage> outputRecordCollector;
+  private final NamingConventionTransformer nameTransformer;
 
   private AirbyteMessage lastStateMessage = null;
 
   public KafkaRecordConsumer(KafkaDestinationConfig kafkaDestinationConfig,
                              ConfiguredAirbyteCatalog catalog,
-                             Consumer<AirbyteMessage> outputRecordCollector) {
+                             Consumer<AirbyteMessage> outputRecordCollector,
+                             NamingConventionTransformer nameTransformer) {
     this.topicPattern = kafkaDestinationConfig.getTopicPattern();
     this.topicMap = new HashMap<>();
     this.producer = kafkaDestinationConfig.getProducer();
@@ -75,22 +79,21 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.callback = (metadata, exception) -> {
       if (exception != null) {
         // TODO improve error management
-        LOGGER.error("Error sending message to topic '{}'", metadata.topic(), exception);
+        LOGGER.error("Error sending message to topic", exception);
       }
     };
     this.outputRecordCollector = outputRecordCollector;
+    this.nameTransformer = nameTransformer;
   }
 
   @Override
   protected void startTracked() {
     Map<AirbyteStreamNameNamespacePair, String> mapped = catalog.getStreams().stream()
-        .map(stream -> new AirbyteStreamNameNamespacePair(
-            stream.getStream().getName(),
-            stream.getStream().getNamespace()))
-        .collect(Collectors.toMap(Function.identity(), pair -> topicPattern
-            .replaceAll("\\{namespace}", pair.getNamespace())
-            .replaceAll("\\{stream}", pair.getName())));
-
+        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
+        .collect(Collectors.toMap(Function.identity(),
+            pair -> nameTransformer.getIdentifier(topicPattern
+                .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
+                .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")))));
     topicMap.putAll(mapped);
 
     if (transactionalProducer) {

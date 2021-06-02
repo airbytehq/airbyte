@@ -199,6 +199,22 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
+   * Detects if a destination implements overwrite mode from the spec.json that should include
+   * 'supportedDestinationSyncMode'
+   *
+   * @return - a boolean.
+   */
+  protected boolean implementsOverwrite() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportedDestinationSyncModes() != null) {
+      return spec.getSupportedDestinationSyncModes().contains(DestinationSyncMode.OVERWRITE);
+    } else {
+      return false;
+    }
+  }
+
+  /**
    * Override to return true to if the destination implements basic normalization and it should be
    * tested here.
    *
@@ -332,6 +348,11 @@ public abstract class DestinationAcceptanceTest {
    */
   @Test
   public void testSecondSync() throws Exception {
+    if (!implementsOverwrite()) {
+      LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
+      return;
+    }
+
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);

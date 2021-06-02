@@ -32,6 +32,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -47,6 +48,12 @@ import org.slf4j.LoggerFactory;
 public class KafkaDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaDestination.class);
+
+  private final StandardNameTransformer namingResolver;
+
+  public KafkaDestination() {
+    this.namingResolver = new StandardNameTransformer();
+  }
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
@@ -66,7 +73,8 @@ public class KafkaDestination extends BaseConnector implements Destination {
           producer.beginTransaction();
         }
 
-        final RecordMetadata metadata = producer.send(new ProducerRecord<>(testTopic, key, value)).get();
+        final RecordMetadata metadata = producer.send(new ProducerRecord<>(
+            namingResolver.getIdentifier(testTopic), key, value)).get();
         producer.flush();
 
         if (kafkaDestinationConfig.isTransactionalProducer()) {
@@ -90,7 +98,8 @@ public class KafkaDestination extends BaseConnector implements Destination {
                                             Consumer<AirbyteMessage> outputRecordCollector) {
     return new KafkaRecordConsumer(KafkaDestinationConfig.getKafkaDestinationConfig(config),
         catalog,
-        outputRecordCollector);
+        outputRecordCollector,
+        namingResolver);
   }
 
   public static void main(String[] args) throws Exception {
