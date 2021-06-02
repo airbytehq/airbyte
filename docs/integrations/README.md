@@ -1,17 +1,18 @@
 # Connector Catalog
 
 ## Connector grades
-Airbyte uses a grading system for connectors to help users understand what to expect from a connector. There are three grades, explained below: 
+Airbyte uses a grading system for connectors to help users understand what to expect from a connector. There are three grades, explained below:
 
 **Certified**: This connector has been proven to be robust via usage by a large number of users and extensive testing.
 
-**Beta**: While this connector is well tested and is expected to work a majority of the time, it was released recently. There may be some unhandled edge cases but Airbyte will provide very quick turnaround for support on any issues (we'll publish our target KPIs for support turnaround very soon). All beta connectors will make their way to certified status after enough field testing.  
- 
-**Alpha**: This connector is either not sufficiently tested, has extremely limited functionality (e.g: created as an example connector), or for any other reason may not be very mature.  
+**Beta**: While this connector is well tested and is expected to work a majority of the time, it was released recently. There may be some unhandled edge cases but Airbyte will provide very quick turnaround for support on any issues (we'll publish our target KPIs for support turnaround very soon). All beta connectors will make their way to certified status after enough field testing.
+
+**Alpha**: This connector is either not sufficiently tested, has extremely limited functionality (e.g: created as an example connector), or for any other reason may not be very mature.
 
 ### Sources
 | Connector | Grade |
 |----|----|
+|[Amazon Seller Partner](./sources/amazon-seller-partner.md)| Alpha |
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
 |[Braintree](./sources/braintree.md)| Alpha |
