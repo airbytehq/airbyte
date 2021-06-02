@@ -38,6 +38,11 @@ public class S3CsvFormatConfigTest {
   public void testFlatteningCreationFromString() {
     assertEquals(Flattening.NO, Flattening.fromValue("no flattening"));
     assertEquals(Flattening.ROOT_LEVEL, Flattening.fromValue("root level flattening"));
+    try {
+      Flattening.fromValue("invalid flattening value");
+    } catch (Exception e) {
+      assertTrue(e instanceof IllegalArgumentException);
+    }
   }
 
 }
