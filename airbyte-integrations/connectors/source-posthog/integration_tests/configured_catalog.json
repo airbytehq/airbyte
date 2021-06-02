@@ -59,7 +59,8 @@
               "type": "string"
             },
             "timestamp": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "person": {
               "type": "object",
@@ -113,10 +114,12 @@
               "type": "integer"
             },
             "start_time": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "end_time": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "event_count": {
               "type": "integer"
@@ -216,7 +219,8 @@
                     "type": "string"
                   },
                   "timestamp": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                   },
                   "person": {
                     "type": "string"
@@ -323,7 +327,8 @@
               "type": "object"
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             }
           }
         },
@@ -424,7 +429,8 @@
               "type": "string"
             },
             "last_refresh": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "refreshing": {
               "type": "boolean"
@@ -433,7 +439,8 @@
               "type": "string"
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "saved": {
               "type": "boolean"
@@ -664,7 +671,8 @@
               }
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             }
           }
         },
@@ -689,7 +697,8 @@
               "type": "string"
             },
             "date_marker": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "creation_type": {
               "type": "string"
@@ -718,10 +727,12 @@
               }
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "updated_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "deleted": {
               "type": "boolean"
@@ -731,12 +742,12 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": []
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
       },
-      "sync_mode": "full_refresh",
-      "cursor_field": [],
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
       "destination_sync_mode": "append"
     },
     {
@@ -798,7 +809,8 @@
               }
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "last_calculation": {
               "type": "string"

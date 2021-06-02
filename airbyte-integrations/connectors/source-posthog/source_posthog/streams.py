@@ -68,7 +68,10 @@ class PosthogStream(HttpStream, ABC):
 
 class IncrementalPosthogStream(PosthogStream, ABC):
     state_checkpoint_interval = math.inf
-    reversed_pagination = {"is_completed": False, "latest_response_state": {}, "is_new_page_available": False, "upgrade_to": {}}
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.reversed_pagination = {"is_completed": False, "latest_response_state": {}, "is_new_page_available": False, "upgrade_to": {}}
 
     @property
     @abstractmethod
@@ -115,7 +118,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         response_json = response.json()
         data = response_json[self.data_field]
         if data:
-            if not ("next" in response_json and response_json["next"]):
+            if not response_json.get("next"):
                 self.reversed_pagination["is_completed"] = True
             latest_field_value = data[-1][self.cursor_field]
             if stream_state:
@@ -133,21 +136,25 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         yield from data
 
 
-class Annotations(PosthogStream):
+class Annotations(IncrementalPosthogStream):
     """
-    Could not use inremental here. No option to sort in request provided by API.
-    There are 3 possible key fields id, created_at, updated_at.
-    The last one is the most suitable
-    But response is always sorted DESC on `id or created_at`.
-    If the field was updated and `updated_at` was increased, it did not change its position in response.
-    So if we have 2766-2891 ids, state saved on id=2870 and update 2869th record,
-    we'll miss the update. So no logical way to use incremental, it will be like full_refresh.
+    OK sorting by updated_at exists, but we still does not have `since`-like params for this endpoint.
+    Hence sorting exists it is possible to make it incremental, but this will be usual reverse incremental
+    from latest to state value.
     """
 
+    cursor_field = "updated_at"
     data_field = "results"
 
     def path(self, **kwargs) -> str:
         return "annotation"
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["order"] = f"-{self.cursor_field}"
+        return params
 
 
 class Cohorts(IncrementalPosthogStream):

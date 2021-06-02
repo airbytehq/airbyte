@@ -8,7 +8,8 @@
       "type": "string"
     },
     "date_marker": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "creation_type": {
       "type": "string"

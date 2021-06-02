@@ -26,7 +26,6 @@
 from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
 import dateutil.parser
-import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -96,18 +95,9 @@ class SourcePosthog(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            session = requests.Session()
-            session.headers["Authorization"] = "Bearer %s" % config["api_key"]
-            session.headers["Content-Type"] = "application/json"
-            session.headers["User-Agent"] = "posthog-python/1.4.0"
-            url_base = "https://app.posthog.com/"
-            response = session.get(url_base + "api/user")
-            if response.status_code != 200:
-                resp_json = response.json()
-                err_message = resp_json["detail"] if "detail" in resp_json else "unknown error"
-                raise Exception(err_message)  # return with a python traceback in the log
-
             _ = dateutil.parser.isoparse(config["start_date"])
+            authenticator = TokenAuthenticator(token=config["api_key"])
+            _ = next(Annotations(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
             return False, repr(e)
