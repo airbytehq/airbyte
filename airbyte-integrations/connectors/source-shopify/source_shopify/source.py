@@ -114,7 +114,7 @@ class Orders(IncrementalShopifyStream):
     data_field = "orders"
 
     def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
+        return f"{self.data_field}.json?status=any"
 
 
 class Products(IncrementalShopifyStream):
