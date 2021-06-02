@@ -24,17 +24,13 @@
 
 package io.airbyte.workers.process;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.workers.WorkerException;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,56 +39,55 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
-  private static final Path WORKSPACE_MOUNT_DESTINATION = Path.of("/workspace");
+  private final String namespace;
+  private final KubernetesClient kubeClient;
+  private final BlockingQueue<Integer> ports;
+  private final Set<Integer> claimedPorts = new HashSet<>();
 
-  private final Path workspaceRoot;
-
-  public KubeProcessFactory(Path workspaceRoot) {
-    this.workspaceRoot = workspaceRoot;
+  public KubeProcessFactory(String namespace, KubernetesClient kubeClient, BlockingQueue<Integer> ports) {
+    this.namespace = namespace;
+    this.kubeClient = kubeClient;
+    this.ports = ports;
   }
 
   @Override
-  public Process create(String jobId, int attempt, final Path jobRoot, final String imageName, final String entrypoint, final String... args)
+  public Process create(String jobId,
+                        int attempt,
+                        final Path jobRoot,
+                        final String imageName,
+                        final boolean usesStdin,
+                        final Map<String, String> files,
+                        final String entrypoint,
+                        final String... args)
       throws WorkerException {
-
     try {
-      final String template = MoreResources.readResource("kube_runner_template.yaml");
-
       // used to differentiate source and destination processes with the same id and attempt
       final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
-
-      ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-
-      final String rendered = template.replaceAll("JOBID", jobId)
-          .replaceAll("ATTEMPTID", String.valueOf(attempt))
-          .replaceAll("IMAGE", imageName)
-          .replaceAll("SUFFIX", suffix)
-          .replaceAll("ARGS", Jsons.serialize(Arrays.asList(args)))
-          .replaceAll("WORKDIR", jobRoot.toString());
-
-      final JsonNode node = yamlMapper.readTree(rendered);
-      final String overrides = Jsons.serialize(node);
-
       final String podName = "airbyte-worker-" + jobId + "-" + attempt + "-" + suffix;
 
-      final List<String> cmd =
-          Lists.newArrayList(
-              "kubectl",
-              "run",
-              "--generator=run-pod/v1",
-              "--rm",
-              "-i",
-              "--pod-running-timeout=24h",
-              "--image=" + imageName,
-              "--restart=Never",
-              "--overrides=" + overrides, // fails if you add quotes around the overrides string
-              podName);
-      // TODO handle entrypoint override (to run DbtTransformationRunner for example)
-      LOGGER.debug("Preparing command: {}", Joiner.on(" ").join(cmd));
+      final int stdoutLocalPort = ports.take();
+      claimedPorts.add(stdoutLocalPort);
+      LOGGER.info("stdoutLocalPort = " + stdoutLocalPort);
 
-      return new ProcessBuilder(cmd).start();
+      final int stderrLocalPort = ports.take();
+      claimedPorts.add(stderrLocalPort);
+      LOGGER.info("stderrLocalPort = " + stderrLocalPort);
+
+      return new KubePodProcess(
+          kubeClient,
+          podName,
+          namespace,
+          imageName,
+          stdoutLocalPort,
+          stderrLocalPort,
+          usesStdin,
+          files,
+          entrypoint,
+          args);
     } catch (Exception e) {
       throw new WorkerException(e.getMessage());
+    } finally {
+      ports.addAll(claimedPorts);
     }
   }
 

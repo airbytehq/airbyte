@@ -2,9 +2,9 @@ Try to use a mounted named pipe instead of using socat.
 
 For builds:
 ```
-cd ~/code/airbyte/airbyte-integrations/connectors/source-always-works/named_pipes/np_source
+cd ~/code/airbyte/airbyte-workers/named_pipes/np_source
 docker build -t np_source:dev .
-cd ~/code/airbyte/airbyte-integrations/connectors/source-always-works/named_pipes/np_dest
+cd ~/code/airbyte/airbyte-workers/named_pipes/np_dest
 docker build -t np_dest:dev .
 ```
 
