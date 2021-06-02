@@ -22,7 +22,7 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
+| Full Refresh Sync | No |  |
 | Incremental - Append Sync | Yes |  |
 | Namespaces | Yes |  |
 
