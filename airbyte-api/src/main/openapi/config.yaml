@@ -1139,7 +1139,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WbConnectionReadList"
+                $ref: "#/components/schemas/WebBackendConnectionReadList"
         "404":
           description: Workspace not found
         "422":
@@ -1162,7 +1162,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WbConnectionRead"
+                $ref: "#/components/schemas/WebBackendConnectionRead"
         "404":
           description: Connection not found
         "422":
@@ -1185,7 +1185,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ConnectionRead"
+                $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/connections/update:
@@ -1206,7 +1206,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ConnectionRead"
+                $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/sources/recreate:
@@ -2540,7 +2540,7 @@ components:
     ConnectionStateObject:
       type: object
     # Web Backend
-    WbConnectionRead:
+    WebBackendConnectionRead:
       type: object
       required:
         - connectionId
@@ -2587,7 +2587,7 @@ components:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
-    WbConnectionReadList:
+    WebBackendConnectionReadList:
       type: object
       required:
         - connections
@@ -2595,7 +2595,7 @@ components:
         connections:
           type: array
           items:
-            $ref: "#/components/schemas/WbConnectionRead"
+            $ref: "#/components/schemas/WebBackendConnectionRead"
     SyncMode:
       type: string
       enum:
