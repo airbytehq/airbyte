@@ -213,7 +213,7 @@ module.exports = function (plop) {
         type: 'add',
         abortOnFail: true,
         templateFile: `${javaDestinationInput}/spec.json.hbs`,
-        path: `${definitionRoot}/src/main/resources/spec.json`
+        path: `${javaDestinationOutputRoot}/src/main/resources/spec.json`
       },
       {
         type: 'add',
