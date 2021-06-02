@@ -1,4 +1,4 @@
-# Operations Manager
+# People Operations Manager
 
 ## **About Airbyte**
 
@@ -10,32 +10,29 @@ We're backed by some of the world's [top investors](./#our-investors) and believ
 
 ## **Description**
 
-As our operations manager, you will have the opportunity to work directly with the co-founders, who are serial entrepreneurs. You will have mainly three focus:
+As our people operations manager, you will have the opportunity to work directly with the co-founders, who are serial entrepreneurs. You will have three main focus areas: 
+1. Owning all people-ops related initiatives (including the [handbook](https://handbook.airbyte.io))
+2. Owning all workspace management / remote culture related initiatives
+3. Assisting on recruiting efforts
 
-1. Helping the 2 co-founders in the day-to-day operations of the company.
-2. Lead pragmatic process initiatives to help the team scale, should it be in operations, HR, or customer success.
-3. Performing the experiments that the team has thought about, but doesn’t have the time for. 
-
-Examples of such experiments would be building the equivalent of [Segment’s Recipes](http://segment.com/recipes), or any other content / SEO initiatives. Other examples could be the organization of virtual events and hackathons. A lot of those experiments will have inspirations from growth marketing and developer advocacy.
+As the first hire in the people function, we will expect you to be hands-on and take full ownership of those initiatives. One of the key focuses for the company is D&I, and the founders will want to work on those topics with you. 
 
 ## **Responsibilities**
 
-* Lead efforts on growth experimentation
-* Help with day-to-day operations \(contracts, compliance, creating sandbox accounts for our connector teams, customer calls, etc.\) 
-* Help with community content creation \(case studies, etc.\)
-* Help set up internal tools \(community dashboards, etc\)
-* Help us define internal process to scale the team and its output
-* Help us set the foundation of customer success
-* Be a force in the community!
+* Lead efforts on people ops (onboarding, offboarding, payroll, device management, benefits, immigration/relocation, handbook, benefits, state registrations, etc.)
+* Lead efforts on culture initiatives (weekly team calls, anniversaries, milestones, celebrations, etc.)
+* Setting up recruiting interviews with the team, possibly doing the first culture-add interview, managing Asana as our ATS
+* Creating content for employer branding around the initiatives we do internally
+* Be an ambassador of our culture in the team!
 
 ## **Requirements**
 
-* Immense curiosity and a deep need to experiment and learn
-* Growth and data-driven mindset 
-* Technical enough to build tutorials as [this one](https://docs.airbyte.io/tutorials/slack-history)
+* 3+ years of experience in people ops.
+* Experience working in remote teams.
 * Self-directed and work with minimal supervision.
 * Outstanding written and verbal communications skills with the ability to explain and translate complex technology concepts into simple and intuitive communications.
-* You share our [values](https://handbook.airbyte.io/company/culture-and-values)
+* Be passionate about people!
+* You share our [values](https://handbook.airbyte.io/company/culture-and-values).
 
 ## **Location**
 
