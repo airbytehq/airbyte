@@ -146,6 +146,39 @@ public class KubePodProcess extends Process {
     return pod.getStatus().getPodIP();
   }
 
+  private static void copyFilesToKubeConfigVolume(KubernetesClient client, String podName, String namespace, Map<String, String> files) {
+    List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
+    fileEntries.add(new AbstractMap.SimpleEntry<>("FINISHED_UPLOADING", ""));
+
+    for (Map.Entry<String, String> file : fileEntries) {
+      Path tmpFile = null;
+      try {
+        tmpFile = Path.of(IOs.writeFileToRandomTmpDir(file.getKey(), file.getValue()));
+
+        LOGGER.info("Uploading file: " + file.getKey());
+
+        client.pods().inNamespace(namespace).withName(podName).inContainer("init")
+            .file("/config/" + file.getKey())
+            .upload(tmpFile);
+
+      } finally {
+        if (tmpFile != null) {
+          tmpFile.toFile().delete();
+        }
+      }
+    }
+  }
+
+  private static void waitForInitPodToBeReady(KubernetesClient client, Pod podDefinition) throws InterruptedException {
+    LOGGER.info("Waiting for init container to be ready before copying files...");
+    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
+        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 1, TimeUnit.MINUTES);
+    LOGGER.info("Init container present..");
+    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
+        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 1, TimeUnit.MINUTES);
+    LOGGER.info("Init container ready..");
+  }
+
   public KubePodProcess(KubernetesClient client,
                         String podName,
                         String namespace,
@@ -250,35 +283,10 @@ public class KubePodProcess extends Process {
 
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
-
-    LOGGER.info("Waiting for init container to be ready before copying files...");
-    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
-        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 1, TimeUnit.MINUTES);
-    LOGGER.info("Init container present..");
-    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
-        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 1, TimeUnit.MINUTES);
-    LOGGER.info("Init container ready..");
-
-    LOGGER.info("Copying files...");
-    List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
-    fileEntries.add(new AbstractMap.SimpleEntry<>("FINISHED_UPLOADING", ""));
-
-    for (Map.Entry<String, String> file : fileEntries) {
-      Path tmpFile = null;
-      try {
-        tmpFile = Path.of(IOs.writeFileToRandomTmpDir(file.getKey(), file.getValue()));
-
-        LOGGER.info("Uploading file: " + file.getKey());
-
-        client.pods().inNamespace(namespace).withName(podName).inContainer("init")
-                .file("/config/" + file.getKey())
-                .upload(tmpFile);
-
-      } finally {
-        if(tmpFile != null) {
-          tmpFile.toFile().delete();
-        }
-      }
+    waitForInitPodToBeReady(client, podDefinition);
+    if (!files.isEmpty()) {
+      LOGGER.info("Copying files...");
+      copyFilesToKubeConfigVolume(client, podName, namespace, files);
     }
 
     LOGGER.info("Waiting until pod is ready...");
@@ -370,7 +378,6 @@ public class KubePodProcess extends Process {
 
   private int getReturnCode(Pod pod) {
     Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).get();
-    LOGGER.info("==== GETTING RETURN CODE");
     if (!isTerminal(refreshedPod)) {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
