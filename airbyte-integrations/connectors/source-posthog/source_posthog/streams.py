@@ -217,7 +217,7 @@ class Elements(PosthogStream):
         """
         return None
 
-    
+
 class Events(IncrementalPosthogStream):
     """
     CAUTION! API supports inserting custom timestamp.
