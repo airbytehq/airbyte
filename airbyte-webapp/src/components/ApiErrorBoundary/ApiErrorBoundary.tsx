@@ -6,10 +6,15 @@ import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 
 type BoundaryState = { errorId?: string; message?: string };
 
+enum ErrorId {
+  VersionMismatch = "version.mismatch",
+  ServerUnavailable = "server.unavailable",
+}
+
 class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
   constructor(props: Record<string, unknown>) {
     super(props);
-    this.state = { errorId: "" };
+    this.state = {};
   }
 
   static getDerivedStateFromError(error: {
@@ -19,11 +24,11 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
   }): BoundaryState {
     // Update state so the next render will show the fallback UI.
     if (isVersionError(error)) {
-      return { errorId: "version.mismatch", message: error.message };
+      return { errorId: ErrorId.VersionMismatch, message: error.message };
     }
 
     if (error.message === "Failed to fetch") {
-      return { errorId: "server.unavailable" };
+      return { errorId: ErrorId.ServerUnavailable };
     }
 
     return {};
@@ -33,11 +38,11 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
   componentDidCatch(): void {}
 
   render(): React.ReactNode {
-    if (this.state.errorId === "version.mismatch") {
+    if (this.state.errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={this.state.message} />;
     }
 
-    if (this.state.errorId === "server.unavailable") {
+    if (this.state.errorId === ErrorId.ServerUnavailable) {
       return (
         <ErrorOccurredView
           message={<FormattedMessage id="webapp.cannotReachServer" />}
