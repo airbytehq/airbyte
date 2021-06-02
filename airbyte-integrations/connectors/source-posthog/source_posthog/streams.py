@@ -116,18 +116,21 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         if data:
             if not response_json.get("next"):
                 self.reversed_pagination["is_completed"] = True
-            latest_field_value = data[-1][self.cursor_field]
-            if stream_state:
-                if latest_field_value <= stream_state.get(self.cursor_field):
+            if not self.reversed_pagination["upgrade_to"]:
+                self.reversed_pagination["upgrade_to"] = {self.cursor_field: data[0][self.cursor_field]}
+            last_record_value = data[-1][self.cursor_field]
+            if not stream_state:
+                self.reversed_pagination["latest_response_state"] = {self.cursor_field: last_record_value}
+            else:
+
+                first_record_value = data[0][self.cursor_field]
+                state_value = stream_state.get(self.cursor_field)
+
+                if state_value >= first_record_value:
                     self.reversed_pagination["upgrade_to"] = stream_state
                     yield from []
                 else:
-                    self.reversed_pagination["latest_response_state"] = stream_state
-
-            else:
-                self.reversed_pagination["latest_response_state"] = {self.cursor_field: latest_field_value}
-            if not self.reversed_pagination["upgrade_to"]:
-                self.reversed_pagination["upgrade_to"] = {self.cursor_field: data[0][self.cursor_field]}
+                    self.reversed_pagination["latest_response_state"] = {self.cursor_field: last_record_value}
 
         yield from data
 

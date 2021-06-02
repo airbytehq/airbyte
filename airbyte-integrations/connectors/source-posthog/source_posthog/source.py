@@ -32,12 +32,11 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import (
+from .streams import (  # EventsSessions,
     Annotations,
     Cohorts,
     Elements,
     Events,
-    EventsSessions,
     FeatureFlags,
     Insights,
     InsightsPath,
@@ -103,13 +102,19 @@ class SourcePosthog(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        """
+        event/sessions stream is dynamic. Probably, it contains a list of CURRENT sessions.
+        In Next day session may expire and wont be available via this endpoint.
+        So we need a dynamic load data before tests.
+        This stream was requested to be removed due to this reason.
+        """
         authenticator = TokenAuthenticator(token=config["api_key"])
         return [
             Annotations(authenticator=authenticator),
             Cohorts(authenticator=authenticator),
             Elements(authenticator=authenticator),
             Events(start_date=config["start_date"], authenticator=authenticator),
-            EventsSessions(authenticator=authenticator),
+            # EventsSessions(authenticator=authenticator),
             FeatureFlags(authenticator=authenticator),
             Insights(authenticator=authenticator),
             InsightsPath(authenticator=authenticator),
