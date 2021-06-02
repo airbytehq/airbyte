@@ -22,20 +22,22 @@
 # SOFTWARE.
 #
 
-# import time
 import math
+
+# import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.models import SyncMode
 
 
 class ShopifyStream(HttpStream, ABC):
-    
+
     primary_key = "id"
     limit = 200
 
@@ -58,22 +60,24 @@ class ShopifyStream(HttpStream, ABC):
         else:
             self.since_id = decoded_response.get(self.data_field)[-1]["id"]
             # UNCOMMENT FOR DEBUG ONLY
-            # print(f"\nSINCE_ID TOKEN: {self.since_id}\n")
-            # time.sleep(5)
+            # print(f"\nSINCE_ID {self.data_field}: {self.since_id}\n")
+            # time.sleep(2)
             return {"since_id": self.since_id}
 
     def request_params(
-            self,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
-            **kwargs
-        ) -> MutableMapping[str, Any]:
-            params = super().request_params(next_page_token=next_page_token, **kwargs)
-            params["limit"] = self.limit
-            params["since_id"] = self.since_id
-            if next_page_token:
-                params.update(**next_page_token)
-            return params
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        # params = super().request_params(next_page_token=next_page_token, stream_state=stream_state, **kwargs)
+        params = {"limit": self.limit}
+        # params["limit"] = self.limit
+        # params["since_id"] = stream_state.get(self.cursor_field)
+        # if self.since_id <= stream_state.get(self.cursor_field, 0):
+        #    params["since_id"] = self.since_id
+        # else:
+        #    params["since_id"] = stream_state.get(self.cursor_field)
+        if next_page_token:
+            params.update(**next_page_token)
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
@@ -98,61 +102,72 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
-### STREAM: customers
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        if stream_state.get(self.cursor_field, 0) > self.since_id:
+            # print(f"STREAM HAS BIGGER VALUE: {stream_state.get(self.cursor_field)}")
+            params["since_id"] = stream_state.get(self.cursor_field)
+        else:
+            # print(f"STREAM HAS LOWWER VALUE OR ZERO-STATE: {stream_state.get(self.cursor_field)}")
+            params["since_id"] = self.since_id
+        return params
+
+
 class Customers(IncrementalShopifyStream):
     data_field = "customers"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-### STREAM: orders
+
 class Orders(IncrementalShopifyStream):
     data_field = "orders"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-### STREAM: products
+
 class Products(IncrementalShopifyStream):
     data_field = "products"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-### STREAM: abandoned_checkouts > checkouts
+
 class AbandonedCheckouts(IncrementalShopifyStream):
     data_field = "checkouts"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-### STREAM: metafields
+
 class Metafields(IncrementalShopifyStream):
     data_field = "metafields"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-### STREAM: custom_collections > custom collections
+
 class CustomCollections(IncrementalShopifyStream):
     data_field = "custom_collections"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-### STREAM: collects
+
 class Collects(IncrementalShopifyStream):
     data_field = "collects"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-### STREAM: Refunds from orders
+
 class OrderRefunds(IncrementalShopifyStream):
     data_field = "refunds"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        order_id = stream_slice['order_id']
+        order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -160,12 +175,12 @@ class OrderRefunds(IncrementalShopifyStream):
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
-### STREAM: Refunds from orders
+
 class Transactions(IncrementalShopifyStream):
     data_field = "transactions"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        order_id = stream_slice['order_id']
+        order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -174,7 +189,7 @@ class Transactions(IncrementalShopifyStream):
             yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
 
-# Basic Abstraction to check the connection
+# Basic Connections Check
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         # mapping config from config.json
@@ -212,5 +227,5 @@ class SourceShopify(AbstractSource):
             CustomCollections(**args),
             Collects(**args),
             OrderRefunds(**args),
-            Transactions(**args)
+            Transactions(**args),
         ]

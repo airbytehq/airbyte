@@ -11,7 +11,7 @@ For information about how to use this connector within Airbyte, see [the documen
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```
-python -m venv .venv
+python3 -m venv .venv
 ```
 
 This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
@@ -21,6 +21,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+
+Once you finished with installing python requirements:
+```
+deactivate
+```
 
 Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
 used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
@@ -45,6 +50,7 @@ See `integration_tests/sample_config.json` for a sample config file.
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
+Use your .venv inside your connector in order to proceed:
 ```
 python main.py spec
 python main.py check --config secrets/config.json
@@ -84,7 +90,7 @@ pip install .[tests]
 ### Unit Tests
 To run unit tests locally, from the connector directory run:
 ```
-python -m pytest unit_tests
+python3 -m pytest unit_tests
 ```
 
 ### Integration Tests
