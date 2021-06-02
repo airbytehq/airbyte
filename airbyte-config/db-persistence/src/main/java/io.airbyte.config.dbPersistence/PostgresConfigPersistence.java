@@ -32,11 +32,11 @@ import java.sql.PreparedStatement;
 
 public class PostgresConfigPersistence extends io.airbyte.config.dbPersistence.DatabaseConfigPersistence {
 
-  protected PostgresConfigPersistence(JdbcDatabase db) {
+  public PostgresConfigPersistence(JdbcDatabase db) {
     super(db);
   }
 
-  protected DatabaseConfigPersistence(JdbcDatabase db, JsonSchemaValidator validator) {
+  public PostgresConfigPersistence(JdbcDatabase db, JsonSchemaValidator validator) {
     super(db, validator);
   }
 

@@ -118,7 +118,6 @@ allprojects {
                 ":airbyte-migration",
                 ":airbyte-scheduler:app",
                 ":airbyte-server",
-                ":airbyte-webapp",
         ].toSet().asImmutable()
 
         if (project.getPath() in composeDeps) {
