@@ -25,89 +25,70 @@
 package io.airbyte.integrations.source.{{snakeCase name}};
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.JdbcDatabaseContainer;
+import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
+public class {{pascalCase name}}SourceAcceptanceTest extends SourceAcceptanceTest {
 
-public class {{pascalCase name}}JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
-
-
-
-  private static JdbcDatabaseContainer dbContainer; //TODO Add your container here instead of this one. Ex.org.testcontainers.containers.MSSQLServerContainer<?>
-  private static JdbcDatabase database;
   private JsonNode config;
 
-  @BeforeAll
-  static void init() {
-
-    // TODO init your container.
-    //  Ex:dbContainer = new org.testcontainers.containers.MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    dbContainer = new JdbcDatabaseContainer();
-    dbContainer.start();
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
-        .put("username", dbContainer.getUsername())
-        .put("password", dbContainer.getPassword())
-        .build());
-
-    database = Databases.createJdbcDatabase(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asInt()),
-        "add_your_driver_here"); // TODO add the driver name. Ex."com.microsoft.sqlserver.jdbc.SQLServerDriver"
-
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
-
-    database.execute(
-        ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
-
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
-
-    super.setup();
-  }
-
-  @AfterAll
-  public static void cleanUp() throws Exception {
-    database.close();
-    dbContainer.close();
+  @Override
+  protected void setup(TestDestinationEnv testEnv) throws Exception {
+    // TODO create new container. Ex: "new OracleContainer("epiclabs/docker-oracle-xe-11g");"
+    // TODO make container started. Ex: "container.start();"
+    // TODO init JsonNode config
+    // TODO crete airbyte Database object "Databases.createJdbcDatabase(...)"
+    // TODO insert test data to DB. Ex: "database.execute(connection-> ...)"
+    // TODO close Database. Ex: "database.close();"
   }
 
   @Override
-  public boolean supportsSchemas() {
-    return true;
+  protected void tearDown(TestDestinationEnv testEnv) {
+    //TODO close container that was initialized in setup() method. Ex: "container.close();"
   }
 
   @Override
-  public JsonNode getConfig() {
-    return Jsons.clone(config);
+  protected String getImageName() {
+    return "airbyte/source-{{dashCase name}}:dev";
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
-    return new {{pascalCase name}}Source();
+  protected ConnectorSpecification getSpec() throws Exception {
+    return Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
   }
 
   @Override
-  public String getDriverClass() {
-    return {{pascalCase name}}Source.DRIVER_CLASS;
+  protected JsonNode getConfig() {
+    return config;
+  }
+
+  @Override
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
+    // TODO Return the ConfiguredAirbyteCatalog with ConfiguredAirbyteStream objects
+    return null;
+  }
+
+  @Override
+  protected List<String> getRegexTests() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  protected JsonNode getState() {
+    return Jsons.jsonNode(new HashMap<>());
   }
 
 }

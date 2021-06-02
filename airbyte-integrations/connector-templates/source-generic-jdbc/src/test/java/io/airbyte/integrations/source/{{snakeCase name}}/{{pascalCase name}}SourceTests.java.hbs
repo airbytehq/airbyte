@@ -27,60 +27,26 @@ package io.airbyte.integrations.source.{{snakeCase name}};
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Properties;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
 public class {{pascalCase name}}SourceTests {
 
-  private static final String TEST_USER = "test";
-  private static final String TEST_PASSWORD = "test";
-  //TODO Declare here container suitable for you DB. Ex: "private static MSSQLServerContainer<?> db;"
-  private static org.testcontainers.containers.JdbcDatabaseContainer container;
-
   private JsonNode config;
   private Database database;
 
   @Test
   public void testSettingTimezones() throws Exception {
-    // start DB
-    // TODO init your container.
-    //  Ex: db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    container = new JdbcDatabaseContainer();
-
-    container.start();
-    Properties properties = new Properties();
-    properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/London"));
-    DriverManager.getConnection(container.getJdbcUrl(), properties);
-    String dbName = "db_" + RandomStringUtils.randomAlphabetic(10);
-    config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
-
-    try (Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
-      connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-      connection.createStatement().execute("CREATE DATABASE " + config.get("database").asText());
-    }
-    AirbyteConnectionStatus check = new {{pascalCase name}}Source().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
-
-    // cleanup
-    container.close();
+    // TODO init your container. Ex: "new org.testcontainers.containers.MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();"
+    // TODO start the container. Ex: "container.start();"
+    // TODO prepare DB config. Ex: "config = getConfig(container, dbName, "serverTimezone=Europe/London");"
+    // TODO create DB, grant all privileges, etc.
+    // TODO check connection status. Ex: "AirbyteConnectionStatus check = new {{pascalCase name}}Source().check(config);"
+    // TODO assert connection status. Ex: "assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());"
+    // TODO cleanup used resources and close used container. Ex: "container.close();"
   }
-
-  private static JsonNode getConfig(MySQLContainer dbContainer, String dbName, String jdbcParams) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
-        .put("jdbc_url_params", jdbcParams)
-        .build());
-  }
-
 }
