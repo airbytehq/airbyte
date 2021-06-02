@@ -19,9 +19,6 @@ tests:
       state_path: "integration_tests/state.json"
       cursor_paths:
         feature_flags: ["id"]
-        events: ["timestamp" ]
-        persons: ["created_at"]
-        cohorts: ["id"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -35,6 +35,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class PosthogStream(HttpStream, ABC):
     url_base = "https://app.posthog.com/api/"
     primary_key = "id"
+    data_field = "results"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
@@ -59,11 +60,6 @@ class PosthogStream(HttpStream, ABC):
         if next_page_token:
             params.update(next_page_token)
         return params
-
-    @property
-    @abstractmethod
-    def data_field(self) -> str:
-        """the responce entry that contains useful data"""
 
 
 class IncrementalPosthogStream(PosthogStream, ABC):
@@ -144,7 +140,6 @@ class Annotations(IncrementalPosthogStream):
     """
 
     cursor_field = "updated_at"
-    data_field = "results"
 
     def path(self, **kwargs) -> str:
         return "annotation"
@@ -164,7 +159,6 @@ class Cohorts(IncrementalPosthogStream):
     """
 
     cursor_field = "id"
-    data_field = "results"
 
     def path(self, **kwargs) -> str:
         return "cohort"
@@ -232,7 +226,6 @@ class Events(IncrementalPosthogStream):
     """
 
     cursor_field = "timestamp"
-    data_field = "results"
 
     def __init__(self, start_date: str, **kwargs):
         self.start_date = start_date
@@ -265,7 +258,6 @@ class EventsSessions(PosthogStream):
 
 class FeatureFlags(IncrementalPosthogStream):
     cursor_field = "id"
-    data_field = "results"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "feature_flag"
@@ -276,8 +268,6 @@ class Insights(PosthogStream):
     NO WAY TO SORT TO IMPLETEMENT INCREMENTAL! id, created_at, last_refresh
     are ordered in a random (!) way, no DESC no ASC
     """
-
-    data_field = "results"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "insight"
@@ -299,7 +289,6 @@ class InsightsSessions(PosthogStream):
 
 class Persons(IncrementalPosthogStream):
     cursor_field = "created_at"
-    data_field = "results"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "person"
