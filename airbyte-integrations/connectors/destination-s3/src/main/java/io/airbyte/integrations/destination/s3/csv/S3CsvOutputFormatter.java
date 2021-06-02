@@ -157,7 +157,7 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
   }
 
   static String getOutputFilename(Timestamp timestamp) {
-    return String.format("%s-%d.csv", DATE_FORMAT.format(timestamp), timestamp.getTime());
+    return String.format("%s_%d.csv", DATE_FORMAT.format(timestamp), timestamp.getTime());
   }
 
   /**

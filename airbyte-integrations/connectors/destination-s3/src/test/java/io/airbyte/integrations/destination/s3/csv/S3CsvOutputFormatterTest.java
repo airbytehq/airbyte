@@ -87,7 +87,7 @@ class S3CsvOutputFormatterTest {
   public void testGetOutputFilename() {
     Timestamp timestamp = new Timestamp(1471461319000L);
     assertEquals(
-        "2016-08-17-1471461319000.csv",
+        "2016_08_17_1471461319000.csv",
         S3CsvOutputFormatter.getOutputFilename(timestamp));
   }
 

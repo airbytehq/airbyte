@@ -38,7 +38,7 @@ public final class S3DestinationConstants {
   public static final int DEFAULT_QUEUE_CAPACITY = 2;
   public static final int DEFAULT_PART_SIZE_MD = 5;
   public static final int DEFAULT_NUM_STREAMS = 1;
-  public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+  public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy_MM_dd");
 
   private S3DestinationConstants() {
   }
