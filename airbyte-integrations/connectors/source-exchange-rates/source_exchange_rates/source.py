@@ -115,7 +115,7 @@ class SourceExchangeRates(AbstractSource):
             # https://exchangeratesapi.io/documentation/#errors
             error = resp.json().get("error")
             code = error.get("code")
-            message = error.get("message")
+            message = error.get("message") if error.get("message") else error.get("info")
             # If code is base_currency_access_restricted, error is caused by switching base currency while using free
             # plan
             if code == "base_currency_access_restricted":
