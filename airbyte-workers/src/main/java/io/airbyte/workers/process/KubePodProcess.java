@@ -167,16 +167,30 @@ public class KubePodProcess extends Process {
     String entrypoint = entrypointOverride == null ? getCommandFromImage(client, image, namespace) : entrypointOverride;
     LOGGER.info("Found entrypoint: {}", entrypoint);
 
-    Volume volume = new VolumeBuilder()
+    Volume pipeVolume = new VolumeBuilder()
         .withName("airbyte-pipes")
         .withNewEmptyDir()
         .endEmptyDir()
         .build();
 
-    VolumeMount volumeMount = new VolumeMountBuilder()
+    VolumeMount pipeVolumeMount = new VolumeMountBuilder()
         .withName("airbyte-pipes")
         .withMountPath("/pipes")
         .build();
+
+    Volume configVolume = new VolumeBuilder()
+        .withName("airbyte-config")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build();
+
+    VolumeMount configVolumeMount = new VolumeMountBuilder()
+        .withName("airbyte-config")
+        .withMountPath("/config")
+        .build();
+
+    List<Volume> volumes = List.of(pipeVolume, configVolume);
+    List<VolumeMount> mainVolumeMounts = List.of(pipeVolumeMount, configVolumeMount);
 
     // todo: wait until files are copied over instead of just sleeping 10s
     Container initContainer = new ContainerBuilder()
@@ -184,37 +198,40 @@ public class KubePodProcess extends Process {
         .withImage("busybox:1.28")
         .withCommand("sh", "-c",
             usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 10" : "mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 10")
-        .withVolumeMounts(volumeMount)
+        .withVolumeMounts(mainVolumeMounts)
         .build();
 
+    var argsStr = String.join(" ", args);
+    var entrypointStr = entrypoint + " " + argsStr + " ";
     Container main = new ContainerBuilder()
         .withName("main")
         .withImage(image)
         .withCommand("sh", "-c",
-            usesStdin ? "cat /pipes/stdin | " + entrypoint + " 2> /pipes/stderr > /pipes/stdout" : entrypoint + "   2> /pipes/stderr > /pipes/stdout")
-        .withArgs(args)
-        .withVolumeMounts(volumeMount)
+            usesStdin ? "cat /pipes/stdin | " + entrypointStr + " 2> /pipes/stderr > /pipes/stdout" : entrypointStr + "   2> /pipes/stderr > /pipes/stdout")
+//        .withArgs(args)
+        .withWorkingDir("/config")
+        .withVolumeMounts(mainVolumeMounts)
         .build();
 
     Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage("alpine/socat:1.7.4.1-r1")
         .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > /pipes/stdin")
-        .withVolumeMounts(volumeMount)
+        .withVolumeMounts(pipeVolumeMount)
         .build();
 
     Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage("alpine/socat:1.7.4.1-r1")
         .withCommand("sh", "-c", "cat /pipes/stdout | socat -d -d -d - TCP:" + InetAddress.getLocalHost().getHostAddress() + ":" + stdoutLocalPort)
-        .withVolumeMounts(volumeMount)
+        .withVolumeMounts(pipeVolumeMount)
         .build();
 
     Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage("alpine/socat:1.7.4.1-r1")
         .withCommand("sh", "-c", "cat /pipes/stderr | socat -d -d -d - TCP:" + InetAddress.getLocalHost().getHostAddress() + ":" + stderrLocalPort)
-        .withVolumeMounts(volumeMount)
+        .withVolumeMounts(pipeVolumeMount)
         .build();
 
     List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr) : List.of(main, relayStdout, relayStderr);
@@ -228,7 +245,7 @@ public class KubePodProcess extends Process {
         .withRestartPolicy("Never")
         .withInitContainers(initContainer)
         .withContainers(containers)
-        .withVolumes(volume)
+        .withVolumes(volumes)
         .endSpec()
         .build();
 
@@ -251,7 +268,7 @@ public class KubePodProcess extends Process {
         LOGGER.info("Uploading file: " + file.getKey());
 
         client.pods().inNamespace(namespace).withName(podName).inContainer("init")
-                .file("/pipes/" + file.getKey()) // todo: actually handle paths correctly
+                .file("/config/" + file.getKey()) // todo: actually handle paths correctly
                 .upload(tmpFile);
 
       } finally {
@@ -350,7 +367,10 @@ public class KubePodProcess extends Process {
 
   private int getReturnCode(Pod pod) {
     Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).get();
-    Preconditions.checkArgument(isTerminal(refreshedPod));
+    LOGGER.info("==== GETTING RETURN CODE");
+    if (!isTerminal(refreshedPod)) {
+      throw new IllegalThreadStateException("Kube pod process has not exited yet.");
+    }
 
     return refreshedPod.getStatus().getContainerStatuses()
         .stream()

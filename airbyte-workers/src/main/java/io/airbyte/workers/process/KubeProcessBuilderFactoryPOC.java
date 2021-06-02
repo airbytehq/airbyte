@@ -69,7 +69,7 @@ public class KubeProcessBuilderFactoryPOC {
     LOGGER.info("Launching background thread to read destination lines...");
     ExecutorService executor = Executors.newSingleThreadExecutor();
     var listenTask = executor.submit(() -> {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(src.getErrorStream()));
+      BufferedReader reader = new BufferedReader(new InputStreamReader(dest.getInputStream()));
       try {
         String line;
         while ((line = reader.readLine()) != null) {
