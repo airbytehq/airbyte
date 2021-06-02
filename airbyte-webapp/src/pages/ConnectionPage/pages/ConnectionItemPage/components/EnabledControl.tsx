@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Toggle from "components/Toggle";
+import { Toggle } from "components";
 import { Connection } from "core/resources/Connection";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import config from "config";
