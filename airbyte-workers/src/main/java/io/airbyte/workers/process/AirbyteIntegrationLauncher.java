@@ -119,8 +119,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
       arguments.add("--state");
       arguments.add(stateFilename);
 
-      Preconditions.checkNotNull(catalogContents);
-      files.put(catalogFilename, catalogContents);
+      Preconditions.checkNotNull(stateContents);
+      files.put(stateFilename, stateContents);
     }
 
     return processFactory.create(
