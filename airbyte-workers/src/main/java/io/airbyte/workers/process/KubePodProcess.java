@@ -58,19 +58,24 @@ import org.slf4j.LoggerFactory;
  * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The
  * parent process starting a Kube Pod Process needs to exist within the Kube networking space. This
  * is so the parent process can forward data into the child's stdin and read the child's stdout and
- * stderr streams.
+ * stderr streams and copy configuration files over.
  *
  * This is made possible by:
- * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err.
- * </li>
- * <li>2) Redirecting the stdin named pipe to the original image's entrypoint and it's output into
+ * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err on
+ * a shared volume.</li>
+ * <li>2) Config files (e.g. config.json, catalog.json etc) are copied from the parent process into
+ * a shared volume.</li>
+ * <li>3) Redirecting the stdin named pipe to the original image's entrypoint and it's output into
  * the respective named pipes for stdout and stderr.</li>
- * <li>3) Each named pipe has a corresponding side car. Each side car forwards its stream
+ * <li>4) Each named pipe has a corresponding side car. Each side car forwards its stream
  * accordingly using socat. e.g. stderr/stdout is forwarded to parent process while input from the
  * parent process is forwarded into stdin.</li>
- * <li>4) The parent process listens on the stdout and stederr sockets for an incoming TCP
+ * <li>5) The parent process listens on the stdout and stederr sockets for an incoming TCP
  * connection. It also initiates a TCP connection to the child process aka the Kube pod on the
  * specified stdin socket.</li>
+ * <li>6) The child process is able to access configuration data via the shared volume. It's inputs
+ * and outputs - stdin, stdout and stderr - are forwarded the parent process via the sidecars.</li>
+ *
  *
  * See the constructor for more information.
  */
@@ -84,6 +89,8 @@ public class KubePodProcess extends Process {
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
+  private static final String STDOUT_PIPE_FILE = PIPES_DIR + "/stdout";
+  private static final String STDERR_PIPE_FILE = PIPES_DIR + "/stderr";
   private static final String CONFIG_DIR = "/config";
   private static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
 
@@ -151,14 +158,16 @@ public class KubePodProcess extends Process {
   }
 
   private static Container getInit(boolean usesStdin, List<VolumeMount> mainVolumeMounts, boolean copyFiles) {
-    var initEntrypointStr = "mkfifo /pipes/stdout && mkfifo /pipes/stderr";
+    var initEntrypointStr = String.format("mkfifo %s && mkfifo %s", STDOUT_PIPE_FILE, STDERR_PIPE_FILE);
     if (usesStdin) {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
     if (copyFiles) {
+      // If files need to be copied, block until the success file is present to ensure all files are
+      // copied over.
       initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 5; done;", SUCCESS_FILE_NAME);
     }
-    
+
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
         .withImage("busybox:1.28")
@@ -172,7 +181,7 @@ public class KubePodProcess extends Process {
     var argsStr = String.join(" ", args);
     var entrypointStr = entrypoint + " " + argsStr + " ";
 
-    var entrypointStrWithPipes = entrypointStr + " 2> /pipes/stderr > /pipes/stdout";
+    var entrypointStrWithPipes = entrypointStr + String.format(" 2> %s > %s", STDERR_PIPE_FILE, STDOUT_PIPE_FILE);
     if (usesStdin) {
       entrypointStrWithPipes = String.format("cat %s | ", STDIN_PIPE_FILE) + entrypointStrWithPipes;
     }
@@ -209,6 +218,12 @@ public class KubePodProcess extends Process {
     }
   }
 
+  /**
+   * The calls in this function aren't straight-forward due to api limitations. There is no proper way
+   * to directly look for containers within a pod or query if a container is in a running state beside
+   * checking if the getRunning field is set. We could put this behind an interface, but that seems
+   * heavy-handed compared to the 10 lines here.
+   */
   private static void waitForInitPodToRun(KubernetesClient client, Pod podDefinition) throws InterruptedException {
     LOGGER.info("Waiting for init container to be ready before copying files...");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
@@ -276,17 +291,17 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(pipeVolumeMount)
         .build();
 
+    var localIp = InetAddress.getLocalHost().getHostAddress();
     Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", "cat /pipes/stdout | socat -d -d -d - TCP:" + InetAddress.getLocalHost().getHostAddress() + ":" + stdoutLocalPort)
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, localIp, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount)
         .build();
-
     Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", "cat /pipes/stderr | socat -d -d -d - TCP:" + InetAddress.getLocalHost().getHostAddress() + ":" + stderrLocalPort)
+        .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, localIp, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount)
         .build();
 
