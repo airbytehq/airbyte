@@ -29,9 +29,18 @@ import java.text.SimpleDateFormat;
 
 public final class S3DestinationConstants {
 
+  // These parameters are used by {@link StreamTransferManager}.
+  // See this doc about how they affect memory usage:
+  // https://alexmojaki.github.io/s3-stream-upload/javadoc/apidocs/alex/mojaki/s3upload/StreamTransferManager.html
+  // Total memory = (numUploadThreads + queueCapacity) * partSize + numStreams * (partSize + 6MB)
+  //              = 31 MB at current configurations
+  public static final int DEFAULT_UPLOAD_THREADS = 2;
+  public static final int DEFAULT_QUEUE_CAPACITY = 2;
   public static final int DEFAULT_PART_SIZE_MD = 5;
+  public static final int DEFAULT_NUM_STREAMS = 1;
   public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-  private S3DestinationConstants() {}
+  private S3DestinationConstants() {
+  }
 
 }

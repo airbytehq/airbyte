@@ -107,12 +107,12 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     // output to disk before loading into S3. This is not feasible with large input.
     // Data is chunked into parts during the upload. A part is sent off to a queue to be uploaded
     // once it has reached it's configured part size.
-    // Memory consumption is queue capacity * part size = 1 * 5 = 5 MB at current configurations.
-    this.uploadManager = new StreamTransferManager(config.getBucketName(), objectKey,
-        s3Client)
-            .numUploadThreads(1)
-            .queueCapacity(1)
-            .partSize(S3DestinationConstants.DEFAULT_PART_SIZE_MD);
+    // See {@link S3DestinationConstants} for memory usage calculation.
+    this.uploadManager = new StreamTransferManager(config.getBucketName(), objectKey, s3Client)
+        .numStreams(S3DestinationConstants.DEFAULT_NUM_STREAMS)
+        .queueCapacity(S3DestinationConstants.DEFAULT_QUEUE_CAPACITY)
+        .numUploadThreads(S3DestinationConstants.DEFAULT_UPLOAD_THREADS)
+        .partSize(S3DestinationConstants.DEFAULT_PART_SIZE_MD);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
