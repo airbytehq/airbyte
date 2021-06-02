@@ -167,13 +167,13 @@
       "type": "number"
     },
     "terms_and_conditions": {
-      "type": "number"
+      "type": "string"
     },
     "customer_notes": {
-      "type": "number"
+      "type": "string"
     },
     "expiration_reason": {
-      "type": "number"
+      "type": "string"
     },
     "custom_fields": {
       "type": "array"
