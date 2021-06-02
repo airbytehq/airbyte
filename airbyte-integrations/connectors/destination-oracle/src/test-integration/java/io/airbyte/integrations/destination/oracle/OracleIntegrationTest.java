@@ -25,22 +25,18 @@
 package io.airbyte.integrations.destination.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.LocalAirbyteDestination;
+import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import io.airbyte.integrations.standardtest.destination.LocalAirbyteDestination;
-import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.JSONFormat;
 import org.jooq.JSONFormat.RecordFormat;
 import org.junit.jupiter.api.AfterAll;
@@ -74,7 +70,7 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     return new LocalAirbyteDestination(new OracleDestination());
   }
 
-    private JsonNode getConfig(OracleContainer db) {
+  private JsonNode getConfig(OracleContainer db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
@@ -169,13 +165,12 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
 
   private List<String> allTables;
 
-  private List<String> getAllTables(Database db)
-  {
+  private List<String> getAllTables(Database db) {
     try {
       return db.query(ctx -> ctx.fetch("select OWNER, TABLE_NAME from ALL_TABLES where upper(TABLESPACE_NAME) = 'USERS'")
-              .stream()
-              .map(r -> String.format("%s.%s", r.get("OWNER"), r.get("TABLE_NAME")))
-              .collect(Collectors.toList()));
+          .stream()
+          .map(r -> String.format("%s.%s", r.get("OWNER"), r.get("TABLE_NAME")))
+          .collect(Collectors.toList()));
     } catch (SQLException e) {
       LOGGER.error("Error while cleaning up test.", e);
       return null;

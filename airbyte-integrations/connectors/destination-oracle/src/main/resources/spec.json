@@ -43,6 +43,14 @@
         "type": "string",
         "airbyte_secret": true,
         "order": 4
+      },
+      "schema": {
+        "title": "Default Schema",
+        "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"airbyte\".  In Oracle, schemas and users are the same thing, so the \"user\" parameter is used as the login credentials and this is used for the default Airbyte message schema.",
+        "type": "string",
+        "examples": ["airbyte"],
+        "default": "airbyte",
+        "order": 5
       }
     }
   }

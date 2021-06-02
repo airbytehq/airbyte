@@ -27,6 +27,7 @@ package io.airbyte.integrations.destination.oracle;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.time.Instant;
+import java.util.UUID;
 
 @VisibleForTesting
 public class OracleNameTransformer extends ExtendedNameTransformer {
@@ -38,12 +39,12 @@ public class OracleNameTransformer extends ExtendedNameTransformer {
 
   @Override
   public String getRawTableName(String streamName) {
-    return maxStringLength(convertStreamName("airbyte_raw_" + streamName), 30);
+    return convertStreamName("airbyte_raw_" + streamName);
   }
 
   @Override
   public String getTmpTableName(String streamName) {
-    return maxStringLength(convertStreamName("airbyte_tmp_" + streamName + "_" + Instant.now().toEpochMilli()), 30);
+    return convertStreamName("airbyte_tmp_" + streamName + "_" + UUID.randomUUID().toString().replace("`", ""));
   }
 
   private String maxStringLength(String value, Integer length) {

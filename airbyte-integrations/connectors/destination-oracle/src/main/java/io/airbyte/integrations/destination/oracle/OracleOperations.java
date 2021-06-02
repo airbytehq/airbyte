@@ -26,7 +26,6 @@ package io.airbyte.integrations.destination.oracle;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.PreparedStatement;
@@ -53,7 +52,7 @@ public class OracleOperations implements SqlOperations {
   public void createSchemaIfNotExists(JdbcDatabase database, String schemaName) throws Exception {
     if (database.queryInt("select count(*) from dba_users where upper(username) = upper(?)", schemaName) == 0) {
       final String query = String.format("create user %s identified by %s quota unlimited on %s",
-              schemaName, schemaName, tablespace);
+          schemaName, schemaName, tablespace);
       database.execute(query);
     }
   }
@@ -79,7 +78,8 @@ public class OracleOperations implements SqlOperations {
             + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
             + ")",
         schemaName, tableName,
-        OracleDestination.COLUMN_NAME_AB_ID, OracleDestination.COLUMN_NAME_DATA, OracleDestination.COLUMN_NAME_EMITTED_AT, OracleDestination.COLUMN_NAME_DATA);
+        OracleDestination.COLUMN_NAME_AB_ID, OracleDestination.COLUMN_NAME_DATA, OracleDestination.COLUMN_NAME_EMITTED_AT,
+        OracleDestination.COLUMN_NAME_DATA);
   }
 
   private boolean tableExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
@@ -118,11 +118,11 @@ public class OracleOperations implements SqlOperations {
 
   // Adapted from SqlUtils.insertRawRecordsInSingleQuery to meet some needs specific to Oracle syntax
   private static void insertRawRecordsInSingleQuery(String tableName,
-                                            String columns,
-                                            String recordQueryComponent,
-                                            JdbcDatabase jdbcDatabase,
-                                            List<AirbyteRecordMessage> records,
-                                            Supplier<UUID> uuidSupplier)
+                                                    String columns,
+                                                    String recordQueryComponent,
+                                                    JdbcDatabase jdbcDatabase,
+                                                    List<AirbyteRecordMessage> records,
+                                                    Supplier<UUID> uuidSupplier)
       throws SQLException {
     if (records.isEmpty()) {
       return;

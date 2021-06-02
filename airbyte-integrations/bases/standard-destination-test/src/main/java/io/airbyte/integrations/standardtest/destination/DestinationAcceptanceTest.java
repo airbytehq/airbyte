@@ -382,11 +382,6 @@ public abstract class DestinationAcceptanceTest {
     runSync(config, secondSyncMessages, configuredCatalog);
     final String defaultSchema = getDefaultSchema(config);
     retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
-    cleanup(configuredCatalog);
-  }
-
-  private void cleanup(ConfiguredAirbyteCatalog catalog) {
-    // catalog.getStreams().forEach();
   }
 
   /**
@@ -413,9 +408,6 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     runSync(config, firstSyncMessages, configuredCatalog);
 
-    configuredCatalog.getStreams().forEach(s -> {
-      s.withDestinationSyncMode(DestinationSyncMode.APPEND);
-    });
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
