@@ -42,7 +42,7 @@ class ShopifyStream(HttpStream, ABC):
     primary_key = "id"
     limit = 250
 
-    def __init__(self, shop: str, api_key: str, api_password: str, api_version = api_version, **kwargs):
+    def __init__(self, shop: str, api_key: str, api_password: str, api_version=api_version, **kwargs):
         super().__init__(**kwargs)
         self.shop = shop
         self.api_key = api_key

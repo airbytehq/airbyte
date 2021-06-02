@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Shopify Source Specifications",
     "type": "object",
-    "required": [ "shop", "api_key", "api_password"],
+    "required": ["shop", "api_key", "api_password"],
     "additionalProperties": false,
     "properties": {
       "shop": {
