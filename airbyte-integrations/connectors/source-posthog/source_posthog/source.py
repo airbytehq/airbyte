@@ -114,7 +114,7 @@ class SourcePosthog(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["api_key"])
-        streams_ = [
+        return [
             Annotations(authenticator=authenticator),
             Cohorts(authenticator=authenticator),
             Elements(authenticator=authenticator),
@@ -127,5 +127,3 @@ class SourcePosthog(AbstractSource):
             Persons(authenticator=authenticator),
             Trends(authenticator=authenticator),
         ]
-
-        return streams_

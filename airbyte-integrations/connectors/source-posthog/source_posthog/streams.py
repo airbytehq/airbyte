@@ -36,13 +36,9 @@ class PosthogStream(HttpStream, ABC):
     url_base = "https://app.posthog.com/api/"
     primary_key = "id"
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        pass
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
-        if "next" in resp_json and resp_json["next"]:
+        if resp_json.get("next"):
             next_query_string = urllib.parse.urlsplit(resp_json["next"]).query
             params = dict(urllib.parse.parse_qsl(next_query_string))
             if params:
@@ -53,7 +49,7 @@ class PosthogStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        yield from response_json[self.data_field]
+        yield from response_json.get(self.data_field)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -72,11 +68,7 @@ class PosthogStream(HttpStream, ABC):
 
 class IncrementalPosthogStream(PosthogStream, ABC):
     state_checkpoint_interval = math.inf
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # params for desendant sorted responses
-        self.reversed_pagination = {"is_completed": False, "latest_response_state": {}, "is_new_page_available": False, "upgrade_to": {}}
+    reversed_pagination = {"is_completed": False, "latest_response_state": {}, "is_new_page_available": False, "upgrade_to": {}}
 
     @property
     @abstractmethod
@@ -190,7 +182,7 @@ class Cohorts(IncrementalPosthogStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        data = response_json[self.data_field]
+        data = response_json.get(self.data_field)
         if data and stream_state:
             last_record_curfield = data[-1][self.cursor_field]
             last_stream_curfield = stream_state[self.cursor_field]
@@ -205,7 +197,7 @@ class Cohorts(IncrementalPosthogStream):
                     yield from slice_
 
         else:
-            yield from response_json[self.data_field]
+            yield from data
 
 
 class Elements(PosthogStream):
@@ -229,8 +221,8 @@ class Events(IncrementalPosthogStream):
     cursor_field = "timestamp"
     data_field = "results"
 
-    def __init__(self, **kwargs):
-        self.start_date = kwargs.pop("start_date", None)
+    def __init__(self, start_date: str, **kwargs):
+        self.start_date = start_date
         super().__init__(**kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
