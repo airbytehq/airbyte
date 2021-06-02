@@ -97,7 +97,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
       }
 
     } catch (Exception e) {
-      throw new WorkerException("Error while getting checking connection.");
+      throw new WorkerException("Error while getting checking connection.", e);
     }
   }
 

@@ -208,7 +208,6 @@ public class KubePodProcess extends Process {
         .withImage(image)
         .withCommand("sh", "-c",
             usesStdin ? "cat /pipes/stdin | " + entrypointStr + " 2> /pipes/stderr > /pipes/stdout" : entrypointStr + "   2> /pipes/stderr > /pipes/stdout")
-//        .withArgs(args)
         .withWorkingDir("/config")
         .withVolumeMounts(mainVolumeMounts)
         .build();
@@ -252,9 +251,13 @@ public class KubePodProcess extends Process {
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
 
-    // todo: use the API to determine if the init container is ready instead of just waiting
-    LOGGER.info("Waiting before copying files...");
-    Thread.sleep(5000);
+    LOGGER.info("Waiting for init container to be ready before copying files...");
+    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
+        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 1, TimeUnit.MINUTES);
+    LOGGER.info("Init container present..");
+    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
+        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 1, TimeUnit.MINUTES);
+    LOGGER.info("Init container ready..");
 
     LOGGER.info("Copying files...");
     List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
@@ -268,7 +271,7 @@ public class KubePodProcess extends Process {
         LOGGER.info("Uploading file: " + file.getKey());
 
         client.pods().inNamespace(namespace).withName(podName).inContainer("init")
-                .file("/config/" + file.getKey()) // todo: actually handle paths correctly
+                .file("/config/" + file.getKey())
                 .upload(tmpFile);
 
       } finally {
