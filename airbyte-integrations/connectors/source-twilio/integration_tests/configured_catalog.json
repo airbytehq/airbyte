@@ -1,0 +1,202 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "accounts",
+        "json_schema": {
+          "properties": {
+            "auth_token": {
+              "type": ["null", "string"]
+            },
+            "date_created": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            },
+            "date_updated": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            },
+            "friendly_name": {
+              "type": ["null", "string"]
+            },
+            "owner_account_sid": {
+              "type": ["null", "string"]
+            },
+            "sid": {
+              "type": ["null", "string"]
+            },
+            "status": {
+              "type": ["null", "string"]
+            },
+            "subresource_uris": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": ["null", "object"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "subresource": {
+                        "type": ["null", "string"]
+                      },
+                      "uri": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                },
+                {
+                  "type": ["null", "object"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "addresses": {
+                      "type": ["null", "string"]
+                    },
+                    "conferences": {
+                      "type": ["null", "string"]
+                    },
+                    "signing_keys": {
+                      "type": ["null", "string"]
+                    },
+                    "transcriptions": {
+                      "type": ["null", "string"]
+                    },
+                    "connect_apps": {
+                      "type": ["null", "string"]
+                    },
+                    "sip": {
+                      "type": ["null", "string"]
+                    },
+                    "authorized_connect_apps": {
+                      "type": ["null", "string"]
+                    },
+                    "usage": {
+                      "type": ["null", "string"]
+                    },
+                    "keys": {
+                      "type": ["null", "string"]
+                    },
+                    "applications": {
+                      "type": ["null", "string"]
+                    },
+                    "recordings": {
+                      "type": ["null", "string"]
+                    },
+                    "short_codes": {
+                      "type": ["null", "string"]
+                    },
+                    "calls": {
+                      "type": ["null", "string"]
+                    },
+                    "notifications": {
+                      "type": ["null", "string"]
+                    },
+                    "incoming_phone_numbers": {
+                      "type": ["null", "string"]
+                    },
+                    "queues": {
+                      "type": ["null", "string"]
+                    },
+                    "messages": {
+                      "type": ["null", "string"]
+                    },
+                    "outgoing_caller_ids": {
+                      "type": ["null", "string"]
+                    },
+                    "available_phone_numbers": {
+                      "type": ["null", "string"]
+                    },
+                    "balance": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              ]
+            },
+            "type": {
+              "type": ["null", "string"]
+            },
+            "uri": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_updated"]
+      },
+      "cursor_field": ["date_updated"],
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "addresses",
+        "json_schema": {
+          "properties": {
+            "account_sid": {
+              "type": ["null", "string"]
+            },
+            "city": {
+              "type": ["null", "string"]
+            },
+            "customer_name": {
+              "type": ["null", "string"]
+            },
+            "date_created": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            },
+            "date_updated": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            },
+            "emergency_enabled": {
+              "type": ["null", "boolean"]
+            },
+            "friendly_name": {
+              "type": ["null", "string"]
+            },
+            "iso_country": {
+              "type": ["null", "string"]
+            },
+            "postal_code": {
+              "type": ["null", "string"]
+            },
+            "region": {
+              "type": ["null", "string"]
+            },
+            "sid": {
+              "type": ["null", "string"]
+            },
+            "street": {
+              "type": ["null", "string"]
+            },
+            "validated": {
+              "type": ["null", "boolean"]
+            },
+            "verified": {
+              "type": ["null", "boolean"]
+            },
+            "uri": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_updated"]
+      },
+      "cursor_field": ["date_updated"],
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    }
+  ]
+}
