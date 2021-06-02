@@ -86,6 +86,11 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
+  protected boolean supportsDBT() {
+    return true;
+  }
+
+  @Override
   protected boolean implementsNamespaces() {
     return true;
   }

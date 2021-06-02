@@ -86,11 +86,6 @@ public class JdbcDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return false;
-  }
-
-  @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);

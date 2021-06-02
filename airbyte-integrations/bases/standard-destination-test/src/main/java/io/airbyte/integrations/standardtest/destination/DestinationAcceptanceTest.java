@@ -192,8 +192,13 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected boolean dbtFromSpec() throws WorkerException {
-    // TODO : Fix this, it should depend on spec.getSupportsDBT() instead of normalisation
-    return normalizationFromSpec();
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportsDBT() != null) {
+      return spec.getSupportsDBT();
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -213,6 +218,10 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected boolean supportsNormalization() {
+    return false;
+  }
+
+  protected boolean supportsDBT() {
     return false;
   }
 
@@ -402,6 +411,11 @@ public abstract class DestinationAcceptanceTest {
   @Test
   public void specNormalizationValueShouldBeCorrect() throws WorkerException {
     assertEquals(normalizationFromSpec(), supportsNormalization());
+  }
+
+  @Test
+  public void specDBTValueShouldBeCorrect() throws WorkerException {
+    assertEquals(dbtFromSpec(), supportsDBT());
   }
 
   /**
@@ -644,7 +658,10 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformations() throws Exception {
-    if (!dbtFromSpec()) {
+    if (!normalizationFromSpec() || !dbtFromSpec()) {
+      // TODO : Fix this, this test should not be restricted to destinations that support normalization
+      // to do so, we need to inject extra packages for dbt to run with dbt community adapters depending
+      // on the destination
       return;
     }
 
@@ -707,6 +724,12 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
+    if (!normalizationFromSpec()) {
+      // TODO : Fix this, this test should not be restricted to destinations that support normalization
+      // to do so, we need to inject extra packages for dbt to run with dbt community adapters depending
+      // on the destination
+      return;
+    }
     if (!dbtFromSpec()) {
       return;
     }

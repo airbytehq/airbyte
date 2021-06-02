@@ -91,6 +91,11 @@ public class PostgresDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
+  protected boolean supportsDBT() {
+    return true;
+  }
+
+  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
