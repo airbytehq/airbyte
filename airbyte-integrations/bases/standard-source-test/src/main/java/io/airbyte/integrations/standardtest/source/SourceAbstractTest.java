@@ -53,7 +53,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 public abstract class SourceAbstractTest {
 
-  private TestDestinationEnv testEnv;
+  private TestDestinationEnv environment;
   private Path jobRoot;
   protected Path localRoot;
   private ProcessFactory processFactory;
@@ -80,10 +80,10 @@ public abstract class SourceAbstractTest {
    * Function that performs any setup of external resources required for the test. e.g. instantiate a
    * postgres database. This function will be called before EACH test.
    *
-   * @param testEnv - information about the test environment.
+   * @param environment - information about the test environment.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract void setup(TestDestinationEnv testEnv) throws Exception;
+  protected abstract void setupEnvironment(TestDestinationEnv environment) throws Exception;
 
   /**
    * Function that performs any clean up of external resources required for the test. e.g. delete a
@@ -102,9 +102,9 @@ public abstract class SourceAbstractTest {
     final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
     localRoot = Files.createTempDirectory(testDir, "output");
-    testEnv = new TestDestinationEnv(localRoot);
+    environment = new TestDestinationEnv(localRoot);
 
-    setup(testEnv);
+    setupEnvironment(environment);
 
     processFactory = new DockerProcessFactory(
         workspaceRoot,
@@ -115,7 +115,7 @@ public abstract class SourceAbstractTest {
 
   @AfterEach
   public void tearDownInternal() throws Exception {
-    tearDown(testEnv);
+    tearDown(environment);
   }
 
   protected ConnectorSpecification runSpec() throws WorkerException {

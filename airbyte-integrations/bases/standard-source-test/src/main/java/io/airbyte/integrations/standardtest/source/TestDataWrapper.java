@@ -25,35 +25,35 @@
 package io.airbyte.integrations.standardtest.source;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DataTypeTest {
+public class TestDataWrapper {
 
   private static final String DEFAULT_CREATE_TABLE_SQL = "CREATE TABLE %1$s(id integer primary key, test_column %2$s);";
   private static final String DEFAULT_INSERT_SQL = "INSERT INTO %1$s VALUES (%2$s, %3$s);";
 
   private final String sourceType;
-  private final Field.JsonSchemaPrimitive airbyteType;
+  private final JsonSchemaPrimitive airbyteType;
   private final List<String> values;
-  private final String createTablePatternSQL;
-  private final String insertPatternSQL;
+  private final String createTablePatternSql;
+  private final String insertPatternSql;
   private final String fullSourceDataType;
   private long testNumber;
 
-  DataTypeTest(String sourceType,
-               Field.JsonSchemaPrimitive airbyteType,
-               List<String> values,
-               String createTablePatternSQL,
-               String insertPatternSQL,
-               String fullSourceDataType) {
+  TestDataWrapper(String sourceType,
+                  JsonSchemaPrimitive airbyteType,
+                  List<String> values,
+                  String createTablePatternSql,
+                  String insertPatternSql,
+                  String fullSourceDataType) {
     this.sourceType = sourceType;
     this.airbyteType = airbyteType;
     this.values = values;
-    this.createTablePatternSQL = createTablePatternSQL;
-    this.insertPatternSQL = insertPatternSQL;
+    this.createTablePatternSql = createTablePatternSql;
+    this.insertPatternSql = insertPatternSql;
     this.fullSourceDataType = fullSourceDataType;
   }
 
@@ -69,24 +69,24 @@ public class DataTypeTest {
    *        {@link ConfiguredAirbyteStream}
    * @return builder for setup comprehensive test
    */
-  public static DataTypeTestBuilder builder(String sourceType, Field.JsonSchemaPrimitive airbyteType) {
+  public static DataTypeTestBuilder builder(String sourceType, JsonSchemaPrimitive airbyteType) {
     return new DataTypeTestBuilder(sourceType, airbyteType);
   }
 
   public static class DataTypeTestBuilder {
 
     private final String sourceType;
-    private final Field.JsonSchemaPrimitive airbyteType;
+    private final JsonSchemaPrimitive airbyteType;
     private final List<String> values = new ArrayList<>();
-    private String createTablePatternSQL;
-    private String insertPatternSQL;
+    private String createTablePatternSql;
+    private String insertPatternSql;
     private String fullSourceDataType;
 
-    DataTypeTestBuilder(String sourceType, Field.JsonSchemaPrimitive airbyteType) {
+    DataTypeTestBuilder(String sourceType, JsonSchemaPrimitive airbyteType) {
       this.sourceType = sourceType;
       this.airbyteType = airbyteType;
-      this.createTablePatternSQL = DEFAULT_CREATE_TABLE_SQL;
-      this.insertPatternSQL = DEFAULT_INSERT_SQL;
+      this.createTablePatternSql = DEFAULT_CREATE_TABLE_SQL;
+      this.insertPatternSql = DEFAULT_INSERT_SQL;
       this.fullSourceDataType = sourceType;
     }
 
@@ -95,11 +95,11 @@ public class DataTypeTest {
      * sql. Default patter described {@link #DEFAULT_CREATE_TABLE_SQL} Note! The patter should contains
      * two String place holders for the table name and data type.
      *
-     * @param createTablePatternSQL creation table sql pattern
+     * @param createTablePatternSql creation table sql pattern
      * @return builder
      */
-    public DataTypeTestBuilder createTablePatternSQL(String createTablePatternSQL) {
-      this.createTablePatternSQL = createTablePatternSQL;
+    public DataTypeTestBuilder createTablePatternSql(String createTablePatternSql) {
+      this.createTablePatternSql = createTablePatternSql;
       return this;
     }
 
@@ -108,11 +108,11 @@ public class DataTypeTest {
      * sql. Default patter described {@link #DEFAULT_INSERT_SQL} Note! The patter should contains two
      * String place holders for the table name and value.
      *
-     * @param insertPatternSQL creation table sql pattern
+     * @param insertPatternSql creation table sql pattern
      * @return builder
      */
-    public DataTypeTestBuilder insertPatternSQL(String insertPatternSQL) {
-      this.insertPatternSQL = insertPatternSQL;
+    public DataTypeTestBuilder insertPatternSql(String insertPatternSql) {
+      this.insertPatternSql = insertPatternSql;
       return this;
     }
 
@@ -136,13 +136,13 @@ public class DataTypeTest {
      * @param insertValue test value
      * @return builder
      */
-    public DataTypeTestBuilder addInsertValue(String... insertValue) {
+    public DataTypeTestBuilder addInsertValues(String... insertValue) {
       this.values.addAll(Arrays.asList(insertValue));
       return this;
     }
 
-    public DataTypeTest build() {
-      return new DataTypeTest(sourceType, airbyteType, values, createTablePatternSQL, insertPatternSQL, fullSourceDataType);
+    public TestDataWrapper build() {
+      return new TestDataWrapper(sourceType, airbyteType, values, createTablePatternSql, insertPatternSql, fullSourceDataType);
     }
 
   }
@@ -155,25 +155,25 @@ public class DataTypeTest {
     return sourceType;
   }
 
-  public Field.JsonSchemaPrimitive getAirbyteType() {
+  public JsonSchemaPrimitive getAirbyteType() {
     return airbyteType;
   }
 
-  public String getName() {
+  public String getNameWithTestPrefix() {
     return "test_" + testNumber + "_" + sourceType;
   }
 
-  public String getCreateSQL() {
-    return String.format(createTablePatternSQL, getName(), fullSourceDataType);
+  public String getCreateSqlQuery() {
+    return String.format(createTablePatternSql, getNameWithTestPrefix(), fullSourceDataType);
   }
 
-  public List<String> getInsertSQLs() {
-    List<String> insertSQLs = new ArrayList<>();
+  public List<String> getInsertSqlQueries() {
+    List<String> insertSqls = new ArrayList<>();
     int rowId = 1;
     for (String value : values) {
-      insertSQLs.add(String.format(insertPatternSQL, getName(), rowId++, value));
+      insertSqls.add(String.format(insertPatternSql, getNameWithTestPrefix(), rowId++, value));
     }
-    return insertSQLs;
+    return insertSqls;
   }
 
 }

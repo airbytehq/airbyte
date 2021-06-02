@@ -36,6 +36,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceComprehensiveTest.class);
 
-  private final List<DataTypeTest> dataTypeTests = new ArrayList<>();
+  private final List<TestDataWrapper> testDataWrappers = new ArrayList<>();
 
   /**
    * Setup the test database. All tables and data described in the registered tests will be put there.
@@ -59,18 +60,17 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
   protected abstract Database setupDatabase() throws Exception;
 
   /**
-   * Put all required tests here using method {@link #addDataTypeTest(DataTypeTest)}
+   * Put all required tests here using method {@link #addDataTypeTestData(TestDataWrapper)}
    */
   protected abstract void initTests();
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     setupDatabaseInternal();
   }
 
   /**
-   * Configuring all streams in the input catalog to full refresh mode, verifies that a read operation
-   * produces some RECORD messages.
+   * The test checks that connector can fetch prepared data without failure.
    */
   @Test
   public void testDataTypes() throws Exception {
@@ -93,11 +93,11 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
 
     initTests();
 
-    for (DataTypeTest test : dataTypeTests) {
+    for (TestDataWrapper test : testDataWrappers) {
       database.query(ctx -> {
-        ctx.fetch(test.getCreateSQL());
-        LOGGER.debug("Table " + test.getName() + " is created.");
-        test.getInsertSQLs().forEach(ctx::fetch);
+        ctx.fetch(test.getCreateSqlQuery());
+        LOGGER.debug("Table " + test.getNameWithTestPrefix() + " is created.");
+        test.getInsertSqlQueries().forEach(ctx::fetch);
         return null;
       });
     }
@@ -114,16 +114,16 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
     final JsonNode config = getConfig();
 
     return new ConfiguredAirbyteCatalog().withStreams(
-        dataTypeTests
+        testDataWrappers
             .stream()
             .map(test -> new ConfiguredAirbyteStream()
                 .withSyncMode(SyncMode.INCREMENTAL)
                 .withCursorField(Lists.newArrayList("id"))
                 .withDestinationSyncMode(DestinationSyncMode.APPEND)
                 .withStream(CatalogHelpers.createAirbyteStream(
-                    String.format("%s", test.getName()),
+                    String.format("%s", test.getNameWithTestPrefix()),
                     String.format("%s", config.get("database").asText()),
-                    Field.of("id", Field.JsonSchemaPrimitive.NUMBER),
+                    Field.of("id", JsonSchemaPrimitive.NUMBER),
                     Field.of("test_column", test.getAirbyteType()))
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(List.of(List.of("id")))
@@ -139,9 +139,9 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
    *
    * @param test comprehensive data type test
    */
-  public void addDataTypeTest(DataTypeTest test) {
-    dataTypeTests.add(test);
-    test.setTestNumber(dataTypeTests.stream().filter(t -> t.getSourceType().equals(test.getSourceType())).count());
+  public void addDataTypeTestData(TestDataWrapper test) {
+    testDataWrappers.add(test);
+    test.setTestNumber(testDataWrappers.stream().filter(t -> t.getSourceType().equals(test.getSourceType())).count());
   }
 
 }

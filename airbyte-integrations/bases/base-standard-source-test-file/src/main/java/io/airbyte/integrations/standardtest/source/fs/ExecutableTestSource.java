@@ -120,7 +120,7 @@ public class ExecutableTestSource extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     // no-op, for now
   }
 
