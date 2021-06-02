@@ -154,6 +154,7 @@
 * [Careers & Open Positions](career-and-open-positions/README.md)
   * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
   * [Founding Developer Evangelist](career-and-open-positions/founding-developer-evangelist.md)
+  * [People Operations Manager](career-and-open-positions/people-operations-manager.md)
 * [FAQ](faq/README.md)
   * [Technical Support](faq/technical-support.md)
   * [Getting Started](faq/getting-started.md)
