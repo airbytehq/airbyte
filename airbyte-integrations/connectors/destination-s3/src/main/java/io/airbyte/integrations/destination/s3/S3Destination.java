@@ -66,7 +66,7 @@ public class S3Destination extends BaseConnector implements Destination {
                                             ConfiguredAirbyteCatalog configuredCatalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
     S3OutputFormatterFactory formatterFactory = new S3OutputFormatterProductionFactory();
-    return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog, formatterFactory);
+    return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
 
 }

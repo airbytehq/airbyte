@@ -42,20 +42,26 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final S3DestinationConfig s3DestinationConfig;
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final S3OutputFormatterFactory formatterFactory;
+  private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, S3OutputFormatter> streamNameAndNamespaceToFormatters;
+
+  private AirbyteMessage lastStateMessage = null;
 
   public S3Consumer(S3DestinationConfig s3DestinationConfig,
                     ConfiguredAirbyteCatalog configuredCatalog,
-                    S3OutputFormatterFactory formatterFactory) {
+                    S3OutputFormatterFactory formatterFactory,
+                    Consumer<AirbyteMessage> outputRecordCollector) {
     this.s3DestinationConfig = s3DestinationConfig;
     this.configuredCatalog = configuredCatalog;
     this.formatterFactory = formatterFactory;
+    this.outputRecordCollector = outputRecordCollector;
     this.streamNameAndNamespaceToFormatters = new HashMap<>(configuredCatalog.getStreams().size());
   }
 
@@ -70,7 +76,8 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      S3OutputFormatter formatter = formatterFactory.create(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
+      S3OutputFormatter formatter = formatterFactory
+          .create(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
       formatter.initialize();
 
       AirbyteStream stream = configuredStream.getStream();
@@ -82,7 +89,10 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   @Override
   protected void acceptTracked(AirbyteMessage airbyteMessage) throws Exception {
-    if (airbyteMessage.getType() != Type.RECORD) {
+    if (airbyteMessage.getType() == Type.STATE) {
+      this.lastStateMessage = airbyteMessage;
+      return;
+    } else if (airbyteMessage.getType() != Type.RECORD) {
       return;
     }
 
@@ -105,6 +115,10 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
   protected void close(boolean hasFailed) throws Exception {
     for (S3OutputFormatter handler : streamNameAndNamespaceToFormatters.values()) {
       handler.close(hasFailed);
+    }
+    // S3 stream uploader is all or nothing if a failure happens in the destination.
+    if (!hasFailed) {
+      outputRecordCollector.accept(lastStateMessage);
     }
   }
 
