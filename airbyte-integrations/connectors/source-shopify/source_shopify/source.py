@@ -93,7 +93,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
-    def request_params(self, stream_state=None, **kwargs):
+    def request_params(self, stream_state, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         if stream_state.get(self.cursor_field, 0) > self.since_id:
