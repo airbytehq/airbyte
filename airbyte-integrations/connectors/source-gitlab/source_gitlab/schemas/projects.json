@@ -1,0 +1,251 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "approvals_before_merge": {
+      "type": ["null", "integer"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "avatar_url": {
+      "type": ["null", "string"]
+    },
+    "builds_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "container_registry_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "creator_id": {
+      "type": ["null", "integer"]
+    },
+    "default_branch": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "forks_count": {
+      "type": ["null", "integer"]
+    },
+    "http_url_to_repo": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "issues_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "last_activity_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "lfs_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "merge_requests_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "merge_method": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "name_with_namespace": {
+      "type": ["null", "string"]
+    },
+    "namespace": {
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "kind": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "path": {
+          "type": ["null", "string"]
+        },
+        "full_path": {
+          "type": ["null", "string"]
+        },
+        "parent_id": {
+          "type": ["null", "integer"]
+        }
+      },
+      "type": "object"
+    },
+    "only_allow_merge_if_all_discussions_are_resolved": {
+      "type": ["null", "boolean"]
+    },
+    "only_allow_merge_if_build_succeeds": {
+      "type": ["null", "boolean"]
+    },
+    "open_issues_count": {
+      "type": ["null", "integer"]
+    },
+    "owner_id": {
+      "type": ["null", "integer"]
+    },
+    "path": {
+      "type": ["null", "string"]
+    },
+    "path_with_namespace": {
+      "type": ["null", "string"]
+    },
+    "permissions": {
+      "properties": {
+        "group_access": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "access_level": {
+                  "type": ["null", "integer"]
+                },
+                "notification_level": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "project_access": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "access_level": {
+                  "type": ["null", "integer"]
+                },
+                "notification_level": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "public": {
+      "type": ["null", "boolean"]
+    },
+    "public_builds": {
+      "type": ["null", "boolean"]
+    },
+    "request_access_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "shared_runners_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "shared_with_groups": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "group_id": {
+                "type": ["null", "integer"]
+              },
+              "group_name": {
+                "type": ["null", "string"]
+              },
+              "group_access_level": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "snippets_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "ssh_url_to_repo": {
+      "type": ["null", "string"]
+    },
+    "star_count": {
+      "type": ["null", "integer"]
+    },
+    "statistics": {
+      "properties": {
+        "commit_count": {
+          "type": ["null", "integer"]
+        },
+        "storage_size": {
+          "type": ["null", "integer"]
+        },
+        "repository_size": {
+          "type": ["null", "integer"]
+        },
+        "lfs_objects_size": {
+          "type": ["null", "integer"]
+        },
+        "job_artifacts_size": {
+          "type": ["null", "integer"]
+        }
+      },
+      "type": "object"
+    },
+    "tag_list": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "visibility_level": {
+      "type": ["null", "integer"]
+    },
+    "visibility": {
+      "type": ["null", "string"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "wiki_enabled": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "iid": {
+      "type": ["null", "integer"]
+    },
+    "group_id": {
+      "type": ["null", "integer"]
+    },
+    "parent_id": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "author_id": {
+      "type": ["null", "integer"]
+    },
+    "start_date": {
+      "type": ["null", "string"]
+    },
+    "end_date": {
+      "type": ["null", "string"]
+    },
+    "due_date": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "updated_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "labels": {
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": "array"
+    },
+    "upvotes": {
+      "type": ["null", "integer"]
+    },
+    "downvotes": {
+      "type": ["null", "integer"]
+    }
+  }
+}

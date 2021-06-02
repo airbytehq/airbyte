@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "commit_id": {
+      "type": ["null", "string"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "target": {
+      "type": ["null", "string"]
+    },
+    "message": {
+      "type": ["null", "string"]
+    }
+  }
+}

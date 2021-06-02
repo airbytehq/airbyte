@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "group_id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "text_color": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "open_issues_count": {
+      "type": ["null", "integer"]
+    },
+    "closed_issues_count": {
+      "type": ["null", "integer"]
+    },
+    "open_merge_requests_count": {
+      "type": ["null", "integer"]
+    },
+    "subscribed": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

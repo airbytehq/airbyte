@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "group_id": {
+      "type": ["null", "integer"]
+    },
+    "epic_iid": {
+      "type": ["null", "integer"]
+    },
+    "epic_issue_id": {
+      "type": ["null", "integer"]
+    },
+    "issue_id": {
+      "type": ["null", "integer"]
+    },
+    "issue_iid": {
+      "type": ["null", "integer"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "relative_position": {
+      "type": ["null", "integer"]
+    }
+  }
+}

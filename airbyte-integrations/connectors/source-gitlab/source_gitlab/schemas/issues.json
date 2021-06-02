@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "iid": {
+      "type": ["null", "integer"]
+    },
+    "milestone_id": {
+      "type": ["null", "integer"]
+    },
+    "author_id": {
+      "type": ["null", "integer"]
+    },
+    "assignee_id": {
+      "type": ["null", "integer"]
+    },
+    "assignees": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": "array"
+    },
+    "closed_by_id": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "labels": {
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": "array"
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "updated_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "closed_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "subscribed": {
+      "type": ["null", "boolean"]
+    },
+    "upvotes": {
+      "type": ["null", "integer"]
+    },
+    "downvotes": {
+      "type": ["null", "integer"]
+    },
+    "merge_requests_count": {
+      "type": ["null", "integer"]
+    },
+    "user_notes_count": {
+      "type": ["null", "integer"]
+    },
+    "due_date": {
+      "type": ["null", "string"]
+    },
+    "weight": {
+      "type": ["null", "integer"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "confidential": {
+      "type": ["null", "boolean"]
+    },
+    "discussion_locked": {
+      "type": ["null", "boolean"]
+    },
+    "has_tasks": {
+      "type": ["null", "boolean"]
+    },
+    "task_status": {
+      "type": ["null", "string"]
+    },
+    "time_estimate": {
+      "type": ["null", "integer"]
+    },
+    "total_time_spent": {
+      "type": ["null", "integer"]
+    },
+    "human_time_estimate": {
+      "type": ["null", "string"]
+    },
+    "human_total_time_spent": {
+      "type": ["null", "string"]
+    }
+  }
+}

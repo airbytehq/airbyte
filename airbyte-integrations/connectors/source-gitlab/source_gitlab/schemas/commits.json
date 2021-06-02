@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "short_id": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "author_name": {
+      "type": ["null", "string"]
+    },
+    "author_email": {
+      "type": ["null", "string"]
+    },
+    "authored_date": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "committer_name": {
+      "type": ["null", "string"]
+    },
+    "committer_email": {
+      "type": ["null", "string"]
+    },
+    "committed_date": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "allow_failure": {
+      "type": ["null", "boolean"]
+    },
+    "parent_ids": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "stats": {
+      "properties": {
+        "additions": {
+          "type": ["null", "integer"]
+        },
+        "deletions": {
+          "type": ["null", "integer"]
+        },
+        "total": {
+          "type": ["null", "integer"]
+        }
+      },
+      "type": "object"
+    }
+  }
+}
