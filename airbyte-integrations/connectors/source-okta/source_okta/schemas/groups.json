@@ -39,11 +39,7 @@
       "type": "object"
     },
     "type": {
-      "enum": [
-        "OKTA_GROUP",
-        "APP_GROUP",
-        "BUILT_IN"
-      ],
+      "enum": ["OKTA_GROUP", "APP_GROUP", "BUILT_IN"],
       "type": "string"
     }
   },

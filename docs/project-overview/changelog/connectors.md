@@ -18,7 +18,7 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 * [**Okta**](https://docs.airbyte.io/integrations/sources/okta)
 * [**Amazon Seller Partner**](https://docs.airbyte.io/integrations/sources/amazon-seller-partner)
 
-Progress on connectors:
+New features:
 * **MySQL CDC** now only polls for 5 minutes if we haven't received any records ([#3789](https://github.com/airbytehq/airbyte/pull/3789))
 * **Python CDK** now supports Python 3.7.X ([#3692](https://github.com/airbytehq/airbyte/pull/3692))
 * **File** source: now supports Azure Blob Storage ([#3660](https://github.com/airbytehq/airbyte/pull/3660))
