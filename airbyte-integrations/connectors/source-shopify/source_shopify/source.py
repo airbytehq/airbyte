@@ -128,7 +128,7 @@ class AbandonedCheckouts(IncrementalShopifyStream):
     data_field = "checkouts"
 
     def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
+        return f"{self.data_field}.json?status=any"
 
 
 class Metafields(IncrementalShopifyStream):
