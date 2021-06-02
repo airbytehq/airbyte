@@ -71,7 +71,7 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
         report_definition = (
             json.loads(pkgutil.get_data("tap_google_analytics", "defaults/default_report_definition.json")) + custom_reports_data
         )
-        if self.reports_to_read is not None:
+        if self.reports_to_read:
             report_definition = [i for i in report_definition if i["name"] in self.reports_to_read]
 
         custom_reports = os.path.join(temp_dir, "custom_reports.json")
