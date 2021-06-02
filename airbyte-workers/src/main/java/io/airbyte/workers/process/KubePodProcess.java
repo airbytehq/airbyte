@@ -80,6 +80,13 @@ public class KubePodProcess extends Process {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
+  private static final String INIT_CONTAINER_NAME = "init";
+
+  private static final String PIPES_DIR = "/pipes";
+  private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
+  private static final String CONFIG_DIR = "/config";
+  private static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
+
   private static final int STDIN_REMOTE_PORT = 9001;
 
   private final KubernetesClient client;
@@ -116,7 +123,7 @@ public class KubePodProcess extends Process {
     LOGGER.info("Creating pod...");
     Pod podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
     LOGGER.info("Waiting until command fetcher pod completes...");
-    // TODO(Davin): If a pod is not missing, this will wait for up to 2 minutes before error-ing out.
+    // TODO(Davin): If a pod is missing, this will wait for up to 2 minutes before error-ing out.
     // Figure out a better way.
     client.resource(podDefinition).waitUntilCondition(p -> p.getStatus().getPhase().equals("Succeeded"), 2, TimeUnit.MINUTES);
 
@@ -143,9 +150,45 @@ public class KubePodProcess extends Process {
     return pod.getStatus().getPodIP();
   }
 
+  private static Container getInit(boolean usesStdin, List<VolumeMount> mainVolumeMounts, boolean copyFiles) {
+    var initEntrypointStr = "mkfifo /pipes/stdout && mkfifo /pipes/stderr";
+    if (usesStdin) {
+      initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
+    }
+    if (copyFiles) {
+      initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 5; done;", SUCCESS_FILE_NAME);
+    }
+    
+    return new ContainerBuilder()
+        .withName(INIT_CONTAINER_NAME)
+        .withImage("busybox:1.28")
+        .withWorkingDir(CONFIG_DIR)
+        .withCommand("sh", "-c", initEntrypointStr)
+        .withVolumeMounts(mainVolumeMounts)
+        .build();
+  }
+
+  private static Container getMain(String image, boolean usesStdin, String entrypoint, List<VolumeMount> mainVolumeMounts, String[] args) {
+    var argsStr = String.join(" ", args);
+    var entrypointStr = entrypoint + " " + argsStr + " ";
+
+    var entrypointStrWithPipes = entrypointStr + " 2> /pipes/stderr > /pipes/stdout";
+    if (usesStdin) {
+      entrypointStrWithPipes = String.format("cat %s | ", STDIN_PIPE_FILE) + entrypointStrWithPipes;
+    }
+
+    return new ContainerBuilder()
+        .withName("main")
+        .withImage(image)
+        .withCommand("sh", "-c", entrypointStrWithPipes)
+        .withWorkingDir(CONFIG_DIR)
+        .withVolumeMounts(mainVolumeMounts)
+        .build();
+  }
+
   private static void copyFilesToKubeConfigVolume(KubernetesClient client, String podName, String namespace, Map<String, String> files) {
     List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
-    fileEntries.add(new AbstractMap.SimpleEntry<>("FINISHED_UPLOADING", ""));
+    fileEntries.add(new AbstractMap.SimpleEntry<>(SUCCESS_FILE_NAME, ""));
 
     for (Map.Entry<String, String> file : fileEntries) {
       Path tmpFile = null;
@@ -154,8 +197,8 @@ public class KubePodProcess extends Process {
 
         LOGGER.info("Uploading file: " + file.getKey());
 
-        client.pods().inNamespace(namespace).withName(podName).inContainer("init")
-            .file("/config/" + file.getKey())
+        client.pods().inNamespace(namespace).withName(podName).inContainer(INIT_CONTAINER_NAME)
+            .file(CONFIG_DIR + "/" + file.getKey())
             .upload(tmpFile);
 
       } finally {
@@ -166,7 +209,7 @@ public class KubePodProcess extends Process {
     }
   }
 
-  private static void waitForInitPodToBeReady(KubernetesClient client, Pod podDefinition) throws InterruptedException {
+  private static void waitForInitPodToRun(KubernetesClient client, Pod podDefinition) throws InterruptedException {
     LOGGER.info("Waiting for init container to be ready before copying files...");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 1, TimeUnit.MINUTES);
@@ -205,7 +248,7 @@ public class KubePodProcess extends Process {
 
     VolumeMount pipeVolumeMount = new VolumeMountBuilder()
         .withName("airbyte-pipes")
-        .withMountPath("/pipes")
+        .withMountPath(PIPES_DIR)
         .build();
 
     Volume configVolume = new VolumeBuilder()
@@ -216,38 +259,20 @@ public class KubePodProcess extends Process {
 
     VolumeMount configVolumeMount = new VolumeMountBuilder()
         .withName("airbyte-config")
-        .withMountPath("/config")
+        .withMountPath(CONFIG_DIR)
         .build();
 
-    List<Volume> volumes = List.of(pipeVolume, configVolume);
-    List<VolumeMount> mainVolumeMounts = List.of(pipeVolumeMount, configVolumeMount);
+    var volumes = List.of(pipeVolume, configVolume);
+    var mainVolumeMounts = List.of(pipeVolumeMount, configVolumeMount);
 
-    // todo: wait until files are copied over instead of just sleeping 10s
-    Container initContainer = new ContainerBuilder()
-        .withName("init")
-        .withImage("busybox:1.28")
-        .withCommand("sh", "-c",
-            usesStdin ? "mkfifo /pipes/stdin && mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 30"
-                : "mkfifo /pipes/stdout && mkfifo /pipes/stderr && sleep 30")
-        .withVolumeMounts(mainVolumeMounts)
-        .build();
-
-    var argsStr = String.join(" ", args);
-    var entrypointStr = entrypoint + " " + argsStr + " ";
-    Container main = new ContainerBuilder()
-        .withName("main")
-        .withImage(image)
-        .withCommand("sh", "-c",
-            usesStdin ? "cat /pipes/stdin | " + entrypointStr + " 2> /pipes/stderr > /pipes/stdout"
-                : entrypointStr + "   2> /pipes/stderr > /pipes/stdout")
-        .withWorkingDir("/config")
-        .withVolumeMounts(mainVolumeMounts)
-        .build();
+    var copyFiles = !files.isEmpty();
+    Container init = getInit(usesStdin, mainVolumeMounts, copyFiles);
+    Container main = getMain(image, usesStdin, entrypoint, mainVolumeMounts, args);
 
     Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage("alpine/socat:1.7.4.1-r1")
-        .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > /pipes/stdin")
+        .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount)
         .build();
 
@@ -274,7 +299,7 @@ public class KubePodProcess extends Process {
         .endMetadata()
         .withNewSpec()
         .withRestartPolicy("Never")
-        .withInitContainers(initContainer)
+        .withInitContainers(init)
         .withContainers(containers)
         .withVolumes(volumes)
         .endSpec()
@@ -282,8 +307,8 @@ public class KubePodProcess extends Process {
 
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
-    waitForInitPodToBeReady(client, podDefinition);
-    if (!files.isEmpty()) {
+    waitForInitPodToRun(client, podDefinition);
+    if (copyFiles) {
       LOGGER.info("Copying files...");
       copyFilesToKubeConfigVolume(client, podName, namespace, files);
     }
@@ -348,7 +373,8 @@ public class KubePodProcess extends Process {
   public int waitFor() throws InterruptedException {
     // These are closed in the opposite order in which they are created to prevent any resource
     // conflicts.
-    client.resource(podDefinition).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+    Pod refreshedPod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
+    client.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
     try {
       this.stdin.close();
       this.stdout.close();
