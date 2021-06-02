@@ -98,7 +98,7 @@ There are two types of integration tests: Acceptance Tests (Airbyte's test suite
 #### Custom Integration tests
 Place custom tests inside `integration_tests/` folder, then, from the connector root, run
 ```
-python -m pytest integration_tests
+python3 -m pytest integration_tests
 ```
 #### Acceptance Tests
 Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](source-acceptance-tests.md) for more information.

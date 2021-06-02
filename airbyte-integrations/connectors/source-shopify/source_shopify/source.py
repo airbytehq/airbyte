@@ -36,10 +36,13 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 class ShopifyStream(HttpStream, ABC):
 
+    # Latest Stable Release
+    api_version = "2021-04"
+
     primary_key = "id"
     limit = 250
 
-    def __init__(self, shop: str, api_key: str, api_password: str, api_version: str, **kwargs):
+    def __init__(self, shop: str, api_key: str, api_password: str, api_version = api_version, **kwargs):
         super().__init__(**kwargs)
         self.shop = shop
         self.api_key = api_key
@@ -182,7 +185,7 @@ class SourceShopify(AbstractSource):
         shop = config["shop"]
         api_key = config["api_key"]
         api_pass = config["api_password"]
-        api_version = config["api_version"]  # Latest is '2021-04'
+        api_version = "2021-04"  # Latest Stable Release
 
         # Construct base url for checking connetion
         url = f"https://{api_key}:{api_pass}@{shop}.myshopify.com/admin/api/{api_version}/shop.json"
@@ -198,12 +201,7 @@ class SourceShopify(AbstractSource):
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
         """
-        args = {
-            "shop": config["shop"],
-            "api_key": config["api_key"],
-            "api_password": config["api_password"],
-            "api_version": config["api_version"],
-        }
+        args = {"shop": config["shop"], "api_key": config["api_key"], "api_password": config["api_password"]}
         return [
             Customers(**args),
             Orders(**args),
