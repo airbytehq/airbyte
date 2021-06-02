@@ -466,13 +466,13 @@ class DealStageHistoryStream(Stream):
     The v1 endpoint requires the contacts scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals
     """
-    
+
     url = "/deals/v1/deals/paged"
     more_key = "hasMore"
     data_field = "deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
-    
+
     def list(self, fields) -> Iterable:
         params = {"propertiesWithHistory": "dealstage"}
         yield from self.read(partial(self._api.get, url=self.url), params)
@@ -480,11 +480,11 @@ class DealStageHistoryStream(Stream):
 
 class DealStream(CRMObjectStream):
     """Deals, API v3"""
-    
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.stageHistory = DealStageHistoryStream(**kwargs)
-    
+
     def list(self, fields) -> Iterable:
         history_by_id = {}
         for record in self.stageHistory.list(fields):
