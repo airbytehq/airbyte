@@ -30,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncOperation;
@@ -77,6 +78,7 @@ class JobSchedulerTest {
     STANDARD_SYNC = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)

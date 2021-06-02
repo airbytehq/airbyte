@@ -1972,6 +1972,8 @@ components:
         name:
           type: string
           description: Optional name of the connection
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -2007,6 +2009,8 @@ components:
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -2045,6 +2049,8 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -2096,6 +2102,13 @@ components:
             - days
             - weeks
             - months
+    NamespaceDefinitionType:
+      type: string
+      description:
+      enum:
+        - source
+        - destination
+        #- format
     # Operations
     OperationId:
       type: string
@@ -2557,6 +2570,8 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
         prefix:
           type: string
         sourceId:

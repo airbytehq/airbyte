@@ -39,6 +39,7 @@ import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -82,6 +83,7 @@ public class ConnectionsHandler {
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
+        .withNamespaceDefinition(Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
@@ -150,6 +152,7 @@ public class ConnectionsHandler {
   public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve and update sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
+        .withNamespaceDefinition(Enums.convertTo(connectionUpdate.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .withPrefix(connectionUpdate.getPrefix())
         .withOperationIds(connectionUpdate.getOperationIds())
         .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
@@ -199,6 +202,7 @@ public class ConnectionsHandler {
 
   public void deleteConnection(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+        .namespaceDefinition(connectionRead.getNamespaceDefinition())
         .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
         .operationIds(connectionRead.getOperationIds())
@@ -238,6 +242,7 @@ public class ConnectionsHandler {
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())
+        .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.NamespaceDefinitionType.class))
         .prefix(standardSync.getPrefix())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
   }

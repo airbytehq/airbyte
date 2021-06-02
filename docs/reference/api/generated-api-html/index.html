@@ -5190,6 +5190,7 @@ font-style: italic;
     <li><a href="#LogRead"><code>LogRead</code> - </a></li>
     <li><a href="#LogType"><code>LogType</code> - </a></li>
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
+    <li><a href="#NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a></li>
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
@@ -5328,6 +5329,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Optional name of the connection </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
@@ -5350,6 +5352,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
@@ -5395,6 +5398,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
@@ -5632,6 +5636,12 @@ font-style: italic;
     <div class="field-items">
       <div class="param">logType </div><div class="param-desc"><span class="param-type"><a href="#LogType">LogType</a></span>  </div>
     </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>null</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="Notification"><code>Notification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -5913,6 +5923,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Optional name of the connection </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
@@ -5936,6 +5947,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
@@ -5971,6 +5983,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>

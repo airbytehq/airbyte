@@ -25,6 +25,7 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -40,16 +41,18 @@ import org.apache.logging.log4j.util.Strings;
  */
 public class NamespacingMapper implements Mapper<AirbyteMessage> {
 
+  private final NamespaceDefinitionType namespaceDefinition;
   private final String prefix;
 
-  public NamespacingMapper(String prefix) {
+  public NamespacingMapper(NamespaceDefinitionType namespaceDefinition, String prefix) {
+    this.namespaceDefinition = namespaceDefinition;
     this.prefix = prefix;
   }
 
   @Override
   public ConfiguredAirbyteCatalog mapCatalog(final ConfiguredAirbyteCatalog inputCatalog) {
     final ConfiguredAirbyteCatalog catalog = Jsons.clone(inputCatalog);
-    catalog.getStreams().forEach(s -> mutateStream(s.getStream(), prefix));
+    catalog.getStreams().forEach(s -> mutateStream(s.getStream(), namespaceDefinition, prefix));
     return catalog;
   }
 
@@ -57,13 +60,19 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
   public AirbyteMessage mapMessage(final AirbyteMessage inputMessage) {
     if (inputMessage.getType() == Type.RECORD) {
       final AirbyteMessage message = Jsons.clone(inputMessage);
+      if (namespaceDefinition != null && namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
+        message.getRecord().withNamespace(null);
+      }
       message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), prefix));
       return message;
     }
     return inputMessage;
   }
 
-  private static void mutateStream(final AirbyteStream stream, final String prefix) {
+  private static void mutateStream(final AirbyteStream stream, final NamespaceDefinitionType namespaceDefinition, final String prefix) {
+    if (namespaceDefinition != null && namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
+      stream.withNamespace(null);
+    }
     stream.withName(transformStreamName(stream.getName(), prefix));
   }
 

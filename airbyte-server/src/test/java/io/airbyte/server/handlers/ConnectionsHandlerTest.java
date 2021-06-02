@@ -41,12 +41,15 @@ import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.NamespaceDefinitionType;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -84,8 +87,15 @@ class ConnectionsHandlerTest {
   @Test
   void testCreateConnection() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
-
+    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+        .withName("source-test")
+        .withSourceDefinitionId(UUID.randomUUID());
+    final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+        .withName("destination-test")
+        .withDestinationDefinitionId(UUID.randomUUID());
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
+    when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
+    when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
 
     final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
 
@@ -94,6 +104,7 @@ class ConnectionsHandlerTest {
         .destinationId(standardSync.getDestinationId())
         .operationIds(standardSync.getOperationIds())
         .name("presto to hudi")
+        .namespaceDefinition(NamespaceDefinitionType.SOURCE)
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
@@ -115,6 +126,7 @@ class ConnectionsHandlerTest {
     catalog.getStreams().get(0).getConfig().setAliasName("azkaban_users");
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+        .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
@@ -127,6 +139,7 @@ class ConnectionsHandlerTest {
     final StandardSync updatedStandardSync = new StandardSync()
         .withConnectionId(standardSync.getConnectionId())
         .withName("presto to hudi")
+        .withNamespaceDefinition(io.airbyte.config.JobSyncConfig.NamespaceDefinitionType.SOURCE)
         .withPrefix("presto_to_hudi")
         .withSourceId(standardSync.getSourceId())
         .withDestinationId(standardSync.getDestinationId())
@@ -193,6 +206,7 @@ class ConnectionsHandlerTest {
         standardSync.getOperationIds());
 
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
+        .namespaceDefinition(connectionRead.getNamespaceDefinition())
         .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
         .operationIds(connectionRead.getOperationIds())
@@ -218,6 +232,7 @@ class ConnectionsHandlerTest {
     assertTrue(Enums.isCompatible(ConnectionSchedule.TimeUnitEnum.class, Schedule.TimeUnit.class));
     assertTrue(Enums.isCompatible(io.airbyte.api.model.DataType.class, DataType.class));
     assertTrue(Enums.isCompatible(DataType.class, io.airbyte.api.model.DataType.class));
+    assertTrue(Enums.isCompatible(NamespaceDefinitionType.class, io.airbyte.config.JobSyncConfig.NamespaceDefinitionType.class));
   }
 
 }

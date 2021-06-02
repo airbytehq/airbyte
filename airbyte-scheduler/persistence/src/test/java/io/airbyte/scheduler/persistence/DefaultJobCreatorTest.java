@@ -40,6 +40,7 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
@@ -113,6 +114,7 @@ public class DefaultJobCreatorTest {
     STANDARD_SYNC = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)
@@ -202,6 +204,7 @@ public class DefaultJobCreatorTest {
   @Test
   void testCreateSyncJob() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
@@ -230,6 +233,7 @@ public class DefaultJobCreatorTest {
   @Test
   void testCreateSyncJobEnsureNoQueuing() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
@@ -264,6 +268,7 @@ public class DefaultJobCreatorTest {
         });
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
@@ -295,6 +300,7 @@ public class DefaultJobCreatorTest {
         });
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)

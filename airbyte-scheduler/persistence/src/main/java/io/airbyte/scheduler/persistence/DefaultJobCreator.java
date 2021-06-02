@@ -111,6 +111,7 @@ public class DefaultJobCreator implements JobCreator {
       throws IOException {
     // reusing this isn't going to quite work.
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
         .withPrefix(standardSync.getPrefix())
         .withSourceDockerImage(sourceDockerImageName)
         .withSourceConfiguration(source.getConfiguration())
@@ -148,6 +149,7 @@ public class DefaultJobCreator implements JobCreator {
     });
 
     final JobResetConnectionConfig resetConnectionConfig = new JobResetConnectionConfig()
+        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
         .withPrefix(standardSync.getPrefix())
         .withDestinationDockerImage(destinationDockerImage)
         .withDestinationConfiguration(destination.getConfiguration())

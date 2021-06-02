@@ -110,6 +110,7 @@ public class TemporalClient {
         .withDockerImage(config.getDestinationDockerImage());
 
     final StandardSyncInput input = new StandardSyncInput()
+        .withNamespaceDefinition(config.getNamespaceDefinition())
         .withPrefix(config.getPrefix())
         .withSourceConfiguration(config.getSourceConfiguration())
         .withDestinationConfiguration(config.getDestinationConfiguration())

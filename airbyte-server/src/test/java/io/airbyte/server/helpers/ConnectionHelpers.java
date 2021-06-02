@@ -36,6 +36,7 @@ import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.commons.text.Names;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardSync;
@@ -62,6 +63,7 @@ public class ConnectionHelpers {
     return new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
@@ -78,6 +80,7 @@ public class ConnectionHelpers {
     return new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
@@ -110,6 +113,7 @@ public class ConnectionHelpers {
         .destinationId(destinationId)
         .operationIds(operationIds)
         .name("presto to hudi")
+        .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.SOURCE)
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicConnectionSchedule())
