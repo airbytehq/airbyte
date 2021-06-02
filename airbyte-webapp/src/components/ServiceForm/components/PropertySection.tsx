@@ -23,7 +23,7 @@ const PropertySection: React.FC<{ property: FormBaseItem; path?: string }> = ({
   } = useServiceForm();
 
   const overriddenComponent = widgetsInfo[propertyPath]?.component;
-  if (widgetsInfo[propertyPath]?.component) {
+  if (overriddenComponent) {
     return <>{overriddenComponent(property)}</>;
   }
 

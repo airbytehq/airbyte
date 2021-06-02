@@ -88,7 +88,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     sourceProcess = integrationLauncher.read(jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME).start();
+        input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME);
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error);
 

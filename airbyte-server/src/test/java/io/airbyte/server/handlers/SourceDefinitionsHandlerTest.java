@@ -105,7 +105,7 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(loadIcon(source.getIcon()));
+        .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
     SourceDefinitionRead expectedSourceDefinitionRead2 = new SourceDefinitionRead()
         .sourceDefinitionId(source2.getSourceDefinitionId())
@@ -113,7 +113,7 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(loadIcon(source.getIcon()));
+        .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
     final SourceDefinitionReadList actualSourceDefinitionReadList = sourceHandler.listSourceDefinitions();
 
@@ -133,7 +133,7 @@ class SourceDefinitionsHandlerTest {
         .dockerRepository(source.getDockerRepository())
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
-        .icon(loadIcon(source.getIcon()));
+        .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
     final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody =
         new SourceDefinitionIdRequestBody().sourceDefinitionId(source.getSourceDefinitionId());
@@ -161,7 +161,7 @@ class SourceDefinitionsHandlerTest {
         .dockerImageTag(source.getDockerImageTag())
         .documentationUrl(new URI(source.getDocumentationUrl()))
         .sourceDefinitionId(source.getSourceDefinitionId())
-        .icon(loadIcon(source.getIcon()));
+        .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
     final SourceDefinitionRead actualRead = sourceHandler.createSourceDefinition(create);
 
@@ -215,20 +215,12 @@ class SourceDefinitionsHandlerTest {
     @Test
     @DisplayName("Icon should contain data")
     void testIconHoldsData() {
-      final String icon = loadIcon(source.getIcon());
+      final String icon = SourceDefinitionsHandler.loadIcon(source.getIcon());
       assertNotNull(icon);
       assert (icon.length() > 3000);
       assert (icon.length() < 6000);
     }
 
-  }
-
-  private static String loadIcon(String name) {
-    try {
-      return SourceDefinitionsHandler.loadIcon(name);
-    } catch (IOException e) {
-      return "Error";
-    }
   }
 
 }

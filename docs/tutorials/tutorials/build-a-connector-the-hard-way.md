@@ -28,7 +28,7 @@ To run this tutorial, you'll need:
 
 ```bash
 $ python --version
-Python 3.7.9
+Python 3.7.0
 ```
 
 On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
@@ -262,6 +262,8 @@ Make sure to add your actual API key \(the private key\) instead of the placehol
 Then we'll add the `check_method`:
 
 ```python
+import requests
+
 def _call_api(endpoint, token):
     return requests.get("https://cloud.iexapis.com/v1/" + endpoint + "?token=" + token)
 
