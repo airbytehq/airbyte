@@ -11,9 +11,9 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      # Set to NO because some streams has 0 data on the source 
-      validate_output_from_all_streams: no
+      # When account doesn't have the Refunds
+      configured_catalog_path: "integration_tests/no_refunds_catalog.json"
+      validate_output_from_all_streams: yes
   incremental: 
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

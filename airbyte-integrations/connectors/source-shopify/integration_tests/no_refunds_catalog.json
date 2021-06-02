@@ -2994,7 +2994,6 @@
       "cursor_field": ["id"],
       "destination_sync_mode": "append"
     },
-    
     {
       "stream": {
         "name": "transactions",
