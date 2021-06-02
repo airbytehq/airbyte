@@ -49,7 +49,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceComprehensiveTest.class);
 
-  private final List<TestDataWrapper> testDataWrappers = new ArrayList<>();
+  private final List<TestDataHolder> testDataHolders = new ArrayList<>();
 
   /**
    * Setup the test database. All tables and data described in the registered tests will be put there.
@@ -60,7 +60,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
   protected abstract Database setupDatabase() throws Exception;
 
   /**
-   * Put all required tests here using method {@link #addDataTypeTestData(TestDataWrapper)}
+   * Put all required tests here using method {@link #addDataTypeTestData(TestDataHolder)}
    */
   protected abstract void initTests();
 
@@ -93,7 +93,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
 
     initTests();
 
-    for (TestDataWrapper test : testDataWrappers) {
+    for (TestDataHolder test : testDataHolders) {
       database.query(ctx -> {
         ctx.fetch(test.getCreateSqlQuery());
         LOGGER.debug("Table " + test.getNameWithTestPrefix() + " is created.");
@@ -114,7 +114,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
     final JsonNode config = getConfig();
 
     return new ConfiguredAirbyteCatalog().withStreams(
-        testDataWrappers
+        testDataHolders
             .stream()
             .map(test -> new ConfiguredAirbyteStream()
                 .withSyncMode(SyncMode.INCREMENTAL)
@@ -139,9 +139,9 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
    *
    * @param test comprehensive data type test
    */
-  public void addDataTypeTestData(TestDataWrapper test) {
-    testDataWrappers.add(test);
-    test.setTestNumber(testDataWrappers.stream().filter(t -> t.getSourceType().equals(test.getSourceType())).count());
+  public void addDataTypeTestData(TestDataHolder test) {
+    testDataHolders.add(test);
+    test.setTestNumber(testDataHolders.stream().filter(t -> t.getSourceType().equals(test.getSourceType())).count());
   }
 
 }

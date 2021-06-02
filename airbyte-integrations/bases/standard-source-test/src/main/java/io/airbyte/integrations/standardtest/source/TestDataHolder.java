@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TestDataWrapper {
+public class TestDataHolder {
 
   private static final String DEFAULT_CREATE_TABLE_SQL = "CREATE TABLE %1$s(id integer primary key, test_column %2$s);";
   private static final String DEFAULT_INSERT_SQL = "INSERT INTO %1$s VALUES (%2$s, %3$s);";
@@ -43,12 +43,12 @@ public class TestDataWrapper {
   private final String fullSourceDataType;
   private long testNumber;
 
-  TestDataWrapper(String sourceType,
-                  JsonSchemaPrimitive airbyteType,
-                  List<String> values,
-                  String createTablePatternSql,
-                  String insertPatternSql,
-                  String fullSourceDataType) {
+  TestDataHolder(String sourceType,
+                 JsonSchemaPrimitive airbyteType,
+                 List<String> values,
+                 String createTablePatternSql,
+                 String insertPatternSql,
+                 String fullSourceDataType) {
     this.sourceType = sourceType;
     this.airbyteType = airbyteType;
     this.values = values;
@@ -60,34 +60,52 @@ public class TestDataWrapper {
   /**
    * The builder allows to setup any comprehensive data type test.
    *
-   * @param sourceType name of the source data type. Duplicates by name will be tested independently
-   *        from each others. Note that this name will be used for connector setup and table creation.
-   *        If source syntax requires more details (E.g. "varchar" type requires length
-   *        "varchar(50)"), you can additionally set custom data type syntax by
-   *        {@link DataTypeTestBuilder#fullSourceDataType(String)} method.
-   * @param airbyteType corresponding Airbyte data type. It requires for proper configuration
-   *        {@link ConfiguredAirbyteStream}
    * @return builder for setup comprehensive test
    */
-  public static DataTypeTestBuilder builder(String sourceType, JsonSchemaPrimitive airbyteType) {
-    return new DataTypeTestBuilder(sourceType, airbyteType);
+  public static TestDataHolderBuilder builder() {
+    return new TestDataHolderBuilder();
   }
 
-  public static class DataTypeTestBuilder {
+  public static class TestDataHolderBuilder {
 
-    private final String sourceType;
-    private final JsonSchemaPrimitive airbyteType;
+    private String sourceType;
+    private JsonSchemaPrimitive airbyteType;
     private final List<String> values = new ArrayList<>();
     private String createTablePatternSql;
     private String insertPatternSql;
     private String fullSourceDataType;
 
-    DataTypeTestBuilder(String sourceType, JsonSchemaPrimitive airbyteType) {
-      this.sourceType = sourceType;
-      this.airbyteType = airbyteType;
+    TestDataHolderBuilder() {
       this.createTablePatternSql = DEFAULT_CREATE_TABLE_SQL;
       this.insertPatternSql = DEFAULT_INSERT_SQL;
-      this.fullSourceDataType = sourceType;
+    }
+
+    /**
+     * The name of the source data type. Duplicates by name will be tested independently from each
+     * others. Note that this name will be used for connector setup and table creation. If source syntax
+     * requires more details (E.g. "varchar" type requires length "varchar(50)"), you can additionally
+     * set custom data type syntax by {@link TestDataHolderBuilder#fullSourceDataType(String)} method.
+     *
+     * @param sourceType source data type name
+     * @return builder
+     */
+    public TestDataHolderBuilder sourceType(String sourceType) {
+      this.sourceType = sourceType;
+      if (fullSourceDataType == null)
+        fullSourceDataType = sourceType;
+      return this;
+    }
+
+    /**
+     * corresponding Airbyte data type. It requires for proper configuration
+     * {@link ConfiguredAirbyteStream}
+     *
+     * @param airbyteType Airbyte data type
+     * @return builder
+     */
+    public TestDataHolderBuilder airbyteType(JsonSchemaPrimitive airbyteType) {
+      this.airbyteType = airbyteType;
+      return this;
     }
 
     /**
@@ -98,7 +116,7 @@ public class TestDataWrapper {
      * @param createTablePatternSql creation table sql pattern
      * @return builder
      */
-    public DataTypeTestBuilder createTablePatternSql(String createTablePatternSql) {
+    public TestDataHolderBuilder createTablePatternSql(String createTablePatternSql) {
       this.createTablePatternSql = createTablePatternSql;
       return this;
     }
@@ -111,7 +129,7 @@ public class TestDataWrapper {
      * @param insertPatternSql creation table sql pattern
      * @return builder
      */
-    public DataTypeTestBuilder insertPatternSql(String insertPatternSql) {
+    public TestDataHolderBuilder insertPatternSql(String insertPatternSql) {
       this.insertPatternSql = insertPatternSql;
       return this;
     }
@@ -123,7 +141,7 @@ public class TestDataWrapper {
      * @param fullSourceDataType actual string for the column data type description
      * @return builder
      */
-    public DataTypeTestBuilder fullSourceDataType(String fullSourceDataType) {
+    public TestDataHolderBuilder fullSourceDataType(String fullSourceDataType) {
       this.fullSourceDataType = fullSourceDataType;
       return this;
     }
@@ -136,13 +154,13 @@ public class TestDataWrapper {
      * @param insertValue test value
      * @return builder
      */
-    public DataTypeTestBuilder addInsertValues(String... insertValue) {
+    public TestDataHolderBuilder addInsertValues(String... insertValue) {
       this.values.addAll(Arrays.asList(insertValue));
       return this;
     }
 
-    public TestDataWrapper build() {
-      return new TestDataWrapper(sourceType, airbyteType, values, createTablePatternSql, insertPatternSql, fullSourceDataType);
+    public TestDataHolder build() {
+      return new TestDataHolder(sourceType, airbyteType, values, createTablePatternSql, insertPatternSql, fullSourceDataType);
     }
 
   }
