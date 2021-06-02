@@ -253,12 +253,7 @@
       "type": ["object", "null"]
     },
     "severity": {
-      "enum": [
-        "DEBUG",
-        "INFO",
-        "WARN",
-        "ERROR"
-      ],
+      "enum": ["DEBUG", "INFO", "WARN", "ERROR"],
       "type": "string"
     },
     "target": {
