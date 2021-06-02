@@ -24,21 +24,12 @@
 
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
-class HarvestTokenAuthenticator(HttpAuthenticator):
-    def __init__(
-        self,
-        token: str,
-        account_id: str,
-        auth_method: str = "Bearer",
-        auth_header: str = "Authorization",
-        account_id_header: str = "Harvest-Account-ID",
-    ):
-        self.auth_method = auth_method
-        self.auth_header = auth_header
-        self._token = token
+class HarvestTokenAuthenticator(TokenAuthenticator):
+    def __init__(self, token: str, account_id: str, account_id_header: str = "Harvest-Account-ID", **kwargs):
+        super().__init__(token, **kwargs)
         self.account_id = account_id
         self.account_id_header = account_id_header
 
