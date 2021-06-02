@@ -17,7 +17,8 @@
       "type": "object"
     },
     "created_at": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     }
   }
 }

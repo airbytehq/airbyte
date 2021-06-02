@@ -84,7 +84,8 @@
       "type": "string"
     },
     "last_refresh": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "refreshing": {
       "type": "boolean"
@@ -93,7 +94,8 @@
       "type": "string"
     },
     "created_at": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "saved": {
       "type": "boolean"

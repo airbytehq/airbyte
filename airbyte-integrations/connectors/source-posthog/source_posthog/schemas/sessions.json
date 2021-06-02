@@ -11,10 +11,12 @@
       "type": "integer"
     },
     "start_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "end_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "event_count": {
       "type": "integer"
@@ -108,7 +110,8 @@
             "type": "string"
           },
           "timestamp": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "person": {
             "type": "string"

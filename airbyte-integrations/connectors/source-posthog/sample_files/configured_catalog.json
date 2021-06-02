@@ -59,7 +59,8 @@
               "type": "string"
             },
             "timestamp": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "person": {
               "type": "object",
@@ -113,10 +114,12 @@
               "type": "integer"
             },
             "start_time": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "end_time": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "event_count": {
               "type": "integer"
@@ -216,7 +219,8 @@
                     "type": "string"
                   },
                   "timestamp": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                   },
                   "person": {
                     "type": "string"
@@ -323,7 +327,8 @@
               "type": "object"
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             }
           }
         },
@@ -424,7 +429,8 @@
               "type": "string"
             },
             "last_refresh": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "refreshing": {
               "type": "boolean"
@@ -433,7 +439,8 @@
               "type": "string"
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "saved": {
               "type": "boolean"
@@ -664,7 +671,8 @@
               }
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             }
           }
         },
@@ -718,10 +726,12 @@
               }
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "updated_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "deleted": {
               "type": "boolean"
@@ -798,7 +808,8 @@
               }
             },
             "created_at": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "last_calculation": {
               "type": "string"

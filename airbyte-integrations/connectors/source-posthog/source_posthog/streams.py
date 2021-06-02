@@ -211,7 +211,13 @@ class Elements(PosthogStream):
         elements = [i[self.data_field][0] for i in response_json]
         yield from elements
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        This enpoint returns full stats list and have no pagination.
+        """
+        return None
 
+    
 class Events(IncrementalPosthogStream):
     """
     CAUTION! API supports inserting custom timestamp.
