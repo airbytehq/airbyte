@@ -115,6 +115,7 @@ public class DefaultJobCreatorTest {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)
@@ -205,6 +206,7 @@ public class DefaultJobCreatorTest {
   void testCreateSyncJob() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
@@ -234,6 +236,7 @@ public class DefaultJobCreatorTest {
   void testCreateSyncJobEnsureNoQueuing() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
@@ -269,6 +272,7 @@ public class DefaultJobCreatorTest {
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
@@ -301,6 +305,7 @@ public class DefaultJobCreatorTest {
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)

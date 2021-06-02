@@ -7,4 +7,4 @@ type: string
 enum:
   - source
   - destination
-  #- format
+  - customformat

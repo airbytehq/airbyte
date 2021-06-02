@@ -79,6 +79,7 @@ class JobSchedulerTest {
         .withConnectionId(connectionId)
         .withName("presto to hudi")
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)

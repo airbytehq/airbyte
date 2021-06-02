@@ -147,6 +147,7 @@ public class WebBackendConnectionsHandler {
         .operationIds(connectionRead.getOperationIds())
         .name(connectionRead.getName())
         .namespaceDefinition(connectionRead.getNamespaceDefinition())
+        .namespaceFormat(connectionRead.getNamespaceFormat())
         .prefix(connectionRead.getPrefix())
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
@@ -321,6 +322,7 @@ public class WebBackendConnectionsHandler {
     ConnectionCreate connectionCreate = new ConnectionCreate();
 
     connectionCreate.namespaceDefinition(webBackendConnectionCreate.getNamespaceDefinition());
+    connectionCreate.namespaceFormat(webBackendConnectionCreate.getNamespaceFormat());
     connectionCreate.prefix(webBackendConnectionCreate.getPrefix());
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
@@ -335,6 +337,7 @@ public class WebBackendConnectionsHandler {
     ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
     connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
+    connectionUpdate.namespaceFormat(webBackendConnectionUpdate.getNamespaceFormat());
     connectionUpdate.prefix(webBackendConnectionUpdate.getPrefix());
     connectionUpdate.connectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.operationIds(operationIds);
