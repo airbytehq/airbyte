@@ -84,6 +84,11 @@ class SourceGoogleAds(Source):
         float: "number",
         str: "string"
     }
+    def get_field(self, row, key):
+        parts = key.split('.')
+        obj = getattr(row, parts[0])
+        fld = getattr(obj, parts[1])
+        return fld
 
     def extract_schema(self, stream_config, response):
         props = {}
@@ -97,9 +102,7 @@ class SourceGoogleAds(Source):
                 error_keys = []
                 for key in batch.field_mask.paths:
                     try:
-                        parts = key.split('.')
-                        obj = getattr(row, parts[0])
-                        fld = getattr(obj, parts[1])
+                        fld = self.get_field(row, key)
                         typ = self.field_type_dict[type(fld)]
                         props[key] = {'type': typ}
                     except Exception as e:
@@ -184,9 +187,7 @@ class SourceGoogleAds(Source):
                 for row in batch.results:
                     data = {}
                     for key in batch.field_mask.paths:
-                        parts = key.split('.')
-                        obj = getattr(row, parts[0])
-                        fld = getattr(obj, parts[1])
+                        fld = self.get_field(row, key)
                         data[key] = fld
                     yield AirbyteMessage(
                         type=Type.RECORD,
