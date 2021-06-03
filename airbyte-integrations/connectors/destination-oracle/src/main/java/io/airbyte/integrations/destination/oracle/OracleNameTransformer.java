@@ -22,30 +22,44 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination;
+package io.airbyte.integrations.destination.oracle;
 
-import io.airbyte.commons.text.Names;
-import java.time.Instant;
+import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import java.util.UUID;
 
-public class StandardNameTransformer implements NamingConventionTransformer {
+@VisibleForTesting
+public class OracleNameTransformer extends ExtendedNameTransformer {
 
   @Override
-  public String getIdentifier(String name) {
-    return convertStreamName(name);
+  protected String applyDefaultCase(String input) {
+    return input.toUpperCase();
   }
 
   @Override
   public String getRawTableName(String streamName) {
-    return convertStreamName("_airbyte_raw_" + streamName);
+    return convertStreamName("airbyte_raw_" + streamName);
   }
 
   @Override
   public String getTmpTableName(String streamName) {
-    return convertStreamName("_airbyte_" + Instant.now().toEpochMilli() + "_" + getRawTableName(streamName));
+    return convertStreamName("airbyte_tmp_" + streamName + "_" + UUID.randomUUID().toString().replace("-", ""));
   }
 
-  protected String convertStreamName(String input) {
-    return Names.toAlphanumericAndUnderscore(input);
+  private String maxStringLength(String value, Integer length) {
+    if (value.length() <= length) {
+      return value;
+    }
+    return value.substring(0, length);
+  }
+
+  @Override
+  public String convertStreamName(String input) {
+    String result = super.convertStreamName(input);
+    if (!result.isEmpty() && result.charAt(0) == '_') {
+      result = result.substring(1);
+    }
+    return maxStringLength(result, 30);
   }
 
 }
