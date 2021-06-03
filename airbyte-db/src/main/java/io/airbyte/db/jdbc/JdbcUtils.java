@@ -156,11 +156,11 @@ public class JdbcUtils {
    * unsigned Integer type, which can contain value 3428724653. If we fail to cast Integer value, we
    * will try to cast Long.
    */
-  private static void putInteger(ObjectNode node, String columnName, ResultSet r, int i) {
+  private static void putInteger(ObjectNode node, String columnName, ResultSet resultSet, int index) {
     try {
-      node.put(columnName, r.getInt(i));
+      node.put(columnName, resultSet.getInt(index));
     } catch (SQLException e) {
-      node.put(columnName, nullIfInvalid(() -> r.getLong(i)));
+      node.put(columnName, nullIfInvalid(() -> resultSet.getLong(index)));
     }
   }
 
