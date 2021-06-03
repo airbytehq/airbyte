@@ -34,7 +34,6 @@ import com.github.dockerjava.transport.DockerHttpClient;
 import java.io.File;
 import java.util.Set;
 
-// TODO(Davin): This should be split out into an Docker commons to minimise dependency pollution.
 public class DockerUtils {
 
   private static final DockerClientConfig CONFIG = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
