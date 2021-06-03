@@ -1,5 +1,5 @@
 dependencies {
-    implementation group: 'commons-io', name: 'commons-io', version: '2.7'
+    implementation 'commons-io:commons-io:2.7'
 
     implementation project(':airbyte-db')
     implementation project(':airbyte-commons')
