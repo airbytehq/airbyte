@@ -176,7 +176,8 @@ public abstract class JdbcSourceAcceptanceTest {
         jdbcConfig.get("username").asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
-        getDriverClass());
+        getDriverClass(),
+        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null);
 
     if (supportsSchemas()) {
       createSchemas();
@@ -871,8 +872,8 @@ public abstract class JdbcSourceAcceptanceTest {
   public void createSchemas() throws SQLException {
     if (supportsSchemas()) {
       for (String schemaName : TEST_SCHEMAS) {
-        final String dropSchemaQuery = String.format("CREATE SCHEMA %s;", schemaName);
-        database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
+        final String createSchemaQuery = String.format("CREATE SCHEMA %s;", schemaName);
+        database.execute(connection -> connection.createStatement().execute(createSchemaQuery));
       }
     }
   }
@@ -890,6 +891,8 @@ public abstract class JdbcSourceAcceptanceTest {
   private JsonNode convertIdBasedOnDatabase(int idValue) {
     if (getDriverClass().toLowerCase().contains("oracle")) {
       return Jsons.jsonNode(BigDecimal.valueOf(idValue));
+    } else if (getDriverClass().toLowerCase().contains("snowflake")) {
+      return Jsons.jsonNode(Long.valueOf(idValue));
     } else {
       return Jsons.jsonNode(idValue);
     }

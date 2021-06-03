@@ -80,10 +80,12 @@ public class Databases {
                                                          final String password,
                                                          final String jdbcConnectionString,
                                                          final String driverClassName,
-                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery) {
+                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
+                                                         final String connectionProperties) {
     final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
 
-    final JdbcDatabase defaultJdbcDatabase = createJdbcDatabase(username, password, jdbcConnectionString, driverClassName);
+    final JdbcDatabase defaultJdbcDatabase =
+        createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties);
     return new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQuery);
   }
 

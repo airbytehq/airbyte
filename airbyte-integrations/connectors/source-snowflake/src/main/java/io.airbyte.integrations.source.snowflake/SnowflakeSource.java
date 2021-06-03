@@ -34,7 +34,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeSource extends AbstractJdbcSource {
+public class SnowflakeSource extends AbstractJdbcSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
   public static final String DRIVER_CLASS = "net.snowflake.client.jdbc.SnowflakeDriver";
@@ -53,13 +53,16 @@ public class SnowflakeSource extends AbstractJdbcSource {
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("jdbc_url", String.format("jdbc:snowflake://%s/", config.get("host").asText()))
-        .put("role", config.get("role").asText())
-        .put("warehouse", config.get("warehouse").asText())
-        .put("database", config.get("database").asText())
-        .put("schema", config.get("schema").asText())
+        .put("jdbc_url", String.format("jdbc:snowflake://%s/",
+            config.get("host").asText()))
+        .put("host", config.get("host").asText())
         .put("username", config.get("username").asText())
         .put("password", config.get("password").asText())
+        .put("connection_properties", String.format("role=%s;warehouse=%s;database=%s;schema=%s",
+            config.get("role").asText(),
+            config.get("warehouse").asText(),
+            config.get("database").asText(),
+            config.get("schema").asText()))
         .build());
   }
 
@@ -68,5 +71,4 @@ public class SnowflakeSource extends AbstractJdbcSource {
     return Set.of(
         "INFORMATION_SCHEMA");
   }
-
 }

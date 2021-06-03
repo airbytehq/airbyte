@@ -77,6 +77,7 @@
     * [Shopify](integrations/sources/shopify.md)
     * [Slack](integrations/sources/slack.md)
     * [Smartsheets](integrations/sources/smartsheets.md)
+    * [Snowflake](integrations/sources/snowflake.md)
     * [Stripe](integrations/sources/stripe.md)
     * [Tempo](integrations/sources/tempo.md)
     * [Twilio](integrations/sources/twilio.md)
