@@ -165,10 +165,19 @@ class SourceGoogleAds(Source):
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
 
-        for stream_config in config['streams']:
-            query = stream_config['gaql']
-            stream_name = stream_config['name'] #TODO How to use the stream name from the catalog
+        for stream_catalog in catalog['streams']:
+            stream_name = stream_catalog['stream']['name']
+            stream_config = None
+            for config in config["streams"]:
+                if config["name"] == stream_name:
+                    stream_config = config
 
+            if stream_config is None:
+                #TODO Can we map the configured name back to original somehow?
+                logger.error("Renaming of streams not supported. Please use the original stream name defined in the config.")
+                continue
+
+            query = stream_config['gaql']
             response = self._search(query, config)
 
             for batch in response:
