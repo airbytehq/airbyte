@@ -152,9 +152,9 @@ public class JdbcUtils {
   }
 
   /**
-   * In some sources Integer might have value larger than {@link Integer#MAX_VALUE}. E.q. MySQL has unsigned Integer type,
-   * which can contain value 3428724653.
-   * If we fail to cast Integer value, we will try to cast Long.
+   * In some sources Integer might have value larger than {@link Integer#MAX_VALUE}. E.q. MySQL has
+   * unsigned Integer type, which can contain value 3428724653. If we fail to cast Integer value, we
+   * will try to cast Long.
    */
   private static void putInteger(ObjectNode node, String columnName, ResultSet r, int i) {
     try {
