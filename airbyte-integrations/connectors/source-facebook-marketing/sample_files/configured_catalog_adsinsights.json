@@ -540,7 +540,7 @@
     },
     {
       "stream": {
-        "name": "ads_insights_platform_and_device",
+        "name": "ads_insights_age_and_gender",
         "json_schema": {
           "properties": {
             "account_currency": {
@@ -575,6 +575,9 @@
             },
             "adset_name": {
               "type": ["null", "string"]
+            },
+            "age": {
+              "type": ["null", "integer", "string"]
             },
             "age_targeting": {
               "type": ["null", "string"]
@@ -737,6 +740,9 @@
             },
             "full_view_reach": {
               "type": ["null", "number"]
+            },
+            "gender": {
+              "type": ["null", "string"]
             },
             "gender_targeting": {
               "type": ["null", "string"]
