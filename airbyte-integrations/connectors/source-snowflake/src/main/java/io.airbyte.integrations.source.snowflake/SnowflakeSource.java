@@ -71,4 +71,5 @@ public class SnowflakeSource extends AbstractJdbcSource implements Source {
     return Set.of(
         "INFORMATION_SCHEMA");
   }
+
 }

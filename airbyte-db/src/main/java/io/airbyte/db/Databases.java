@@ -82,7 +82,8 @@ public class Databases {
                                                          final String driverClassName,
                                                          final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
                                                          final String connectionProperties) {
-    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+    final BasicDataSource connectionPool =
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.of(connectionProperties));
 
     final JdbcDatabase defaultJdbcDatabase =
         createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties);

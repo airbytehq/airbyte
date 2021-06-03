@@ -125,4 +125,5 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
     database.execute(dropSchemaQuery);
     database.close();
   }
+
 }
