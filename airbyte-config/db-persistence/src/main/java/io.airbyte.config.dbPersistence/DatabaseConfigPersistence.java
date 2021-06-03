@@ -38,73 +38,81 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public abstract class DatabaseConfigPersistence implements ConfigPersistence {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class)
+  private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConfigPersistence.class);
 
-  private final JdbcDatabase database;
+  protected final JdbcDatabase database;
   private final JsonSchemaValidator jsonSchemaValidator;
-
-  protected DatabaseConfigPersistence(JdbcDatabase db) {
-    this(db, new JsonSchemaValidator());
-  }
 
   protected DatabaseConfigPersistence(JdbcDatabase db, JsonSchemaValidator validator) {
     database = db;
     jsonSchemaValidator = validator;
   }
 
+  // Create a table named CONFIG with three columns: CONFIG_ID (PK UUID/string), CONFIG_TYPE (string),
+  // CONFIG_DATA (JSON/string)
+  public abstract void Setup() throws SQLException;
+
   @Override
-  public <T> T getConfig(ConfigSchema configType, String configId, Class<T> clazz)
+  public <T> T getConfig(ConfigSchema configType, UUID configId, Class<T> clazz)
       throws ConfigNotFoundException, JsonValidationException, IOException {
-    Optional<String> data = database.querySingle("SELECT CONFIG_DATA FROM CONFIG WHERE CONFIG_TYPE = ? AND CONFIG_ID = ?",
-        r -> r.getString("CONFIG_DATA"), configType.toString(), configId);
-    if (!data.isPresent()) {
-      throw new ConfigNotFoundException(configType, configId);
+    try {
+      Optional<String> data = database.querySingle("SELECT CONFIG_DATA FROM CONFIG WHERE CONFIG_TYPE = ? AND CONFIG_ID = ?",
+          r -> r.getString("CONFIG_DATA"), configType.toString(), configId);
+      if (!data.isPresent()) {
+        throw new ConfigNotFoundException(configType, configId);
+      }
+
+      final T config = Jsons.deserialize(data.get(), clazz);
+      validateJson(config, configType);
+      return config;
+    } catch (SQLException e) {
+      throw new IOException(String.format("Failed to get config type %s item %s.  Reason: %s", configType, configId, e.getMessage()), e);
     }
-
-    final T config = Jsons.deserialize(data.get(), clazz);
-    validateJson(config, configType);
-    return config;
   }
 
   @Override
-  public <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException {
-    List<T> results = database.query(c -> {
-      var stmt = c.prepareStatement("SELECT CONFIG_DATA FROM CONFIG WHERE CONFIG_TYPE = ?");
-      stmt.setString(1, configType.toString());
-      return stmt;
-    }, r -> r.getString("CONFIG_DATA"))
-        .map(s -> (T) Jsons.deserialize(s, clazz))
-        .collect(Collectors.toList());
-    return results;
+  public <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
+    try {
+      List<T> results = database.query(c -> {
+        var stmt = c.prepareStatement("SELECT CONFIG_DATA FROM CONFIG WHERE CONFIG_TYPE = ?");
+        stmt.setString(1, configType.toString());
+        return stmt;
+      }, r -> r.getString("CONFIG_DATA"))
+          .map(s -> (T) Jsons.deserialize(s, clazz))
+          .collect(Collectors.toList());
+      return results;
+    } catch (SQLException e) {
+      throw new IOException(String.format("Failed to get config type %s listing.  Reason: %s", configType, e.getMessage()), e);
+    }
   }
 
   @Override
-  public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException {
+  public <T> void writeConfig(ConfigSchema configType, UUID configId, T config) throws JsonValidationException, IOException {
     // validate config with schema
     validateJson(Jsons.jsonNode(config), configType);
     final String data = Jsons.serialize(config);
     try {
       database.execute(c -> writeConfigQuery(c, configType, configId, data).execute());
-    } catch (SQLException e)
-    {
-      LOGGER.error("Error while writing config data,", e);
+    } catch (SQLException e) {
+      throw new IOException(String.format("Failed to write config type %s item %s.  Reason: %s", configType, configId, e.getMessage()), e);
     }
   }
 
   // Made abstract because what we want for this is an upsert operation, which different databases
   // handle with different syntax
   // Overrides need to return a prepared statement with all 3 data elements added
-  protected abstract PreparedStatement writeConfigQuery(Connection conn, ConfigSchema configType, String configId, String data);
+  protected abstract PreparedStatement writeConfigQuery(Connection conn, ConfigSchema configType, UUID configId, String data) throws SQLException;
 
   private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
     JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
   }
+
 }

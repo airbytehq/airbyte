@@ -51,8 +51,7 @@ public interface JdbcDatabase extends AutoCloseable {
     execute(connection -> connection.createStatement().execute(sql));
   }
 
-  default void executeParameterized (String sql, String... params) throws SQLException
-  {
+  default void executeParameterized(String sql, String... params) throws SQLException {
     execute(connection -> {
       final PreparedStatement stmt = connection.prepareStatement(sql, params);
       stmt.execute();
@@ -132,6 +131,19 @@ public interface JdbcDatabase extends AutoCloseable {
       int i = 1;
       for (String param : params) {
         stmt.setString(i, param);
+        ++i;
+      }
+      return stmt;
+    }, recordTransform).findFirst();
+  }
+
+  default <T> Optional<T> querySingle(String sql, CheckedFunction<ResultSet, T, SQLException> recordTransform, Object... params)
+      throws SQLException {
+    return query(c -> {
+      var stmt = c.prepareStatement(sql);
+      int i = 1;
+      for (Object param : params) {
+        stmt.setObject(i, param);
         ++i;
       }
       return stmt;

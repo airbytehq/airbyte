@@ -24,25 +24,48 @@
 
 package io.airbyte.config.dbPersistence;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.ConfigSchema;
+import io.airbyte.db.Databases;
 import io.airbyte.validation.json.JsonSchemaValidator;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.UUID;
 
-public class PostgresConfigPersistence extends io.airbyte.config.dbPersistence.DatabaseConfigPersistence {
+public class PostgresConfigPersistence extends DatabaseConfigPersistence {
 
-  public PostgresConfigPersistence(JdbcDatabase db) {
-    super(db);
+  public PostgresConfigPersistence(String username, String password, String connectionString) {
+    this(username, password, connectionString, new JsonSchemaValidator());
   }
 
-  public PostgresConfigPersistence(JdbcDatabase db, JsonSchemaValidator validator) {
-    super(db, validator);
+  public PostgresConfigPersistence(JsonNode config) {
+    this(config, new JsonSchemaValidator());
+  }
+
+  public PostgresConfigPersistence(JsonNode config, JsonSchemaValidator validator) {
+    this(config.get("username").asText(), config.get("password").asText(), Databases.getPostgresJdbcUrl(config), validator);
+  }
+
+  public PostgresConfigPersistence(String username, String password, String connectionString, JsonSchemaValidator validator) {
+    super(Databases.createJdbcDatabase(username, password, connectionString, Databases.POSTGRES_DRIVER), validator);
   }
 
   @Override
-  protected PreparedStatement writeConfigQuery(Connection conn, ConfigSchema configType, String configId, String data)
-  {
-    return conn.prepareStatement("INSERT INTO CONFIG (CONFIG_ID, CONFIG_TYPE, CONFIG_DATA) VALUES (?, ?, ?) ON CONFLICT (CONFIG_ID) DO UPDATE SET CONFIG_DATA = EXCLUDED.CONFIG_DATA", configId, configType.toString(), data);
+  // Create a table named CONFIG with three columns: CONFIG_ID (PK UUID/string), CONFIG_TYPE (string),
+  // CONFIG_DATA (JSON/string)
+  public void Setup() throws SQLException {
+    database.execute("CREATE TABLE CONFIG (CONFIG_ID UUID PRIMARY KEY, CONFIG_TYPE VARCHAR(32) NOT NULL, CONFIG_DATA JSONB NOT NULL)");
   }
+
+  @Override
+  protected PreparedStatement writeConfigQuery(Connection conn, ConfigSchema configType, UUID configId, String data) throws SQLException {
+    var result = conn.prepareStatement(
+        "INSERT INTO CONFIG (CONFIG_ID, CONFIG_TYPE, CONFIG_DATA) VALUES (?, ?, CAST(? as jsonb)) ON CONFLICT (CONFIG_ID) DO UPDATE SET CONFIG_DATA = EXCLUDED.CONFIG_DATA");
+    result.setObject(1, configId);
+    result.setString(2, configType.toString());
+    result.setString(3, data);
+    return result;
+  }
+
 }

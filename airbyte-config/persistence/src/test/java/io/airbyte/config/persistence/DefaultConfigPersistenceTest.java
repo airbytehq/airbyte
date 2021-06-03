@@ -77,20 +77,20 @@ class DefaultConfigPersistenceTest {
 
   @Test
   void testReadWriteConfig() throws IOException, JsonValidationException, ConfigNotFoundException {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1, SOURCE_1);
 
     assertEquals(
         SOURCE_1,
         configPersistence.getConfig(
             ConfigSchema.STANDARD_SOURCE_DEFINITION,
-            UUID_1.toString(),
+            UUID_1,
             StandardSourceDefinition.class));
   }
 
   @Test
   void testListConfigs() throws JsonValidationException, IOException {
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1.toString(), SOURCE_1);
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_2.toString(), SOURCE_2);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_1, SOURCE_1);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, UUID_2, SOURCE_2);
 
     assertEquals(
         Sets.newHashSet(SOURCE_1, SOURCE_2),
@@ -107,11 +107,11 @@ class DefaultConfigPersistenceTest {
         .withDestinationId(UUID.randomUUID())
         .withOperationIds(List.of(UUID.randomUUID()));
 
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), standardSync);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, UUID_1, standardSync);
 
     assertEquals(
         standardSync,
-        configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), StandardSync.class));
+        configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, UUID_1, StandardSync.class));
   }
 
   @Test
@@ -122,7 +122,7 @@ class DefaultConfigPersistenceTest {
 
     assertThrows(JsonValidationException.class, () -> configPersistence.writeConfig(
         ConfigSchema.STANDARD_SOURCE_DEFINITION,
-        UUID_1.toString(),
+        UUID_1,
         standardSourceDefinition));
   }
 

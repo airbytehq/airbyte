@@ -158,7 +158,7 @@ public class OperationsHandler {
       standardSyncOperation.withTombstone(true);
       configRepository.writeStandardSyncOperation(standardSyncOperation);
     } else {
-      throw new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_OPERATION, operationId.toString());
+      throw new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_OPERATION, operationId);
     }
   }
 
@@ -168,7 +168,7 @@ public class OperationsHandler {
     if (standardSyncOperation != null) {
       return buildOperationRead(standardSyncOperation);
     } else {
-      throw new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_OPERATION, operationId.toString());
+      throw new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_OPERATION, operationId);
     }
   }
 
