@@ -168,20 +168,28 @@ class SourceGoogleAds(Source):
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
 
-        for stream_catalog in catalog['streams']:
-            stream_name = stream_catalog['stream']['name']
-            stream_config = None
-            for config in config["streams"]:
-                if config["name"] == stream_name:
-                    stream_config = config
+        for stream_catalog in catalog.streams:
+            stream_name = stream_catalog.stream.name
+            
+            stream_config = next(cfg for cfg in config["streams"] if cfg["name"] == stream_name)
 
             if stream_config is None:
                 #TODO Can we map the configured name back to original somehow?
                 logger.error("Renaming of streams not supported. Please use the original stream name defined in the config.")
                 continue
 
+            #TODO Can we annotate the gaql when using incremental sync, like add a WHERE clause?
             query = stream_config['gaql']
             response = self._search(query, config)
+
+            max_cursor = state.get(stream_name)
+            cursor_field_key = None
+            if(stream_catalog.sync_mode == SyncMode.incremental):
+                crs_fld = stream_catalog.cursor_field
+                if(crs_fld is None):
+                    logger.error(f"Incremental mode, but no cursor field defined for stream {stream_name}")
+                    continue
+                cursor_field_key = crs_fld[0] #TODO Can we support composite cursor fields?
 
             for batch in response:
                 for row in batch.results:
@@ -189,7 +197,20 @@ class SourceGoogleAds(Source):
                     for key in batch.field_mask.paths:
                         fld = self.get_field(row, key)
                         data[key] = fld
+                    if(stream_catalog.sync_mode == SyncMode.incremental):
+                        data_cursor_value = data[cursor_field_key]
+                        if(max_cursor and max_cursor > data_cursor_value):
+                            continue
                     yield AirbyteMessage(
                         type=Type.RECORD,
                         record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
                     )
+                    if(stream_catalog.sync_mode == SyncMode.incremental and (not max_cursor or max_cursor < data[cursor_field_key])):
+                        max_cursor = data_cursor_value
+                        state[stream_name] = max_cursor
+                        yield AirbyteMessage(
+                            type=Type.STATE,
+                            state=AirbyteRecordMessage(stream=stream_name, data=state, emitted_at=int(datetime.now().timestamp()) * 1000),
+                        )
+
+
