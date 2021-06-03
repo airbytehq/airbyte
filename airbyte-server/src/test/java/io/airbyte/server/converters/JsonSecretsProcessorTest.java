@@ -54,34 +54,33 @@ public class JsonSecretsProcessorTest {
           + "}\n");
 
   private static final JsonNode SCHEMA_INNER_OBJECT = Jsons.deserialize(
-  "{\n"
-      + "    \"type\": \"object\",\n"
-      + "    \"properties\": {\n"
-      + "      \"warehouse\": {\n"
-      + "        \"type\": \"string\"\n"
-      + "      },\n"
-      + "      \"loading_method\": {\n"
-      + "        \"type\": \"object\",\n"
-      + "        \"oneOf\": [\n"
-      + "          {\n"
-      + "            \"properties\": {}\n"
-      + "          },\n"
-      + "          {\n"
-      + "            \"properties\": {\n"
-      + "              \"s3_bucket_name\": {\n"
-      + "                \"type\": \"string\"\n"
-      + "              },\n"
-      + "              \"access_key_id\": {\n"
-      + "                \"type\": \"string\",\n"
-      + "                \"airbyte_secret\": true\n"
-      + "              }\n"
-      + "            }\n"
-      + "          }\n"
-      + "        ]\n"
-      + "      }\n"
-      + "    }\n"
-      + "  }"
-      );
+      "{\n"
+          + "    \"type\": \"object\",\n"
+          + "    \"properties\": {\n"
+          + "      \"warehouse\": {\n"
+          + "        \"type\": \"string\"\n"
+          + "      },\n"
+          + "      \"loading_method\": {\n"
+          + "        \"type\": \"object\",\n"
+          + "        \"oneOf\": [\n"
+          + "          {\n"
+          + "            \"properties\": {}\n"
+          + "          },\n"
+          + "          {\n"
+          + "            \"properties\": {\n"
+          + "              \"s3_bucket_name\": {\n"
+          + "                \"type\": \"string\"\n"
+          + "              },\n"
+          + "              \"secret_access_key\": {\n"
+          + "                \"type\": \"string\",\n"
+          + "                \"airbyte_secret\": true\n"
+          + "              }\n"
+          + "            }\n"
+          + "          }\n"
+          + "        ]\n"
+          + "      }\n"
+          + "    }\n"
+          + "  }");
 
   JsonSecretsProcessor processor = new JsonSecretsProcessor();
 
@@ -117,19 +116,24 @@ public class JsonSecretsProcessorTest {
 
   @Test
   public void testMaskSecretInnerObject() {
-    System.out.println(SCHEMA_INNER_OBJECT);
-
-    JsonNode oneOff = Jsons.jsonNode(ImmutableMap.builder()
+    JsonNode oneOf = Jsons.jsonNode(ImmutableMap.builder()
         .put("s3_bucket_name", "name")
-        .put("access_key_id","secret").build());
-
+        .put("secret_access_key", "secret").build());
     JsonNode base = Jsons.jsonNode(ImmutableMap.builder()
         .put("warehouse", "house")
-        .put("loading_method", oneOff).build());
+        .put("loading_method", oneOf).build());
 
-    System.out.println("before: " + base);
     JsonNode actual = processor.maskSecrets(base, SCHEMA_INNER_OBJECT);
-    System.out.println("actual: " + actual);
+
+    JsonNode expectedOneOf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("s3_bucket_name", "name")
+        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
+        .build());
+    JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
+        .put("warehouse", "house")
+        .put("loading_method", expectedOneOf).build());
+
+    assertEquals(expected, actual);
   }
 
   @Test
@@ -176,6 +180,35 @@ public class JsonSecretsProcessorTest {
 
     JsonNode expected = dst.deepCopy();
     JsonNode actual = processor.copySecrets(src, dst, SCHEMA_ONE_LAYER);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testCopySecretInnerObject() {
+    JsonNode srcOneOf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("s3_bucket_name", "name")
+        .put("secret_access_key", "secret").build());
+    JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
+        .put("warehouse", "house")
+        .put("loading_method", srcOneOf).build());
+
+    JsonNode dstOneOf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("s3_bucket_name", "name")
+        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
+        .build());
+    JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
+        .put("warehouse", "house")
+        .put("loading_method", dstOneOf).build());
+
+    JsonNode actual = processor.copySecrets(src, dst, SCHEMA_INNER_OBJECT);
+
+    JsonNode expectedOneOf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("s3_bucket_name", "name")
+        .put("secret_access_key", "secret").build());
+    JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
+        .put("warehouse", "house")
+        .put("loading_method", expectedOneOf).build());
 
     assertEquals(expected, actual);
   }
