@@ -26,7 +26,6 @@ package io.airbyte.integrations.destination.oracle;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import java.time.Instant;
 import java.util.UUID;
 
 @VisibleForTesting

@@ -31,8 +31,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.LocalAirbyteDestination;
-import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
