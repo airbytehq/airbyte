@@ -24,7 +24,7 @@
 
 package io.airbyte.integrations.destination.s3.csv;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DATE_FORMAT;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.YYYY_MM_DD_FORMAT;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
@@ -131,7 +131,7 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
   }
 
   static String getOutputFilename(Timestamp timestamp) {
-    return String.format("%s_%d_0.csv", DATE_FORMAT.format(timestamp), timestamp.getTime());
+    return String.format("%s_%d_0.csv", YYYY_MM_DD_FORMAT.format(timestamp), timestamp.getTime());
   }
 
   /**
