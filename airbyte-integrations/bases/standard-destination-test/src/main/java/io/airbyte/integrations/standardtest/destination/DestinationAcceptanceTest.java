@@ -825,6 +825,10 @@ public abstract class DestinationAcceptanceTest {
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
   }
 
+  protected AirbyteDestination getDestination() {
+    return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
+  }
+
   private void runSyncAndVerifyStateOutput(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog) throws Exception {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog);
     final AirbyteMessage expectedStateMessage = MoreLists.reversed(messages)
@@ -852,8 +856,7 @@ public abstract class DestinationAcceptanceTest {
         .withCatalog(catalog)
         .withDestinationConnectionConfiguration(config);
 
-    final AirbyteDestination destination =
-        new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
+    final AirbyteDestination destination = getDestination();
 
     destination.start(targetConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
