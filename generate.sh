@@ -23,7 +23,7 @@ remove_tmp () {
 # Otherwise the generated connector is copied into the connectors folder.
 check_and_copy_from_docker () {
   mkdir $tmp_folder_name
-  docker cp airbyte-connector-bootstrap:/connectors/. $tmp_folder_name/.
+  docker cp airbyte-connector-bootstrap:/airbyte-integrations/connectors/. $tmp_folder_name/.
   cd $tmp_folder_name || exit
   for f in *; do
     if [ -d "$f" ]; then
@@ -43,7 +43,7 @@ remove_tmp
 # Build image for container from Dockerfile
 docker build . -t airbyte/connector-bootstrap
 # Run the container
-docker run -it  --name airbyte-connector-bootstrap -v "$(pwd)"/..:/sources airbyte/connector-bootstrap
+docker run -it  --name airbyte-connector-bootstrap -v "$(pwd)"/..:/airbyte-integrations/connector-templates airbyte/connector-bootstrap
 # Copy generated template to connectors folder
 check_and_copy_from_docker
 # Remove container after coping files
