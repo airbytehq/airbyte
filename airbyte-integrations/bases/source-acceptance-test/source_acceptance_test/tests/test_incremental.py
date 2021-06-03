@@ -51,11 +51,12 @@ def future_state_fixture(future_state_path) -> Path:
 
 @pytest.fixture(name="cursor_paths")
 def cursor_paths_fixture(inputs, configured_catalog_for_incremental) -> Mapping[str, Any]:
-    cursor_paths = getattr(inputs, "cursor_paths")
+    cursor_paths = getattr(inputs, "cursor_paths", None)
     result = {}
 
     for stream in configured_catalog_for_incremental.streams:
-        path = cursor_paths.get(stream.stream.name, [stream.cursor_field[-1]])
+        default_ = [stream.cursor_field[-1]]
+        path = cursor_paths.get(stream.stream.name, default_) if cursor_paths else default_
         result[stream.stream.name] = path
 
     return result
