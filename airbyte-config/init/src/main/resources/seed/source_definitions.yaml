@@ -305,3 +305,4 @@
   dockerRepository: airbyte/source-recharge
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-recharge
+# SOURCE DEFINITION BY CODE GENERATOR
