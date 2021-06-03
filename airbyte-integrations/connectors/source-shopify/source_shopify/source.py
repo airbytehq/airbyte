@@ -32,27 +32,26 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 
 class ShopifyStream(HttpStream, ABC):
 
     # Latest Stable Release
     api_version = "2021-04"
-
     primary_key = "id"
     limit = 250
 
-    def __init__(self, shop: str, api_key: str, api_password: str, api_version=api_version, **kwargs):
+    def __init__(self, shop: str, api_password: str, **kwargs):
         super().__init__(**kwargs)
         self.shop = shop
-        self.api_key = api_key
         self.api_password = api_password
-        self.api_version = api_version
         self.since_id = 0
+
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.api_key}:{self.api_password}@{self.shop}.myshopify.com/admin/api/{self.api_version}/"
+        return f"https://{self.shop}.myshopify.com/admin/api/{self.api_version}/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -85,10 +84,7 @@ class ShopifyStream(HttpStream, ABC):
 # Basic incremental stream
 class IncrementalShopifyStream(ShopifyStream, ABC):
     state_checkpoint_interval = math.inf
-
-    @property
-    def cursor_field(self) -> str:
-        return "id"
+    cursor_field = "id"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
@@ -160,7 +156,7 @@ class OrderRefunds(IncrementalShopifyStream):
         return f"orders/{order_id}/{self.data_field}.json"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        orders_stream = Orders(self.shop, self.api_key, self.api_password, self.api_version)
+        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
@@ -173,35 +169,55 @@ class Transactions(IncrementalShopifyStream):
         return f"orders/{order_id}/{self.data_field}.json"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        orders_stream = Orders(self.shop, self.api_key, self.api_password, self.api_version)
+        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
 
+class ShopifyAuthenticator(HttpAuthenticator):
+
+    """
+    Making Authenticator to be able to accept Header-Based authentication. 
+    """
+
+    def __init__(self, token: str):
+        self.token = token
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {"X-Shopify-Access-Token" : f"{self.token}"}
+
 # Basic Connections Check
 class SourceShopify(AbstractSource):
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        # mapping config from config.json
+
+        """
+        Testing connection availability for the connector.
+        """
+
         shop = config["shop"]
-        api_key = config["api_key"]
         api_pass = config["api_password"]
         api_version = "2021-04"  # Latest Stable Release
 
-        # Construct base url for checking connetion
-        url = f"https://{api_key}:{api_pass}@{shop}.myshopify.com/admin/api/{api_version}/shop.json"
-        # try to connect
+        headers = {"X-Shopify-Access-Token" : api_pass}
+        url = f"https://{shop}.myshopify.com/admin/api/{api_version}/shop.json"
+        
         try:
-            session = requests.get(url)
+            session = requests.get(url, headers=headers)
             session.raise_for_status()
             return True, None
         except requests.exceptions.RequestException as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+
         """
         Mapping a input config of the user input configuration as defined in the connector spec.
+        Defining streams to run.
         """
-        args = {"shop": config["shop"], "api_key": config["api_key"], "api_password": config["api_password"]}
+
+        auth = ShopifyAuthenticator(token=config["api_password"])
+        args = {"authenticator": auth, "shop": config["shop"], "api_password": config["api_password"]}
         return [
             Customers(**args),
             Orders(**args),
@@ -211,5 +227,5 @@ class SourceShopify(AbstractSource):
             CustomCollections(**args),
             Collects(**args),
             OrderRefunds(**args),
-            Transactions(**args),
+            Transactions(**args)
         ]
