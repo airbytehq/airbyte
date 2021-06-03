@@ -215,6 +215,10 @@ class Stream(ABC):
             stream_name = stream_name[: -len("Stream")]
         return stream_name
 
+    @abstractmethod
+    def parse_cursor(self):
+        """Return a computed cursor for endpoints without an updated_at field"""
+
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
 
@@ -249,7 +253,7 @@ class Stream(ABC):
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
         for record in records:
-            updated_at = record[self.updated_at_field]
+            updated_at = record.get(self.updated_at_field) or self.parse_cursor(record)
             if updated_at:
                 updated_at = self._field_to_datetime(updated_at)
                 if updated_at < self._start_date:
@@ -344,7 +348,8 @@ class IncrementalStream(Stream, ABC):
         # like to save the state more often we can do this every batch
         for record in self.read_chunked(getter, params):
             yield record
-            cursor = self._field_to_datetime(record[self.updated_at_field])
+            updated_at = record.get(self.updated_at_field) or self.parse_cursor(record)
+            cursor = self._field_to_datetime(updated_at)
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
 
         if latest_cursor:
@@ -466,13 +471,18 @@ class DealStageHistoryStream(Stream):
     The v1 endpoint requires the contacts scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals
     """
-
-    url = "/deals/v1/deals/paged"
+    
+    url = "/deals/v1/deal/paged"
     more_key = "hasMore"
     data_field = "deals"
-    updated_at_field = "updatedAt"
-    created_at_field = "createdAt"
 
+    def parse_cursor(self, record):
+        updated_at = 0
+        for prop in record.get("properties", {}).values():
+            if prop.get("timestamp", 0) > updated_at:
+                updated_at = prop.get("timestamp")
+        return updated_at
+    
     def list(self, fields) -> Iterable:
         params = {"propertiesWithHistory": "dealstage"}
         yield from self.read(partial(self._api.get, url=self.url), params)
