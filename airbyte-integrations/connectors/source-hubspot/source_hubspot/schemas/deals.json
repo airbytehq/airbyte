@@ -45,6 +45,18 @@
     },
     "updatedAt": {
       "type": "string"
+    },
+    "companies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "contacts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
     }
   }
 }
