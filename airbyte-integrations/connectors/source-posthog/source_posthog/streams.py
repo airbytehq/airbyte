@@ -48,9 +48,9 @@ class PosthogStream(HttpStream, ABC):
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {"Content-Type": "application/json", "User-Agent": "posthog-python/1.4.0"}
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        yield from response_json.get(self.data_field)
+        yield from response_json.get(self.data_field, [])
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -106,7 +106,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        data = response_json.get(self.data_field)
+        data = response_json.get(self.data_field, [])
         if data:
             if not response_json.get("next"):
                 self.reversed_pagination["is_completed"] = True
@@ -169,12 +169,9 @@ class Cohorts(IncrementalPosthogStream):
         return "cohort"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        resp_json = response.json()
-        if "next" in resp_json and resp_json["next"]:
-            next_query_string = urllib.parse.urlsplit(resp_json["next"]).query
-            params = dict(urllib.parse.parse_qsl(next_query_string))
-            if params:
-                return params
+        params = PosthogStream.next_page_token(self, response=response)
+        if params:
+            return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -188,7 +185,7 @@ class Cohorts(IncrementalPosthogStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        data = response_json.get(self.data_field)
+        data = response_json.get(self.data_field, [])
         if data and stream_state:
             last_record_curfield = data[-1][self.cursor_field]
             last_stream_curfield = stream_state[self.cursor_field]
@@ -213,8 +210,19 @@ class Elements(PosthogStream):
         return "element/stats"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """
+        Response itself is a list of object.
+        Each object contain field `elements` which is an array of some elements.
+        It may contain duplicates, but actually it would be better if I keep them as is,
+        just converting array value to object with `0`, `1`, `2` ... keys.
+        example output:
+            {
+                0: {'text': None, 'tag_name': 'input', 'attr_class': None ...},
+                1: {'text': None, 'tag_name': 'body', 'attr_class': None ...}, ...
+            }
+        """
         response_json = response.json()
-        elements = [i[self.data_field][0] for i in response_json]
+        elements = [dict(enumerate(i[self.data_field])) for i in response_json]
         yield from elements
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
