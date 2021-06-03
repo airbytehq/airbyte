@@ -41,7 +41,7 @@ public class StandardNameTransformer implements NamingConventionTransformer {
 
   @Override
   public String getTmpTableName(String streamName) {
-    return convertStreamName("_airbyte_" + Instant.now().toEpochMilli() + "_" + streamName);
+    return convertStreamName("_airbyte_" + Instant.now().toEpochMilli() + "_" + getRawTableName(streamName));
   }
 
   protected String convertStreamName(String input) {
