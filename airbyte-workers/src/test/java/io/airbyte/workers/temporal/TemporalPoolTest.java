@@ -24,12 +24,11 @@
 
 package io.airbyte.workers.temporal;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import io.temporal.api.namespace.v1.NamespaceInfo;
 import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -44,8 +43,8 @@ class TemporalPoolTest {
   public void testWaitForTemporalServerOnLogThrowsException() {
     WorkflowServiceStubs workflowServiceStubs = mock(WorkflowServiceStubs.class, Mockito.RETURNS_DEEP_STUBS);
     Path path = mock(Path.class);
-    ProcessBuilderFactory processBuilderFactory = mock(ProcessBuilderFactory.class);
-    TemporalPool testPool = new TemporalPool(workflowServiceStubs, path, processBuilderFactory);
+    ProcessFactory processFactory = mock(ProcessFactory.class);
+    TemporalPool testPool = new TemporalPool(workflowServiceStubs, path, processFactory);
     DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
 

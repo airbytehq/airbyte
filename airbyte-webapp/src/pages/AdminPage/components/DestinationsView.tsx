@@ -14,7 +14,7 @@ import DestinationDefinitionResource from "core/resources/DestinationDefinition"
 import { DestinationResource } from "core/resources/Destination";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import UpgradeAllButton from "./UpgradeAllButton";
-import useNotification from "components/hooks/services/useNotification";
+import useConnector from "components/hooks/services/useConnector";
 import HeadTitle from "components/HeadTitle";
 
 const DestinationsView: React.FC = () => {
@@ -36,7 +36,7 @@ const DestinationsView: React.FC = () => {
     DestinationDefinitionResource.updateShape()
   );
 
-  const { hasNewDestinationVersion } = useNotification();
+  const { hasNewDestinationVersion } = useConnector();
 
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
@@ -148,7 +148,7 @@ const DestinationsView: React.FC = () => {
     return Array.from(destinationDefinitionMap.values());
   }, [destinations, destinationDefinitions]);
 
-  const { updateAllDestinationVersions } = useNotification();
+  const { updateAllDestinationVersions } = useConnector();
 
   const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
     setSuccessUpdate(false);

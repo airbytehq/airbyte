@@ -14,10 +14,11 @@ import { NavLink } from "react-router-dom";
 import { Routes } from "pages/routes";
 import config from "config";
 
-import useNotification from "components/hooks/services/useNotification";
+import useConnector from "components/hooks/services/useConnector";
 import Link from "components/Link";
 import Version from "components/Version";
 import Indicator from "components/Indicator";
+
 import Source from "./components/Source";
 import Connections from "./components/Connections";
 import Destination from "./components/Destination";
@@ -105,7 +106,7 @@ const Notification = styled(Indicator)`
 `;
 
 const SideBar: React.FC = () => {
-  const { hasNewVersions } = useNotification();
+  const { hasNewVersions } = useConnector();
 
   return (
     <Bar>

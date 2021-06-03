@@ -63,6 +63,8 @@ public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
+  private static final int MAX_BATCH_SIZE = 10000;
+
   public static AirbyteMessageConsumer create(Consumer<AirbyteMessage> outputRecordCollector,
                                               JdbcDatabase database,
                                               SqlOperations sqlOperations,
@@ -77,7 +79,8 @@ public class JdbcBufferedConsumerFactory {
         recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
         onCloseFunction(database, sqlOperations, writeConfigs),
         catalog,
-        sqlOperations::isValidData);
+        sqlOperations::isValidData,
+        MAX_BATCH_SIZE);
   }
 
   private static List<WriteConfig> createWriteConfigs(NamingConventionTransformer namingResolver,

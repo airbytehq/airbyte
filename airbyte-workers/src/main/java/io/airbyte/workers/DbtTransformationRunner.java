@@ -30,7 +30,7 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.workers.normalization.NormalizationRunner;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,12 +45,12 @@ public class DbtTransformationRunner implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(DbtTransformationRunner.class);
   private static final String DBT_ENTRYPOINT_SH = "entrypoint.sh";
 
-  private final ProcessBuilderFactory pbf;
+  private final ProcessFactory processFactory;
   private final NormalizationRunner normalizationRunner;
   private Process process = null;
 
-  public DbtTransformationRunner(final ProcessBuilderFactory pbf, NormalizationRunner normalizationRunner) {
-    this.pbf = pbf;
+  public DbtTransformationRunner(final ProcessFactory processFactory, NormalizationRunner normalizationRunner) {
+    this.processFactory = processFactory;
     this.normalizationRunner = normalizationRunner;
   }
 
@@ -87,7 +87,7 @@ public class DbtTransformationRunner implements AutoCloseable {
       if (!dbtConfig.getDbtArguments().contains("--project-dir=")) {
         dbtArguments.add("--project-dir=/data/job/transform/git_repo/");
       }
-      process = pbf.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), "/bin/bash", dbtArguments).start();
+      process = processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), "/bin/bash", dbtArguments);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);

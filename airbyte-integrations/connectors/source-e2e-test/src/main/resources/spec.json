@@ -1,0 +1,44 @@
+{
+  "documentationUrl": "https://example.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "E2E Test Source Spec",
+    "type": "object",
+    "oneOf": [
+      {
+        "title": "Exception After N",
+        "required": ["type", "throw_after_n_records"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "EXCEPTION_AFTER_N",
+            "default": "EXCEPTION_AFTER_N"
+          },
+          "throw_after_n_records": {
+            "title": "Throw After N Records",
+            "description": "Number of records to emit before throwing an exception.",
+            "type": "integer"
+          }
+        }
+      },
+      {
+        "title": "Infinite Feed",
+        "required": ["type", "max_records"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "INFINITE_FEED",
+            "default": "INFINITE_FEED"
+          },
+          "max_records": {
+            "title": "Max Records",
+            "description": "Number of records to emit. If not set, defaults to infinity.",
+            "type": "integer"
+          }
+        }
+      }
+    ]
+  }
+}
