@@ -98,7 +98,7 @@ The emojis help us identify which commits should be included in the product rele
 
 1. Some background information motivating the problem
 2. A description of the problem itself
-
+3. Good places to start reading and file changes that can be skipped
 Some examples: 
 
 _insufficient context_: `Create an OpenAPI to JSON schema generator`. Unclear what the value or problem being solved here is. 
