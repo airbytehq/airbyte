@@ -117,7 +117,7 @@ class Transactions(PaypalTransactionStream):
     Stream for Transactions /v1/reporting/transactions
     """
 
-    primary_key = "transaction_id"
+    primary_key = "last_refreshed_datetime"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -136,7 +136,7 @@ class Balances(PaypalTransactionStream):
     """
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    primary_key = "as_of_time"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -209,6 +209,8 @@ class SourcePaypalTransaction(AbstractSource):
             client_id=config["client_id"],
             client_secret=config["secret"],
             refresh_token='').get_access_token()
+        if not token:
+            return False, 'Unable to fetch Paypal API token due to incorrect client_id or secret'
 
         print(f"token {token}")
         return True, None
@@ -219,7 +221,11 @@ class SourcePaypalTransaction(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
+        token = PayPalOauth2Authenticator(
+            token_refresh_endpoint='https://api-m.sandbox.paypal.com/v1/oauth2/token',
+            client_id=config["client_id"],
+            client_secret=config["secret"],
+            refresh_token='').get_access_token()
+        auth = TokenAuthenticator(token=token)  # Oauth2Authenticator is also available if you need oauth support
         # return [Transactions(authenticator=auth), Balances(authenticator=auth)]
-        return [Transactions(authenticator=auth)]
+        return [Transactions(authenticator=auth), Balances(authenticator=auth)]

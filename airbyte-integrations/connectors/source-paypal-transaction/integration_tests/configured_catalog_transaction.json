@@ -1,0 +1,29 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "transactions",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "account_number": {
+              "type": ["null", "string"]
+            },
+            "last_refreshed_datetime": {
+              "type": ["null", "string"]
+            },
+            "page": {
+              "type": ["null", "integer"]
+            },
+            "total_items": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
