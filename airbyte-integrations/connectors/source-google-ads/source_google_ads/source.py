@@ -169,6 +169,7 @@ class SourceGoogleAds(Source):
         """
 
         for stream_catalog in catalog.streams:
+            has_emitted_state = False
             stream_name = stream_catalog.stream.name
             
             stream_config = next(cfg for cfg in config["streams"] if cfg["name"] == stream_name)
@@ -211,9 +212,15 @@ class SourceGoogleAds(Source):
                     if(stream_catalog.sync_mode == SyncMode.incremental and (not max_cursor or max_cursor < data[cursor_field_key])):
                         max_cursor = data_cursor_value
                         state[stream_name] = {cursor_field_key: max_cursor}
+                        has_emitted_state = True
                         yield AirbyteMessage(
                             type=Type.STATE,
                             state=AirbyteRecordMessage(stream=stream_name, data=state, emitted_at=int(datetime.now().timestamp()) * 1000),
                         )
 
+            if(not has_emitted_state):
+                yield AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteRecordMessage(stream=stream_name, data=state, emitted_at=int(datetime.now().timestamp()) * 1000),
+                )
 
