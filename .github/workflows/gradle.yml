@@ -335,6 +335,7 @@ jobs:
           chmod +x minikube-linux-amd64
           sudo mv minikube-linux-amd64 /usr/local/bin/minikube
           ln -s $(which minikube) /usr/local/bin/kubectl
+          minikube start
 
       - name: Build Core Docker Images and Run Tests
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan
