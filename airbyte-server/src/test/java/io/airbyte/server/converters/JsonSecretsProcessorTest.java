@@ -137,6 +137,19 @@ public class JsonSecretsProcessorTest {
   }
 
   @Test
+  public void testMaskSecretNotInInnerObject() {
+    JsonNode base = Jsons.jsonNode(ImmutableMap.builder()
+        .put("warehouse", "house").build());
+
+    JsonNode actual = processor.maskSecrets(base, SCHEMA_INNER_OBJECT);
+
+    JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
+        .put("warehouse", "house").build());
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
   public void testCopySecrets() {
     JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
@@ -176,6 +189,7 @@ public class JsonSecretsProcessorTest {
     JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
         .put("field2", 2)
+        .put("secret1", JsonSecretsProcessor.SECRETS_MASK)
         .build());
 
     JsonNode expected = dst.deepCopy();
@@ -188,7 +202,9 @@ public class JsonSecretsProcessorTest {
   public void testCopySecretInnerObject() {
     JsonNode srcOneOf = Jsons.jsonNode(ImmutableMap.builder()
         .put("s3_bucket_name", "name")
-        .put("secret_access_key", "secret").build());
+        .put("secret_access_key", "secret")
+        .put("additional_field", "dont_copy_me")
+        .build());
     JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
         .put("warehouse", "house")
         .put("loading_method", srcOneOf).build());
@@ -209,6 +225,25 @@ public class JsonSecretsProcessorTest {
     JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
         .put("warehouse", "house")
         .put("loading_method", expectedOneOf).build());
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testCopySecretNotInSrcInnerObject() {
+    JsonNode src = Jsons.jsonNode(ImmutableMap.builder()
+        .put("warehouse", "house").build());
+
+    JsonNode dstOneOf = Jsons.jsonNode(ImmutableMap.builder()
+        .put("s3_bucket_name", "name")
+        .put("secret_access_key", JsonSecretsProcessor.SECRETS_MASK)
+        .build());
+    JsonNode dst = Jsons.jsonNode(ImmutableMap.builder()
+        .put("warehouse", "house")
+        .put("loading_method", dstOneOf).build());
+
+    JsonNode actual = processor.copySecrets(src, dst, SCHEMA_INNER_OBJECT);
+    JsonNode expected = dst.deepCopy();
 
     assertEquals(expected, actual);
   }

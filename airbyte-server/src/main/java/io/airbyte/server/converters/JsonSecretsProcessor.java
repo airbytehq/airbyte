@@ -76,7 +76,7 @@ public class JsonSecretsProcessor {
       }
 
       var combinationKey = findJsonCombinationNode(fieldSchema);
-      if (combinationKey.isPresent()) {
+      if (combinationKey.isPresent() && copy.has(key)) {
         var combinationCopy = copy.get(key);
         var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
         for (int i = 0; i < arrayNode.size(); i++) {
@@ -131,12 +131,14 @@ public class JsonSecretsProcessor {
       }
 
       var combinationKey = findJsonCombinationNode(fieldSchema);
-      if (combinationKey.isPresent()) {
+      if (combinationKey.isPresent() && dstCopy.has(key)) {
         var combinationCopy = dstCopy.get(key);
-        var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
-        for (int i = 0; i < arrayNode.size(); i++) {
-          // Absorb field values if any of the combination option is declaring it as secrets
-          combinationCopy = copySecrets(src.get(key), combinationCopy, arrayNode.get(i));
+        if (src.has(key)) {
+          var arrayNode = (ArrayNode) fieldSchema.get(combinationKey.get());
+          for (int i = 0; i < arrayNode.size(); i++) {
+            // Absorb field values if any of the combination option is declaring it as secrets
+            combinationCopy = copySecrets(src.get(key), combinationCopy, arrayNode.get(i));
+          }
         }
         dstCopy.set(key, combinationCopy);
       }
