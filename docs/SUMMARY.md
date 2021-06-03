@@ -96,6 +96,7 @@
     * [Postgres](integrations/destinations/postgres.md)
     * [Redshift](integrations/destinations/redshift.md)
     * [Snowflake](integrations/destinations/snowflake.md)
+    * [S3](integrations/destinations/s3.md)
   * [Custom or New Connector](integrations/custom-connectors.md)
 * [Upgrading Airbyte](tutorials/upgrading-airbyte.md)
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)

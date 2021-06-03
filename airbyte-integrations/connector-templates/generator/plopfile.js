@@ -23,7 +23,7 @@ ${additionalMessage || ""}
 }
 
 module.exports = function (plop) {
-  const docRoot = '../../../docs/integrations';
+  const docRoot = '../../../docs';
   const definitionRoot = '../../../airbyte-config/init/src/main/resources';
 
   const pythonSourceInputRoot = '../source-python';
@@ -206,7 +206,14 @@ module.exports = function (plop) {
         type: 'add',
         abortOnFail: true,
         templateFile: `${javaDestinationInput}/doc.md.hbs`,
-        path: `${docRoot}/destinations/{{dashCase name}}.md`
+        path: `${docRoot}/integrations/destinations/{{dashCase name}}.md`
+      },
+      {
+        type: 'append',
+        abortOnFail: true,
+        path: `${docRoot}/SUMMARY.md`,
+        pattern: '  * [Destinations](integrations/destinations/README.md)',
+        templateFile: `${javaDestinationInput}/doc-link.md.hbs`,
       },
       // Definition
       {
