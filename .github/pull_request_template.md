@@ -5,11 +5,35 @@
 ## How
 *Describe the solution*
 
-## Pre-merge Checklist
-- [ ] *Run integration tests*
-- [ ] *Publish Docker images*
-
 ## Recommended reading order
-1. `test.java`
-1. `component.ts`
-1. the rest
+1. `x.java`
+2. `y.python`
+
+## Pre-merge Checklist
+Expand the checklist which is relevant for this PR. 
+
+<details><summary>Connector checklist </summary>
+<p>
+
+- [ ] Issue acceptance criteria met
+- [ ] Unit & integration tests added as appropriate (and are passing)
+    * Community members: please provide proof of this succeeding locally e.g: screenshot or copy-paste acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
+- [ ] `/test` command documented [here]() is passing. 
+    * Community members can skip this, Airbyters will run this for you. 
+- [ ] Code reviews completed
+- [ ] Credentials added to Github CI if needed and not already present. [instructions for injecting secrets into CI](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#using-credentials-in-ci). 
+- [ ] Documentation updated 
+    - [ ] README
+    - [ ] CHANGELOG.md
+    - [ ] Reference docs in the `docs/integrations/` directory.
+    - [ ] If adding a new connector, update the `docs/SUMMARY.md` to point to the new docs in `docs/integrations/`
+- [ ] Build is successful
+- [ ] Connector version bumped like described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)
+- [ ] New Connector version released on Dockerhub by running the `/publish` command described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)
+- [ ] No major blockers
+- [ ] PR merged into master branch
+- [ ] Follow up tickets have been created
+- [ ] Associated tickets have been closed & stakeholders notified
+</p>
+</details>
+
