@@ -36,9 +36,9 @@ from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, filt
 @pytest.fixture(name="future_state_path")
 def future_state_path_fixture(inputs, base_path) -> Path:
     """Fixture with connector's future state path (relative to base_path)"""
-    if getattr(inputs, "state_path"):
-        return Path(base_path) / getattr(inputs, "state_path")
-    pytest.skip("`state_path` not specified, skipping")
+    if getattr(inputs, "abnormal_state_path"):
+        return Path(base_path) / getattr(inputs, "abnormal_state_path")
+    pytest.skip("`abnormal_state_path` not specified, skipping")
 
 
 @pytest.fixture(name="future_state")
