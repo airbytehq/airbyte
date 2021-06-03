@@ -48,7 +48,7 @@ Several output streams are available from this source:
 
 ### Performance considerations
 
-Harvest connector has rate limitations. See [rate limitations](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting) docs.
+The Harvest connector will gracefully handle rate limits. For more information, see [the Harvest docs for rate limitations](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
 
 ## Getting started
 
@@ -61,7 +61,7 @@ Harvest connector has rate limitations. See [rate limitations](https://help.geth
 
 This connector supports only authentication with API Key. To obtain API key follow the instructions below:
 
-1. Go to Account Settings page (login/password are in LastPass);
+1. Go to Account Settings page;
 1. Under Integrations section press Authorized OAuth2 API Clients button;
 1. New page will be opened on which you need to click on Create New Personal Access Token button and follow instructions.
 

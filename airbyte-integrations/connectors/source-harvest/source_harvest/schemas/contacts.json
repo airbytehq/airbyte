@@ -2,56 +2,48 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "base_uri": {
-      "type": ["null", "string"]
-    },
-    "full_domain": {
-      "type": ["null", "string"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "is_active": {
-      "type": ["null", "boolean"]
-    },
-    "week_start_day": {
-      "type": ["null", "string"]
-    },
-    "wants_timestamp_timers": {
-      "type": ["null", "boolean"]
-    },
-    "time_format": {
-      "type": ["null", "string"]
-    },
-    "plan_type": {
-      "type": ["null", "string"]
-    },
-    "expense_feature": {
-      "type": ["null", "boolean"]
-    },
-    "invoice_feature": {
-      "type": ["null", "boolean"]
-    },
-    "estimate_feature": {
-      "type": ["null", "boolean"]
-    },
-    "approval_required": {
-      "type": ["null", "boolean"]
-    },
-    "clock": {
-      "type": ["null", "string"]
-    },
-    "decimal_symbol": {
-      "type": ["null", "string"]
-    },
-    "thousands_separator": {
-      "type": ["null", "string"]
-    },
-    "color_scheme": {
-      "type": ["null", "string"]
-    },
-    "weekly_capacity": {
+    "id": {
       "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "phone_office": {
+      "type": ["null", "string"]
+    },
+    "phone_mobile": {
+      "type": ["null", "string"]
+    },
+    "fax": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "client": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

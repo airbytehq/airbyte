@@ -23,7 +23,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
@@ -87,9 +87,9 @@ class HarvestStream(HttpStream, ABC):
 class IncrementalHarvestStream(HarvestStream, ABC):
     cursor_field = "updated_at"
 
-    def __init__(self, updated_since: pendulum.datetime = None, **kwargs):
+    def __init__(self, replication_start_date: pendulum.datetime = None, **kwargs):
         super().__init__(**kwargs)
-        self._updated_since = updated_since
+        self._replication_start_date = replication_start_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -108,8 +108,8 @@ class IncrementalHarvestStream(HarvestStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        updated_since = stream_state.get(self.cursor_field) or self._updated_since
-        params.update({"updated_since": updated_since})
+        replication_start_date = stream_state.get(self.cursor_field) or self._replication_start_date
+        params.update({"updated_since": replication_start_date})
         return params
 
 
@@ -128,9 +128,9 @@ class HarvestSubStream(HarvestStream):
         :return: parent stream class
         """
 
-    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         items = self.parent_stream(authenticator=self.authenticator)
-        for item in items.read_records(sync_mode=sync_mode):
+        for item in items.read_records(sync_mode=SyncMode.full_refresh):
             yield {"parent_id": item["id"]}
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
@@ -138,96 +138,154 @@ class HarvestSubStream(HarvestStream):
 
 
 class Contacts(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/clients-api/clients/contacts/
+    """
 
 
 class Clients(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/clients-api/clients/clients/
+    """
 
 
 class Company(HarvestStream):
+    """
+    Docs: https://help.getharvest.com/api-v2/company-api/company/company/
+    """
+
     primary_key = None
     data_field = None
 
 
 class Invoices(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoices/
+    """
 
 
 class InvoiceMessages(HarvestSubStream, IncrementalHarvestStream):
+    """
+    Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-messages/
+    """
+
     parent_stream = Invoices
     path_template = "invoices/{parent_id}/messages"
 
 
 class InvoicePayments(HarvestSubStream, IncrementalHarvestStream):
+    """
+    Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-payments/
+    """
+
     parent_stream = Invoices
     path_template = "invoices/{parent_id}/payments"
 
 
 class InvoiceItemCategories(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-item-categories/
+    """
 
 
 class Estimates(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimates/
+    """
 
 
 class EstimateMessages(HarvestSubStream, IncrementalHarvestStream):
+    """
+    Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-messages/
+    """
+
     parent_stream = Estimates
     path_template = "estimates/{parent_id}/messages"
 
 
 class EstimateItemCategories(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/
+    """
 
 
 class Expenses(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/expenses-api/expenses/expenses/
+    """
 
 
 class ExpenseCategories(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/expenses-api/expenses/expense-categories/
+    """
 
 
 class Tasks(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/tasks-api/tasks/tasks/
+    """
 
 
 class TimeEntries(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/timesheets-api/timesheets/time-entries/
+    """
 
 
 class UserAssignments(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/projects-api/projects/user-assignments/
+    """
 
 
 class TaskAssignments(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/
+    """
 
 
 class Projects(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/projects-api/projects/projects/
+    """
 
 
 class Roles(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/roles-api/roles/roles/
+    """
 
 
 class Users(IncrementalHarvestStream):
-    pass
+    """
+    Docs: https://help.getharvest.com/api-v2/users-api/users/users/
+    """
 
 
 class BillableRates(HarvestSubStream):
+    """
+    Docs: https://help.getharvest.com/api-v2/users-api/users/billable-rates/
+    """
+
     parent_stream = Users
     path_template = "users/{parent_id}/billable_rates"
 
 
 class CostRates(HarvestSubStream):
+    """
+    Docs: https://help.getharvest.com/api-v2/users-api/users/cost-rates/
+    """
+
     parent_stream = Users
     path_template = "users/{parent_id}/cost_rates"
 
 
 class ProjectAssignments(HarvestSubStream, IncrementalHarvestStream):
+    """
+    Docs: https://help.getharvest.com/api-v2/users-api/users/project-assignments/
+    """
+
     parent_stream = Users
     path_template = "users/{parent_id}/project_assignments"
 
@@ -260,40 +318,80 @@ class ReportsBase(HarvestStream, ABC):
 
 
 class ExpensesClients(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Clients Report)
+    """
+
     report_path = "expenses/clients"
 
 
 class ExpensesProjects(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Projects Report)
+    """
+
     report_path = "expenses/projects"
 
 
 class ExpensesCategories(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Expense Categories Report)
+    """
+
     report_path = "expenses/categories"
 
 
 class ExpensesTeam(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Team Report)
+    """
+
     report_path = "expenses/team"
 
 
 class Uninvoiced(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/
+    """
+
     report_path = "uninvoiced"
 
 
 class TimeClients(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Clients Report)
+    """
+
     report_path = "time/clients"
 
 
 class TimeProjects(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Projects Report)
+    """
+
     report_path = "time/projects"
 
 
 class TimeTasks(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Tasks Report)
+    """
+
     report_path = "time/tasks"
 
 
 class TimeTeam(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Team Report)
+    """
+
     report_path = "time/team"
 
 
 class ProjectBudget(ReportsBase):
+    """
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/
+    """
+
     report_path = "project_budget"

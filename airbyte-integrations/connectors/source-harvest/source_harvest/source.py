@@ -72,44 +72,46 @@ class SourceHarvest(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             auth = HarvestTokenAuthenticator(token=config["api_token"], account_id=config["account_id"])
-            updated_since = pendulum.parse(config["updated_since"])
-            users_gen = Users(authenticator=auth, updated_since=updated_since).read_records(sync_mode=SyncMode.full_refresh)
+            replication_start_date = pendulum.parse(config["replication_start_date"])
+            users_gen = Users(authenticator=auth, replication_start_date=replication_start_date).read_records(
+                sync_mode=SyncMode.full_refresh
+            )
             next(users_gen)
             return True, None
         except Exception as error:
-            return False, f"Unable to connect to Harvest API with the provided credentials - {error}"
+            return False, f"Unable to connect to Harvest API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         auth = HarvestTokenAuthenticator(token=config["api_token"], account_id=config["account_id"])
-        updated_since = pendulum.parse(config["updated_since"])
-        from_date = updated_since.date()
+        replication_start_date = pendulum.parse(config["replication_start_date"])
+        from_date = replication_start_date.date()
 
         streams = [
-            Clients(authenticator=auth, updated_since=updated_since),
-            Contacts(authenticator=auth, updated_since=updated_since),
+            Clients(authenticator=auth, replication_start_date=replication_start_date),
+            Contacts(authenticator=auth, replication_start_date=replication_start_date),
             Company(authenticator=auth),
-            Invoices(authenticator=auth, updated_since=updated_since),
-            InvoiceMessages(authenticator=auth, updated_since=updated_since),
-            InvoicePayments(authenticator=auth, updated_since=updated_since),
-            InvoiceItemCategories(authenticator=auth, updated_since=updated_since),
-            Estimates(authenticator=auth, updated_since=updated_since),
-            EstimateMessages(authenticator=auth, updated_since=updated_since),
-            EstimateItemCategories(authenticator=auth, updated_since=updated_since),
-            Expenses(authenticator=auth, updated_since=updated_since),
-            ExpenseCategories(authenticator=auth, updated_since=updated_since),
-            Tasks(authenticator=auth, updated_since=updated_since),
-            TimeEntries(authenticator=auth, updated_since=updated_since),
-            UserAssignments(authenticator=auth, updated_since=updated_since),
-            TaskAssignments(authenticator=auth, updated_since=updated_since),
-            Projects(authenticator=auth, updated_since=updated_since),
-            Roles(authenticator=auth, updated_since=updated_since),
-            Users(authenticator=auth, updated_since=updated_since),
+            Invoices(authenticator=auth, replication_start_date=replication_start_date),
+            InvoiceMessages(authenticator=auth, replication_start_date=replication_start_date),
+            InvoicePayments(authenticator=auth, replication_start_date=replication_start_date),
+            InvoiceItemCategories(authenticator=auth, replication_start_date=replication_start_date),
+            Estimates(authenticator=auth, replication_start_date=replication_start_date),
+            EstimateMessages(authenticator=auth, replication_start_date=replication_start_date),
+            EstimateItemCategories(authenticator=auth, replication_start_date=replication_start_date),
+            Expenses(authenticator=auth, replication_start_date=replication_start_date),
+            ExpenseCategories(authenticator=auth, replication_start_date=replication_start_date),
+            Tasks(authenticator=auth, replication_start_date=replication_start_date),
+            TimeEntries(authenticator=auth, replication_start_date=replication_start_date),
+            UserAssignments(authenticator=auth, replication_start_date=replication_start_date),
+            TaskAssignments(authenticator=auth, replication_start_date=replication_start_date),
+            Projects(authenticator=auth, replication_start_date=replication_start_date),
+            Roles(authenticator=auth, replication_start_date=replication_start_date),
+            Users(authenticator=auth, replication_start_date=replication_start_date),
             BillableRates(authenticator=auth),
             CostRates(authenticator=auth),
-            ProjectAssignments(authenticator=auth, updated_since=updated_since),
+            ProjectAssignments(authenticator=auth, replication_start_date=replication_start_date),
             ExpensesClients(authenticator=auth, from_date=from_date),
             ExpensesProjects(authenticator=auth, from_date=from_date),
             ExpensesCategories(authenticator=auth, from_date=from_date),

@@ -1,5 +1,5 @@
 {
   "api_token": "<API Token>",
   "account_id": "<Account ID>",
-  "updated_since": "2021-01-01T00:00:00Z"
+  "replication_start_date": "2021-01-01T00:00:00Z"
 }

@@ -34,4 +34,4 @@ class HarvestTokenAuthenticator(TokenAuthenticator):
         self.account_id_header = account_id_header
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        return {self.auth_header: f"{self.auth_method} {self._token}", self.account_id_header: self.account_id}
+        return {**super().get_auth_header(), self.account_id_header: self.account_id}
