@@ -36,6 +36,7 @@ from airbyte_cdk.models import (
     Status,
     Type,
 )
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.errors import GoogleAdsException
@@ -150,6 +151,7 @@ class SourceGoogleAds(Source):
             response = self._search(query, config)
             json_schema = self.extract_schema(response)
             stream = AirbyteStream(name=stream_name, json_schema=json_schema)
+            stream.supported_sync_modes = [SyncMode.full_refresh, SyncMode.incremental]
             streams.append(stream)
 
         return AirbyteCatalog(streams=streams)
