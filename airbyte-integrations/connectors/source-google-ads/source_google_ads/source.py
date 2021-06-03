@@ -99,7 +99,7 @@ class SourceGoogleAds(Source):
         str: "string"
     }
 
-    def extract_schema(self, response):
+    def extract_schema(self, stream_config, response):
         props = {}
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -120,10 +120,10 @@ class SourceGoogleAds(Source):
                         error_keys.append(key)
 
                 if(len(error_keys)>0):
-                    raise Exception(f"The GAQL contains invalid keys, try removing them from the GAQL. Keys: {str(error_keys)}")
+                    raise Exception(f"The {stream_config['name']} GAQL contains invalid keys, try removing them from the GAQL. Keys: {str(error_keys)}")
                 return json_schema
 
-        raise Exception("The reponse has now rows. Please modify the GAQL so that it returns at least one row") 
+        raise Exception(f"The reponse has now rows. Please modify the {stream_config['name']} GAQL so that it returns at least one row") 
 
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
@@ -149,7 +149,7 @@ class SourceGoogleAds(Source):
             query = stream_config['gaql']
             stream_name = stream_config['name']
             response = self._search(query, config)
-            json_schema = self.extract_schema(response)
+            json_schema = self.extract_schema(stream_config, response)
             stream = AirbyteStream(name=stream_name, json_schema=json_schema)
             stream.supported_sync_modes = [SyncMode.full_refresh, SyncMode.incremental]
             streams.append(stream)
