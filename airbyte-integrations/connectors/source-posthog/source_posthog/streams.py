@@ -26,7 +26,7 @@
 import math
 import urllib.parse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -83,22 +83,18 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         params = super().next_page_token(response=response)
         if params:
             return params
-        
 
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
-    ) -> Union[Mapping[str, Any], Tuple[Any, Mapping[str, Any]]]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         current_stream_state = current_stream_state or {}
         current_state = current_stream_state.get(self.cursor_field)
-        latest_state = latest_record.get(self.cursor_field)  # 810->809->808
+        latest_state = latest_record.get(self.cursor_field)
 
         if current_state and latest_state <= current_state:
-            # return Tuple with any first element and current state
-            return (-1, self.reversed_pagination["upgrade_to"])
+            return self.reversed_pagination["upgrade_to"]
         if (
             self.reversed_pagination["latest_response_state"]
             and latest_state <= self.reversed_pagination["latest_response_state"][self.cursor_field]
@@ -110,7 +106,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        data = response_json[self.data_field]
+        data = response_json.get(self.data_field)
         if data:
             if not response_json.get("next"):
                 self.reversed_pagination["is_completed"] = True
@@ -119,18 +115,26 @@ class IncrementalPosthogStream(PosthogStream, ABC):
             last_record_value = data[-1][self.cursor_field]
             if not stream_state:
                 self.reversed_pagination["latest_response_state"] = {self.cursor_field: last_record_value}
+                yield from data
             else:
-
                 first_record_value = data[0][self.cursor_field]
                 state_value = stream_state.get(self.cursor_field)
 
                 if state_value >= first_record_value:
                     self.reversed_pagination["upgrade_to"] = stream_state
+                    self.reversed_pagination["is_completed"] = True
                     yield from []
-                else:
+                elif state_value < last_record_value:  # full page
                     self.reversed_pagination["latest_response_state"] = {self.cursor_field: last_record_value}
+                    yield from data
+                else:  # last_record_value <= state_value < first_record_value
+                    slice_ = [i for i in data if i[self.cursor_field] > state_value]
+                    self.reversed_pagination["latest_response_state"] = {self.cursor_field: slice_[-1][self.cursor_field]}
+                    self.reversed_pagination["is_completed"] = True
+                    yield from slice_
 
-        yield from data
+        else:
+            yield from data
 
 
 class Annotations(IncrementalPosthogStream):

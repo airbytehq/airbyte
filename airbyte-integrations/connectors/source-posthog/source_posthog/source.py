@@ -23,11 +23,11 @@
 #
 
 
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, Tuple
 
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -47,58 +47,13 @@ from .streams import (  # EventsSessions,
 
 
 class SourcePosthog(AbstractSource):
-    def _read_incremental(
-        self,
-        logger: AirbyteLogger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        connector_state: MutableMapping[str, Any],
-    ) -> Iterator[AirbyteMessage]:
-        """
-        overridden: accept stream_state both dict and tuple
-        if Tuple:
-            second element is dict state
-            first element- any - says to break a loop
-            Reason: descendant reading records, break on cursor_val <= state
-            Alternative: filter whole responce by cursor_field, not that great.
-        """
-        stream_name = configured_stream.stream.name
-        stream_state = connector_state.get(stream_name, {})
-        if stream_state:
-            logger.info(f"Setting state of {stream_name} stream to {stream_state.get(stream_name)}")
-
-        checkpoint_interval = stream_instance.state_checkpoint_interval
-        slices = stream_instance.stream_slices(
-            cursor_field=configured_stream.cursor_field, sync_mode=SyncMode.incremental, stream_state=stream_state
-        )
-        for slice_ in slices:
-            record_counter = 0
-            records = stream_instance.read_records(
-                sync_mode=SyncMode.incremental,
-                stream_slice=slice_,
-                stream_state=stream_state,
-                cursor_field=configured_stream.cursor_field or None,
-            )
-            for record_data in records:
-                stream_state = stream_instance.get_updated_state(stream_state, record_data)
-                if isinstance(stream_state, tuple):
-                    stream_state = stream_state[1]
-                    break
-                record_counter += 1
-                yield self._as_airbyte_record(stream_name, record_data)
-
-                if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                    yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
-
-            yield self._checkpoint_state(stream_name, stream_state, connector_state, logger)
-
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             _ = pendulum.parse(config["start_date"], strict=True)
             authenticator = TokenAuthenticator(token=config["api_key"])
             annotations_stream = Annotations(authenticator=authenticator)
             records = annotations_stream.read_records(sync_mode=SyncMode.full_refresh)
-            first_record = next(records)
+            _ = next(records)
             return True, None
         except Exception as e:
             return False, repr(e)
