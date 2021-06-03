@@ -78,14 +78,12 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         """
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        resp_json = response.json()
         if self.reversed_pagination["is_completed"]:
             return {}
-        if "next" in resp_json and resp_json["next"]:
-            next_query_string = urllib.parse.urlsplit(resp_json["next"]).query
-            params = dict(urllib.parse.parse_qsl(next_query_string))
-            if params:
-                return params
+        params = super().next_page_token(response=response)
+        if params:
+            return params
+        
 
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]

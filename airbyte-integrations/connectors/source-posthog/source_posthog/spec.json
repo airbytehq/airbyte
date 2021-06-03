@@ -8,8 +8,11 @@
     "additionalProperties": false,
     "properties": {
       "start_date": {
+        "title": "Stard Date",
         "type": "string",
-        "description": "The date begining point: no data read in incremental before this date"
+        "description": "The date begining point: no data read in incremental before this date",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}Z$",
+        "examples": "2021-01-01T00:00:00.000000Z"
       },
       "api_key": {
         "type": "string",

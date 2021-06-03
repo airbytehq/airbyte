@@ -25,7 +25,7 @@
 
 from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
-import dateutil.parser
+import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -94,9 +94,11 @@ class SourcePosthog(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            _ = dateutil.parser.isoparse(config["start_date"])
+            _ = pendulum.parse(config["start_date"], strict=True)
             authenticator = TokenAuthenticator(token=config["api_key"])
-            _ = next(Annotations(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh))
+            annotations_stream = Annotations(authenticator=authenticator)
+            records = annotations_stream.read_records(sync_mode=SyncMode.full_refresh)
+            first_record = next(records)
             return True, None
         except Exception as e:
             return False, repr(e)
