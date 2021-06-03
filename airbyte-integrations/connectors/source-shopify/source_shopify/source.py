@@ -48,7 +48,6 @@ class ShopifyStream(HttpStream, ABC):
         self.api_password = api_password
         self.since_id = 0
 
-
     @property
     def url_base(self) -> str:
         return f"https://{self.shop}.myshopify.com/admin/api/{self.api_version}/"
@@ -177,18 +176,18 @@ class Transactions(IncrementalShopifyStream):
 class ShopifyAuthenticator(HttpAuthenticator):
 
     """
-    Making Authenticator to be able to accept Header-Based authentication. 
+    Making Authenticator to be able to accept Header-Based authentication.
     """
 
     def __init__(self, token: str):
         self.token = token
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        return {"X-Shopify-Access-Token" : f"{self.token}"}
+        return {"X-Shopify-Access-Token": f"{self.token}"}
+
 
 # Basic Connections Check
 class SourceShopify(AbstractSource):
-
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
         """
@@ -199,9 +198,9 @@ class SourceShopify(AbstractSource):
         api_pass = config["api_password"]
         api_version = "2021-04"  # Latest Stable Release
 
-        headers = {"X-Shopify-Access-Token" : api_pass}
+        headers = {"X-Shopify-Access-Token": api_pass}
         url = f"https://{shop}.myshopify.com/admin/api/{api_version}/shop.json"
-        
+
         try:
             session = requests.get(url, headers=headers)
             session.raise_for_status()
@@ -227,5 +226,5 @@ class SourceShopify(AbstractSource):
             CustomCollections(**args),
             Collects(**args),
             OrderRefunds(**args),
-            Transactions(**args)
+            Transactions(**args),
         ]
