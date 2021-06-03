@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
+import { FieldArray, useField } from "formik";
 
-import { DropDown, Label, ArrayOfObjectsEditor } from "components";
+import { ArrayOfObjectsEditor, DropDown, Label } from "components";
 import {
   FormBlock,
   FormConditionItem,
@@ -10,7 +11,23 @@ import {
 import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../serviceFormContext";
 import GroupControls from "./Property/GroupControls";
-import { FieldArray, useField } from "formik";
+import { naturalComparator } from "utils/objects";
+
+function OrderComparator(a: FormBlock, b: FormBlock): number {
+  const aIsNumber = Number.isInteger(a.order);
+  const bIsNumber = Number.isInteger(b.order);
+
+  switch (true) {
+    case aIsNumber && bIsNumber:
+      return (a.order as number) - (b.order as number);
+    case aIsNumber && !bIsNumber:
+      return -1;
+    case bIsNumber && !aIsNumber:
+      return 1;
+    default:
+      return naturalComparator(a.fieldKey, b.fieldKey);
+  }
+}
 
 const SectionContainer = styled.div`
   margin-bottom: 27px;
@@ -134,7 +151,16 @@ const FormSection: React.FC<{
   path?: string;
   skipAppend?: boolean;
 }> = ({ blocks, path, skipAppend }) => {
-  const sections = Array.isArray(blocks) ? blocks : [blocks];
+  const sections = useMemo(() => {
+    const bl = [blocks].flat();
+
+    if (bl.some((b) => Number.isInteger(b.order))) {
+      return bl.sort(OrderComparator);
+    }
+
+    return bl;
+  }, [blocks]);
+
   return (
     <>
       {sections.map((formField) => {

@@ -36,3 +36,4 @@ redirects:
   tutorials/transformations-with-sql: ./tutorials/transformation-and-normalization/transformations-with-sql.md
   tutorials/transformations-with-dbt: ./tutorials/transformation-and-normalization/transformations-with-dbt.md
   contributing-to-airbyte/cdk-tutorial-alpha: ./contributing-to-airbyte/python/README.md
+  integrations/connector-health: ./integrations.md

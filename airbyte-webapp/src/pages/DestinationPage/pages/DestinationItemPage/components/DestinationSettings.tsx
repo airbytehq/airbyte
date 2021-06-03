@@ -113,13 +113,7 @@ const DestinationsSettings: React.FC<IProps> = ({
           isEditMode
           onSubmit={onSubmitForm}
           formType="destination"
-          availableServices={[
-            {
-              value: currentDestination.destinationDefinitionId,
-              text: currentDestination.destinationName,
-              icon: destinationDefinition.icon,
-            },
-          ]}
+          availableServices={[destinationDefinition]}
           formValues={{
             ...currentDestination,
             serviceType: currentDestination.destinationDefinitionId,

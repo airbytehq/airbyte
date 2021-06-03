@@ -29,7 +29,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
+import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopier;
@@ -44,14 +44,15 @@ public class SnowflakeCopyGcsDestination extends CopyDestination {
                                             ConfiguredAirbyteCatalog catalog,
                                             Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    return new CopyConsumer<>(
-        getConfiguredSchema(config),
+    return CopyConsumerFactory.create(
+        outputRecordCollector,
+        getDatabase(config),
+        getSqlOperations(),
+        getNameTransformer(),
         GcsConfig.getGcsConfig(config),
         catalog,
-        getDatabase(config),
         new SnowflakeGcsStreamCopierFactory(),
-        getSqlOperations(),
-        getNameTransformer());
+        getConfiguredSchema(config));
   }
 
   @Override

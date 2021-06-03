@@ -34,7 +34,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -44,10 +44,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.29";
+  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.31";
 
   private final DestinationType destinationType;
-  private final ProcessBuilderFactory pbf;
+  private final ProcessFactory processFactory;
 
   private Process process = null;
 
@@ -58,9 +58,9 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     SNOWFLAKE
   }
 
-  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessBuilderFactory pbf) {
+  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory) {
     this.destinationType = destinationType;
-    this.pbf = pbf;
+    this.processFactory = processFactory;
   }
 
   @Override
@@ -86,7 +86,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private boolean runProcess(String jobId, int attempt, Path jobRoot, final String... args) throws Exception {
     try {
-      process = pbf.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, null, args).start();
+      process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, null, args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
