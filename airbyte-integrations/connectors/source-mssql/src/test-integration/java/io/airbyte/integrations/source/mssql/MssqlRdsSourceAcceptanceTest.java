@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class MssqlSourceAcceptanceTestRDS extends SourceAcceptanceTest {
+public class MssqlRdsSourceAcceptanceTest extends SourceAcceptanceTest {
 
     private static final String SCHEMA_NAME = "dbo";
     private static final String STREAM_NAME = "id_and_name";

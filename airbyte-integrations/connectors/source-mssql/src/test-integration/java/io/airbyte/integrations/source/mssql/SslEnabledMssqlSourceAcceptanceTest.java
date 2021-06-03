@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class MssqlSourceAcceptanceTestSSL extends SourceAcceptanceTest {
+public class SslEnabledMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
     private static final String SCHEMA_NAME = "dbo";
     private static final String STREAM_NAME = "id_and_name";
@@ -76,7 +76,7 @@ public class MssqlSourceAcceptanceTestSSL extends SourceAcceptanceTest {
     }
 
     // how to interact with the mssql test container manaully.
-    // 1. exec into mssql container (not the test container container)
+    // 1. exec into mssql container (not the test container)
     // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
     @Override
     protected void setup(TestDestinationEnv testEnv) throws SQLException {
