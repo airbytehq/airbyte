@@ -115,7 +115,11 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv env, String streamName, String namespace) throws Exception {
+  protected List<JsonNode> retrieveRecords(TestDestinationEnv env,
+                                           String streamName,
+                                           String namespace,
+                                           JsonNode streamSchema)
+      throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
         .stream()
         .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())
