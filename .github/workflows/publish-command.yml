@@ -117,12 +117,6 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Merge Pull Request
-        if: success()
-        uses: ridedott/merge-me-action@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
-          MERGE_METHOD: SQUASH
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && !success()
         uses: peter-evans/create-or-update-comment@v1
