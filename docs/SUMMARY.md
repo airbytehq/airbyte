@@ -128,6 +128,7 @@
     * [Testing Connectors](contributing-to-airbyte/building-new-connector/testing-connectors.md)
     * [Source Connector Acceptance Tests](contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
   * [Code Style](contributing-to-airbyte/code-style.md)
+  * [Gradle Cheatsheet](contributing-to-airbyte/gradle-cheatsheet.md)
   * [Updating Documentation](contributing-to-airbyte/updating-documentation.md)
   * [Templates](contributing-to-airbyte/templates/README.md)
     * [Connector Doc Template](contributing-to-airbyte/templates/integration-documentation-template.md)
