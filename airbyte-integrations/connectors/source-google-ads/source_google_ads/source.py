@@ -182,7 +182,7 @@ class SourceGoogleAds(Source):
             query = stream_config['gaql']
             response = self._search(query, config)
 
-            max_cursor = state.get(stream_name)
+            max_cursor = None
             cursor_field_key = None
             if(stream_catalog.sync_mode == SyncMode.incremental):
                 crs_fld = stream_catalog.cursor_field
@@ -190,6 +190,9 @@ class SourceGoogleAds(Source):
                     logger.error(f"Incremental mode, but no cursor field defined for stream {stream_name}")
                     continue
                 cursor_field_key = '.'.join(crs_fld)
+                stream_state = state.get(stream_name)
+                if(not stream_state is None):
+                    max_cursor = stream_state[cursor_field_key]
 
             for batch in response:
                 for row in batch.results:
@@ -207,7 +210,7 @@ class SourceGoogleAds(Source):
                     )
                     if(stream_catalog.sync_mode == SyncMode.incremental and (not max_cursor or max_cursor < data[cursor_field_key])):
                         max_cursor = data_cursor_value
-                        state[stream_name] = max_cursor
+                        state[stream_name] = {cursor_field_key: max_cursor}
                         yield AirbyteMessage(
                             type=Type.STATE,
                             state=AirbyteRecordMessage(stream=stream_name, data=state, emitted_at=int(datetime.now().timestamp()) * 1000),
