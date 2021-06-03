@@ -1,0 +1,767 @@
+{
+  "name": "Ad Performance Report",
+  "supported_sync_modes": ["full_refresh", "incremental"],
+  "source_defined_cursor": true,
+  "default_cursor_field": ["date"],
+  "json_schema": {
+    "type": "object",
+    "title": "Ad Performace Report",
+    "properties": {
+      "accent_color": {
+        "description": "AccentColor",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.accent_color"
+      },
+      "account_currency_code": {
+        "description": "AccountCurrencyCode",
+        "type": ["null", "string"],
+        "field": "customer.currency_code"
+      },
+      "account_descriptive_name": {
+        "description": "AccountDescriptiveName",
+        "type": ["null", "string"],
+        "field": "customer.descriptive_name"
+      },
+      "account_time_zone": {
+        "description": "AccountTimeZone",
+        "type": ["null", "string"],
+        "field": "customer.time_zone"
+      },
+      "active_view_cpm": {
+        "description": "ActiveViewCpm",
+        "type": ["null", "string"],
+        "field": "metrics.active_view_cpm"
+      },
+      "active_view_ctr": {
+        "description": "ActiveViewCtr",
+        "type": ["null", "string"],
+        "field": "metrics.active_view_ctr"
+      },
+      "active_view_impressions": {
+        "description": "ActiveViewImpressions",
+        "type": ["null", "string"],
+        "field": "metrics.active_view_impressions"
+      },
+      "active_view_measurability": {
+        "description": "ActiveViewMeasurability",
+        "type": ["null", "string"],
+        "field": "metrics.active_view_measurability"
+      },
+      "active_view_measurable_cost": {
+        "description": "ActiveViewMeasurableCost",
+        "type": ["null", "string"],
+        "field": "metrics.active_view_measurable_cost_micros"
+      },
+      "active_view_measurable_impressions": {
+        "description": "ActiveViewMeasurableImpressions",
+        "type": ["null", "string"],
+        "field": "metrics.active_view_measurable_impressions"
+      },
+      "active_view_viewability": {
+        "description": "ActiveViewViewability",
+        "type": ["null", "string"],
+        "field": "metrics.active_view_viewability"
+      },
+      "ad_group_id": {
+        "description": "AdGroupId",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad_group"
+      },
+      "ad_group_name": {
+        "description": "AdGroupName",
+        "type": ["null", "string"],
+        "field": "ad_group.name"
+      },
+      "ad_group_status": {
+        "description": "AdGroupStatus",
+        "type": ["null", "string"],
+        "field": "ad_group.status"
+      },
+      "ad_network_type2": {
+        "description": "AdNetworkType2",
+        "type": ["null", "string"],
+        "field": "segments.ad_network_type"
+      },
+      "ad_strength_info": {
+        "description": "AdStrengthInfo",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad_strength"
+      },
+      "ad_type": {
+        "description": "AdType",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.type"
+      },
+      "all_conversion_rate": {
+        "description": "AllConversionRate",
+        "type": ["null", "string"],
+        "field": "metrics.all_conversions_from_interactions_rate"
+      },
+      "all_conversion_value": {
+        "description": "AllConversionValue",
+        "type": ["null", "string"],
+        "field": "metrics.all_conversions_value"
+      },
+      "all_conversions": {
+        "description": "AllConversions",
+        "type": ["null", "string"],
+        "field": "metrics.all_conversions"
+      },
+      "allow_flexible_color": {
+        "description": "AllowFlexibleColor",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.allow_flexible_color"
+      },
+      "automated": {
+        "description": "Automated",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.added_by_google_ads"
+      },
+      "average_cost": {
+        "description": "AverageCost",
+        "type": ["null", "string"],
+        "field": "metrics.average_cost"
+      },
+      "average_cpc": {
+        "description": "AverageCpc",
+        "type": ["null", "string"],
+        "field": "metrics.average_cpc"
+      },
+      "average_cpe": {
+        "description": "AverageCpe",
+        "type": ["null", "string"],
+        "field": "metrics.average_cpe"
+      },
+      "average_cpm": {
+        "description": "AverageCpm",
+        "type": ["null", "string"],
+        "field": "metrics.average_cpm"
+      },
+      "average_cpv": {
+        "description": "AverageCpv",
+        "type": ["null", "string"],
+        "field": "metrics.average_cpv"
+      },
+      "average_pageviews": {
+        "description": "AveragePageviews",
+        "type": ["null", "string"],
+        "field": "metrics.average_page_views"
+      },
+      "average_time_on_site": {
+        "description": "AverageTimeOnSite",
+        "type": ["null", "string"],
+        "field": "metrics.average_time_on_site"
+      },
+      "base_ad_group_id": {
+        "description": "BaseAdGroupId",
+        "type": ["null", "string"],
+        "field": "ad_group.base_ad_group"
+      },
+      "base_campaign_id": {
+        "description": "BaseCampaignId",
+        "type": ["null", "string"],
+        "field": "campaign.base_campaign"
+      },
+      "bounce_rate": {
+        "description": "BounceRate",
+        "type": ["null", "string"],
+        "field": "metrics.bounce_rate"
+      },
+      "business_name": {
+        "description": "BusinessName",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.business_name"
+      },
+      "call_only_phone_number": {
+        "description": "CallOnlyPhoneNumber",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.call_only_ad.phone_number"
+      },
+      "call_to_action_text": {
+        "description": "CallToActionText",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.call_to_action_text"
+      },
+      "campaign_id": {
+        "description": "CampaignId",
+        "type": ["null", "string"],
+        "field": "campaign.id"
+      },
+      "campaign_name": {
+        "description": "CampaignName",
+        "type": ["null", "string"],
+        "field": "campaign.name"
+      },
+      "campaign_status": {
+        "description": "CampaignStatus",
+        "type": ["null", "string"],
+        "field": "campaign.status"
+      },
+      "clicks": {
+        "description": "Clicks",
+        "type": ["null", "string"],
+        "field": "metrics.clicks"
+      },
+      "combined_approval_status": {
+        "description": "CombinedApprovalStatus",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.policy_summary.approval_status"
+      },
+      "conversion_rate": {
+        "description": "ConversionRate",
+        "type": ["null", "string"],
+        "field": "metrics.conversions_from_interactions_rate"
+      },
+      "conversion_value": {
+        "description": "ConversionValue",
+        "type": ["null", "string"],
+        "field": "metrics.conversions_value"
+      },
+      "conversions": {
+        "description": "Conversions",
+        "type": ["null", "string"],
+        "field": "metrics.conversions"
+      },
+      "cost": {
+        "description": "Cost",
+        "type": ["null", "string"],
+        "field": "metrics.cost_micros"
+      },
+      "cost_per_all_conversion": {
+        "description": "CostPerAllConversion",
+        "type": ["null", "string"],
+        "field": "metrics.cost_per_all_conversions"
+      },
+      "cost_per_conversion": {
+        "description": "CostPerConversion",
+        "type": ["null", "string"],
+        "field": "metrics.cost_per_conversion"
+      },
+      "cost_per_current_model_attributed_conversion": {
+        "description": "CostPerCurrentModelAttributedConversion",
+        "type": ["null", "string"],
+        "field": "metrics.cost_per_current_model_attributed_conversion"
+      },
+      "creative_final_mobile_urls": {
+        "description": "CreativeFinalMobileUrls",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.final_mobile_urls"
+      },
+      "creative_final_urls": {
+        "description": "CreativeFinalUrls",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.final_urls"
+      },
+      "creative_tracking_url_template": {
+        "description": "CreativeTrackingUrlTemplate",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.tracking_url_template"
+      },
+      "creative_url_custom_parameters": {
+        "description": "CreativeUrlCustomParameters",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.url_custom_parameters"
+      },
+      "cross_device_conversions": {
+        "description": "CrossDeviceConversions",
+        "type": ["null", "string"],
+        "field": "metrics.cross_device_conversions"
+      },
+      "ctr": {
+        "description": "Ctr",
+        "type": ["null", "string"],
+        "field": "metrics.ctr"
+      },
+      "current_model_attributed_conversion_value": {
+        "description": "CurrentModelAttributedConversionValue",
+        "type": ["null", "string"],
+        "field": "metrics.current_model_attributed_conversions_value"
+      },
+      "current_model_attributed_conversions": {
+        "description": "CurrentModelAttributedConversions",
+        "type": ["null", "string"],
+        "field": "metrics.current_model_attributed_conversions"
+      },
+      "customer_descriptive_name": {
+        "description": "CustomerDescriptiveName",
+        "type": ["null", "string"],
+        "field": "customer.descriptive_name"
+      },
+      "date": {
+        "description": "Date",
+        "type": ["null", "string"],
+        "field": "segments.date"
+      },
+      "day_of_week": {
+        "description": "DayOfWeek",
+        "type": ["null", "string"],
+        "field": "segments.day_of_week"
+      },
+      "description": {
+        "description": "Description",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.expanded_text_ad.description"
+      },
+      "description1": {
+        "description": "Description1",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.text_ad.description1"
+      },
+      "description2": {
+        "description": "Description2",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.text_ad.description2"
+      },
+      "device_preference": {
+        "description": "DevicePreference",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.device_preference"
+      },
+      "display_url": {
+        "description": "DisplayUrl",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.display_url"
+      },
+      "engagement_rate": {
+        "description": "EngagementRate",
+        "type": ["null", "string"],
+        "field": "metrics.engagement_rate"
+      },
+      "engagements": {
+        "description": "Engagements",
+        "type": ["null", "string"],
+        "field": "metrics.engagements"
+      },
+      "enhanced_display_creative_landscape_logo_image_media_id": {
+        "description": "EnhancedDisplayCreativeLandscapeLogoImageMediaId",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.logo_image"
+      },
+      "enhanced_display_creative_logo_image_media_id": {
+        "description": "EnhancedDisplayCreativeLogoImageMediaId",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.square_logo_image"
+      },
+      "enhanced_display_creative_marketing_image_media_id": {
+        "description": "EnhancedDisplayCreativeMarketingImageMediaId",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.marketing_image"
+      },
+      "enhanced_display_creative_marketing_image_square_media_id": {
+        "description": "EnhancedDisplayCreativeMarketingImageSquareMediaId",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.square_marketing_image"
+      },
+      "expanded_dynamic_search_creative_description2": {
+        "description": "ExpandedDynamicSearchCreativeDescription2",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.expanded_dynamic_search_ad.description"
+      },
+      "expanded_text_ad_description2": {
+        "description": "ExpandedTextAdDescription2",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.expanded_text_ad.description2"
+      },
+      "expanded_text_ad_headline_part3": {
+        "description": "ExpandedTextAdHeadlinePart3",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.expanded_text_ad.headline_part3"
+      },
+      "external_customer_id": {
+        "description": "ExternalCustomerId",
+        "type": ["null", "string"],
+        "field": "customer.id"
+      },
+      "format_setting": {
+        "description": "FormatSetting",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.format_setting"
+      },
+      "gmail_creative_header_image_media_id": {
+        "description": "GmailCreativeHeaderImageMediaId",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.header_image"
+      },
+      "gmail_creative_logo_image_media_id": {
+        "description": "GmailCreativeLogoImageMediaId",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.teaser.logo_image"
+      },
+      "gmail_creative_marketing_image_media_id": {
+        "description": "GmailCreativeMarketingImageMediaId",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.marketing_image"
+      },
+      "gmail_forwards": {
+        "description": "GmailForwards",
+        "type": ["null", "string"],
+        "field": "metrics.gmail_forwards"
+      },
+      "gmail_saves": {
+        "description": "GmailSaves",
+        "type": ["null", "string"],
+        "field": "metrics.gmail_saves"
+      },
+      "gmail_secondary_clicks": {
+        "description": "GmailSecondaryClicks",
+        "type": ["null", "string"],
+        "field": "metrics.gmail_secondary_clicks"
+      },
+      "gmail_teaser_business_name": {
+        "description": "GmailTeaserBusinessName",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.teaser.business_name"
+      },
+      "gmail_teaser_description": {
+        "description": "GmailTeaserDescription",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.teaser.description"
+      },
+      "gmail_teaser_headline": {
+        "description": "GmailTeaserHeadline",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.teaser.headline"
+      },
+      "headline": {
+        "description": "Headline",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.text_ad.headline"
+      },
+      "headline_part1": {
+        "description": "HeadlinePart1",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.expanded_text_ad.headline_part1"
+      },
+      "headline_part2": {
+        "description": "HeadlinePart2",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.expanded_text_ad.headline_part2"
+      },
+      "id": {
+        "description": "Id",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.id"
+      },
+      "image_ad_url": {
+        "description": "ImageAdUrl",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.image_ad.image_url"
+      },
+      "image_creative_image_height": {
+        "description": "ImageCreativeImageHeight",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.image_ad.pixel_height"
+      },
+      "image_creative_image_width": {
+        "description": "ImageCreativeImageWidth",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.image_ad.pixel_width"
+      },
+      "image_creative_mime_type": {
+        "description": "ImageCreativeMimeType",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.image_ad.mime_type"
+      },
+      "image_creative_name": {
+        "description": "ImageCreativeName",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.image_ad.name"
+      },
+      "impressions": {
+        "description": "Impressions",
+        "type": ["null", "string"],
+        "field": "metrics.impressions"
+      },
+      "interaction_rate": {
+        "description": "InteractionRate",
+        "type": ["null", "string"],
+        "field": "metrics.interaction_rate"
+      },
+      "interaction_types": {
+        "description": "InteractionTypes",
+        "type": ["null", "string"],
+        "field": "metrics.interaction_event_types"
+      },
+      "interactions": {
+        "description": "Interactions",
+        "type": ["null", "string"],
+        "field": "metrics.interactions"
+      },
+      "long_headline": {
+        "description": "LongHeadline",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.long_headline"
+      },
+      "main_color": {
+        "description": "MainColor",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.main_color"
+      },
+      "marketing_image_call_to_action_text": {
+        "description": "MarketingImageCallToActionText",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.marketing_image_display_call_to_action.text"
+      },
+      "marketing_image_call_to_action_text_color": {
+        "description": "MarketingImageCallToActionTextColor",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.marketing_image_display_call_to_action.text_color"
+      },
+      "marketing_image_description": {
+        "description": "MarketingImageDescription",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.marketing_image_headline"
+      },
+      "marketing_image_headline": {
+        "description": "MarketingImageHeadline",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.gmail_ad.marketing_image_description"
+      },
+      "month": {
+        "description": "Month",
+        "type": ["null", "string"],
+        "field": "segments.month"
+      },
+      "multi_asset_responsive_display_ad_accent_color": {
+        "description": "MultiAssetResponsiveDisplayAdAccentColor",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.accent_color"
+      },
+      "multi_asset_responsive_display_ad_allow_flexible_color": {
+        "description": "MultiAssetResponsiveDisplayAdAllowFlexibleColor",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.allow_flexible_color"
+      },
+      "multi_asset_responsive_display_ad_business_name": {
+        "description": "MultiAssetResponsiveDisplayAdBusinessName",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.business_name"
+      },
+      "multi_asset_responsive_display_ad_call_to_action_text": {
+        "description": "MultiAssetResponsiveDisplayAdCallToActionText",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.call_to_action_text"
+      },
+      "multi_asset_responsive_display_ad_descriptions": {
+        "description": "MultiAssetResponsiveDisplayAdDescriptions",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.descriptions"
+      },
+      "multi_asset_responsive_display_ad_dynamic_settings_price_prefix": {
+        "description": "MultiAssetResponsiveDisplayAdDynamicSettingsPricePrefix",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.price_prefix"
+      },
+      "multi_asset_responsive_display_ad_dynamic_settings_promo_text": {
+        "description": "MultiAssetResponsiveDisplayAdDynamicSettingsPromoText",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.promo_text"
+      },
+      "multi_asset_responsive_display_ad_format_setting": {
+        "description": "MultiAssetResponsiveDisplayAdFormatSetting",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.format_setting"
+      },
+      "multi_asset_responsive_display_ad_headlines": {
+        "description": "MultiAssetResponsiveDisplayAdHeadlines",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.headlines"
+      },
+      "multi_asset_responsive_display_ad_landscape_logo_images": {
+        "description": "MultiAssetResponsiveDisplayAdLandscapeLogoImages",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.logo_images"
+      },
+      "multi_asset_responsive_display_ad_logo_images": {
+        "description": "MultiAssetResponsiveDisplayAdLogoImages",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.square_logo_images"
+      },
+      "multi_asset_responsive_display_ad_long_headline": {
+        "description": "MultiAssetResponsiveDisplayAdLongHeadline",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.long_headline"
+      },
+      "multi_asset_responsive_display_ad_main_color": {
+        "description": "MultiAssetResponsiveDisplayAdMainColor",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.main_color"
+      },
+      "multi_asset_responsive_display_ad_marketing_images": {
+        "description": "MultiAssetResponsiveDisplayAdMarketingImages",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.marketing_images"
+      },
+      "multi_asset_responsive_display_ad_square_marketing_images": {
+        "description": "MultiAssetResponsiveDisplayAdSquareMarketingImages",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.square_marketing_images"
+      },
+      "multi_asset_responsive_display_ad_you_tube_videos": {
+        "description": "MultiAssetResponsiveDisplayAdYouTubeVideos",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_display_ad.youtube_videos"
+      },
+      "path1": {
+        "description": "Path1",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.expanded_text_ad.path1"
+      },
+      "path2": {
+        "description": "Path2",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.expanded_text_ad.path2"
+      },
+      "percent_new_visitors": {
+        "description": "PercentNewVisitors",
+        "type": ["null", "string"],
+        "field": "metrics.percent_new_visitors"
+      },
+      "price_prefix": {
+        "description": "PricePrefix",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.price_prefix"
+      },
+      "promo_text": {
+        "description": "PromoText",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.promo_text"
+      },
+      "quarter": {
+        "description": "Quarter",
+        "type": ["null", "string"],
+        "field": "segments.quarter"
+      },
+      "responsive_search_ad_descriptions": {
+        "description": "ResponsiveSearchAdDescriptions",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_search_ad.descriptions"
+      },
+      "responsive_search_ad_headlines": {
+        "description": "ResponsiveSearchAdHeadlines",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_search_ad.headlines"
+      },
+      "responsive_search_ad_path1": {
+        "description": "ResponsiveSearchAdPath1",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_search_ad.path1"
+      },
+      "responsive_search_ad_path2": {
+        "description": "ResponsiveSearchAdPath2",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.responsive_search_ad.path2"
+      },
+      "short_headline": {
+        "description": "ShortHeadline",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.legacy_responsive_display_ad.short_headline"
+      },
+      "status": {
+        "description": "Status",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.status"
+      },
+      "system_managed_entity_source": {
+        "description": "SystemManagedEntitySource",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.system_managed_resource_source"
+      },
+      "top_impression_percentage": {
+        "description": "TopImpressionPercentage",
+        "type": ["null", "string"],
+        "field": "metrics.top_impression_percentage"
+      },
+      "universal_app_ad_descriptions": {
+        "description": "UniversalAppAdDescriptions",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.app_ad.descriptions"
+      },
+      "universal_app_ad_headlines": {
+        "description": "UniversalAppAdHeadlines",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.app_ad.headlines"
+      },
+      "universal_app_ad_html5_media_bundles": {
+        "description": "UniversalAppAdHtml5MediaBundles",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.app_ad.html5_media_bundles"
+      },
+      "universal_app_ad_images": {
+        "description": "UniversalAppAdImages",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.app_ad.images"
+      },
+      "universal_app_ad_mandatory_ad_text": {
+        "description": "UniversalAppAdMandatoryAdText",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.app_ad.mandatory_ad_text"
+      },
+      "universal_app_ad_you_tube_videos": {
+        "description": "UniversalAppAdYouTubeVideos",
+        "type": ["null", "string"],
+        "field": "ad_group_ad.ad.app_ad.youtube_videos"
+      },
+      "value_per_all_conversion": {
+        "description": "ValuePerAllConversion",
+        "type": ["null", "string"],
+        "field": "metrics.value_per_all_conversions"
+      },
+      "value_per_conversion": {
+        "description": "ValuePerConversion",
+        "type": ["null", "string"],
+        "field": "metrics.value_per_conversion"
+      },
+      "value_per_current_model_attributed_conversion": {
+        "description": "ValuePerCurrentModelAttributedConversion",
+        "type": ["null", "string"],
+        "field": "metrics.value_per_current_model_attributed_conversion"
+      },
+      "video_quartile100_rate": {
+        "description": "VideoQuartile100Rate",
+        "type": ["null", "string"],
+        "field": "metrics.video_quartile_p100_rate"
+      },
+      "video_quartile25_rate": {
+        "description": "VideoQuartile25Rate",
+        "type": ["null", "string"],
+        "field": "metrics.video_quartile_p25_rate"
+      },
+      "video_quartile50_rate": {
+        "description": "VideoQuartile50Rate",
+        "type": ["null", "string"],
+        "field": "metrics.video_quartile_p50_rate"
+      },
+      "video_quartile75_rate": {
+        "description": "VideoQuartile75Rate",
+        "type": ["null", "string"],
+        "field": "metrics.video_quartile_p75_rate"
+      },
+      "video_view_rate": {
+        "description": "VideoViewRate",
+        "type": ["null", "string"],
+        "field": "metrics.video_view_rate"
+      },
+      "video_views": {
+        "description": "VideoViews",
+        "type": ["null", "string"],
+        "field": "metrics.video_views"
+      },
+      "view_through_conversions": {
+        "description": "ViewThroughConversions",
+        "type": ["null", "string"],
+        "field": "metrics.view_through_conversions"
+      },
+      "week": {
+        "description": "Week",
+        "type": ["null", "string"],
+        "field": "segments.week"
+      },
+      "year": {
+        "description": "Year",
+        "type": ["null", "string"],
+        "field": "segments.year"
+      }
+    }
+  }
+}
