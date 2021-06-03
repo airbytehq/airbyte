@@ -1,6 +1,12 @@
 # On Kubernetes \(Alpha\)
 
-> :warning: **Alpha Preview**: This is an early preview of Kubernetes that is pinned to Airbyte version 0.16.1. We do not recommend this preview for production use.
+{% hint style="danger" %}
+The steps below can be performed for testing purposes on your Kubernetes cluster.
+We're currently working on improving the Airbyte integration with Kubernetes.
+For this reason, if you want to perform some more complex tests: load balancer, multi-node, etc. 
+We recommend you wait a few weeks until we release the new version.
+{% endhint %}
+
 
 ## Support
 
