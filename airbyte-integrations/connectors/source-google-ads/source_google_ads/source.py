@@ -56,24 +56,10 @@ class SourceGoogleAds(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            client = GoogleAdsClient.load_from_dict(config)
-            ga_service = client.get_service("GoogleAdsService")
-            query = """
-                SELECT
-                campaign.name,
-                metrics.impressions
-                FROM campaign
-                LIMIT 1"""
-  
-            search_request = client.get_type("SearchGoogleAdsStreamRequest")
-            search_request.customer_id = config['customer_id']
-            search_request.query = query
-#            search_request.summary_row_setting = client.get_type('SummaryRowSettingEnum').SummaryRowSetting.SUMMARY_ROW_ONLY
-            response = ga_service.search_stream(search_request)
+            if(len(config['streams'] )== 0):
+                raise Exception("No streams defined. Add at least one stream.")
 
-            for batch in response:
-                for row in batch.results:
-                    print(f"{row}")
+            self.discover(logger, config)
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
