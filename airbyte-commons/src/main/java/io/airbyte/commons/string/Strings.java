@@ -26,7 +26,7 @@ package io.airbyte.commons.string;
 
 import com.google.common.collect.Streams;
 import java.util.stream.Collectors;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class Strings {
 
