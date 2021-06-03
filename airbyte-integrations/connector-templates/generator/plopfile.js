@@ -7,7 +7,7 @@ const getSuccessMessage = function(connectorName, outputPath, additionalMessage)
 
 Success! 
 
-Your ${connectorName} connector has been created at ${path.resolve(outputPath)}.
+Your ${connectorName} connector has been created at .${path.resolve(outputPath)}.
 
 Follow the TODOs in the generated module to implement your connector. 
 
