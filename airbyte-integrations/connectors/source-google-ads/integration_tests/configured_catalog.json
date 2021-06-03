@@ -2,21 +2,12 @@
   "streams": [
     {
       "stream": {
-        "name": "table_name",
-        "json_schema": {
-          "properties": {
-            "column_name": {
-              "type": "string"
-            }
-          },
-          "type": "object",
-          "additionalProperties": false
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["column_name"]
+        "name": "campaigns",
+        "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {"campaign.name": {"type": "string"}, "metrics.impressions": {"type": "integer"}, "segments.date": {"type": "string"}}},
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
+      "cursor_field": ["segments.date"],
       "destination_sync_mode": "overwrite"
     }
   ]
