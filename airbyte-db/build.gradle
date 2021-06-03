@@ -9,7 +9,6 @@ dependencies {
     api 'org.postgresql:postgresql:42.2.18'
 
     implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-config')
 
     testImplementation project(':airbyte-test-utils')
 
