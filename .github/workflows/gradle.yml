@@ -287,7 +287,7 @@ jobs:
         run: ./tools/bin/e2e_test.sh
 
   start-kube-acceptance-test-runner:
-    name: Start Acceptance Test EC2 Runner
+    name: Start Kube Acceptance Test EC2 Runner
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
