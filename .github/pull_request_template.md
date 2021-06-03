@@ -12,7 +12,7 @@
 ## Pre-merge Checklist
 Expand the checklist which is relevant for this PR. 
 
-<details><summary>Connector checklist </summary>
+<details><summary> ### Connector checklist </summary>
 <p>
 
 - [ ] Issue acceptance criteria met
