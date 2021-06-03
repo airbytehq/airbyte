@@ -1,10 +1,11 @@
 # On Kubernetes \(Alpha\)
 
 {% hint style="danger" %}
-The steps below can be performed for testing purposes on your Kubernetes cluster.
-We're currently working on improving the Airbyte integration with Kubernetes.
-For this reason, if you want to perform some more complex tests: load balancer, multi-node, etc. 
-We recommend you wait a few weeks until we release the new version.
+
+The version Kubernetes support is not production-ready. We are actively working on stabilizing our Kubernetes implementation.
+We recommend waiting until issue [#3839](https://github.com/airbytehq/airbyte/issues/3839) is resolved before trying to run production workflows on Kubernetes. 
+This new version should be released around June 18.
+
 {% endhint %}
 
 
