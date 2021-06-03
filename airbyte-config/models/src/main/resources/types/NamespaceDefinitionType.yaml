@@ -4,6 +4,7 @@
 title: Namespace Definition
 description: Method used for computing final namespace in destination
 type: string
+default: source
 enum:
   - source
   - destination

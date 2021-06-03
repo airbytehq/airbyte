@@ -126,7 +126,7 @@ class NamespacingMapperTest {
 
   @Test
   void testCustomFormatWithVariableNamespace() {
-    final NamespacingMapper mapper = new NamespacingMapper(NamespaceDefinitionType.CUSTOMFORMAT, "%s_suffix", OUTPUT_PREFIX);
+    final NamespacingMapper mapper = new NamespacingMapper(NamespaceDefinitionType.CUSTOMFORMAT, "${SOURCE_NAMESPACE}_suffix", OUTPUT_PREFIX);
 
     final String expectedNamespace = INPUT_NAMESPACE + "_suffix";
     final ConfiguredAirbyteCatalog originalCatalog = Jsons.clone(CATALOG);
@@ -167,6 +167,32 @@ class NamespacingMapperTest {
     final AirbyteMessage actualMessage = mapper.mapMessage(RECORD_MESSAGE);
 
     assertEquals(originalMessage, RECORD_MESSAGE);
+    assertEquals(expectedMessage, actualMessage);
+  }
+
+  @Test
+  void testEmptyCustomFormatWithVariableNamespace() {
+    final NamespacingMapper mapper = new NamespacingMapper(NamespaceDefinitionType.CUSTOMFORMAT, "${SOURCE_NAMESPACE}", OUTPUT_PREFIX);
+
+    final ConfiguredAirbyteCatalog originalCatalog = Jsons.clone(CATALOG);
+    assertEquals(originalCatalog, CATALOG);
+    originalCatalog.getStreams().get(0).getStream().withNamespace(null);
+    final ConfiguredAirbyteCatalog expectedCatalog = CatalogHelpers.createConfiguredAirbyteCatalog(
+        OUTPUT_PREFIX + STREAM_NAME,
+        null,
+        Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
+    final ConfiguredAirbyteCatalog actualCatalog = mapper.mapCatalog(originalCatalog);
+
+    assertEquals(expectedCatalog, actualCatalog);
+
+    final AirbyteMessage originalMessage = Jsons.clone(RECORD_MESSAGE);
+    assertEquals(originalMessage, RECORD_MESSAGE);
+    originalMessage.getRecord().withNamespace(null);
+
+    final AirbyteMessage expectedMessage = AirbyteMessageUtils.createRecordMessage(OUTPUT_PREFIX + STREAM_NAME, FIELD_NAME, "blue");
+    expectedMessage.getRecord().withNamespace(null);
+    final AirbyteMessage actualMessage = mapper.mapMessage(originalMessage);
+
     assertEquals(expectedMessage, actualMessage);
   }
 

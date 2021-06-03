@@ -31,6 +31,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.protocols.Mapper;
+import java.util.regex.Pattern;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,11 +61,12 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
     final ConfiguredAirbyteCatalog catalog = Jsons.clone(inputCatalog);
     catalog.getStreams().forEach(s -> {
       final AirbyteStream stream = s.getStream();
+      // Default behavior if namespaceDefinition is not set is to follow SOURCE
       if (namespaceDefinition != null) {
         if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
           stream.withNamespace(null);
         } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
-          stream.withNamespace(formatNamespace(stream.getNamespace(), namespaceFormat));
+          stream.withNamespace(formatNamespace(stream.getName(), stream.getNamespace(), namespaceFormat));
         }
       }
       stream.withName(transformStreamName(stream.getName(), streamPrefix));
@@ -76,11 +78,12 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
   public AirbyteMessage mapMessage(final AirbyteMessage inputMessage) {
     if (inputMessage.getType() == Type.RECORD) {
       final AirbyteMessage message = Jsons.clone(inputMessage);
+      // Default behavior if namespaceDefinition is not set is to follow SOURCE
       if (namespaceDefinition != null) {
         if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
           message.getRecord().withNamespace(null);
         } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
-          message.getRecord().withNamespace(formatNamespace(message.getRecord().getNamespace(), namespaceFormat));
+          message.getRecord().withNamespace(formatNamespace(message.getRecord().getStream(), message.getRecord().getNamespace(), namespaceFormat));
         }
       }
       message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), streamPrefix));
@@ -89,17 +92,21 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
     return inputMessage;
   }
 
-  private static String formatNamespace(final String sourceNamespace, final String namespaceFormat) {
-    if (Strings.isNotEmpty(namespaceFormat)) {
-      return namespaceFormat.replaceAll("%s", Strings.isNotEmpty(sourceNamespace) ? sourceNamespace : "");
-    } else {
-      LOGGER.error("Namespace Format cannot be empty. Falling back to default namespace from destination settings");
-      return null;
+  private static String formatNamespace(String streamName, final String sourceNamespace, final String namespaceFormat) {
+    String result = "";
+    if (Strings.isNotBlank(namespaceFormat)) {
+      final String regex = Pattern.quote("${SOURCE_NAMESPACE}");
+      result = namespaceFormat.replaceAll(regex, Strings.isNotEmpty(sourceNamespace) ? sourceNamespace : "");
     }
+    if (Strings.isBlank(result)) {
+      LOGGER.error("Namespace Format cannot be blank for Stream {}. Falling back to default namespace from destination settings", streamName);
+      result = null;
+    }
+    return result;
   }
 
   private static String transformStreamName(final String streamName, final String prefix) {
-    if (Strings.isNotEmpty(prefix)) {
+    if (Strings.isNotBlank(prefix)) {
       return prefix + streamName;
     } else {
       return streamName;
