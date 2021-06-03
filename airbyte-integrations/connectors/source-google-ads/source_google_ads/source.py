@@ -175,7 +175,7 @@ class SourceGoogleAds(Source):
 
             if stream_config is None:
                 #TODO Can we map the configured name back to original somehow?
-                logger.error("Renaming of streams not supported. Please use the original stream name defined in the config.")
+                logger.error(f"Renaming of streams not supported. Please use the original stream name defined in the config. Configured name: {stream_name}")
                 continue
 
             #TODO Can we annotate the gaql when using incremental sync, like add a WHERE clause?
