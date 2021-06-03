@@ -65,11 +65,6 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
     return "airbyte/destination-oracle:dev";
   }
 
-  @Override
-  protected AirbyteDestination getDestination() {
-    return new LocalAirbyteDestination(new OracleDestination());
-  }
-
   private JsonNode getConfig(OracleContainer db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())

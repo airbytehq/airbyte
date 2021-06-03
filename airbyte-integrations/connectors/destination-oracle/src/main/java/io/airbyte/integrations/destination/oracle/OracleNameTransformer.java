@@ -44,7 +44,7 @@ public class OracleNameTransformer extends ExtendedNameTransformer {
 
   @Override
   public String getTmpTableName(String streamName) {
-    return convertStreamName("airbyte_tmp_" + streamName + "_" + UUID.randomUUID().toString().replace("`", ""));
+    return convertStreamName("airbyte_tmp_" + streamName + "_" + UUID.randomUUID().toString().replace("-", ""));
   }
 
   private String maxStringLength(String value, Integer length) {
