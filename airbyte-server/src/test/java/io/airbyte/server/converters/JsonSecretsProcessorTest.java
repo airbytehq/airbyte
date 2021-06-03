@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 public class JsonSecretsProcessorTest {
 
-  private static final JsonNode SCHEMA = Jsons.deserialize(
+  private static final JsonNode SCHEMA_ONE_LAYER = Jsons.deserialize(
       "{\n"
           + "  \"properties\": {\n"
           + "    \"secret1\": {\n"
@@ -53,6 +53,36 @@ public class JsonSecretsProcessorTest {
           + "  }\n"
           + "}\n");
 
+  private static final JsonNode SCHEMA_INNER_OBJECT = Jsons.deserialize(
+  "{\n"
+      + "    \"type\": \"object\",\n"
+      + "    \"properties\": {\n"
+      + "      \"warehouse\": {\n"
+      + "        \"type\": \"string\"\n"
+      + "      },\n"
+      + "      \"loading_method\": {\n"
+      + "        \"type\": \"object\",\n"
+      + "        \"oneOf\": [\n"
+      + "          {\n"
+      + "            \"properties\": {}\n"
+      + "          },\n"
+      + "          {\n"
+      + "            \"properties\": {\n"
+      + "              \"s3_bucket_name\": {\n"
+      + "                \"type\": \"string\"\n"
+      + "              },\n"
+      + "              \"access_key_id\": {\n"
+      + "                \"type\": \"string\",\n"
+      + "                \"airbyte_secret\": true\n"
+      + "              }\n"
+      + "            }\n"
+      + "          }\n"
+      + "        ]\n"
+      + "      }\n"
+      + "    }\n"
+      + "  }"
+      );
+
   JsonSecretsProcessor processor = new JsonSecretsProcessor();
 
   @Test
@@ -63,7 +93,7 @@ public class JsonSecretsProcessorTest {
         .put("secret1", "donttellanyone")
         .put("secret2", "verysecret").build());
 
-    JsonNode sanitized = processor.maskSecrets(obj, SCHEMA);
+    JsonNode sanitized = processor.maskSecrets(obj, SCHEMA_ONE_LAYER);
 
     JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
@@ -79,10 +109,27 @@ public class JsonSecretsProcessorTest {
         .put("field1", "value1")
         .put("field2", 2).build());
 
-    JsonNode actual = processor.maskSecrets(obj, SCHEMA);
+    JsonNode actual = processor.maskSecrets(obj, SCHEMA_ONE_LAYER);
 
     // Didn't have secrets, no fields should have been impacted.
     assertEquals(obj, actual);
+  }
+
+  @Test
+  public void testMaskSecretInnerObject() {
+    System.out.println(SCHEMA_INNER_OBJECT);
+
+    JsonNode oneOff = Jsons.jsonNode(ImmutableMap.builder()
+        .put("s3_bucket_name", "name")
+        .put("access_key_id","secret").build());
+
+    JsonNode base = Jsons.jsonNode(ImmutableMap.builder()
+        .put("warehouse", "house")
+        .put("loading_method", oneOff).build());
+
+    System.out.println("before: " + base);
+    JsonNode actual = processor.maskSecrets(base, SCHEMA_INNER_OBJECT);
+    System.out.println("actual: " + actual);
   }
 
   @Test
@@ -102,7 +149,7 @@ public class JsonSecretsProcessorTest {
         .put("secret2", "newvalue")
         .build());
 
-    JsonNode actual = processor.copySecrets(src, dst, SCHEMA);
+    JsonNode actual = processor.copySecrets(src, dst, SCHEMA_ONE_LAYER);
 
     JsonNode expected = Jsons.jsonNode(ImmutableMap.builder()
         .put("field1", "value1")
@@ -128,7 +175,7 @@ public class JsonSecretsProcessorTest {
         .build());
 
     JsonNode expected = dst.deepCopy();
-    JsonNode actual = processor.copySecrets(src, dst, SCHEMA);
+    JsonNode actual = processor.copySecrets(src, dst, SCHEMA_ONE_LAYER);
 
     assertEquals(expected, actual);
   }

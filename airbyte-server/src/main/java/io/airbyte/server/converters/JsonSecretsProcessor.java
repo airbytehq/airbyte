@@ -25,19 +25,23 @@
 package io.airbyte.server.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JsonSecretsProcessor {
 
   public static String AIRBYTE_SECRET_FIELD = "airbyte_secret";
+  private static final Logger LOGGER = LoggerFactory.getLogger(JsonSecretsProcessor.class);
 
   @VisibleForTesting
   static String SECRETS_MASK = "**********";
 
-  private static String PROPERTIES_FIELD = "properties";
+  private static final String PROPERTIES_FIELD = "properties";
 
   /**
    * Returns a copy of the input object wherein any fields annotated with "airbyte_secret" in the
@@ -52,16 +56,34 @@ public class JsonSecretsProcessor {
    * @return
    */
   public JsonNode maskSecrets(JsonNode obj, JsonNode schema) {
+    // if schema is an object and has a properties field
     if (!canBeProcessed(schema)) {
       return obj;
     }
     Preconditions.checkArgument(schema.isObject());
-
+    // get the properties field
     ObjectNode properties = (ObjectNode) schema.get(PROPERTIES_FIELD);
     JsonNode copy = obj.deepCopy();
+    // for the property keys
+    LOGGER.info("===== using new masker");
     for (String key : Jsons.keys(properties)) {
-      if (isSecret(properties.get(key)) && copy.has(key)) {
-        ((ObjectNode) copy).put(key, SECRETS_MASK);
+      JsonNode fieldSchema = properties.get(key);
+      // if the json schema field is an obj and has the airbyte secret field
+      if (isSecret(fieldSchema) && copy.has(key)) {
+        // mask and set it
+        if (copy.has(key)) {
+          ((ObjectNode) copy).put(key, SECRETS_MASK);
+        }
+      }
+
+      if (fieldSchema.has("oneOf") && fieldSchema.get("oneOf").isArray()) {
+        LOGGER.info("===== one off");
+        var oneOffCopy = copy.get(key);
+        var arrayNode = (ArrayNode) fieldSchema.get("oneOf");
+        for (int i = 0; i < arrayNode.size(); i++) {
+          oneOffCopy = maskSecrets(oneOffCopy, arrayNode.get(i));
+        }
+        ((ObjectNode) copy).set(key, oneOffCopy);
       }
     }
 
@@ -98,6 +120,9 @@ public class JsonSecretsProcessor {
         if (dst.has(key) && dst.get(key).asText().equals(SECRETS_MASK))
           dstCopy.set(key, src.get(key));
       }
+//      if (properties.get(key).isObject()) {
+//        ((ObjectNode) copy).put(key, maskSecrets(copy, properties.get(key)));
+//      }
     }
 
     return dstCopy;
