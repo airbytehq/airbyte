@@ -99,7 +99,7 @@
       "type": "string"
     },
     "amount": {
-      "type": "integer"
+      "type": "number"
     },
     "status": {
       "type": "string"
@@ -164,10 +164,10 @@
           "type": "string"
         },
         "exp_month": {
-          "type": "integer"
+          "type": "number"
         },
         "exp_year": {
-          "type": "integer"
+          "type": "number"
         },
         "gateway_token": {
           "type": "string"
@@ -240,7 +240,7 @@
       "type": "string"
     },
     "gateway_response_time": {
-      "type": "integer"
+      "type": "number"
     },
     "gateway_response_values": {
       "type": "object"
