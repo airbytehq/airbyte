@@ -189,7 +189,7 @@ class SourceGoogleAds(Source):
                 if(crs_fld is None):
                     logger.error(f"Incremental mode, but no cursor field defined for stream {stream_name}")
                     continue
-                cursor_field_key = crs_fld[0] #TODO Can we support composite cursor fields?
+                cursor_field_key = '.'.join(crs_fld)
 
             for batch in response:
                 for row in batch.results:
