@@ -1,0 +1,10 @@
+{
+  "host": "mssqldb.cevykyaz98rn.us-east-2.rds.amazonaws.com",
+  "port": 1433,
+  "database": "sandbox_test",
+  "username": "admin",
+  "password": "FA$V6v4wJ+WEyqG%",
+  "ssl_method": {
+    "ssl_method": "encrypted_trust_server_certificate"
+  }
+}
