@@ -215,9 +215,9 @@ class Stream(ABC):
             stream_name = stream_name[: -len("Stream")]
         return stream_name
 
-    @abstractmethod
-    def parse_cursor(self):
+    def parse_cursor(self, record):
         """Return a computed cursor for endpoints without an updated_at field"""
+        pass
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
@@ -471,7 +471,7 @@ class DealStageHistoryStream(Stream):
     The v1 endpoint requires the contacts scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals
     """
-    
+
     url = "/deals/v1/deal/paged"
     more_key = "hasMore"
     data_field = "deals"
@@ -482,7 +482,7 @@ class DealStageHistoryStream(Stream):
             if prop.get("timestamp", 0) > updated_at:
                 updated_at = prop.get("timestamp")
         return updated_at
-    
+
     def list(self, fields) -> Iterable:
         params = {"propertiesWithHistory": "dealstage"}
         yield from self.read(partial(self._api.get, url=self.url), params)
