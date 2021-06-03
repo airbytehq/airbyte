@@ -238,7 +238,6 @@ public class DestinationHandler {
   private DestinationRead buildDestinationRead(final UUID destinationId, ConnectorSpecification spec)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
-    LOGGER.info("====== dest call");
     // remove secrets from config before returning the read
     final DestinationConnection dci = configRepository.getDestinationConnection(destinationId);
     dci.setConfiguration(secretProcessor.maskSecrets(dci.getConfiguration(), spec.getConnectionSpecification()));
