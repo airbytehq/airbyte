@@ -207,7 +207,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.info("Replication thread started.");
       try {
         while (!cancelled.get() && !source.isFinished()) {
-          LOGGER.info("====== replication thread trying to read");
           final Optional<AirbyteMessage> messageOptional = source.attemptRead();
           if (messageOptional.isPresent()) {
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());
@@ -215,7 +214,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             sourceMessageTracker.accept(message);
             destination.accept(message);
           }
-          LOGGER.info("====== replication thread read; next loop");
         }
         destination.notifyEndOfStream();
       } catch (Exception e) {
@@ -235,13 +233,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.info("Destination output thread started.");
       try {
         while (!cancelled.get() && !destination.isFinished()) {
-          LOGGER.info("====== destination output trying to read");
           final Optional<AirbyteMessage> messageOptional = destination.attemptRead();
           if (messageOptional.isPresent()) {
             LOGGER.info("state in DefaultReplicationWorker from Destination: {}", messageOptional.get());
             destinationMessageTracker.accept(messageOptional.get());
           }
-          LOGGER.info("====== destination output read; next loop");
         }
       } catch (Exception e) {
         if (!cancelled.get()) {
@@ -260,7 +256,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       e.printStackTrace();
     }
     cancelled.set(true);
-    LOGGER.info("====== cancelled set to True");
 
     LOGGER.info("Cancelling destination...");
     try {

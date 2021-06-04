@@ -156,6 +156,15 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   }
 
 
+  /**
+   * Cancel is implementation in a slightly convoluted manner due to Temporal's semantics. Cancel requests are routed to the Temporal Scheduler via
+   * the cancelJob function in SchedulerHandler.java. This manifests as a {@link io.temporal.client.ActivityCompletionException} when the {@link CancellationHandler}
+   * heartbeats to the Temporal Scheduler.
+   *
+   * The callback defined in this function is executed after the above exception is caught, and defines the clean up operations executed as part of cancel.
+   *
+   * See {@link CancellationHandler} for more info.
+   */
   private Runnable getCancellationChecker(Worker<INPUT, OUTPUT> worker, Thread workerThread, CompletableFuture<OUTPUT> outputFuture) {
     var cancelled = new AtomicBoolean(false);
     return () -> {
@@ -177,7 +186,6 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
           workerThread.interrupt();
 
           LOGGER.info("Cancelling completable future...");
-          LOGGER.info("===== future: {}", outputFuture);
           // This throws a CancellationException as part of the cancelling and is the exception seen when cancelling the job.
           outputFuture.cancel(false);
         };
