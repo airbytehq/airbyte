@@ -1,6 +1,13 @@
 # On Kubernetes \(Alpha\)
 
-> :warning: **Alpha Preview**: This is an early preview of Kubernetes that is pinned to Airbyte version 0.16.1. We do not recommend this preview for production use.
+{% hint style="danger" %}
+
+The version Kubernetes support is not production-ready. We are actively working on stabilizing our Kubernetes implementation.
+We recommend waiting until issue [#3839](https://github.com/airbytehq/airbyte/issues/3839) is resolved before trying to run production workflows on Kubernetes. 
+This new version should be released around June 18.
+
+{% endhint %}
+
 
 ## Support
 
