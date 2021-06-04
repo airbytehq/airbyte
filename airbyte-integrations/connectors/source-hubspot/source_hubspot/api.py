@@ -214,10 +214,6 @@ class Stream(ABC):
         if stream_name.endswith("Stream"):
             stream_name = stream_name[: -len("Stream")]
         return stream_name
-    
-    @abstractmethod
-    def parse_cursor(self):
-        """Return a computed cursor for endpoints without an updated_at field"""
 
     def list(self, fields) -> Iterable:
         yield from self.read(partial(self._api.get, url=self.url))
@@ -253,7 +249,7 @@ class Stream(ABC):
     def _filter_old_records(self, records: Iterable) -> Iterable:
         """Skip records that was updated before our start_date"""
         for record in records:
-            updated_at = record.get(self.updated_at_field) or self.parse_cursor(record)
+            updated_at = record[self.updated_at_field]
             if updated_at:
                 updated_at = self._field_to_datetime(updated_at)
                 if updated_at < self._start_date:
@@ -348,8 +344,7 @@ class IncrementalStream(Stream, ABC):
         # like to save the state more often we can do this every batch
         for record in self.read_chunked(getter, params):
             yield record
-            updated_at = record.get(self.updated_at_field) or self.parse_cursor(record)
-            cursor = self._field_to_datetime(updated_at)
+            cursor = self._field_to_datetime(record[self.updated_at_field])
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
 
         if latest_cursor:
@@ -475,13 +470,11 @@ class DealStageHistoryStream(Stream):
     url = "/deals/v1/deal/paged"
     more_key = "hasMore"
     data_field = "deals"
+    updated_at_field = "timestamp"
     
-    def parse_cursor(self, record):
-        updated_at = 0
-        for prop in record.get("properties", {}).values():
-            if prop.get("timestamp", 0) > updated_at:
-                updated_at = prop.get("timestamp")
-        return updated_at
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            yield {"id": record.get("dealId"), **record.get("properties", {}).get("dealstage")}
     
     def list(self, fields) -> Iterable:
         params = {"propertiesWithHistory": "dealstage"}
@@ -492,17 +485,17 @@ class DealStream(CRMObjectStream):
     """Deals, API v3"""
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.stageHistory = DealStageHistoryStream(**kwargs)
+        super().__init__(entity="deal", **kwargs)
+        self._stage_history = DealStageHistoryStream(**kwargs)
     
     def list(self, fields) -> Iterable:
         history_by_id = {}
-        for record in self.stageHistory.list(fields):
-            if all(field in record for field in ("dealId", "dealstage")):
-                history_by_id[record["dealId"]] = record["dealstage"]
+        for record in self._stage_history.list(fields):
+            if all(field in record for field in ("id", "dealstage")):
+                history_by_id[record["id"]] = record["dealstage"]
         for record in super().list(fields):
-            if record.get("dealId") in history_by_id:
-                record["dealstage"] = history_by_id[record.get("dealId")]
+            if record.get("id") in history_by_id:
+                record["dealstage"] = history_by_id[record.get("id")]
             yield record
 
 
