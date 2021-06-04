@@ -9,7 +9,7 @@ REPORT_MAPPING = {
 
 
 class GoogleAds:
-    DEFAULT_PAGE_SIZE = 100
+    DEFAULT_PAGE_SIZE = 1000
 
     def __init__(self, developer_token: str, refresh_token: str, client_id: str, client_secret: str, customer_id: str, **kwargs):
         credentials = {
@@ -48,7 +48,8 @@ class GoogleAds:
             $fields
           FROM $from_category
           WHERE segments.date > '$from_date'
-          AND segments.date < '$to_date'
+            AND segments.date < '$to_date'
+          ORDER BY segments.date
       """)
         query = query.substitute(
             fields=fields, from_category=from_category, from_date=from_date, to_date=to_date)

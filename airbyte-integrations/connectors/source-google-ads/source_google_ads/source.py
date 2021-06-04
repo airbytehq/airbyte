@@ -28,7 +28,6 @@ from dateutil.relativedelta import *
 
 import requests
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 
 from .google_ads import GoogleAds
@@ -41,6 +40,10 @@ def chunk_date_range(start_date: str, conversion_window: Optional[int]) -> Itera
     The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
     intervals = []
+
+    # As in to return some state when state in abnormal
+    if start_date > date.today().isoformat():
+        return [{"date": start_date}]
 
     # applying conversion windoe
     start_date = date.fromisoformat(
@@ -77,12 +80,8 @@ class GoogleAdsStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        if sync_mode == SyncMode.incremental:
-            start_date, end_date = Utils.get_date_params_incremental(
-                stream_slice, self.cursor_field)
-        else:
-            start_date, end_date = Utils.get_date_params_fullrefresh(
-                self.config.get("start_date"))
+        start_date, end_date = Utils.get_date_params(
+            stream_slice, self.cursor_field)
         query = GoogleAds.convert_schema_into_query(
             self.get_json_schema(), self.name, start_date, end_date)
 
@@ -99,7 +98,6 @@ class GoogleAdsStream(Stream, ABC):
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
-
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     state_checkpoint_interval = None
