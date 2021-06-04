@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 public interface CancellationHandler {
 
-  void checkAndHandleCancellation(Runnable onCancellationCallback) throws WorkerException;
+  void checkAndHandleCancellation(Runnable onCancellationCallback) ;
 
   class TemporalCancellationHandler implements CancellationHandler {
 

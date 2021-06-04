@@ -261,6 +261,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     cancelled.set(true);
     LOGGER.info("====== cancelled set to True");
 
+    LOGGER.info("Cancelling destination...");
+    try {
+      destination.cancel();
+    } catch (Exception e) {
+      LOGGER.info("Error cancelling destination: ", e);
+    }
+
     LOGGER.info("Cancelling source...");
     try {
       source.cancel();
@@ -268,12 +275,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.info("Error cancelling source: ", e);
     }
 
-    LOGGER.info("Cancelling destination...");
-    try {
-      destination.cancel();
-    } catch (Exception e) {
-      LOGGER.info("Error cancelling destination: ", e);
-    }
   }
 
 }

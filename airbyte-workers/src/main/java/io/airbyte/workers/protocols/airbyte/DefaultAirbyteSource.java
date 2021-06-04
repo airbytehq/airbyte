@@ -127,7 +127,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      throw new WorkerException("Source process wasn't successful");
+      LOGGER.warn("Source process might not have shut down correctly. source process alive: {}, source process exit value: {}", sourceProcess.isAlive(), sourceProcess.exitValue());
     }
   }
 

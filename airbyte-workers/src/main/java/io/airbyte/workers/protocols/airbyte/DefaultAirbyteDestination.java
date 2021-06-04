@@ -123,7 +123,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
     if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
-      LOGGER.warn("destination process might not have shut down correctly. destination process alive: {}, destination process exit value: {}", destinationProcess.isAlive(), destinationProcess.exitValue());
+      LOGGER.warn("Destination process might not have shut down correctly. destination process alive: {}, destination process exit value: {}", destinationProcess.isAlive(), destinationProcess.exitValue());
     }
   }
 

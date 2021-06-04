@@ -38,10 +38,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -153,24 +155,40 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     });
   }
 
+  /**
+   *
+   */
   private Runnable getCancellationChecker(Worker<INPUT, OUTPUT> worker, Thread workerThread, CompletableFuture<OUTPUT> outputFuture) {
+    var cancelled = new AtomicBoolean(false);
     return () -> {
       try {
         mdcSetter.accept(jobRoot, jobId);
 
         final Runnable onCancellationCallback = () -> {
+          if (cancelled.get()) {
+            // Since this is a separate thread, race condition between the executor service shutting down and this thread's next invocation can happen. This
+            // check guarantees cancel operations are only executed once.
+            return;
+          }
+
           LOGGER.info("Running sync worker cancellation...");
+          cancelled.set(true);
           worker.cancel();
 
           LOGGER.info("Interrupting worker thread...");
           workerThread.interrupt();
 
           LOGGER.info("Cancelling completable future...");
-          outputFuture.cancel(false);
+          LOGGER.info("===== future: {}", outputFuture);
+          try {
+            outputFuture.cancel(false);
+          } catch (Throwable e) {
+            // This exception is how the CompletableFuture is cancelled, and can be ignored.
+          }
         };
 
         cancellationHandler.checkAndHandleCancellation(onCancellationCallback);
-      } catch (WorkerException e) {
+      } catch (Exception e) {
         LOGGER.error("Cancellation checker exception", e);
       }
     };
