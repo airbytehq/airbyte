@@ -20,6 +20,19 @@ You can’t see your data in Airbyte, because we don’t store it. The sync load
 
 Sure, you can. Just go to the "Destinations" section and click on the top right "+ new destination" button. You can have multiple destinations for the same source, and multiple sources for the same destination.
 
+## Am I limited to GUI interaction or is there a way to set up / run / interact with Airbyte programmatically?
+
+You can use the API to do anything you do today from the UI. Though, word of notice, the API is in alpha and may change. You won’t lose any functionality, but you may need to update your code to catch up to any backwards incompatible changes in the API
+
+## How does Airbyte handle connecting to databases that are behind a firewall / NAT?
+
+We don’t. Airbyte is to be self-hosted in your own private cloud.
+
+## Can I set a start time for my integration?
+
+Here the links to the docs: https://docs.airbyte.io/architecture/connections#sync-schedules
+
+
 ## **Can I disable analytics in Airbyte?**
 
 Yes, you can control what's sent outside of Airbyte for analytics purposes.

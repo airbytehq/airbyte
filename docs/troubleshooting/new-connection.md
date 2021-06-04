@@ -2,7 +2,6 @@
 description: Common issues when trying to set up a new connection (source/destination)
 ---
 
-
 # Setting new connection
 
 ## Onboarding
@@ -30,3 +29,6 @@ If the above workaround does not fix your problem, please report it [here](https
 Depending on your Docker network configuration, you may not be able to connect to `localhost` or `127.0.0.1` directly.
 
 If you are running into connection refused errors when running Airbyte via Docker Compose on Mac, try using `host.docker.internal` as the host. On Linux, you may have to modify `docker-compose.yml` and add a host that maps to your local machine using [`extra_hosts`](https://docs.docker.com/compose/compose-file/compose-file-v3/#extra_hosts).
+
+### I don’t see a form when selecting a connector
+We’ve had that issue once. (no spinner & 500 http error). We don’t know why. Resolution: try to stop airbyte (`docker-compose down`) & restart (`docker-compose up`)

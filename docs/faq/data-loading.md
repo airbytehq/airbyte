@@ -22,6 +22,13 @@ Once all this is done, Airbyte resumes your sync from where it left off.
 
 We truly appreciate any contribution you make to help the community. Airbyte will become the open-source standard only if everybody participates.
 
+## **Can Airbyte support 2-way sync i.e. changes from A go to B and changes from B go to A?**
+
+We actually do not support this right now. There are some details around how we handle schema and tables names that isn't going to work for you in the current iteration.
+If you attempt to do a circular dependency between source and destination, you'll end up with the following
+A.public.table_foo writes to B.public.public_table_foo to A.public.public_public_table_foo. You won't be writing into your original table, which I think is your intention.
+
+
 ## **What happens to data in the pipeline if the destination gets disconnected? Could I lose data, or wind up with duplicate data when the pipeline is reconnected?**
 
 Airbyte is architected to prevent data loss or duplication. We will display a failure for the sync, and re-attempt it at the next syncing, according to the frequency you set.
@@ -48,6 +55,10 @@ Unfortunately not yet.
 
 We currently support [CDC for Postgres 10+](../integrations/sources/postgres.md). We are adding support for a few other databases April/May 2021.
 
+## For Incremental, how is it possible to add more fields when some new columns are added to a source table, or when a new table is added?
+
+For the moment, incremental load doesn't support schema changes so you would need to go through a full refresh whenever that happens.
+Here’s a related [Github issue](https://github.com/airbytehq/airbyte/issues/1601).
 
 ## **I see you support a lot of connectors – what about connectors Airbyte doesn’t support yet?**
 
