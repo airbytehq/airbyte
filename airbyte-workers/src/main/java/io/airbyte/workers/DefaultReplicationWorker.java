@@ -218,6 +218,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         destination.notifyEndOfStream();
       } catch (Exception e) {
         if (!cancelled.get()) {
+          // Although this thread is closed first, it races with the source's closure and can attempt one final read after the source is closed before it's terminated.
+          // This read will fail and throw an exception. Because of this, throw exceptions only if the worker was not cancelled.
           throw new RuntimeException(e);
         }
       }
@@ -241,6 +243,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       } catch (Exception e) {
         if (!cancelled.get()) {
+          // Although this thread is closed first, it races with the destination's closure and can attempt one final read after the destination is closed before it's terminated.
+          // This read will fail and throw an exception. Because of this, throw exceptions only if the worker was not cancelled.
           throw new RuntimeException(e);
         }
       }
