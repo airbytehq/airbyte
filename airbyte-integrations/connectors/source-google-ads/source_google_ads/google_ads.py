@@ -1,16 +1,22 @@
 from google.ads.googleads.client import GoogleAdsClient
-from typing import Any, Tuple, Mapping, List
+from google.ads.googleads.v7.services.types.google_ads_service import GoogleAdsRow
+from typing import Any, Mapping, List
 from string import Template
 
 REPORT_MAPPING = {
-    "ad_performance_report": "ad_group_ad"
+    "ad_group_ad_report": "ad_group_ad"
 }
 
 
 class GoogleAds:
-    DEFAULT_PAGE_SIZE = 10
+    DEFAULT_PAGE_SIZE = 100
 
-    def __init__(self, credentials: Tuple[str, Any], customer_id: str):
+    def __init__(self, developer_token: str, refresh_token: str, client_id: str, client_secret: str, customer_id: str, **kwargs):
+        credentials = {
+            "developer_token": developer_token,
+            "refresh_token": refresh_token,
+            "client_id": client_id,
+            "client_secret": client_secret}
         self.client = GoogleAdsClient.load_from_dict(credentials)
         self.customer_id = customer_id
         self.ga_service = self.client.get_service("GoogleAdsService")
@@ -24,17 +30,6 @@ class GoogleAds:
         if page_token:
             search_request.page_token = page_token
         return self.ga_service.search(search_request)
-
-    @staticmethod
-    def Create(developer_token: str, refresh_token: str, client_id: str, client_secret: str, customer_id: str, **kwargs):
-
-        credentials = {
-            "developer_token": developer_token,
-            "refresh_token": refresh_token,
-            "client_id": client_id,
-            "client_secret": client_secret}
-
-        return GoogleAds(credentials, customer_id)
 
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
@@ -60,7 +55,7 @@ class GoogleAds:
         return query
 
     @staticmethod
-    def get_field_value(result, field) -> str:
+    def get_field_value(result: GoogleAdsRow, field: str) -> str:
         field_name = field.split(".")
         try:
             field_value = result
@@ -73,7 +68,7 @@ class GoogleAds:
         return field_value
 
     @staticmethod
-    def parse_single_result(schema: Mapping[str, Any], result):
+    def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
         properties = schema.get('json_schema').get('properties')
         fields = [{"name": key, "field_path": properties.get(key).get("field")}
                   for key in properties.keys()]

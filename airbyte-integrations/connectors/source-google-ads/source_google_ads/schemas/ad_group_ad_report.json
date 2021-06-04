@@ -1,11 +1,11 @@
 {
-  "name": "Ad Performance Report",
+  "name": "ad_group_ad_report",
   "supported_sync_modes": ["full_refresh", "incremental"],
   "source_defined_cursor": true,
   "default_cursor_field": ["date"],
   "json_schema": {
     "type": "object",
-    "title": "Ad Performace Report",
+    "title": "Ad Group Ad Report",
     "properties": {
       "accent_color": {
         "description": "AccentColor",

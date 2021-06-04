@@ -2,10 +2,10 @@
   "streams": [
     {
       "stream": {
-        "name": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
+        "name": "ad_group_ad_report",
         "json_schema": {
           "type": "object",
-          "title": "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL",
+          "title": "Ad Group Ad Report",
           "description": "All orders that were placed in the specified period.",
           "properties": {
             "accent_color": {

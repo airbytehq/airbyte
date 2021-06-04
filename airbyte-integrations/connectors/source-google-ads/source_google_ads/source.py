@@ -35,21 +35,23 @@ from .google_ads import GoogleAds
 from .utils import Utils
 
 
-def chunk_date_range(start_date: str, conversion_window: int) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(start_date: str, conversion_window: Optional[int]) -> Iterable[Mapping[str, any]]:
     """
     Returns a list of the beginning and ending timetsamps of each month between the start date and now.
-    The return value is a list of dicts {'start': str, 'end': str} which can be used directly with the Slack API
+    The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
     intervals = []
-    start_date = date.fromisoformat(start_date)
-    if conversion_window:
-        start_date = start_date - relativedelta(days=conversion_window)
-    now = date.today() - relativedelta(days=1)
+
+    # applying conversion windoe
+    start_date = date.fromisoformat(
+        start_date) - relativedelta(days=conversion_window)
+    yesterday = date.today() - relativedelta(days=1)
+
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
-    while start_date < now:
+    while start_date < yesterday:
         start = start_date
         intervals.append({"date": start.isoformat()})
-        start_date = min(now, start_date + relativedelta(months=1))
+        start_date = min(yesterday, start_date + relativedelta(months=1))
 
     return intervals
 
@@ -57,7 +59,7 @@ def chunk_date_range(start_date: str, conversion_window: int) -> Iterable[Mappin
 class GoogleAdsStream(Stream, ABC):
     def __init__(self, config):
         self.config = config
-        self.google_ads_client = GoogleAds.Create(**config)
+        self.google_ads_client = GoogleAds(**config)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return response.next_page_token
@@ -103,6 +105,9 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     state_checkpoint_interval = None
     CONVERSION_WINDOW_DAYS = 14
 
+    # Just to have to default value to check with latest_Record
+    TOO_OLD_DATE = "2000-01-01"
+
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = stream_state.get(
@@ -113,11 +118,11 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         current_stream_state = current_stream_state or {}
         current_stream_state[self.cursor_field] = max(
             latest_record[self.cursor_field], current_stream_state.get(
-                self.cursor_field, "0"))
+                self.cursor_field, self.TOO_OLD_DATE))
         return current_stream_state
 
 
-class AdPerformanceReport(IncrementalGoogleAdsStream):
+class AdGroupAdReport(IncrementalGoogleAdsStream):
     cursor_field = "date"
     primary_key = None
 
@@ -126,10 +131,11 @@ class AdPerformanceReport(IncrementalGoogleAdsStream):
 class SourceGoogleAds(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            GoogleAds.Create(**config)
+            logger.info(f"Checking the config")
+            GoogleAds(**config)
             return True, None
         except Exception as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [AdPerformanceReport(config)]
+        return [AdGroupAdReport(config)]
