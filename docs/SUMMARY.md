@@ -10,7 +10,7 @@
 * [Tutorials](tutorials/README.md)
   * [Browsing Output Logs](tutorials/browsing-output-logs.md)
   * [Using the Airflow Airbyte Operator](tutorials/using-the-airflow-airbyte-operator.md)
-  * [Using the Airflow Airbyte Operator](tutorials/using-the-airflow-airbyte-operator.md)
+  * [Windows - Looking local file output](tutorials/locating-files-local-destination.md)
   * [Contributing to Airbyte](tutorials/tutorials/README.md)
     * [A Beginner's Guide to the AirbyteCatalog](tutorials/tutorials/beginners-guide-to-catalog.md)
     * [Building a Connector: The Hard Way](tutorials/tutorials/build-a-connector-the-hard-way.md)
