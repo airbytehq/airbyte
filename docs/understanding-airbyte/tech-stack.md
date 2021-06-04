@@ -13,7 +13,7 @@
 
 Connectors can be written in any language. However the most common languages are:
 
-* Python 3.7.9
+* Python 3.7.0
 * Java 14
 
 ## **Frontend**

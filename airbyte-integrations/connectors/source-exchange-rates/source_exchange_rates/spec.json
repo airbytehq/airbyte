@@ -15,8 +15,8 @@
       },
       "access_key": {
         "type": "string",
-        "airbyte_secret": true,
-        "description": "Your API Access Key. See <a href=\"https://exchangeratesapi.io/documentation/\">here</a>. The key is case sensitive."
+        "description": "Your API Access Key. See <a href=\"https://exchangeratesapi.io/documentation/\">here</a>. The key is case sensitive.",
+        "airbyte_secret": true
       },
       "base": {
         "type": "string",
