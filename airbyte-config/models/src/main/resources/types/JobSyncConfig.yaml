@@ -12,6 +12,12 @@ required:
   - sourceDockerImage
   - destinationDockerImage
 properties:
+  namespaceDefinition:
+    "$ref": NamespaceDefinitionType.yaml
+  namespaceFormat:
+    type: string
+    default: null
+    example: "${SOURCE_NAMESPACE}"
   prefix:
     description: Prefix that will be prepended to the name of each stream when it is written to the destination.
     type: string

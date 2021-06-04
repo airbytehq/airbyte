@@ -32,6 +32,8 @@ jobs:
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
+        with:
+          repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
       - uses: actions/setup-java@v1
         with:
           java-version: '14'
@@ -47,9 +49,11 @@ jobs:
           ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
+          AZURE_STORAGE_INTEGRATION_TEST_CREDS: ${{ secrets.AZURE_STORAGE_INTEGRATION_TEST_CREDS }}
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
           BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
           DRIFT_INTEGRATION_TEST_CREDS: ${{ secrets.DRIFT_INTEGRATION_TEST_CREDS }}
+          EXCHANGE_RATES_TEST_CREDS: ${{ secrets.EXCHANGE_RATES_TEST_CREDS }}
           FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS }}
           FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS }}
           FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
@@ -69,6 +73,7 @@ jobs:
           ITERABLE_INTEGRATION_TEST_CREDS: ${{ secrets.ITERABLE_INTEGRATION_TEST_CREDS }}
           JIRA_INTEGRATION_TEST_CREDS: ${{ secrets.JIRA_INTEGRATION_TEST_CREDS }}
           KLAVIYO_TEST_CREDS: ${{ secrets.KLAVIYO_TEST_CREDS }}
+          SOURCE_ASANA_TEST_CREDS: ${{ secrets.SOURCE_ASANA_TEST_CREDS }}
           LOOKER_INTEGRATION_TEST_CREDS: ${{ secrets.LOOKER_INTEGRATION_TEST_CREDS }}
           MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
           MICROSOFT_TEAMS_TEST_CREDS: ${{ secrets.MICROSOFT_TEAMS_TEST_CREDS }}
@@ -79,6 +84,7 @@ jobs:
           SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
           SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
           SLACK_TEST_CREDS: ${{ secrets.SLACK_TEST_CREDS }}
+          SOURCE_OKTA_TEST_CREDS: ${{ secrets.SOURCE_OKTA_TEST_CREDS }}
           SOURCE_SLACK_TEST_CREDS: ${{ secrets.SOURCE_SLACK_TEST_CREDS }}
           SMARTSHEETS_TEST_CREDS: ${{ secrets.SMARTSHEETS_TEST_CREDS }}
           SNOWFLAKE_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_INTEGRATION_TEST_CREDS }}
@@ -95,6 +101,7 @@ jobs:
           ZENDESK_TALK_TEST_CREDS: ${{ secrets.ZENDESK_TALK_TEST_CREDS }}
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
           PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
+          DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
       - run: |
           docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }}
@@ -111,12 +118,6 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Merge Pull Request
-        if: success()
-        uses: ridedott/merge-me-action@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
-          MERGE_METHOD: SQUASH
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && !success()
         uses: peter-evans/create-or-update-comment@v1

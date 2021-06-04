@@ -6,7 +6,7 @@ import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { useFetcher, useResource, useSubscription } from "rest-hooks";
 
 import ContentCard from "components/ContentCard";
-import Button from "components/Button";
+import { Button, LoadingButton } from "components";
 import StatusMainInfo from "./StatusMainInfo";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import JobResource from "core/resources/Job";
@@ -17,7 +17,6 @@ import EmptyResource from "components/EmptyResourceBlock";
 import ResetDataModal from "components/ResetDataModal";
 import useConnection from "components/hooks/services/useConnectionHook";
 import useLoadingStateHook from "components/hooks/useLoadingStateHook";
-import LoadingButton from "components/Button/LoadingButton";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 

@@ -57,10 +57,10 @@ public class TestPythonSourceMain {
     final String imageName = ns.getString("imageName");
     final String pythonContainerName = ns.getString("pythonContainerName");
 
-    PythonTestSource.IMAGE_NAME = imageName;
-    PythonTestSource.PYTHON_CONTAINER_NAME = pythonContainerName;
+    PythonSourceAcceptanceTest.IMAGE_NAME = imageName;
+    PythonSourceAcceptanceTest.PYTHON_CONTAINER_NAME = pythonContainerName;
 
-    TestRunner.runTestClass(PythonTestSource.class);
+    TestRunner.runTestClass(PythonSourceAcceptanceTest.class);
   }
 
 }

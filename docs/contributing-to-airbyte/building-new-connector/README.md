@@ -6,6 +6,11 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
+## Connector-Development Kit (CDK)
+
+You can build a source connector very quickly with the [Airbyte CDK](../python/README.md), which generates 75% of the code required for you. Currently, creating destinations isn't supported, but it will be soon.
+
+
 ## The Airbyte specification
 
 Before building a new connector, review [Airbyte's data protocol specification](../../understanding-airbyte/airbyte-specification.md).
@@ -28,6 +33,7 @@ If you are building a connector in any of the following languages/frameworks, th
 
 * **Python Source Connector**
 * [**Singer**](https://singer.io)**-based Python Source Connector**. [Singer.io](https://singer.io/) is an open source framework with a large community and many available connectors \(known as taps & targets\). To build an Airbyte connector from a Singer tap, wrap the tap in a thin Python package to make it Airbyte Protocol-compatible. See the [Github Connector](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-github-singer) for an example of an Airbyte Connector implemented on top of a Singer tap.
+* **Java Destination Connector**
 * **Generic Connector**: This template provides a basic starting point for any language.
 
 #### Creating a connector from a template
@@ -96,3 +102,11 @@ Once you've finished iterating on the changes to a connector as specified in its
 
 6. The new version of the connector is now available for everyone who uses it. Thank you!
 
+## Using credentials in CI
+In order to run integration tests in CI, you'll often need to inject credentials into CI. There are a few steps for doing this:
+
+1. **Place the credentials into Lastpass**: Airbyte uses a shared Lastpass account as the source of truth for all secrets. Place the credentials **exactly as they should be used by the connector** into a secure note i.e: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `<source OR destination> <name> creds` e.g: `source google adwords creds` or `destination snowflake creds`.
+2. **Add the credentials to Github Secrets**: To inject credentials into a CI workflow, the first step is to add it to Github Secrets. Admin access to the Airbyte repo is required to do this. All Airbyte engineers have admin access and should be able to do this themselves. External contributors or contractors will need to request this from their team lead or project manager who should have admin access. Follow the same naming pattern as all the other secrets e.g: if you are placing credentials for source google adwords, name the secret `SOURCE_GOOGLE_ADWORDS_CREDS`. After doing this step, the secret will be available in the Github run using the workflow secrets syntax. 
+3. **Inject the credentials into test and publish CI workflows**: edit the files `.github/workflows/publish-command.yml` and `.github/workflows/test-command.yml` to inject the secret into the CI run. This will make these secrets available to the `/test` and `/publish` commands.
+4. **During CI, write the secret from env variables to the connector directory**: edit `tools/bin/ci_credentials.sh` to write the secret into the `secrets/` directory of the relevant connector.  
+5. That should be it.

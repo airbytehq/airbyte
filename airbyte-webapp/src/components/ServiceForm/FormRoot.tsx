@@ -4,6 +4,9 @@ import styled from "styled-components";
 
 import { Spinner } from "components";
 
+import { SourceDefinition } from "core/resources/SourceDefinition";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+
 import { FormBlock } from "core/form/types";
 import { ServiceFormValues } from "./types";
 import { useServiceForm } from "./serviceFormContext";
@@ -26,18 +29,18 @@ const LoadingMessage = styled.div`
 `;
 
 const FormRoot: React.FC<{
+  formFields: FormBlock;
+  selectedService?: SourceDefinition | DestinationDefinition;
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  formFields: FormBlock;
-  connector?: string;
   onRetest?: () => void;
 }> = ({
   onRetest,
   formFields,
-  connector,
   successMessage,
+  selectedService,
   errorMessage,
   hasSuccess,
   additionBottomControls,
@@ -63,7 +66,7 @@ const FormRoot: React.FC<{
         <LoaderContainer>
           <Spinner />
           <LoadingMessage>
-            <ShowLoadingMessage connector={connector} />
+            <ShowLoadingMessage connector={selectedService?.name} />
           </LoadingMessage>
         </LoaderContainer>
       )}

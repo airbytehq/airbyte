@@ -10,6 +10,10 @@ The CDK provides an improved developer experience by providing basic implementat
 
 This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding.
 
+{% hint style="info" %}
+The CDK currently does not support creating destinations, but it will very soon.
+{% endhint %}
+
 ## Getting Started
 
 Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
