@@ -43,8 +43,8 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Path;
-import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -157,16 +157,14 @@ public class KubePodProcess extends Process {
     return pod.getStatus().getPodIP();
   }
 
-  private static Container getInit(boolean usesStdin, List<VolumeMount> mainVolumeMounts, boolean copyFiles) {
+  private static Container getInit(boolean usesStdin, List<VolumeMount> mainVolumeMounts) {
     var initEntrypointStr = String.format("mkfifo %s && mkfifo %s", STDOUT_PIPE_FILE, STDERR_PIPE_FILE);
+
     if (usesStdin) {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
-    if (copyFiles) {
-      // If files need to be copied, block until the success file is present to ensure all files are
-      // copied over.
-      initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 5; done;", SUCCESS_FILE_NAME);
-    }
+
+    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 5; done;", SUCCESS_FILE_NAME);
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
@@ -197,7 +195,6 @@ public class KubePodProcess extends Process {
 
   private static void copyFilesToKubeConfigVolume(KubernetesClient client, String podName, String namespace, Map<String, String> files) {
     List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
-    fileEntries.add(new AbstractMap.SimpleEntry<>(SUCCESS_FILE_NAME, ""));
 
     for (Map.Entry<String, String> file : fileEntries) {
       Path tmpFile = null;
@@ -280,8 +277,7 @@ public class KubePodProcess extends Process {
     var volumes = List.of(pipeVolume, configVolume);
     var mainVolumeMounts = List.of(pipeVolumeMount, configVolumeMount);
 
-    var copyFiles = !files.isEmpty();
-    Container init = getInit(usesStdin, mainVolumeMounts, copyFiles);
+    Container init = getInit(usesStdin, mainVolumeMounts);
     Container main = getMain(image, usesStdin, entrypoint, mainVolumeMounts, args);
 
     Container remoteStdin = new ContainerBuilder()
@@ -323,10 +319,11 @@ public class KubePodProcess extends Process {
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
     waitForInitPodToRun(client, podDefinition);
-    if (copyFiles) {
-      LOGGER.info("Copying files...");
-      copyFilesToKubeConfigVolume(client, podName, namespace, files);
-    }
+
+    LOGGER.info("Copying files...");
+    Map<String, String> filesWithSuccess = new HashMap<>(files);
+    filesWithSuccess.put(SUCCESS_FILE_NAME, "");
+    copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
 
     LOGGER.info("Waiting until pod is ready...");
     client.resource(podDefinition).waitUntilReady(30, TimeUnit.MINUTES);
