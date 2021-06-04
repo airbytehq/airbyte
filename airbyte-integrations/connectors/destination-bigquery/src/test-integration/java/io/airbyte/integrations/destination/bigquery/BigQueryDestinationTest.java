@@ -137,6 +137,7 @@ class BigQueryDestinationTest {
         .getService();
 
     final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
+    final String datasetLocation = "EU";
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
     MESSAGE_TASKS1.getRecord().setNamespace(datasetId);
@@ -156,6 +157,7 @@ class BigQueryDestinationTest {
         .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
         .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
         .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryDestination.CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
     tornDown = false;

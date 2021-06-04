@@ -74,6 +74,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   static final String CONFIG_DATASET_ID = "dataset_id";
   static final String CONFIG_PROJECT_ID = "project_id";
+  static final String CONFIG_DATASET_LOCATION = "dataset_location";
   static final String CONFIG_CREDS = "credentials_json";
 
   static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
@@ -91,8 +92,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       final String datasetId = config.get(CONFIG_DATASET_ID).asText();
+      final String datasetLocation = config.get(CONFIG_DATASET_LOCATION).asText();
       final BigQuery bigquery = getBigQuery(config);
-      createSchemaTable(bigquery, datasetId);
+      createSchemaTable(bigquery, datasetId, datasetLocation);
       QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM %s.INFORMATION_SCHEMA.TABLES LIMIT 1;", datasetId))
           .setUseLegacySql(false)
@@ -110,10 +112,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private void createSchemaTable(BigQuery bigquery, String datasetId) {
+  private void createSchemaTable(BigQuery bigquery, String datasetId, String datasetLocation) {
     final Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
-      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).build();
+      final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
       bigquery.create(datasetInfo);
     }
   }
@@ -175,7 +177,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final String schemaName = getSchema(config, configStream);
       final String tableName = namingResolver.getRawTableName(streamName);
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
-      createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName);
+      final String datasetLocation = config.get(CONFIG_DATASET_LOCATION).asText();
+      createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName, datasetLocation);
 
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
       final WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
@@ -205,9 +208,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return srcNamespace;
   }
 
-  private void createSchemaAndTableIfNeeded(BigQuery bigquery, Set<String> existingSchemas, String schemaName, String tmpTableName) {
+  private void createSchemaAndTableIfNeeded(BigQuery bigquery, Set<String> existingSchemas, String schemaName, String tmpTableName, String datasetLocation) {
     if (!existingSchemas.contains(schemaName)) {
-      createSchemaTable(bigquery, schemaName);
+      createSchemaTable(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
     }
     BigQueryUtils.createTable(bigquery, schemaName, tmpTableName, SCHEMA);
