@@ -19,5 +19,5 @@ While running Airbyte's Docker image on Windows with WSL2, you can access your t
 
 ## Notes
 
-1. Local JSON and Local CSV files do not persist between docker restarts. This means once you turn off your docker image, your data is lost. This is consistent with the `tmp` nature of the folder
+1. Local JSON and Local CSV files do not persist between Docker restarts. This means that once you turn off your Docker image, your data is lost. This is consistent with the `tmp` nature of the folder.
 2. In the root folder of your docker files, it might generate tmp and var folders that only have empty folders inside.
