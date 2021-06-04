@@ -35,7 +35,6 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from .streams import (  # EventsSessions,
     Annotations,
     Cohorts,
-    Elements,
     Events,
     FeatureFlags,
     Insights,
@@ -69,7 +68,6 @@ class SourcePosthog(AbstractSource):
         return [
             Annotations(authenticator=authenticator),
             Cohorts(authenticator=authenticator),
-            Elements(authenticator=authenticator),
             Events(start_date=config["start_date"], authenticator=authenticator),
             # EventsSessions(authenticator=authenticator),
             FeatureFlags(authenticator=authenticator),

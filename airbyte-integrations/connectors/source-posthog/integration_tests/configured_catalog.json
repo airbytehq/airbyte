@@ -2,49 +2,6 @@
   "streams": [
     {
       "stream": {
-        "name": "elements",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "text": {
-              "type": "string"
-            },
-            "tag_name": {
-              "type": "string"
-            },
-            "attr_class": {
-              "type": "string"
-            },
-            "href": {
-              "type": "string"
-            },
-            "attr_id": {
-              "type": "string"
-            },
-            "nth_child": {
-              "type": "integer"
-            },
-            "nth_of_type": {
-              "type": "integer"
-            },
-            "attributes": {
-              "type": "object"
-            },
-            "order": {
-              "type": "integer"
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": [],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "events",
         "json_schema": {
           "type": "object",

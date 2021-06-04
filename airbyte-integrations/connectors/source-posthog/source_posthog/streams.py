@@ -203,35 +203,6 @@ class Cohorts(IncrementalPosthogStream):
             yield from data
 
 
-class Elements(PosthogStream):
-    data_field = "elements"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "element/stats"
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """
-        Response itself is a list of object.
-        Each object contain field `elements` which is an array of some elements.
-        It may contain duplicates, but actually it would be better if I keep them as is,
-        just converting array value to object with `0`, `1`, `2` ... keys.
-        example output:
-            {
-                0: {'text': None, 'tag_name': 'input', 'attr_class': None ...},
-                1: {'text': None, 'tag_name': 'body', 'attr_class': None ...}, ...
-            }
-        """
-        response_json = response.json()
-        elements = [dict(enumerate(i[self.data_field])) for i in response_json]
-        yield from elements
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        This enpoint returns full stats list and have no pagination.
-        """
-        return None
-
-
 class Events(IncrementalPosthogStream):
     """
     CAUTION! API supports inserting custom timestamp.
