@@ -23,6 +23,7 @@
 #
 
 import math
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -39,8 +40,10 @@ class ShopifyStream(HttpStream, ABC):
 
     # Latest Stable Release
     api_version = "2021-04"
-    primary_key = "id"
+    # Page size
     limit = 250
+    # Define primary key to all streams
+    primary_key = "id"
 
     def __init__(self, shop: str, api_password: str, **kwargs):
         super().__init__(**kwargs)
@@ -57,6 +60,7 @@ class ShopifyStream(HttpStream, ABC):
         if len(decoded_response.get(self.data_field)) < self.limit:
             return None
         else:
+            time.sleep(10)
             self.since_id = decoded_response.get(self.data_field)[-1]["id"]
             return {"since_id": self.since_id}
 
@@ -71,8 +75,7 @@ class ShopifyStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-        for record in records:
-            yield record
+        yield from records
 
     @property
     @abstractmethod
@@ -82,13 +85,21 @@ class ShopifyStream(HttpStream, ABC):
 
 # Basic incremental stream
 class IncrementalShopifyStream(ShopifyStream, ABC):
-    state_checkpoint_interval = math.inf
+
+    # Getting page size as 'limit' from parrent class
+    @property
+    def limit(self):
+        return super().limit
+    # setting state 
+    state_checkpoint_interval = limit
+
+    # Setting general cursor_field, overwrite this if you have different cursor fields for different streams.
     cursor_field = "id"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
-    def request_params(self, stream_state, **kwargs):
+    def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         if stream_state.get(self.cursor_field, 0) > self.since_id:

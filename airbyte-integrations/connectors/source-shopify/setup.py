@@ -36,7 +36,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_shopify",
-    description="Source implementation for Shopify.",
+    description="Source CDK implementation for Shopify.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
