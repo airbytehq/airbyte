@@ -85,6 +85,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
@@ -101,7 +102,6 @@ import java.util.stream.Collectors;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
-import org.junit.Assume;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -435,9 +435,6 @@ public class AcceptanceTests {
   @Test
   @Order(9)
   public void testScheduledSync() throws Exception {
-    // skip with Kube. HTTP client error with port forwarding
-    Assume.assumeFalse(IS_KUBE);
-
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
@@ -821,11 +818,13 @@ public class AcceptanceTests {
     try {
       final Map<Object, Object> dbConfig = new HashMap<>();
 
-      // todo (cgardens) - hack to get building passing in CI. need to follow up on why this was necessary
-      // (and affect on the k8s version of these tests).
-      dbConfig.put("host", "localhost");
-      // necessary for minikube tests on Github Actions instead of psql.getHost()
-      // dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+      // don't use psql.getHost() directly since the ip we need differs depending on environment
+      if (IS_KUBE) {
+        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress()); // if this doesn't work use host.docker.internal locally and minikube host
+                                                                            // on minikube
+      } else {
+        dbConfig.put("host", "localhost");
+      }
 
       if (hiddenPassword) {
         dbConfig.put("password", "**********");
