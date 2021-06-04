@@ -56,7 +56,7 @@ module.exports = function (plop) {
     );
   });
 
-  plop.setGenerator("Python HTTP API Source", {
+  plop.setGenerator("Source - Python HTTP API", {
     description:
       "Generate a Source that pulls data from a synchronous HTTP API.",
     prompts: [
@@ -90,6 +90,34 @@ module.exports = function (plop) {
         templateFile: `${httpApiInputRoot}/.dockerignore.hbs`,
         path: `${httpApiOutputRoot}/.dockerignore`,
       },
+      // doc
+      {
+        type: "add",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/doc-file.md.hbs`,
+        path: `${docRoot}/integrations/sources/{{dashCase name}}.md`,
+      },
+      {
+        type: "append",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/doc-link.md.hbs`,
+        path: `${docRoot}/SUMMARY.md`,
+        pattern: "  * [Sources](integrations/sources/README.md)",
+      },
+      // definition
+      {
+        type: "add",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/definition-config.json.hbs`,
+        path: `${definitionRoot}/config/STANDARD_SOURCE_DEFINITION/{{uuid}}.json`,
+      },
+      {
+        type: "append",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/definition-seed.yaml.hbs`,
+        path: `${definitionRoot}/seed/source_definitions.yaml`,
+        pattern: "# SOURCE DEFINITION BY CODE GENERATOR",
+      },
       {
         type: "emitSuccess",
         outputPath: httpApiOutputRoot,
@@ -97,7 +125,7 @@ module.exports = function (plop) {
     ],
   });
 
-  plop.setGenerator("Python Singer Source", {
+  plop.setGenerator("Source - Python Singer ", {
     description: "Generate a Singer-tap-based Airbyte Source.",
     prompts: [
       {
@@ -144,11 +172,39 @@ module.exports = function (plop) {
         templateFile: `${singerSourceInputRoot}/.dockerignore.hbs`,
         path: `${singerSourceOutputRoot}/.dockerignore`,
       },
+      // doc
+      {
+        type: "add",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/doc-file.md.hbs`,
+        path: `${docRoot}/integrations/sources/{{dashCase name}}.md`,
+      },
+      {
+        type: "append",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/doc-link.md.hbs`,
+        path: `${docRoot}/SUMMARY.md`,
+        pattern: "  * [Sources](integrations/sources/README.md)",
+      },
+      // definition
+      {
+        type: "add",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/definition-config.json.hbs`,
+        path: `${definitionRoot}/config/STANDARD_SOURCE_DEFINITION/{{uuid}}.json`,
+      },
+      {
+        type: "append",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/definition-seed.yaml.hbs`,
+        path: `${definitionRoot}/seed/source_definitions.yaml`,
+        pattern: "# SOURCE DEFINITION BY CODE GENERATOR",
+      },
       { type: "emitSuccess", outputPath: singerSourceOutputRoot },
     ],
   });
 
-  plop.setGenerator("Python Source", {
+  plop.setGenerator("Source - Python", {
     description:
       "Generate a minimal Python Airbyte Source Connector that works with any kind of data source. Use this if none of the other Python templates serve your use case.",
     prompts: [
@@ -188,6 +244,34 @@ module.exports = function (plop) {
         templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
         path: `${pythonSourceOutputRoot}/.dockerignore`,
       },
+      // doc
+      {
+        type: "add",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/doc-file.md.hbs`,
+        path: `${docRoot}/integrations/sources/{{dashCase name}}.md`,
+      },
+      {
+        type: "append",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/doc-link.md.hbs`,
+        path: `${docRoot}/SUMMARY.md`,
+        pattern: "  * [Sources](integrations/sources/README.md)",
+      },
+      // definition
+      {
+        type: "add",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/definition-config.json.hbs`,
+        path: `${definitionRoot}/config/STANDARD_SOURCE_DEFINITION/{{uuid}}.json`,
+      },
+      {
+        type: "append",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/definition-seed.yaml.hbs`,
+        path: `${definitionRoot}/seed/source_definitions.yaml`,
+        pattern: "# SOURCE DEFINITION BY CODE GENERATOR",
+      },
       {
         type: "emitSuccess",
         outputPath: pythonSourceOutputRoot,
@@ -197,7 +281,7 @@ module.exports = function (plop) {
     ],
   });
 
-  plop.setGenerator("Generic Source", {
+  plop.setGenerator("Source - Generic", {
     description: "Use if none of the other templates apply to your use case.",
     prompts: [
       {
@@ -230,11 +314,39 @@ module.exports = function (plop) {
         templateFile: `${genericSourceInputRoot}/.gitignore.hbs`,
         path: `${genericSourceOutputRoot}/.gitignore`,
       },
+      // doc
+      {
+        type: "add",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/doc-file.md.hbs`,
+        path: `${docRoot}/integrations/sources/{{dashCase name}}.md`,
+      },
+      {
+        type: "append",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/doc-link.md.hbs`,
+        path: `${docRoot}/SUMMARY.md`,
+        pattern: "  * [Sources](integrations/sources/README.md)",
+      },
+      // definition
+      {
+        type: "add",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/definition-config.json.hbs`,
+        path: `${definitionRoot}/config/STANDARD_SOURCE_DEFINITION/{{uuid}}.json`,
+      },
+      {
+        type: "append",
+        abortOnFail: true,
+        templateFile: `${baseSourceInputRoot}/definition-seed.yaml.hbs`,
+        path: `${definitionRoot}/seed/source_definitions.yaml`,
+        pattern: "# SOURCE DEFINITION BY CODE GENERATOR",
+      },
       { type: "emitSuccess", outputPath: genericSourceOutputRoot },
     ],
   });
 
-  plop.setGenerator("Java Destination", {
+  plop.setGenerator("Destination - Java", {
     description:
       "Generate a minimal Java Airbyte Destination Connector that works with any kind of data source. Use this if none of the other templates serve your use case.",
     prompts: [
@@ -262,14 +374,14 @@ module.exports = function (plop) {
         templateFiles: `${javaDestinationInput}/**/**`,
         destination: javaDestinationOutputRoot,
       },
-      // Plop doesn't add dotfiles by default so we manually add them
+      // plop doesn't add dotfiles by default so we manually add them
       {
         type: "add",
         abortOnFail: true,
         templateFile: `${javaDestinationInput}/.dockerignore.hbs`,
         path: `${javaDestinationOutputRoot}/.dockerignore`,
       },
-      // Doc
+      // doc
       {
         type: "add",
         abortOnFail: true,
@@ -283,7 +395,7 @@ module.exports = function (plop) {
         path: `${docRoot}/SUMMARY.md`,
         pattern: "  * [Destinations](integrations/destinations/README.md)",
       },
-      // Definition
+      // definition
       {
         type: "add",
         abortOnFail: true,
