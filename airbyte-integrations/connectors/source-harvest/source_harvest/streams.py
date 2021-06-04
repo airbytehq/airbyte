@@ -294,7 +294,6 @@ class ProjectAssignments(HarvestSubStream, IncrementalHarvestStream):
 class ReportsBase(HarvestStream, ABC):
     data_field = "results"
     date_param_template = "%Y%m%d"
-    cursor_field = "from"
 
     @property
     @abstractmethod
@@ -308,23 +307,26 @@ class ReportsBase(HarvestStream, ABC):
 
         current_date = pendulum.now().date()
         self._from_date = from_date or current_date.subtract(years=1)
-        self._to_date = current_date
+        # `to` date greater than `from` date causes an exception on Harvest
+        if self._from_date > current_date:
+            self._to_date = from_date
+        else:
+            self._to_date = current_date
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        stream_state = stream_state or {}
+    def request_params(self, stream_state, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, **kwargs)
+        current_date = pendulum.now()
         # `from` and `to` params are required for reports calls
         # min `from` value is current_date - 1 year
-        params.update(
-            {
-                "from": stream_state.get(self.cursor_field, self._from_date.strftime(self.date_param_template)),
-                "to": self._to_date.strftime(self.date_param_template),
-            }
-        )
+        params.update({"from": self._from_date.strftime("%Y%m%d"), "to": current_date.strftime("%Y%m%d")})
         return params
 
     def path(self, **kwargs) -> str:
         return f"reports/{self.report_path}"
+
+
+class IncrementalReportsBase(ReportsBase, ABC):
+    cursor_field = "from"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         parsed_url = urlparse(response.url)
@@ -340,6 +342,19 @@ class ReportsBase(HarvestStream, ABC):
             )
             yield record
 
+    def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state, **kwargs)
+        # `from` and `to` params are required for reports calls
+        # min `from` value is current_date - 1 year
+        params.update(
+            {
+                "from": stream_state.get(self.cursor_field, self._from_date.strftime(self.date_param_template)),
+                "to": self._to_date.strftime(self.date_param_template),
+            }
+        )
+        return params
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
@@ -351,7 +366,7 @@ class ReportsBase(HarvestStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
 
-class ExpensesClients(ReportsBase):
+class ExpensesClients(IncrementalReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Clients Report)
     """
@@ -359,7 +374,7 @@ class ExpensesClients(ReportsBase):
     report_path = "expenses/clients"
 
 
-class ExpensesProjects(ReportsBase):
+class ExpensesProjects(IncrementalReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Projects Report)
     """
@@ -367,7 +382,7 @@ class ExpensesProjects(ReportsBase):
     report_path = "expenses/projects"
 
 
-class ExpensesCategories(ReportsBase):
+class ExpensesCategories(IncrementalReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Expense Categories Report)
     """
@@ -375,7 +390,7 @@ class ExpensesCategories(ReportsBase):
     report_path = "expenses/categories"
 
 
-class ExpensesTeam(ReportsBase):
+class ExpensesTeam(IncrementalReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Team Report)
     """
@@ -386,12 +401,14 @@ class ExpensesTeam(ReportsBase):
 class Uninvoiced(ReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/
+
+    TODO: `from`/`to` pagination does not work for `uninvoiced` stream. Look like a bug on Harvest side. Check out later.
     """
 
     report_path = "uninvoiced"
 
 
-class TimeClients(ReportsBase):
+class TimeClients(IncrementalReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Clients Report)
     """
@@ -399,7 +416,7 @@ class TimeClients(ReportsBase):
     report_path = "time/clients"
 
 
-class TimeProjects(ReportsBase):
+class TimeProjects(IncrementalReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Projects Report)
     """
@@ -407,7 +424,7 @@ class TimeProjects(ReportsBase):
     report_path = "time/projects"
 
 
-class TimeTasks(ReportsBase):
+class TimeTasks(IncrementalReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Tasks Report)
     """
@@ -415,7 +432,7 @@ class TimeTasks(ReportsBase):
     report_path = "time/tasks"
 
 
-class TimeTeam(ReportsBase):
+class TimeTeam(IncrementalReportsBase):
     """
     Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Team Report)
     """
