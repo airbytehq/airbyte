@@ -4,7 +4,7 @@
 
 This tutorial will describe how to look for json and csv files in when using local destinations on Windows on a local deployment.
 
-There is generally some confusion when using local destination as your destination in Airbyte on Windows, especially if you are running WSL2 to power Docker. There are also two folders generated at the root folder of your Docker folder which will point you in the wrong direction
+There can be confusion when using local destinations in Airbyte on Windows, especially if you are running WSL2 to power Docker. There are also two folders generated at the root folder of your Docker folder which will point you in the wrong direction.
 
 ## Locating where your temp folder is
 
