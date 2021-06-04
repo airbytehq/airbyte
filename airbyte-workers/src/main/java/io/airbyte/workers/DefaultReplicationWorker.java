@@ -249,6 +249,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
   @Override
   public void cancel() {
+    // Resources are closed in the opposite order they are declared.
     LOGGER.info("Cancelling replication worker...");
     try {
       executors.awaitTermination(10, TimeUnit.SECONDS);

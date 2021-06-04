@@ -42,16 +42,15 @@ public class LineGobbler implements VoidCallable {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(LineGobbler.class);
 
-  public static LineGobbler gobble(final InputStream is, final Consumer<String> consumer) {
-    return gobble(is, consumer, "generic");
+  public static void gobble(final InputStream is, final Consumer<String> consumer) {
+    gobble(is, consumer, "generic");
   }
 
-  public static LineGobbler gobble(final InputStream is, final Consumer<String> consumer, String caller) {
+  public static void gobble(final InputStream is, final Consumer<String> consumer, String caller) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
     var gobbler = new LineGobbler(is, consumer, executor, mdc, caller);
     executor.submit(gobbler);
-    return gobbler;
   }
 
   private final BufferedReader is;

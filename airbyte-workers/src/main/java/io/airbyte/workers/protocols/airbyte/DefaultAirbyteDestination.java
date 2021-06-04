@@ -53,7 +53,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
-  private LineGobbler gobbler;
 
   private final AtomicBoolean endOfStream = new AtomicBoolean(false);
 
@@ -85,7 +84,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
     // stdout logs are logged elsewhere since stdout also contains data
-    gobbler = LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination");
+    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination");
 
     writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
 

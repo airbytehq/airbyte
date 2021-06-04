@@ -186,7 +186,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
           workerThread.interrupt();
 
           LOGGER.info("Cancelling completable future...");
-          // This throws a CancellationException as part of the cancelling and is the exception seen when cancelling the job.
+          // This throws a CancellationException as part of the cancelling and is the exception seen in logs when cancelling the job.
           outputFuture.cancel(false);
         };
 

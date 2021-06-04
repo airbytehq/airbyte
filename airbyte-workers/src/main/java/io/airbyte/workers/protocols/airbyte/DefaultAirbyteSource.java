@@ -58,7 +58,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
   private final HeartbeatMonitor heartbeatMonitor;
-  private LineGobbler gobbler;
 
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
@@ -91,7 +90,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
         input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME);
     // stdout logs are logged elsewhere since stdout also contains data
-    gobbler = LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
+    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
