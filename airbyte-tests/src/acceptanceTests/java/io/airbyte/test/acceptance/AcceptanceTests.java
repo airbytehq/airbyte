@@ -913,7 +913,7 @@ public class AcceptanceTests {
   private static JobRead waitForJob(JobsApi jobsApi, JobRead originalJob, Set<JobStatus> jobStatuses) throws InterruptedException, ApiException {
     JobRead job = originalJob;
     int count = 0;
-    while (count < 60 && jobStatuses.contains(job.getStatus())) {
+    while (count < 200 && jobStatuses.contains(job.getStatus())) {
       sleep(1000);
       count++;
 
