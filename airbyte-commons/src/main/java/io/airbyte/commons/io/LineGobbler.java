@@ -30,7 +30,9 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import javax.sound.sampled.Line;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -39,16 +41,19 @@ public class LineGobbler implements VoidCallable {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(LineGobbler.class);
 
-  public static void gobble(final InputStream is, final Consumer<String> consumer) {
+  public static LineGobbler gobble(final InputStream is, final Consumer<String> consumer) {
     final ExecutorService executor = Executors.newSingleThreadExecutor();
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
-    executor.submit(new LineGobbler(is, consumer, executor, mdc));
+    var gobbler = new LineGobbler(is, consumer, executor, mdc);
+    executor.submit(gobbler);
+    return gobbler;
   }
 
   private final BufferedReader is;
   private final Consumer<String> consumer;
   private final ExecutorService executor;
   private final Map<String, String> mdc;
+  private final AtomicBoolean running = new AtomicBoolean(false);
 
   LineGobbler(final InputStream is,
               final Consumer<String> consumer,
@@ -65,7 +70,7 @@ public class LineGobbler implements VoidCallable {
     MDC.setContextMap(mdc);
     try {
       String line;
-      while ((line = is.readLine()) != null) {
+      while (running.get() && (line = is.readLine()) != null) {
         consumer.accept(line);
       }
     } catch (Exception e) {
@@ -75,4 +80,7 @@ public class LineGobbler implements VoidCallable {
     }
   }
 
+  public void close() {
+    running.set(false);
+  }
 }

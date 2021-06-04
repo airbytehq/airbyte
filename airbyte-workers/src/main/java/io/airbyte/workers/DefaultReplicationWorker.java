@@ -207,6 +207,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.info("Replication thread started.");
       try {
         while (!cancelled.get() && !source.isFinished()) {
+          LOGGER.info("====== replication thread trying to read");
           final Optional<AirbyteMessage> messageOptional = source.attemptRead();
           if (messageOptional.isPresent()) {
             final AirbyteMessage message = mapper.mapMessage(messageOptional.get());

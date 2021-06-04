@@ -58,6 +58,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
   private final HeartbeatMonitor heartbeatMonitor;
+  private LineGobbler gobbler;
 
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
@@ -90,7 +91,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
         input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME);
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error);
+    gobbler = LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error);
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
@@ -118,6 +119,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
       return;
     }
 
+    gobbler.close();
     LOGGER.debug("Closing source process");
     WorkerUtils.gentleCloseWithHeartbeat(
         sourceProcess,
@@ -139,6 +141,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
       LOGGER.info("Source process no longer exists, cancellation is a no-op.");
     } else {
       LOGGER.info("Source process exists, cancelling...");
+      gobbler.close();
       WorkerUtils.cancelProcess(sourceProcess);
       LOGGER.info("Cancelled source process!");
     }

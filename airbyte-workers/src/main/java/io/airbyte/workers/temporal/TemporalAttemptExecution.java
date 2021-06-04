@@ -155,9 +155,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     });
   }
 
-  /**
-   *
-   */
+
   private Runnable getCancellationChecker(Worker<INPUT, OUTPUT> worker, Thread workerThread, CompletableFuture<OUTPUT> outputFuture) {
     var cancelled = new AtomicBoolean(false);
     return () -> {
@@ -180,11 +178,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
           LOGGER.info("Cancelling completable future...");
           LOGGER.info("===== future: {}", outputFuture);
-          try {
-            outputFuture.cancel(false);
-          } catch (Throwable e) {
-            // This exception is how the CompletableFuture is cancelled, and can be ignored.
-          }
+          // This throws a CancellationException as part of the cancelling and is the exception seen when cancelling the job.
+          outputFuture.cancel(false);
         };
 
         cancellationHandler.checkAndHandleCancellation(onCancellationCallback);
