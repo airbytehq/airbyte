@@ -198,7 +198,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
-  public static void attemptWriteToPersistence(S3Config s3Config) {
+  public static void attemptS3WriteAndDelete(S3Config s3Config) {
     final String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteS3Object(s3Config, outputTableName);
   }
