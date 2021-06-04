@@ -102,7 +102,8 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
                 .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
         File trustStoreFile = new File(trustStoreLocation);
         if (!trustStoreFile.exists()) {
-          throw new RuntimeException("Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
+          throw new RuntimeException(
+                  "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
                   + trustStoreLocation + " does not exist.");
         }
         String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");

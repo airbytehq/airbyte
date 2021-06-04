@@ -80,7 +80,9 @@ public class SslEnabledMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
     @Override
     protected void setup(TestDestinationEnv testEnv) throws SQLException {
-        db = new MSSQLServerContainer<>(DockerImageName.parse("airbyte/mssql_ssltest:dev").asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
+        db = new MSSQLServerContainer<>(DockerImageName
+                .parse("airbyte/mssql_ssltest:dev")
+                .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
                 .acceptLicense();
         db.start();
 
@@ -98,7 +100,10 @@ public class SslEnabledMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             ctx.fetch(String.format("USE %s;", dbName));
             ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
             ctx.fetch(
-                    "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+                    "INSERT INTO id_and_name (id, name, born) VALUES " +
+                            "(1,'picard', '2124-03-04T01:01:01Z'),  " +
+                            "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
+                            "(3, 'vash', '2124-03-04T01:01:01Z');");
             return null;
         });
 
