@@ -6,7 +6,7 @@
 
 Airbyte is remote friendly, with most of the team still based in the Silicon Valley. We’re fully open as a company. Our **[company handbook](https://handbook.airbyte.io)**, **[culture & values](https://handbook.airbyte.io/company/culture-and-values)**, **[strategy](https://handbook.airbyte.io/strategy/strategy)** and **[roadmap](../project-overview/roadmap.md)** are open to all.
 
-We're backed by some of the world's [top investors](./#our-investors) and believe in product-led growth, where we build something awesome and let our product bring the users, rather than an outbound sales engine with cold calls.
+We raised a total of $31.2M by some of the world's [top investors](./#our-investors) (Benchmark, Accel, YCombinator, co-founders or CEOs of Segment, Elastic, MongoDB, Cloudera, etc.) and believe in product-led growth, where we build something awesome and let our product bring the users, rather than an outbound sales engine with cold calls.
 
 ## **Description**
 
