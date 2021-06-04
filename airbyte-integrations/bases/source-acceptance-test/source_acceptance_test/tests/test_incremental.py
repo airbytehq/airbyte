@@ -36,9 +36,9 @@ from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, filt
 @pytest.fixture(name="future_state_path")
 def future_state_path_fixture(inputs, base_path) -> Path:
     """Fixture with connector's future state path (relative to base_path)"""
-    if getattr(inputs, "abnormal_state_path"):
-        return Path(base_path) / getattr(inputs, "abnormal_state_path")
-    pytest.skip("`abnormal_state_path` not specified, skipping")
+    if getattr(inputs, "future_state_path"):
+        return Path(base_path) / getattr(inputs, "future_state_path")
+    pytest.skip("`future_state_path` not specified, skipping")
 
 
 @pytest.fixture(name="future_state")
@@ -51,12 +51,11 @@ def future_state_fixture(future_state_path) -> Path:
 
 @pytest.fixture(name="cursor_paths")
 def cursor_paths_fixture(inputs, configured_catalog_for_incremental) -> Mapping[str, Any]:
-    cursor_paths = getattr(inputs, "cursor_paths", None)
+    cursor_paths = getattr(inputs, "cursor_paths", {})
     result = {}
 
     for stream in configured_catalog_for_incremental.streams:
-        default_ = [stream.cursor_field[-1]]
-        path = cursor_paths.get(stream.stream.name, default_) if cursor_paths else default_
+        path = cursor_paths.get(stream.stream.name, [stream.cursor_field[-1]])
         result[stream.stream.name] = path
 
     return result
