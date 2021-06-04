@@ -68,7 +68,7 @@ class Annotations(AmplitudeStream):
 
 
 class IncrementalAmplitudeStream(AmplitudeStream, ABC):
-    state_checkpoint_interval = 100
+    state_checkpoint_interval = 10
     base_params = {}
     cursor_field = "date"
     date_template = "%Y%m%d"
@@ -130,6 +130,7 @@ class Events(IncrementalAmplitudeStream):
     cursor_field = "event_time"
     date_template = "%Y%m%dT%H"
     primary_key = "uuid"
+    state_checkpoint_interval = 1000
     time_interval = {"days": 3}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -197,6 +198,9 @@ class AverageSessionLength(IncrementalAmplitudeStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_data = response.json().get("data", [])
         if response_data:
+            # From the Amplitude documentation it follows that "series" is an array with one element which is itself
+            # an array that contains the average session length for each day.
+            # https://developers.amplitude.com/docs/dashboard-rest-api#returns-2
             series = response_data["series"][0]
             for i, date in enumerate(response_data["xValues"]):
                 yield {"date": date, "length": series[i]}
