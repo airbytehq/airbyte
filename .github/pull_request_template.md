@@ -16,6 +16,7 @@ Expand the checklist which is relevant for this PR.
 <p>
 
 - [ ] Issue acceptance criteria met
+- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
 - [ ] Secrets are annotated with `airbyte_secret` in output spec
 - [ ] Unit & integration tests added as appropriate (and are passing)
     * Community members: please provide proof of this succeeding locally e.g: screenshot or copy-paste acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
