@@ -6,6 +6,7 @@
   * [Add a Source](quickstart/add-a-source.md)
   * [Add a Destination](quickstart/add-a-destination.md)
   * [Set up a Connection](quickstart/set-up-a-connection.md)
+  * [Resetting Your Data](quickstart/reset.md)
 * [Tutorials](tutorials/README.md)
   * [Browsing Output Logs](tutorials/browsing-output-logs.md)
   * [Using the Airflow Airbyte Operator](tutorials/using-the-airflow-airbyte-operator.md)
