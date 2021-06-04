@@ -8,7 +8,7 @@ There can be confusion when using local destinations in Airbyte on Windows, espe
 
 ## Locating where your temp folder is
 
-While running Airbyte's Docker image on Windows with WSL2, you can access your temp folder by going to 
+While running Airbyte's Docker image on Windows with WSL2, you can access your temp folder by doing the following: 
 
 1. Open File Explorer (Or any folder where you can access the address bar)
 2. Type in `\\wsl$` in the address bar
