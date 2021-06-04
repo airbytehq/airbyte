@@ -46,10 +46,10 @@ import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String SCHEMA_NAME = "dbo";
-  private static final String STREAM_NAME = "id_and_name";
-  private static MSSQLServerContainer<?> db;
-  private JsonNode config;
+  protected static final String SCHEMA_NAME = "dbo";
+  protected static final String STREAM_NAME = "id_and_name";
+  protected static MSSQLServerContainer<?> db;
+  protected JsonNode config;
 
   @Override
   protected void setup(TestDestinationEnv testEnv) throws SQLException {
@@ -81,7 +81,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
     db.stop();
     db.close();
   }
