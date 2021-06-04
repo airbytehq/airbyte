@@ -336,6 +336,9 @@ jobs:
           minikube version: 'v1.21.0-beta.0'
           kubernetes version: 'v1.20.7'
 
+      - name: Install socat (required for port forwarding)
+        run: sudo apt-get install socat
+
       - name: Build Core Docker Images and Run Tests
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan
 
