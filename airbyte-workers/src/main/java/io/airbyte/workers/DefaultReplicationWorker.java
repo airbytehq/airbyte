@@ -42,6 +42,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -60,6 +61,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final MessageTracker<AirbyteMessage> sourceMessageTracker;
   private final MessageTracker<AirbyteMessage> destinationMessageTracker;
 
+  private final ExecutorService executors;
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
 
@@ -77,6 +79,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.destination = destination;
     this.sourceMessageTracker = sourceMessageTracker;
     this.destinationMessageTracker = destinationMessageTracker;
+    this.executors = Executors.newFixedThreadPool(2);
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -111,7 +114,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
       final StandardTapConfig sourceConfig = WorkerUtils.syncToTapConfig(syncInput);
 
-      final ExecutorService executorService = Executors.newFixedThreadPool(2);
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
       // note: resources are closed in the opposite order in which they are declared. thus source will be
@@ -120,13 +122,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         destination.start(destinationConfig, jobRoot);
         source.start(sourceConfig, jobRoot);
 
-        final Future<?> destinationOutputThreadFuture = executorService.submit(getDestinationOutputRunnable(
+        final Future<?> destinationOutputThreadFuture = executors.submit(getDestinationOutputRunnable(
             destination,
             cancelled,
             destinationMessageTracker,
             mdc));
 
-        final Future<?> replicationThreadFuture = executorService.submit(getReplicationRunnable(
+        final Future<?> replicationThreadFuture = executors.submit(getReplicationRunnable(
             source,
             destination,
             cancelled,
@@ -145,7 +147,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         hasFailed.set(true);
         LOGGER.error("Sync worker failed.", e);
       } finally {
-        executorService.shutdownNow();
+        executors.shutdownNow();
       }
 
       final ReplicationStatus outputStatus;
@@ -212,10 +214,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             sourceMessageTracker.accept(message);
             destination.accept(message);
           }
+          LOGGER.info("====== replication thread read; next loop");
         }
         destination.notifyEndOfStream();
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        if (!cancelled.get()) {
+          throw new RuntimeException(e);
+        }
       }
     };
   }
@@ -229,14 +234,18 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.info("Destination output thread started.");
       try {
         while (!cancelled.get() && !destination.isFinished()) {
+          LOGGER.info("====== destination output trying to read");
           final Optional<AirbyteMessage> messageOptional = destination.attemptRead();
           if (messageOptional.isPresent()) {
             LOGGER.info("state in DefaultReplicationWorker from Destination: {}", messageOptional.get());
             destinationMessageTracker.accept(messageOptional.get());
           }
+          LOGGER.info("====== destination output read; next loop");
         }
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        if (!cancelled.get()) {
+          throw new RuntimeException(e);
+        }
       }
     };
   }
@@ -244,20 +253,26 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   @Override
   public void cancel() {
     LOGGER.info("Cancelling replication worker...");
+    try {
+      executors.awaitTermination(10, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     cancelled.set(true);
+    LOGGER.info("====== cancelled set to True");
 
     LOGGER.info("Cancelling source...");
     try {
       source.cancel();
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.info("Error cancelling source: ", e);
     }
 
     LOGGER.info("Cancelling destination...");
     try {
       destination.cancel();
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.info("Error cancelling destination: ", e);
     }
   }
 

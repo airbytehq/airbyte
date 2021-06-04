@@ -111,7 +111,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void close() throws WorkerException, IOException {
+  public void close() throws IOException {
     if (destinationProcess == null) {
       return;
     }
@@ -123,7 +123,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
     if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
-      throw new WorkerException("destination process wasn't successful");
+      LOGGER.warn("destination process might not have shut down correctly. destination process alive: {}, destination process exit value: {}", destinationProcess.isAlive(), destinationProcess.exitValue());
     }
   }
 
