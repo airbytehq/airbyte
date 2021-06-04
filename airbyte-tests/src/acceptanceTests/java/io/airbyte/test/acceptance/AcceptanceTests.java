@@ -126,6 +126,7 @@ public class AcceptanceTests {
 
   // Skip networking related failures on kube using this flag
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
+  private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
 
   private static final String OUTPUT_NAMESPACE = "output_";
   private static final String TABLE_NAME = "id_and_name";
@@ -820,8 +821,13 @@ public class AcceptanceTests {
 
       // don't use psql.getHost() directly since the ip we need differs depending on environment
       if (IS_KUBE) {
-        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress()); // if this doesn't work use host.docker.internal locally and minikube host
-                                                                            // on minikube
+        if (IS_MINIKUBE) {
+          // used with minikube driver=none instance
+          dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+        } else {
+          // used on a single node with docker driver
+          dbConfig.put("host", "host.docker.internal");
+        }
       } else {
         dbConfig.put("host", "localhost");
       }

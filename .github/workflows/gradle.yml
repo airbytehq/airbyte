@@ -344,4 +344,4 @@ jobs:
 
       - name: Run Kubernetes End-to-End Acceptance Tests
         run: |
-          ./tools/bin/acceptance_test_kube.sh
+          IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
