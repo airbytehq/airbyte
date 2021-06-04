@@ -22,8 +22,6 @@
 # SOFTWARE.
 #
 
-import math
-import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -60,7 +58,6 @@ class ShopifyStream(HttpStream, ABC):
         if len(decoded_response.get(self.data_field)) < self.limit:
             return None
         else:
-            time.sleep(10)
             self.since_id = decoded_response.get(self.data_field)[-1]["id"]
             return {"since_id": self.since_id}
 
@@ -90,7 +87,8 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     @property
     def limit(self):
         return super().limit
-    # setting state 
+
+    # setting state
     state_checkpoint_interval = limit
 
     # Setting general cursor_field, overwrite this if you have different cursor fields for different streams.
