@@ -117,20 +117,11 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
     String file = Jsons.deserialize(event.value()).get("source").get("file").asText();
     int position = Jsons.deserialize(event.value()).get("source").get("pos").asInt();
-    if (targetFilePosition.get().fileName.compareTo(file) > 0) {
-      return false;
-    }
 
-    if (targetFilePosition.get().fileName.compareTo(file) < 0) {
-      LOGGER.info(
-          "Signalling close cause record's binlog file : " + file + " , position : " + position
-              + " is after target file : "
-              + targetFilePosition.get().fileName + " , target position : " + targetFilePosition
-                  .get().position);
-      return true;
-    }
+    boolean isSnapshot = SnapshotMetadata.TRUE == SnapshotMetadata.valueOf(
+        Jsons.deserialize(event.value()).get("source").get("snapshot").asText().toUpperCase());
 
-    if (targetFilePosition.get().position >= position) {
+    if (isSnapshot || targetFilePosition.get().fileName.compareTo(file) > 0 || targetFilePosition.get().position >= position) {
       return false;
     }
 
@@ -148,6 +139,12 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  enum SnapshotMetadata {
+    TRUE,
+    FALSE,
+    LAST
   }
 
   private static class WaitTime {
