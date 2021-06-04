@@ -85,7 +85,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
     // stdout logs are logged elsewhere since stdout also contains data
-    gobbler = LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error);
+    gobbler = LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination");
 
     writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
 
@@ -121,11 +121,10 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       notifyEndOfStream();
     }
 
-    gobbler.close();
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
     if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
-      LOGGER.warn("Destination process might not have shut down correctly. destination process alive: {}, destination process exit value: {}", destinationProcess.isAlive(), destinationProcess.exitValue());
+      LOGGER.warn("Destination process might not have shut down correctly. destination process alive: {}, destination process exit value: {}. This warning is normal if the job was cancelled.", destinationProcess.isAlive(), destinationProcess.exitValue());
     }
   }
 
@@ -137,7 +136,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       LOGGER.info("Destination process no longer exists, cancellation is a no-op.");
     } else {
       LOGGER.info("Destination process exists, cancelling...");
-      gobbler.close();
       WorkerUtils.cancelProcess(destinationProcess);
       LOGGER.info("Cancelled destination process!");
     }

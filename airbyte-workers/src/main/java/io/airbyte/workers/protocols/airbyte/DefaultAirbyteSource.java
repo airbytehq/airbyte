@@ -91,7 +91,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
         input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME);
     // stdout logs are logged elsewhere since stdout also contains data
-    gobbler = LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error);
+    gobbler = LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
@@ -119,7 +119,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
       return;
     }
 
-    gobbler.close();
     LOGGER.debug("Closing source process");
     WorkerUtils.gentleCloseWithHeartbeat(
         sourceProcess,
@@ -129,7 +128,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      LOGGER.warn("Source process might not have shut down correctly. source process alive: {}, source process exit value: {}", sourceProcess.isAlive(), sourceProcess.exitValue());
+      LOGGER.warn("Source process might not have shut down correctly. source process alive: {}, source process exit value: {}. This warning is normal if the job was cancelled.", sourceProcess.isAlive(), sourceProcess.exitValue());
     }
   }
 
@@ -141,7 +140,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
       LOGGER.info("Source process no longer exists, cancellation is a no-op.");
     } else {
       LOGGER.info("Source process exists, cancelling...");
-      gobbler.close();
       WorkerUtils.cancelProcess(sourceProcess);
       LOGGER.info("Cancelled source process!");
     }
