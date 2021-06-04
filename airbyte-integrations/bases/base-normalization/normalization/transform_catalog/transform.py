@@ -34,15 +34,15 @@ from normalization.transform_catalog.catalog_processor import CatalogProcessor
 
 class TransformCatalog:
     """
-    To run this transformation:
-    ```
-    python3 main_dev_transform_catalog.py \
-      --integration-type <postgres|bigquery|redshift|snowflake>
-      --profile-config-dir . \
-      --catalog integration_tests/catalog.json \
-      --out dir \
-      --json-column json_blob
-    ```
+To run this transformation:
+```
+python3 main_dev_transform_catalog.py \
+  --integration-type <postgres|bigquery|redshift|snowflake>
+  --profile-config-dir . \
+  --catalog integration_tests/catalog.json \
+  --out dir \
+  --json-column json_blob
+```
     """
 
     config: dict = {}
