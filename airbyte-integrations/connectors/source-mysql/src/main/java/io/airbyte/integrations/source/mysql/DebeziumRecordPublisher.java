@@ -139,7 +139,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
 
-    //https://debezium.io/documentation/reference/connectors/mysql.html#mysql-boolean-values
+    // https://debezium.io/documentation/reference/connectors/mysql.html#mysql-boolean-values
     props.setProperty("converters", "boolean");
     props.setProperty("boolean.type", "io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter");
 
