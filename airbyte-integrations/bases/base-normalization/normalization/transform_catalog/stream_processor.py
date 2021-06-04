@@ -232,7 +232,7 @@ class StreamProcessor(object):
                 is_intermediate=False,
                 column_count=column_count,
                 suffix="scd",
-                )
+            )
             where_clause = "\nwhere _airbyte_active_row = True"
             from_table = self.add_to_outputs(
                 self.generate_final_model(from_table, column_names) + where_clause, is_intermediate=False, column_count=column_count
