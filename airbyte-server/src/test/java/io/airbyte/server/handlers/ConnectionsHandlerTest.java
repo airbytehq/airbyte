@@ -105,6 +105,7 @@ class ConnectionsHandlerTest {
         .operationIds(standardSync.getOperationIds())
         .name("presto to hudi")
         .namespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .namespaceFormat(null)
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
@@ -127,6 +128,7 @@ class ConnectionsHandlerTest {
 
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), NamespaceDefinitionType.class))
+        .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .connectionId(standardSync.getConnectionId())
         .status(ConnectionStatus.INACTIVE)
@@ -140,6 +142,7 @@ class ConnectionsHandlerTest {
         .withConnectionId(standardSync.getConnectionId())
         .withName("presto to hudi")
         .withNamespaceDefinition(io.airbyte.config.JobSyncConfig.NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(standardSync.getNamespaceFormat())
         .withPrefix("presto_to_hudi")
         .withSourceId(standardSync.getSourceId())
         .withDestinationId(standardSync.getDestinationId())
@@ -207,6 +210,7 @@ class ConnectionsHandlerTest {
 
     final ConnectionUpdate expectedConnectionUpdate = new ConnectionUpdate()
         .namespaceDefinition(connectionRead.getNamespaceDefinition())
+        .namespaceFormat(connectionRead.getNamespaceFormat())
         .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
         .operationIds(connectionRead.getOperationIds())

@@ -103,6 +103,7 @@ class DefaultConfigPersistenceTest {
     final StandardSync standardSync = new StandardSync()
         .withName("sync")
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("sync")
         .withConnectionId(UUID_1)
         .withSourceId(UUID.randomUUID())
