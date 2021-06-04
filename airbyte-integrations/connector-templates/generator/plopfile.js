@@ -30,6 +30,9 @@ module.exports = function (plop) {
   const docRoot = "../../../docs";
   const definitionRoot = "../../../airbyte-config/init/src/main/resources";
 
+  const baseSourceInputRoot = "../source-base";
+  const baseDestinationInputRoot = "../destination-base";
+
   const pythonSourceInputRoot = "../source-python";
   const singerSourceInputRoot = "../source-singer";
   const genericSourceInputRoot = "../source-generic";
@@ -61,6 +64,15 @@ module.exports = function (plop) {
         type: "input",
         name: "name",
         message: 'Source name e.g: "google-analytics"',
+      },
+      {
+        type: "input",
+        name: "uuid",
+        default: () => {
+          return uuid.v4();
+        },
+        message:
+          "Connector UUID (v4). Press enter to use the auto generated one.",
       },
     ],
     actions: [
@@ -102,6 +114,15 @@ module.exports = function (plop) {
         name: "tap_name",
         message: 'Singer tap package e.g "tap-mixpanel"',
       },
+      {
+        type: "input",
+        name: "uuid",
+        default: () => {
+          return uuid.v4();
+        },
+        message:
+          "Connector UUID (v4). Press enter to use the auto generated one.",
+      },
     ],
     actions: [
       {
@@ -136,6 +157,15 @@ module.exports = function (plop) {
         name: "name",
         message:
           'Source name, without the "source-" prefix e.g: "google-analytics"',
+      },
+      {
+        type: "input",
+        name: "uuid",
+        default: () => {
+          return uuid.v4();
+        },
+        message:
+          "Connector UUID (v4). Press enter to use the auto generated one.",
       },
     ],
     actions: [
@@ -175,6 +205,15 @@ module.exports = function (plop) {
         name: "name",
         message:
           'Source name, without the "source-" prefix e.g: "google-analytics"',
+      },
+      {
+        type: "input",
+        name: "uuid",
+        default: () => {
+          return uuid.v4();
+        },
+        message:
+          "Connector UUID (v4). Press enter to use the auto generated one.",
       },
     ],
     actions: [
@@ -216,78 +255,47 @@ module.exports = function (plop) {
       },
     ],
     actions: [
-      // Gradle
       {
-        type: "add",
         abortOnFail: true,
-        templateFile: `${javaDestinationInput}/build.gradle.hbs`,
-        path: `${javaDestinationOutputRoot}/build.gradle`,
+        type: "addMany",
+        base: javaDestinationInput,
+        templateFiles: `${javaDestinationInput}/**/**`,
+        destination: javaDestinationOutputRoot,
       },
-      // Docker
+      // Plop doesn't add dotfiles by default so we manually add them
       {
         type: "add",
         abortOnFail: true,
         templateFile: `${javaDestinationInput}/.dockerignore.hbs`,
         path: `${javaDestinationOutputRoot}/.dockerignore`,
       },
-      {
-        type: "add",
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/Dockerfile.hbs`,
-        path: `${javaDestinationOutputRoot}/Dockerfile`,
-      },
-      // Java
-      {
-        type: "add",
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/Destination.java.hbs`,
-        path: `${javaDestinationOutputRoot}/src/main/java/io/airbyte/integrations/destination/{{snakeCase name}}/{{properCase name}}Destination.java`,
-      },
-      {
-        type: "add",
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/DestinationAcceptanceTest.java.hbs`,
-        path: `${javaDestinationOutputRoot}/src/test-integration/java/io/airbyte/integrations/destination/{{snakeCase name}}/{{properCase name}}DestinationAcceptanceTest.java`,
-      },
       // Doc
       {
         type: "add",
         abortOnFail: true,
-        templateFile: `${javaDestinationInput}/README.md.hbs`,
-        path: `${javaDestinationOutputRoot}/README.md`,
-      },
-      {
-        type: "add",
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/doc.md.hbs`,
+        templateFile: `${baseDestinationInputRoot}/doc-file.md.hbs`,
         path: `${docRoot}/integrations/destinations/{{dashCase name}}.md`,
       },
       {
         type: "append",
         abortOnFail: true,
+        templateFile: `${baseDestinationInputRoot}/doc-link.md.hbs`,
         path: `${docRoot}/SUMMARY.md`,
         pattern: "  * [Destinations](integrations/destinations/README.md)",
-        templateFile: `${javaDestinationInput}/doc-link.md.hbs`,
       },
       // Definition
       {
         type: "add",
         abortOnFail: true,
-        templateFile: `${javaDestinationInput}/spec.json.hbs`,
-        path: `${javaDestinationOutputRoot}/src/main/resources/spec.json`,
-      },
-      {
-        type: "add",
-        abortOnFail: true,
-        templateFile: `${javaDestinationInput}/destination-definition.json.hbs`,
+        templateFile: `${baseDestinationInputRoot}/definition-config.json.hbs`,
         path: `${definitionRoot}/config/STANDARD_DESTINATION_DEFINITION/{{uuid}}.json`,
       },
       {
         type: "append",
         abortOnFail: true,
+        templateFile: `${baseDestinationInputRoot}/definition-seed.yaml.hbs`,
         path: `${definitionRoot}/seed/destination_definitions.yaml`,
         pattern: "# DESTINATION DEFINITION BY CODE GENERATOR",
-        templateFile: `${javaDestinationInput}/definition.yaml.hbs`,
       },
       {
         type: "emitSuccess",
