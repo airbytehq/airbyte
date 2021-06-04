@@ -138,6 +138,14 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("int")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .fullSourceDataType("int unsigned")
+            .addInsertValues("3428724653")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("int")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("int zerofill")
             .addInsertValues("1")
             .build());
