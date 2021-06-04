@@ -25,7 +25,7 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-
+import datetime
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -102,14 +102,20 @@ class PaypalTransactionStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return {}
+        return {
+            'start_date': '2021-05-15T00:00:00-0700',
+            'end_date': '2021-06-15T00:00:00-0700',
+            'fields': 'all',
+            'page_size': '100'
+        }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
+        #yield {}
+        return [response.json()]
 
 
 class Transactions(PaypalTransactionStream):
@@ -228,4 +234,6 @@ class SourcePaypalTransaction(AbstractSource):
             refresh_token='').get_access_token()
         auth = TokenAuthenticator(token=token)  # Oauth2Authenticator is also available if you need oauth support
         # return [Transactions(authenticator=auth), Balances(authenticator=auth)]
-        return [Transactions(authenticator=auth), Balances(authenticator=auth)]
+        #start_date = datetime.strptime(config["start_date"], "%Y-%m-%d")
+        #return [Transactions(authenticator=auth), Balances(authenticator=auth)]
+        return [Transactions(authenticator=auth)]
