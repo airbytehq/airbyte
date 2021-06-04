@@ -31,14 +31,12 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -155,13 +153,14 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     });
   }
 
-
   /**
-   * Cancel is implementation in a slightly convoluted manner due to Temporal's semantics. Cancel requests are routed to the Temporal Scheduler via
-   * the cancelJob function in SchedulerHandler.java. This manifests as a {@link io.temporal.client.ActivityCompletionException} when the {@link CancellationHandler}
-   * heartbeats to the Temporal Scheduler.
+   * Cancel is implementation in a slightly convoluted manner due to Temporal's semantics. Cancel
+   * requests are routed to the Temporal Scheduler via the cancelJob function in
+   * SchedulerHandler.java. This manifests as a {@link io.temporal.client.ActivityCompletionException}
+   * when the {@link CancellationHandler} heartbeats to the Temporal Scheduler.
    *
-   * The callback defined in this function is executed after the above exception is caught, and defines the clean up operations executed as part of cancel.
+   * The callback defined in this function is executed after the above exception is caught, and
+   * defines the clean up operations executed as part of cancel.
    *
    * See {@link CancellationHandler} for more info.
    */
@@ -173,7 +172,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
         final Runnable onCancellationCallback = () -> {
           if (cancelled.get()) {
-            // Since this is a separate thread, race condition between the executor service shutting down and this thread's next invocation can happen. This
+            // Since this is a separate thread, race condition between the executor service shutting down and
+            // this thread's next invocation can happen. This
             // check guarantees cancel operations are only executed once.
             return;
           }
@@ -186,7 +186,8 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
           workerThread.interrupt();
 
           LOGGER.info("Cancelling completable future...");
-          // This throws a CancellationException as part of the cancelling and is the exception seen in logs when cancelling the job.
+          // This throws a CancellationException as part of the cancelling and is the exception seen in logs
+          // when cancelling the job.
           outputFuture.cancel(false);
         };
 

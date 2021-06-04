@@ -24,7 +24,6 @@
 
 package io.airbyte.workers.temporal;
 
-import io.airbyte.workers.DefaultReplicationWorker;
 import io.airbyte.workers.WorkerException;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
@@ -34,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 public interface CancellationHandler {
 
-  void checkAndHandleCancellation(Runnable onCancellationCallback) ;
+  void checkAndHandleCancellation(Runnable onCancellationCallback);
 
   class TemporalCancellationHandler implements CancellationHandler {
 

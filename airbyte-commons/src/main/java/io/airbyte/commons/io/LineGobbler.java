@@ -31,9 +31,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import javax.sound.sampled.Line;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -60,9 +58,9 @@ public class LineGobbler implements VoidCallable {
   private final String caller;
 
   LineGobbler(final InputStream is,
-      final Consumer<String> consumer,
-      final ExecutorService executor,
-      final Map<String, String> mdc) {
+              final Consumer<String> consumer,
+              final ExecutorService executor,
+              final Map<String, String> mdc) {
     this(is, consumer, executor, mdc, "generic");
   }
 
