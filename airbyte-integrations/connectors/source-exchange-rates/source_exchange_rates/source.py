@@ -119,7 +119,7 @@ class SourceExchangeRates(AbstractSource):
             # If code is base_currency_access_restricted, error is caused by switching base currency while using free
             # plan
             if code == "base_currency_access_restricted":
-                message = f"{message} (this plan doesn't support Source Currency Switching)"
+                message = f"{message} (this plan doesn't support selecting the base currency)"
             return False, message
         except Exception as e:
             return False, e
