@@ -46,6 +46,10 @@ public class Databases {
     return createDatabase(username, password, jdbcConnectionString, "com.microsoft.sqlserver.jdbc.SQLServerDriver", SQLDialect.DEFAULT);
   }
 
+  public static Database createOracleDatabase(String username, String password, String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "oracle.jdbc.OracleDriver", SQLDialect.DEFAULT);
+  }
+
   public static Database createDatabase(final String username,
                                         final String password,
                                         final String jdbcConnectionString,
