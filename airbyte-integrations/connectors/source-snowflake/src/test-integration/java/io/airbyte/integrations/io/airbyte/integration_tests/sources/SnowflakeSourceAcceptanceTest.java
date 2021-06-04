@@ -25,6 +25,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -34,9 +35,12 @@ import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,7 +49,8 @@ import java.util.List;
 public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST";
-  private static final String STREAM_NAME = "ID_AND_NAME";
+  private static final String STREAM_NAME1 = "ID_AND_NAME1";
+  private static final String STREAM_NAME2 = "ID_AND_NAME2";
 
   // config which refers to the schema that the test is being run in.
   private JsonNode config;
@@ -73,11 +78,26 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
-    return CatalogHelpers.createConfiguredAirbyteCatalog(
-        STREAM_NAME,
-        SCHEMA_NAME,
-        Field.of("ID", JsonSchemaPrimitive.NUMBER),
-        Field.of("NAME", JsonSchemaPrimitive.STRING));
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("ID"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
+                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
+                Field.of("ID", JsonSchemaPrimitive.NUMBER),
+                Field.of("NAME", JsonSchemaPrimitive.STRING))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
@@ -106,16 +126,24 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
             config.get("database").asText()));
 
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
-    final String createTableQuery = String
+    final String createTableQuery1 = String
         .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,
-            STREAM_NAME);
-    final String insertIntoTableQuery = String
+            STREAM_NAME1);
+    final String createTableQuery2 = String
+        .format("CREATE OR REPLACE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME,
+            STREAM_NAME2);
+    final String insertIntoTableQuery1 = String
         .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME);
+            SCHEMA_NAME, STREAM_NAME1);
+    final String insertIntoTableQuery2 = String
+        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+            SCHEMA_NAME, STREAM_NAME2);
 
     database.execute(createSchemaQuery);
-    database.execute(createTableQuery);
-    database.execute(insertIntoTableQuery);
+    database.execute(createTableQuery1);
+    database.execute(createTableQuery2);
+    database.execute(insertIntoTableQuery1);
+    database.execute(insertIntoTableQuery2);
   }
 
   @Override
