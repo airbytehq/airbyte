@@ -20,7 +20,7 @@ If you're adding new files, don't forget to update `docs/SUMMARY.md`.
 
 Once you're satisfied with your changes just follow the regular PR process.
 
-## Connector Documentation Best Practices
+## Documentation Best Practices
 Connectors typically have the following documentation elements: 
 
 * READMEs
@@ -41,15 +41,18 @@ Every module should have a README containing:
 * any other information needed for local iteration
   
 ### Changelogs
-Each connector should have a CHANGELOG.md file. Inside, each new connector version should have a section whose title is the connector's version number. The body of this section should describe the changes added in the new version. For example: 
+
+##### Core
+Core changelogs should be updated in the `docs/project-overview/platform.md` file.
+
+#### Connectors
+Each connector should have a CHANGELOG.md section in its public facing docs in the `docs/integrations/<sources OR destinations>/<name>` at the bottom of the page. Inside, each new connector version should have a section whose title is the connector's version number. The body of this section should describe the changes added in the new version. For example: 
 
 ```
-## 0.1.2
-* Fixed bug with schema generation
-* Added a better description for the `password` input parameter
-
-## 0.1.1
-* Added incremental sync
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.0   | 20XX-05-XX | [PR2#](https://github.com/airbytehq/airbyte/pull/PR2#) | Fixed bug with schema generation <br><br> Added a better description for the `password` input parameter |
+| 0.1.0   | 20XX-04-XX | [PR#](https://github.com/airbytehq/airbyte/pull/PR#) | Added incremental sync |
 ```
   
 ### Source code comments
@@ -82,8 +85,10 @@ _good PR title_: `Source MySQL: update acceptance tests to connect to SSL-enable
 **PR title conventions**
 When creating a PR, follow the naming conventions depending on the change being made: 
 
+* Notable updates to Airbyte Core: "🎉<description of feature>"
+    * e.g: `🎉 enable configuring un-nesting in normalization`
 * New connectors: “🎉 New source or destination: <name>” e.g: `🎉 New Source: Okta`
-* New features: “🎉<Source or Destination> <name>: <feature description> E.g:
+* New connector features: “🎉<Source or Destination> <name>: <feature description> E.g:
     * `🎉 Destination Redshift: write JSONs as SUPER type instead of VARCHAR`
     * `🎉 Source MySQL: enable logical replication`
 * Bugfixes should start with the  🐛 emoji
