@@ -16,9 +16,10 @@ Expand the checklist which is relevant for this PR.
 <p>
 
 - [ ] Issue acceptance criteria met
+- [ ] Secrets are annotated with `airbyte_secret` in output spec
 - [ ] Unit & integration tests added as appropriate (and are passing)
     * Community members: please provide proof of this succeeding locally e.g: screenshot or copy-paste acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
-- [ ] `/test` command documented [here]() is passing. 
+- [ ] `/test connector=connectors/<name>` command as documented [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-an-existing-connector) is passing. 
     * Community members can skip this, Airbyters will run this for you. 
 - [ ] Code reviews completed
 - [ ] Credentials added to Github CI if needed and not already present. [instructions for injecting secrets into CI](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#using-credentials-in-ci). 
@@ -35,4 +36,3 @@ Expand the checklist which is relevant for this PR.
 - [ ] Associated tickets have been closed & stakeholders notified
 </p>
 </details>
-
