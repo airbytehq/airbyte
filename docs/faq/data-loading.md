@@ -44,6 +44,11 @@ We generally recommend setting the incremental loads to every hour to help limit
 
 Unfortunately not yet.
 
+## **Do you support change data capture \(CDC\) or logical replication for databases?**
+
+We currently support [CDC for Postgres 10+](../integrations/sources/postgres.md). We are adding support for a few other databases April/May 2021.
+
+
 ## **I see you support a lot of connectors – what about connectors Airbyte doesn’t support yet?**
 
 You can either:

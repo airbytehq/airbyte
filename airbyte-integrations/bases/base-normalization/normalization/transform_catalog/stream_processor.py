@@ -359,18 +359,18 @@ from {{ from_table }}
     def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
--- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
-select
-  {%- if parent_hash_id %}
-    {{ parent_hash_id }},
-  {%- endif %}
-  {%- for field in fields %}
-    {{ field }},
-  {%- endfor %}
-    _airbyte_emitted_at
-from {{ from_table }}
-{{ sql_table_comment }}
-    """
+        -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+        select
+          {%- if parent_hash_id %}
+            {{ parent_hash_id }},
+          {%- endif %}
+          {%- for field in fields %}
+            {{ field }},
+          {%- endfor %}
+            _airbyte_emitted_at
+        from {{ from_table }}
+        {{ sql_table_comment }}
+        """
         )
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
@@ -420,22 +420,21 @@ from {{ from_table }}
         return jinja_call("type_json()")
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
-        template = Template(
-            """
--- SQL model to build a hash column based on the values of this record
-select
-    *,
-    {{ '{{' }} dbt_utils.surrogate_key([
-      {%- if parent_hash_id %}
-        '{{ parent_hash_id }}',
-      {%- endif %}
-      {%- for field in fields %}
-        {{ field }},
-      {%- endfor %}
-    ]) {{ '}}' }} as {{ hash_id }}
-from {{ from_table }}
-{{ sql_table_comment }}
-    """
+        template = Template("""
+        -- SQL model to build a hash column based on the values of this record
+        select
+            *,
+            {{ '{{' }} dbt_utils.surrogate_key([
+              {%- if parent_hash_id %}
+                '{{ parent_hash_id }}',
+              {%- endif %}
+              {%- for field in fields %}
+                {{ field }},
+              {%- endfor %}
+            ]) {{ '}}' }} as {{ hash_id }}
+        from {{ from_table }}
+        {{ sql_table_comment }}
+        """
         )
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
@@ -466,15 +465,15 @@ from {{ from_table }}
     def generate_dedup_record_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
--- SQL model to prepare for deduplicating records based on the hash record column
-select
-  *,
-  row_number() over (
-    partition by {{ hash_id }}
-    order by _airbyte_emitted_at asc
-  ) as _airbyte_row_num
-from {{ from_table }}
-{{ sql_table_comment }}
+        -- SQL model to prepare for deduplicating records based on the hash record column
+        select
+          *,
+          row_number() over (
+            partition by {{ hash_id }}
+            order by _airbyte_emitted_at asc
+          ) as _airbyte_row_num
+        from {{ from_table }}
+        {{ sql_table_comment }}
         """
         )
         sql = template.render(
@@ -487,27 +486,27 @@ from {{ from_table }}
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
--- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
-select
-  {%- if parent_hash_id %}
-    {{ parent_hash_id }},
-  {%- endif %}
-  {%- for field in fields %}
-    {{ field }},
-  {%- endfor %}
-    {{ cursor_field }} as _airbyte_start_at,
-    lag({{ cursor_field }}) over (
-        partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
-    ) as _airbyte_end_at,
-    lag({{ cursor_field }}) over (
-        partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
-    ) is null as _airbyte_active_row,
-    _airbyte_emitted_at,
-    {{ hash_id }}
-from {{ from_table }}
-{{ sql_table_comment }}
+            -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
+            select
+              {%- if parent_hash_id %}
+                {{ parent_hash_id }},
+              {%- endif %}
+              {%- for field in fields %}
+                {{ field }},
+              {%- endfor %}
+                {{ cursor_field }} as _airbyte_start_at,
+                lag({{ cursor_field }}) over (
+                    partition by {{ primary_key }}
+                    order by {{ cursor_field }} desc, _airbyte_emitted_at desc
+                ) as _airbyte_end_at,
+                lag({{ cursor_field }}) over (
+                    partition by {{ primary_key }}
+                    order by {{ cursor_field }} desc, _airbyte_emitted_at desc
+                ) is null as _airbyte_active_row,
+                _airbyte_emitted_at,
+                {{ hash_id }}
+            from {{ from_table }}
+            {{ sql_table_comment }}
         """
         )
         sql = template.render(
@@ -564,19 +563,19 @@ from {{ from_table }}
     def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
             """
--- Final base SQL model
-select
-  {%- if parent_hash_id %}
-    {{ parent_hash_id }},
-  {%- endif %}
-  {%- for field in fields %}
-    {{ field }},
-  {%- endfor %}
-    _airbyte_emitted_at,
-    {{ hash_id }}
-from {{ from_table }}
-{{ sql_table_comment }}
-    """
+        -- Final base SQL model
+        select
+          {%- if parent_hash_id %}
+            {{ parent_hash_id }},
+          {%- endif %}
+          {%- for field in fields %}
+            {{ field }},
+          {%- endfor %}
+            _airbyte_emitted_at,
+            {{ hash_id }}
+        from {{ from_table }}
+        {{ sql_table_comment }}
+        """
         )
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
@@ -614,9 +613,9 @@ from {{ from_table }}
         self.sql_outputs[
             output
         ] = f"""
-{header}
-{sql}
-"""
+        {header}
+        {sql}
+        """
         json_path = self.current_json_path()
         print(f"  Generating {output} from {json_path}")
         return ref_table(file_name)
@@ -686,8 +685,8 @@ from {{ from_table }}
                 cross_join = jinja_call(f"cross_join_unnest({parent_stream_name}, {quoted_field})")
             column_name = self.name_transformer.normalize_column_name(self.stream_name)
             result = f"""
-{cross_join}
-where {column_name} is not null"""
+            {cross_join}
+            where {column_name} is not null"""
         return result
 
 

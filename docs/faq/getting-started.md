@@ -20,3 +20,21 @@ You can’t see your data in Airbyte, because we don’t store it. The sync load
 
 Sure, you can. Just go to the "Destinations" section and click on the top right "+ new destination" button. You can have multiple destinations for the same source, and multiple sources for the same destination.
 
+## **Can I disable analytics in Airbyte?**
+
+Yes, you can control what's sent outside of Airbyte for analytics purposes.
+
+We instrumented some parts of Airbyte for the following reasons:
+
+* measure usage of Airbyte
+* measure usage of features & connectors
+* collect connector telemetry to measure stability
+* reach out to our users if they opt-in
+* ...
+
+To disable telemetry, modify the `.env` file and define the two following environment variables:
+
+```text
+TRACKING_STRATEGY=logging
+PAPERCUPS_STORYTIME=disabled
+```
