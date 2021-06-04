@@ -71,10 +71,9 @@ def configured_catalog_for_incremental_fixture(configured_catalog) -> Configured
                 stream.cursor_field = stream.stream.default_cursor_field[:]
             else:
                 pytest.fail(
-                    "Configured catalog should have `cursor_field` "
-                    "either `default_cursor_field` specified for all incremental streams"
+                    "Configured catalog should have `cursor_field` " "either `default_cursor_field` specified for all incremental streams"
                 )
-                
+
     return catalog
 
 
