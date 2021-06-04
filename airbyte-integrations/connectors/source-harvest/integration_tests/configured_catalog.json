@@ -1646,13 +1646,22 @@
             },
             "currency": {
               "type": ["null", "string"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1681,13 +1690,22 @@
             },
             "currency": {
               "type": ["null", "string"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1710,13 +1728,22 @@
             },
             "currency": {
               "type": ["null", "string"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1742,13 +1769,22 @@
             },
             "currency": {
               "type": ["null", "string"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1783,13 +1819,22 @@
             },
             "uninvoiced_amount": {
               "type": ["null", "integer"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1815,13 +1860,22 @@
             },
             "billable_amount": {
               "type": ["null", "integer"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1853,13 +1907,22 @@
             },
             "billable_amount": {
               "type": ["null", "integer"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1885,13 +1948,22 @@
             },
             "billable_amount": {
               "type": ["null", "integer"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1920,13 +1992,22 @@
             },
             "billable_amount": {
               "type": ["null", "integer"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -1964,13 +2045,22 @@
             },
             "budget_remaining": {
               "type": ["null", "integer"]
+            },
+            "from": {
+              "type": ["null", "string"]
+            },
+            "to": {
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["from"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["from"],
+      "destination_sync_mode": "append"
     }
   ]
 }

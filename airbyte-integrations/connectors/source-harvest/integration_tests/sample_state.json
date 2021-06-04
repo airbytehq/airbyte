@@ -57,33 +57,33 @@
     "updated_at": "2021-01-01T00:00:00Z"
   },
   "expenses_clients": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   },
   "expenses_projects": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   },
   "expenses_categories": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   },
   "expenses_team": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   },
   "uninvoiced": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   },
   "time_clients": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   },
   "time_projects": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   },
   "time_tasks": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   },
   "time_team": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   },
   "project_budget": {
-    "updated_at": "2021-01-01T00:00:00Z"
+    "from": "20210101"
   }
 }

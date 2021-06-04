@@ -19,6 +19,12 @@
     },
     "currency": {
       "type": ["null", "string"]
+    },
+    "from": {
+      "type": ["null", "string"]
+    },
+    "to": {
+      "type": ["null", "string"]
     }
   }
 }

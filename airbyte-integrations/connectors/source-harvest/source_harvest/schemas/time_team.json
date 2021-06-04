@@ -22,6 +22,12 @@
     },
     "billable_amount": {
       "type": ["null", "integer"]
+    },
+    "from": {
+      "type": ["null", "string"]
+    },
+    "to": {
+      "type": ["null", "string"]
     }
   }
 }

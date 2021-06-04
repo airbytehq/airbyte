@@ -24,6 +24,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
@@ -293,6 +294,7 @@ class ProjectAssignments(HarvestSubStream, IncrementalHarvestStream):
 class ReportsBase(HarvestStream, ABC):
     data_field = "results"
     date_param_template = "%Y%m%d"
+    cursor_field = "from"
 
     @property
     @abstractmethod
@@ -303,18 +305,50 @@ class ReportsBase(HarvestStream, ABC):
 
     def __init__(self, from_date: pendulum.date = None, **kwargs):
         super().__init__(**kwargs)
-        self._from_date = from_date or pendulum.now().date().subtract(years=1)
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
-        current_date = pendulum.now()
+        current_date = pendulum.now().date()
+        self._from_date = from_date or current_date.subtract(years=1)
+        self._to_date = current_date
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state, **kwargs)
         # `from` and `to` params are required for reports calls
         # min `from` value is current_date - 1 year
-        params.update({"from": self._from_date.strftime("%Y%m%d"), "to": current_date.strftime("%Y%m%d")})
+        params.update(
+            {
+                "from": stream_state.get(self.cursor_field, self._from_date.strftime(self.date_param_template)),
+                "to": self._to_date.strftime(self.date_param_template),
+            }
+        )
         return params
 
     def path(self, **kwargs) -> str:
         return f"reports/{self.report_path}"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        parsed_url = urlparse(response.url)
+        params = dict(parse_qsl(parsed_url.query))
+
+        records = response.json().get(self.data_field, [])
+        for record in records:
+            record.update(
+                {
+                    "from": params.get("from", self._from_date.strftime(self.date_param_template)),
+                    "to": params.get("to", self._from_date.strftime(self.date_param_template)),
+                }
+            )
+            yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
 
 
 class ExpensesClients(ReportsBase):
