@@ -15,7 +15,8 @@
       },
       "access_key": {
         "type": "string",
-        "description": "Your API Access Key. See <a href=\"https://exchangeratesapi.io/documentation/\">here</a>."
+        "description": "Your API Access Key. See <a href=\"https://exchangeratesapi.io/documentation/\">here</a>.",
+        "airbyte_secret": true
       },
       "base": {
         "type": "string",

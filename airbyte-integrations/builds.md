@@ -1,11 +1,15 @@
 # Build statuses
 
 # Sources 
- Amplitude   [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amplitude) 
- 
- AppsFlyer   [![source-appsflyer-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appsflyer-singer) 
+ Amazon Seller Partner   [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amazon-seller-partner)
 
- App Store   [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appstore-singer) 
+ Amplitude   [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amplitude)
+
+ AppsFlyer   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appsflyer-singer) 
+
+ App Store   [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appstore-singer)
+
+ Asana   [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-asana)
 
  Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-braintree-singer) 
 
