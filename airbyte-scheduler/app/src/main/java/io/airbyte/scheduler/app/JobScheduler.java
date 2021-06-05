@@ -77,11 +77,11 @@ public class JobScheduler implements Runnable {
   @Override
   public void run() {
     try {
-      LOGGER.info("Running job-scheduler...");
+      LOGGER.debug("Running job-scheduler...");
 
       scheduleSyncJobs();
 
-      LOGGER.info("Completed Job-Scheduler...");
+      LOGGER.debug("Completed Job-Scheduler...");
     } catch (Throwable e) {
       LOGGER.error("Job Scheduler Error", e);
     }
