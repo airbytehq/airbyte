@@ -98,7 +98,10 @@ public class JobScheduler implements Runnable {
         jobFactory.create(connection.getConnectionId());
       }
     }
-    LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduler: {}", activeConnections.size(), jobsScheduled.get());
+    int jobsScheduledCount = jobsScheduled.get();
+    if (jobsScheduledCount > 0) {
+      LOGGER.info("Job-Scheduler Summary. Active connections: {}, Jobs scheduler: {}", activeConnections.size(), jobsScheduled.get());
+    }
   }
 
   private List<StandardSync> getAllActiveConnections() {
