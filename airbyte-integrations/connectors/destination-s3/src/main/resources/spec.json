@@ -79,7 +79,7 @@
         "description": "Output data format",
         "oneOf": [
           {
-            "title": "CSV: Comma-separated values",
+            "title": "CSV: Comma-Separated Values",
             "required": ["format_type", "flattening"],
             "properties": {
               "format_type": {
@@ -93,6 +93,17 @@
                 "description": "Whether the input json data should be flattened in the output CSV. Please refer to docs for details.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
+              }
+            }
+          },
+          {
+            "title": "Parquet: Columnar Storage",
+            "required": ["format_type"],
+            "properties": {
+              "format_type": {
+                "type": "string",
+                "enum": ["Parquet"],
+                "default": "Parquet"
               }
             }
           }
