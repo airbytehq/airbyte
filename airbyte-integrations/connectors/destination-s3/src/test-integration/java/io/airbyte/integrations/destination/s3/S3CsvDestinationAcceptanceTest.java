@@ -40,7 +40,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.csv.S3CsvOutputFormatter;
+import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -170,7 +170,7 @@ public class S3CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
                                            String namespace,
                                            JsonNode streamSchema)
       throws IOException {
-    String outputPrefix = S3CsvOutputFormatter
+    String outputPrefix = S3OutputPathHelper
         .getOutputPrefix(config.getBucketPath(), namespace, streamName);
     List<S3ObjectSummary> objectSummaries = s3Client
         .listObjects(config.getBucketName(), outputPrefix)

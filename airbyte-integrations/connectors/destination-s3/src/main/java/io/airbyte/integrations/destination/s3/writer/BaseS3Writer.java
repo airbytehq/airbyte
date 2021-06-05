@@ -1,0 +1,76 @@
+package io.airbyte.integrations.destination.s3.writer;
+
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.DeleteObjectsResult;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import java.util.LinkedList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * The base implementation takes care of the following:
+ * <li>Create shared instance variables.</li>
+ * <li>Create the bucket and prepare the bucket path.</li>
+ */
+public abstract class BaseS3Writer implements S3Writer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Writer.class);
+
+  protected final S3DestinationConfig config;
+  protected final AmazonS3 s3Client;
+  protected final AirbyteStream stream;
+  protected final DestinationSyncMode syncMode;
+  protected final String outputPrefix;
+
+  protected BaseS3Writer(S3DestinationConfig config,
+                       AmazonS3 s3Client,
+                       ConfiguredAirbyteStream configuredStream) {
+    this.config = config;
+    this.s3Client = s3Client;
+    this.stream = configuredStream.getStream();
+    this.syncMode = configuredStream.getDestinationSyncMode();
+    this.outputPrefix = S3OutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
+  }
+
+  /**
+   * <li>1. Create bucket if necessary.</li>
+   * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
+   */
+  @Override
+  public void initialize() {
+    String bucket = config.getBucketName();
+    if (!s3Client.doesBucketExistV2(bucket)) {
+      LOGGER.info("Bucket {} does not exist; creating...", bucket);
+      s3Client.createBucket(bucket);
+      LOGGER.info("Bucket {} has been created.", bucket);
+    }
+
+    if (syncMode == DestinationSyncMode.OVERWRITE) {
+      LOGGER.info("Overwrite mode");
+      List<KeyVersion> keysToDelete = new LinkedList<>();
+      List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
+          .getObjectSummaries();
+      for (S3ObjectSummary object : objects) {
+        keysToDelete.add(new KeyVersion(object.getKey()));
+      }
+
+      if (keysToDelete.size() > 0) {
+        LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
+            stream.getName());
+        DeleteObjectsResult result = s3Client
+            .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
+        LOGGER.info("Deleted {} file(s) for stream '{}'.", result.getDeletedObjects().size(),
+            stream.getName());
+      }
+    }
+  }
+
+}

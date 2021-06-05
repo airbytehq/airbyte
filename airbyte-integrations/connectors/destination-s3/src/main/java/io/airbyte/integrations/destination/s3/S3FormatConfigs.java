@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
+import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
 public class S3FormatConfigs {
 
@@ -38,6 +39,10 @@ public class S3FormatConfigs {
     if (formatType == S3Format.CSV) {
       Flattening flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
       return new S3CsvFormatConfig(flattening);
+    }
+
+    if (formatType == S3Format.PARQUET) {
+      return new S3ParquetFormatConfig();
     }
 
     throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));

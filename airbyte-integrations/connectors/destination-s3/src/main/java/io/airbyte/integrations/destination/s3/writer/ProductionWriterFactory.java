@@ -22,25 +22,31 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.s3.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.integrations.destination.s3.csv.S3CsvOutputFormatter;
+import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
+import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import java.io.IOException;
 import java.sql.Timestamp;
 
-public class S3OutputFormatterProductionFactory implements S3OutputFormatterFactory {
+public class ProductionWriterFactory implements S3WriterFactory {
 
   @Override
-  public S3OutputFormatter create(S3DestinationConfig config,
+  public S3Writer create(S3DestinationConfig config,
                                   AmazonS3 s3Client,
                                   ConfiguredAirbyteStream configuredStream,
                                   Timestamp uploadTimestamp)
-      throws IOException {
+      throws Exception {
     S3Format format = config.getFormatConfig().getFormat();
     if (format == S3Format.CSV) {
-      return new S3CsvOutputFormatter(config, s3Client, configuredStream, uploadTimestamp);
+      return new S3CsvWriter(config, s3Client, configuredStream, uploadTimestamp);
+    }
+
+    if (format == S3Format.PARQUET) {
+      return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp);
     }
 
     throw new RuntimeException("Unexpected S3 destination format: " + format);

@@ -27,26 +27,17 @@ package io.airbyte.integrations.destination.s3.csv;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.amazonaws.services.s3.model.DeleteObjectsResult;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
-import io.airbyte.integrations.destination.s3.S3OutputFormatter;
+import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
+import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
@@ -55,38 +46,25 @@ import org.apache.commons.csv.QuoteMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class S3CsvOutputFormatter implements S3OutputFormatter {
+public class S3CsvWriter extends BaseS3Writer implements S3Writer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3CsvOutputFormatter.class);
-  private static final ExtendedNameTransformer NAME_TRANSFORMER = new ExtendedNameTransformer();
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3CsvWriter.class);
 
-  private final S3DestinationConfig config;
-  private final S3CsvFormatConfig formatConfig;
-  private final AmazonS3 s3Client;
-  private final AirbyteStream stream;
-  private final DestinationSyncMode syncMode;
   private final CsvSheetGenerator csvSheetGenerator;
-  private final String outputPrefix;
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
   private final CSVPrinter csvPrinter;
 
-  public S3CsvOutputFormatter(S3DestinationConfig config,
-                              AmazonS3 s3Client,
-                              ConfiguredAirbyteStream configuredStream,
-                              Timestamp uploadTimestamp)
-      throws IOException {
-    this.config = config;
-    this.formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
-    this.s3Client = s3Client;
-    this.stream = configuredStream.getStream();
-    this.syncMode = configuredStream.getDestinationSyncMode();
-    this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(), formatConfig);
+  public S3CsvWriter(S3DestinationConfig config,
+                     AmazonS3 s3Client,
+                     ConfiguredAirbyteStream configuredStream,
+                     Timestamp uploadTimestamp) throws IOException {
+    super(config, s3Client, configuredStream);
 
-    // prefix: <bucket-path>/<source-namespace-if-exists>/<stream-name>
-    // filename: <upload-date>-<upload-millis>.csv
-    // full path: <bucket-name>/<prefix>/<filename>
-    this.outputPrefix = getOutputPrefix(config.getBucketPath(), stream);
+    S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
+    this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
+        formatConfig);
+
     String outputFilename = getOutputFilename(uploadTimestamp);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
@@ -100,10 +78,10 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
     // once it has reached it's configured part size.
     // See {@link S3DestinationConstants} for memory usage calculation.
     this.uploadManager = new StreamTransferManager(config.getBucketName(), objectKey, s3Client)
-        .numStreams(S3DestinationConstants.DEFAULT_NUM_STREAMS)
-        .queueCapacity(S3DestinationConstants.DEFAULT_QUEUE_CAPACITY)
-        .numUploadThreads(S3DestinationConstants.DEFAULT_UPLOAD_THREADS)
-        .partSize(S3DestinationConstants.DEFAULT_PART_SIZE_MD);
+        .numStreams(S3CsvConstants.DEFAULT_NUM_STREAMS)
+        .queueCapacity(S3CsvConstants.DEFAULT_QUEUE_CAPACITY)
+        .numUploadThreads(S3CsvConstants.DEFAULT_UPLOAD_THREADS)
+        .partSize(S3CsvConstants.DEFAULT_PART_SIZE_MB);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
@@ -111,62 +89,11 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
             .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
   }
 
-  static String getOutputPrefix(String bucketPath, AirbyteStream stream) {
-    return getOutputPrefix(bucketPath, stream.getNamespace(), stream.getName());
-  }
-
-  @VisibleForTesting
-  public static String getOutputPrefix(String bucketPath, String namespace, String streamName) {
-    List<String> paths = new LinkedList<>();
-
-    if (bucketPath != null) {
-      paths.add(bucketPath);
-    }
-    if (namespace != null) {
-      paths.add(NAME_TRANSFORMER.convertStreamName(namespace));
-    }
-    paths.add(NAME_TRANSFORMER.convertStreamName(streamName));
-
-    return String.join("/", paths);
-  }
-
+  // Filename: <upload-date>_<upload-millis>_0.csv
   static String getOutputFilename(Timestamp timestamp) {
     var formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format("%s_%d_0.csv", formatter.format(timestamp), timestamp.getTime());
-  }
-
-  /**
-   * <li>1. Create bucket if necessary.</li>
-   * <li>2. Under OVERWRITE mode, delete all objects with the output prefix.</li>
-   */
-  @Override
-  public void initialize() {
-    String bucket = config.getBucketName();
-    if (!s3Client.doesBucketExistV2(bucket)) {
-      LOGGER.info("Bucket {} does not exist; creating...", bucket);
-      s3Client.createBucket(bucket);
-      LOGGER.info("Bucket {} has been created.", bucket);
-    }
-
-    if (syncMode == DestinationSyncMode.OVERWRITE) {
-      LOGGER.info("Overwrite mode");
-      List<KeyVersion> keysToDelete = new LinkedList<>();
-      List<S3ObjectSummary> objects = s3Client.listObjects(bucket, outputPrefix)
-          .getObjectSummaries();
-      for (S3ObjectSummary object : objects) {
-        keysToDelete.add(new KeyVersion(object.getKey()));
-      }
-
-      if (keysToDelete.size() > 0) {
-        LOGGER.info("Purging non-empty output path for stream '{}' under OVERWRITE mode...",
-            stream.getName());
-        DeleteObjectsResult result = s3Client
-            .deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));
-        LOGGER.info("Deleted {} file(s) for stream '{}'.", result.getDeletedObjects().size(),
-            stream.getName());
-      }
-    }
   }
 
   @Override

@@ -32,6 +32,8 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.destination.s3.writer.S3Writer;
+import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -48,21 +50,21 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
   private final S3DestinationConfig s3DestinationConfig;
   private final ConfiguredAirbyteCatalog configuredCatalog;
-  private final S3OutputFormatterFactory formatterFactory;
+  private final S3WriterFactory writerFactory;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final Map<AirbyteStreamNameNamespacePair, S3OutputFormatter> streamNameAndNamespaceToFormatters;
+  private final Map<AirbyteStreamNameNamespacePair, S3Writer> streamNameAndNamespaceToWriters;
 
   private AirbyteMessage lastStateMessage = null;
 
   public S3Consumer(S3DestinationConfig s3DestinationConfig,
                     ConfiguredAirbyteCatalog configuredCatalog,
-                    S3OutputFormatterFactory formatterFactory,
+                    S3WriterFactory writerFactory,
                     Consumer<AirbyteMessage> outputRecordCollector) {
     this.s3DestinationConfig = s3DestinationConfig;
     this.configuredCatalog = configuredCatalog;
-    this.formatterFactory = formatterFactory;
+    this.writerFactory = writerFactory;
     this.outputRecordCollector = outputRecordCollector;
-    this.streamNameAndNamespaceToFormatters = new HashMap<>(configuredCatalog.getStreams().size());
+    this.streamNameAndNamespaceToWriters = new HashMap<>(configuredCatalog.getStreams().size());
   }
 
   @Override
@@ -76,14 +78,14 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
-      S3OutputFormatter formatter = formatterFactory
+      S3Writer writer = writerFactory
           .create(s3DestinationConfig, s3Client, configuredStream, uploadTimestamp);
-      formatter.initialize();
+      writer.initialize();
 
       AirbyteStream stream = configuredStream.getStream();
       AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
           .fromAirbyteSteam(stream);
-      streamNameAndNamespaceToFormatters.put(streamNamePair, formatter);
+      streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
 
@@ -100,7 +102,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     AirbyteStreamNameNamespacePair pair = AirbyteStreamNameNamespacePair
         .fromRecordMessage(recordMessage);
 
-    if (!streamNameAndNamespaceToFormatters.containsKey(pair)) {
+    if (!streamNameAndNamespaceToWriters.containsKey(pair)) {
       throw new IllegalArgumentException(
           String.format(
               "Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
@@ -108,12 +110,12 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     }
 
     UUID id = UUID.randomUUID();
-    streamNameAndNamespaceToFormatters.get(pair).write(id, recordMessage);
+    streamNameAndNamespaceToWriters.get(pair).write(id, recordMessage);
   }
 
   @Override
   protected void close(boolean hasFailed) throws Exception {
-    for (S3OutputFormatter handler : streamNameAndNamespaceToFormatters.values()) {
+    for (S3Writer handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
     }
     // S3 stream uploader is all or nothing if a failure happens in the destination.
