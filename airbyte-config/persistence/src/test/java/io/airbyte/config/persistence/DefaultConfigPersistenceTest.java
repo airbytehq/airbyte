@@ -31,6 +31,7 @@ import static org.mockito.Mockito.*;
 
 import com.google.common.collect.Sets;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -101,6 +102,8 @@ class DefaultConfigPersistenceTest {
   void writeConfigWithJsonSchemaRef() throws JsonValidationException, IOException, ConfigNotFoundException {
     final StandardSync standardSync = new StandardSync()
         .withName("sync")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("sync")
         .withConnectionId(UUID_1)
         .withSourceId(UUID.randomUUID())
