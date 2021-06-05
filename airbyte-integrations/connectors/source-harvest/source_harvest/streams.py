@@ -326,7 +326,7 @@ class ReportsBase(HarvestStream, ABC):
 
 
 class IncrementalReportsBase(ReportsBase, ABC):
-    cursor_field = "from"
+    cursor_field = "to"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         parsed_url = urlparse(response.url)
@@ -337,7 +337,7 @@ class IncrementalReportsBase(ReportsBase, ABC):
             record.update(
                 {
                     "from": params.get("from", self._from_date.strftime(self.date_param_template)),
-                    "to": params.get("to", self._from_date.strftime(self.date_param_template)),
+                    "to": params.get("to", self._to_date.strftime(self.date_param_template)),
                 }
             )
             yield record
@@ -345,12 +345,21 @@ class IncrementalReportsBase(ReportsBase, ABC):
     def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state, **kwargs)
+
+        # subtract `from` date by 1 year to avoid Harvest exception
+        # `from` date may not be less than `to` - 1 year
+        if stream_state.get(self.cursor_field):
+            cursor_date = pendulum.parse(stream_state[self.cursor_field]).date()
+            dates_diff = cursor_date - self._from_date
+            if dates_diff.years > 0 or dates_diff.years == 0 and dates_diff.remaining_days > 0:
+                self._from_date = cursor_date.subtract(years=1)
+
         # `from` and `to` params are required for reports calls
         # min `from` value is current_date - 1 year
         params.update(
             {
-                "from": stream_state.get(self.cursor_field, self._from_date.strftime(self.date_param_template)),
-                "to": self._to_date.strftime(self.date_param_template),
+                "from": self._from_date.strftime(self.date_param_template),
+                "to": stream_state.get(self.cursor_field, self._to_date.strftime(self.date_param_template)),
             }
         )
         return params
@@ -368,7 +377,7 @@ class IncrementalReportsBase(ReportsBase, ABC):
 
 class ExpensesClients(IncrementalReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Clients Report)
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#clients-report
     """
 
     report_path = "expenses/clients"
@@ -376,7 +385,7 @@ class ExpensesClients(IncrementalReportsBase):
 
 class ExpensesProjects(IncrementalReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Projects Report)
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#projects-report
     """
 
     report_path = "expenses/projects"
@@ -384,7 +393,7 @@ class ExpensesProjects(IncrementalReportsBase):
 
 class ExpensesCategories(IncrementalReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Expense Categories Report)
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#expense-categories-report
     """
 
     report_path = "expenses/categories"
@@ -392,7 +401,7 @@ class ExpensesCategories(IncrementalReportsBase):
 
 class ExpensesTeam(IncrementalReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/ (Team Report)
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#team-report
     """
 
     report_path = "expenses/team"
@@ -410,7 +419,7 @@ class Uninvoiced(ReportsBase):
 
 class TimeClients(IncrementalReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Clients Report)
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#clients-report
     """
 
     report_path = "time/clients"
@@ -418,7 +427,7 @@ class TimeClients(IncrementalReportsBase):
 
 class TimeProjects(IncrementalReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Projects Report)
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#projects-report
     """
 
     report_path = "time/projects"
@@ -426,7 +435,7 @@ class TimeProjects(IncrementalReportsBase):
 
 class TimeTasks(IncrementalReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/ (Tasks Report)
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#tasks-report
     """
 
     report_path = "time/tasks"
@@ -442,7 +451,7 @@ class TimeTeam(IncrementalReportsBase):
 
 class ProjectBudget(ReportsBase):
     """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/
+    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#team-report
     """
 
     report_path = "project_budget"

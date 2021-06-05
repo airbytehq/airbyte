@@ -1657,10 +1657,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["from"]
+        "default_cursor_field": ["to"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["from"],
+      "cursor_field": ["to"],
       "destination_sync_mode": "append"
     },
     {
@@ -1701,10 +1701,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["from"]
+        "default_cursor_field": ["to"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["from"],
+      "cursor_field": ["to"],
       "destination_sync_mode": "append"
     },
     {
@@ -1739,10 +1739,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["from"]
+        "default_cursor_field": ["to"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["from"],
+      "cursor_field": ["to"],
       "destination_sync_mode": "append"
     },
     {
@@ -1780,10 +1780,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["from"]
+        "default_cursor_field": ["to"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["from"],
+      "cursor_field": ["to"],
       "destination_sync_mode": "append"
     },
     {
@@ -1868,10 +1868,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["from"]
+        "default_cursor_field": ["to"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["from"],
+      "cursor_field": ["to"],
       "destination_sync_mode": "append"
     },
     {
@@ -1915,10 +1915,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["from"]
+        "default_cursor_field": ["to"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["from"],
+      "cursor_field": ["to"],
       "destination_sync_mode": "append"
     },
     {
@@ -1956,10 +1956,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["from"]
+        "default_cursor_field": ["to"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["from"],
+      "cursor_field": ["to"],
       "destination_sync_mode": "append"
     },
     {
@@ -2000,10 +2000,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["from"]
+        "default_cursor_field": ["to"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["from"],
+      "cursor_field": ["to"],
       "destination_sync_mode": "append"
     },
     {

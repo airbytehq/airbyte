@@ -57,30 +57,30 @@
     "updated_at": "2217-06-26T21:20:07Z"
   },
   "expenses_clients": {
-    "from": "22170626"
+    "to": "22170626"
   },
   "expenses_projects": {
-    "from": "22170626"
+    "to": "22170626"
   },
   "expenses_categories": {
-    "from": "22170626"
+    "to": "22170626"
   },
   "expenses_team": {
-    "from": "22170626"
+    "to": "22170626"
   },
   "uninvoiced": {
-    "from": "22170626"
+    "to": "22170626"
   },
   "time_clients": {
-    "from": "22170626"
+    "to": "22170626"
   },
   "time_projects": {
-    "from": "22170626"
+    "to": "22170626"
   },
   "time_tasks": {
-    "from": "22170626"
+    "to": "22170626"
   },
   "time_team": {
-    "from": "22170626"
+    "to": "22170626"
   }
 }

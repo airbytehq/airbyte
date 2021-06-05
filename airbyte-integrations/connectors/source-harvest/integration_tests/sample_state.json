@@ -57,30 +57,30 @@
     "updated_at": "2021-01-01T00:00:00Z"
   },
   "expenses_clients": {
-    "from": "20210101"
+    "to": "20210101"
   },
   "expenses_projects": {
-    "from": "20210101"
+    "to": "20210101"
   },
   "expenses_categories": {
-    "from": "20210101"
+    "to": "20210101"
   },
   "expenses_team": {
-    "from": "20210101"
+    "to": "20210101"
   },
   "uninvoiced": {
-    "from": "20210101"
+    "to": "20210101"
   },
   "time_clients": {
-    "from": "20210101"
+    "to": "20210101"
   },
   "time_projects": {
-    "from": "20210101"
+    "to": "20210101"
   },
   "time_tasks": {
-    "from": "20210101"
+    "to": "20210101"
   },
   "time_team": {
-    "from": "20210101"
+    "to": "20210101"
   }
 }
