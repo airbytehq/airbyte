@@ -2,6 +2,7 @@ from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v7.services.types.google_ads_service import GoogleAdsRow
 from typing import Any, Mapping, List
 from string import Template
+from enum import Enum
 
 REPORT_MAPPING = {
     "ad_group_ad_report": "ad_group_ad"
@@ -62,6 +63,8 @@ class GoogleAds:
             field_value = result
             for level_attr in field_name:
                 field_value = field_value.__getattr__(level_attr)
+                if isinstance(field_value, Enum):
+                    field_value = field_value.name
             field_value = str(field_value)
         except:
             field_value = None
