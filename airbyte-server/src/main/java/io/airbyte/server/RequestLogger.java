@@ -104,7 +104,7 @@ public class RequestLogger implements ContainerRequestFilter, ContainerResponseF
     if (HttpStatus.isClientError(status) || HttpStatus.isServerError(status)) {
       LOGGER.error(logBuilder.toString());
     } else {
-      LOGGER.info(logBuilder.toString());
+      LOGGER.debug(logBuilder.toString());
     }
   }
 
