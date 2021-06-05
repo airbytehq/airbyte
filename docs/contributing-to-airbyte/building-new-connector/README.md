@@ -24,6 +24,7 @@ To add a new connector you need to:
 1. Implement & Package your connector in an Airbyte Protocol compliant Docker image
 2. Add integration tests for your connector. At a minimum, all connectors must pass [Airbyte's standard test suite](testing-connectors.md), but you can also add your own tests. 
 3. Document how to build & test your connector
+4. Publish the Docker image containing the connector
 
 Each requirement has a subsection below.
 
@@ -33,6 +34,7 @@ If you are building a connector in any of the following languages/frameworks, th
 
 * **Python Source Connector**
 * [**Singer**](https://singer.io)**-based Python Source Connector**. [Singer.io](https://singer.io/) is an open source framework with a large community and many available connectors \(known as taps & targets\). To build an Airbyte connector from a Singer tap, wrap the tap in a thin Python package to make it Airbyte Protocol-compatible. See the [Github Connector](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-github-singer) for an example of an Airbyte Connector implemented on top of a Singer tap.
+* **Java Destination Connector**
 * **Generic Connector**: This template provides a basic starting point for any language.
 
 #### Creating a connector from a template
@@ -71,32 +73,42 @@ When you submit a PR to Airbyte with your connector, the reviewer will use the c
 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image 
 2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
 
+### 4. Publish the connector
+Typically this will be handled as part of code review by an Airbyter. There is a section below on what steps are needed for publishing a connector. 
+
 ### Best practices
 
 Make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is **not** a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
 
-## Updating a connector
+## Updating an existing connector
+The steps for updating an existing connector are the same as for building a new connector minus the need to use the autogenerator to create a new connector. Therefore the steps are: 
+1. Iterate on the connector to make the needed changes
+2. Run tests
+3. Add any needed docs updates
+4. Create a PR to get the connector published
 
-Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to tell Airbyte to use the latest version of your connector.
+## Publishing a connector
 
-1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\).
-2. Update the connector version in:
-   * `STANDARD_SOURCE_DEFINITION` if it is a source
-   * `STANDARD_DESTINATION_DEFINITION` if it is a destination.
-3. Build the connector with the semantic version tag locally:
+Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to ship the new version of the connector with Airbyte out of the box. 
 
-   ```text
-   ./tools/integrations/manage.sh build airbyte-integrations/connectors/<connector-name>
-   ```
-
+1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\). 
+2. Update the connector definition in the Airbyte connector index to use the new version:
+   * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
+   * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
+3. Update the connector JSON definition. To find the appropriate JSON file to update, find a JSON file `<uuid>.json` where the UUID portion is the ID specified in the YAML file you modified in step 2. The relevant directories are: 
+   * `airbyte-config/init/src/main/resources/config/STANDARD_SOURCE_DEFINITION/<uuid>.json` for sources
+   * `airbyte-config/init/src/main/resources/config/STANDARD_DESTINATION_DEFINITION/<uuid>.json` for destinations
 4. Submit a PR containing the changes you made.
 5. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
 
    ```text
    # to run integration tests for the connector
    /test connector=(connectors|bases)/<connector_name> 
+   # Example: /test connector=connectors/source-hubspot
+
    # to run integration tests and publish the connector
    /publish connector=(connectors|bases)/<connector_name>
+   # Example: /publish connector=connectors/source-hubspot
    ```
 
 6. The new version of the connector is now available for everyone who uses it. Thank you!

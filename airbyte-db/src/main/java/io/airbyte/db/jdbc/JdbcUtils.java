@@ -132,7 +132,7 @@ public class JdbcUtils {
     switch (columnType) {
       case BIT, BOOLEAN -> o.put(columnName, r.getBoolean(i));
       case TINYINT, SMALLINT -> o.put(columnName, r.getShort(i));
-      case INTEGER -> o.put(columnName, r.getInt(i));
+      case INTEGER -> putInteger(o, columnName, r, i);
       case BIGINT -> o.put(columnName, nullIfInvalid(() -> r.getLong(i)));
       case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
       case REAL -> o.put(columnName, nullIfInvalid(() -> r.getFloat(i), Float::isFinite));
@@ -148,6 +148,19 @@ public class JdbcUtils {
       }
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> o.put(columnName, r.getBytes(i));
       default -> o.put(columnName, r.getString(i));
+    }
+  }
+
+  /**
+   * In some sources Integer might have value larger than {@link Integer#MAX_VALUE}. E.q. MySQL has
+   * unsigned Integer type, which can contain value 3428724653. If we fail to cast Integer value, we
+   * will try to cast Long.
+   */
+  private static void putInteger(ObjectNode node, String columnName, ResultSet resultSet, int index) {
+    try {
+      node.put(columnName, resultSet.getInt(index));
+    } catch (SQLException e) {
+      node.put(columnName, nullIfInvalid(() -> resultSet.getLong(index)));
     }
   }
 
