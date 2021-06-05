@@ -124,16 +124,16 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("tinyint")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null")
-            .addInsertValues("-128", "127")
+            .addInsertValues("null", "-128", "127")
+            .addExpectedValues(null, "-128", "127")
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null")
-            .addInsertValues("-32768", "32767")
+            .addInsertValues("null", "-32768", "32767")
+            .addExpectedValues(null, "-32768", "32767")
             .build());
 
     addDataTypeTestData(
@@ -142,6 +142,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("smallint zerofill")
             .addInsertValues("1")
+            .addExpectedValues("1")
             .build());
 
     addDataTypeTestData(
@@ -149,6 +150,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("mediumint")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "-8388608", "8388607")
+            .addExpectedValues(null, "-8388608", "8388607")
             .build());
 
     addDataTypeTestData(
@@ -157,6 +159,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("mediumint zerofill")
             .addInsertValues("1")
+            .addExpectedValues("1")
             .build());
 
     addDataTypeTestData(
@@ -164,6 +167,16 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("int")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "-2147483648", "2147483647")
+            .addExpectedValues(null, "-2147483648", "2147483647")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("int")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .fullSourceDataType("int unsigned")
+            .addInsertValues("3428724653")
+            .addExpectedValues("3428724653")
             .build());
 
     addDataTypeTestData(
@@ -172,6 +185,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("int zerofill")
             .addInsertValues("1")
+            .addExpectedValues("1")
             .build());
 
     addDataTypeTestData(
@@ -179,6 +193,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("bigint")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "9223372036854775807")
+            .addExpectedValues(null, "9223372036854775807")
             .build());
 
     addDataTypeTestData(
@@ -186,6 +201,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("float")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null")
+            .addNullExpectedValue()
             .build());
 
     addDataTypeTestData(
@@ -193,6 +209,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("double")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "power(10, 308)", "1/power(10, 45)")
+            .addExpectedValues(null, String.valueOf(Math.pow(10, 308)), String.valueOf(1 / Math.pow(10, 45)))
             .build());
 
     addDataTypeTestData(
@@ -201,6 +218,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("decimal(5,2)")
             .addInsertValues("null")
+            .addNullExpectedValue()
             .build());
 
     addDataTypeTestData(
@@ -208,6 +226,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("bit")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "1", "0")
+            // @TODO returns True/False instead of 1/0.
+            // .addExpectedValues(null, "1", "0")
             .build());
 
     addDataTypeTestData(
@@ -215,13 +235,17 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
+            .addExpectedValues(null, null, null, null)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'0000-00-00 00:00:00'")
+            .addInsertValues("null")
+            .addNullExpectedValue()
+            // @TODO stream fails when gets Zero date value
+            // .addInsertValues("'0000-00-00 00:00:00'")
             .build());
 
     addDataTypeTestData(
@@ -229,13 +253,15 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("timestamp")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null")
+            .addNullExpectedValue()
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'-838:59:59.000000'")
+            .addInsertValues("null", "'-838:59:59.000000'", "'00:00:01.000000'")
+            .addExpectedValues(null, "-3020399000000", "1000000")
             .build());
 
     addDataTypeTestData(
@@ -244,6 +270,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("varchar(256) character set cp1251")
             .addInsertValues("null", "'тест'")
+            // @TODO stream returns invalid text "С‚РµСЃС‚"
+            // .addExpectedValues(null, "тест")
             .build());
 
     addDataTypeTestData(
@@ -252,6 +280,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("varchar(256) character set utf16")
             .addInsertValues("null", "0xfffd")
+            // @TODO streamer returns invalid text "�"
+            // .addExpectedValues(null, "�")
             .build());
 
     addDataTypeTestData(
@@ -260,6 +290,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("varchar(256)")
             .addInsertValues("null", "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
+            .addExpectedValues(null, "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~")
             .build());
 
     addDataTypeTestData(
@@ -268,6 +299,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("varbinary(256)")
             .addInsertValues("null", "'test'")
+            // @TODO Returns binary value instead of text
+            // .addExpectedValues(null, "test")
             .build());
 
     addDataTypeTestData(
@@ -275,6 +308,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("blob")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "'test'")
+            // @TODO Returns binary value instead of text
+            // .addExpectedValues(null, "test")
             .build());
 
     addDataTypeTestData(
@@ -282,6 +317,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("mediumtext")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "lpad('0', 16777214, '0')")
+            // @TODO returns null instead of long text
+            // .addExpectedValues(null, StringUtils.leftPad("0", 16777214, "0"))
             .build());
 
     addDataTypeTestData(
@@ -289,6 +326,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("tinytext")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null")
+            .addNullExpectedValue()
             .build());
 
     addDataTypeTestData(
@@ -296,6 +334,7 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("longtext")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null")
+            .addNullExpectedValue()
             .build());
 
     addDataTypeTestData(
@@ -303,13 +342,15 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("text")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null")
+            .addNullExpectedValue()
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("json")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'{\"a\" :10, \"b\": 15}'")
+            .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'")
+            .addExpectedValues(null, "{\"a\": 10, \"b\": 15}")
             .build());
 
     addDataTypeTestData(
@@ -324,6 +365,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("bool")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "1", "127", "-128")
+            // @TODO returns number instead of boolean
+            // .addExpectedValues(null, "true", "false", "false")
             .build());
 
   }

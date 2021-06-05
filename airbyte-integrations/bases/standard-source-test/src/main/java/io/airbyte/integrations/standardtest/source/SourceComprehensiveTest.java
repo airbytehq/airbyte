@@ -24,7 +24,7 @@
 
 package io.airbyte.integrations.standardtest.source;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -39,7 +39,9 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -49,6 +51,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SourceComprehensiveTest.class);
 
+  private final String TEST_COLUMN_NAME = "test_column";
   private final List<TestDataHolder> testDataHolders = new ArrayList<>();
 
   /**
@@ -78,8 +81,32 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
     List<AirbyteMessage> allMessages = runRead(catalog);
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
 
-    recordMessages.forEach(msg -> LOGGER.debug(msg.toString()));
-    assertFalse(recordMessages.isEmpty(), "Expected records from source");
+    Map<String, List<String>> expectedValues = new HashMap<>();
+    testDataHolders.forEach(testDataHolder -> {
+      if (!testDataHolder.getExpectedValues().isEmpty())
+        expectedValues.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getExpectedValues());
+    });
+
+    recordMessages.forEach(msg -> {
+      String streamName = msg.getRecord().getStream();
+      List<String> expectedValuesForStream = expectedValues.get(streamName);
+      if (expectedValuesForStream != null) {
+        String value = getValueFromJsonNode(msg.getRecord().getData().get(TEST_COLUMN_NAME));
+        assertTrue(expectedValuesForStream.contains(value),
+            "Returned value '" + value + "' by streamer " + streamName + " should be in the expected list: " + expectedValuesForStream);
+        expectedValuesForStream.remove(value);
+      }
+    });
+
+    expectedValues.forEach((streamName, values) -> {
+      assertTrue(values.isEmpty(), "The streamer " + streamName + " should return all expected values. Missing values: " + values);
+    });
+  }
+
+  private String getValueFromJsonNode(JsonNode jsonNode) {
+    String value = (jsonNode != null ? jsonNode.asText() : null);
+    value = (value != null && value.equals("null") ? null : value);
+    return value;
   }
 
   /**
@@ -124,7 +151,7 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
                     String.format("%s", test.getNameWithTestPrefix()),
                     String.format("%s", config.get("database").asText()),
                     Field.of("id", JsonSchemaPrimitive.NUMBER),
-                    Field.of("test_column", test.getAirbyteType()))
+                    Field.of(TEST_COLUMN_NAME, test.getAirbyteType()))
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                     .withSupportedSyncModes(

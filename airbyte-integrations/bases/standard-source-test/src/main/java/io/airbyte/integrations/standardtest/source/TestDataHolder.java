@@ -38,6 +38,7 @@ public class TestDataHolder {
   private final String sourceType;
   private final JsonSchemaPrimitive airbyteType;
   private final List<String> values;
+  private final List<String> expectedValues;
   private final String createTablePatternSql;
   private final String insertPatternSql;
   private final String fullSourceDataType;
@@ -46,12 +47,14 @@ public class TestDataHolder {
   TestDataHolder(String sourceType,
                  JsonSchemaPrimitive airbyteType,
                  List<String> values,
+                 List<String> expectedValues,
                  String createTablePatternSql,
                  String insertPatternSql,
                  String fullSourceDataType) {
     this.sourceType = sourceType;
     this.airbyteType = airbyteType;
     this.values = values;
+    this.expectedValues = expectedValues;
     this.createTablePatternSql = createTablePatternSql;
     this.insertPatternSql = insertPatternSql;
     this.fullSourceDataType = fullSourceDataType;
@@ -71,6 +74,7 @@ public class TestDataHolder {
     private String sourceType;
     private JsonSchemaPrimitive airbyteType;
     private final List<String> values = new ArrayList<>();
+    private final List<String> expectedValues = new ArrayList<>();
     private String createTablePatternSql;
     private String insertPatternSql;
     private String fullSourceDataType;
@@ -159,8 +163,31 @@ public class TestDataHolder {
       return this;
     }
 
+    /**
+     * Adds expected value(s) to the test scope. If you add at least one value, it will check that all
+     * values are provided by corresponding streamer.
+     *
+     * @param expectedValue value which should be provided by a streamer
+     * @return builder
+     */
+    public TestDataHolderBuilder addExpectedValues(String... expectedValue) {
+      this.expectedValues.addAll(Arrays.asList(expectedValue));
+      return this;
+    }
+
+    /**
+     * Add NULL value to the expected value list. If you need to add only one value and it's NULL, you
+     * have to use this method instead of {@link #addExpectedValues(String...)}
+     *
+     * @return builder
+     */
+    public TestDataHolderBuilder addNullExpectedValue() {
+      this.expectedValues.add(null);
+      return this;
+    }
+
     public TestDataHolder build() {
-      return new TestDataHolder(sourceType, airbyteType, values, createTablePatternSql, insertPatternSql, fullSourceDataType);
+      return new TestDataHolder(sourceType, airbyteType, values, expectedValues, createTablePatternSql, insertPatternSql, fullSourceDataType);
     }
 
   }
@@ -175,6 +202,10 @@ public class TestDataHolder {
 
   public JsonSchemaPrimitive getAirbyteType() {
     return airbyteType;
+  }
+
+  public List<String> getExpectedValues() {
+    return expectedValues;
   }
 
   public String getNameWithTestPrefix() {
