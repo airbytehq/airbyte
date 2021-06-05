@@ -4,12 +4,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Shopify Source CDK Specifications",
     "type": "object",
-    "required": ["shop", "api_password"],
+    "required": ["shop", "start_date", "api_password"],
     "additionalProperties": false,
     "properties": {
       "shop": {
         "type": "string",
         "description": "The name of the shopify store. For https://EXAMPLE.myshopify.com, the shop name is 'EXAMPLE'."
+      },
+      "start_date": {
+        "type": "string",
+        "description": "Format: YYYY-MM-DD, from what date you would like to replicate the data?"
       },
       "api_password": {
         "type": "string",

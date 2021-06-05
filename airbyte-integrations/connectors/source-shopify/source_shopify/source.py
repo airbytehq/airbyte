@@ -40,11 +40,12 @@ class ShopifyStream(HttpStream, ABC):
     api_version = "2021-04"
     # Page size
     limit = 250
-    # Define primary key to all streams
+    # Define primary key to all streams as primary key, sort key
     primary_key = "id"
 
-    def __init__(self, shop: str, api_password: str, **kwargs):
+    def __init__(self, shop: str, start_date: str, api_password: str, **kwargs):
         super().__init__(**kwargs)
+        self.start_date = start_date
         self.shop = shop
         self.api_password = api_password
         self.since_id = 0
@@ -64,8 +65,10 @@ class ShopifyStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
+        params = {"limit": self.limit, "order": f"{self.primary_key} asc", "created_at_min": self.start_date}
         if next_page_token:
+            params.pop("created_at_min", None)
+            params.pop("order", None)
             params.update(**next_page_token)
         return params
 
@@ -164,7 +167,7 @@ class OrderRefunds(IncrementalShopifyStream):
         return f"orders/{order_id}/{self.data_field}.json"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, api_password=self.api_password)
+        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
@@ -177,7 +180,7 @@ class Transactions(IncrementalShopifyStream):
         return f"orders/{order_id}/{self.data_field}.json"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, api_password=self.api_password)
+        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
@@ -225,7 +228,7 @@ class SourceShopify(AbstractSource):
         """
 
         auth = ShopifyAuthenticator(token=config["api_password"])
-        args = {"authenticator": auth, "shop": config["shop"], "api_password": config["api_password"]}
+        args = {"authenticator": auth, "shop": config["shop"], "start_date": config["start_date"], "api_password": config["api_password"]}
         return [
             Customers(**args),
             Orders(**args),
