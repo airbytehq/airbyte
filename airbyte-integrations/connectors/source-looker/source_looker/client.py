@@ -27,15 +27,16 @@ from typing import List, Tuple
 
 import backoff
 import requests
+from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
 from requests.exceptions import ConnectionError
 from requests.structures import CaseInsensitiveDict
-
+from typing import Generator
 
 class Client(BaseClient):
     API_VERSION = "3.1"
 
-    def __init__(self, domain: str, client_id: str, client_secret: str):
+    def __init__(self, domain: str, client_id: str, client_secret: str, run_look_ids: list=[]):
         self.BASE_URL = f"https://{domain}/api/{self.API_VERSION}"
         self._client_id = client_id
         self._client_secret = client_secret
@@ -51,8 +52,17 @@ class Client(BaseClient):
         self._role_ids = []
         self._user_attribute_ids = []
         self._user_ids = []
+        self._run_look_ids = run_look_ids
         self._context_metadata_mapping = {"dashboards": [], "folders": [], "homepages": [], "looks": [], "spaces": []}
         super().__init__()
+
+    @property    
+    def streams(self) -> Generator[AirbyteStream, None, None]: 
+        streams = super().streams
+        for stream in streams:
+            if len(self._run_look_ids) > 0 and stream.name == "run_looks":
+                stream.json_schema = self._get_run_look_json_schema()
+            yield stream
 
     def get_token(self):
         headers = CaseInsensitiveDict()
@@ -84,10 +94,32 @@ class Client(BaseClient):
                 return [response_data]
         return []
 
+    def _get_run_look_json_schema(self):
+        json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "type": "object",
+            "properties": {
+                look_id: {
+                    "properties": {
+                        field_name: {"type": ["null", "string"]} for field_name in self._get_look_fields(look_id)
+                    },
+                    "type": ["null", "object"],
+                    "additionalProperties": False
+                }
+                for look_id in self._run_look_ids
+            }
+        }
+        return json_schema
+
+
     def _get_dashboard_ids(self) -> List[int]:
         if not self._dashboard_ids:
             self._dashboard_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/dashboards") if isinstance(obj["id"], int)]
         return self._dashboard_ids
+
+    def _get_look_fields(self, look_id) -> List[str]:
+        return self._request(f"{self.BASE_URL}/looks/{look_id}?fields=query")[0]["query"]["fields"]
 
     def _get_project_ids(self) -> List[int]:
         if not self._project_ids:
@@ -197,6 +229,10 @@ class Client(BaseClient):
             self._role_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/roles")]
         for role_id in self._role_ids:
             yield from self._request(f"{self.BASE_URL}/roles/{role_id}/groups")
+
+    def stream__run_looks(self, fields):
+        for look_id in self._run_look_ids:
+            yield from [{look_id: row} for row in self._request(f"{self.BASE_URL}/looks/{look_id}/run/json")]
 
     def stream__scheduled_plans(self, fields):
         yield from self._request(f"{self.BASE_URL}/scheduled_plans?all_users=true")
