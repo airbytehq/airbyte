@@ -242,10 +242,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // @TODO stream fails when gets Zero date value
-            // .addInsertValues("'0000-00-00 00:00:00'")
+            .addInsertValues("null", "'0000-00-00 00:00:00'")
+            .addExpectedValues(null, null)
             .build());
 
     addDataTypeTestData(
