@@ -91,10 +91,8 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def limit(self):
         return super().limit
 
-    # setting state
     state_checkpoint_interval = limit
 
-    # Setting general cursor_field, overwrite this if you have different cursor fields for different streams.
     cursor_field = "id"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -143,6 +141,15 @@ class Metafields(IncrementalShopifyStream):
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
+
+    def request_params(self, stream_state=None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        params = {"limit": self.limit, "since_id": {self.since_id}, **stream_state, **kwargs}
+        if stream_state.get(self.cursor_field, 0) > self.since_id:
+            params["since_id"] = stream_state.get(self.cursor_field)
+        else:
+            params["since_id"] = self.since_id
+        return params
 
 
 class CustomCollections(IncrementalShopifyStream):
