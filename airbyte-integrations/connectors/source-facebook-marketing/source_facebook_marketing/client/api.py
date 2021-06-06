@@ -26,15 +26,19 @@
 import time
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
+from typing import Any, Callable, Iterable, Iterator, Mapping, MutableMapping, Sequence
 
 import backoff
 import pendulum as pendulum
-from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
+
+# FIXME (Eugene K): use standard logger
+from airbyte_cdk.entrypoint import logger
+from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from .common import JobTimeoutException, deep_merge, retry_pattern
+from .common import JobTimeoutException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -176,34 +180,30 @@ class AdCreativeAPI(StreamAPI):
     """
 
     entity_prefix = "adcreative"
-    BATCH_SIZE = 50
+    batch_size = 50
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        # Create the initial batch
-        api_batch = self._api._api.new_batch()
+        # get pending requests for each creative
+        requests = [creative.api_get(fields=fields, pending=True) for creative in self.read(getter=self._get_creatives)]
+        for requests_batch in batch(requests, size=self.batch_size):
+            yield from self.execute_in_batch(requests_batch)
+
+    @backoff_policy
+    def execute_in_batch(self, requests: Iterable[FacebookRequest]) -> Sequence[MutableMapping[str, Any]]:
         records = []
 
-        def success(response):
+        def success(response: FacebookResponse):
             records.append(response.json())
 
-        def failure(response):
+        def failure(response: FacebookResponse):
             raise response.error()
 
-        # This loop syncs minimal AdCreative objects
-        for i, creative in enumerate(self.read(getter=self._get_creatives), start=1):
-            # Execute and create a new batch for every BATCH_SIZE added
-            if i % self.BATCH_SIZE == 0:
-                api_batch.execute()
-                api_batch = self._api._api.new_batch()
-                yield from records
-                records[:] = []
-
-            # Add a call to the batch with the full object
-            creative.api_get(fields=fields, batch=api_batch, success=success, failure=failure)
-
-        # Ensure the final batch is executed
+        api_batch: FacebookAdsApiBatch = self._api._api.new_batch()
+        for request in requests:
+            api_batch.add_request(request, success=success, failure=failure)
         api_batch.execute()
-        yield from records
+
+        return records
 
     @backoff_policy
     def _get_creatives(self, params: Mapping[str, Any]) -> Iterator:
@@ -230,7 +230,7 @@ class AdsAPI(IncrementalStreamAPI):
         return self._api.account.get_ads(params=params, fields=[self.state_pk])
 
     @backoff_policy
-    def _extend_record(self, ad, fields):
+    def _extend_record(self, ad: Ad, fields: Sequence[str]):
         return ad.api_get(fields=fields).export_all_data()
 
 
@@ -330,11 +330,11 @@ class AdsInsightAPI(IncrementalStreamAPI):
     level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
-    buffer_days = 28
 
-    def __init__(self, api, start_date, breakdowns=None):
+    def __init__(self, api, start_date, breakdowns=None, buffer_days=28):
         super().__init__(api=api)
         self.start_date = start_date
+        self.buffer_days = buffer_days
         self._state = start_date
         self.breakdowns = breakdowns
 
@@ -359,11 +359,15 @@ class AdsInsightAPI(IncrementalStreamAPI):
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
             logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete")
+            runtime = pendulum.now() - start_time
 
             if job["async_status"] == "Job Completed":
                 return job
+            elif job["async_status"] == "Job Failed":
+                raise JobTimeoutException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
+            elif job["async_status"] == "Job Skipped":
+                raise JobTimeoutException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
 
-            runtime = pendulum.now() - start_time
             if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
                 raise JobTimeoutException(
                     f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."

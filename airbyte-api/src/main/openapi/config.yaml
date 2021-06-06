@@ -841,6 +841,29 @@ paths:
           description: Connection not found
         "422":
           $ref: "#/components/responses/InvalidInput"
+  /v1/state/get:
+    post:
+      tags:
+        - connection
+      summary: Fetch the current state for a connection.
+      operationId: getState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionState"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
   /v1/connections/delete:
     post:
       tags:
@@ -904,6 +927,27 @@ paths:
                 $ref: "#/components/schemas/JobInfoRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/check:
+    post:
+      tags:
+        - operation
+      summary: Check if an operation to be created is valid
+      operationId: checkOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationCreateOrUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckOperationRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/operations/create:
@@ -1095,7 +1139,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WbConnectionReadList"
+                $ref: "#/components/schemas/WebBackendConnectionReadList"
         "404":
           description: Workspace not found
         "422":
@@ -1118,9 +1162,30 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WbConnectionRead"
+                $ref: "#/components/schemas/WebBackendConnectionRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/create:
+    post:
+      tags:
+        - web_backend
+      summary: Create a connection
+      operationId: webBackendCreateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/connections/update:
@@ -1141,7 +1206,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ConnectionRead"
+                $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/sources/recreate:
@@ -1907,6 +1972,13 @@ components:
         name:
           type: string
           description: Optional name of the connection
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -1924,6 +1996,15 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+    WebBackendConnectionCreate:
+      allOf:
+        - $ref: "#/components/schemas/ConnectionCreate"
+        - type: object
+          properties:
+            withOperations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OperationCreate"
     ConnectionUpdate:
       type: object
       required:
@@ -1933,6 +2014,13 @@ components:
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -1953,6 +2041,10 @@ components:
           properties:
             withRefreshedCatalog:
               type: boolean
+            operations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OperationCreateOrUpdate"
     ConnectionRead:
       type: object
       required:
@@ -1967,6 +2059,13 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -2018,6 +2117,14 @@ components:
             - days
             - weeks
             - months
+    NamespaceDefinitionType:
+      type: string
+      description: Method used for computing final namespace in destination
+      default: source
+      enum:
+        - source
+        - destination
+        - customformat
     # Operations
     OperationId:
       type: string
@@ -2043,6 +2150,18 @@ components:
       type: object
       required:
         - operationId
+        - name
+        - operatorConfiguration
+      properties:
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+    OperationCreateOrUpdate:
+      type: object
+      required:
         - name
         - operatorConfiguration
       properties:
@@ -2115,6 +2234,18 @@ components:
         dockerImage:
           type: string
         dbtArguments:
+          type: string
+    CheckOperationRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        message:
           type: string
     # LOGS
     LogType:
@@ -2426,8 +2557,19 @@ components:
           type: string
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+    ConnectionState:
+      type: object
+      required:
+        - connectionId
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        state:
+          $ref: "#/components/schemas/ConnectionStateObject"
+    ConnectionStateObject:
+      type: object
     # Web Backend
-    WbConnectionRead:
+    WebBackendConnectionRead:
       type: object
       required:
         - connectionId
@@ -2444,8 +2586,16 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
         prefix:
           type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
@@ -2474,7 +2624,7 @@ components:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
-    WbConnectionReadList:
+    WebBackendConnectionReadList:
       type: object
       required:
         - connections
@@ -2482,7 +2632,7 @@ components:
         connections:
           type: array
           items:
-            $ref: "#/components/schemas/WbConnectionRead"
+            $ref: "#/components/schemas/WebBackendConnectionRead"
     SyncMode:
       type: string
       enum:

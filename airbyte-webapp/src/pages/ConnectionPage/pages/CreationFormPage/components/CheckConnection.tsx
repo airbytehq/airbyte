@@ -2,11 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import Spinner from "components/Spinner";
-import { H4 } from "components/Titles";
 import StatusIcon from "components/StatusIcon";
-import Button from "components/Button";
-import Link from "components/Link";
+import { Button, H4, Link, Spinner } from "components";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 type IProps = {

@@ -5,8 +5,7 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
 
-import Button from "components/Button";
-
+import { Button } from "components";
 type IProps = {
   logs: string[];
   fileName: string;

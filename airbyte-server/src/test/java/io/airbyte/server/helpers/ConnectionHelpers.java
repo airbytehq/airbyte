@@ -32,12 +32,14 @@ import io.airbyte.api.model.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.AirbyteStreamConfiguration;
 import io.airbyte.api.model.ConnectionRead;
 import io.airbyte.api.model.ConnectionSchedule;
+import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.commons.text.Names;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
+import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -52,6 +54,8 @@ public class ConnectionHelpers {
 
   private static final String STREAM_NAME = "users-data";
   private static final String FIELD_NAME = "id";
+  private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
+  private static final long BASIC_SCHEDULE_UNITS = 1L;
 
   public static StandardSync generateSyncWithSourceId(UUID sourceId) {
     final UUID connectionId = UUID.randomUUID();
@@ -59,12 +63,16 @@ public class ConnectionHelpers {
     return new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(sourceId)
         .withDestinationId(UUID.randomUUID())
-        .withOperationIds(List.of(UUID.randomUUID()));
+        .withOperationIds(List.of(UUID.randomUUID()))
+        .withManual(false)
+        .withSchedule(generateBasicSchedule());
   }
 
   public static StandardSync generateSyncWithDestinationId(UUID destinationId) {
@@ -73,18 +81,27 @@ public class ConnectionHelpers {
     return new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceId(UUID.randomUUID())
         .withDestinationId(destinationId)
-        .withOperationIds(List.of(UUID.randomUUID()));
+        .withOperationIds(List.of(UUID.randomUUID()))
+        .withManual(true);
   }
 
-  public static ConnectionSchedule generateBasicSchedule() {
+  public static ConnectionSchedule generateBasicConnectionSchedule() {
     return new ConnectionSchedule()
-        .timeUnit(ConnectionSchedule.TimeUnitEnum.DAYS)
-        .units(1L);
+        .timeUnit(ConnectionSchedule.TimeUnitEnum.fromValue(BASIC_SCHEDULE_TIME_UNIT))
+        .units(BASIC_SCHEDULE_UNITS);
+  }
+
+  public static Schedule generateBasicSchedule() {
+    return new Schedule()
+        .withTimeUnit(TimeUnit.fromValue(BASIC_SCHEDULE_TIME_UNIT))
+        .withUnits(BASIC_SCHEDULE_UNITS);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(UUID connectionId,
@@ -98,29 +115,30 @@ public class ConnectionHelpers {
         .destinationId(destinationId)
         .operationIds(operationIds)
         .name("presto to hudi")
+        .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.SOURCE)
+        .namespaceFormat(null)
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
-        .schedule(generateBasicSchedule())
+        .schedule(generateBasicConnectionSchedule())
         .syncCatalog(ConnectionHelpers.generateBasicApiCatalog());
   }
 
   public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
-    return generateExpectedConnectionRead(
+    final ConnectionRead connectionRead = generateExpectedConnectionRead(
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
         standardSync.getDestinationId(),
         standardSync.getOperationIds());
-  }
 
-  public static StandardSyncSchedule generateSchedule(UUID connectionId) {
-    final Schedule schedule = new Schedule()
-        .withTimeUnit(Schedule.TimeUnit.DAYS)
-        .withUnits(1L);
+    if (standardSync.getSchedule() == null) {
+      connectionRead.schedule(null);
+    } else {
+      connectionRead.schedule(new ConnectionSchedule()
+          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
+          .units(standardSync.getSchedule().getUnits()));
+    }
 
-    return new StandardSyncSchedule()
-        .withConnectionId(connectionId)
-        .withSchedule(schedule)
-        .withManual(false);
+    return connectionRead;
   }
 
   public static JsonNode generateBasicJsonSchema() {

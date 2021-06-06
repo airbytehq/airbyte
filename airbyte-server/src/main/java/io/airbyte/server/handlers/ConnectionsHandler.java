@@ -39,11 +39,11 @@ import io.airbyte.api.model.ConnectionUpdate;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncSchedule;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -83,6 +83,8 @@ public class ConnectionsHandler {
     final StandardSync standardSync = new StandardSync()
         .withConnectionId(connectionId)
         .withName(connectionCreate.getName() != null ? connectionCreate.getName() : "default")
+        .withNamespaceDefinition(Enums.convertTo(connectionCreate.getNamespaceDefinition(), NamespaceDefinitionType.class))
+        .withNamespaceFormat(connectionCreate.getNamespaceFormat())
         .withPrefix(connectionCreate.getPrefix())
         .withSourceId(connectionCreate.getSourceId())
         .withDestinationId(connectionCreate.getDestinationId())
@@ -96,38 +98,34 @@ public class ConnectionsHandler {
       standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
     }
 
-    configRepository.writeStandardSync(standardSync);
-
-    // persist schedule
-    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule().withConnectionId(connectionId);
     if (connectionCreate.getSchedule() != null) {
       final Schedule schedule = new Schedule()
           .withTimeUnit(toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
           .withUnits(connectionCreate.getSchedule().getUnits());
-      standardSyncSchedule
+      standardSync
           .withManual(false)
           .withSchedule(schedule);
     } else {
-      standardSyncSchedule.withManual(true);
+      standardSync.withManual(true);
     }
 
-    configRepository.writeStandardSchedule(standardSyncSchedule);
+    configRepository.writeStandardSync(standardSync);
 
-    trackNewConnection(standardSync, standardSyncSchedule);
+    trackNewConnection(standardSync);
 
     return buildConnectionRead(connectionId);
   }
 
-  private void trackNewConnection(final StandardSync standardSync, final StandardSyncSchedule standardSyncSchedule) {
+  private void trackNewConnection(final StandardSync standardSync) {
     try {
-      final Builder<String, Object> metadataBuilder = generateMetadata(standardSync, standardSyncSchedule);
+      final Builder<String, Object> metadataBuilder = generateMetadata(standardSync);
       TrackingClientSingleton.get().track("New Connection - Backend", metadataBuilder.build());
     } catch (Exception e) {
       LOGGER.error("failed while reporting usage.", e);
     }
   }
 
-  private Builder<String, Object> generateMetadata(final StandardSync standardSync, final StandardSyncSchedule standardSyncSchedule) {
+  private Builder<String, Object> generateMetadata(final StandardSync standardSync) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
 
     final UUID connectionId = standardSync.getConnectionId();
@@ -142,10 +140,10 @@ public class ConnectionsHandler {
     metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
 
     final String frequencyString;
-    if (standardSyncSchedule.getManual()) {
+    if (standardSync.getManual()) {
       frequencyString = "manual";
     } else {
-      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSyncSchedule.getSchedule()));
+      final long intervalInMinutes = TimeUnit.SECONDS.toMinutes(ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule()));
       frequencyString = intervalInMinutes + " min";
     }
     metadata.put("frequency", frequencyString);
@@ -153,40 +151,27 @@ public class ConnectionsHandler {
   }
 
   public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate) throws ConfigNotFoundException, IOException, JsonValidationException {
-    // retrieve sync
+    // retrieve and update sync
     final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId())
+        .withNamespaceDefinition(Enums.convertTo(connectionUpdate.getNamespaceDefinition(), NamespaceDefinitionType.class))
+        .withNamespaceFormat(connectionUpdate.getNamespaceFormat())
         .withPrefix(connectionUpdate.getPrefix())
         .withOperationIds(connectionUpdate.getOperationIds())
         .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
-    return updateConnection(connectionUpdate, persistedSync);
-  }
-
-  public ConnectionRead updateConnection(ConnectionUpdate connectionUpdate, StandardSync persistedSync)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final UUID connectionId = connectionUpdate.getConnectionId();
-
-    // retrieve schedule
-    final StandardSyncSchedule persistedSchedule = configRepository.getStandardSyncSchedule(connectionId);
+    // update sync schedule
     if (connectionUpdate.getSchedule() != null) {
-      final Schedule schedule = new Schedule()
+      final Schedule newSchedule = new Schedule()
           .withTimeUnit(toPersistenceTimeUnit(connectionUpdate.getSchedule().getTimeUnit()))
           .withUnits(connectionUpdate.getSchedule().getUnits());
-
-      persistedSchedule
-          .withSchedule(schedule)
-          .withManual(false);
+      persistedSync.withManual(false).withSchedule(newSchedule);
     } else {
-      persistedSchedule
-          .withSchedule(null)
-          .withManual(true);
+      persistedSync.withManual(true).withSchedule(null);
     }
 
     configRepository.writeStandardSync(persistedSync);
-    configRepository.writeStandardSchedule(persistedSchedule);
-
-    return buildConnectionRead(connectionId);
+    return buildConnectionRead(connectionUpdate.getConnectionId());
   }
 
   public ConnectionReadList listConnectionsForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -219,6 +204,8 @@ public class ConnectionsHandler {
 
   public void deleteConnection(ConnectionRead connectionRead) throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+        .namespaceDefinition(connectionRead.getNamespaceDefinition())
+        .namespaceFormat(connectionRead.getNamespaceFormat())
         .prefix(connectionRead.getPrefix())
         .connectionId(connectionRead.getConnectionId())
         .operationIds(connectionRead.getOperationIds())
@@ -237,22 +224,17 @@ public class ConnectionsHandler {
 
   private ConnectionRead buildConnectionRead(UUID connectionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    // read sync from db
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-
-    // read schedule from db
-    final StandardSyncSchedule standardSyncSchedule = configRepository.getStandardSyncSchedule(connectionId);
-    return buildConnectionRead(standardSync, standardSyncSchedule);
+    return buildConnectionRead(standardSync);
   }
 
-  private ConnectionRead buildConnectionRead(final StandardSync standardSync,
-                                             final StandardSyncSchedule standardSyncSchedule) {
+  private ConnectionRead buildConnectionRead(final StandardSync standardSync) {
     ConnectionSchedule apiSchedule = null;
 
-    if (!standardSyncSchedule.getManual()) {
+    if (!standardSync.getManual()) {
       apiSchedule = new ConnectionSchedule()
-          .timeUnit(toApiTimeUnit(standardSyncSchedule.getSchedule().getTimeUnit()))
-          .units(standardSyncSchedule.getSchedule().getUnits());
+          .timeUnit(toApiTimeUnit(standardSync.getSchedule().getTimeUnit()))
+          .units(standardSync.getSchedule().getUnits());
     }
 
     return new ConnectionRead()
@@ -263,6 +245,8 @@ public class ConnectionsHandler {
         .status(toApiStatus(standardSync.getStatus()))
         .schedule(apiSchedule)
         .name(standardSync.getName())
+        .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.NamespaceDefinitionType.class))
+        .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
   }

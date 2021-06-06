@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useFetcher } from "rest-hooks";
+import { useFetcher, useResource } from "rest-hooks";
 import { useStatefulResource } from "@rest-hooks/legacy";
 
 import config from "config";
@@ -243,4 +243,11 @@ const useSource = (): SourceService => {
     checkSourceConnection,
   };
 };
+
+const useSourceList = (): { sources: Source[] } =>
+  useResource(SourceResource.listShape(), {
+    workspaceId: config.ui.workspaceId,
+  });
+
+export { useSourceList };
 export default useSource;

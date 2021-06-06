@@ -4,7 +4,7 @@
 
 This source can sync data for the [Slack API](https://api.slack.com/). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Source Connector is based on a [Singer Tap](https://github.com/singer-io/tap-slack).
+This Source Connector is based on a [Singer Tap](https://github.com/airbytehq/tap-slack).
 
 ### Output schema
 

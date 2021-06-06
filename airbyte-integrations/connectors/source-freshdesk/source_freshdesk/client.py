@@ -23,8 +23,9 @@
 #
 
 
-from typing import Any, Mapping, Tuple
+from typing import Any, Iterable, Mapping, Tuple
 
+from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
 
 from .api import (
@@ -63,6 +64,14 @@ class Client(BaseClient):
             "satisfaction_ratings": SatisfactionRatingsAPI(self._api),
         }
         super().__init__()
+
+    @property
+    def streams(self) -> Iterable[AirbyteStream]:
+        """List of available streams"""
+        for stream in super().streams:
+            if stream.source_defined_cursor:
+                stream.default_cursor_field = [self._apis[stream.name].state_pk]
+            yield stream
 
     def settings(self):
         url = "settings/helpdesk"

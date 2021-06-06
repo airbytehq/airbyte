@@ -292,4 +292,10 @@ const useDestination = (): DestinationService => {
   };
 };
 
+const useDestinationList = (): { destinations: Destination[] } =>
+  useResource(DestinationResource.listShape(), {
+    workspaceId: config.ui.workspaceId,
+  });
+
+export { useDestinationList };
 export default useDestination;
