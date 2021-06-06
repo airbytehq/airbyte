@@ -67,7 +67,17 @@ class IncrementalPosthogStream(PosthogStream, ABC):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.reversed_pagination = {"is_completed": False, "latest_response_state": {}, "is_new_page_available": False, "upgrade_to": {}}
+        """
+        Personal instance variables.
+        @params _initial_state - contains initial state for each instance. Uses for interrupting next_page_token.
+        @param _upgrade_to - first response state value.
+            Example we have 5 pages of data from 500 to 1 with resp_size and state = 121.
+            The loop will be interrupted after we got response containing [200-101] <- by _initial_state
+            The value `500` will be a new state value we need to save it.
+        """
+        self._initial_state = None
+        self._upgrade_state_to = None
+        
 
     @property
     @abstractmethod
@@ -78,29 +88,37 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         """
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self.reversed_pagination["is_completed"]:
-            return {}
-        params = super().next_page_token(response=response)
-        if params:
-            return params
+        response_json = response.json()
+        data = response_json.get(self.data_field, [])
+        if data:
+            if (
+                self._initial_state
+                and data[-1][self.cursor_field] <= self._initial_state
+                ):
+                return {}
+            params = super().next_page_token(response=response)
+            if params:
+                return params
+            elif not self._initial_state:
+                
+                # cover full_refresh!, end of pagination, for state upgrade
+                self._initial_state = data[-1][self.cursor_field]
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
+            
         current_stream_state = current_stream_state or {}
         current_state = current_stream_state.get(self.cursor_field)
         latest_state = latest_record.get(self.cursor_field)
 
-        if current_state and latest_state <= current_state:
-            return self.reversed_pagination["upgrade_to"]
-        if (
-            self.reversed_pagination["latest_response_state"]
-            and latest_state <= self.reversed_pagination["latest_response_state"][self.cursor_field]
-            and self.reversed_pagination["is_completed"]
-        ):
-            return self.reversed_pagination["upgrade_to"]
+        if current_stream_state and not self._initial_state:
+            self._initial_state = current_stream_state.get(self.cursor_field)
+            
+        if self._initial_state and latest_state <= self._initial_state:
+            return self._upgrade_state_to
 
         return current_stream_state  # dont upgrade state until complete!
 
@@ -108,30 +126,18 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         response_json = response.json()
         data = response_json.get(self.data_field, [])
         if data:
-            if not response_json.get("next"):
-                self.reversed_pagination["is_completed"] = True
-            if not self.reversed_pagination["upgrade_to"]:
-                self.reversed_pagination["upgrade_to"] = {self.cursor_field: data[0][self.cursor_field]}
-            last_record_value = data[-1][self.cursor_field]
+            if not self._upgrade_state_to: # set once
+                self._upgrade_state_to = {self.cursor_field: data[0][self.cursor_field]}
             if not stream_state:
-                self.reversed_pagination["latest_response_state"] = {self.cursor_field: last_record_value}
                 yield from data
             else:
-                first_record_value = data[0][self.cursor_field]
-                state_value = stream_state.get(self.cursor_field)
-
-                if state_value >= first_record_value:
-                    self.reversed_pagination["upgrade_to"] = stream_state
-                    self.reversed_pagination["is_completed"] = True
-                    yield from []
-                elif state_value < last_record_value:  # full page
-                    self.reversed_pagination["latest_response_state"] = {self.cursor_field: last_record_value}
-                    yield from data
-                else:  # last_record_value <= state_value < first_record_value
-                    slice_ = [i for i in data if i[self.cursor_field] > state_value]
-                    self.reversed_pagination["latest_response_state"] = {self.cursor_field: slice_[-1][self.cursor_field]}
-                    self.reversed_pagination["is_completed"] = True
-                    yield from slice_
+                for record in data:
+                    record_cur_value = record.get(self.cursor_field)
+                    state_value = stream_state.get(self.cursor_field)
+                    if record_cur_value > state_value:
+                        yield record
+                    else:
+                        break
 
         else:
             yield from data
@@ -185,19 +191,20 @@ class Cohorts(IncrementalPosthogStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
+        # need to skip response until data>stream_state
         data = response_json.get(self.data_field, [])
         if data and stream_state:
-            last_record_curfield = data[-1][self.cursor_field]
-            last_stream_curfield = stream_state[self.cursor_field]
-            if last_stream_curfield >= last_record_curfield:
+            state_value = stream_state.get(self.cursor_field)
+            first_record_curvalue = data[0][self.cursor_field]
+            if first_record_curvalue > state_value: # skip page
                 yield from []
             else:
-                first_record_curfield = data[0][self.cursor_field]
-                if first_record_curfield > last_stream_curfield:
-                    yield from data
-                else:
-                    slice_ = [i for i in data if i[self.cursor_field] > last_stream_curfield]
-                    yield from slice_
+                for record in data:
+                    record_cur_value = record.get(self.cursor_field)
+                    if record_cur_value <= state_value:
+                        continue
+                    else:
+                        yield record
 
         else:
             yield from data
@@ -283,3 +290,4 @@ class Trends(PosthogStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "insight/trend"
+
