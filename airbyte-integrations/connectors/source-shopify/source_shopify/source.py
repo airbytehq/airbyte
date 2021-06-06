@@ -165,6 +165,15 @@ class Collects(IncrementalShopifyStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
+    def request_params(self, stream_state=None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        params = {"limit": self.limit, "since_id": {self.since_id}, **stream_state, **kwargs}
+        if stream_state.get(self.cursor_field, 0) > self.since_id:
+            params["since_id"] = stream_state.get(self.cursor_field)
+        else:
+            params["since_id"] = self.since_id
+        return params
+
 
 class OrderRefunds(IncrementalShopifyStream):
     data_field = "refunds"
