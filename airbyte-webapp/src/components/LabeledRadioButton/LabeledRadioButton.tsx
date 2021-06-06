@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import RadioButton from "components/RadioButton";
+import { RadioButton } from "components";
 
 type IProps = {
   message?: React.ReactNode;
