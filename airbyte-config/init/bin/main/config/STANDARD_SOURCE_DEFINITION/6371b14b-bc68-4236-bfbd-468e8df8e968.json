@@ -1,7 +1,0 @@
-{
-  "sourceDefinitionId": "6371b14b-bc68-4236-bfbd-468e8df8e968",
-  "name": "PokeAPI",
-  "dockerRepository": "airbyte/source-pokeapi",
-  "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-pokeapi"
-}

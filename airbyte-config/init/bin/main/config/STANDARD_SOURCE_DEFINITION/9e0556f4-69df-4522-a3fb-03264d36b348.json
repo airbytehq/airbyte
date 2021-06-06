@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "9e0556f4-69df-4522-a3fb-03264d36b348",
-  "name": "Marketo",
-  "dockerRepository": "airbyte/source-marketo-singer",
-  "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-marketo-singer",
-  "icon": "marketo.svg"
-}

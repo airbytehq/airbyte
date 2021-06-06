@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
-  "name": "Postgres",
-  "dockerRepository": "airbyte/source-postgres",
-  "dockerImageTag": "0.3.2",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-postgres",
-  "icon": "postgresql.svg"
-}
