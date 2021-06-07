@@ -36,6 +36,7 @@ import io.airbyte.api.model.ConnectionSchedule.TimeUnitEnum;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.commons.text.Names;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardSync;
@@ -44,7 +45,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -62,6 +63,8 @@ public class ConnectionHelpers {
     return new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
@@ -78,6 +81,8 @@ public class ConnectionHelpers {
     return new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
@@ -110,6 +115,8 @@ public class ConnectionHelpers {
         .destinationId(destinationId)
         .operationIds(operationIds)
         .name("presto to hudi")
+        .namespaceDefinition(io.airbyte.api.model.NamespaceDefinitionType.SOURCE)
+        .namespaceFormat(null)
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicConnectionSchedule())

@@ -1,0 +1,40 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
+# for more information about how to configure these tests
+connector_image: airbyte/source-jira:dev
+tests:
+  spec:
+    - spec_path: "source_jira/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/issues_configured_catalog.json"
+      validate_output_from_all_streams: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/issue_worklogs_configured_catalog.json"
+      validate_output_from_all_streams: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/projects_configured_catalog.json"
+      validate_output_from_all_streams: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/workflows_configured_catalog.json"
+      validate_output_from_all_streams: yes
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      validate_output_from_all_streams: yes
+#  incremental:
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/full_configured_catalog.json"
+#      state_path: "integration_tests/abnormal_state.json"
+#      cursor_paths:
+#        issues: ["created"]
+#        issue_worklogs: ["startedAfter"]
+#  Jira Source has a lot streams. It takes to long to sync them, which caused timeout error
+#  full_refresh:
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "integration_tests/full_configured_catalog.json"

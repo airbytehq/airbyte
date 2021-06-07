@@ -10,11 +10,8 @@ import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import Button from "components/Button";
-
+import { Button } from "components";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
-
-import config from "config";
 
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { Source } from "core/resources/Source";
@@ -134,7 +131,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
 
   const onSelectFrequency = (item: { text: string }) => {
     AnalyticsService.track("New Connection - Action", {
-      user_id: config.ui.workspaceId,
       action: "Select a frequency",
       frequency: item?.text,
       connector_source_definition: source?.sourceName,

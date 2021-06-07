@@ -48,6 +48,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -59,7 +60,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -67,8 +68,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
@@ -132,7 +133,6 @@ public class CdcMySqlSourceTest {
   }
 
   private void init() {
-    DebeziumRecordIterator.sleepTimeUnit = TimeUnit.SECONDS;
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     source = new MySqlSource();
@@ -260,6 +260,89 @@ public class CdcMySqlSourceTest {
   }
 
   @Test
+  public void fullRefreshAndCDCShouldReturnSameRecords() throws Exception {
+    JsonNode record1 = Jsons.jsonNode(ImmutableMap.of(
+        "id", 1,
+        "bool_col", true,
+        "tiny_int_one_col", true));
+    ((ObjectNode) record1).put("tiny_int_two_col", (short) 80);
+    JsonNode record2 = Jsons.jsonNode(ImmutableMap.of(
+        "id", 2,
+        "bool_col", false,
+        "tiny_int_one_col", false));
+    ((ObjectNode) record2).put("tiny_int_two_col", (short) 90);
+    ImmutableList<JsonNode> records = ImmutableList.of(record1, record2);
+    Set<JsonNode> originalData = new HashSet<>(records);
+    setupForComparisonBetweenFullRefreshAndCDCSnapshot(records);
+
+    AirbyteCatalog discover = source.discover(config);
+    List<AirbyteStream> streams = discover.getStreams();
+
+    assertEquals(streams.size(), 1);
+    JsonNode jsonSchema = streams.get(0).getJsonSchema().get("properties");
+    assertEquals(jsonSchema.get("id").get("type").asText(), "number");
+    assertEquals(jsonSchema.get("bool_col").get("type").asText(), "boolean");
+    assertEquals(jsonSchema.get("tiny_int_one_col").get("type").asText(), "boolean");
+    assertEquals(jsonSchema.get("tiny_int_two_col").get("type").asText(), "number");
+
+    AirbyteCatalog catalog = new AirbyteCatalog().withStreams(streams);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
+        .toDefaultConfiguredCatalog(catalog);
+    configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.FULL_REFRESH));
+
+    Set<JsonNode> dataFromFullRefresh = extractRecordMessages(
+        AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
+            .stream()
+            .map(AirbyteRecordMessage::getData).collect(Collectors.toSet());
+
+    configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.INCREMENTAL));
+    Set<JsonNode> dataFromDebeziumSnapshot = extractRecordMessages(
+        AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
+            .stream()
+            .map(
+                airbyteRecordMessage -> {
+                  JsonNode data = airbyteRecordMessage.getData();
+                  removeCDCColumns((ObjectNode) data);
+                  /**
+                   * Debezium reads TINYINT (expect for TINYINT(1)) as IntNode while FullRefresh reads it as Short Ref
+                   * : {@link io.airbyte.db.jdbc.JdbcUtils#setJsonField(java.sql.ResultSet, int, ObjectNode)} -> case
+                   * TINYINT, SMALLINT -> o.put(columnName, r.getShort(i));
+                   */
+                  ((ObjectNode) data)
+                      .put("tiny_int_two_col", (short) data.get("tiny_int_two_col").asInt());
+                  return data;
+                })
+            .collect(Collectors.toSet());
+
+    assertEquals(dataFromFullRefresh, originalData);
+    assertEquals(dataFromFullRefresh, dataFromDebeziumSnapshot);
+  }
+
+  private void setupForComparisonBetweenFullRefreshAndCDCSnapshot(
+                                                                  ImmutableList<JsonNode> data) {
+    executeQuery("CREATE DATABASE " + "test_schema" + ";");
+    executeQuery(String.format(
+        "CREATE TABLE %s.%s(%s INTEGER, %s Boolean, %s TINYINT(1), %s TINYINT(2), PRIMARY KEY (%s));",
+        "test_schema", "table_with_tiny_int", "id", "bool_col", "tiny_int_one_col",
+        "tiny_int_two_col", "id"));
+
+    executeQuery(String
+        .format("INSERT INTO %s.%s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s);", "test_schema",
+            "table_with_tiny_int",
+            "id", "bool_col", "tiny_int_one_col", "tiny_int_two_col",
+            data.get(0).get("id").asInt(), data.get(0).get("bool_col").asBoolean(),
+            data.get(0).get("tiny_int_one_col").asBoolean() ? 99 : -99, data.get(0).get("tiny_int_two_col").asInt()));
+
+    executeQuery(String
+        .format("INSERT INTO %s.%s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s);", "test_schema",
+            "table_with_tiny_int",
+            "id", "bool_col", "tiny_int_one_col", "tiny_int_two_col",
+            data.get(1).get("id").asInt(), data.get(1).get("bool_col").asBoolean(),
+            data.get(1).get("tiny_int_one_col").asBoolean() ? 99 : -99, data.get(1).get("tiny_int_two_col").asInt()));
+    ((ObjectNode) config).put("database", "test_schema");
+  }
+
+  @Test
   @DisplayName("On the first sync, produce returns records that exist in the database.")
   void testExistingData() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> read = source
@@ -268,6 +351,27 @@ public class CdcMySqlSourceTest {
 
     final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
+
+    JdbcDatabase jdbcDatabase = Databases.createJdbcDatabase(
+        config.get("username").asText(),
+        config.get("password").asText(),
+        String.format("jdbc:mysql://%s:%s",
+            config.get("host").asText(),
+            config.get("port").asInt()),
+        DRIVER_CLASS);
+
+    Optional<TargetFilePosition> targetFilePosition = TargetFilePosition.targetFilePosition(jdbcDatabase);
+    assertTrue(targetFilePosition.isPresent());
+    /**
+     * Debezium sets the binlog file name and position values for all the records fetched during
+     * snapshot to the latest log position fetched via query SHOW MASTER STATUS Ref :
+     * {@linkplain io.debezium.connector.mysql.SnapshotReader#readBinlogPosition(int, io.debezium.connector.mysql.SourceInfo, io.debezium.jdbc.JdbcConnection, java.util.concurrent.atomic.AtomicReference)}
+     */
+    recordMessages.forEach(record -> {
+      assertEquals(record.getData().get(CDC_LOG_FILE).asText(),
+          targetFilePosition.get().fileName);
+      assertEquals(record.getData().get(CDC_LOG_POS).asInt(), targetFilePosition.get().position);
+    });
 
     assertExpectedRecords(
         new HashSet<>(MODEL_RECORDS), recordMessages);
@@ -655,16 +759,20 @@ public class CdcMySqlSourceTest {
             assertNull(data.get(CDC_DELETED_AT));
           }
 
-          ((ObjectNode) data).remove(CDC_LOG_FILE);
-          ((ObjectNode) data).remove(CDC_LOG_POS);
-          ((ObjectNode) data).remove(CDC_UPDATED_AT);
-          ((ObjectNode) data).remove(CDC_DELETED_AT);
+          removeCDCColumns((ObjectNode) data);
 
           return data;
         })
         .collect(Collectors.toSet());
 
     assertEquals(expectedRecords, actualData);
+  }
+
+  private static void removeCDCColumns(ObjectNode data) {
+    data.remove(CDC_LOG_FILE);
+    data.remove(CDC_LOG_POS);
+    data.remove(CDC_UPDATED_AT);
+    data.remove(CDC_DELETED_AT);
   }
 
 }
