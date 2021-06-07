@@ -33,7 +33,6 @@ import io.airbyte.config.StandardTapConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
@@ -87,7 +86,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
         input.getState() == null ? null : Jsons.serialize(input.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error);
+    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
@@ -124,7 +123,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      throw new WorkerException("Source process wasn't successful");
+      LOGGER.warn(
+          "Source process might not have shut down correctly. source process alive: {}, source process exit value: {}. This warning is normal if the job was cancelled.",
+          sourceProcess.isAlive(), sourceProcess.exitValue());
     }
   }
 
