@@ -99,28 +99,15 @@ class IncrementalPosthogStream(PosthogStream, ABC):
             params = super().next_page_token(response=response)
             if params:
                 return params
-            elif not self._initial_state:
-                
-                # cover full_refresh!, end of pagination, for state upgrade
-                self._initial_state = data[-1][self.cursor_field]
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-            
-        current_stream_state = current_stream_state or {}
-        current_state = current_stream_state.get(self.cursor_field)
-        latest_state = latest_record.get(self.cursor_field)
-
-        if current_stream_state and not self._initial_state:
-            self._initial_state = current_stream_state.get(self.cursor_field)
-            
-        if self._initial_state and latest_state <= self._initial_state:
+        if self._initial_state and self._upgrade_state_to:
             return self._upgrade_state_to
-
-        return current_stream_state  # dont upgrade state until complete!
+        return current_stream_state
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -131,9 +118,11 @@ class IncrementalPosthogStream(PosthogStream, ABC):
             if not stream_state:
                 yield from data
             else:
+                state_value = stream_state.get(self.cursor_field)
+                if not self._initial_state:
+                    self._initial_state = state_value
                 for record in data:
                     record_cur_value = record.get(self.cursor_field)
-                    state_value = stream_state.get(self.cursor_field)
                     if record_cur_value > state_value:
                         yield record
                     else:
