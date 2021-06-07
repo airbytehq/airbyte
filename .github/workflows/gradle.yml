@@ -114,11 +114,14 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
+      - name: Free up space
+        run: sudo rm -rf /usr/share/dotnet
+
       - name: Get Docker Space
         run: docker run --rm busybox df -h
 
       - name: Build Core Docker Images
-        if: success() && github.ref == 'refs/heads/master'
+        if: success()
         run: ./gradlew --no-daemon composeBuild --scan
         env:
           GIT_REVISION: ${{ github.sha }}
