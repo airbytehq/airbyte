@@ -92,7 +92,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
       final String datasetId = config.get(CONFIG_DATASET_ID).asText();
-      final String datasetLocation = config.get(CONFIG_DATASET_LOCATION).asText();
+      final String datasetLocation = getDatasetLocation(config);
       final BigQuery bigquery = getBigQuery(config);
       createSchemaTable(bigquery, datasetId, datasetLocation);
       QueryJobConfiguration queryConfig = QueryJobConfiguration
@@ -109,6 +109,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     } catch (Exception e) {
       LOGGER.info("Check failed.", e);
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
+    }
+  }
+
+  private static String getDatasetLocation(JsonNode config) {
+    if (config.has(CONFIG_DATASET_LOCATION)) {
+      return config.get(CONFIG_DATASET_LOCATION).asText();
+    } else {
+      return "US";
     }
   }
 
@@ -177,7 +185,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final String schemaName = getSchema(config, configStream);
       final String tableName = namingResolver.getRawTableName(streamName);
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
-      final String datasetLocation = config.get(CONFIG_DATASET_LOCATION).asText();
+      final String datasetLocation = getDatasetLocation(config);
       createSchemaAndTableIfNeeded(bigquery, existingSchemas, schemaName, tmpTableName, datasetLocation);
 
       // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
@@ -208,7 +216,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return srcNamespace;
   }
 
-  private void createSchemaAndTableIfNeeded(BigQuery bigquery, Set<String> existingSchemas, String schemaName, String tmpTableName, String datasetLocation) {
+  private void createSchemaAndTableIfNeeded(BigQuery bigquery,
+                                            Set<String> existingSchemas,
+                                            String schemaName,
+                                            String tmpTableName,
+                                            String datasetLocation) {
     if (!existingSchemas.contains(schemaName)) {
       createSchemaTable(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);

@@ -206,7 +206,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .build()
         .getService();
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+    final DatasetInfo datasetInfo =
+        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
     dataset = bigquery.create(datasetInfo);
 
     tornDown = false;
