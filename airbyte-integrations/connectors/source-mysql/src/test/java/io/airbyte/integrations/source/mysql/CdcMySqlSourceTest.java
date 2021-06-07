@@ -261,7 +261,19 @@ public class CdcMySqlSourceTest {
 
   @Test
   public void fullRefreshAndCDCShouldReturnSameRecords() throws Exception {
-    setupForComparisonBetweenFullRefreshAndCDCSnapshot();
+    JsonNode record1 = Jsons.jsonNode(ImmutableMap.of(
+        "id", 1,
+        "bool_col", true,
+        "tiny_int_one_col", true));
+    ((ObjectNode) record1).put("tiny_int_two_col", (short) 80);
+    JsonNode record2 = Jsons.jsonNode(ImmutableMap.of(
+        "id", 2,
+        "bool_col", false,
+        "tiny_int_one_col", false));
+    ((ObjectNode) record2).put("tiny_int_two_col", (short) 90);
+    ImmutableList<JsonNode> records = ImmutableList.of(record1, record2);
+    Set<JsonNode> originalData = new HashSet<>(records);
+    setupForComparisonBetweenFullRefreshAndCDCSnapshot(records);
 
     AirbyteCatalog discover = source.discover(config);
     List<AirbyteStream> streams = discover.getStreams();
@@ -302,23 +314,12 @@ public class CdcMySqlSourceTest {
                 })
             .collect(Collectors.toSet());
 
-    JsonNode data1 = Jsons.jsonNode(ImmutableMap.of(
-        "id", 1,
-        "bool_col", true,
-        "tiny_int_one_col", true));
-    ((ObjectNode) data1).put("tiny_int_two_col", (short) 80);
-    JsonNode data2 = Jsons.jsonNode(ImmutableMap.of(
-        "id", 2,
-        "bool_col", false,
-        "tiny_int_one_col", true));
-    ((ObjectNode) data2).put("tiny_int_two_col", (short) 90);
-    Set<JsonNode> originalData = new HashSet<>(ImmutableList.of(data1, data2));
-
     assertEquals(dataFromFullRefresh, originalData);
     assertEquals(dataFromFullRefresh, dataFromDebeziumSnapshot);
   }
 
-  private void setupForComparisonBetweenFullRefreshAndCDCSnapshot() {
+  private void setupForComparisonBetweenFullRefreshAndCDCSnapshot(
+                                                                  ImmutableList<JsonNode> data) {
     executeQuery("CREATE DATABASE " + "test_schema" + ";");
     executeQuery(String.format(
         "CREATE TABLE %s.%s(%s INTEGER, %s Boolean, %s TINYINT(1), %s TINYINT(2), PRIMARY KEY (%s));",
@@ -329,15 +330,15 @@ public class CdcMySqlSourceTest {
         .format("INSERT INTO %s.%s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s);", "test_schema",
             "table_with_tiny_int",
             "id", "bool_col", "tiny_int_one_col", "tiny_int_two_col",
-            1, true,
-            5, 80));
+            data.get(0).get("id").asInt(), data.get(0).get("bool_col").asBoolean(),
+            data.get(0).get("tiny_int_one_col").asBoolean() ? 99 : -99, data.get(0).get("tiny_int_two_col").asInt()));
 
     executeQuery(String
         .format("INSERT INTO %s.%s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s);", "test_schema",
             "table_with_tiny_int",
             "id", "bool_col", "tiny_int_one_col", "tiny_int_two_col",
-            2, false,
-            11, 90));
+            data.get(1).get("id").asInt(), data.get(1).get("bool_col").asBoolean(),
+            data.get(1).get("tiny_int_one_col").asBoolean() ? 99 : -99, data.get(1).get("tiny_int_two_col").asInt()));
     ((ObjectNode) config).put("database", "test_schema");
   }
 

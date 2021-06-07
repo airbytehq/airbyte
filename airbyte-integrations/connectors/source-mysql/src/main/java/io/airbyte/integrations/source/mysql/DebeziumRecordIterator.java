@@ -123,12 +123,13 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     boolean isSnapshot = SnapshotMetadata.TRUE == SnapshotMetadata.valueOf(
         valueAsJson.get("source").get("snapshot").asText().toUpperCase());
 
-    if (isSnapshot || targetFilePosition.get().fileName.compareTo(file) > 0 || targetFilePosition.get().position >= position) {
+    if (isSnapshot || targetFilePosition.get().fileName.compareTo(file) > 0
+        || (targetFilePosition.get().fileName.compareTo(file) == 0 && targetFilePosition.get().position >= position)) {
       return false;
     }
 
     LOGGER.info(
-        "Signalling close cause record's binlog file : " + file + " , position : " + position
+        "Signalling close because record's binlog file : " + file + " , position : " + position
             + " is after target file : "
             + targetFilePosition.get().fileName + " , target position : " + targetFilePosition
                 .get().position);
