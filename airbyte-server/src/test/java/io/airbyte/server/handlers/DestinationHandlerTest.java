@@ -210,7 +210,6 @@ class DestinationHandlerTest {
     when(configRepository.getDestinationDefinitionFromDestination(destinationConnection.getDestinationId()))
         .thenReturn(standardDestinationDefinition);
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId()))
-        .thenReturn(destinationConnection)
         .thenReturn(expectedDestinationConnection);
     when(specFetcher.execute(imageName)).thenReturn(connectorSpecification);
     when(configurationUpdate.destination(destinationConnection.getDestinationId(), updatedDestName, newConfiguration))
