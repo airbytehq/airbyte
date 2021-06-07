@@ -2,7 +2,7 @@
   "sourceDefinitionId": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
   "name": "Jira",
   "dockerRepository": "airbyte/source-jira",
-  "dockerImageTag": "0.2.2",
+  "dockerImageTag": "0.2.4",
   "documentationUrl": "https://hub.docker.com/r/airbyte/source-jira",
   "icon": "jira.svg"
 }

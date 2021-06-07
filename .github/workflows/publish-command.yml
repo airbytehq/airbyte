@@ -49,6 +49,7 @@ jobs:
           ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
+          AZURE_STORAGE_INTEGRATION_TEST_CREDS: ${{ secrets.AZURE_STORAGE_INTEGRATION_TEST_CREDS }}
           BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
           BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
           DRIFT_INTEGRATION_TEST_CREDS: ${{ secrets.DRIFT_INTEGRATION_TEST_CREDS }}
@@ -66,6 +67,7 @@ jobs:
           GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS: ${{ secrets.GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS }}
           GREENHOUSE_TEST_CREDS: ${{ secrets.GREENHOUSE_TEST_CREDS }}
           GSHEETS_INTEGRATION_TESTS_CREDS: ${{ secrets.GSHEETS_INTEGRATION_TESTS_CREDS }}
+          HARVEST_INTEGRATION_TESTS_CREDS: ${{ secrets.HARVEST_INTEGRATION_TESTS_CREDS }}
           HUBSPOT_INTEGRATION_TESTS_CREDS: ${{ secrets.HUBSPOT_INTEGRATION_TESTS_CREDS }}
           INSTAGRAM_INTEGRATION_TESTS_CREDS: ${{ secrets.INSTAGRAM_INTEGRATION_TESTS_CREDS }}
           INTERCOM_INTEGRATION_TEST_CREDS: ${{ secrets.INTERCOM_INTEGRATION_TEST_CREDS }}
@@ -83,6 +85,7 @@ jobs:
           SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
           SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
           SLACK_TEST_CREDS: ${{ secrets.SLACK_TEST_CREDS }}
+          SOURCE_OKTA_TEST_CREDS: ${{ secrets.SOURCE_OKTA_TEST_CREDS }}
           SOURCE_SLACK_TEST_CREDS: ${{ secrets.SOURCE_SLACK_TEST_CREDS }}
           SMARTSHEETS_TEST_CREDS: ${{ secrets.SMARTSHEETS_TEST_CREDS }}
           SNOWFLAKE_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_INTEGRATION_TEST_CREDS }}
@@ -99,6 +102,7 @@ jobs:
           ZENDESK_TALK_TEST_CREDS: ${{ secrets.ZENDESK_TALK_TEST_CREDS }}
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
           PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
+          DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
       - run: |
           docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }}
@@ -115,12 +119,6 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Merge Pull Request
-        if: success()
-        uses: ridedott/merge-me-action@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
-          MERGE_METHOD: SQUASH
       - name: Add Failure Comment
         if: github.event.inputs.comment-id && !success()
         uses: peter-evans/create-or-update-comment@v1
