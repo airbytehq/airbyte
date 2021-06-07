@@ -224,13 +224,16 @@ public class KubePodProcess extends Process {
    * checking if the getRunning field is set. We could put this behind an interface, but that seems
    * heavy-handed compared to the 10 lines here.
    */
-  private static void waitForInitPodToRun(KubernetesClient client, Pod podDefinition) throws InterruptedException {
+  private static void waitForInitPodToRun(KubernetesClient client, Pod podDefinition, boolean copyFiles) throws InterruptedException {
     LOGGER.info("Waiting for init container to be ready before copying files...");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
     LOGGER.info("Init container present..");
-    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
-        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
+    if (copyFiles) {
+      LOGGER.info("Need to copy files, double checking init container is ready..");
+      client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
+          .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
+    }
     LOGGER.info("Init container ready..");
   }
 
@@ -246,7 +249,7 @@ public class KubePodProcess extends Process {
                         final String... args)
       throws IOException, InterruptedException {
     this.client = client;
-
+    LOGGER.info("===== New Kube Pod Process..");
     stdoutServerSocket = new ServerSocket(stdoutLocalPort);
     stderrServerSocket = new ServerSocket(stderrLocalPort);
     executorService = Executors.newFixedThreadPool(2);
@@ -322,8 +325,8 @@ public class KubePodProcess extends Process {
 
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
-    waitForInitPodToRun(client, podDefinition);
     if (copyFiles) {
+      waitForInitPodToRun(client, podDefinition, copyFiles);
       LOGGER.info("Copying files...");
       copyFilesToKubeConfigVolume(client, podName, namespace, files);
     }
@@ -418,6 +421,10 @@ public class KubePodProcess extends Process {
 
   private int getReturnCode(Pod pod) {
     Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).get();
+    if (refreshedPod == null) {
+      LOGGER.info("====== Error, cannot find pod when getting return code.");
+    }
+
     if (!isTerminal(refreshedPod)) {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
@@ -441,6 +448,7 @@ public class KubePodProcess extends Process {
 
   @Override
   public void destroy() {
+    LOGGER.info("Destroying Kube process: {}", podDefinition.getMetadata().getName());
     try {
       stdoutServerSocket.close();
     } catch (IOException e) {
@@ -448,6 +456,7 @@ public class KubePodProcess extends Process {
     } finally {
       executorService.shutdown();
       client.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
+      LOGGER.info("Destroyed Kube process: {}", podDefinition.getMetadata().getName());
     }
   }
 
