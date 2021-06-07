@@ -18,7 +18,6 @@ reviewers:
 skipKeywords:
   - dnm
   - zazmic
-  - globallogic
 
 # A number of reviewers added to the pull request
 # Set 0 to add all the reviewers (default: 0)
