@@ -31,9 +31,6 @@ history.defaultWorkflowRetryPolicy:
       MaximumIntervalCoefficient: 100.0
       BackoffCoefficient: 2.0
       MaximumAttempts: 0
-log.level:
-  - value: "debug"
-    constraints: {}
 # Limit for responses. This mostly impacts discovery jobs since they have the largest responses.
 limit.blobSize.error:
   - value: 15728640 # 15MB
