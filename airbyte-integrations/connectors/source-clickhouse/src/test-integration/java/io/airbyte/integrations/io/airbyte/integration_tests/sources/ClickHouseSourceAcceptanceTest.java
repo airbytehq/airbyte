@@ -34,13 +34,14 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.HashMap;
@@ -104,7 +105,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     db = new ClickHouseContainer("yandex/clickhouse-server:21.3.10.1-alpine");
     db.start();
 

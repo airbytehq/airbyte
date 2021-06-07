@@ -61,7 +61,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
   @Override
   public ConnectorSpecification run(JobGetSpecConfig config, Path jobRoot) throws WorkerException {
     try {
-      process = integrationLauncher.spec(jobRoot).start();
+      process = integrationLauncher.spec(jobRoot);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 

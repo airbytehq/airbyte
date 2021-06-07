@@ -31,6 +31,7 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
@@ -39,7 +40,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,13 +52,23 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestination.class);
 
   private final IntegrationLauncher integrationLauncher;
+  private final AirbyteStreamFactory streamFactory;
+
+  private final AtomicBoolean endOfStream = new AtomicBoolean(false);
 
   private Process destinationProcess = null;
   private BufferedWriter writer = null;
-  private boolean endOfStream = false;
+  private Iterator<AirbyteMessage> messageIterator = null;
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory());
+
+  }
+
+  public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher,
+                                   final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
+    this.streamFactory = streamFactory;
   }
 
   @Override
@@ -68,16 +82,20 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     destinationProcess = integrationLauncher.write(
         jobRoot,
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME).start();
-    LineGobbler.gobble(destinationProcess.getInputStream(), LOGGER::info);
-    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error);
+        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
+    // stdout logs are logged elsewhere since stdout also contains data
+    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination");
 
     writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
+
+    messageIterator = streamFactory.create(IOs.newBufferedReader(destinationProcess.getInputStream()))
+        .filter(message -> message.getType() == Type.STATE)
+        .iterator();
   }
 
   @Override
   public void accept(AirbyteMessage message) throws IOException {
-    Preconditions.checkState(destinationProcess != null && !endOfStream);
+    Preconditions.checkState(destinationProcess != null && !endOfStream.get());
 
     writer.write(Jsons.serialize(message));
     writer.newLine();
@@ -85,27 +103,29 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void notifyEndOfStream() throws IOException {
-    Preconditions.checkState(destinationProcess != null && !endOfStream);
+    Preconditions.checkState(destinationProcess != null && !endOfStream.get());
 
     writer.flush();
     writer.close();
-    endOfStream = true;
+    endOfStream.set(true);
   }
 
   @Override
-  public void close() throws WorkerException, IOException {
+  public void close() throws IOException {
     if (destinationProcess == null) {
       return;
     }
 
-    if (!endOfStream) {
+    if (!endOfStream.get()) {
       notifyEndOfStream();
     }
 
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
     if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
-      throw new WorkerException("destination process wasn't successful");
+      LOGGER.warn(
+          "Destination process might not have shut down correctly. destination process alive: {}, destination process exit value: {}. This warning is normal if the job was cancelled.",
+          destinationProcess.isAlive(), destinationProcess.exitValue());
     }
   }
 
@@ -120,6 +140,20 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       WorkerUtils.cancelProcess(destinationProcess);
       LOGGER.info("Cancelled destination process!");
     }
+  }
+
+  @Override
+  public boolean isFinished() {
+    Preconditions.checkState(destinationProcess != null);
+
+    return !destinationProcess.isAlive() && !messageIterator.hasNext();
+  }
+
+  @Override
+  public Optional<AirbyteMessage> attemptRead() {
+    Preconditions.checkState(destinationProcess != null);
+
+    return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
 
 }

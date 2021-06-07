@@ -59,7 +59,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -282,7 +282,7 @@ class BigQueryDestinationTest {
         .build();
 
     return StreamSupport
-        .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
+        .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
         .map(v -> v.get("TABLE_NAME").getStringValue()).collect(Collectors.toSet());
   }
 
@@ -301,10 +301,10 @@ class BigQueryDestinationTest {
         QueryJobConfiguration.newBuilder(String.format("SELECT * FROM %s.%s;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
 
-    BigQueryDestination.executeQuery(bigquery, queryConfig);
+    BigQueryUtils.executeQuery(bigquery, queryConfig);
 
     return StreamSupport
-        .stream(BigQueryDestination.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
+        .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
         .map(v -> v.get(JavaBaseConstants.COLUMN_NAME_DATA).getStringValue())
         .map(Jsons::deserialize)
         .collect(Collectors.toList());

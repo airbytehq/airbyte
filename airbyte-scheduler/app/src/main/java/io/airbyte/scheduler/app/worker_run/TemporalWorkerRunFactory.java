@@ -31,6 +31,7 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
@@ -39,8 +40,12 @@ import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.nio.file.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TemporalWorkerRunFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TemporalWorkerRunFactory.class);
 
   private final TemporalClient temporalClient;
   private final Path workspaceRoot;
@@ -65,6 +70,8 @@ public class TemporalWorkerRunFactory {
       case RESET_CONNECTION -> () -> {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
         final JobSyncConfig config = new JobSyncConfig()
+            .withNamespaceDefinition(resetConnection.getNamespaceDefinition())
+            .withNamespaceFormat(resetConnection.getNamespaceFormat())
             .withPrefix(resetConnection.getPrefix())
             .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
             .withDestinationDockerImage(resetConnection.getDestinationDockerImage())
@@ -90,7 +97,17 @@ public class TemporalWorkerRunFactory {
   }
 
   private OutputAndStatus<JobOutput> toOutputAndStatus(TemporalResponse<StandardSyncOutput> response) {
-    final JobStatus status = response.isSuccess() ? JobStatus.SUCCEEDED : JobStatus.FAILED;
+    final JobStatus status;
+    if (!response.isSuccess()) {
+      status = JobStatus.FAILED;
+    } else {
+      final ReplicationStatus replicationStatus = response.getOutput().get().getStandardSyncSummary().getStatus();
+      if (replicationStatus == ReplicationStatus.FAILED || replicationStatus == ReplicationStatus.CANCELLED) {
+        status = JobStatus.FAILED;
+      } else {
+        status = JobStatus.SUCCEEDED;
+      }
+    }
     return new OutputAndStatus<>(status, new JobOutput().withSync(response.getOutput().orElse(null)));
   }
 
