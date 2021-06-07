@@ -44,7 +44,7 @@ The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` 
 * the local mount is using the `/tmp/airbyte_local` default
 * then all data will be written to `/tmp/airbyte_local/cars/models` directory.
 
-### Access Replicated Data Files
+## Access Replicated Data Files
 
 * If Airbyte instance is running on the same computer that you are navigating with, you can open your browser to go to [file:///tmp/airbyte\_local](file:///tmp/airbyte_local) and look at the replicated data locally
 * If Airbyte instance is running on a remote server or for some reasons you can't use the first approach ([file:///tmp/airbyte\_local]) to access the replicated files, follow the following steps to access the replicated files:
@@ -53,4 +53,3 @@ The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` 
     * Navigate to the replicated file directory you specified when you created the destination, using `cd /{Directory_Specified}`
     * List files containing the replicated data using `ls`
     * After that you can execute `cat {filename}` to display the data in a particular file
-
