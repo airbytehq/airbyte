@@ -3402,6 +3402,52 @@
     },
     {
       "stream": {
+        "name": "order_risks",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "order_id": {
+              "type": ["null", "integer"]
+            },
+            "checkout_id": {
+              "type": ["null", "integer"]
+            },
+            "source": {
+              "type": ["null", "string"]
+            },
+            "score": {
+              "type": ["null", "string"]
+            },
+            "recommendation": {
+              "type": ["null", "string"]
+            },
+            "display": {
+              "type": ["null", "boolean"]
+            },
+            "cause_cancel": {
+              "type": ["null", "boolean"]
+            },
+            "message": {
+              "type": ["null", "string"]
+            },
+            "merchant_message": {
+              "type": ["null", "string"]
+            }
+            }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "transactions",
         "json_schema": {
           "properties": {
