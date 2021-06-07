@@ -474,7 +474,10 @@ class DealStageHistoryStream(Stream):
     
     def _transform(self, records: Iterable) -> Iterable:
         for record in super()._transform(records):
-            yield {"id": record.get("dealId"), **record.get("properties", {}).get("dealstage")}
+            dealstage = record.get("properties", {}).get("dealstage", {})
+            updated_at = dealstage.get(self.updated_at_field)
+            if updated_at:
+                yield {"id": record.get("dealId"), "dealstage": dealstage, self.updated_at_field: updated_at}
     
     def list(self, fields) -> Iterable:
         params = {"propertiesWithHistory": "dealstage"}
