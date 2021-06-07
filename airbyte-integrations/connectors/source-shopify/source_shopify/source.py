@@ -101,10 +101,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
-        if stream_state.get(self.cursor_field, 0) > self.since_id:
-            params["since_id"] = stream_state.get(self.cursor_field)
-        else:
-            params["since_id"] = self.since_id
+        params["since_id"] = stream_state.get(self.cursor_field)
         return params
 
 
@@ -144,11 +141,8 @@ class Metafields(IncrementalShopifyStream):
 
     def request_params(self, stream_state=None, **kwargs) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
-        params = {"limit": self.limit, "since_id": {self.since_id}, **stream_state, **kwargs}
-        if stream_state.get(self.cursor_field, 0) > self.since_id:
-            params["since_id"] = stream_state.get(self.cursor_field)
-        else:
-            params["since_id"] = self.since_id
+        params = {"limit": self.limit}
+        params["since_id"] = stream_state.get(self.cursor_field)
         return params
 
 
@@ -167,11 +161,8 @@ class Collects(IncrementalShopifyStream):
 
     def request_params(self, stream_state=None, **kwargs) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
-        params = {"limit": self.limit, "since_id": {self.since_id}, **stream_state, **kwargs}
-        if stream_state.get(self.cursor_field, 0) > self.since_id:
-            params["since_id"] = stream_state.get(self.cursor_field)
-        else:
-            params["since_id"] = self.since_id
+        params = {"limit": self.limit}
+        params["since_id"] = stream_state.get(self.cursor_field)
         return params
 
 
