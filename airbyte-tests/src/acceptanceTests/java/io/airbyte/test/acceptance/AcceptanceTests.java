@@ -70,6 +70,7 @@ import io.airbyte.api.client.model.JobRead;
 import io.airbyte.api.client.model.JobStatus;
 import io.airbyte.api.client.model.LogType;
 import io.airbyte.api.client.model.LogsRequestBody;
+import io.airbyte.api.client.model.NamespaceDefinitionType;
 import io.airbyte.api.client.model.SourceCreate;
 import io.airbyte.api.client.model.SourceDefinitionCreate;
 import io.airbyte.api.client.model.SourceDefinitionIdRequestBody;
@@ -128,7 +129,9 @@ public class AcceptanceTests {
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
 
-  private static final String OUTPUT_NAMESPACE = "output_";
+  private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
+  private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
+  private static final String OUTPUT_STREAM_PREFIX = "output_table_";
   private static final String TABLE_NAME = "id_and_name";
   private static final String STREAM_NAME = TABLE_NAME;
   private static final String COLUMN_ID = "id";
@@ -677,10 +680,12 @@ public class AcceptanceTests {
     final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = sourceTables.stream().flatMap(x -> {
       final String cleanedNameStream = x.tableName.replace(".", "_");
       final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
-          new SchemaTableNamePair(x.schemaName, String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream)),
-          new SchemaTableNamePair(x.schemaName, String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream))));
+          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+              String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream)),
+          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream))));
       if (withScdTable) {
-        explodedStreamNames.add(new SchemaTableNamePair(x.schemaName, String.format("%s%s_scd", OUTPUT_NAMESPACE, cleanedNameStream)));
+        explodedStreamNames
+            .add(new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s_scd", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
       }
       return explodedStreamNames.stream();
     }).collect(Collectors.toSet());
@@ -703,7 +708,7 @@ public class AcceptanceTests {
 
   private void assertNormalizedDestinationContains(final List<JsonNode> sourceRecords) throws Exception {
     final Database destination = getDatabase(destinationPsql);
-    final String finalDestinationTable = String.format("%s%s", OUTPUT_NAMESPACE, STREAM_NAME.replace(".", "_"));
+    final String finalDestinationTable = String.format("%spublic.%s%s", OUTPUT_NAMESPACE_PREFIX, OUTPUT_STREAM_PREFIX, STREAM_NAME.replace(".", "_"));
     final List<JsonNode> destinationRecords = retrieveSourceRecords(destination, finalDestinationTable);
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
@@ -733,7 +738,9 @@ public class AcceptanceTests {
             .syncCatalog(catalog)
             .schedule(schedule)
             .name(name)
-            .prefix(OUTPUT_NAMESPACE));
+            .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
+            .namespaceFormat(OUTPUT_NAMESPACE)
+            .prefix(OUTPUT_STREAM_PREFIX));
     connectionIds.add(connection.getConnectionId());
     return connection;
   }
@@ -767,8 +774,7 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveSourceRecords(Database database, String table) throws SQLException {
-    final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", cleanedName)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
         .map(Jsons::jsonNode)
@@ -776,8 +782,7 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
-    final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", cleanedName)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
         .map(r -> r.get(COLUMN_NAME_DATA))
@@ -792,8 +797,8 @@ public class AcceptanceTests {
     final Database destination = getDatabase(destinationPsql);
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
-    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, pair.tableName.replace(".", "_"));
-    final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(pair.schemaName, rawStreamName);
+    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, pair.tableName.replace(".", "_"));
+    final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + pair.schemaName, rawStreamName);
     assertTrue(namePairs.contains(rawTablePair), "can't find a non-normalized version (raw) of " + rawTablePair.getFullyQualifiedTableName());
 
     return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());

@@ -182,6 +182,8 @@ class TemporalClientTest {
           .withOperationSequence(List.of())
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
       final StandardSyncInput input = new StandardSyncInput()
+          .withNamespaceDefinition(syncConfig.getNamespaceDefinition())
+          .withNamespaceFormat(syncConfig.getNamespaceFormat())
           .withPrefix(syncConfig.getPrefix())
           .withSourceConfiguration(syncConfig.getSourceConfiguration())
           .withDestinationConfiguration(syncConfig.getDestinationConfiguration())
