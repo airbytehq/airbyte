@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2020 Airbyte
+# Copyright (c) 2021 Airbyte
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,16 +21,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-import datetime
+from datetime import datetime, timedelta
+
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, Oauth2Authenticator, HttpAuthenticator
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -93,7 +95,13 @@ class PaypalTransactionStream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        return None
+        decoded_response = response.json()
+        total_pages = decoded_response.get('total_pages')
+        page_number = decoded_response.get('page')
+        if page_number >= total_pages:
+            return None
+        else:
+            return {"page": page_number+1}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -102,11 +110,22 @@ class PaypalTransactionStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
+        page_number = 1
+        if next_page_token:
+            page_number = next_page_token.get('page')
+
+        print(f'stream_state {stream_state}')
+        print(f'stream_slice {stream_slice}')
+
+        start_date = stream_slice['date']
+        end_date_dt = datetime.fromisoformat(start_date) + timedelta(days=self.stream_size_in_days)
+        end_date = end_date_dt.isoformat()
         return {
-            'start_date': '2021-05-15T00:00:00-0700',
-            'end_date': '2021-06-15T00:00:00-0700',
+            'start_date': start_date,
+            'end_date': end_date,
             'fields': 'all',
-            'page_size': '100'
+            'page_size': '1',
+            'page': page_number
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -114,26 +133,61 @@ class PaypalTransactionStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        #yield {}
-        return [response.json()]
+        json_response = response.json()
+        records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+        yield from records
 
 
 class Transactions(PaypalTransactionStream):
     """
     Stream for Transactions /v1/reporting/transactions
     """
+    data_field = "transaction_details"
+    primary_key = "transaction_id"
+    cursor_field = "date"
+    stream_size_in_days = 1
 
-    primary_key = "last_refreshed_datetime"
+    def __init__(self, start_date: datetime, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = start_date
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-
         return "transactions"
+
+    # def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+    #     # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
+    #     # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
+    #     if current_stream_state is not None and 'date' in current_stream_state:
+    #         current_parsed_date = datetime.strptime(current_stream_state['date'], '%Y-%m-%d')
+    #         latest_record_date = datetime.strptime(latest_record['date'], '%Y-%m-%d')
+    #         return {'date': max(current_parsed_date, latest_record_date).strftime('%Y-%m-%d')}
+    #     else:
+    #         return {'date': self.start_date.strftime('%Y-%m-%d')}
+
+    def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
+        """
+        Returns a list of each day between the start date and now.
+        The return value is a list of dicts {'date': date_string}.
+        """
+        dates = []
+        while start_date < datetime.now().astimezone():
+            dates.append({'date': start_date.isoformat()})
+            start_date += timedelta(days=self.stream_size_in_days)
+
+        print(f'dates {dates}')
+        return dates
+
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+
+        start_date = self.start_date
+        if stream_state and 'date' in stream_state:
+            start_date = datetime.fromisoformat(stream_state['date'])
+
+        return self._chunk_date_range(start_date)
 
 
 class Balances(PaypalTransactionStream):
@@ -141,17 +195,14 @@ class Balances(PaypalTransactionStream):
     Stream for Balances /v1/reporting/balances
     """
 
+    data_field = "transaction_details"
+
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "as_of_time"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-
         return "balances"
 
 
@@ -234,6 +285,7 @@ class SourcePaypalTransaction(AbstractSource):
             refresh_token='').get_access_token()
         auth = TokenAuthenticator(token=token)  # Oauth2Authenticator is also available if you need oauth support
         # return [Transactions(authenticator=auth), Balances(authenticator=auth)]
-        #start_date = datetime.strptime(config["start_date"], "%Y-%m-%d")
+        print(f'TOKEN: {token}')
+        start_date = datetime.strptime(config["start_date"], "%Y-%m-%d").astimezone()
         #return [Transactions(authenticator=auth), Balances(authenticator=auth)]
-        return [Transactions(authenticator=auth)]
+        return [Transactions(authenticator=auth, start_date=start_date)]
