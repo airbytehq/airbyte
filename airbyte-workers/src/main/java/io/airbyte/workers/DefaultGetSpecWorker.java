@@ -84,7 +84,6 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         if (spec.isEmpty()) {
           throw new WorkerException("integration failed to output a spec struct.");
         }
-        LOGGER.info("===== we succeeded!");
         return spec.get();
 
       } else {

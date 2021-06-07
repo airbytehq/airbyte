@@ -224,16 +224,16 @@ public class KubePodProcess extends Process {
    * checking if the getRunning field is set. We could put this behind an interface, but that seems
    * heavy-handed compared to the 10 lines here.
    */
-  private static void waitForInitPodToRun(KubernetesClient client, Pod podDefinition, boolean copyFiles) throws InterruptedException {
+  private static void waitForInitPodToRun(KubernetesClient client, Pod podDefinition) throws InterruptedException {
     LOGGER.info("Waiting for init container to be ready before copying files...");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
     LOGGER.info("Init container present..");
-    if (copyFiles) {
-      LOGGER.info("Need to copy files, double checking init container is ready..");
-      client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
-          .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
-    }
+
+    LOGGER.info("Need to copy files, double checking init container is ready..");
+    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
+        .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().get(0).getState().getRunning() != null, 5, TimeUnit.MINUTES);
+
     LOGGER.info("Init container ready..");
   }
 
@@ -249,7 +249,6 @@ public class KubePodProcess extends Process {
                         final String... args)
       throws IOException, InterruptedException {
     this.client = client;
-    LOGGER.info("===== New Kube Pod Process..");
     stdoutServerSocket = new ServerSocket(stdoutLocalPort);
     stderrServerSocket = new ServerSocket(stderrLocalPort);
     executorService = Executors.newFixedThreadPool(2);
@@ -325,8 +324,9 @@ public class KubePodProcess extends Process {
 
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
+
     if (copyFiles) {
-      waitForInitPodToRun(client, podDefinition, copyFiles);
+      waitForInitPodToRun(client, podDefinition);
       LOGGER.info("Copying files...");
       copyFilesToKubeConfigVolume(client, podName, namespace, files);
     }
