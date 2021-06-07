@@ -224,7 +224,7 @@ public class KubePodProcess extends Process {
    * checking if the getRunning field is set. We could put this behind an interface, but that seems
    * heavy-handed compared to the 10 lines here.
    */
-  private static void waitForInitPodToRun(KubernetesClient client, Pod podDefinition) throws InterruptedException {
+  private static void ensureInitPodCanReceiveFiles(KubernetesClient client, Pod podDefinition) throws InterruptedException {
     LOGGER.info("Waiting for init container to be ready before copying files...");
     client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName())
         .waitUntilCondition(p -> p.getStatus().getInitContainerStatuses().size() != 0, 5, TimeUnit.MINUTES);
@@ -325,8 +325,9 @@ public class KubePodProcess extends Process {
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
 
+    // If no files need to be copied, the pod's default lifecycle (init containers are run before normal containers), is sufficient.
     if (copyFiles) {
-      waitForInitPodToRun(client, podDefinition);
+      ensureInitPodCanReceiveFiles(client, podDefinition);
       LOGGER.info("Copying files...");
       copyFilesToKubeConfigVolume(client, podName, namespace, files);
     }
@@ -422,7 +423,8 @@ public class KubePodProcess extends Process {
   private int getReturnCode(Pod pod) {
     Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).get();
     if (refreshedPod == null) {
-      // If the pod cannot be found, it is most likely because it was successfully manually terminated. Return 0 to indicate the successful
+      // If the pod cannot be found, it is most likely because it was successfully manually terminated.
+      // Return 0 to indicate the successful
       // termination.
       return 0;
     }
