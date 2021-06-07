@@ -118,7 +118,7 @@ class CsvDestinationTest {
   }
 
   @Test
-  void testSpec() throws IOException {
+  void testSpec() throws Exception {
     final ConnectorSpecification actual = getDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
