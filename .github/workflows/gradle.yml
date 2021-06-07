@@ -114,6 +114,10 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
+      - name: Free up space
+        # Get rid of dot net libraries we don't need to get us more space. See https://github.com/actions/virtual-environments/issues/2606#issuecomment-772683150.
+        run: sudo rm -rf /usr/share/dotnet
+
       - name: Get Docker Space
         run: docker run --rm busybox df -h
 
