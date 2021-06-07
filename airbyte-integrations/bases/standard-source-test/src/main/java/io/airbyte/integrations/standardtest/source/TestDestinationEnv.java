@@ -22,48 +22,20 @@
  * SOFTWARE.
  */
 
-package io.airbyte.protocol.models;
+package io.airbyte.integrations.standardtest.source;
 
-import java.util.Objects;
+import java.nio.file.Path;
 
-public class Field {
+public class TestDestinationEnv {
 
-  private final String name;
-  private final JsonSchemaPrimitive type;
+  private final Path localRoot;
 
-  public Field(String name, JsonSchemaPrimitive type) {
-    this.name = name;
-    this.type = type;
+  public TestDestinationEnv(Path localRoot) {
+    this.localRoot = localRoot;
   }
 
-  public static Field of(String name, JsonSchemaPrimitive type) {
-    return new Field(name, type);
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getTypeAsJsonSchemaString() {
-    return type.name().toLowerCase();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Field field = (Field) o;
-    return name.equals(field.name) &&
-        type == field.type;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(name, type);
+  public Path getLocalRoot() {
+    return localRoot;
   }
 
 }
