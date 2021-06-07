@@ -11,4 +11,5 @@ class Utils:
             stream_slice.get(cursor_field)) + relativedelta(days=1)
         end_date = date.fromisoformat(
             stream_slice.get(cursor_field)) + relativedelta(months=1)
+
         return start_date.isoformat(), end_date.isoformat()

@@ -1,5 +1,5 @@
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v7.services.types.google_ads_service import GoogleAdsRow
+from google.ads.googleads.v7.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from typing import Any, Mapping, List
 from string import Template
 from enum import Enum
@@ -22,21 +22,20 @@ class GoogleAds:
         self.customer_id = customer_id
         self.ga_service = self.client.get_service("GoogleAdsService")
 
-    def send_request(self, query: str, page_token: str):
+    def send_request(self, query: str) -> SearchGoogleAdsResponse:
         client = self.client
         search_request = client.get_type("SearchGoogleAdsRequest")
         search_request.customer_id = self.customer_id
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
-        if page_token:
-            search_request.page_token = page_token
+
         return self.ga_service.search(search_request)
 
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
         properties = schema.get('json_schema').get('properties')
-        return [properties.get(key).get("field")
-                for key in properties.keys()]
+
+        return [*properties]
 
     @staticmethod
     def convert_schema_into_query(schema: Mapping[str, Any], report_name: str, from_date: str, to_date: str) -> str:
@@ -54,6 +53,7 @@ class GoogleAds:
       """)
         query = query.substitute(
             fields=fields, from_category=from_category, from_date=from_date, to_date=to_date)
+
         return query
 
     @staticmethod
@@ -73,11 +73,9 @@ class GoogleAds:
 
     @staticmethod
     def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
-        properties = schema.get('json_schema').get('properties')
-        fields = [{"name": key, "field_path": properties.get(key).get("field")}
-                  for key in properties.keys()]
+        fields = GoogleAds.get_fields_from_schema(schema)
         single_record = {}
         for field in fields:
-            single_record[field["name"]] = GoogleAds.get_field_value(
-                result, field["field_path"])
+            single_record[field] = GoogleAds.get_field_value(
+                result, field)
         return single_record

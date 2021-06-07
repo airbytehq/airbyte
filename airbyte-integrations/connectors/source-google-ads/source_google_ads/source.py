@@ -21,39 +21,39 @@
 # SOFTWARE.
 
 
+from .utils import Utils
+from .google_ads import GoogleAds
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources import AbstractSource
+
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from datetime import date
 from dateutil.relativedelta import *
-
-import requests
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-
-from .google_ads import GoogleAds
-from .utils import Utils
+from google.ads.googleads.v7.services.types.google_ads_service import SearchGoogleAdsResponse
 
 
-def chunk_date_range(start_date: str, conversion_window: Optional[int]) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional[int], field: str) -> Iterable[Mapping[str, any]]:
     """
+    Passing optional parameter end_date for testing
     Returns a list of the beginning and ending timetsamps of each month between the start date and now.
     The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
     intervals = []
-
+    end_date = date.fromisoformat(end_date) if end_date else date.today()
     # As in to return some state when state in abnormal
-    if start_date > date.today().isoformat():
-        return [{"date": start_date}]
+    if start_date > end_date.isoformat():
+        return [{field: start_date}]
 
     # applying conversion windoe
     start_date = date.fromisoformat(
         start_date) - relativedelta(days=conversion_window)
-    yesterday = date.today() - relativedelta(days=1)
+    yesterday = end_date - relativedelta(days=1)
 
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date < yesterday:
         start = start_date
-        intervals.append({"date": start.isoformat()})
+        intervals.append({field: start.isoformat()})
         start_date = min(yesterday, start_date + relativedelta(months=1))
 
     return intervals
@@ -64,10 +64,7 @@ class GoogleAdsStream(Stream, ABC):
         self.config = config
         self.google_ads_client = GoogleAds(**config)
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return response.next_page_token
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: SearchGoogleAdsResponse) -> Iterable[Mapping]:
         for result in response:
             record = GoogleAds.parse_single_result(
                 self.get_json_schema(), result)
@@ -85,19 +82,9 @@ class GoogleAdsStream(Stream, ABC):
         query = GoogleAds.convert_schema_into_query(
             self.get_json_schema(), self.name, start_date, end_date)
 
-        pagination_complete = False
-        next_page_token = None
-        while not pagination_complete:
-            response = self.google_ads_client.send_request(
-                query, next_page_token)
-            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
-
-            next_page_token = self.next_page_token(response)
-            if not next_page_token:
-                pagination_complete = True
-
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
+        response = self.google_ads_client.send_request(
+            query)
+        yield from self.parse_response(response)
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     state_checkpoint_interval = None
@@ -110,7 +97,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
         stream_state = stream_state or {}
         start_date = stream_state.get(
             self.cursor_field) or self.config.get("start_date")
-        return chunk_date_range(start_date, self.CONVERSION_WINDOW_DAYS)
+        return chunk_date_range(start_date, None, self.CONVERSION_WINDOW_DAYS, self.cursor_field)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
@@ -121,7 +108,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
 
 
 class AdGroupAdReport(IncrementalGoogleAdsStream):
-    cursor_field = "date"
+    cursor_field = "segments.date"
     primary_key = None
 
 

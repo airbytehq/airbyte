@@ -60,57 +60,8 @@ SAMPLE_CATALOG = {
 
 def test_chunk_date_range():
     start_date = "2021-03-04"
+    end_date = "2021-05-04"
     conversion_window = 14
-    response = chunk_date_range(start_date, conversion_window)
+    response = chunk_date_range(start_date, end_date, conversion_window)
     assert [{'date': '2021-02-18'}, {'date': '2021-03-18'},
-            {'date': '2021-04-18'}, {'date': '2021-05-18'}] == response
-
-
-"""
-This won't work until we get sample credentials 
-"""
-
-# def test_incremental_sync():
-#     google_ads_client = SourceGoogleAds()
-#     state = "2021-05-24"
-#     records = google_ads_client.read(AirbyteLogger(), SAMPLE_CONFIG, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {
-#         "date": state
-#     }})
-#     current_state = (date.fromisoformat(state) -
-#                      relativedelta(days=14)).isoformat()
-#     for record in records:
-#         if record and record.type == Type.STATE:
-#             current_state = record.state.data["ad_group_ad_report"]["date"]
-#         if record and record.type == Type.RECORD:
-#             assert record.record.data["date"] >= current_state
-
-#     # Next sync
-#     state = "2021-06-04"
-#     records = google_ads_client.read(AirbyteLogger(), SAMPLE_CONFIG, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {
-#         "date": state
-#     }})
-#     current_state = (date.fromisoformat(state) -
-#                      relativedelta(days=14)).isoformat()
-
-#     for record in records:
-#         if record and record.type == Type.STATE:
-#             current_state = record.state.data["ad_group_ad_report"]["date"]
-#         if record and record.type == Type.RECORD:
-#             assert record.record.data["date"] >= current_state
-
-#     # Abnormal state
-#     state = "2029-06-04"
-#     records = google_ads_client.read(AirbyteLogger(), SAMPLE_CONFIG, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {
-#         "date": state
-#     }})
-#     current_state = (date.fromisoformat(state) -
-#                      relativedelta(days=14)).isoformat()
-
-#     no_records = True
-#     for record in records:
-#         if record and record.type == Type.STATE:
-#             assert record.state.data["ad_group_ad_report"]["date"] == state
-#         if record and record.type == Type.RECORD:
-#             no_records = False
-
-#     assert no_records == True
+            {'date': '2021-04-18'}] == response

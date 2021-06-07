@@ -8,25 +8,17 @@
           "title": "Ad Group Ad Report",
           "description": "An ad group ad.",
           "properties": {
-            "accent_color": {
-              "description": "AccentColor",
-              "type": ["null", "string"],
-              "field": "ad_group_ad.ad.legacy_responsive_display_ad.accent_color"
+            "ad_group_ad.ad.legacy_responsive_display_ad.accent_color": {
+              "type": ["null", "string"]
             },
-            "account_currency_code": {
-              "description": "AccountCurrencyCode",
-              "type": ["null", "string"],
-              "field": "customer.currency_code"
+            "customer.currency_code": {
+              "type": ["null", "string"]
             },
-            "account_descriptive_name": {
-              "description": "AccountDescriptiveName",
-              "type": ["null", "string"],
-              "field": "customer.descriptive_name"
+            "customer.descriptive_name": {
+              "type": ["null", "string"]
             },
-            "date": {
-              "description": "Date",
-              "type": ["null", "string"],
-              "field": "segments.date"
+            "segments.date": {
+              "type": ["null", "string"]
             }
           }
         },

@@ -1,13 +1,13 @@
 from source_google_ads.google_ads import GoogleAds
 from string import Template
+from datetime import date
 
 
 SAMPLE_SCHEMA = {
     "json_schema": {
         "properties": {
-            "date": {
+            "segment.date": {
                 "type": ["null", "string"],
-                "field": "segment.date"
             }
         }
     }
@@ -18,6 +18,16 @@ SAMPLE_SCHEMA = {
 class MockGoogleAdsService:
     def search(self, search_request):
         return search_request
+
+
+class MockedDateSegment:
+    def __init__(self, date: str):
+        self._mock_date = date
+
+    def __getattr__(self, attr):
+        if attr == 'date':
+            return date.fromisoformat(self._mock_date)
+        return MockedDateSegment(self._mock_date)
 
 
 class MockSearchRequest:
@@ -107,36 +117,16 @@ def test_convert_schema_into_query():
 
 def test_get_field_value():
     field = "segment.date"
-
-    class Segment:
-
-        @staticmethod
-        def __getattr__(attr):
-            if attr == "date":
-                return "2001-01-01"
-            return Segment()
-    response = GoogleAds.get_field_value(Segment(), field)
-    assert response == "2001-01-01"
-
-    class Segment:
-
-        @staticmethod
-        def getatt(attr):
-            if attr == "date":
-                return "2001-01-01"
-            return Segment()
-    response = GoogleAds.get_field_value(Segment(), field)
+    date = "2001-01-01"
+    response = GoogleAds.get_field_value(MockedDateSegment(date), field)
+    assert response == date
+    date = "2020"
+    response = GoogleAds.get_field_value(MockedDateSegment(date), field)
     assert response == None
 
 
 def test_parse_single_result():
-    class Segment:
-
-        @staticmethod
-        def __getattr__(attr):
-            if attr == "date":
-                return "2001-01-01"
-            return Segment()
-
-    response = GoogleAds.parse_single_result(SAMPLE_SCHEMA, Segment())
-    assert response == {'date': '2001-01-01'}
+    date = "2001-01-01"
+    response = GoogleAds.parse_single_result(
+        SAMPLE_SCHEMA, MockedDateSegment(date))
+    assert response == response
