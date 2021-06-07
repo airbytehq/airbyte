@@ -1,52 +1,19 @@
 #!/usr/bin/env sh
 
-# Variables for terminal coloring
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-
 generator_path="$(pwd)/airbyte-integrations/connector-templates/generator"
-# The connectors folder relative path
-connectors_path="$(pwd)/airbyte-integrations/connectors"
-# The name of the temporary folder
-tmp_folder_name="tmp_output"
 
-remove_tmp () {
-  rm -rf tmp_output
-  docker container rm -f airbyte-connector-bootstrap > /dev/null 2>&1
-}
-
-# This function creates the tmp folder in generator directory and copy the generated new connector to it.
-# If nothing was generated or generator was stopped - this folder will be empty and removed at the enc
-# After coping the generated connector from container to created tmp folder (docker cpn)
-# The contains of tmp folder is looped and check each item whenever it is a directory and if the connector with
-# the same name already exists in connectors folder. In this case an error msg displayed.
-# Otherwise the generated connector is copied into the connectors folder.
-check_and_copy_from_docker () {
-  mkdir $tmp_folder_name
-  docker cp airbyte-connector-bootstrap:/airbyte-integrations/connectors/. $tmp_folder_name/.
-  cd $tmp_folder_name || exit
-  for f in *; do
-    if [ -d "$f" ]; then
-      if [ ! -d "$connectors_path/$f" ]; then
-        cp -r "$f" "$connectors_path/$f"
-      else
-        >&2 echo "${RED}$f already exists in connectors. Coping aborted to prevent data overwriting${NC}"
-      fi
-    fi
-  done
-  cd ./..
-}
-
-cd "$generator_path" || exit
 # Remove container if already exist
-remove_tmp
+docker container rm -f airbyte-connector-bootstrap >/dev/null 2>&1
+
 # Build image for container from Dockerfile
-docker build . -t airbyte/connector-bootstrap
-# Run the container
-docker run -it  --name airbyte-connector-bootstrap -v "$(pwd)"/..:/airbyte-integrations/connector-templates airbyte/connector-bootstrap
-# Copy generated template to connectors folder
-check_and_copy_from_docker
+# Specify the host system user UID and GID to chown the generated files to host system user.
+# This is done because all generated files in container with mounted folders has root owner
+docker build --build-arg UID="$(id -u)" --build-arg GID="$(id -g)" -f "$generator_path/Dockerfile" "$generator_path" -t airbyte/connector-bootstrap
+
+# Run the container and mount the airbyte folder
+docker run -it --name airbyte-connector-bootstrap -v "$(pwd)":/airbyte airbyte/connector-bootstrap
+
 # Remove container after coping files
-remove_tmp
+docker container rm -f airbyte-connector-bootstrap >/dev/null 2>&1
 
 exit 0
