@@ -422,7 +422,9 @@ public class KubePodProcess extends Process {
   private int getReturnCode(Pod pod) {
     Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).get();
     if (refreshedPod == null) {
-      LOGGER.info("====== Error, cannot find pod when getting return code.");
+      // If the pod cannot be found, it is most likely because it was successfully manually terminated. Return 0 to indicate the successful
+      // termination.
+      return 0;
     }
 
     if (!isTerminal(refreshedPod)) {
