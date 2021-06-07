@@ -5,6 +5,9 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_amazon_seller_partner_singer'
+    moduleDirectory 'source_amazon_seller_partner'
 }
 
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
+}

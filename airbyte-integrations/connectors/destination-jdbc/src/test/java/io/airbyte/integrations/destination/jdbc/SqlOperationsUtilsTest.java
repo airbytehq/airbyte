@@ -101,7 +101,7 @@ class SqlOperationsUtilsTest {
             .withEmittedAt(NOW.toEpochMilli())
             .withData(Jsons.jsonNode(ImmutableMap.of("name", "mississippi", "width", 20))));
 
-    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records, uuidSupplier);
+    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records, uuidSupplier, true);
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM RIVERS"),

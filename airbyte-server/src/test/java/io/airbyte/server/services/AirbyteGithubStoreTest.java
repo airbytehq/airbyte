@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.http.HttpTimeoutException;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -39,13 +40,15 @@ import org.junit.jupiter.api.Test;
 
 public class AirbyteGithubStoreTest {
 
+  private static final Duration TIMEOUT = Duration.ofSeconds(1);
+
   private static MockWebServer webServer;
   private static AirbyteGithubStore githubStore;
 
   @BeforeAll
   public static void setUp() {
     webServer = new MockWebServer();
-    githubStore = AirbyteGithubStore.test(webServer.url("/").toString());
+    githubStore = AirbyteGithubStore.test(webServer.url("/").toString(), TIMEOUT);
   }
 
   @Nested
@@ -71,8 +74,8 @@ public class AirbyteGithubStoreTest {
           .addHeader("Content-Type", "text/plain; charset=utf-8")
           .addHeader("Cache-Control", "no-cache")
           .setBody("")
-          .setHeadersDelay(10, TimeUnit.SECONDS)
-          .setBodyDelay(10, TimeUnit.SECONDS);
+          .setHeadersDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS)
+          .setBodyDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS);
       webServer.enqueue(timeoutResp);
 
       assertThrows(HttpTimeoutException.class, () -> githubStore.getFile("test-file"));
