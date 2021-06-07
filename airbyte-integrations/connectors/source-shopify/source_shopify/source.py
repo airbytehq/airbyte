@@ -178,6 +178,7 @@ class OrderRefunds(IncrementalShopifyStream):
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
+
 class OrderRisks(IncrementalShopifyStream):
     data_field = "risks"
 
@@ -258,5 +259,5 @@ class SourceShopify(AbstractSource):
             Collects(**args),
             OrderRefunds(**args),
             OrderRisks(**args),
-            Transactions(**args)
+            Transactions(**args),
         ]
