@@ -77,7 +77,6 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         """
         self._initial_state = None
         self._upgrade_state_to = None
-        
 
     @property
     @abstractmethod
@@ -91,10 +90,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         response_json = response.json()
         data = response_json.get(self.data_field, [])
         if data:
-            if (
-                self._initial_state
-                and data[-1][self.cursor_field] <= self._initial_state
-                ):
+            if self._initial_state and data[-1][self.cursor_field] <= self._initial_state:
                 return {}
             params = super().next_page_token(response=response)
             if params:
@@ -105,7 +101,8 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        if self._initial_state and self._upgrade_state_to:
+        if self._upgrade_state_to:
+            # print('DEBUG will return upgraded', self._upgrade_state_to)
             return self._upgrade_state_to
         return current_stream_state
 
@@ -113,7 +110,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         response_json = response.json()
         data = response_json.get(self.data_field, [])
         if data:
-            if not self._upgrade_state_to: # set once
+            if not self._upgrade_state_to:  # set once
                 self._upgrade_state_to = {self.cursor_field: data[0][self.cursor_field]}
             if not stream_state:
                 yield from data
@@ -185,7 +182,7 @@ class Cohorts(IncrementalPosthogStream):
         if data and stream_state:
             state_value = stream_state.get(self.cursor_field)
             first_record_curvalue = data[0][self.cursor_field]
-            if first_record_curvalue > state_value: # skip page
+            if first_record_curvalue > state_value:  # skip page
                 yield from []
             else:
                 for record in data:
@@ -279,4 +276,3 @@ class Trends(PosthogStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "insight/trend"
-
