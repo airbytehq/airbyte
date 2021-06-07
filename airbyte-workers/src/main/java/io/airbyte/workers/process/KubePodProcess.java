@@ -325,7 +325,8 @@ public class KubePodProcess extends Process {
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
 
-    // If no files need to be copied, the pod's default lifecycle (init containers are run before normal containers), is sufficient.
+    // If no files need to be copied, the pod's default lifecycle (init containers are run before normal
+    // containers), is sufficient.
     if (copyFiles) {
       ensureInitPodCanReceiveFiles(client, podDefinition);
       LOGGER.info("Copying files...");
