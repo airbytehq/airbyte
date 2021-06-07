@@ -55,7 +55,7 @@ public class JobRetrier implements Runnable {
 
   @Override
   public void run() {
-    LOGGER.info("Running Job Retrier...");
+    LOGGER.debug("Running Job Retrier...");
 
     final AtomicInteger failedJobs = new AtomicInteger();
     final AtomicInteger retriedJobs = new AtomicInteger();
@@ -71,11 +71,17 @@ public class JobRetrier implements Runnable {
       }
     });
 
-    LOGGER.info("Completed Job Retrier...");
-    LOGGER.info("Job Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
-        incompleteJobs.size(),
-        failedJobs.get(),
-        retriedJobs.get());
+    LOGGER.debug("Completed Job Retrier...");
+
+    int incompleteJobCount = incompleteJobs.size();
+    int failedJobCount = failedJobs.get();
+    int retriedJobCount = retriedJobs.get();
+    if (incompleteJobCount > 0 || failedJobCount > 0 || retriedJobCount > 0) {
+      LOGGER.info("Job Retrier Summary. Incomplete jobs: {}, Job set to retry: {}, Jobs set to failed: {}",
+          incompleteJobs.size(),
+          failedJobs.get(),
+          retriedJobs.get());
+    }
   }
 
   private List<Job> incompleteJobs() {

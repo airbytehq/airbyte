@@ -29,7 +29,7 @@ Example Output:
 ```text
 Running with dbt=0.18.1
 dbt version: 0.18.1
-python version: 3.7.9
+python version: 3.7.0
 python path: /usr/local/bin/python
 os info: Linux-4.19.121-linuxkit-x86_64-with-debian-10.6
 Using profiles.yml file at ./profiles.yml
