@@ -34,7 +34,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 Runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.1.0
+        uses: machulav/ec2-github-runner@v2.2.0
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
