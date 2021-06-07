@@ -259,5 +259,5 @@ class SourceShopify(AbstractSource):
             Collects(**args),
             OrderRefunds(**args),
             OrderRisks(**args),
-            Transactions(**args),
+            Transactions(**args)
         ]
