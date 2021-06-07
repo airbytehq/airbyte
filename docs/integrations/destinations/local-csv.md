@@ -46,7 +46,7 @@ The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` 
 
 ## Access Replicated Data Files
 
-* If Airbyte instance is running on the same computer that you are navigating with, you can open your browser to go to [file:///tmp/airbyte\_local](file:///tmp/airbyte_local) and look at the replicated data locally
+If your Airbyte instance is running on the same computer that you are navigating with, you can open your browser and enter [file:///tmp/airbyte\_local](file:///tmp/airbyte_local) to look at the replicated data locally.
 If the first approach fails or if your Airbyte instance is running on a remote server, follow the following steps to access the replicated files:
     * Access the scheduler container using `docker exec -it airbyte-scheduler bash`
     * Navigate to the default local mount using `cd /tmp/airbyte_local`
