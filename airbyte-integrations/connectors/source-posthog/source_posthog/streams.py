@@ -102,7 +102,6 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         and returning an updated state object.
         """
         if self._upgrade_state_to:
-            # print('DEBUG will return upgraded', self._upgrade_state_to)
             return self._upgrade_state_to
         return current_stream_state
 
