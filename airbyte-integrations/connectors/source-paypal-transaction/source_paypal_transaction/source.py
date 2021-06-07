@@ -213,7 +213,6 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
       -H "Accept-Language: en_US" \
       -u "CLIENT_ID:SECRET" \
       -d "grant_type=client_credentials"
-
     """
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         """ Override to define additional parameters """
@@ -241,13 +240,11 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
                 auth=auth)
             response.raise_for_status()
             response_json = response.json()
-            print(response_json)
             return response_json["access_token"], response_json["expires_in"]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
 
 
-# Source
 class SourcePaypalTransaction(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -269,7 +266,6 @@ class SourcePaypalTransaction(AbstractSource):
         if not token:
             return False, 'Unable to fetch Paypal API token due to incorrect client_id or secret'
 
-        print(f"token {token}")
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -278,14 +274,11 @@ class SourcePaypalTransaction(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        token = PayPalOauth2Authenticator(
+        authenticator = PayPalOauth2Authenticator(
             token_refresh_endpoint='https://api-m.sandbox.paypal.com/v1/oauth2/token',
             client_id=config["client_id"],
             client_secret=config["secret"],
-            refresh_token='').get_access_token()
-        auth = TokenAuthenticator(token=token)  # Oauth2Authenticator is also available if you need oauth support
-        # return [Transactions(authenticator=auth), Balances(authenticator=auth)]
-        print(f'TOKEN: {token}')
+            refresh_token='')
         start_date = datetime.strptime(config["start_date"], "%Y-%m-%d").astimezone()
         #return [Transactions(authenticator=auth), Balances(authenticator=auth)]
-        return [Transactions(authenticator=auth, start_date=start_date)]
+        return [Transactions(authenticator=authenticator, start_date=start_date)]
