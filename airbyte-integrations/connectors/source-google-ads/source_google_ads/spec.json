@@ -44,15 +44,15 @@
         "examples": ["2017-01-25"]
       },
       "customer_id": {
-        "title": "Customer Title",
+        "title": "Customer Id",
         "type": "string",
         "description": "Customer id must be specified  as a 10-digit number without dashes. More instruction on how to find this value in our <a href=\"https://docs.airbyte.io/integrations/sources/google-adwords#setup-guide\">docs</a>"
       },
       "conversion_window_days": {
         "title": "Conversion Window",
-        "type": "string",
+        "type": "integer",
         "description": "Define the historical replication lookback window in days",
-        "examples": ["14"]
+        "examples": [14]
       }
     }
   }

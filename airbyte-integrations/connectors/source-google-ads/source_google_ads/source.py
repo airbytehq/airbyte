@@ -93,9 +93,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self.config.get("start_date")
-        conversion_window_size = int(self.conversion_window_days)
 
-        return chunk_date_range(start_date, None, conversion_window_size, self.cursor_field)
+        return chunk_date_range(start_date, None, self.conversion_window_days, self.cursor_field)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
