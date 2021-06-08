@@ -51,6 +51,7 @@ write_standard_creds source-google-search-console-singer "$GOOGLE_SEARCH_CONSOLE
 write_standard_creds source-google-sheets "$GSHEETS_INTEGRATION_TESTS_CREDS" "creds.json"
 write_standard_creds source-google-workspace-admin-reports "$GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS"
 write_standard_creds source-greenhouse "$GREENHOUSE_TEST_CREDS"
+write_standard_creds source-harvest "$HARVEST_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-hubspot "$HUBSPOT_INTEGRATION_TESTS_CREDS"
 write_standard_creds source-klaviyo "$KLAVIYO_TEST_CREDS"
 write_standard_creds source-asana "$SOURCE_ASANA_TEST_CREDS"

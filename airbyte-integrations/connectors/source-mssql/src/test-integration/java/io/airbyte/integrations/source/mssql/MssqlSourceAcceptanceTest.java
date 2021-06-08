@@ -32,11 +32,12 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,7 +53,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   private JsonNode config;
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws SQLException {
+  protected void setupEnvironment(TestDestinationEnv environment) throws SQLException {
     db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     db.start();
 

@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.json.Jsons;
@@ -115,20 +116,24 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       return false;
     }
 
-    String file = Jsons.deserialize(event.value()).get("source").get("file").asText();
-    int position = Jsons.deserialize(event.value()).get("source").get("pos").asInt();
-    if (!file.equals(targetFilePosition.get().fileName)) {
+    JsonNode valueAsJson = Jsons.deserialize(event.value());
+    String file = valueAsJson.get("source").get("file").asText();
+    int position = valueAsJson.get("source").get("pos").asInt();
+
+    boolean isSnapshot = SnapshotMetadata.TRUE == SnapshotMetadata.valueOf(
+        valueAsJson.get("source").get("snapshot").asText().toUpperCase());
+
+    if (isSnapshot || targetFilePosition.get().fileName.compareTo(file) > 0
+        || (targetFilePosition.get().fileName.compareTo(file) == 0 && targetFilePosition.get().position >= position)) {
       return false;
     }
 
-    if (targetFilePosition.get().position >= position) {
-      return false;
-    }
-
-    // if not snapshot or is snapshot but last record in snapshot.
-    return SnapshotMetadata.TRUE != SnapshotMetadata.valueOf(
-        Jsons.deserialize(event.value()).get("source").get("snapshot").asText()
-            .toUpperCase());
+    LOGGER.info(
+        "Signalling close because record's binlog file : " + file + " , position : " + position
+            + " is after target file : "
+            + targetFilePosition.get().fileName + " , target position : " + targetFilePosition
+                .get().position);
+    return true;
   }
 
   private void requestClose() {

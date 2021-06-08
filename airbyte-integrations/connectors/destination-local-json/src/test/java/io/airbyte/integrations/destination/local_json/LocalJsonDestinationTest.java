@@ -52,7 +52,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -114,7 +114,7 @@ class LocalJsonDestinationTest {
   }
 
   @Test
-  void testSpec() throws IOException {
+  void testSpec() throws Exception {
     final ConnectorSpecification actual = getDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);
