@@ -70,10 +70,10 @@ class SourcePosthog(AbstractSource):
             Cohorts(authenticator=authenticator),
             Events(authenticator=authenticator, start_date=config["start_date"]),
             # EventsSessions(authenticator=authenticator),
-            FeatureFlags(authenticator=authenticator, start_date=config["start_date"]),
+            FeatureFlags(authenticator=authenticator),
             Insights(authenticator=authenticator),
             InsightsPath(authenticator=authenticator),
             InsightsSessions(authenticator=authenticator),
-            Persons(authenticator=authenticator, start_date=config["start_date"]),
+            Persons(authenticator=authenticator),
             Trends(authenticator=authenticator),
         ]

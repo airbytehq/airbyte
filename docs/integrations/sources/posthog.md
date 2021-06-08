@@ -12,11 +12,11 @@ This Source is capable of syncing the following core Streams:
 * [Annotations](https://posthog.com/docs/api/annotations) (Incremental)
 * [Cohorts](https://posthog.com/docs/api/cohorts)
 * [Events](https://posthog.com/docs/api/events) (Incremental)
-* [FeatureFlags](https://posthog.com/docs/api/feature-flags) (Incremental)
+* [FeatureFlags](https://posthog.com/docs/api/feature-flags)
 * [Insights](https://posthog.com/docs/api/insights)
 * [InsightsPath](https://posthog.com/docs/api/insights)
 * [InsightsSessions](https://posthog.com/docs/api/insights)
-* [Persons](https://posthog.com/docs/api/people) (Incremental)
+* [Persons](https://posthog.com/docs/api/people)
 * [Trends](https://posthog.com/docs/api/insights)
 
 ### Data type mapping

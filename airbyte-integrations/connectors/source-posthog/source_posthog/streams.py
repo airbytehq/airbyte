@@ -165,11 +165,10 @@ class EventsSessions(PosthogStream):
         return resp_json.get("pagination")
 
 
-class FeatureFlags(IncrementalPosthogStream):
+class FeatureFlags(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/feature-flags
     """
-    cursor_field = "id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "feature_flag"
@@ -205,12 +204,10 @@ class InsightsSessions(PosthogStream):
         return "insight/session"
 
 
-class Persons(IncrementalPosthogStream):
+class Persons(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/people
     """
-    cursor_field = "created_at"
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "person"
 
