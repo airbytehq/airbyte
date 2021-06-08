@@ -70,6 +70,7 @@
         <Logger name="org.apache" level="WARN" />
         <Logger name="httpclient" level="WARN" />
         <Logger name="com.amazonaws" level="WARN" />
+        <Logger name="io.debezium.connector.mysql.MySqlValueConverters" level="OFF" />
 
     </Loggers>
 
