@@ -165,7 +165,12 @@
             "title": "GCS Staging",
             "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
-            "required": ["method","project_id", "bucket_name", "credentials_json"],
+            "required": [
+              "method",
+              "project_id",
+              "bucket_name",
+              "credentials_json"
+            ],
             "properties": {
               "method": {
                 "type": "string",
