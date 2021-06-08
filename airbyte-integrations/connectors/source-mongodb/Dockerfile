@@ -10,6 +10,7 @@ COPY . ./
 RUN gem install bundler
 RUN bundle install
 
+ENV AIRBYTE_ENTRYPOINT "ruby /airbyte/source.rb"
 ENTRYPOINT ["ruby", "/airbyte/source.rb"]
 
 LABEL io.airbyte.name=airbyte/source-mongodb

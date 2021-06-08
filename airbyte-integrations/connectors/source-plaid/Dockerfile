@@ -9,6 +9,7 @@ COPY spec.json .
 # Install any needed dependencies
 RUN npm install
 
+ENV AIRBYTE_ENTRYPOINT "node /airbyte/integration_code/source.js"
 ENTRYPOINT ["node", "/airbyte/integration_code/source.js"]
 
 LABEL io.airbyte.version=0.2.0
