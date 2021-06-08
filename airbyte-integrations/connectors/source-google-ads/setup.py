@@ -24,8 +24,9 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "google-ads"
+    "airbyte-cdk~=0.1",
+    "google-ads",
+    "pendulum"
 ]
 
 TEST_REQUIREMENTS = [

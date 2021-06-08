@@ -82,17 +82,11 @@ def test_send_request(mocker):
     google_ads_client = GoogleAds(**SAMPLE_CONFIG)
     query = "Query"
     page_size = 1000
-    response = google_ads_client.send_request(query, None)
+    response = google_ads_client.send_request(query)
 
     assert response.customer_id == SAMPLE_CONFIG["customer_id"]
     assert response.query == query
     assert response.page_size == page_size
-    assert response.page_token == None
-
-    page_token = "12345"
-    response = google_ads_client.send_request(query, page_token)
-
-    assert response.page_token == page_token
 
 
 def test_get_fields_from_schema():

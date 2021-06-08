@@ -28,7 +28,7 @@ from airbyte_cdk.sources import AbstractSource
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from datetime import date
+import pendulum
 from dateutil.relativedelta import *
 from google.ads.googleads.v7.services.types.google_ads_service import SearchGoogleAdsResponse
 
@@ -40,21 +40,20 @@ def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional
     The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
     intervals = []
-    end_date = date.fromisoformat(end_date) if end_date else date.today()
+    end_date = pendulum.parse(end_date) if end_date else pendulum.yesterday()
+    start_date = pendulum.parse(start_date)
+
     # As in to return some state when state in abnormal
-    if start_date > end_date.isoformat():
-        return [{field: start_date}]
+    if start_date > end_date:
+        return [{field: start_date.to_date_string()}]
 
     # applying conversion windoe
-    start_date = date.fromisoformat(
-        start_date) - relativedelta(days=conversion_window)
-    yesterday = end_date - relativedelta(days=1)
+    start_date = start_date.subtract(days=conversion_window)
 
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
-    while start_date < yesterday:
-        start = start_date
-        intervals.append({field: start.isoformat()})
-        start_date = min(yesterday, start_date + relativedelta(months=1))
+    while start_date <= end_date:
+        intervals.append({field: start_date.to_date_string()})
+        start_date = start_date.add(months=1)
 
     return intervals
 
@@ -86,12 +85,10 @@ class GoogleAdsStream(Stream, ABC):
             query)
         yield from self.parse_response(response)
 
+
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     state_checkpoint_interval = None
     CONVERSION_WINDOW_DAYS = 14
-
-    # Just to have to default value to check with latest_Record
-    TOO_OLD_DATE = "2000-01-01"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
@@ -101,9 +98,21 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
-        current_stream_state[self.cursor_field] = max(
-            latest_record[self.cursor_field], current_stream_state.get(
-                self.cursor_field, self.TOO_OLD_DATE))
+
+        # When state is none return date from latest record
+        if current_stream_state.get(self.cursor_field) == None:
+            current_stream_state[self.cursor_field] = latest_record[self.cursor_field]
+
+            return current_stream_state
+
+        date_in_current_stream = pendulum.parse(
+            current_stream_state.get(self.cursor_field))
+        date_in_latest_record = pendulum.parse(
+            latest_record[self.cursor_field])
+
+        current_stream_state[self.cursor_field] = (max(
+            date_in_current_stream, date_in_latest_record)).to_date_string()
+
         return current_stream_state
 
 
