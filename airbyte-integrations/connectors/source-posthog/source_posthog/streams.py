@@ -66,7 +66,6 @@ class IncrementalPosthogStream(PosthogStream, ABC):
     state_checkpoint_interval = math.inf
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
         """
         Personal instance variables.
         @params _initial_state - contains initial state for each instance. Uses for interrupting next_page_token.
@@ -75,6 +74,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
             The loop will be interrupted after we got response containing [200-101] <- by _initial_state
             The value `500` will be a new state value we need to save it.
         """
+        super().__init__(**kwargs)
         self._initial_state = None
         self._upgrade_state_to = None
 
@@ -129,12 +129,6 @@ class IncrementalPosthogStream(PosthogStream, ABC):
 
 
 class Annotations(IncrementalPosthogStream):
-    """
-    OK sorting by updated_at exists, but we still does not have `since`-like params for this endpoint.
-    Hence sorting exists it is possible to make it incremental, but this will be usual reverse incremental
-    from latest to state value.
-    """
-
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
@@ -151,7 +145,6 @@ class Annotations(IncrementalPosthogStream):
 class Cohorts(IncrementalPosthogStream):
     """
     normal ASC sorting. But without filters like `since`
-    So we need to query all anyway, but we may skip already written reords for incremental.
     """
 
     cursor_field = "id"
@@ -196,11 +189,6 @@ class Cohorts(IncrementalPosthogStream):
 
 
 class Events(IncrementalPosthogStream):
-    """
-    CAUTION! API supports inserting custom timestamp.
-    That may break incremental since there is no way to sort in request params.
-    """
-
     cursor_field = "timestamp"
 
     def __init__(self, start_date: str, **kwargs):
@@ -241,8 +229,8 @@ class FeatureFlags(IncrementalPosthogStream):
 
 class Insights(PosthogStream):
     """
-    NO WAY TO SORT TO IMPLETEMENT INCREMENTAL! id, created_at, last_refresh
-    are ordered in a random (!) way, no DESC no ASC
+    Endpoint does not support incremental read because id, created_at, last_refresh
+    are ordered in a random way, no DESC no ASC
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
