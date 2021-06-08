@@ -179,6 +179,19 @@ class OrderRefunds(IncrementalShopifyStream):
             yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
 
+class OrderRisks(IncrementalShopifyStream):
+    data_field = "risks"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        order_id = stream_slice["order_id"]
+        return f"orders/{order_id}/{self.data_field}.json"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
+        for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
+
+
 class Transactions(IncrementalShopifyStream):
     data_field = "transactions"
 
@@ -245,5 +258,6 @@ class SourceShopify(AbstractSource):
             CustomCollections(**args),
             Collects(**args),
             OrderRefunds(**args),
+            OrderRisks(**args),
             Transactions(**args),
         ]
