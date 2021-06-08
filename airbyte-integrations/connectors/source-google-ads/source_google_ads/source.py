@@ -61,10 +61,12 @@ def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional
 
 
 class GoogleAdsStream(Stream, ABC):
+    DEFAULT_CONVERSION_WINDOW_DAYS = 14
+
     def __init__(self, config):
         self.config = config
         self.google_ads_client = GoogleAds(**config)
-        self.conversion_window_days = self.config.get('conversion_window_days')
+        self.conversion_window_days = self.config.get('conversion_window_days', self.DEFAULT_CONVERSION_WINDOW_DAYS)
 
     def parse_response(self, response: SearchGoogleAdsResponse) -> Iterable[Mapping]:
         for result in response:
@@ -87,12 +89,11 @@ class GoogleAdsStream(Stream, ABC):
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
     state_checkpoint_interval = None
-    CONVERSION_WINDOW_DAYS = 14
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self.config.get("start_date")
-        conversion_window_size = int(self.conversion_window_days) if self.conversion_window_days else self.CONVERSION_WINDOW_DAYS
+        conversion_window_size = int(self.conversion_window_days)
 
         return chunk_date_range(start_date, None, conversion_window_size, self.cursor_field)
 
