@@ -5,10 +5,22 @@ import { VersionError } from "./VersionError";
 abstract class AirbyteRequestService {
   static rootUrl = config.apiUrl;
 
+  fetch(
+    url: string,
+    body?: any,
+    options?: Partial<RequestInit>
+  ): Promise<Response> {
+    return AirbyteRequestService.fetch(url, body, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
   /** Perform network request */
   static async fetch(
     url: string,
-    body?: Readonly<Record<string, unknown> | Array<unknown> | string>,
+    body?: any,
     options?: Partial<RequestInit>
   ): Promise<Response> {
     const path = `${this.rootUrl}${url}`;
@@ -18,7 +30,7 @@ abstract class AirbyteRequestService {
       ...options,
     });
 
-    return this.parseResponse(response);
+    return AirbyteRequestService.parseResponse(response);
   }
 
   /** Parses errors from server */
@@ -44,7 +56,7 @@ abstract class AirbyteRequestService {
       }
     }
 
-    throw new CommonRequestError(response, resultJsonResponse.message);
+    throw new CommonRequestError(response, resultJsonResponse?.message);
   }
 }
 

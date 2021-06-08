@@ -113,7 +113,7 @@ const ArraySection: React.FC<{
           name={path}
           render={(arrayHelpers) => (
             <ArrayOfObjectsEditor
-              isEditMode={!!flow}
+              editableItemIndex={flow?.id}
               onStartEdit={(index) =>
                 addUnfinishedFlow(path, {
                   id: index,

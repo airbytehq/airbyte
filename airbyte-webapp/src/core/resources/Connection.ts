@@ -13,6 +13,7 @@ import { Source } from "./Source";
 import { Destination } from "./Destination";
 
 import BaseResource from "./BaseResource";
+import { Operation } from "../domain/connector/operation";
 
 export type ScheduleProperties = {
   units: number;
@@ -30,6 +31,7 @@ export interface Connection {
   syncCatalog: SyncSchema;
   source: Source;
   destination: Destination;
+  operations: Operation[];
   latestSyncJobCreatedAt?: number | null;
   isSyncing?: boolean;
   latestSyncJobStatus: string | null;
@@ -47,6 +49,7 @@ export default class ConnectionResource
   readonly status: string = "";
   readonly message: string = "";
   readonly schedule: ScheduleProperties | null = null;
+  readonly operations: Operation[] = [];
   readonly source: Source = {} as Source;
   readonly destination: Destination = {} as Destination;
   readonly latestSyncJobCreatedAt: number | undefined | null = null;
@@ -120,15 +123,13 @@ export default class ConnectionResource
       ...super.createShape(),
       schema: this,
       fetch: async (
-        params: Readonly<Record<string, string>>,
+        _: Readonly<Record<string, string>>,
         body: Readonly<Record<string, unknown>>
       ): Promise<Connection> =>
-        await this.fetch("post", `${this.url(params)}/create`, body).then(
-          (response) => ({
-            ...response,
-            // will remove it if BE returns resource in /web_backend/get format
-            ...params,
-          })
+        await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/connections/create`,
+          body
         ),
     };
   }

@@ -8,11 +8,11 @@ import ContentCard from "components/ContentCard";
 import FrequencyConfig from "data/FrequencyConfig.json";
 import useConnection, {
   useConnectionLoad,
+  ValuesProps,
 } from "components/hooks/services/useConnectionHook";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import DeleteBlock from "components/DeleteBlock";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import { SyncSchema } from "core/domain/catalog";
 import { equal } from "utils/objects";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
@@ -67,12 +67,6 @@ const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-type FormValues = {
-  frequency: string;
-  prefix: string;
-  schema: SyncSchema;
-};
-
 const SettingsView: React.FC<IProps> = ({
   onAfterSaveSchema,
   connectionId,
@@ -87,10 +81,10 @@ const SettingsView: React.FC<IProps> = ({
   const formatMessage = useIntl().formatMessage;
   const [saved, setSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentValues, setCurrentValues] = useState<FormValues>({
+  const [currentValues, setCurrentValues] = useState<ValuesProps>({
     frequency: "",
     prefix: "",
-    schema: { streams: [] },
+    syncCatalog: { streams: [] },
   });
   const [errorMessage, setErrorMessage] = useState("");
   const {
@@ -125,7 +119,7 @@ const SettingsView: React.FC<IProps> = ({
     connection &&
     FrequencyConfig.find((item) => equal(connection.schedule, item.config));
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: ValuesProps) => {
     setIsLoading(true);
     const frequencyData = FrequencyConfig.find(
       (item) => item.value === values.frequency
@@ -135,7 +129,7 @@ const SettingsView: React.FC<IProps> = ({
     try {
       await updateConnection({
         connectionId: connectionId,
-        syncCatalog: values.schema,
+        syncCatalog: values.syncCatalog,
         status: connection?.status || "",
         schedule: frequencyData?.config || null,
         prefix: values.prefix,
@@ -143,7 +137,7 @@ const SettingsView: React.FC<IProps> = ({
       });
 
       setSaved(true);
-      if (!equal(values.schema, initialSyncSchema)) {
+      if (!equal(values.syncCatalog, initialSyncSchema)) {
         onAfterSaveSchema();
       }
 
@@ -167,7 +161,7 @@ const SettingsView: React.FC<IProps> = ({
     await onSubmit(currentValues);
   };
 
-  const onSubmitForm = async (values: FormValues) => {
+  const onSubmitForm = async (values: ValuesProps) => {
     if (activeUpdatingSchemaMode) {
       setCurrentValues(values);
       setIsUpdateModalOpen(true);
@@ -215,10 +209,11 @@ const SettingsView: React.FC<IProps> = ({
         {!isLoadingConnection && !loadingDestination && connection ? (
           <ConnectionForm
             isEditMode
-            schema={connection.syncCatalog}
+            syncCatalog={connection.syncCatalog}
             prefixValue={connection.prefix}
             source={connection.source}
             destination={connection.destination}
+            operations={connection.operations}
             onSubmit={onSubmitForm}
             onReset={onReset}
             frequencyValue={schedule?.value}

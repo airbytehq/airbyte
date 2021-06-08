@@ -19,10 +19,15 @@ import EditControls from "./components/EditControls";
 import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
 import { ConnectionFormValues, connectionValidationSchema } from "./formConfig";
-import NormalizationBlock from "./components/NormalizationBlock";
+import NormalizationField from "./components/NormalizationField";
 import SectionTitle from "./components/SectionTitle";
-import TransformationBlock from "./components/TransformationBlock";
-import { Normalisation } from "./types";
+import { TransformationField } from "./components/TransformationField";
+import {
+  Normalization,
+  NormalizationType,
+  Operation,
+  OperatorType,
+} from "core/domain/connector/operation";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -43,11 +48,8 @@ const ConnectorLabel = styled(ControlLabels)`
 `;
 
 type ConnectionFormProps = {
-  schema: SyncSchema;
   onSubmit: (values: ConnectionFormValues) => void;
   className?: string;
-  source: Source;
-  destination: Destination;
   errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
@@ -55,14 +57,18 @@ type ConnectionFormProps = {
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
   editSchemeMode?: boolean;
-  frequencyValue?: string;
-  prefixValue?: string;
   isEditMode?: boolean;
   isLoading?: boolean;
   additionalSchemaControl?: React.ReactNode;
   sourceIcon?: string;
   destinationIcon?: string;
-  normalization?: string;
+
+  syncCatalog: SyncSchema;
+  source: Source;
+  destination: Destination;
+  prefixValue?: string;
+  frequencyValue?: string;
+  operations?: Operation[];
 };
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
@@ -75,7 +81,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   errorMessage,
   onDropDownSelect,
   frequencyValue,
-  normalization,
   prefixValue,
   isEditMode,
   successMessage,
@@ -85,42 +90,75 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   additionalSchemaControl,
   source,
   destination,
+  operations,
   ...props
 }) => {
-  const initialSchema = useInitialSchema(props.schema);
+  const initialSchema = useInitialSchema(props.syncCatalog);
   const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
     destination.destinationDefinitionId
   );
   const dropdownData = useFrequencyDropdownData();
-  //TODO: add real action
-  const onTransformationDone = () => null;
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const formatMessage = useIntl().formatMessage;
 
+  const transformations = operations?.filter(
+    (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
+  );
+  const normalization = (operations?.find(
+    (op) => op.operatorConfiguration.operatorType === OperatorType.Normalization
+  ) as Normalization)?.operatorConfiguration?.normalization;
+
   return (
     <Formik
       initialValues={{
+        syncCatalog: initialSchema,
         frequency: frequencyValue || "",
         prefix: prefixValue || "",
-        schema: initialSchema,
-        // TODO: fix
-        transformations: [],
-        // TODO: check normalization values with api
-        normalization: normalization || Normalisation.RAW,
+        transformations: transformations ?? [],
+        normalization: normalization ?? NormalizationType.RAW,
       }}
-      validateOnBlur={true}
-      validateOnChange={true}
+      // validateOnBlur={true}
+      // validateOnChange={true}
       validationSchema={connectionValidationSchema}
       onSubmit={async (values) => {
-        await onSubmit(
-          connectionValidationSchema.cast(values, {
-            context: { isRequest: true },
-          })
-        );
+        // TODO: fix
+        const formValues: any = connectionValidationSchema.cast(values, {
+          context: { isRequest: true },
+        });
+
+        const newOperations: Operation[] = [...values.transformations];
+
+        if (values.normalization !== NormalizationType.RAW) {
+          const normalizationOperation = operations?.find(
+            (op) =>
+              op.operatorConfiguration.operatorType ===
+              OperatorType.Normalization
+          );
+
+          if (normalizationOperation) {
+            newOperations.push(normalizationOperation);
+          } else {
+            newOperations.push({
+              name: "Normalization",
+              operatorConfiguration: {
+                operatorType: OperatorType.Normalization,
+                normalization: values.normalization,
+              },
+            });
+          }
+        }
+
+        if (newOperations.length > 0) {
+          formValues.withOperations = newOperations;
+        }
+
+        await onSubmit(formValues);
 
         const requiresReset =
-          isEditMode && !equal(initialSchema, values.schema) && !editSchemeMode;
+          isEditMode &&
+          !equal(initialSchema, values.syncCatalog) &&
+          !editSchemeMode;
         if (requiresReset) {
           setResetModalIsOpen(true);
         }
@@ -195,17 +233,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           <SectionTitle>
             <FormattedMessage id="form.normalizationTransformation" />
           </SectionTitle>
-          <Field name="normalization">
-            {({ field }: FieldProps<string>) => (
-              <NormalizationBlock
-                {...field}
-                onClick={(value: string) =>
-                  setFieldValue("normalization", value)
-                }
-              />
-            )}
-          </Field>
-          <TransformationBlock onDone={onTransformationDone} />
+          <NormalizationField />
+          <TransformationField />
           {!isEditMode ? (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}
@@ -216,7 +245,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               <EditControls
                 isSubmitting={isLoading || isSubmitting}
                 isValid={isValid}
-                dirty={dirty || !equal(initialSchema, values.schema)}
+                dirty={dirty || !equal(initialSchema, values.syncCatalog)}
                 resetForm={() => {
                   resetForm();
                   if (onCancel) {

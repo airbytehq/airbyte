@@ -16,9 +16,10 @@ import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { Source } from "core/resources/Source";
 import { Destination } from "core/resources/Destination";
-import { SyncSchema } from "core/domain/catalog";
 
-import useConnection from "components/hooks/services/useConnectionHook";
+import useConnection, {
+  ValuesProps,
+} from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
@@ -96,19 +97,11 @@ const CreateConnectionContent: React.FC<IProps> = ({
     );
   }
 
-  const onSubmitConnectionStep = async (values: {
-    frequency: string;
-    prefix: string;
-    schema: SyncSchema;
-  }) => {
+  const onSubmitConnectionStep = async (values: ValuesProps) => {
     setErrorStatusRequest(0);
     try {
       await createConnection({
-        values: {
-          frequency: values.frequency,
-          prefix: values.prefix,
-          syncCatalog: values.schema,
-        },
+        values,
         source: source,
         destination: destination,
         sourceDefinition: {
@@ -158,7 +151,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
           additionalSchemaControl={RefreshSchemaButton()}
           onSubmit={onSubmitConnectionStep}
           errorMessage={createFormErrorMessage({ status: errorStatusRequest })}
-          schema={schema}
+          syncCatalog={schema}
           source={source}
           destination={destination}
           sourceIcon={sourceDefinition?.icon}

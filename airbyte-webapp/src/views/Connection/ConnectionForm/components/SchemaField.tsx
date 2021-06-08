@@ -40,7 +40,7 @@ const SchemaField: React.FC<SchemaViewProps> = ({
   destinationSupportedSyncModes,
   additionalControl,
 }) => {
-  const [field, , form] = useField<SyncSchemaStream[]>("schema.streams");
+  const [field, , form] = useField<SyncSchemaStream[]>("syncCatalog.streams");
   const streams = field.value;
   const onChangeSchema = form.setValue;
   const [searchString, setSearchString] = useState("");

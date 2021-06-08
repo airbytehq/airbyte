@@ -6,17 +6,14 @@ import {
   SyncSchemaStream,
 } from "core/domain/catalog";
 import * as yup from "yup";
+import { ValuesProps } from "components/hooks/services/useConnectionHook";
 
-type ConnectionFormValues = {
-  frequency: string;
-  prefix: string;
-  schema: SyncSchema;
-};
+type ConnectionFormValues = ValuesProps;
 
 const connectionValidationSchema = yup.object<ConnectionFormValues>({
   frequency: yup.string().required("form.empty.error"),
   prefix: yup.string(),
-  schema: yup.object<SyncSchema>({
+  syncCatalog: yup.object<SyncSchema>({
     streams: yup.array().of(
       yup.object<SyncSchemaStream>({
         id: yup

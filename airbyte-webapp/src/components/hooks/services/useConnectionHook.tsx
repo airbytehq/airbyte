@@ -13,12 +13,13 @@ import useRouter from "../useRouterHook";
 import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspaceHook";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { Operation } from "core/domain/connector/operation";
 
-type ValuesProps = {
+export type ValuesProps = {
   frequency: string;
   prefix: string;
   syncCatalog: SyncSchema;
-  source?: { name: string; sourceId: string };
+  withOperations?: Operation[];
 };
 
 type CreateConnectionProps = {
@@ -120,18 +121,7 @@ const useConnection = (): {
 
     try {
       const result = await createConnectionResource(
-        {
-          source: {
-            sourceId: source?.sourceId || "",
-            sourceName: source?.sourceName || "",
-            name: source?.name || "",
-          },
-          destination: {
-            destinationId: destination?.destinationId || "",
-            destinationName: destination?.destinationName || "",
-            name: destination?.name || "",
-          },
-        },
+        {},
         {
           sourceId: source?.sourceId,
           destinationId: destination?.destinationId,
@@ -139,6 +129,7 @@ const useConnection = (): {
           prefix: values.prefix,
           status: "active",
           syncCatalog: values.syncCatalog,
+          withOperations: values.withOperations,
         },
         [
           [
