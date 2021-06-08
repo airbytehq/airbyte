@@ -33,6 +33,7 @@
 * [Connector Catalog](integrations/README.md)
   * [Sources](integrations/sources/README.md)
     * [Amazon Seller Partner](integrations/sources/amazon-seller-partner.md)
+    * [Amplitude](integrations/sources/amplitude.md)
     * [Appstore](integrations/sources/appstore.md)
     * [Asana](integrations/sources/asana.md)
     * [Braintree](integrations/sources/braintree.md)
