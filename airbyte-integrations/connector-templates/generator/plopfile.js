@@ -25,7 +25,7 @@ module.exports = function (plop) {
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
-  const genericJdbcSourceInputRoot = '../source-generic-jdbc';
+  const genericJdbcSourceInputRoot = '../java-jdbc-scaffolding';
   const httpApiInputRoot = '../source-python-http-api';
 
   const outputDir = '../../connectors';
@@ -119,7 +119,7 @@ module.exports = function (plop) {
             {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
     });
 
-  plop.setGenerator('Basic Jdbc Source', {
+  plop.setGenerator('Java JDBC Scaffolding', {
     description: 'Generate a minimal Java JDBC Airbyte Source Connector.',
     prompts: [{type: 'input', name: 'name', message: 'Source name, without the "source-" prefix e.g: "mysql"'}],
     actions: [
