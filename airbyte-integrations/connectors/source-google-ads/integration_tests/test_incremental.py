@@ -67,14 +67,6 @@ SAMPLE_CATALOG = {
     ]
 }
 
-def test_incremental_sync():
-    google_ads_client = SourceGoogleAds()
-    state = "2021-05-24"
-    records = google_ads_client.read(AirbyteLogger(), SAMPLE_CONFIG, ConfiguredAirbyteCatalog.parse_obj(SAMPLE_CATALOG), {"ad_group_ad_report": {
-        "date": state
-    }})
-    current_state = pendulum.parse(state).subtract(days=14).to_date_string()
-
 def test_incremental_sync(config):
     google_ads_client = SourceGoogleAds()
     state = "2021-05-24"

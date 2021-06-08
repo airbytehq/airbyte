@@ -28,11 +28,9 @@ from string import Template
 from source_google_ads.google_ads import GoogleAds
 
 SAMPLE_SCHEMA = {
-    "json_schema": {
-        "properties": {
-            "segment.date": {
-                "type": ["null", "string"],
-            }
+    "properties": {
+        "segment.date": {
+            "type": ["null", "string"],
         }
     }
 }

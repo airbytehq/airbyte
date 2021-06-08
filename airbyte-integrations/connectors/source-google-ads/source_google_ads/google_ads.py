@@ -57,7 +57,7 @@ class GoogleAds:
 
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
-        properties = schema.get("json_schema").get("properties")
+        properties = schema.get("properties")
 
         return [*properties]
 
