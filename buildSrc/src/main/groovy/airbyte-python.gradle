@@ -125,17 +125,16 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn project.unitTest
         }
 
-//        print("HI THERE")
-//        print("$project.projectDir.absolutePath/$venvPath")
+        // Add a task that allows cleaning up venvs to every python project
         project.task('cleanPythonVenv', type: Exec){
             commandLine 'rm'
             args '-rf', "$project.projectDir.absolutePath/$venvPath"
         }
 
+        // Add a task which can be run at the root project level to delete all python venvs
         if (!project.rootProject.hasProperty('cleanPythonVenvs')){
             project.rootProject.task('cleanPythonVenvs')
         }
-
         project.rootProject.cleanPythonVenvs.dependsOn(project.cleanPythonVenv)
 
         project.assemble.dependsOn project.airbytePythonApply
