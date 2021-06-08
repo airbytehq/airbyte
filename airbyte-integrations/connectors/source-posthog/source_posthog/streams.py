@@ -66,6 +66,7 @@ class IncrementalPosthogStream(PosthogStream, ABC):
     Because endpoints has descending order we need to save initial state value to know when to stop pagination.
     start_date is used to as a min date to filter on.
     """
+
     state_checkpoint_interval = math.inf
 
     def __init__(self, start_date: str, **kwargs):
@@ -113,6 +114,7 @@ class Annotations(IncrementalPosthogStream):
     """
     Docs: https://posthog.com/docs/api/annotations
     """
+
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
@@ -138,6 +140,7 @@ class Events(IncrementalPosthogStream):
     """
     Docs: https://posthog.com/docs/api/events
     """
+
     cursor_field = "timestamp"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -155,6 +158,7 @@ class EventsSessions(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/events
     """
+
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -188,6 +192,7 @@ class InsightsPath(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/insights
     """
+
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -198,6 +203,7 @@ class InsightsSessions(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/insights
     """
+
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -208,6 +214,7 @@ class Persons(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/people
     """
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "person"
 
@@ -216,6 +223,7 @@ class Trends(PosthogStream):
     """
     Docs: https://posthog.com/docs/api/insights
     """
+
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
