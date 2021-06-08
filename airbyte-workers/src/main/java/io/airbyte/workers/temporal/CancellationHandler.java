@@ -28,12 +28,16 @@ import io.airbyte.workers.WorkerException;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.client.ActivityCompletionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface CancellationHandler {
 
-  void checkAndHandleCancellation(Runnable onCancellationCallback) throws WorkerException;
+  void checkAndHandleCancellation(Runnable onCancellationCallback);
 
   class TemporalCancellationHandler implements CancellationHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TemporalCancellationHandler.class);
 
     final ActivityExecutionContext context;
 
@@ -54,7 +58,7 @@ public interface CancellationHandler {
      * @throws WorkerException
      */
     @Override
-    public void checkAndHandleCancellation(Runnable onCancellationCallback) throws WorkerException {
+    public void checkAndHandleCancellation(Runnable onCancellationCallback) {
       try {
         // Heartbeat is somewhat misleading here. What it does is check the current Temporal activity's
         // context and
@@ -64,7 +68,7 @@ public interface CancellationHandler {
         context.heartbeat(null);
       } catch (ActivityCompletionException e) {
         onCancellationCallback.run();
-        throw new WorkerException("Worker cleaned up after exception", e);
+        LOGGER.warn("Job either timeout-ed or was cancelled.");
       }
     }
 

@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,10 +20,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
-from typing import Dict, Generator, Mapping, DefaultDict
+from typing import Any, Generator, Mapping, MutableMapping
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -32,7 +34,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     Status,
-    SyncMode
+    SyncMode,
 )
 from airbyte_cdk.sources import Source
 
@@ -49,7 +51,7 @@ class SourceAmazonSellerPartner(Source):
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         client = self._get_client(config)
-        logger.info(f"Checking access to Amazon SP-API")
+        logger.info("Checking access to Amazon SP-API")
         try:
             client.check_connection()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
@@ -62,7 +64,7 @@ class SourceAmazonSellerPartner(Source):
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._get_client(config)
 
@@ -74,7 +76,7 @@ class SourceAmazonSellerPartner(Source):
 
     @staticmethod
     def _read_record(
-        logger: AirbyteLogger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any]
+        logger: AirbyteLogger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]
     ) -> Generator[AirbyteMessage, None, None]:
         stream_name = configured_stream.stream.name
         is_report = client._amazon_client.is_report(stream_name)

@@ -29,6 +29,7 @@ import os
 import pkgutil
 import shutil
 from enum import Enum
+from typing import Any, Dict
 
 import yaml
 
@@ -52,7 +53,8 @@ class TransformConfig:
             # move it right next to the profile.yml file for easier access.
             shutil.copy("/tmp/bq_keyfile.json", os.path.join(inputs["output_path"], "bq_keyfile.json"))
 
-    def parse(self, args):
+    @staticmethod
+    def parse(args):
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument("--config", type=str, required=True, help="path to original config")
         parser.add_argument(
@@ -69,10 +71,11 @@ class TransformConfig:
             "output_path": parsed_args.out,
         }
 
-    def transform(self, integration_type: DestinationType, config: dict):
-        base_profile = yaml.load(
-            pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/profile_base.yml"), Loader=yaml.FullLoader
-        )
+    def transform(self, integration_type: DestinationType, config: Dict[str, Any]):
+        data = pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/profile_base.yml")
+        if not data:
+            raise FileExistsError("Failed to load profile_base.yml")
+        base_profile = yaml.load(data, Loader=yaml.FullLoader)
 
         transformed_integration_config = {
             DestinationType.bigquery.value: self.transform_bigquery,
@@ -86,7 +89,8 @@ class TransformConfig:
 
         return base_profile
 
-    def transform_bigquery(self, config: dict):
+    @staticmethod
+    def transform_bigquery(config: Dict[str, Any]):
         print("transform_bigquery")
         credentials_json = config["credentials_json"]
         keyfile_path = "/tmp/bq_keyfile.json"
@@ -94,76 +98,81 @@ class TransformConfig:
             fh.write(credentials_json)
 
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
-        dbt_config = dict()
-        dbt_config["type"] = "bigquery"
-        dbt_config["method"] = "service-account"
-        dbt_config["project"] = config["project_id"]
-        dbt_config["dataset"] = config["dataset_id"]
-        dbt_config["keyfile"] = keyfile_path
-        dbt_config["threads"] = 32
-        dbt_config["retries"] = 1
+        dbt_config = {
+            "type": "bigquery",
+            "method": "service-account",
+            "project": config["project_id"],
+            "dataset": config["dataset_id"],
+            "keyfile": keyfile_path,
+            "threads": 32,
+            "retries": 1,
+        }
 
         return dbt_config
 
-    def transform_postgres(self, config: dict):
+    @staticmethod
+    def transform_postgres(config: Dict[str, Any]):
         print("transform_postgres")
-        dbt_config = dict()
-
         # https://docs.getdbt.com/reference/warehouse-profiles/postgres-profile
-        dbt_config["type"] = "postgres"
-        dbt_config["host"] = config["host"]
-        dbt_config["user"] = config["username"]
-        dbt_config["pass"] = config.get("password", "")
-        dbt_config["port"] = config["port"]
-        dbt_config["dbname"] = config["database"]
-        dbt_config["schema"] = config["schema"]
-        dbt_config["threads"] = 32
+        dbt_config = {
+            "type": "postgres",
+            "host": config["host"],
+            "user": config["username"],
+            "pass": config.get("password", ""),
+            "port": config["port"],
+            "dbname": config["database"],
+            "schema": config["schema"],
+            "threads": 32,
+        }
 
         return dbt_config
 
-    def transform_redshift(self, config: dict):
+    @staticmethod
+    def transform_redshift(config: Dict[str, Any]):
         print("transform_redshift")
-        dbt_config = dict()
-
         # https://docs.getdbt.com/reference/warehouse-profiles/redshift-profile
-        dbt_config["type"] = "redshift"
-        dbt_config["host"] = config["host"]
-        dbt_config["user"] = config["username"]
-        dbt_config["pass"] = config["password"]
-        dbt_config["port"] = config["port"]
-        dbt_config["dbname"] = config["database"]
-        dbt_config["schema"] = config["schema"]
-        dbt_config["threads"] = 32
-
+        dbt_config = {
+            "type": "redshift",
+            "host": config["host"],
+            "user": config["username"],
+            "pass": config["password"],
+            "port": config["port"],
+            "dbname": config["database"],
+            "schema": config["schema"],
+            "threads": 32,
+        }
         return dbt_config
 
-    def transform_snowflake(self, config: dict):
+    @staticmethod
+    def transform_snowflake(config: Dict[str, Any]):
         print("transform_snowflake")
-        dbt_config = dict()
-
-        # https://docs.getdbt.com/reference/warehouse-profiles/snowflake-profile
-        dbt_config["type"] = "snowflake"
         # here account is everything before ".snowflakecomputing.com" as it can include account, region & cloud environment information)
-        dbt_config["account"] = config["host"].replace(".snowflakecomputing.com", "")
+        account = config["host"].replace(".snowflakecomputing.com", "").replace("http://", "").replace("https://", "")
+        # https://docs.getdbt.com/reference/warehouse-profiles/snowflake-profile
         # snowflake coerces most of these values to uppercase, but if dbt has them as a different casing it has trouble finding the resources it needs. thus we coerce them to upper.
-        dbt_config["user"] = config["username"].upper()
-        dbt_config["password"] = config["password"]
-        dbt_config["role"] = config["role"].upper()
-        dbt_config["database"] = config["database"].upper()
-        dbt_config["warehouse"] = config["warehouse"].upper()
-        dbt_config["schema"] = config["schema"].upper()
-        dbt_config["threads"] = 32
-        dbt_config["client_session_keep_alive"] = False
-        dbt_config["query_tag"] = "normalization"
-
+        dbt_config = {
+            "type": "snowflake",
+            "account": account,
+            "user": config["username"].upper(),
+            "password": config["password"],
+            "role": config["role"].upper(),
+            "database": config["database"].upper(),
+            "warehouse": config["warehouse"].upper(),
+            "schema": config["schema"].upper(),
+            "threads": 32,
+            "client_session_keep_alive": False,
+            "query_tag": "normalization",
+        }
         return dbt_config
 
-    def read_json_config(self, input_path: str):
+    @staticmethod
+    def read_json_config(input_path: str):
         with open(input_path, "r") as file:
             contents = file.read()
         return json.loads(contents)
 
-    def write_yaml_config(self, output_path: str, config: dict):
+    @staticmethod
+    def write_yaml_config(output_path: str, config: Dict[str, Any]):
         if not os.path.exists(output_path):
             os.makedirs(output_path)
         with open(os.path.join(output_path, "profiles.yml"), "w") as fh:

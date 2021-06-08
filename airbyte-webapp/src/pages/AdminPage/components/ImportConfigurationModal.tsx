@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import Modal from "components/Modal";
-import Button from "components/Button";
+import { Button } from "components";
 import FileDropZone from "components/FileDropZone";
 
 export type IProps = {

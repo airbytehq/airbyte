@@ -8,7 +8,7 @@ import { useResource } from "rest-hooks";
 import config from "config";
 
 import { Link } from "components";
-import { H2 } from "components/Titles";
+import { H2 } from "components";
 import StepsMenu from "components/StepsMenu";
 import HeadTitle from "components/HeadTitle";
 import Version from "components/Version";

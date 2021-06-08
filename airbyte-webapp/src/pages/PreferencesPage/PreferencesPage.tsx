@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { PageViewContainer } from "../../components/CenteredPageComponents";
-import { H1 } from "components/Titles";
+import { H1 } from "components";
 import { PreferencesForm } from "components";
 import config from "../../config";
 import { AnalyticsService } from "../../core/analytics/AnalyticsService";
