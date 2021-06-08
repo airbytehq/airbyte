@@ -25,6 +25,7 @@
 package io.airbyte.workers.process;
 
 import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -51,7 +52,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -373,56 +373,6 @@ public class KubePodProcess extends Process {
         e.printStackTrace(); // todo: propagate exception / join at the end of constructor
       }
     });
-
-    executorService.submit(() -> {
-      try {
-        LOGGER.info("Starting cleanup thread...");
-        Pod refreshedPod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get(); //todo: fix npe
-        client.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
-
-        try {
-          this.stdin.close();
-        } catch (Exception e) {
-
-        }
-
-        try {
-          this.stdout.close();
-        } catch (Exception e) {
-
-        }
-        try {
-          this.stdoutServerSocket.close();
-        } catch (Exception e) {
-
-        }
-        try {
-          this.stderr.close();
-        } catch (Exception e) {
-
-        }
-        try {
-          this.stderrServerSocket.close();
-        } catch (Exception e) {
-
-        }
-
-        try {
-          this.executorService.shutdownNow();
-        } catch (Exception e) {
-
-        }
-
-        LOGGER.info("Finished closing...");
-
-        portConsumer.accept(stdoutLocalPort);
-        portConsumer.accept(stderrLocalPort);
-
-        LOGGER.info("Released ports back to pool...");
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    });
   }
 
   @Override
@@ -442,25 +392,42 @@ public class KubePodProcess extends Process {
 
   @Override
   public int waitFor() throws InterruptedException {
-    // These are closed in the opposite order in which they are created to prevent any resource
-    // conflicts.
-    Pod refreshedPod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
-    client.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
     try {
-      this.stdin.close();
-      this.stdout.close();
-      this.stdoutServerSocket.close();
-      this.stderr.close();
-      this.stderrServerSocket.close();
-      portConsumer.accept(stdoutLocalPort);
-      portConsumer.accept(stderrLocalPort);
-    } catch (IOException e) {
-      LOGGER.warn("Error while closing sockets and streams: ", e);
-      throw new InterruptedException();
+      Pod refreshedPod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
+      client.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+      return exitValue();
+    } finally {
+      close();
     }
-    this.executorService.shutdownNow();
+  }
 
-    return exitValue();
+  @Override
+  public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
+    try {
+      return super.waitFor(timeout, unit);
+    } finally {
+      close();
+    }
+  }
+
+  @Override
+  public void destroy() {
+    try {
+      client.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
+    } finally {
+      close();
+    }
+  }
+
+  private void close() {
+    Exceptions.swallow(this.stdin::close);
+    Exceptions.swallow(this.stdout::close);
+    Exceptions.swallow(this.stderr::close);
+    Exceptions.swallow(this.stdoutServerSocket::close);
+    Exceptions.swallow(this.stderrServerSocket::close);
+    Exceptions.swallow(this.executorService::shutdownNow);
+    Exceptions.swallow(() -> portConsumer.accept(stdoutLocalPort));
+    Exceptions.swallow(() -> portConsumer.accept(stderrLocalPort));
   }
 
   private boolean isTerminal(Pod pod) {
@@ -495,18 +462,6 @@ public class KubePodProcess extends Process {
   @Override
   public int exitValue() {
     return getReturnCode(podDefinition);
-  }
-
-  @Override
-  public void destroy() {
-    try {
-      stdoutServerSocket.close();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    } finally {
-      executorService.shutdown();
-      client.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
-    }
   }
 
 }

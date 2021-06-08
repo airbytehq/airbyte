@@ -26,7 +26,6 @@ package io.airbyte.test.acceptance;
 
 import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.lang.Thread.sleep;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -125,7 +124,6 @@ public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
 
-  // Skip networking related failures on kube using this flag
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
   private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
 
@@ -196,17 +194,17 @@ public class AcceptanceTests {
     clearDbData(sourcePsql);
     destinationPsql.stop();
 
-//    for (UUID sourceId : sourceIds) {
-//      deleteSource(sourceId);
-//    }
-//
-//    for (UUID connectionId : connectionIds) {
-//      disableConnection(connectionId);
-//    }
-//
-//    for (UUID destinationId : destinationIds) {
-//      deleteDestination(destinationId);
-//    }
+    for (UUID sourceId : sourceIds) {
+      deleteSource(sourceId);
+    }
+
+    for (UUID connectionId : connectionIds) {
+      disableConnection(connectionId);
+    }
+
+    for (UUID destinationId : destinationIds) {
+      deleteDestination(destinationId);
+    }
   }
 
   @Test
@@ -453,7 +451,10 @@ public class AcceptanceTests {
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
-    sleep(Duration.of(30, SECONDS).toMillis());
+    // todo: wait for two attempts in the UI
+    // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
+    // syncs in progress
+    sleep(Duration.ofMinutes(2).toMillis());
     assertSourceAndTargetDbInSync(sourcePsql, false);
   }
 

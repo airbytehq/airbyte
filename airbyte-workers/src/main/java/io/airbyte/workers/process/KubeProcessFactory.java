@@ -76,7 +76,7 @@ public class KubeProcessFactory implements ProcessFactory {
       return new KubePodProcess(
           kubeClient,
           port -> {
-            if(!ports.contains(port)) {
+            if (!ports.contains(port)) {
               ports.add(port);
               LOGGER.info("Port consumer releasing: " + port);
             } else {
