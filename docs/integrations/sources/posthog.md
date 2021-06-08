@@ -1,8 +1,8 @@
-# Posthog
+# PostHog
 
 ## Sync overview
 
-This source can sync data for the [Posthog API](https://posthog.com/docs/api/overview). It supports both Full Refresh and Incremental syncs.
+This source can sync data for the [PostHog API](https://posthog.com/docs/api/overview). It supports both Full Refresh and Incremental syncs.
 You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Output schema
@@ -38,7 +38,7 @@ This Source is capable of syncing the following core Streams:
 
 ### Performance considerations
 
-The Posthog API doesn't have any known request limitation.
+The PostHog API doesn't have any known request limitation.
 
 Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
@@ -46,7 +46,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 ### Requirements
 
-* Posthog Personal API Key
+* PostHog Personal API Key
 
 ### Setup guide
 
