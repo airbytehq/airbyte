@@ -1,5 +1,4 @@
 from source_google_ads.source import chunk_date_range, AdGroupAdReport
-from dateutil.relativedelta import *
 
 
 def test_chunk_date_range():
@@ -12,18 +11,9 @@ def test_chunk_date_range():
             {'date': '2021-04-18'}] == response
 
 
-SAMPLE_CONFIG = {
-    "developer_token": "developer_token",
-    "client_id": "client_id",
-    "client_secret": "client_secret",
-    "refresh_token": "refresh_token",
-    "start_date": "start_date",
-    "customer_id": "customer_id"
-}
-
-
-def test_get_updated_state():
-    client = AdGroupAdReport(SAMPLE_CONFIG)
+# this requires the config because instantiating a stream creates a google client. TODO refactor so client can be mocked.
+def test_get_updated_state(config):
+    client = AdGroupAdReport(config)
     current_state_stream = {}
     latest_record = {"segments.date": "2020-01-01"}
 
