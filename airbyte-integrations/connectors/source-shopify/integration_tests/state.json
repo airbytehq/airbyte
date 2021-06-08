@@ -1,0 +1,29 @@
+{
+  "orders": {
+    "id": 2497723957406
+  },
+  "collects": {
+    "id": 17279451103367
+  },
+  "products": {
+    "id": 5059311534215
+  },
+  "customers": {
+    "id": 3664773775518
+  },
+  "metafields": {
+    "id": 11269168529474
+  },
+  "transactions": {
+    "id": 3125579481246
+  },
+  "order_refunds": {
+    "id": 639978373255
+  },
+  "custom_collections": {
+    "id": 153276284994
+  },
+  "abandoned_checkouts": {
+    "id": 14254866366622
+  }
+}

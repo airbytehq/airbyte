@@ -104,7 +104,7 @@ class IncrementalConfig(BaseConfig):
     cursor_paths: Optional[Mapping[str, List[str]]] = Field(
         description="For each stream, the path of its cursor field in the output state messages."
     )
-    state_path: Optional[str] = Field(description="Path to state file")
+    future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
 
 
 class TestConfig(BaseConfig):

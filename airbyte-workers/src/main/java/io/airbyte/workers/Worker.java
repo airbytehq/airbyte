@@ -34,6 +34,10 @@ public interface Worker<InputType, OutputType> {
    */
   OutputType run(InputType inputType, Path jobRoot) throws WorkerException;
 
+  /**
+   * Cancels in-progress workers. Although all workers support cancel, in reality only the
+   * asynchronous {@link DefaultReplicationWorker}'s cancel is used.
+   */
   void cancel();
 
 }
