@@ -129,7 +129,6 @@ class Cohorts(PosthogStream):
     Docs: https://posthog.com/docs/api/cohorts
     normal ASC sorting. But without filters like `since`
     """
-    cursor_field = "id"
 
     def path(self, **kwargs) -> str:
         return "cohort"
