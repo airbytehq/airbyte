@@ -42,7 +42,7 @@ def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional
     The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
     intervals = []
-    end_date = pendulum.parse(end_date) if end_date else pendulum.yesterday()
+    end_date = pendulum.parse(end_date) if end_date else pendulum.now()
     start_date = pendulum.parse(start_date)
 
     # As in to return some state when state in abnormal
@@ -53,7 +53,7 @@ def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional
     start_date = start_date.subtract(days=conversion_window)
 
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
-    while start_date <= end_date:
+    while start_date < end_date:
         intervals.append({field: start_date.to_date_string()})
         start_date = start_date.add(months=1)
 
