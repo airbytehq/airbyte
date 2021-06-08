@@ -75,6 +75,14 @@ public class KubeProcessFactory implements ProcessFactory {
 
       return new KubePodProcess(
           kubeClient,
+          port -> {
+            if(!ports.contains(port)) {
+              ports.add(port);
+              LOGGER.info("Port consumer releasing: " + port);
+            } else {
+              LOGGER.info("Port consumer skipping releasing: " + port);
+            }
+          },
           podName,
           namespace,
           imageName,
@@ -86,8 +94,6 @@ public class KubeProcessFactory implements ProcessFactory {
           args);
     } catch (Exception e) {
       throw new WorkerException(e.getMessage());
-    } finally {
-      ports.addAll(claimedPorts);
     }
   }
 

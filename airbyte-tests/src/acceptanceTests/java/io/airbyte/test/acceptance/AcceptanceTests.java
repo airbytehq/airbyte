@@ -196,17 +196,17 @@ public class AcceptanceTests {
     clearDbData(sourcePsql);
     destinationPsql.stop();
 
-    for (UUID sourceId : sourceIds) {
-      deleteSource(sourceId);
-    }
-
-    for (UUID connectionId : connectionIds) {
-      disableConnection(connectionId);
-    }
-
-    for (UUID destinationId : destinationIds) {
-      deleteDestination(destinationId);
-    }
+//    for (UUID sourceId : sourceIds) {
+//      deleteSource(sourceId);
+//    }
+//
+//    for (UUID connectionId : connectionIds) {
+//      disableConnection(connectionId);
+//    }
+//
+//    for (UUID destinationId : destinationIds) {
+//      deleteDestination(destinationId);
+//    }
   }
 
   @Test

@@ -50,6 +50,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,8 +105,11 @@ public class KubePodProcess extends Process {
   private InputStream stdout;
   private InputStream stderr;
 
+  private final Consumer<Integer> portConsumer;
   private final ServerSocket stdoutServerSocket;
+  private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
+  private final int stderrLocalPort;
   private final ExecutorService executorService;
 
   // TODO(Davin): Cache this result.
@@ -232,6 +237,7 @@ public class KubePodProcess extends Process {
   }
 
   public KubePodProcess(KubernetesClient client,
+                        Consumer<Integer> portConsumer,
                         String podName,
                         String namespace,
                         String image,
@@ -243,10 +249,13 @@ public class KubePodProcess extends Process {
                         final String... args)
       throws IOException, InterruptedException {
     this.client = client;
+    this.portConsumer = portConsumer;
+    this.stdoutLocalPort = stdoutLocalPort;
+    this.stderrLocalPort = stderrLocalPort;
 
     stdoutServerSocket = new ServerSocket(stdoutLocalPort);
     stderrServerSocket = new ServerSocket(stderrLocalPort);
-    executorService = Executors.newFixedThreadPool(2);
+    executorService = Executors.newFixedThreadPool(3);
     setupStdOutAndStdErrListeners();
 
     String entrypoint = entrypointOverride == null ? getCommandFromImage(client, image, namespace) : entrypointOverride;
@@ -364,6 +373,56 @@ public class KubePodProcess extends Process {
         e.printStackTrace(); // todo: propagate exception / join at the end of constructor
       }
     });
+
+    executorService.submit(() -> {
+      try {
+        LOGGER.info("Starting cleanup thread...");
+        Pod refreshedPod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get(); //todo: fix npe
+        client.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+
+        try {
+          this.stdin.close();
+        } catch (Exception e) {
+
+        }
+
+        try {
+          this.stdout.close();
+        } catch (Exception e) {
+
+        }
+        try {
+          this.stdoutServerSocket.close();
+        } catch (Exception e) {
+
+        }
+        try {
+          this.stderr.close();
+        } catch (Exception e) {
+
+        }
+        try {
+          this.stderrServerSocket.close();
+        } catch (Exception e) {
+
+        }
+
+        try {
+          this.executorService.shutdownNow();
+        } catch (Exception e) {
+
+        }
+
+        LOGGER.info("Finished closing...");
+
+        portConsumer.accept(stdoutLocalPort);
+        portConsumer.accept(stderrLocalPort);
+
+        LOGGER.info("Released ports back to pool...");
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    });
   }
 
   @Override
@@ -393,6 +452,8 @@ public class KubePodProcess extends Process {
       this.stdoutServerSocket.close();
       this.stderr.close();
       this.stderrServerSocket.close();
+      portConsumer.accept(stdoutLocalPort);
+      portConsumer.accept(stderrLocalPort);
     } catch (IOException e) {
       LOGGER.warn("Error while closing sockets and streams: ", e);
       throw new InterruptedException();
