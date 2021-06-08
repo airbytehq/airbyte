@@ -37,3 +37,13 @@ Expand the checklist which is relevant for this PR.
 - [ ] Associated tickets have been closed & stakeholders notified
 </p>
 </details>
+
+<details><summary> <strong> Connector Generator checklist </strong> </summary>
+<p>
+- [ ] Issue acceptance criteria met
+- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
+- [ ] If adding a new generator, add it to the [list of scaffold modules being tested](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/build.gradle#L41)
+- [ ] The generator test modules (all connectors with `-scaffold` in their name) have been updated with the latest scaffold by running `./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates` then checking in your changes
+- [ ] Documentation which references the generator is updated as needed.
+</p>
+</details>

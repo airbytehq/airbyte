@@ -292,7 +292,7 @@
 - sourceDefinitionId: 5a1d14c2-d829-49cd-8437-1e87dc9f5368
   name: Google Search Console
   dockerRepository: airbyte/source-google-search-console-singer
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-search-console-singer
 - sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   name: ClickHouse
@@ -309,4 +309,9 @@
   dockerRepository: airbyte/source-harvest
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-harvest
+- sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
+  name: Amplitude
+  dockerRepository: airbyte/source-amplitude
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-amplitude
 # SOURCE DEFINITION BY CODE GENERATOR
