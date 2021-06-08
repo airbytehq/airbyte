@@ -17,9 +17,13 @@ area/worker:
   - airbyte-workers/**/*
 
 area/connectors:
-  - airbyte-integrations/bases/**/*
-  - airbyte-integrations/connectors/**/*
-  - airbyte-integrations/builds.md
+  - any: [
+      'airbyte-integrations/bases/**/*',
+      'airbyte-integrations/connectors/**/*',
+      'airbyte-integrations/builds.md',
+      '!airbyte-integrations/bases/base-normalization/*',
+      '!airbyte-integrations/bases/base-normalization/**/*'
+  ]
 
 area/documentation:
   - docs/*
