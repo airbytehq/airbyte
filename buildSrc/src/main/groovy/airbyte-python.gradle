@@ -1,6 +1,8 @@
+import org.apache.tools.ant.taskdefs.ExecTask
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Exec
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
 class AirbytePythonConfiguration {
@@ -11,7 +13,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         def extension = project.extensions.create('airbytePython', AirbytePythonConfiguration)
-
+        def venvPath = '.venv'
         project.plugins.apply 'ru.vyarus.use-python'
 
         project.python {
@@ -122,6 +124,19 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn project.installTestReqs
             dependsOn project.unitTest
         }
+
+//        print("HI THERE")
+//        print("$project.projectDir.absolutePath/$venvPath")
+        project.task('cleanPythonVenv', type: Exec){
+            commandLine 'rm'
+            args '-rf', "$project.projectDir.absolutePath/$venvPath"
+        }
+
+        if (!project.rootProject.hasProperty('cleanPythonVenvs')){
+            project.rootProject.task('cleanPythonVenvs')
+        }
+
+        project.rootProject.cleanPythonVenvs.dependsOn(project.cleanPythonVenv)
 
         project.assemble.dependsOn project.airbytePythonApply
         project.assemble.dependsOn project.airbytePythonTest
