@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -15,7 +16,7 @@ import java.sql.SQLException;
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
     @Override
-    protected void setup(TestDestinationEnv testEnv) throws SQLException {
+    protected void setupEnvironment(TestDestinationEnv environment) throws SQLException {
         db = new MSSQLServerContainer<>(DockerImageName
                 .parse("airbyte/mssql_ssltest:dev")
                 .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))

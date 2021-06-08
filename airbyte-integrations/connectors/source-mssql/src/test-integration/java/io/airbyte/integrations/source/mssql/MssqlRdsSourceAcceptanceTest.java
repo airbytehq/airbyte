@@ -6,6 +6,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.nio.file.Path;
@@ -16,7 +17,7 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
     private JsonNode baseConfig;
 
     @Override
-    protected void setup(TestDestinationEnv testEnv) throws SQLException {
+    protected void setupEnvironment(TestDestinationEnv environment) throws SQLException {
         baseConfig = getStaticConfig();
         String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
