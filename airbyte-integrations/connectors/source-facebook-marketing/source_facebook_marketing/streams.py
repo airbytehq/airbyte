@@ -26,7 +26,7 @@ import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import partial
-from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Sequence
+from typing import Any, Callable, Iterable, Iterator, List, Mapping, MutableMapping, Sequence, Optional
 
 import backoff
 import pendulum as pendulum
@@ -35,7 +35,7 @@ from airbyte_cdk.sources.streams import Stream
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
-from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
+from facebook_business.exceptions import FacebookRequestError
 
 from .common import FacebookAPIException, JobTimeoutException, batch, deep_merge, retry_pattern
 
@@ -48,13 +48,17 @@ class FBMarketingStream(Stream):
     page_size = 100
 
     enable_deleted = False
-    split_deleted_filter = True
+    split_deleted_filter = False
     entity_prefix = None
 
     def __init__(self, api, include_deleted=False, **kwargs):
         super().__init__(**kwargs)
         self._api = api
         self._include_deleted = include_deleted if self.enable_deleted else False
+
+    @property
+    def fields(self) -> List[str]:
+        return list(self.get_json_schema().get("properties", {}).keys())
 
     def read_records(
         self,
@@ -63,10 +67,15 @@ class FBMarketingStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        fields = list(self.get_json_schema().get("properties", {}).keys())
-        yield from self.list(fields=fields)
+        yield from self.list(fields=self.fields)
 
-    def _entity_status_filters(self) -> Iterator:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        if self.enable_deleted:
+            yield from self._status_slices()
+        else:
+            return [None]
+
+    def _status_slices(self) -> Iterator:
         """We split single request into multiple requests with few delivery_info values,
         Note: this logic originally taken from singer tap implementation, my guess is that when we
         query entities with all possible delivery_info values the API response time will be slow.
@@ -100,7 +109,7 @@ class FBMarketingStream(Stream):
         """Read entities using provided callable"""
         params = params or {}
         if self._include_deleted:
-            for status_filter in self._entity_status_filters():
+            for status_filter in self._status_slices():
                 yield from getter(params=self._build_params(deep_merge(params, status_filter)))
         else:
             yield from getter(params=self._build_params(params))
@@ -116,30 +125,26 @@ class FBMarketingStream(Stream):
 
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     buffer_days = -1
+    cursor_field = "updated_time"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._state = None
+    def __init__(self, start_date: datetime = None, **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = pendulum.instance(start_date) if start_date else None
 
-    @property
-    @abstractmethod
-    def state_pk(self):
-        """Name of the field associated with the state"""
-
-    @property
-    def state(self):
-        return {
-            self.state_pk: str(self._state),
-            "include_deleted": self._include_deleted,
-        }
-
-    @state.setter
-    def state(self, value):
-        potentially_new_records_in_the_past = self._include_deleted and not value.get("include_deleted", False)
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        cursor_value = self._start_date
+        potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
         else:
-            self._state = pendulum.parse(value[self.state_pk])
+            cursor_value = pendulum.parse(current_stream_state.get(self.cursor_field, self._start_date)
+
+        max(pendulum.parse(current_stream_state[self.cursor_field])
+
+        return {
+            self.cursor_field: str(cursor_value),
+            "include_deleted": self._include_deleted,
+        }
 
     def _build_params(self, params: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         """Build complete params for request"""
@@ -152,7 +157,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
             return {
                 "filtering": [
                     {
-                        "field": f"{self.entity_prefix}.{self.state_pk}",
+                        "field": f"{self.entity_prefix}.{self.cursor_field}",
                         "operator": "GREATER_THAN",
                         "value": self._state.int_timestamp,
                     },
@@ -166,7 +171,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         params = params or {}
         latest_cursor = None
         for record in super().read(getter, params):
-            cursor = pendulum.parse(record[self.state_pk])
+            cursor = pendulum.parse(record[self.cursor_field])
             if self._state and self._state.subtract(days=self.buffer_days + 1) >= cursor:
                 continue
             latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
@@ -185,9 +190,14 @@ class AdCreatives(FBMarketingStream):
     entity_prefix = "adcreative"
     batch_size = 50
 
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        # get pending requests for each creative
-        requests = [creative.api_get(fields=fields, pending=True) for creative in self.read(getter=self._get_creatives)]
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        requests = [creative.api_get(fields=self.fields, pending=True) for creative in self.read(getter=self._get_creatives)]
         for requests_batch in batch(requests, size=self.batch_size):
             yield from self.execute_in_batch(requests_batch)
 
@@ -220,7 +230,6 @@ class Ads(FBMarketingIncrementalStream):
 
     entity_prefix = "ad"
     enable_deleted = True
-    state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for record in self.read(getter=self._get_ads):
@@ -232,7 +241,7 @@ class Ads(FBMarketingIncrementalStream):
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_ads(params=params, fields=[self.state_pk])
+        return self._api.account.get_ads(params=params, fields=[self.cursor_field])
 
     @backoff_policy
     def _extend_record(self, ad: Ad, fields: Sequence[str]):
@@ -244,7 +253,6 @@ class AdSets(FBMarketingIncrementalStream):
 
     entity_prefix = "adset"
     enable_deleted = True
-    state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for adset in self.read(getter=self._get_ad_sets):
@@ -256,7 +264,7 @@ class AdSets(FBMarketingIncrementalStream):
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_ad_sets(params={**params, **self._state_filter()}, fields=[self.state_pk])
+        return self._api.account.get_ad_sets(params={**params, **self._state_filter()}, fields=[self.cursor_field])
 
     @backoff_policy
     def _extend_record(self, ad_set, fields):
@@ -266,7 +274,6 @@ class AdSets(FBMarketingIncrementalStream):
 class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
     enable_deleted = True
-    state_pk = "updated_time"
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Read available campaigns"""
@@ -284,14 +291,13 @@ class Campaigns(FBMarketingIncrementalStream):
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
         """
-        return self._api.account.get_campaigns(params={**params, **self._state_filter()}, fields=[self.state_pk])
+        return self._api.account.get_campaigns(params={**params, **self._state_filter()}, fields=[self.cursor_field])
 
 
 class AdsInsights(FBMarketingIncrementalStream):
     primary_key = None
 
     entity_prefix = ""
-    state_pk = "date_start"
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",
@@ -332,11 +338,12 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     breakdowns = None
 
-    def __init__(self, *args, start_date: datetime, buffer_days, **kwargs):
+    def __init__(self, *args, start_date: datetime, buffer_days, days_per_job, **kwargs):
         super().__init__(*args, **kwargs)
-        self.start_date = pendulum.instance(start_date)
-        self.buffer_days = buffer_days
-        self._state = self.start_date
+        self._start_date = pendulum.instance(start_date)
+        self._buffer_days = buffer_days
+        self._sync_interval = pendulum.Interval(days=days_per_job)
+        self._state = self._start_date
 
     @staticmethod
     def _get_job_result(job, **params) -> Iterator:
@@ -344,17 +351,19 @@ class AdsInsights(FBMarketingIncrementalStream):
             yield obj.export_all_data()
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+        jobs = []
         for params in self._params(fields=fields):
-            job = self._run_job_until_completion(params)
+            jobs.append(self._get_insights(params))
+
+        for job in jobs:
+            result = self.wait_for_job(job)
             yield from super().read(partial(self._get_job_result, job=job), params)
 
-    @retry_pattern(backoff.expo, (FacebookRequestError, JobTimeoutException, FacebookBadObjectError), max_tries=5, factor=4)
-    def _run_job_until_completion(self, params) -> AdReportRun:
-        # TODO parallelize running these jobs
-        job = self._get_insights(params)
-        self.logger.info(f"Created AdReportRun: {job} to sync insights with breakdown {self.breakdowns}")
+    @backoff_policy
+    def wait_for_job(self, job) -> AdReportRun:
+        factor = 2
         start_time = pendulum.now()
-        sleep_seconds = 2
+        sleep_seconds = factor
         while True:
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
@@ -378,7 +387,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             self.logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job} to complete")
             time.sleep(sleep_seconds)
             if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
-                sleep_seconds *= 2
+                sleep_seconds *= factor
 
     def _params(self, fields: Sequence[str] = None) -> Iterator[dict]:
         # Facebook freezes insight data 28 days after it was generated, which means that all data
@@ -389,7 +398,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         fields = list(set(fields) - set(self.INVALID_INSIGHT_FIELDS))
 
         while buffered_start_date <= end_date:
-            buffered_end_date = buffered_start_date + pendulum.Interval(days=10)
+            buffered_end_date = buffered_start_date + self._sync_interval
             yield {
                 "level": self.level,
                 "action_breakdowns": self.action_breakdowns,
@@ -398,14 +407,16 @@ class AdsInsights(FBMarketingIncrementalStream):
                 "fields": fields,
                 "time_increment": self.time_increment,
                 "action_attribution_windows": self.action_attribution_windows,
-                "time_ranges": [{"since": buffered_start_date.to_date_string(), "until": buffered_end_date.to_date_string()}],
+                "time_range": {"since": buffered_start_date.to_date_string(), "until": buffered_end_date.to_date_string()},
             }
 
             buffered_start_date = buffered_end_date
 
     @backoff_policy
     def _get_insights(self, params) -> AdReportRun:
-        return self._api.account.get_insights(params=params, is_async=True)
+        job = self._api.account.get_insights(params=params, is_async=True)
+        self.logger.info(f"Created AdReportRun: {job} to sync insights with breakdown {self.breakdowns}")
+        return job
 
 
 class AdsInsightsAgeAndGender(AdsInsights):
@@ -426,3 +437,4 @@ class AdsInsightsDma(AdsInsights):
 
 class AdsInsightsPlatformAndDevice(AdsInsights):
     breakdowns = ["publisher_platform", "platform_position", "impression_device"]
+    action_breakdowns = ["action_type"]  # FB Async Job fails for unknown reason if we set other breakdowns

@@ -53,12 +53,12 @@ def state_with_include_deleted_fixture(state):
 
 @pytest.fixture(scope="session", name="configured_catalog")
 def configured_catalog_fixture():
-    return ConfiguredAirbyteCatalog.parse_file("sample_files/configured_catalog.json")
+    return ConfiguredAirbyteCatalog.parse_file("integration_tests/configured_catalog.json")
 
 
 class TestFacebookMarketingSource:
     @pytest.mark.parametrize(
-        "catalog_path", ["sample_files/configured_catalog_adsinsights.json", "sample_files/configured_catalog_adcreatives.json"]
+        "catalog_path", ["integration_tests/configured_catalog_adsinsights.json", "integration_tests/configured_catalog_adcreatives.json"]
     )
     def test_streams_outputs_records(self, catalog_path, config):
         configured_catalog = ConfiguredAirbyteCatalog.parse_file(catalog_path)
