@@ -72,8 +72,8 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
       ctx.fetch(
           "INSERT INTO id_and_name (id, name, born) VALUES " +
-                  "(1,'picard', '2124-03-04T01:01:01Z'),  " +
-                  "(2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+              "(1,'picard', '2124-03-04T01:01:01Z'),  " +
+              "(2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
       return null;
     });
 

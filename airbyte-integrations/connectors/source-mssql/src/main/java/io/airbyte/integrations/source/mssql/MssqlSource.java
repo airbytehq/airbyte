@@ -30,7 +30,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,9 +53,9 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
     List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            mssqlConfig.get("host").asText(),
-            mssqlConfig.get("port").asText(),
-            mssqlConfig.get("database").asText()));
+        mssqlConfig.get("host").asText(),
+        mssqlConfig.get("port").asText(),
+        mssqlConfig.get("database").asText()));
 
     if (mssqlConfig.has("ssl_method")) {
       readSsl(mssqlConfig, additionalParameters);
@@ -99,11 +98,11 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
 
         // trust store location code found at https://stackoverflow.com/a/56570588
         String trustStoreLocation = Optional.ofNullable(System.getProperty("javax.net.ssl.trustStore"))
-                .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
+            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
         File trustStoreFile = new File(trustStoreLocation);
         if (!trustStoreFile.exists()) {
           throw new RuntimeException(
-                  "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
+              "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
                   + trustStoreLocation + " does not exist.");
         }
         String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
