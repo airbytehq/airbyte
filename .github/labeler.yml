@@ -1,0 +1,21 @@
+area/frontend:
+  - airbyte-webapp/*
+
+area/core:
+  - airbyte-server/*
+  - airbyte-scheduler/*
+
+area/protocol:
+  - airbyte-protocol/*
+
+area/worker:
+  - airbyte-workers/*
+
+area/connectors:
+  - airbyte-integrations/connectors/*
+
+area/documentation:
+  - docs/*
+
+CDK:
+  - airbyte-cdk/*
