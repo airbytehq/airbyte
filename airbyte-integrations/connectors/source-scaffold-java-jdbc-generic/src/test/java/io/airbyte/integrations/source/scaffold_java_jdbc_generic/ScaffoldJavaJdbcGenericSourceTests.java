@@ -24,14 +24,8 @@
 
 package io.airbyte.integrations.source.scaffold_java_jdbc_generic;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import java.util.Properties;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
 public class ScaffoldJavaJdbcGenericSourceTests {
@@ -41,12 +35,17 @@ public class ScaffoldJavaJdbcGenericSourceTests {
 
   @Test
   public void testSettingTimezones() throws Exception {
-    // TODO init your container. Ex: "new org.testcontainers.containers.MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();"
+    // TODO init your container. Ex: "new
+    // org.testcontainers.containers.MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();"
     // TODO start the container. Ex: "container.start();"
-    // TODO prepare DB config. Ex: "config = getConfig(container, dbName, "serverTimezone=Europe/London");"
+    // TODO prepare DB config. Ex: "config = getConfig(container, dbName,
+    // "serverTimezone=Europe/London");"
     // TODO create DB, grant all privileges, etc.
-    // TODO check connection status. Ex: "AirbyteConnectionStatus check = new ScaffoldJavaJdbcGenericSource().check(config);"
-    // TODO assert connection status. Ex: "assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());"
+    // TODO check connection status. Ex: "AirbyteConnectionStatus check = new
+    // ScaffoldJavaJdbcGenericSource().check(config);"
+    // TODO assert connection status. Ex: "assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED,
+    // check.getStatus());"
     // TODO cleanup used resources and close used container. Ex: "container.close();"
   }
+
 }

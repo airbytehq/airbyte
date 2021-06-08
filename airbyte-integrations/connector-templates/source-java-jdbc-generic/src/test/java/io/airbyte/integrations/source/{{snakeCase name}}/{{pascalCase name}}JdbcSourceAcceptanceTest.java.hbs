@@ -25,8 +25,6 @@
 package io.airbyte.integrations.source.{{snakeCase name}};
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import org.junit.jupiter.api.AfterAll;
@@ -36,13 +34,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 class {{pascalCase name}}JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger({{pascalCase name}}JdbcSourceAcceptanceTest.class);
 
-  //TODO declare a test container for DB. EX: org.testcontainers.containers.OracleContainer
-
+  // TODO declare a test container for DB. EX: org.testcontainers.containers.OracleContainer
 
   @BeforeAll
   static void init() {
@@ -53,13 +49,14 @@ class {{pascalCase name}}JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
 
   @BeforeEach
   public void setup() throws Exception {
-    //TODO init config. Ex: "config = Jsons.jsonNode(ImmutableMap.builder().put("host", host).put("port", port)....build());
+    // TODO init config. Ex: "config = Jsons.jsonNode(ImmutableMap.builder().put("host",
+    // host).put("port", port)....build());
     super.setup();
   }
 
   @AfterEach
   public void tearDown() {
-    //TODO clean used resources
+    // TODO clean used resources
   }
 
   @Override
@@ -85,6 +82,7 @@ class {{pascalCase name}}JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
 
   @AfterAll
   static void cleanUp() {
-    //TODO close the container. Ex: "container.close();"
+    // TODO close the container. Ex: "container.close();"
   }
+
 }

@@ -24,10 +24,7 @@
 
 package io.airbyte.integrations.source.scaffold_java_jdbc_generic;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -40,19 +37,20 @@ public class ScaffoldJavaJdbcGenericSource extends AbstractJdbcSource implements
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ScaffoldJavaJdbcGenericSource.class);
 
-  //TODO insert your driver name. Ex: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+  // TODO insert your driver name. Ex: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
   static final String DRIVER_CLASS = "driver_name_here";
 
   public ScaffoldJavaJdbcGenericSource() {
-    // By default NoOpJdbcStreamingQueryConfiguration class is used, but may be updated. See see example MssqlJdbcStreamingQueryConfiguration
+    // By default NoOpJdbcStreamingQueryConfiguration class is used, but may be updated. See see example
+    // MssqlJdbcStreamingQueryConfiguration
     super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration());
   }
-
 
   // TODO The config is based on spec.json, update according to your DB
   @Override
   public JsonNode toJdbcConfig(JsonNode aqqConfig) {
-    // TODO create DB config. Ex: "Jsons.jsonNode(ImmutableMap.builder().put("username", un).put("password", pas)...build());
+    // TODO create DB config. Ex: "Jsons.jsonNode(ImmutableMap.builder().put("username",
+    // un).put("password", pas)...build());
     return null;
   }
 
@@ -68,4 +66,5 @@ public class ScaffoldJavaJdbcGenericSource extends AbstractJdbcSource implements
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", ScaffoldJavaJdbcGenericSource.class);
   }
+
 }

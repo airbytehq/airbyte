@@ -27,16 +27,9 @@ package io.airbyte.integrations.source.scaffold_java_jdbc_generic;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
-import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +50,7 @@ public class ScaffoldJavaJdbcGenericSourceAcceptanceTest extends SourceAcceptanc
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    //TODO close container that was initialized in setup() method. Ex: "container.close();"
+    // TODO close container that was initialized in setup() method. Ex: "container.close();"
   }
 
   @Override
