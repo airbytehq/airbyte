@@ -63,15 +63,19 @@ if not os.path.exists(default_folder):
 
 messages = [AirbyteMessage.parse_raw(line) for line in data]
 record_messages = [i for i in messages if i.type == Type.RECORD]
-written_schemas = []
+builders = {}  # "stream_name": builder_instance, "stream_name2: builder_instance2...}
 
 for record in record_messages:
     stream_name = record.record.stream
-    if stream_name not in written_schemas:
+    if stream_name not in builders:
         builder = SchemaBuilder()
-        builder.add_object(record.record.data)
-        schema = builder.to_schema()
-        output_file_name = os.path.join(default_folder, stream_name + ".json")
-        with open(output_file_name, "w") as outfile:
-            json.dump(schema, outfile, indent=2)
-        written_schemas.append(stream_name)
+        builders[stream_name] = builder
+    else:
+        builder = builders[stream_name]
+    builder.add_object(record.record.data)
+
+for stream_name, builder in builders.items():
+    schema = builder.to_schema()
+    output_file_name = os.path.join(default_folder, stream_name + ".json")
+    with open(output_file_name, "w") as outfile:
+        json.dump(schema, outfile, indent=2)
