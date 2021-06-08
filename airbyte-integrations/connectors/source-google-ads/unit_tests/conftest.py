@@ -22,25 +22,12 @@
 # SOFTWARE.
 #
 
+import json
 
-from setuptools import find_packages, setup
+import pytest
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "google-ads", "pendulum"]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "pytest-mock",
-]
-
-setup(
-    name="source_google_ads",
-    description="Source implementation for Google Ads.",
-    author="Airbyte",
-    author_email="contact@airbyte.io",
-    packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
-)
+@pytest.fixture(scope="session", name="config")
+def config_fixture():
+    with open("secrets/config.json", "r") as config_file:
+        return json.load(config_file)

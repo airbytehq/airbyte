@@ -1,5 +1,28 @@
-from source_google_ads.source import chunk_date_range, AdGroupAdReport
-from dateutil.relativedelta import *
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
+from source_google_ads.source import AdGroupAdReport, chunk_date_range
 
 
 def test_chunk_date_range():
@@ -8,31 +31,20 @@ def test_chunk_date_range():
     conversion_window = 14
     field = "date"
     response = chunk_date_range(start_date, end_date, conversion_window, field)
-    assert [{'date': '2021-02-18'}, {'date': '2021-03-18'},
-            {'date': '2021-04-18'}] == response
+    assert [{"date": "2021-02-18"}, {"date": "2021-03-18"}, {"date": "2021-04-18"}] == response
 
 
-SAMPLE_CONFIG = {
-    "developer_token": "developer_token",
-    "client_id": "client_id",
-    "client_secret": "client_secret",
-    "refresh_token": "refresh_token",
-    "start_date": "start_date",
-    "customer_id": "customer_id"
-}
-
-
-def test_get_updated_state():
-    client = AdGroupAdReport(SAMPLE_CONFIG)
+# this requires the config because instantiating a stream creates a google client. TODO refactor so client can be mocked.
+def test_get_updated_state(config):
+    client = AdGroupAdReport(config)
     current_state_stream = {}
     latest_record = {"segments.date": "2020-01-01"}
 
-    new_stream_state = client.get_updated_state(
-        current_state_stream, latest_record)
-    assert new_stream_state == {'segments.date': '2020-01-01'}
+    new_stream_state = client.get_updated_state(current_state_stream, latest_record)
+    assert new_stream_state == {"segments.date": "2020-01-01"}
 
-    current_state_stream = {'segments.date': '2020-01-01'}
+    current_state_stream = {"segments.date": "2020-01-01"}
     latest_record = {"segments.date": "2020-02-01"}
-    new_stream_state = client.get_updated_state(
-        current_state_stream, latest_record)
-    assert new_stream_state == {'segments.date': '2020-02-01'}
+    new_stream_state = client.get_updated_state(current_state_stream, latest_record)
+    assert new_stream_state == {"segments.date": "2020-02-01"}
+

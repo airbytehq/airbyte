@@ -1,12 +1,35 @@
+#
+# MIT License
+#
+# Copyright (c) 2020 Airbyte
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
+from enum import Enum
+from string import Template
+from typing import Any, List, Mapping
+
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v7.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
-from typing import Any, Mapping, List
-from string import Template
-from enum import Enum
 
-REPORT_MAPPING = {
-    "ad_group_ad_report": "ad_group_ad"
-}
+REPORT_MAPPING = {"ad_group_ad_report": "ad_group_ad"}
 
 
 class GoogleAds:
@@ -17,7 +40,8 @@ class GoogleAds:
             "developer_token": developer_token,
             "refresh_token": refresh_token,
             "client_id": client_id,
-            "client_secret": client_secret}
+            "client_secret": client_secret,
+        }
         self.client = GoogleAdsClient.load_from_dict(credentials)
         self.customer_id = customer_id
         self.ga_service = self.client.get_service("GoogleAdsService")
@@ -33,7 +57,7 @@ class GoogleAds:
 
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
-        properties = schema.get('json_schema').get('properties')
+        properties = schema.get("json_schema").get("properties")
 
         return [*properties]
 
@@ -43,16 +67,17 @@ class GoogleAds:
         fields = GoogleAds.get_fields_from_schema(schema)
         fields = ",\n".join(fields)
 
-        query = Template("""
+        query = Template(
+            """
           SELECT
             $fields
           FROM $from_category
           WHERE segments.date > '$from_date'
             AND segments.date < '$to_date'
           ORDER BY segments.date
-      """)
-        query = query.substitute(
-            fields=fields, from_category=from_category, from_date=from_date, to_date=to_date)
+      """
+        )
+        query = query.substitute(fields=fields, from_category=from_category, from_date=from_date, to_date=to_date)
 
         return query
 
@@ -66,7 +91,7 @@ class GoogleAds:
                 if isinstance(field_value, Enum):
                     field_value = field_value.name
             field_value = str(field_value)
-        except:
+        except Exception:
             field_value = None
 
         return field_value
@@ -76,6 +101,5 @@ class GoogleAds:
         fields = GoogleAds.get_fields_from_schema(schema)
         single_record = {}
         for field in fields:
-            single_record[field] = GoogleAds.get_field_value(
-                result, field)
+            single_record[field] = GoogleAds.get_field_value(result, field)
         return single_record
