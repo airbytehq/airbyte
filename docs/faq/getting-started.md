@@ -22,7 +22,7 @@ Sure, you can. Just go to the "Destinations" section and click on the top right 
 
 ## Am I limited to GUI interaction or is there a way to set up / run / interact with Airbyte programmatically?
 
-You can use the API to do anything you do today from the UI. Though, word of notice, the API is in alpha and may change. You won’t lose any functionality, but you may need to update your code to catch up to any backwards incompatible changes in the API
+You can use the API to do anything you do today from the UI. Though, word of notice, the API is in alpha and may change. You won’t lose any functionality, but you may need to update your code to catch up to any backwards incompatible changes in the API.
 
 ## How does Airbyte handle connecting to databases that are behind a firewall / NAT?
 
@@ -30,19 +30,17 @@ We don’t. Airbyte is to be self-hosted in your own private cloud.
 
 ## Can I set a start time for my integration?
 
-Here the links to the docs: https://docs.airbyte.io/architecture/connections#sync-schedules
-
+Here the links to the docs: https://docs.airbyte.io/understading-airbyte/connections#sync-schedules
 
 ## **Can I disable analytics in Airbyte?**
 
 Yes, you can control what's sent outside of Airbyte for analytics purposes.
 
-We instrumented some parts of Airbyte for the following reasons:
+We added the following telemetry to Airbyte to ensure the best experience for users:
 
-* measure usage of Airbyte
-* measure usage of features & connectors
-* collect connector telemetry to measure stability
-* reach out to our users if they opt-in
+* Measure usage of features & connectors
+* Measure failure rate of connectors to address bugs quickly
+* Reach out to our users about Airbyte community updates if they opt-in
 * ...
 
 To disable telemetry, modify the `.env` file and define the two following environment variables:
