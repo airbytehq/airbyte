@@ -9,7 +9,7 @@ This Snowflake source connector is built on top of the source-jdbc code base and
 
 #### Resulting schema
 
-The Snowflake source does not alter the schema present in your warehouse. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
+The Snowflake source does not alter the schema present in your warehouse. Depending on the destination connected to this source, however, the result schema may be altered. See the destination's documentation for more details.
 
 #### Features
 
