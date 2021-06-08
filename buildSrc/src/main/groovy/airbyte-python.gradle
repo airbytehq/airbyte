@@ -1,4 +1,3 @@
-import org.apache.tools.ant.taskdefs.ExecTask
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -13,12 +12,12 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         def extension = project.extensions.create('airbytePython', AirbytePythonConfiguration)
-        def venvPath = '.venv'
+        def venvDirectoryName = '.venv'
         project.plugins.apply 'ru.vyarus.use-python'
 
         project.python {
             pythonBinary = 'python'
-            envPath = '.venv'
+            envPath = venvDirectoryName
             minPythonVersion = '3.7'
             scope = 'VIRTUALENV'
             installVirtualenv = true
@@ -128,7 +127,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
         // Add a task that allows cleaning up venvs to every python project
         project.task('cleanPythonVenv', type: Exec){
             commandLine 'rm'
-            args '-rf', "$project.projectDir.absolutePath/$venvPath"
+            args '-rf', "$project.projectDir.absolutePath/$venvDirectoryName"
         }
 
         // Add a task which can be run at the root project level to delete all python venvs
