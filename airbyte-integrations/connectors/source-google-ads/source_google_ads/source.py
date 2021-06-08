@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,18 +20,19 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
-
-from .utils import Utils
-from .google_ads import GoogleAds
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources import AbstractSource
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+
 import pendulum
-from dateutil.relativedelta import *
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v7.services.types.google_ads_service import SearchGoogleAdsResponse
+
+from .google_ads import GoogleAds
+from .utils import Utils
 
 
 def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional[int], field: str) -> Iterable[Mapping[str, any]]:
@@ -65,8 +67,7 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchGoogleAdsResponse) -> Iterable[Mapping]:
         for result in response:
-            record = GoogleAds.parse_single_result(
-                self.get_json_schema(), result)
+            record = GoogleAds.parse_single_result(self.get_json_schema(), result)
             yield record
 
     def read_records(
@@ -76,13 +77,10 @@ class GoogleAdsStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_date, end_date = Utils.get_date_params(
-            stream_slice, self.cursor_field)
-        query = GoogleAds.convert_schema_into_query(
-            self.get_json_schema(), self.name, start_date, end_date)
+        start_date, end_date = Utils.get_date_params(stream_slice, self.cursor_field)
+        query = GoogleAds.convert_schema_into_query(self.get_json_schema(), self.name, start_date, end_date)
 
-        response = self.google_ads_client.send_request(
-            query)
+        response = self.google_ads_client.send_request(query)
         yield from self.parse_response(response)
 
 
@@ -92,26 +90,22 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
-        start_date = stream_state.get(
-            self.cursor_field) or self.config.get("start_date")
+        start_date = stream_state.get(self.cursor_field) or self.config.get("start_date")
         return chunk_date_range(start_date, None, self.CONVERSION_WINDOW_DAYS, self.cursor_field)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
 
         # When state is none return date from latest record
-        if current_stream_state.get(self.cursor_field) == None:
+        if current_stream_state.get(self.cursor_field) is None:
             current_stream_state[self.cursor_field] = latest_record[self.cursor_field]
 
             return current_stream_state
 
-        date_in_current_stream = pendulum.parse(
-            current_stream_state.get(self.cursor_field))
-        date_in_latest_record = pendulum.parse(
-            latest_record[self.cursor_field])
+        date_in_current_stream = pendulum.parse(current_stream_state.get(self.cursor_field))
+        date_in_latest_record = pendulum.parse(latest_record[self.cursor_field])
 
-        current_stream_state[self.cursor_field] = (max(
-            date_in_current_stream, date_in_latest_record)).to_date_string()
+        current_stream_state[self.cursor_field] = (max(date_in_current_stream, date_in_latest_record)).to_date_string()
 
         return current_stream_state
 
@@ -125,7 +119,7 @@ class AdGroupAdReport(IncrementalGoogleAdsStream):
 class SourceGoogleAds(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            logger.info(f"Checking the config")
+            logger.info("Checking the config")
             GoogleAds(**config)
             return True, None
         except Exception as e:
