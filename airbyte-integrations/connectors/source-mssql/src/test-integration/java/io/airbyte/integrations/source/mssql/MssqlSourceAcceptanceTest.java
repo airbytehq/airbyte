@@ -47,10 +47,10 @@ import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String SCHEMA_NAME = "dbo";
-  private static final String STREAM_NAME = "id_and_name";
-  private static MSSQLServerContainer<?> db;
-  private JsonNode config;
+  protected static final String SCHEMA_NAME = "dbo";
+  protected static final String STREAM_NAME = "id_and_name";
+  protected static MSSQLServerContainer<?> db;
+  protected JsonNode config;
 
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws SQLException {
@@ -71,7 +71,9 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
       ctx.fetch(String.format("USE %s;", dbName));
       ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
       ctx.fetch(
-          "INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
+          "INSERT INTO id_and_name (id, name, born) VALUES " +
+              "(1,'picard', '2124-03-04T01:01:01Z'),  " +
+              "(2, 'crusher', '2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
       return null;
     });
 
@@ -80,7 +82,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
     db.stop();
     db.close();
   }
