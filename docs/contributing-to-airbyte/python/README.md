@@ -19,6 +19,7 @@ The CDK currently does not support creating destinations, but it will very soon.
 Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
 
 ```text
+cd airbyte-integrations/connector-templates/generator
 ./generate.sh
 ```
 
