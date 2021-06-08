@@ -70,7 +70,13 @@
         <Logger name="org.apache" level="WARN" />
         <Logger name="httpclient" level="WARN" />
         <Logger name="com.amazonaws" level="WARN" />
+        <!--MySQL Debezium connector generates a log whenever it converts an invalid value to empty value.
+        Ex: Invalid value '0000-00-00 00:00:00' stored in column 'column_name' of table 'table_name' converted to empty value
+        If a user a lots of such values in their table, the logs would be filled with such messages-->
         <Logger name="io.debezium.connector.mysql.MySqlValueConverters" level="OFF" />
+        <!--MySQL Debezium connector generates a log whenever it comes across a DDL query to mention that it skipped it.
+        If a database has tons of DDL queries, the logs would be filled with such messages-->
+        <Logger name="io.debezium.relational.history" level="OFF" />
 
     </Loggers>
 
