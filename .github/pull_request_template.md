@@ -40,6 +40,7 @@ Expand the checklist which is relevant for this PR.
 
 <details><summary> <strong> Connector Generator checklist </strong> </summary>
 <p>
+   
 - [ ] Issue acceptance criteria met
 - [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
 - [ ] If adding a new generator, add it to the [list of scaffold modules being tested](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/build.gradle#L41)
