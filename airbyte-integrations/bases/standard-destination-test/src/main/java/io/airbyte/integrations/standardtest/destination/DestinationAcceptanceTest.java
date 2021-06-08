@@ -65,8 +65,8 @@ import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.DockerProcessBuilderFactory;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.DockerProcessFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
 import java.nio.file.Files;
@@ -101,7 +101,7 @@ public abstract class DestinationAcceptanceTest {
 
   private Path jobRoot;
   protected Path localRoot;
-  private ProcessBuilderFactory pbf;
+  private ProcessFactory processFactory;
 
   /**
    * Name of the docker image that the tests will run against.
@@ -136,10 +136,17 @@ public abstract class DestinationAcceptanceTest {
    * @param streamName - name of the stream for which we are retrieving records.
    * @param namespace - the destination namespace records are located in. Null if not applicable.
    *        Usually a JDBC schema.
+   * @param streamSchema - schema of the stream to be retrieved. This is only necessary for
+   *        destinations in which data types cannot be accurately inferred (e.g. in CSV destination,
+   *        every value is a string).
    * @return All of the records in the destination at the time this method is invoked.
    * @throws Exception - can throw any exception, test framework will handle.
    */
-  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace) throws Exception;
+  protected abstract List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
+                                                    String streamName,
+                                                    String namespace,
+                                                    JsonNode streamSchema)
+      throws Exception;
 
   /**
    * Returns a destination's default schema. The default implementation assumes this corresponds to
@@ -221,10 +228,10 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String)}. Except this method
-   * should pull records from the table that contains the normalized records and convert them back
-   * into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override this
-   * method if {@link #implementsBasicNormalization} returns true.
+   * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String, JsonNode)}. Except this
+   * method should pull records from the table that contains the normalized records and convert them
+   * back into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override
+   * this method if {@link #implementsBasicNormalization} returns true.
    *
    * @param testEnv - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
@@ -275,7 +282,7 @@ public abstract class DestinationAcceptanceTest {
 
     setup(testEnv);
 
-    pbf = new DockerProcessBuilderFactory(workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
+    processFactory = new DockerProcessFactory(workspaceRoot, workspaceRoot.toString(), localRoot.toString(), "host");
   }
 
   @AfterEach
@@ -641,9 +648,9 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfigWithBasicNormalization();
 
-    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+    final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
-        pbf,
+        processFactory,
         config));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
@@ -705,9 +712,9 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfigWithBasicNormalization();
 
-    final DbtTransformationRunner runner = new DbtTransformationRunner(pbf, NormalizationRunnerFactory.create(
+    final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
-        pbf,
+        processFactory,
         config));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
@@ -809,13 +816,17 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
-    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
+    return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
   }
 
   private StandardCheckConnectionOutput runCheck(JsonNode config) throws WorkerException {
-    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf))
+    return new DefaultCheckConnectionWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot);
+  }
+
+  protected AirbyteDestination getDestination() {
+    return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
   }
 
   private void runSyncAndVerifyStateOutput(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog) throws Exception {
@@ -845,7 +856,7 @@ public abstract class DestinationAcceptanceTest {
         .withCatalog(catalog)
         .withDestinationConnectionConfiguration(config);
 
-    final AirbyteDestination destination = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), pbf));
+    final AirbyteDestination destination = getDestination();
 
     destination.start(targetConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
@@ -865,7 +876,7 @@ public abstract class DestinationAcceptanceTest {
 
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
-        pbf,
+        processFactory,
         targetConfig.getDestinationConnectionConfiguration());
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
@@ -881,7 +892,7 @@ public abstract class DestinationAcceptanceTest {
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
-      List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema)
+      List<AirbyteRecordMessage> msgList = retrieveRecords(testEnv, streamName, schema, stream.getJsonSchema())
           .stream()
           .map(data -> new AirbyteRecordMessage().withStream(streamName).withNamespace(schema).withData(data))
           .collect(Collectors.toList());
@@ -921,7 +932,7 @@ public abstract class DestinationAcceptanceTest {
       final Iterator<Entry<String, JsonNode>> expectedDataIterator = expectedData.fields();
       LOGGER.info("Expected row {}", expectedData);
       LOGGER.info("Actual row   {}", actualData);
-      assertEquals(expectedData.size(), actualData.size());
+      assertEquals(expectedData.size(), actualData.size(), "Unequal row size");
       while (expectedDataIterator.hasNext()) {
         final Entry<String, JsonNode> expectedEntry = expectedDataIterator.next();
         final JsonNode expectedValue = expectedEntry.getValue();
@@ -1022,6 +1033,13 @@ public abstract class DestinationAcceptanceTest {
 
     public Path getLocalRoot() {
       return localRoot;
+    }
+
+    @Override
+    public String toString() {
+      return "TestDestinationEnv{" +
+          "localRoot=" + localRoot +
+          '}';
     }
 
   }

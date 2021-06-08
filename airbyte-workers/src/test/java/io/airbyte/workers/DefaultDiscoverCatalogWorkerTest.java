@@ -45,7 +45,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
 import java.io.ByteArrayInputStream;
@@ -83,7 +83,7 @@ public class DefaultDiscoverCatalogWorkerTest {
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class);
 
-    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME).start()).thenReturn(process);
+    when(integrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME)).thenReturn(process);
     final InputStream inputStream = mock(InputStream.class);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));

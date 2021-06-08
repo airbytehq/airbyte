@@ -367,13 +367,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         while True:
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
-            self.logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete, {job['async_status']}")
+            logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete")
+            runtime = pendulum.now() - start_time
 
-            # FIXME: failed tasks???
             if job["async_status"] == "Job Completed":
                 return job
+            elif job["async_status"] == "Job Failed":
+                raise JobTimeoutException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
+            elif job["async_status"] == "Job Skipped":
+                raise JobTimeoutException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
 
-            runtime = pendulum.now() - start_time
             if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
                 raise JobTimeoutException(
                     f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds."

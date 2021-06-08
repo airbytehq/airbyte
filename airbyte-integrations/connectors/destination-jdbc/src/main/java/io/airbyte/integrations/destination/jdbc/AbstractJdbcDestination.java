@@ -94,7 +94,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
     // verify we have write permissions on the target schema by creating a table with a random name,
     // then dropping that table
-    String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+    String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
     sqlOps.createSchemaIfNotExists(database, outputSchema);
     sqlOps.createTableIfNotExists(database, outputSchema, outputTableName);
     sqlOps.dropTableIfExists(database, outputSchema, outputTableName);

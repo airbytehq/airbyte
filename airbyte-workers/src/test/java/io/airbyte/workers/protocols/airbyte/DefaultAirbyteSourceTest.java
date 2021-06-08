@@ -43,7 +43,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -101,8 +101,7 @@ class DefaultAirbyteSourceTest {
         jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        WorkerConstants.INPUT_STATE_JSON_FILENAME)
-        .start()).thenReturn(process);
+        WorkerConstants.INPUT_STATE_JSON_FILENAME)).thenReturn(process);
     when(process.isAlive()).thenReturn(true);
     when(process.getInputStream()).thenReturn(inputStream);
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
@@ -151,16 +150,6 @@ class DefaultAirbyteSourceTest {
     });
 
     verify(process).exitValue();
-  }
-
-  @Test
-  public void testProcessFail() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
-    tap.start(SOURCE_CONFIG, jobRoot);
-
-    when(process.exitValue()).thenReturn(1);
-
-    Assertions.assertThrows(WorkerException.class, tap::close);
   }
 
 }
