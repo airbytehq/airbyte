@@ -69,6 +69,8 @@ class SourcePosthog(AbstractSource):
             Annotations(authenticator=authenticator, start_date=config["start_date"]),
             Cohorts(authenticator=authenticator),
             Events(authenticator=authenticator, start_date=config["start_date"]),
+            # disabled because the endpoint returns only active sessions and they have TTL=24h
+            # so most of the time it will be empty
             # EventsSessions(authenticator=authenticator),
             FeatureFlags(authenticator=authenticator),
             Insights(authenticator=authenticator),
