@@ -20,8 +20,7 @@ Generate an empty connector using the code generator. First clone the Airbyte re
 
 ```text
 cd airbyte-integrations/connector-templates/generator
-npm install
-npm run generate
+./generate.sh
 ```
 
 then follow the interactive prompt. Next, find all `TODO`s in the generated project directory -- they're accompanied by lots of comments explaining what you'll need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
