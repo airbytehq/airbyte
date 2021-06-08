@@ -50,8 +50,8 @@ class SourcePosthog(AbstractSource):
         try:
             _ = pendulum.parse(config["start_date"], strict=True)
             authenticator = TokenAuthenticator(token=config["api_key"])
-            annotations_stream = Annotations(authenticator=authenticator)
-            records = annotations_stream.read_records(sync_mode=SyncMode.full_refresh)
+            stream = Cohorts(authenticator=authenticator)
+            records = stream.read_records(sync_mode=SyncMode.full_refresh)
             _ = next(records)
             return True, None
         except Exception as e:
@@ -66,14 +66,14 @@ class SourcePosthog(AbstractSource):
         """
         authenticator = TokenAuthenticator(token=config["api_key"])
         return [
-            Annotations(authenticator=authenticator),
+            Annotations(authenticator=authenticator, start_date=config["start_date"]),
             Cohorts(authenticator=authenticator),
-            Events(start_date=config["start_date"], authenticator=authenticator),
+            Events(authenticator=authenticator, start_date=config["start_date"]),
             # EventsSessions(authenticator=authenticator),
-            FeatureFlags(authenticator=authenticator),
+            FeatureFlags(authenticator=authenticator, start_date=config["start_date"]),
             Insights(authenticator=authenticator),
             InsightsPath(authenticator=authenticator),
             InsightsSessions(authenticator=authenticator),
-            Persons(authenticator=authenticator),
+            Persons(authenticator=authenticator, start_date=config["start_date"]),
             Trends(authenticator=authenticator),
         ]

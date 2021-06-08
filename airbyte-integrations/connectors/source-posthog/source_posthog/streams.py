@@ -42,13 +42,12 @@ class PosthogStream(HttpStream, ABC):
         if resp_json.get("next"):
             next_query_string = urllib.parse.urlsplit(resp_json["next"]).query
             params = dict(urllib.parse.parse_qsl(next_query_string))
-            if params:
-                return params
+            return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {"Content-Type": "application/json", "User-Agent": "posthog-python/1.4.0"}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         yield from response_json.get(self.data_field, [])
 
@@ -63,20 +62,16 @@ class PosthogStream(HttpStream, ABC):
 
 
 class IncrementalPosthogStream(PosthogStream, ABC):
+    """
+    Because endpoints has descending order we need to save initial state value to know when to stop pagination.
+    start_date is used to as a min date to filter on.
+    """
     state_checkpoint_interval = math.inf
 
-    def __init__(self, **kwargs):
-        """
-        Personal instance variables.
-        @params _initial_state - contains initial state for each instance. Uses for interrupting next_page_token.
-        @param _upgrade_to - first response state value.
-            Example we have 5 pages of data from 500 to 1 with resp_size and state = 121.
-            The loop will be interrupted after we got response containing [200-101] <- by _initial_state
-            The value `500` will be a new state value we need to save it.
-        """
+    def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._initial_state = None
-        self._upgrade_state_to = None
+        self._start_date = start_date
+        self._initial_state = None  # we need to keep it here because next_page_token doesn't accept state argument
 
     @property
     @abstractmethod
@@ -87,128 +82,80 @@ class IncrementalPosthogStream(PosthogStream, ABC):
         """
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Return next page token until we reach the page with records older than state/start_date
+        """
+        min_state = self._initial_state or self._start_date
         response_json = response.json()
         data = response_json.get(self.data_field, [])
-        if data:
-            if self._initial_state and data[-1][self.cursor_field] <= self._initial_state:
-                return {}
-            params = super().next_page_token(response=response)
-            if params:
-                return params
+        latest_record = data[-1] if data else None  # records are ordered so we check only last one
+
+        if not latest_record or latest_record[self.cursor_field] > min_state:
+            return super().next_page_token(response=response)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        if self._upgrade_state_to:
-            return self._upgrade_state_to
-        return current_stream_state
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        data = response_json.get(self.data_field, [])
-        if data:
-            if not self._upgrade_state_to:  # set once
-                self._upgrade_state_to = {self.cursor_field: data[0][self.cursor_field]}
-            if not stream_state:
-                yield from data
-            else:
-                state_value = stream_state.get(self.cursor_field)
-                if not self._initial_state:
-                    self._initial_state = state_value
-                for record in data:
-                    record_cur_value = record.get(self.cursor_field)
-                    if record_cur_value > state_value:
-                        yield record
-                    else:
-                        break
-
-        else:
-            yield from data
-
-
-class Annotations(IncrementalPosthogStream):
-    cursor_field = "updated_at"
-
-    def path(self, **kwargs) -> str:
-        return "annotation"
-
-    def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        params["order"] = f"-{self.cursor_field}"
-        return params
-
-
-class Cohorts(IncrementalPosthogStream):
-    """
-    normal ASC sorting. But without filters like `since`
-    """
-
-    cursor_field = "id"
-
-    def path(self, **kwargs) -> str:
-        return "cohort"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        params = PosthogStream.next_page_token(self, response=response)
-        if params:
-            return params
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        current_stream_state = current_stream_state or {}
         latest_state = latest_record.get(self.cursor_field)
         current_state = current_stream_state.get(self.cursor_field) or latest_state
         return {self.cursor_field: max(latest_state, current_state)}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        # need to skip response until data>stream_state
-        data = response_json.get(self.data_field, [])
-        if data and stream_state:
-            state_value = stream_state.get(self.cursor_field)
-            first_record_curvalue = data[0][self.cursor_field]
-            if first_record_curvalue > state_value:  # skip page
-                yield from []
-            else:
-                for record in data:
-                    record_cur_value = record.get(self.cursor_field)
-                    if record_cur_value <= state_value:
-                        continue
-                    else:
-                        yield record
+        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
+        for record in data:
+            if record.get(self.cursor_field) >= stream_state.get(self.cursor_field, self._start_date):
+                yield record
 
-        else:
-            yield from data
+
+class Annotations(IncrementalPosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/annotations
+    """
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "annotation"
+
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["order"] = f"-{self.cursor_field}"  # sort descending
+        return params
+
+
+class Cohorts(PosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/cohorts
+    normal ASC sorting. But without filters like `since`
+    """
+    cursor_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return "cohort"
 
 
 class Events(IncrementalPosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/events
+    """
     cursor_field = "timestamp"
-
-    def __init__(self, start_date: str, **kwargs):
-        self.start_date = start_date
-        super().__init__(**kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "event"
 
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
-        stream_state = stream_state or {}
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        since_value = stream_state.get(self.cursor_field) or self.start_date
-        since_value = max(since_value, self.start_date)
-        if since_value:
-            params["after"] = since_value
+        since_value = stream_state.get(self.cursor_field) or self._start_date
+        since_value = max(since_value, self._start_date)
+        params["after"] = since_value
         return params
 
 
 class EventsSessions(PosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/events
+    """
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -216,11 +163,13 @@ class EventsSessions(PosthogStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
-        if "pagination" in resp_json and resp_json["pagination"]:
-            return resp_json["pagination"]
+        return resp_json.get("pagination")
 
 
 class FeatureFlags(IncrementalPosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/feature-flags
+    """
     cursor_field = "id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -229,8 +178,8 @@ class FeatureFlags(IncrementalPosthogStream):
 
 class Insights(PosthogStream):
     """
-    Endpoint does not support incremental read because id, created_at, last_refresh
-    are ordered in a random way, no DESC no ASC
+    Docs: https://posthog.com/docs/api/insights
+    Endpoint does not support incremental read because id, created_at and last_refresh are ordered in any particular way
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -238,6 +187,9 @@ class Insights(PosthogStream):
 
 
 class InsightsPath(PosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/insights
+    """
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -245,6 +197,9 @@ class InsightsPath(PosthogStream):
 
 
 class InsightsSessions(PosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/insights
+    """
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -252,6 +207,9 @@ class InsightsSessions(PosthogStream):
 
 
 class Persons(IncrementalPosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/people
+    """
     cursor_field = "created_at"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -259,6 +217,9 @@ class Persons(IncrementalPosthogStream):
 
 
 class Trends(PosthogStream):
+    """
+    Docs: https://posthog.com/docs/api/insights
+    """
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
