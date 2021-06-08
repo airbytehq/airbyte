@@ -314,6 +314,7 @@
   name: Amplitude
   dockerRepository: airbyte/source-amplitude
   dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-amplitude
 - sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   name: Snowflake
   dockerRepository: airbyte/source-snowflake
