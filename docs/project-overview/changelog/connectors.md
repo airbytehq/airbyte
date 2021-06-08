@@ -12,6 +12,25 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
 
+## 06/3/2021
+
+2 new sources:
+* [**Okta**](https://docs.airbyte.io/integrations/sources/okta)
+* [**Amazon Seller Partner**](https://docs.airbyte.io/integrations/sources/amazon-seller-partner)
+
+New features:
+* **MySQL CDC** now only polls for 5 minutes if we haven't received any records ([#3789](https://github.com/airbytehq/airbyte/pull/3789))
+* **Python CDK** now supports Python 3.7.X ([#3692](https://github.com/airbytehq/airbyte/pull/3692))
+* **File** source: now supports Azure Blob Storage ([#3660](https://github.com/airbytehq/airbyte/pull/3660))
+
+Bugfixes:
+* **Recurly** source: now uses type `number` instead of `integer` ([#3769](https://github.com/airbytehq/airbyte/pull/3769))
+* **Stripe** source: fix types in schema ([#3744](https://github.com/airbytehq/airbyte/pull/3744))
+* **Stripe** source: output `number` instead of `int` ([#3728](https://github.com/airbytehq/airbyte/pull/3728))
+* **MSSQL** destination: fix issue with unicode symbols handling ([#3671](https://github.com/airbytehq/airbyte/pull/3671))
+
+***
+
 ## 05/25/2021
 
 4 new sources: 

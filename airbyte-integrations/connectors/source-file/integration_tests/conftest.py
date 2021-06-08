@@ -34,6 +34,7 @@ from typing import Mapping
 import boto3
 import pandas
 import pytest
+from azure.storage.blob import BlobServiceClient
 from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
@@ -71,6 +72,13 @@ def cloud_bucket_name():
     return "airbytetestbucket"
 
 
+@pytest.fixture(scope="session")
+def azblob_credentials() -> Mapping:
+    filename = HERE.parent / "secrets/azblob.json"
+    with open(filename) as json_file:
+        return json.load(json_file)
+
+
 def is_ssh_ready(ip, port):
     try:
         with SSHClient() as ssh:
@@ -89,7 +97,6 @@ def is_ssh_ready(ip, port):
 @pytest.fixture(scope="session")
 def ssh_service(docker_ip, docker_services):
     """Ensure that SSH service is up and responsive."""
-
     # `port_for` takes a container port and returns the corresponding host port
     port = docker_services.port_for("ssh", 22)
     docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port))
@@ -105,6 +112,7 @@ def provider_config(ssh_service):
             "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="pass1", port=100),
             "gcs": dict(storage="GCS"),
             "s3": dict(storage="S3"),
+            "azure": dict(storage="AzBlob"),
         }
         return providers[name]
 
@@ -183,3 +191,37 @@ def private_aws_file(aws_credentials, cloud_bucket_name, download_gcs_public_dat
     bucket = s3.Bucket(bucket_name)
     bucket.objects.all().delete()
     print(f"\nS3 Bucket {bucket_name} is now deleted")
+
+
+def azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False):
+    acc_url = f"https://{azblob_credentials['storage_account']}.blob.core.windows.net"
+    azblob_client = BlobServiceClient(account_url=acc_url, credential=azblob_credentials["shared_key"])
+    container_name = cloud_bucket_name
+    if public:
+        container_name += "public"
+    print(f"\nUpload dataset to private azure blob container {container_name}")
+    if container_name not in [cntr["name"] for cntr in azblob_client.list_containers()]:
+        if public:
+            azblob_client.create_container(name=container_name, metadata=None, public_access="container")
+        else:
+            azblob_client.create_container(name=container_name, metadata=None, public_access=None)
+    blob_client = azblob_client.get_blob_client(container_name, "myfile.csv")
+    with open(download_gcs_public_data, "r") as f:
+        blob_client.upload_blob(f.read(), blob_type="BlockBlob", overwrite=True)
+
+    yield f"{container_name}/myfile.csv"
+
+    azblob_client.delete_container(container_name)
+    print(f"\nAzure Blob Container {container_name} is now marked for deletion")
+
+
+@pytest.fixture(scope="session")
+def private_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
+    for yld in azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False):
+        yield yld
+
+
+@pytest.fixture(scope="session")
+def public_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
+    for yld in azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=True):
+        yield yld

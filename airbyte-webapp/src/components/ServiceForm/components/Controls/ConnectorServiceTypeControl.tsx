@@ -2,32 +2,61 @@ import React, { useCallback, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useField } from "formik";
 import styled from "styled-components";
-import { DropDown, DropDownRow, ControlLabels } from "components";
+import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
 
 import { FormBaseItem } from "core/form/types";
-import { useServiceForm } from "../../serviceFormContext";
+import Instruction from "./Instruction";
+import { SourceDefinition } from "core/resources/SourceDefinition";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { isSourceDefinition } from "core/domain/connector/source";
 
 const DropdownLabels = styled(ControlLabels)`
   max-width: 202px;
 `;
 
-const ConnectorServiceTypeControl: React.FC<{ property: FormBaseItem }> = ({
+const ConnectorServiceTypeControl: React.FC<{
+  property: FormBaseItem;
+  formType: "source" | "destination";
+  availableServices: (SourceDefinition | DestinationDefinition)[];
+  isEditMode?: boolean;
+  documentationUrl?: string;
+  allowChangeConnector?: boolean;
+  onChangeServiceType?: (id: string) => void;
+}> = ({
   property,
+  formType,
+  isEditMode,
+  allowChangeConnector,
+  onChangeServiceType,
+  availableServices,
+  documentationUrl,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
 
-  const {
-    formType,
-    isEditMode,
-    allowChangeConnector,
-    onChangeServiceType,
-    dropDownData,
-  } = useServiceForm();
-
   const sortedDropDownData = useMemo(
-    () => dropDownData.sort(DropDownRow.defaultDataItemSort),
-    [dropDownData]
+    () =>
+      availableServices
+        .map((item: SourceDefinition | DestinationDefinition) => ({
+          text: item.name,
+          value: isSourceDefinition(item)
+            ? item.sourceDefinitionId
+            : item.destinationDefinitionId,
+          img: <ImageBlock img={item.icon} />,
+        }))
+        .sort(DropDownRow.defaultDataItemSort),
+    [availableServices]
+  );
+
+  const selectedService = React.useMemo(
+    () =>
+      availableServices.find(
+        (s) =>
+          (isSourceDefinition(s)
+            ? s.sourceDefinitionId
+            : s.destinationDefinitionId) === field.value
+      ),
+    [field.value, availableServices]
   );
 
   const handleSelect = useCallback(
@@ -62,14 +91,12 @@ const ConnectorServiceTypeControl: React.FC<{ property: FormBaseItem }> = ({
           onSelect={handleSelect}
         />
       </DropdownLabels>
-      {/*TODO: figure out when we want to include instruction*/}
-      {/*{field.value && includeInstruction && (*/}
-      {/*  <Instruction*/}
-      {/*    serviceId={field.value}*/}
-      {/*    availableServices={availableServices}*/}
-      {/*    documentationUrl={documentationUrl}*/}
-      {/*  />*/}
-      {/*)}*/}
+      {selectedService && documentationUrl && (
+        <Instruction
+          selectedService={selectedService}
+          documentationUrl={documentationUrl}
+        />
+      )}
     </>
   );
 };

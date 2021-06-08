@@ -10,14 +10,17 @@ The CDK provides an improved developer experience by providing basic implementat
 
 This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding.
 
+{% hint style="info" %}
+The CDK currently does not support creating destinations, but it will very soon.
+{% endhint %}
+
 ## Getting Started
 
 Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
 
 ```text
 cd airbyte-integrations/connector-templates/generator
-npm install
-npm run generate
+./generate.sh
 ```
 
 then follow the interactive prompt. Next, find all `TODO`s in the generated project directory -- they're accompanied by lots of comments explaining what you'll need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
