@@ -255,7 +255,7 @@ public class KubePodProcess extends Process {
 
     stdoutServerSocket = new ServerSocket(stdoutLocalPort);
     stderrServerSocket = new ServerSocket(stderrLocalPort);
-    executorService = Executors.newFixedThreadPool(3);
+    executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
     String entrypoint = entrypointOverride == null ? getCommandFromImage(client, image, namespace) : entrypointOverride;
