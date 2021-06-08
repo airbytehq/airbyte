@@ -114,8 +114,9 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
-      - name: Get Docker Space
-        run: docker run --rm busybox df -h
+# This is only required on the usual github runner. The usual runner does not contain enough disk space for our use.
+#      - name: Get Docker Space
+#        run: docker run --rm busybox df -h
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
