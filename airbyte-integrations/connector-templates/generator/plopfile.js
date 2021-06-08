@@ -130,12 +130,6 @@ module.exports = function (plop) {
         base: genericJdbcSourceInputRoot,
         templateFiles: `${genericJdbcSourceInputRoot}/**/**`,
       },
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${genericJdbcSourceInputRoot}/.gitignore.hbs`,
-        path: `${genericJdbcSourceOutputRoot}/.gitignore`
-      },
       {type: 'emitSuccess', outputPath: genericJdbcSourceOutputRoot}
     ]
   });
