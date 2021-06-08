@@ -50,7 +50,7 @@ public class ScaffoldJavaJdbcGenericSource extends AbstractJdbcSource implements
   @Override
   public JsonNode toJdbcConfig(JsonNode aqqConfig) {
     // TODO create DB config. Ex: "Jsons.jsonNode(ImmutableMap.builder().put("username",
-    // un).put("password", pas)...build());
+    // userName).put("password", pas)...build());
     return null;
   }
 
