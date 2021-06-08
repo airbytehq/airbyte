@@ -16,6 +16,7 @@ Expand the checklist which is relevant for this PR.
 <p>
 
 - [ ] Issue acceptance criteria met
+- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
 - [ ] Secrets are annotated with `airbyte_secret` in output spec
 - [ ] Unit & integration tests added as appropriate (and are passing)
     * Community members: please provide proof of this succeeding locally e.g: screenshot or copy-paste acceptance test output. To run acceptance tests for a Python connector, follow instructions in the README. For java connectors run `./gradlew :airbyte-integrations:connectors:<name>:integrationTest`.
@@ -34,5 +35,15 @@ Expand the checklist which is relevant for this PR.
 - [ ] PR merged into master branch
 - [ ] Follow up tickets have been created
 - [ ] Associated tickets have been closed & stakeholders notified
+</p>
+</details>
+
+<details><summary> <strong> Connector Generator checklist </strong> </summary>
+<p>
+- [ ] Issue acceptance criteria met
+- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
+- [ ] If adding a new generator, add it to the [list of scaffold modules being tested](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/build.gradle#L41)
+- [ ] The generator test modules (all connectors with `-scaffold` in their name) have been updated with the latest scaffold by running `./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates` then checking in your changes
+- [ ] Documentation which references the generator is updated as needed.
 </p>
 </details>
