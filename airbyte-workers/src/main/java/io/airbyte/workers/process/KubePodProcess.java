@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
@@ -96,10 +97,18 @@ public class KubePodProcess extends Process {
   private static final String CONFIG_DIR = "/config";
   private static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
 
+  // 143 is the typical SIGTERM exit code.
+  private static final int KILLED_EXIT_CODE = 143;
   private static final int STDIN_REMOTE_PORT = 9001;
 
   private final KubernetesClient client;
   private final Pod podDefinition;
+  // Necessary since it is not possible to retrieve the pod's actual exit code upon termination. This
+  // is because the Kube API server does not keep
+  // terminated pod history like it does for successful pods.
+  // This variable should be set in functions where the pod is forcefully terminated. See
+  // getReturnCode() for more info.
+  private final AtomicBoolean wasKilled = new AtomicBoolean(false);
 
   private final OutputStream stdin;
   private InputStream stdout;
@@ -332,7 +341,8 @@ public class KubePodProcess extends Process {
     LOGGER.info("Copying files...");
     Map<String, String> filesWithSuccess = new HashMap<>(files);
 
-    // we always copy the empty success file to ensure our waiting step can detect init container in RUNNING
+    // We always copy the empty success file to ensure our waiting step can detect the init container in
+    // RUNNING. Otherwise, the container can complete and exit before we are able to detect it.
     filesWithSuccess.put(SUCCESS_FILE_NAME, "");
     copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
 
@@ -392,17 +402,25 @@ public class KubePodProcess extends Process {
     return this.stderr;
   }
 
+  /**
+   * Immediately terminates the Kube Pod backing this process and cleans up IO resources.
+   */
   @Override
   public int waitFor() throws InterruptedException {
     try {
       Pod refreshedPod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
       client.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+      wasKilled.set(true);
       return exitValue();
     } finally {
       close();
     }
   }
 
+  /**
+   * Intended to gracefully clean up after a completed Kube Pod. This should only be called if the
+   * process is successful.
+   */
   @Override
   public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
     try {
@@ -412,15 +430,24 @@ public class KubePodProcess extends Process {
     }
   }
 
+  /**
+   * Immediately terminates the Kube Pod backing this process and cleans up IO resources.
+   */
   @Override
   public void destroy() {
+    LOGGER.info("Destroying Kube process: {}", podDefinition.getMetadata().getName());
     try {
       client.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
+      wasKilled.set(true);
     } finally {
       close();
+      LOGGER.info("Destroyed Kube process: {}", podDefinition.getMetadata().getName());
     }
   }
 
+  /**
+   * Close all open resource in the opposite order of resource creation.
+   */
   private void close() {
     Exceptions.swallow(this.stdin::close);
     Exceptions.swallow(this.stdout::close);
@@ -444,7 +471,18 @@ public class KubePodProcess extends Process {
   }
 
   private int getReturnCode(Pod pod) {
-    Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).get();
+    var name = pod.getMetadata().getName();
+    Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(name).get();
+    if (refreshedPod == null) {
+      if (wasKilled.get()) {
+        LOGGER.info("Unable to find pod {} to retrieve exit value. Defaulting to  value {}. This is expected if the job was cancelled.", name,
+            KILLED_EXIT_CODE);
+        return KILLED_EXIT_CODE;
+      }
+      // If the pod cannot be found and was not killed, it either means 1) the pod was not created
+      // properly 2) this method is incorrectly called.
+      throw new RuntimeException("Cannot find pod while trying to retrieve exit code. This probably means the Pod was not correctly created.");
+    }
     if (!isTerminal(refreshedPod)) {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
@@ -454,7 +492,7 @@ public class KubePodProcess extends Process {
         .filter(containerStatus -> containerStatus.getState() != null && containerStatus.getState().getTerminated() != null)
         .map(containerStatus -> {
           int statusCode = containerStatus.getState().getTerminated().getExitCode();
-          LOGGER.info("Termination status for container " + containerStatus.getName() + " is " + statusCode);
+          LOGGER.info("Exit code for pod {}, container {} is {}", name, containerStatus.getName(), statusCode);
           return statusCode;
         })
         .reduce(Integer::sum)
