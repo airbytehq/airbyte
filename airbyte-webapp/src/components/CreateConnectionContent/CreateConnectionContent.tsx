@@ -133,7 +133,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
     });
   };
 
-  const RefreshSchemaButton = () => {
+  const renderRefreshSchemaButton = () => {
     return (
       <Button onClick={onDiscoverSchema} type="button">
         <TryArrow icon={faRedoAlt} />
@@ -148,7 +148,7 @@ const CreateConnectionContent: React.FC<IProps> = ({
         <ConnectionForm
           additionBottomControls={additionBottomControls}
           onDropDownSelect={onSelectFrequency}
-          additionalSchemaControl={RefreshSchemaButton()}
+          additionalSchemaControl={renderRefreshSchemaButton()}
           onSubmit={onSubmitConnectionStep}
           errorMessage={createFormErrorMessage({ status: errorStatusRequest })}
           syncCatalog={schema}

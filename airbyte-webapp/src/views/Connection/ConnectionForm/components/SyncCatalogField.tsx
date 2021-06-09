@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { setIn, useField } from "formik";
+import { FieldProps, setIn } from "formik";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -34,16 +34,21 @@ const SchemaTitle = styled(SectionTitle)`
 type SchemaViewProps = {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
-};
+} & FieldProps<SyncSchemaStream[]>;
 
-const SchemaField: React.FC<SchemaViewProps> = ({
+const SyncCatalogField: React.FC<SchemaViewProps> = ({
   destinationSupportedSyncModes,
   additionalControl,
+  field,
+  form,
 }) => {
-  const [field, , form] = useField<SyncSchemaStream[]>("syncCatalog.streams");
-  const streams = field.value;
-  const onChangeSchema = form.setValue;
+  const { value: streams, name: fieldName } = field;
+
   const [searchString, setSearchString] = useState("");
+  const onChangeSchema = useCallback(
+    (newValue: SyncSchemaStream[]) => form.setFieldValue(fieldName, newValue),
+    [fieldName, form.setFieldValue]
+  );
 
   const sortedSchema = useMemo(
     () =>
@@ -128,4 +133,4 @@ const SchemaField: React.FC<SchemaViewProps> = ({
   );
 };
 
-export default React.memo(SchemaField);
+export default React.memo(SyncCatalogField);

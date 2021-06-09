@@ -56,7 +56,7 @@ const validationSchema = yup.object({
 // enum with only one value for the moment
 const TransformationTypes = [{ value: "custom", text: "Custom DBT" }];
 
-const TransformationItem: React.FC<TransformationProps> = ({
+const TransformationForm: React.FC<TransformationProps> = ({
   transformation,
   onCancel,
   onDone,
@@ -145,4 +145,4 @@ const TransformationItem: React.FC<TransformationProps> = ({
   );
 };
 
-export default TransformationItem;
+export default TransformationForm;

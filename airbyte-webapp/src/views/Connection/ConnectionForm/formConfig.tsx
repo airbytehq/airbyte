@@ -7,6 +7,12 @@ import {
 } from "core/domain/catalog";
 import * as yup from "yup";
 import { ValuesProps } from "components/hooks/services/useConnectionHook";
+import {
+  NormalizationType,
+  Operation,
+  OperatorType,
+  Transformation,
+} from "core/domain/connector/operation";
 
 type ConnectionFormValues = ValuesProps;
 
@@ -67,5 +73,52 @@ const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
   [SyncMode.Incremental, DestinationSyncMode.Dedupted],
 ];
 
+const DEFAULT_TRANSFORMATION: Transformation = {
+  name: "My dbt transformations",
+  operatorConfiguration: {
+    operatorType: OperatorType.Dbt,
+    dbt: {
+      dockerImage: "fishtownanalytics/dbt:0.19.1",
+      dbtArguments: "run",
+    },
+  },
+};
+
+function mapFormPropsToOperation(
+  values: {
+    transformations: Transformation[];
+    normalization: NormalizationType;
+  },
+  initialOperations: Operation[] = []
+): Operation[] {
+  const newOperations: Operation[] = [...values.transformations];
+
+  if (values.normalization !== NormalizationType.RAW) {
+    const normalizationOperation = initialOperations.find(
+      (op) =>
+        op.operatorConfiguration.operatorType === OperatorType.Normalization
+    );
+
+    if (normalizationOperation) {
+      newOperations.push(normalizationOperation);
+    } else {
+      newOperations.push({
+        name: "Normalization",
+        operatorConfiguration: {
+          operatorType: OperatorType.Normalization,
+          normalization: values.normalization,
+        },
+      });
+    }
+  }
+
+  return newOperations;
+}
+
 export type { ConnectionFormValues };
-export { connectionValidationSchema, SUPPORTED_MODES };
+export {
+  connectionValidationSchema,
+  mapFormPropsToOperation,
+  SUPPORTED_MODES,
+  DEFAULT_TRANSFORMATION,
+};
