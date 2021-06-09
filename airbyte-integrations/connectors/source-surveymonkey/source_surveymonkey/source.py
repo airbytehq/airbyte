@@ -32,16 +32,11 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import (  # EventsSessions,
-    Annotations,
-    Cohorts,
-    Events,
-    FeatureFlags,
-    Insights,
-    InsightsPath,
-    InsightsSessions,
-    Persons,
-    Trends,
+from .streams import (
+    Surveys,
+    SurveyPages,
+    SurveyQuestions,
+    SurveyResponses
 )
 
 
@@ -49,8 +44,8 @@ class SourceSurveymonkey(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             _ = pendulum.parse(config["start_date"], strict=True)
-            authenticator = TokenAuthenticator(token=config["api_key"])
-            stream = Cohorts(authenticator=authenticator)
+            authenticator = TokenAuthenticator(token=config["access_token"])
+            stream = Surveys(authenticator=authenticator)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             _ = next(records)
             return True, None
@@ -58,24 +53,10 @@ class SourceSurveymonkey(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        event/sessions stream is dynamic. Probably, it contains a list of CURRENT sessions.
-        In Next day session may expire and wont be available via this endpoint.
-        So we need a dynamic load data before tests.
-        This stream was requested to be removed due to this reason.
-        """
         authenticator = TokenAuthenticator(token=config["api_key"])
         return [
-            Annotations(authenticator=authenticator, start_date=config["start_date"]),
-            Cohorts(authenticator=authenticator),
-            Events(authenticator=authenticator, start_date=config["start_date"]),
-            # disabled because the endpoint returns only active sessions and they have TTL=24h
-            # so most of the time it will be empty
-            # EventsSessions(authenticator=authenticator),
-            FeatureFlags(authenticator=authenticator),
-            Insights(authenticator=authenticator),
-            InsightsPath(authenticator=authenticator),
-            InsightsSessions(authenticator=authenticator),
-            Persons(authenticator=authenticator),
-            Trends(authenticator=authenticator),
+            Surveys(authenticator=authenticator, start_date=config["start_date"]),
+            SurveyPages(authenticator=authenticator),
+            SurveyQuestions(authenticator=authenticator),
+            SurveyResponses(authenticator=authenticator, start_date=config["start_date"]),
         ]
