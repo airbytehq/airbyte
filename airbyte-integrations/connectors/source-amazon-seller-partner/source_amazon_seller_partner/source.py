@@ -24,7 +24,7 @@
 
 
 import json
-from typing import DefaultDict, Dict, Generator, Mapping, Any, Generator, MutableMapping
+from typing import Any, Generator, Mapping, MutableMapping
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (

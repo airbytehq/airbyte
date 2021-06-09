@@ -26,9 +26,8 @@ import json
 import pkgutil
 import time
 from datetime import date, datetime, timedelta
-from typing import DefaultDict, Dict, Generator, Any, MutableMapping, Tuple
+from typing import Any, Dict, Generator, MutableMapping, Tuple
 
-import dateutil
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, Type
 from dateutil import parser
