@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.8
+Add 80000 as a rate-limiting error code (#3996) 
+
 ## 0.2.7
 Add missing fields to AdInsights streams (#3693) 
 
