@@ -439,10 +439,10 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void setVersion(String airbyteVersion) throws IOException {
     database.query(ctx -> ctx.execute(String.format(
-        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s');",
+        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (key) DO UPDATE SET value = '%s'",
         AIRBYTE_METADATA_TABLE,
         AirbyteVersion.AIRBYTE_VERSION_KEY_NAME, airbyteVersion,
-        current_timestamp(), airbyteVersion)));
+        current_timestamp(), airbyteVersion, airbyteVersion)));
   }
 
   private static String current_timestamp() {

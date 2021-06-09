@@ -41,10 +41,12 @@ public class MigrationRunner {
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationRunner.class);
 
   public static void run(String[] args) throws IOException {
-
-    final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_migrate");
-
     MigrateConfig migrateConfig = parse(args);
+    run(migrateConfig);
+  }
+
+  public static void run(MigrateConfig migrateConfig) throws IOException {
+    final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_migrate");
 
     if (migrateConfig.getInputPath().toString().endsWith(".gz")) {
       LOGGER.info("Unpacking tarball");

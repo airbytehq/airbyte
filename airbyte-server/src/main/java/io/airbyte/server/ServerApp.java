@@ -210,13 +210,24 @@ public class ServerApp {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
       jobPersistence.setVersion(airbyteVersion);
     }
-    final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+
+    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+    if (airbyteDatabaseVersion.isPresent() && !AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+      try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion.get(),
+          configRepository, jobPersistence, airbyteVersion)) {
+        runMigration.run();
+      } catch (Exception e) {
+        LOGGER.error("Automatic Migration failed ", e);
+      }
+      // After migration, upgrade the DB version
+      airbyteDatabaseVersion = jobPersistence.getVersion();
+    }
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
       new ServerApp(configRepository, jobPersistence, configs).start();
     } else {
-      LOGGER.info("Start serving version mismatch errors...");
+      LOGGER.info("Start serving version mismatch errors. Automatic migration must have failed");
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
   }

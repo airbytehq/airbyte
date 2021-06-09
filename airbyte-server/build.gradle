@@ -31,6 +31,7 @@ dependencies {
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')
     implementation project(':airbyte-workers')
+    implementation project(':airbyte-migration')
 
     testImplementation "org.postgresql:postgresql:42.2.18"
 

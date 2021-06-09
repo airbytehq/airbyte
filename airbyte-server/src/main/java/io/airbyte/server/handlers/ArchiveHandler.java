@@ -24,6 +24,7 @@
 
 package io.airbyte.server.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
@@ -155,7 +156,8 @@ public class ArchiveHandler {
     configFileArchiver.importConfigsFromArchive(tempFolder, true);
   }
 
-  private Optional<UUID> getCurrentCustomerId() {
+  @VisibleForTesting
+  public Optional<UUID> getCurrentCustomerId() {
     try {
       return Optional.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true).getCustomerId());
     } catch (Exception e) {
