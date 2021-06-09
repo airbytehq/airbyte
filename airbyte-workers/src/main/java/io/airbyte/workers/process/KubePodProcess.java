@@ -105,7 +105,7 @@ public class KubePodProcess extends Process {
   private InputStream stdout;
   private InputStream stderr;
 
-  private final Consumer<Integer> portConsumer;
+  private final Consumer<Integer> portReleaser;
   private final ServerSocket stdoutServerSocket;
   private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
@@ -237,7 +237,7 @@ public class KubePodProcess extends Process {
   }
 
   public KubePodProcess(KubernetesClient client,
-                        Consumer<Integer> portConsumer,
+                        Consumer<Integer> portReleaser,
                         String podName,
                         String namespace,
                         String image,
@@ -249,7 +249,7 @@ public class KubePodProcess extends Process {
                         final String... args)
       throws IOException, InterruptedException {
     this.client = client;
-    this.portConsumer = portConsumer;
+    this.portReleaser = portReleaser;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
 
@@ -426,8 +426,8 @@ public class KubePodProcess extends Process {
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
-    Exceptions.swallow(() -> portConsumer.accept(stdoutLocalPort));
-    Exceptions.swallow(() -> portConsumer.accept(stderrLocalPort));
+    Exceptions.swallow(() -> portReleaser.accept(stdoutLocalPort));
+    Exceptions.swallow(() -> portReleaser.accept(stderrLocalPort));
   }
 
   private boolean isTerminal(Pod pod) {

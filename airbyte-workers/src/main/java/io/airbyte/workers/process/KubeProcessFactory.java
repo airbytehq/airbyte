@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.function.Consumer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,16 +74,18 @@ public class KubeProcessFactory implements ProcessFactory {
       claimedPorts.add(stderrLocalPort);
       LOGGER.info("stderrLocalPort = " + stderrLocalPort);
 
+      final Consumer<Integer> portReleaser = port -> {
+        if (!ports.contains(port)) {
+          ports.add(port);
+          LOGGER.info("Port consumer releasing: " + port);
+        } else {
+          LOGGER.info("Port consumer skipping releasing: " + port);
+        }
+      };
+
       return new KubePodProcess(
           kubeClient,
-          port -> {
-            if (!ports.contains(port)) {
-              ports.add(port);
-              LOGGER.info("Port consumer releasing: " + port);
-            } else {
-              LOGGER.info("Port consumer skipping releasing: " + port);
-            }
-          },
+          portReleaser,
           podName,
           namespace,
           imageName,

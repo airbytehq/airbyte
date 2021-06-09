@@ -14,6 +14,7 @@ kubectl apply -k kube/overlays/dev
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
 kubectl wait --for=condition=Available deployment/airbyte-scheduler --timeout=300s || (kubectl describe pods && exit 1)
 
+# allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
 sleep 120s
 
 server_logs () { echo "server logs:" && kubectl logs deployment.apps/airbyte-server; }
