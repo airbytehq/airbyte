@@ -213,6 +213,8 @@ public class ServerApp {
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     if (airbyteDatabaseVersion.isPresent() && !AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+      LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion.get()
+          + " to version : " + airbyteVersion);
       try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion.get(),
           configRepository, jobPersistence, airbyteVersion)) {
         runMigration.run();

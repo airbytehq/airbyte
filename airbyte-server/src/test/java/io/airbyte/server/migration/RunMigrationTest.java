@@ -60,7 +60,7 @@ import org.junit.jupiter.api.Test;
 public class RunMigrationTest {
 
   private static final String INITIAL_VERSION = "0.17.0-alpha";
-  private static final String TARGET_VERSION = "0.24.0-alpha";
+  private static final String TARGET_VERSION = "0.24.3-alpha";
   private final List<File> resourceToBeCleanedUp = new ArrayList<>();
 
   @After
