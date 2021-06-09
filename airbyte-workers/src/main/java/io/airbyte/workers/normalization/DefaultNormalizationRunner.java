@@ -29,11 +29,12 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.OperatorDbt;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -43,10 +44,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.28";
+  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.31";
 
   private final DestinationType destinationType;
-  private final ProcessBuilderFactory pbf;
+  private final ProcessFactory processFactory;
 
   private Process process = null;
 
@@ -57,9 +58,19 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     SNOWFLAKE
   }
 
-  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessBuilderFactory pbf) {
+  public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory) {
     this.destinationType = destinationType;
-    this.pbf = pbf;
+    this.processFactory = processFactory;
+  }
+
+  @Override
+  public boolean configureDbt(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) throws Exception {
+    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
+    return runProcess(jobId, attempt, jobRoot, "configure-dbt",
+        "--integration-type", destinationType.toString().toLowerCase(),
+        "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+        "--git-repo", dbtConfig.getGitRepoUrl(),
+        "--git-branch", dbtConfig.getGitRepoBranch());
   }
 
   @Override
@@ -67,11 +78,15 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
     IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
+    return runProcess(jobId, attempt, jobRoot, "run",
+        "--integration-type", destinationType.toString().toLowerCase(),
+        "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+        "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
+  }
+
+  private boolean runProcess(String jobId, int attempt, Path jobRoot, final String... args) throws Exception {
     try {
-      process = pbf.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, "run",
-          "--integration-type", destinationType.toString().toLowerCase(),
-          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-          "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME).start();
+      process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, null, args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -94,10 +109,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return;
     }
 
-    LOGGER.debug("Closing source process");
+    LOGGER.debug("Closing normalization process");
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Source process wasn't successful");
+      throw new WorkerException("Normalization process wasn't successful");
     }
   }
 

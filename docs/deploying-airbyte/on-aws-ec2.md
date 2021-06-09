@@ -47,7 +47,7 @@ The instructions have been tested on `Amazon Linux 2 AMI (HVM)`
 ## Install environment
 
 {% hint style="info" %}
-This part assumes that you have access to a terminal on your workstation
+Note: The following commands will be entered either on your local terminal or in your ssh session on the instance terminal. The comments above each command block will indicate where to enter the commands.
 {% endhint %}
 
 * Connect to your instance
@@ -125,5 +125,5 @@ ssh -i $SSH_KEY -L 8000:localhost:8000 -L 8001:localhost:8001 -N -f ec2-user@$IN
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../faq/technical-support.md) section in our docs for common problems.
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploy.md) section in our docs for common problems.
 

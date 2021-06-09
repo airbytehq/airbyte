@@ -12,5 +12,5 @@ COPY $CODE_PATH ./$CODE_PATH
 COPY setup.py ./
 RUN pip install .
 
-LABEL io.airbyte.version=0.2.1
+LABEL io.airbyte.version=0.2.4
 LABEL io.airbyte.name=airbyte/source-recurly

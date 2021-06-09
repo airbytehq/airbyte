@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -29,6 +31,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-cdk-test", "pytest==6.1.2", "slack_sdk==3.4.2", "pendulum>=2,<3"],
+    install_requires=["airbyte-cdk==0.1.2", "pytest==6.1.2", "slack_sdk==3.4.2", "pendulum>=2,<3"],
     package_data={"": ["*.json"]},
 )

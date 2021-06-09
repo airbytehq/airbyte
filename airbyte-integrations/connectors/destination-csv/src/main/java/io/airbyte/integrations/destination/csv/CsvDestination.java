@@ -27,10 +27,10 @@ package io.airbyte.integrations.destination.csv;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -41,7 +41,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -59,7 +58,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CsvDestination implements Destination {
+public class CsvDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvDestination.class);
 
@@ -69,12 +68,6 @@ public class CsvDestination implements Destination {
 
   public CsvDestination() {
     namingResolver = new StandardNameTransformer();
-  }
-
-  @Override
-  public ConnectorSpecification spec() throws IOException {
-    final String resourceString = MoreResources.readResource("spec.json");
-    return Jsons.deserialize(resourceString, ConnectorSpecification.class);
   }
 
   @Override
@@ -125,7 +118,7 @@ public class CsvDestination implements Destination {
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(printer, tmpPath, finalPath));
     }
 
-    return new CsvConsumer(writeConfigs, catalog);
+    return new CsvConsumer(writeConfigs, catalog, outputRecordCollector);
   }
 
   /**
@@ -153,12 +146,13 @@ public class CsvDestination implements Destination {
    * successfully, it moves the tmp files to files named by their respective stream. If there are any
    * failures, nothing is written.
    */
-  private static class CsvConsumer extends FailureTrackingAirbyteMessageConsumer {
+  private static class CsvConsumer extends CommitOnStateAirbyteMessageConsumer {
 
     private final Map<String, WriteConfig> writeConfigs;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public CsvConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog) {
+    public CsvConsumer(Map<String, WriteConfig> writeConfigs, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+      super(outputRecordCollector);
       this.catalog = catalog;
       LOGGER.info("initializing consumer.");
 
@@ -188,6 +182,13 @@ public class CsvDestination implements Destination {
           UUID.randomUUID(),
           recordMessage.getEmittedAt(),
           Jsons.serialize(recordMessage.getData()));
+    }
+
+    @Override
+    public void commit() throws Exception {
+      for (WriteConfig writeConfig : writeConfigs.values()) {
+        writeConfig.getWriter().flush();
+      }
     }
 
     @Override

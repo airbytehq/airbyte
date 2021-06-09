@@ -14,7 +14,7 @@ This document is a general introduction to the CDK. Readers should have basic fa
 Generate an empty connector using the code generator. First clone the Airbyte repository then from the repository root run
 ```
 cd airbyte-integrations/connector-templates/generator
-npm run generate
+./generate.sh
 ```
 
 then follow the interactive prompt. Next, find all `TODO`s in the generated project directory -- they're accompanied by lots of comments explaining what you'll need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
@@ -67,7 +67,7 @@ This also presents a test coverage report.
 #### Publishing a new version to PyPi
 1. Bump the package version in `setup.py`
 2. Open a PR
-3. An Airbyte member must comment `/publish-cdk --dry-run=<true or false>`. Dry runs publish to test.pypi.org.
+3. An Airbyte member must comment `/publish-cdk dry-run=<true or false>`. Dry runs publish to test.pypi.org. Not including the `dry-run` parameter defaults to a value of `true`. 
 
 ## Coming Soon
 * Full OAuth 2.0 support (including refresh token issuing flow via UI or CLI) 

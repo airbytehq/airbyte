@@ -1,27 +1,34 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
+import { useResource } from "rest-hooks";
 
-import { H2 } from "components/Titles";
+import config from "config";
+
+import { Link } from "components";
+import { H2 } from "components";
 import StepsMenu from "components/StepsMenu";
+import HeadTitle from "components/HeadTitle";
+import Version from "components/Version";
+
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import useSource, {
+  useSourceList,
+} from "components/hooks/services/useSourceHook";
+import useDestination, {
+  useDestinationList,
+} from "components/hooks/services/useDestinationHook";
+import { JobInfo } from "core/resources/Scheduler";
+import { ConnectionConfiguration } from "core/domain/connection";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import useGetStepsConfig from "./useStepsConfig";
 import SourceStep from "./components/SourceStep";
 import DestinationStep from "./components/DestinationStep";
 import ConnectionStep from "./components/ConnectionStep";
-import SourceResource from "core/resources/Source";
-import DestinationResource from "core/resources/Destination";
-import config from "config";
-import UseGetStepsConfig, { StepsTypes } from "./components/useGetStepsConfig";
-import usePrepareDropdownLists from "./components/usePrepareDropdownLists";
-import { AnalyticsService } from "core/analytics/AnalyticsService";
-import useSource from "components/hooks/services/useSourceHook";
-import useDestination from "components/hooks/services/useDestinationHook";
-import Link from "components/Link";
-import Version from "components/Version";
-import { JobInfo } from "core/resources/Scheduler";
-import { ConnectionConfiguration } from "core/domain/connection";
+import { StepType } from "./types";
 
 const Content = styled.div<{ big?: boolean }>`
   width: 100%;
@@ -81,15 +88,20 @@ const OnboardingPage: React.FC = () => {
     AnalyticsService.page("Onboarding Page");
   }, []);
 
+  const { sources } = useSourceList();
+  const { destinations } = useDestinationList();
+
+  const { sourceDefinitions } = useResource(
+    SourceDefinitionResource.listShape(),
+    {}
+  );
+  const { destinationDefinitions } = useResource(
+    DestinationDefinitionResource.listShape(),
+    {}
+  );
+
   const { createSource, recreateSource } = useSource();
   const { createDestination, recreateDestination } = useDestination();
-
-  const { sources } = useResource(SourceResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
-  });
-  const { destinations } = useResource(DestinationResource.listShape(), {
-    workspaceId: config.ui.workspaceId,
-  });
 
   const [successRequest, setSuccessRequest] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<{
@@ -103,103 +115,100 @@ const OnboardingPage: React.FC = () => {
     setErrorStatusRequest(null);
   };
 
-  const { currentStep, steps, setCurrentStep } = UseGetStepsConfig(
+  const { currentStep, setCurrentStep, steps } = useGetStepsConfig(
     !!sources.length,
     !!destinations.length,
     afterUpdateStep
   );
 
-  const {
-    sourcesDropDownData,
-    destinationsDropDownData,
-    getSourceDefinitionById,
-    getDestinationDefinitionById,
-  } = usePrepareDropdownLists();
+  const getSourceDefinitionById = (id: string) =>
+    sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
-  const onSubmitSourceStep = async (values: {
-    name: string;
-    serviceType: string;
-    sourceId?: string;
-    connectionConfiguration?: ConnectionConfiguration;
-  }) => {
-    setErrorStatusRequest(null);
-    const sourceConnector = getSourceDefinitionById(values.serviceType);
-
-    try {
-      if (!!sources.length) {
-        await recreateSource({
-          values,
-          sourceId: sources[0].sourceId,
-        });
-      } else {
-        await createSource({ values, sourceConnector });
-      }
-
-      setSuccessRequest(true);
-      setTimeout(() => {
-        setSuccessRequest(false);
-        setCurrentStep(StepsTypes.CREATE_DESTINATION);
-      }, 2000);
-    } catch (e) {
-      setErrorStatusRequest(e);
-    }
-  };
-
-  const onSubmitDestinationStep = async (values: {
-    name: string;
-    serviceType: string;
-    destinationDefinitionId?: string;
-    connectionConfiguration?: ConnectionConfiguration;
-  }) => {
-    setErrorStatusRequest(null);
-    const destinationConnector = getDestinationDefinitionById(
-      values.serviceType
-    );
-
-    try {
-      if (!!destinations.length) {
-        await recreateDestination({
-          values,
-          destinationId: destinations[0].destinationId,
-        });
-      } else {
-        await createDestination({
-          values,
-          destinationConnector,
-        });
-      }
-
-      setSuccessRequest(true);
-      setTimeout(() => {
-        setSuccessRequest(false);
-        setCurrentStep(StepsTypes.SET_UP_CONNECTION);
-      }, 2000);
-    } catch (e) {
-      setErrorStatusRequest(e);
-    }
-  };
+  const getDestinationDefinitionById = (id: string) =>
+    destinationDefinitions.find((item) => item.destinationDefinitionId === id);
 
   const renderStep = () => {
-    if (currentStep === StepsTypes.CREATE_SOURCE) {
+    if (currentStep === StepType.CREATE_SOURCE) {
+      const onSubmitSourceStep = async (values: {
+        name: string;
+        serviceType: string;
+        sourceId?: string;
+        connectionConfiguration?: ConnectionConfiguration;
+      }) => {
+        setErrorStatusRequest(null);
+        const sourceConnector = getSourceDefinitionById(values.serviceType);
+
+        try {
+          if (!!sources.length) {
+            await recreateSource({
+              values,
+              sourceId: sources[0].sourceId,
+            });
+          } else {
+            await createSource({ values, sourceConnector });
+          }
+
+          setSuccessRequest(true);
+          setTimeout(() => {
+            setSuccessRequest(false);
+            setCurrentStep(StepType.CREATE_DESTINATION);
+          }, 2000);
+        } catch (e) {
+          setErrorStatusRequest(e);
+        }
+      };
       return (
         <SourceStep
           afterSelectConnector={() => setErrorStatusRequest(null)}
           jobInfo={errorStatusRequest?.response}
           onSubmit={onSubmitSourceStep}
-          dropDownData={sourcesDropDownData}
+          availableServices={sourceDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
           // source={sources.length && !successRequest ? sources[0] : undefined}
         />
       );
     }
-    if (currentStep === StepsTypes.CREATE_DESTINATION) {
+    if (currentStep === StepType.CREATE_DESTINATION) {
+      const onSubmitDestinationStep = async (values: {
+        name: string;
+        serviceType: string;
+        destinationDefinitionId?: string;
+        connectionConfiguration?: ConnectionConfiguration;
+      }) => {
+        setErrorStatusRequest(null);
+        const destinationConnector = getDestinationDefinitionById(
+          values.serviceType
+        );
+
+        try {
+          if (!!destinations.length) {
+            await recreateDestination({
+              values,
+              destinationId: destinations[0].destinationId,
+            });
+          } else {
+            await createDestination({
+              values,
+              destinationConnector,
+            });
+          }
+
+          setSuccessRequest(true);
+          setTimeout(() => {
+            setSuccessRequest(false);
+            setCurrentStep(StepType.SET_UP_CONNECTION);
+          }, 2000);
+        } catch (e) {
+          setErrorStatusRequest(e);
+        }
+      };
       return (
         <DestinationStep
           afterSelectConnector={() => setErrorStatusRequest(null)}
           jobInfo={errorStatusRequest?.response}
           onSubmit={onSubmitDestinationStep}
-          dropDownData={destinationsDropDownData}
+          availableServices={destinationDefinitions}
           hasSuccess={successRequest}
           error={errorStatusRequest}
           currentSourceDefinitionId={sources[0].sourceDefinitionId}
@@ -220,7 +229,8 @@ const OnboardingPage: React.FC = () => {
   };
 
   return (
-    <Content big={currentStep === StepsTypes.SET_UP_CONNECTION}>
+    <Content big={currentStep === StepType.SET_UP_CONNECTION}>
+      <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
       <Main>
         <Img src="/welcome.svg" height={132} />
         <MainTitle center>

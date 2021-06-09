@@ -27,7 +27,9 @@ package io.airbyte.scheduler.persistence;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 public interface JobCreator {
@@ -54,7 +56,8 @@ public interface JobCreator {
                                DestinationConnection destination,
                                StandardSync standardSync,
                                String sourceDockerImage,
-                               String destinationDockerImage)
+                               String destinationDockerImage,
+                               List<StandardSyncOperation> standardSyncOperations)
       throws IOException;
 
   /**
@@ -65,7 +68,10 @@ public interface JobCreator {
    * @return the new job if no other conflicting job was running, otherwise empty
    * @throws IOException if something wrong happens
    */
-  Optional<Long> createResetConnectionJob(DestinationConnection destination, StandardSync standardSync, String destinationDockerImage)
+  Optional<Long> createResetConnectionJob(DestinationConnection destination,
+                                          StandardSync standardSync,
+                                          String destinationDockerImage,
+                                          List<StandardSyncOperation> standardSyncOperations)
       throws IOException;
 
 }

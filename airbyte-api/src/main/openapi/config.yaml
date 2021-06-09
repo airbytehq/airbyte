@@ -777,7 +777,7 @@ paths:
     post:
       tags:
         - connection
-      summary: Updated a connection status
+      summary: Update a connection
       operationId: updateConnection
       requestBody:
         content:
@@ -837,6 +837,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ConnectionRead"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/state/get:
+    post:
+      tags:
+        - connection
+      summary: Fetch the current state for a connection.
+      operationId: getState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionState"
         "404":
           description: Connection not found
         "422":
@@ -904,6 +927,135 @@ paths:
                 $ref: "#/components/schemas/JobInfoRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/check:
+    post:
+      tags:
+        - operation
+      summary: Check if an operation to be created is valid
+      operationId: checkOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationCreateOrUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckOperationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/create:
+    post:
+      tags:
+        - operation
+      summary: Create an operation to be applied as part of a connection pipeline
+      operationId: createOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/update:
+    post:
+      tags:
+        - operation
+      summary: Update an operation
+      operationId: updateOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/list:
+    post:
+      tags:
+        - operation
+      summary: Returns all operations for a connection.
+      description: List operations for connection.
+      operationId: listOperationsForConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationReadList"
+        "404":
+          description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/get:
+    post:
+      tags:
+        - operation
+      summary: Returns an operation
+      operationId: getOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationRead"
+        "404":
+          description: Operation not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/operations/delete:
+    post:
+      tags:
+        - operation
+      summary: Delete an operation
+      operationId: deleteOperation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OperationIdRequestBody"
+        required: true
+      responses:
+        "204":
+          description: The resource was deleted successfully.
+        "404":
+          description: Operation not found
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/scheduler/sources/check_connection:
@@ -987,7 +1139,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WbConnectionReadList"
+                $ref: "#/components/schemas/WebBackendConnectionReadList"
         "404":
           description: Workspace not found
         "422":
@@ -1010,9 +1162,30 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WbConnectionRead"
+                $ref: "#/components/schemas/WebBackendConnectionRead"
         "404":
           description: Connection not found
+        "422":
+          $ref: "#/components/responses/InvalidInput"
+  /v1/web_backend/connections/create:
+    post:
+      tags:
+        - web_backend
+      summary: Create a connection
+      operationId: webBackendCreateConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionCreate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/connections/update:
@@ -1033,7 +1206,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ConnectionRead"
+                $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/web_backend/sources/recreate:
@@ -1799,6 +1972,13 @@ components:
         name:
           type: string
           description: Optional name of the connection
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -1806,12 +1986,25 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+    WebBackendConnectionCreate:
+      allOf:
+        - $ref: "#/components/schemas/ConnectionCreate"
+        - type: object
+          properties:
+            withOperations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OperationCreate"
     ConnectionUpdate:
       type: object
       required:
@@ -1821,9 +2014,20 @@ components:
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -1837,6 +2041,10 @@ components:
           properties:
             withRefreshedCatalog:
               type: boolean
+            operations:
+              type: array
+              items:
+                $ref: "#/components/schemas/OperationCreateOrUpdate"
     ConnectionRead:
       type: object
       required:
@@ -1851,6 +2059,13 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
         prefix:
           type: string
           description: Prefix that will be prepended to the name of each stream when it is written to the destination.
@@ -1858,6 +2073,10 @@ components:
           $ref: "#/components/schemas/SourceId"
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -1898,6 +2117,136 @@ components:
             - days
             - weeks
             - months
+    NamespaceDefinitionType:
+      type: string
+      description: Method used for computing final namespace in destination
+      default: source
+      enum:
+        - source
+        - destination
+        - customformat
+    # Operations
+    OperationId:
+      type: string
+      format: uuid
+    OperationIdRequestBody:
+      type: object
+      required:
+        - OperationId
+      properties:
+        OperationId:
+          $ref: "#/components/schemas/OperationId"
+    OperationCreate:
+      type: object
+      required:
+        - name
+        - operatorConfiguration
+      properties:
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+    OperationUpdate:
+      type: object
+      required:
+        - operationId
+        - name
+        - operatorConfiguration
+      properties:
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+    OperationCreateOrUpdate:
+      type: object
+      required:
+        - name
+        - operatorConfiguration
+      properties:
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+    OperationRead:
+      type: object
+      required:
+        - operationId
+        - name
+        - operatorConfiguration
+      properties:
+        operationId:
+          $ref: "#/components/schemas/OperationId"
+        name:
+          type: string
+        operatorConfiguration:
+          $ref: "#/components/schemas/OperatorConfiguration"
+    OperationReadList:
+      type: object
+      required:
+        - operations
+      properties:
+        operations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationRead"
+    OperatorConfiguration:
+      type: object
+      required:
+        - operatorType
+      properties:
+        # Instead of this type field, we would prefer a json schema "oneOf" but unfortunately,
+        # the jsonschema2pojo does not seem to support it yet: https://github.com/joelittlejohn/jsonschema2pojo/issues/392
+        operatorType:
+          $ref: "#/components/schemas/OperatorType"
+        normalization:
+          $ref: "#/components/schemas/OperatorNormalization"
+        dbt:
+          $ref: "#/components/schemas/OperatorDbt"
+    OperatorType:
+      type: string
+      enum:
+        # - destination
+        - normalization
+        - dbt
+      # - docker
+      # - webhook
+    OperatorNormalization:
+      type: object
+      properties:
+        option:
+          type: string
+          enum:
+            - basic
+            #- unnesting
+    OperatorDbt:
+      type: object
+      required:
+        - gitRepoUrl
+      properties:
+        gitRepoUrl:
+          type: string
+        gitRepoBranch:
+          type: string
+        dockerImage:
+          type: string
+        dbtArguments:
+          type: string
+    CheckOperationRead:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - succeeded
+            - failed
+        message:
+          type: string
     # LOGS
     LogType:
       type: string
@@ -2208,8 +2557,19 @@ components:
           type: string
         jobInfo:
           $ref: "#/components/schemas/SynchronousJobRead"
+    ConnectionState:
+      type: object
+      required:
+        - connectionId
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        state:
+          $ref: "#/components/schemas/ConnectionStateObject"
+    ConnectionStateObject:
+      type: object
     # Web Backend
-    WbConnectionRead:
+    WebBackendConnectionRead:
       type: object
       required:
         - connectionId
@@ -2226,8 +2586,16 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
+        namespaceDefinition:
+          $ref: "#/components/schemas/NamespaceDefinitionType"
+        namespaceFormat:
+          type: string
+          description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
+          default: null
+          example: "${SOURCE_NAMESPACE}"
         prefix:
           type: string
+          description: Prefix that will be prepended to the name of each stream when it is written to the destination.
         sourceId:
           $ref: "#/components/schemas/SourceId"
         destinationId:
@@ -2238,10 +2606,16 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+        operationIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationId"
         source:
           $ref: "#/components/schemas/SourceRead"
         destination:
           $ref: "#/components/schemas/DestinationRead"
+        operations:
+          $ref: "#/components/schemas/OperationReadList"
         latestSyncJobCreatedAt:
           description: epoch time of the latest sync job. null if no sync job has taken place.
           type: integer
@@ -2250,7 +2624,7 @@ components:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
-    WbConnectionReadList:
+    WebBackendConnectionReadList:
       type: object
       required:
         - connections
@@ -2258,7 +2632,7 @@ components:
         connections:
           type: array
           items:
-            $ref: "#/components/schemas/WbConnectionRead"
+            $ref: "#/components/schemas/WebBackendConnectionRead"
     SyncMode:
       type: string
       enum:

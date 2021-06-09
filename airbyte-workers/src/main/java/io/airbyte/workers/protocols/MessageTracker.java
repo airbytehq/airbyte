@@ -24,7 +24,7 @@
 
 package io.airbyte.workers.protocols;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.State;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -37,6 +37,6 @@ public interface MessageTracker<T> extends Consumer<T> {
 
   long getBytesCount();
 
-  Optional<JsonNode> getOutputState();
+  Optional<State> getOutputState();
 
 }

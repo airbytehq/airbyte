@@ -1,5 +1,21 @@
 # Basic Normalization
 
+At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT process. These steps can also be referred in Airbyte's dialect as "Source" and "Destination".
+
+However, this is actually producing a table in the destination with a JSON blob column... For the typical analytics use case, you probably want this json blob normalized so that each field is its own column.
+
+So, after EL, comes the T \(transformation\) and the first T step that Airbyte actually applies on top of the extracted data is called "Normalization".
+
+Airbyte runs this step before handing the final data over to other tools that will manage further transformation down the line.
+
+To summarize, we can represent the ELT process in the diagram below. These are steps that happens between your "Source Database or API" and the final "Replicated Tables" with examples of implementation underneath:
+
+![](../.gitbook/assets/connecting-EL-with-T-4.png)
+
+In Airbyte, the current normalization option is implemented using a DBT Transformer composed of:
+- Airbyte base-normalization python package to generate DBT SQL models files
+- dbt to compile and executes the models on top of the data in the destinations that supports it.
+
 ## Overview
 
 Basic Normalization uses a fixed set of rules to map a json object from a source to the types and format that are native to the destination. For example if a source emits data that looks like this:
@@ -243,8 +259,16 @@ As an example from the hubspot source, we could have the following tables with n
 | Final table name of expanded nested column on BigQuery | companies\_2e8\_property\_engag**ements\_last\_meeting\_bo**oked\_campaign | deals\_prop**erties**\_6e6\_engagements\_l**ast\_meeting\_**booked\_medium |
 | Final table name of expanded nested column on Postgres | companies\_2e8\_property\_engag**\_\_**oked\_campaign | deals\_prop\_6e6\_engagements\_l**\_\_**booked\_medium |
 
+As mentioned in the overview:
+
+- Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`.
+- If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`.
+- In certain pathological cases, basic normalization is required to generate large models with many columns and multiple intermediate transformation steps for a stream. This may break down the "ephemeral" materialization strategy and require the use of additional intermediate views or tables instead. As a result, you may notice additional temporary tables being generated in the destination to handle these checkpoints.
+
+## Extending normalization
+
 Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. To do so, you can follow the following tutorial
 
-* to build a [custom SQL view]() with your own naming conventions
+* to build a [custom SQL view](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
 * to export, edit and run [custom DBT normalization](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
 

@@ -26,6 +26,12 @@ const Icon = styled(ImageBlock)`
   vertical-align: sub;
 `;
 
+const ConnectorName = styled.div`
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+`;
+
 type IProps = {
   name: string;
   icon?: string;
@@ -34,10 +40,10 @@ type IProps = {
 const Connector: React.FC<IProps> = ({ name, icon }) => {
   return (
     <Content>
-      <div>
+      <ConnectorName>
         <Icon img={icon} small />
         <span>{name}</span>
-      </div>
+      </ConnectorName>
       <FontAwesomeIcon icon={faArrowRight} />
     </Content>
   );

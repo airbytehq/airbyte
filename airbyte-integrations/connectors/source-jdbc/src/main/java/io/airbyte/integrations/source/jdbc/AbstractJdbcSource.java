@@ -54,7 +54,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -87,6 +87,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
   public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
+  public static final String CDC_LOG_FILE = "_ab_cdc_log_file";
+  public static final String CDC_LOG_POS = "_ab_cdc_log_pos";
 
   private static final String JDBC_COLUMN_DATABASE_NAME = "TABLE_CAT";
   private static final String JDBC_COLUMN_SCHEMA_NAME = "TABLE_SCHEM";
@@ -384,9 +386,9 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
    * making repeated queries to the DB, we try to get all primary keys without specifying a table
    * first, if it doesn't work, we retry one table at a time.
    */
-  private Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
-                                                        Optional<String> databaseOptional,
-                                                        List<TableInfoInternal> tableInfos) {
+  protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
+                                                          Optional<String> databaseOptional,
+                                                          List<TableInfoInternal> tableInfos) {
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(

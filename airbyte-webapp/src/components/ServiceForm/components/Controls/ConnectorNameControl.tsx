@@ -4,14 +4,13 @@ import { useField } from "formik";
 
 import { Input, ControlLabels } from "components";
 import { FormBaseItem } from "core/form/types";
-import { useServiceForm } from "../../serviceFormContext";
 
-const ConnectorNameControl: React.FC<{ property: FormBaseItem }> = ({
-  property,
-}) => {
+const ConnectorNameControl: React.FC<{
+  property: FormBaseItem;
+  formType: "source" | "destination";
+}> = ({ property, formType }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta] = useField(property.path);
-  const { formType } = useServiceForm();
 
   return (
     <ControlLabels

@@ -2,6 +2,12 @@ import { JSONSchema7, JSONSchema7Definition } from "json-schema";
 
 import { FormBlock } from "core/form/types";
 
+interface AirbyteJSONSchema extends JSONSchema7 {
+  airbyte_secret?: boolean;
+  multiline?: boolean;
+  order?: number;
+}
+
 /**
  * Returns {@link FormBlock} representation of jsonSchema
  *
@@ -94,8 +100,8 @@ export const jsonSchemaToUiWidget = (
     path: path || key,
     fieldKey: key,
     isRequired,
-    isSecret: (jsonSchema as { airbyte_secret: boolean }).airbyte_secret,
-    multiline: (jsonSchema as { multiline: boolean }).multiline,
+    isSecret: (jsonSchema as AirbyteJSONSchema).airbyte_secret,
+    multiline: (jsonSchema as AirbyteJSONSchema).multiline,
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
       "null",
@@ -115,11 +121,14 @@ function isKeyRequired(
   return isRequired;
 }
 
-const pickDefaultFields = (schema: JSONSchema7): Partial<JSONSchema7> => ({
+const pickDefaultFields = (
+  schema: AirbyteJSONSchema
+): Partial<AirbyteJSONSchema> => ({
   default: schema.default,
   examples: schema.examples,
   description: schema.description,
   pattern: schema.pattern,
+  order: schema.order,
   title: schema.title,
   enum:
     typeof schema.items === "object" &&

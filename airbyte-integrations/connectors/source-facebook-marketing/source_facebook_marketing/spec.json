@@ -26,6 +26,14 @@
         "type": "boolean",
         "description": "Include data from deleted campaigns, ads, and adsets.",
         "default": "false"
+      },
+      "insights_lookback_window": {
+        "type": "integer",
+        "title": "Insights Lookback Window",
+        "description": "The attribution window for the actions",
+        "minimum": 0,
+        "maximum": 28,
+        "default": 28
       }
     }
   }

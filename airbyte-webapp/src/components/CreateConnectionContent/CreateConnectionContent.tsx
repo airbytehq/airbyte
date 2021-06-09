@@ -3,17 +3,15 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useResource } from "rest-hooks";
 
 import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import Button from "components/Button";
-
+import { Button } from "components";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
-
-import config from "config";
 
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { Source } from "core/resources/Source";
@@ -22,7 +20,9 @@ import { SyncSchema } from "core/domain/catalog";
 
 import useConnection from "components/hooks/services/useConnectionHook";
 import { useDiscoverSchema } from "components/hooks/services/useSchemaHook";
-import { useDestinationDefinitionSpecificationLoad } from "../hooks/services/useDestinationHook";
+import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
 
 const SkipButton = styled.div`
   margin-top: 6px;
@@ -60,11 +60,20 @@ const CreateConnectionContent: React.FC<IProps> = ({
     onDiscoverSchema,
   } = useDiscoverSchema(source?.sourceId);
 
+  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: source.sourceDefinitionId,
+  });
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    {
+      destinationDefinitionId: destination.destinationDefinitionId,
+    }
+  );
+
   const {
-    destinationDefinitionSpecification,
     isLoading: loadingDestination,
   } = useDestinationDefinitionSpecificationLoad(
-    destination.destinationDefinitionId
+    destination?.destinationDefinitionId
   );
 
   if (isLoading || loadingDestination) {
@@ -122,7 +131,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
 
   const onSelectFrequency = (item: { text: string }) => {
     AnalyticsService.track("New Connection - Action", {
-      user_id: config.ui.workspaceId,
       action: "Select a frequency",
       frequency: item?.text,
       connector_source_definition: source?.sourceName,
@@ -153,7 +161,8 @@ const CreateConnectionContent: React.FC<IProps> = ({
           schema={schema}
           source={source}
           destination={destination}
-          destinationDefinition={destinationDefinitionSpecification}
+          sourceIcon={sourceDefinition?.icon}
+          destinationIcon={destinationDefinition?.icon}
         />
       </Suspense>
     </ContentCard>
