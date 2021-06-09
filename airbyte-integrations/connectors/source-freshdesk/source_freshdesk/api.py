@@ -138,15 +138,58 @@ class StreamAPI(ABC):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
 
+    @property
+    def name(self):
+        """Name of the stream"""
+        stream_name = self.__class__.__name__
+        if stream_name.endswith("API"):
+            stream_name = stream_name[:-3]
+        return stream_name
+
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter"""
         params = params or {}
-        for page in range(1, self.maximum_page):
-            batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
-            yield from batch
 
-            if len(batch) < self.result_return_limit:
-                break
+        stream = self.name
+        # This block extends TicketsAPI Stream to overcome '300 page' server error.
+
+        if stream == "Tickets":
+            page_break = 300  # the maximum page allowed to pull during pagination.
+
+            for page in range(1, self.maximum_page):
+                if page < page_break:
+                    batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
+                    yield from batch
+                    last_record = batch[0]["updated_at"]  # position 0, because the records are returned in 'desc'
+
+                    if len(batch) < self.result_return_limit:
+                        break
+                else:
+                    last_record = pendulum.parse(last_record).add(seconds=1)
+                    for more_page in range(1, self.maximum_page):
+                        batch = list(
+                            getter(
+                                params={
+                                    **params,
+                                    "order_by": "updated_at",
+                                    "updated_since": last_record,
+                                    "per_page": self.result_return_limit,
+                                    "page": more_page,
+                                }
+                            )
+                        )
+                        yield from batch
+
+                        if len(batch) < self.result_return_limit:
+                            break  # break nested loop
+                    break  # break main loop
+        else:
+            for page in range(1, self.maximum_page):
+                batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
+                yield from batch
+
+                if len(batch) < self.result_return_limit:
+                    break
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
@@ -173,14 +216,6 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         if self._state:
             return {self.state_filter: self._state}
         return {}
-
-    @property
-    def name(self):
-        """Name of the stream"""
-        stream_name = self.__class__.__name__
-        if stream_name.endswith("API"):
-            stream_name = stream_name[:-3]
-        return stream_name
 
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter, patched to respect current state"""
