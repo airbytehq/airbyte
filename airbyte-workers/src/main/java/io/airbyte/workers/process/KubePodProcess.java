@@ -25,6 +25,7 @@
 package io.airbyte.workers.process;
 
 import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
@@ -43,13 +44,14 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Path;
-import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,8 +105,11 @@ public class KubePodProcess extends Process {
   private InputStream stdout;
   private InputStream stderr;
 
+  private final Consumer<Integer> portReleaser;
   private final ServerSocket stdoutServerSocket;
+  private final int stdoutLocalPort;
   private final ServerSocket stderrServerSocket;
+  private final int stderrLocalPort;
   private final ExecutorService executorService;
 
   // TODO(Davin): Cache this result.
@@ -157,16 +162,14 @@ public class KubePodProcess extends Process {
     return pod.getStatus().getPodIP();
   }
 
-  private static Container getInit(boolean usesStdin, List<VolumeMount> mainVolumeMounts, boolean copyFiles) {
+  private static Container getInit(boolean usesStdin, List<VolumeMount> mainVolumeMounts) {
     var initEntrypointStr = String.format("mkfifo %s && mkfifo %s", STDOUT_PIPE_FILE, STDERR_PIPE_FILE);
+
     if (usesStdin) {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
-    if (copyFiles) {
-      // If files need to be copied, block until the success file is present to ensure all files are
-      // copied over.
-      initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 5; done;", SUCCESS_FILE_NAME);
-    }
+
+    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 5; done;", SUCCESS_FILE_NAME);
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
@@ -197,7 +200,6 @@ public class KubePodProcess extends Process {
 
   private static void copyFilesToKubeConfigVolume(KubernetesClient client, String podName, String namespace, Map<String, String> files) {
     List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
-    fileEntries.add(new AbstractMap.SimpleEntry<>(SUCCESS_FILE_NAME, ""));
 
     for (Map.Entry<String, String> file : fileEntries) {
       Path tmpFile = null;
@@ -235,6 +237,7 @@ public class KubePodProcess extends Process {
   }
 
   public KubePodProcess(KubernetesClient client,
+                        Consumer<Integer> portReleaser,
                         String podName,
                         String namespace,
                         String image,
@@ -246,6 +249,9 @@ public class KubePodProcess extends Process {
                         final String... args)
       throws IOException, InterruptedException {
     this.client = client;
+    this.portReleaser = portReleaser;
+    this.stdoutLocalPort = stdoutLocalPort;
+    this.stderrLocalPort = stderrLocalPort;
 
     stdoutServerSocket = new ServerSocket(stdoutLocalPort);
     stderrServerSocket = new ServerSocket(stderrLocalPort);
@@ -280,8 +286,7 @@ public class KubePodProcess extends Process {
     var volumes = List.of(pipeVolume, configVolume);
     var mainVolumeMounts = List.of(pipeVolumeMount, configVolumeMount);
 
-    var copyFiles = !files.isEmpty();
-    Container init = getInit(usesStdin, mainVolumeMounts, copyFiles);
+    Container init = getInit(usesStdin, mainVolumeMounts);
     Container main = getMain(image, usesStdin, entrypoint, mainVolumeMounts, args);
 
     Container remoteStdin = new ContainerBuilder()
@@ -323,10 +328,13 @@ public class KubePodProcess extends Process {
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
     waitForInitPodToRun(client, podDefinition);
-    if (copyFiles) {
-      LOGGER.info("Copying files...");
-      copyFilesToKubeConfigVolume(client, podName, namespace, files);
-    }
+
+    LOGGER.info("Copying files...");
+    Map<String, String> filesWithSuccess = new HashMap<>(files);
+
+    // we always copy the empty success file to ensure our waiting step can detect init container in RUNNING
+    filesWithSuccess.put(SUCCESS_FILE_NAME, "");
+    copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
 
     LOGGER.info("Waiting until pod is ready...");
     client.resource(podDefinition).waitUntilReady(30, TimeUnit.MINUTES);
@@ -386,23 +394,42 @@ public class KubePodProcess extends Process {
 
   @Override
   public int waitFor() throws InterruptedException {
-    // These are closed in the opposite order in which they are created to prevent any resource
-    // conflicts.
-    Pod refreshedPod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
-    client.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
     try {
-      this.stdin.close();
-      this.stdout.close();
-      this.stdoutServerSocket.close();
-      this.stderr.close();
-      this.stderrServerSocket.close();
-    } catch (IOException e) {
-      LOGGER.warn("Error while closing sockets and streams: ", e);
-      throw new InterruptedException();
+      Pod refreshedPod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
+      client.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+      return exitValue();
+    } finally {
+      close();
     }
-    this.executorService.shutdownNow();
+  }
 
-    return exitValue();
+  @Override
+  public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
+    try {
+      return super.waitFor(timeout, unit);
+    } finally {
+      close();
+    }
+  }
+
+  @Override
+  public void destroy() {
+    try {
+      client.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
+    } finally {
+      close();
+    }
+  }
+
+  private void close() {
+    Exceptions.swallow(this.stdin::close);
+    Exceptions.swallow(this.stdout::close);
+    Exceptions.swallow(this.stderr::close);
+    Exceptions.swallow(this.stdoutServerSocket::close);
+    Exceptions.swallow(this.stderrServerSocket::close);
+    Exceptions.swallow(this.executorService::shutdownNow);
+    Exceptions.swallow(() -> portReleaser.accept(stdoutLocalPort));
+    Exceptions.swallow(() -> portReleaser.accept(stderrLocalPort));
   }
 
   private boolean isTerminal(Pod pod) {
@@ -437,18 +464,6 @@ public class KubePodProcess extends Process {
   @Override
   public int exitValue() {
     return getReturnCode(podDefinition);
-  }
-
-  @Override
-  public void destroy() {
-    try {
-      stdoutServerSocket.close();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    } finally {
-      executorService.shutdown();
-      client.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
-    }
   }
 
 }
