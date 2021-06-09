@@ -287,4 +287,7 @@ class SourceShopify(AbstractSource):
             OrderRefunds(**args),
             OrderRisks(**args),
             Transactions(**args),
+            Pages(**args),
+            PriceRules(**args),
+            DiscountCodes(**args)
         ]
