@@ -35,7 +35,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class SurveymonkeyStream(HttpStream, ABC):
     url_base = "https://app.posthog.com/api/"
     primary_key = "id"
-    data_field = "results"
+    data_field = "data"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
@@ -67,12 +67,12 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
     start_date is used to as a min date to filter on.
     """
 
-    state_checkpoint_interval = math.inf
+    state_checkpoint_interval = 1000
 
     def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = start_date
-        self._initial_state = None  # we need to keep it here because next_page_token doesn't accept state argument
+        # place for some vars if needed
+
 
     @property
     @abstractmethod
@@ -86,13 +86,7 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         """
         Return next page token until we reach the page with records older than state/start_date
         """
-        min_state = self._initial_state or self._start_date
-        response_json = response.json()
-        data = response_json.get(self.data_field, [])
-        latest_record = data[-1] if data else None  # records are ordered so we check only last one
-
-        if not latest_record or latest_record[self.cursor_field] > min_state:
-            return super().next_page_token(response=response)
+        return super().next_page_token(response=response)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -109,16 +103,24 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
             if record.get(self.cursor_field) >= stream_state.get(self.cursor_field, self._start_date):
                 yield record
 
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        since_value = stream_state.get(self.cursor_field) or self._start_date
+        since_value = max(since_value, self._start_date)
+        params["after"] = since_value
+        return params
+
 
 class Surveys(IncrementalSurveymonkeyStream):
     """
     Docs: https://posthog.com/docs/api/annotations
+    A source for stream slices. It does not contain useful info itself.
     """
 
     cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
-        return "annotation"
+        return "surveys"
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -126,14 +128,36 @@ class Surveys(IncrementalSurveymonkeyStream):
         return params
 
 
+class SurveysDetails(SurveymonkeyStream):
+    """
+    Actually stream above can just filter, sort and enumarate survey ids.
+    It does not contain the needed information. I will need it as stream slice source
+    in all of endpoints
+    """
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        survey_id = stream_slice["survey_id"]
+        return f"reports/{survey_id}"
+
+
 class SurveyPages(SurveymonkeyStream):
     """
-    Docs: https://posthog.com/docs/api/cohorts
-    normal ASC sorting. But without filters like `since`
     """
 
-    def path(self, **kwargs) -> str:
-        return "cohort"
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        survey_id = stream_slice["survey_id"]
+        return f"surveys{survey_id}/pages"
+
+    def stream_slices(self, **kwargs):
+        campaign_stream = Campaigns(authenticator=self.authenticator)
+        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"campaign_id": campaign["id"]}
+
+
+class SurveyPagesDetails(SurveymonkeyStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        survey_id = stream_slice["survey_id"]
+        page_id = stream_slice['page_id']
+        return f"surveys{survey_id}/pages/{page_id}"
 
 
 class SurveyQuestions(SurveymonkeyStream):
@@ -144,14 +168,27 @@ class SurveyQuestions(SurveymonkeyStream):
     cursor_field = "timestamp"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "event"
+        survey_id = stream_slice["survey_id"]
+        page_id = stream_slice['page_id']
+        return f"surveys{survey_id}/pages/{page_id}/questions"
 
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        since_value = stream_state.get(self.cursor_field) or self._start_date
-        since_value = max(since_value, self._start_date)
-        params["after"] = since_value
-        return params
+    def stream_slices(self, **kwargs):
+        campaign_stream = Campaigns(authenticator=self.authenticator)
+        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"campaign_id": campaign["id"]}
+
+
+class SurveyQuestionsDetails(SurveymonkeyStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        survey_id = stream_slice["survey_id"]
+        page_id = stream_slice['page_id']
+        question_id = stream_slice['question_id']
+        return f"surveys{survey_id}/pages/{page_id}/questions/{question_id}"
+
+    def stream_slices(self, **kwargs):
+        campaign_stream = Campaigns(authenticator=self.authenticator)
+        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"campaign_id": campaign["id"]}
 
 
 class SurveyResponses(IncrementalSurveymonkeyStream):
@@ -162,8 +199,14 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
     data_field = "result"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "event/sessions"
+        survey_id = stream_slice['survey_id']
+        return f"surveys/{survey_id}/responses/bulk"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
         return resp_json.get("pagination")
+
+    def stream_slices(self, **kwargs):
+        campaign_stream = Campaigns(authenticator=self.authenticator)
+        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"campaign_id": campaign["id"]}

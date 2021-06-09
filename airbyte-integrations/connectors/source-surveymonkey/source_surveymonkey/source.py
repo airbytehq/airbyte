@@ -34,7 +34,9 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .streams import (
     Surveys,
+    SurveysDetails,
     SurveyPages,
+    SurveyPagesDetails,
     SurveyQuestions,
     SurveyResponses
 )
@@ -53,7 +55,7 @@ class SourceSurveymonkey(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = TokenAuthenticator(token=config["api_key"])
+        authenticator = TokenAuthenticator(token=config["access_token"])
         return [
             Surveys(authenticator=authenticator, start_date=config["start_date"]),
             SurveyPages(authenticator=authenticator),
