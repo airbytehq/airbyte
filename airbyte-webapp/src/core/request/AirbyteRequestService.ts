@@ -14,6 +14,7 @@ abstract class AirbyteRequestService {
       ...options,
       headers: {
         "Content-Type": "application/json",
+        ...(options?.headers ?? {}),
       },
     });
   }
@@ -39,7 +40,14 @@ abstract class AirbyteRequestService {
       return {} as T;
     }
     if (response.status >= 200 && response.status < 300) {
-      return response.status === 204 ? {} : await response.json();
+      const contentType = response.headers.get("content-type");
+
+      if (contentType === "application/json") {
+        return await response.json();
+      }
+
+      // @ts-ignore needs refactoring of services
+      return response;
     }
     let resultJsonResponse: any;
 
