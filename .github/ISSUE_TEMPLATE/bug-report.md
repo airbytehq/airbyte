@@ -7,15 +7,15 @@ assignees: ''
 
 ---
 <!-- 
-Welcome to Airbyte project!
-We're really glad with your contribution this will help us build 
-an amazing tool. We accept contributions too! You can find them filtering the
-issues by good-first-issues or maybe... try to solve this one? 
-(we could help you debug and pointing the path)
+Welcome to Airbyte!
+We're really appreciate your report and know that this will help us build an 
+amazing tool. If you want to contribute yourself, you can find a good place 
+to start by searching for the good-first-issues label or maybe... by trying 
+to solve this one? (we can help debug this with you!)
 
-Right now we are in alpha, this means  we're releasing versions
-more frequently and answer the questions below as much you can will help 
-us find the problem more faster!
+Right now we are in alpha, so we're releasing versions a lot more frequently than 
+normal. You can help us get to the root of the problem faster by filling out the
+questionnaire below!
 
 You can remove any comment block using these tags <-- info --/>
 
@@ -26,7 +26,7 @@ You can remove any comment block using these tags <-- info --/>
 - **OS**: <!-- macOS, Windows 7 / 10, Ubuntu 18.04 -->
 - **Source Connector and version** (if applicable): <!-- Found in the admin page in the UI in the Source tab. -->
 - **Destination Connector and version** (if applicable): <!-- Found in the admin page in the UI in the Destination tab. -->
-- **Severity**: <!-- Very low / Low / Medium / High / Critical -->
+- **Severity**: <!-- Very Low / Low / Medium / High / Critical -->
 - **Step where error happened**: <!-- Sync / Setup new connection or destination / Update connector -->
 
 ## Current Behavior
@@ -42,12 +42,12 @@ clicking the download logs button at the top right of the logs display window.*
 <!-- You can remove this block.
 
 If you share the complete log you can put them inside the details tag.
-This helps to keep the issue reading easier to read.
+This helps with keeping the issue easy to read.
 e.g:
 <details><summary>LOG</summary> 
 ```
 
-replace this by
+replace this with
 your long log
 output here
 

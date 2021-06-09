@@ -21,12 +21,13 @@ What are you considering doing if you don’t have this integration through Airb
 
 ## Are you willing to submit a PR?
 <!--- 
-We accept contributions! 
-We just released the Airbyte Python Connector Development Framework (CDK)!
-This tool simplify a lot to build a new source connector. 
-If you know Python can be a good way to help us adding a new connector.
-You can enter the #airbyte_cdk Slack channel to get more information about this and
-there we'll help you building your connector!
+We accept and love contributions! 
+We just released the Airbyte Python Connector Development Framework (CDK), 
+which helps simplify the process of building a new source connector. 
+If you are even somewhat familiar with Python, this can be a good way to 
+help us add a new connector! You can check out the #connector-development 
+Slack channel to get more information about building a connector or to receive
+help during the process!
 
 Don't feel pressured in any way.
 We understand if you can't submit a PR and we're tremendously grateful
