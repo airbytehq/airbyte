@@ -72,19 +72,30 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void startTracked() throws Exception {
 
+    var endPoint = s3DestinationConfig.getEndPoint();
+
     AWSCredentials awsCreds = new BasicAWSCredentials(s3DestinationConfig.getAccessKeyId(),s3DestinationConfig.getSecretAccessKey());
+    AmazonS3 s3Client = null;
 
-    ClientConfiguration clientConfiguration = new ClientConfiguration();
-    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+    if (endPoint.equals("aws")){
+      s3Client = AmazonS3ClientBuilder.standard()
+      .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+      .withRegion(s3DestinationConfig.getBucketRegion())
+      .build();
+  
+    }else{
+      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
 
-    AmazonS3 s3Client = AmazonS3ClientBuilder
-                .standard()
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3DestinationConfig.getEndPoint(), s3DestinationConfig.getBucketRegion()))
-                .withPathStyleAccessEnabled(true)
-                .withClientConfiguration(clientConfiguration)
-                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-                .build();
-    
+      s3Client = AmazonS3ClientBuilder
+      .standard()
+      .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, s3DestinationConfig.getBucketRegion()))
+      .withPathStyleAccessEnabled(true)
+      .withClientConfiguration(clientConfiguration)
+      .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+      .build();
+    }
+
     Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
     for (ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {

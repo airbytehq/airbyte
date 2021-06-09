@@ -222,17 +222,27 @@ public abstract class S3StreamCopier implements StreamCopier {
     
     var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
-    ClientConfiguration clientConfiguration = new ClientConfiguration();
-    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+    if (endPoint.equals("aws")){
+      return AmazonS3ClientBuilder.standard()
+      .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+      .withRegion(s3Config.getRegion())
+      .build();
+      
+    }else{
 
-    return AmazonS3ClientBuilder
-    .standard()
-    .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint,region))
-    .withPathStyleAccessEnabled(true)
-    .withClientConfiguration(clientConfiguration)
-    .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-    .build();
+      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+  
+      return AmazonS3ClientBuilder
+      .standard()
+      .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint,region))
+      .withPathStyleAccessEnabled(true)
+      .withClientConfiguration(clientConfiguration)
+      .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+      .build();
+    }
   }
+   
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
                                               String s3FileLocation,
