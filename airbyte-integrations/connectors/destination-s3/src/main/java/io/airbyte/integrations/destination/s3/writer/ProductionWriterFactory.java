@@ -28,9 +28,12 @@ import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
+import io.airbyte.integrations.destination.s3.parquet.JsonSchemaConverter;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
+import org.apache.avro.Schema;
 
 public class ProductionWriterFactory implements S3WriterFactory {
 
@@ -44,9 +47,10 @@ public class ProductionWriterFactory implements S3WriterFactory {
     if (format == S3Format.CSV) {
       return new S3CsvWriter(config, s3Client, configuredStream, uploadTimestamp);
     }
-
     if (format == S3Format.PARQUET) {
-      return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp);
+      AirbyteStream stream = configuredStream.getStream();
+      Schema avroSchema = JsonSchemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
+      return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema);
     }
 
     throw new RuntimeException("Unexpected S3 destination format: " + format);

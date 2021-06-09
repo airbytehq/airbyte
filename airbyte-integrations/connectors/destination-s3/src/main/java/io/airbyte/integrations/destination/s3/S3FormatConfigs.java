@@ -34,7 +34,7 @@ public class S3FormatConfigs {
 
   public static S3FormatConfig getS3FormatConfig(JsonNode config) {
     JsonNode formatConfig = config.get("format");
-    S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText());
+    S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     if (formatType == S3Format.CSV) {
       Flattening flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
