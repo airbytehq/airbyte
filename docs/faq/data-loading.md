@@ -13,7 +13,9 @@ You won't loose data when a sync fails, however, no data will be added or update
 Airbyte will automatically attempt to replicate data 3 times. You can see and export the logs for those attempts in the connection 
 detail page. You can access this page through the Source or Destination detail page.
 
-In the future, you will be able to configure a notification \(email, Slack...\) when a sync fails, with an option to create a 
+You can configure a Slack webhook to warn you when a sync failed.
+
+In the future you will be able to configuration other notification method (email, Sentry) and an option to create a
 GitHub issue with the logs. We’re still working on it, and the purpose would be to help the community and the Airbyte team fix the
 issue as soon as possible, especially if it is a connector issue.
 
