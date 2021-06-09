@@ -24,6 +24,10 @@
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
 
+import com.amazonaws.regions.Regions;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.ClientConfiguration;
+
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -211,13 +215,23 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   public static AmazonS3 getAmazonS3(S3Config s3Config) {
+    var endPoint = s3Config.getEndPoint();
+    var region = s3Config.getRegion();
     var accessKeyId = s3Config.getAccessKeyId();
     var secretAccessKey = s3Config.getSecretAccessKey();
+    
     var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-    return AmazonS3ClientBuilder.standard()
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-        .withRegion(s3Config.getRegion())
-        .build();
+
+    ClientConfiguration clientConfiguration = new ClientConfiguration();
+    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+
+    return AmazonS3ClientBuilder
+    .standard()
+    .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint,region))
+    .withPathStyleAccessEnabled(true)
+    .withClientConfiguration(clientConfiguration)
+    .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+    .build();
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,

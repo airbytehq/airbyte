@@ -27,7 +27,7 @@ package io.airbyte.integrations.destination.s3;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class S3DestinationConfig {
-
+  private final String endPoint;
   private final String bucketName;
   private final String bucketPath;
   private final String bucketRegion;
@@ -36,12 +36,14 @@ public class S3DestinationConfig {
   private final S3FormatConfig formatConfig;
 
   public S3DestinationConfig(
+                             String endPoint,
                              String bucketName,
                              String bucketPath,
                              String bucketRegion,
                              String accessKeyId,
                              String secretAccessKey,
                              S3FormatConfig formatConfig) {
+    this.endPoint = endPoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
@@ -52,6 +54,7 @@ public class S3DestinationConfig {
 
   public static S3DestinationConfig getS3DestinationConfig(JsonNode config) {
     return new S3DestinationConfig(
+        config.get("s3_endpoint").asText(),
         config.get("s3_bucket_name").asText(),
         config.get("s3_bucket_path").asText(),
         config.get("s3_bucket_region").asText(),
@@ -60,6 +63,10 @@ public class S3DestinationConfig {
         S3FormatConfigs.getS3FormatConfig(config));
   }
 
+  public String getEndPoint() {
+    return endPoint;
+  }
+  
   public String getBucketName() {
     return bucketName;
   }

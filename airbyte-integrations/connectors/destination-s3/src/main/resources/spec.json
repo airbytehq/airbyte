@@ -16,6 +16,12 @@
     ],
     "additionalProperties": false,
     "properties": {
+      "s3_endpoint": {
+        "title": "Endpoint",
+        "type": "string",
+        "description": "this is end point url.",
+        "examples": ["localhost:9000"]
+      },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",
         "type": "string",
@@ -30,7 +36,7 @@
       "s3_bucket_region": {
         "title": "S3 Bucket Region",
         "type": "string",
-        "default": "",
+        "default": "ap-southeast-1",
         "description": "The region of the S3 bucket.",
         "enum": [
           "",
@@ -91,7 +97,7 @@
                 "type": "string",
                 "title": "Flattening",
                 "description": "Whether the input json data should be flattened in the output CSV. Please refer to docs for details.",
-                "default": "No flattening",
+                "default": "Root level flattening",
                 "enum": ["No flattening", "Root level flattening"]
               }
             }
