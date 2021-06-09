@@ -32,8 +32,8 @@ import java.util.List;
 
 public class TestDataHolder {
 
-  private static final String DEFAULT_CREATE_TABLE_SQL = "CREATE TABLE %1$s(id integer primary key, test_column %2$s);";
-  private static final String DEFAULT_INSERT_SQL = "INSERT INTO %1$s VALUES (%2$s, %3$s);";
+  private static final String DEFAULT_CREATE_TABLE_SQL = "CREATE TABLE %1$s(id integer primary key, test_column %2$s)";
+  private static final String DEFAULT_INSERT_SQL = "INSERT INTO %1$s VALUES (%2$s, %3$s)";
 
   private final String sourceType;
   private final JsonSchemaPrimitive airbyteType;
@@ -42,6 +42,7 @@ public class TestDataHolder {
   private final String createTablePatternSql;
   private final String insertPatternSql;
   private final String fullSourceDataType;
+  private String nameSpace;
   private long testNumber;
 
   TestDataHolder(String sourceType,
@@ -192,7 +193,11 @@ public class TestDataHolder {
 
   }
 
-  public void setTestNumber(long testNumber) {
+  void setNameSpace(String nameSpace) {
+    this.nameSpace = nameSpace;
+  }
+
+  void setTestNumber(long testNumber) {
     this.testNumber = testNumber;
   }
 
@@ -209,18 +214,18 @@ public class TestDataHolder {
   }
 
   public String getNameWithTestPrefix() {
-    return "test_" + testNumber + "_" + sourceType;
+    return nameSpace + "_" + testNumber + "_" + sourceType;
   }
 
   public String getCreateSqlQuery() {
-    return String.format(createTablePatternSql, getNameWithTestPrefix(), fullSourceDataType);
+    return String.format(createTablePatternSql, (nameSpace != null ? nameSpace + "." : "") + getNameWithTestPrefix(), fullSourceDataType);
   }
 
   public List<String> getInsertSqlQueries() {
     List<String> insertSqls = new ArrayList<>();
     int rowId = 1;
     for (String value : values) {
-      insertSqls.add(String.format(insertPatternSql, getNameWithTestPrefix(), rowId++, value));
+      insertSqls.add(String.format(insertPatternSql, (nameSpace != null ? nameSpace + "." : "") + getNameWithTestPrefix(), rowId++, value));
     }
     return insertSqls;
   }
