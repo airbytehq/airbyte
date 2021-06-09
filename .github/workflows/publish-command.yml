@@ -5,6 +5,10 @@ on:
       connector:
         description: 'Airbyte Connector'
         required: true
+      run-tests:
+        description: 'Should run tests when publishing'
+        required: true
+        default: 'true'
       comment-id:
         description: 'The comment-id of the slash command. Used to update the comment with the status.'
         required: false
@@ -108,7 +112,7 @@ jobs:
           DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
       - run: |
           docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }}
+          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }}
         name: publish ${{ github.event.inputs.connector }}
         id: publish
         env:
