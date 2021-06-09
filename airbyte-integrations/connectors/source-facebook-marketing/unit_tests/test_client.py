@@ -56,7 +56,7 @@ def client_fixture(some_config, requests_mock, fb_account_response):
 
 @pytest.fixture(name="fb_call_rate_response")
 def fb_call_rate_response_fixture():
-    error = {"message": "(#32) Page request limit reached", "type": "OAuthException", "code": 32, "fbtrace_id": "Fz54k3GZrio"}
+    error = {"message": "(#80000) Page request limit reached", "type": "OAuthException", "code": 80000, "fbtrace_id": "Fz54k3GZrio"}
 
     headers = {"x-app-usage": json.dumps({"call_count": 28, "total_time": 25, "total_cputime": 25})}
 
