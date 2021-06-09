@@ -42,5 +42,5 @@ If you can successfully run Airbyte using a MacBook with the M1 chip, let us kno
 
 **Other issues**
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../faq/technical-support.md) section in our docs for common problems.
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploy.md) section in our docs for common problems.
 

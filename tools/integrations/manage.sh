@@ -8,8 +8,8 @@ USAGE="
 Usage: $(basename "$0") <cmd>
 Available commands:
   scaffold
-  build  <integration_root_path>
-  publish  <integration_root_path>
+  build  <integration_root_path> [<run_tests>]
+  publish  <integration_root_path> [<run_tests>]
 "
 
 _check_tag_exists() {
@@ -29,18 +29,27 @@ cmd_build() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
+  local run_tests=$1; shift || run_tests=true
+
   echo "Building $path"
   ./gradlew "$(_to_gradle_path "$path" clean)"
   ./gradlew "$(_to_gradle_path "$path" build)"
 
-  ./gradlew "$(_to_gradle_path "$path" integrationTest)"
+  if [ "$run_tests" = false ] ; then
+    echo "Skipping integration tests..."
+  else
+    echo "Running integration tests..."
+    ./gradlew "$(_to_gradle_path "$path" integrationTest)"
+  fi
 }
 
 cmd_publish() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
-  cmd_build "$path"
+  local run_tests=$1; shift || run_tests=true
+
+  cmd_build "$path" "$run_tests"
 
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)

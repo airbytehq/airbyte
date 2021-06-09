@@ -12,6 +12,7 @@ plugins {
 import org.jsoup.Jsoup;
 
 dependencies {
+    implementation project(':airbyte-db')
     implementation project(':airbyte-config:models')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-workers')
