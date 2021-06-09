@@ -278,11 +278,16 @@ class WebBackendConnectionsHandlerTest {
 
     final ConnectionSchedule schedule = new ConnectionSchedule().units(1L).timeUnit(TimeUnitEnum.MINUTES);
 
+    final UUID newSourceId = UUID.randomUUID();
+    final UUID newDestinationId = UUID.randomUUID();
     final UUID newOperationId = UUID.randomUUID();
     final WebBackendConnectionCreate input = new WebBackendConnectionCreate()
+        .name("testConnectionCreate")
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
+        .sourceId(newSourceId)
+        .destinationId(newDestinationId)
         .operationIds(List.of(newOperationId))
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
@@ -291,9 +296,12 @@ class WebBackendConnectionsHandlerTest {
     final List<UUID> operationIds = List.of(newOperationId);
 
     final ConnectionCreate expected = new ConnectionCreate()
+        .name("testConnectionCreate")
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), NamespaceDefinitionType.class))
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
+        .sourceId(newSourceId)
+        .destinationId(newDestinationId)
         .operationIds(operationIds)
         .status(ConnectionStatus.INACTIVE)
         .schedule(schedule)
@@ -344,7 +352,25 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testForCompleteness() {
+  public void testForConnectionCreateCompleteness() {
+    final Set<String> handledMethods =
+        Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "syncCatalog", "schedule", "status");
+
+    final Set<String> methods = Arrays.stream(ConnectionCreate.class.getMethods())
+        .filter(method -> method.getReturnType() == ConnectionCreate.class)
+        .map(Method::getName)
+        .collect(Collectors.toSet());
+
+    final String message =
+        "If this test is failing, it means you added a field to ConnectionUpdate!\nCongratulations, but you're not done yet...\n"
+            + "\tYou should update WebBackendConnectionsHandler::toConnectionUpdate\n"
+            + "\tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate\n"
+            + "Then you can add the field name here to make this test pass. Cheers!";
+    assertEquals(handledMethods, methods, message);
+  }
+
+  @Test
+  public void testForConnectionUpdateCompleteness() {
     final Set<String> handledMethods =
         Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds");
 
