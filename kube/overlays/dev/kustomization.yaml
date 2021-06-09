@@ -20,5 +20,4 @@ images:
 
 configMapGenerator:
   - name: airbyte-env
-    envs:
-      - .env
+    env: .env
