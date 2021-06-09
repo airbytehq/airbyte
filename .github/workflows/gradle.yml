@@ -34,7 +34,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 Runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2.1.0
+        uses: machulav/ec2-github-runner@v2.2.0
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -46,7 +46,7 @@ jobs:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-build-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-build-runner.outputs.label }} # run the job on the newly created runner
-    # runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
     name: Build Airbyte
     steps:
       - name: Checkout Airbyte
@@ -114,8 +114,9 @@ jobs:
         if: success() && github.ref == 'refs/heads/master'
         run: ./tools/site/link_checker.sh check_docs
 
-      - name: Get Docker Space
-        run: docker run --rm busybox df -h
+# This is only required on the usual github runner. The usual runner does not contain enough disk space for our use.
+#      - name: Get Docker Space
+#        run: docker run --rm busybox df -h
 
       - name: Build Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
@@ -210,7 +211,7 @@ jobs:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
-    # runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
     name: Run Acceptance Tests
     steps:
       - name: Checkout Airbyte

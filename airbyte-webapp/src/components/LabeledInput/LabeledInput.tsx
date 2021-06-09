@@ -1,6 +1,6 @@
 import React from "react";
 
-import Input, { InputProps } from "components/Input";
+import { Input, InputProps } from "components/base";
 import { ControlLabels } from "components/LabeledControl";
 
 type IProps = {
