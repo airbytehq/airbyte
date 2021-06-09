@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useFetcher } from "rest-hooks";
 
-import Button from "components/Button";
+import { Button } from "components";
 import CreateConnectorModal from "./CreateConnectorModal";
 import SourceDefinitionResource from "core/resources/SourceDefinition";
 import config from "config";

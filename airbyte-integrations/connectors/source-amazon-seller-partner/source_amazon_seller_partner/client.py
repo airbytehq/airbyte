@@ -26,11 +26,12 @@ import json
 import pkgutil
 import time
 from datetime import date, datetime, timedelta
-from typing import DefaultDict, Dict, Generator
+from typing import DefaultDict, Dict, Generator, Any, MutableMapping, Tuple
 
 import dateutil
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, Type
+from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
 from .amazon import AmazonClient
@@ -73,7 +74,9 @@ class BaseClient:
             streams.append(AirbyteStream.parse_obj(raw_schema))
         return streams
 
-    def read_stream(self, logger: AirbyteLogger, stream_name: str, state: DefaultDict[str, any]) -> Generator[AirbyteMessage, None, None]:
+    def read_stream(
+        self, logger: AirbyteLogger, stream_name: str, state: MutableMapping[str, Any]
+    ) -> Generator[AirbyteMessage, None, None]:
         cursor_field = self._amazon_client.get_cursor_for_stream(stream_name)
         cursor_value = self._get_cursor_or_none(state, stream_name, cursor_field) or self.start_date
 
@@ -97,7 +100,7 @@ class BaseClient:
             HAS_NEXT = True if NEXT_TOKEN else False
             PAGE = PAGE + 1
             for order in orders:
-                current_date = dateutil.parser.parse(order[cursor_field]).date().isoformat()
+                current_date = parser.parse(order[cursor_field]).date().isoformat()
                 cursor_value = max(current_date, cursor_value) if cursor_value else current_date
                 yield self._record(stream=stream_name, data=order)
 
@@ -108,7 +111,9 @@ class BaseClient:
             # Sleep for 2 seconds
             time.sleep(2)
 
-    def read_reports(self, logger: AirbyteLogger, stream_name: str, state: DefaultDict[str, any]) -> Generator[AirbyteMessage, None, None]:
+    def read_reports(
+        self, logger: AirbyteLogger, stream_name: str, state: MutableMapping[str, Any]
+    ) -> Generator[AirbyteMessage, None, None]:
         cursor_field = self._amazon_client.get_cursor_for_stream(stream_name)
         cursor_value = self._get_cursor_or_none(state, stream_name, cursor_field) or self.start_date
 
@@ -191,7 +196,7 @@ class BaseClient:
         return (date.fromisoformat(current_date) + relativedelta(months=1)).isoformat()
 
     @staticmethod
-    def _get_date_parameters(current_date: str) -> str:
+    def _get_date_parameters(current_date: str) -> Tuple[str, str]:
         start_date = date.fromisoformat(current_date)
         end_date = start_date + relativedelta(months=1)
         if end_date > date.today():
@@ -199,17 +204,17 @@ class BaseClient:
         return start_date.isoformat(), end_date.isoformat()
 
     @staticmethod
-    def _get_cursor_or_none(state: DefaultDict[str, any], stream_name: str, cursor_name: str) -> any:
+    def _get_cursor_or_none(state: MutableMapping[str, Any], stream_name: str, cursor_name: str) -> Any:
         if state and stream_name in state and cursor_name in state[stream_name]:
             return state[stream_name][cursor_name]
         else:
             return None
 
     @staticmethod
-    def _record(stream: str, data: Dict[str, any]) -> AirbyteMessage:
+    def _record(stream: str, data: Dict[str, Any]) -> AirbyteMessage:
         now = int(datetime.now().timestamp()) * 1000
         return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=now))
 
     @staticmethod
-    def _state(data: Dict[str, any]) -> AirbyteMessage:
+    def _state(data: MutableMapping[str, Any]) -> AirbyteMessage:
         return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))

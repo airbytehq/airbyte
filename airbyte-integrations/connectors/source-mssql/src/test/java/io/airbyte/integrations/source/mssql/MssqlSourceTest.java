@@ -36,7 +36,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.SQLException;
 import java.util.List;
