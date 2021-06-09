@@ -35,11 +35,11 @@ cmd_build() {
   ./gradlew "$(_to_gradle_path "$path" clean)"
   ./gradlew "$(_to_gradle_path "$path" build)"
 
-  if [ "$run_tests" = true ] ; then
+  if [ "$run_tests" = false ] ; then
+    echo "Skipping integration tests..."
+  else
     echo "Running integration tests..."
     ./gradlew "$(_to_gradle_path "$path" integrationTest)"
-  else
-    echo "Skipping integration tests..."
   fi
 }
 
