@@ -53,10 +53,22 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
 
   private final List<TestDataHolder> testDataHolders = new ArrayList<>();
 
+  /**
+   * The column name will be used for a PK column in the test tables. Override it if default name is
+   * not valid for your source.
+   *
+   * @return Id column name
+   */
   protected String getIdColumnName() {
     return "id";
   }
 
+  /**
+   * The column name will be used for a test column in the test tables. Override it if default name is
+   * not valid for your source.
+   *
+   * @return Test column name
+   */
   protected String getTestColumnName() {
     return "test_column";
   }
