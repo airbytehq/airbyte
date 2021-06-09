@@ -197,6 +197,8 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
     testDataHolders.add(test);
     test.setTestNumber(testDataHolders.stream().filter(t -> t.getSourceType().equals(test.getSourceType())).count());
     test.setNameSpace(getNameSpace());
+    test.setIdColumnName(getIdColumnName());
+    test.setTestColumnName(getTestColumnName());
   }
 
 }
