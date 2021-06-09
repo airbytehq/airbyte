@@ -60,7 +60,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -137,6 +137,8 @@ class BigQueryDestinationTest {
         .getService();
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+    final String datasetLocation = "EU";
+
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
     MESSAGE_TASKS1.getRecord().setNamespace(datasetId);
@@ -156,6 +158,7 @@ class BigQueryDestinationTest {
         .put(BigQueryDestination.CONFIG_PROJECT_ID, projectId)
         .put(BigQueryDestination.CONFIG_CREDS, credentialsJsonString)
         .put(BigQueryDestination.CONFIG_DATASET_ID, datasetId)
+        .put(BigQueryDestination.CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
     tornDown = false;
@@ -194,7 +197,7 @@ class BigQueryDestinationTest {
   }
 
   @Test
-  void testSpec() throws IOException {
+  void testSpec() throws Exception {
     final ConnectorSpecification actual = new BigQueryDestination().spec();
     final String resourceString = MoreResources.readResource("spec.json");
     final ConnectorSpecification expected = Jsons.deserialize(resourceString, ConnectorSpecification.class);

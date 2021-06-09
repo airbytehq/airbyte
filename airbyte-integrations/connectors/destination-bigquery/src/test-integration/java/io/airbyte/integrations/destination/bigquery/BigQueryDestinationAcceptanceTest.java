@@ -68,6 +68,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   private static final String CONFIG_DATASET_ID = "dataset_id";
   private static final String CONFIG_PROJECT_ID = "project_id";
+  private static final String CONFIG_DATASET_LOCATION = "dataset_location";
   private static final String CONFIG_CREDS = "credentials_json";
 
   private BigQuery bigquery;
@@ -187,6 +188,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
+    final String datasetLocation = "US";
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
 
@@ -194,6 +196,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)
         .put(CONFIG_DATASET_ID, datasetId)
+        .put(CONFIG_DATASET_LOCATION, datasetLocation)
         .build());
 
     final ServiceAccountCredentials credentials =
@@ -204,7 +207,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .build()
         .getService();
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).build();
+    final DatasetInfo datasetInfo =
+        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
     dataset = bigquery.create(datasetInfo);
 
     tornDown = false;

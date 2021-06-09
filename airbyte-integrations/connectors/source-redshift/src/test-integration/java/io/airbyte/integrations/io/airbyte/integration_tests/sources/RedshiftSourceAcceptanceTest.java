@@ -34,10 +34,12 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -57,7 +59,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     config = getStaticConfig();
 
     database = Databases.createJdbcDatabase(
@@ -115,9 +117,9 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     return CatalogHelpers.createConfiguredAirbyteCatalog(
         streamName,
         schemaName,
-        Field.of("c_custkey", Field.JsonSchemaPrimitive.NUMBER),
-        Field.of("c_name", Field.JsonSchemaPrimitive.STRING),
-        Field.of("c_nation", Field.JsonSchemaPrimitive.STRING));
+        Field.of("c_custkey", JsonSchemaPrimitive.NUMBER),
+        Field.of("c_name", JsonSchemaPrimitive.STRING),
+        Field.of("c_nation", JsonSchemaPrimitive.STRING));
   }
 
   @Override

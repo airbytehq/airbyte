@@ -63,7 +63,7 @@ public class JobSubmitter implements Runnable {
   @Override
   public void run() {
     try {
-      LOGGER.info("Running job-submitter...");
+      LOGGER.debug("Running job-submitter...");
 
       final Optional<Job> nextJob = persistence.getNextJob();
 
@@ -73,7 +73,7 @@ public class JobSubmitter implements Runnable {
         LOGGER.info("Job-Submitter Summary. Submitted job with scope {}", job.getScope());
       });
 
-      LOGGER.info("Completed Job-Submitter...");
+      LOGGER.debug("Completed Job-Submitter...");
     } catch (Throwable e) {
       LOGGER.error("Job Submitter Error", e);
     }
