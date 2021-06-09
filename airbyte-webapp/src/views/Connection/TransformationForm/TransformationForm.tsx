@@ -5,8 +5,9 @@ import * as yup from "yup";
 import { useFormik } from "formik";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
-import { Transformation } from "core/domain/connector/operation";
-import { operationService } from "core/domain/connector/OperationService";
+import { Transformation } from "core/domain/connection/operation";
+import { operationService } from "core/domain/connection/OperationService";
+import { equal } from "utils/objects";
 
 const Content = styled.div`
   display: flex;
@@ -48,7 +49,7 @@ const validationSchema = yup.object({
       gitRepoUrl: yup.string().required("form.empty.error"),
       dockerImage: yup.string().required("form.empty.error"),
       dbtArguments: yup.string().required("form.empty.error"),
-      gitRepoBranch: yup.string(),
+      gitRepoBranch: yup.string().nullable(),
     }),
   }),
 });
@@ -137,6 +138,8 @@ const TransformationForm: React.FC<TransformationProps> = ({
           onClick={() => formik.handleSubmit()}
           type="button"
           data-test-id="done-button"
+          isLoading={formik.isSubmitting}
+          disabled={!formik.dirty || equal(transformation, formik.values)}
         >
           <FormattedMessage id="form.saveTransformation" />
         </SmallButton>

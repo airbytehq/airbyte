@@ -184,7 +184,7 @@ class WebBackendConnectionsHandlerTest {
         .schedule(connectionRead.getSchedule())
         .source(sourceRead)
         .destination(destinationRead)
-        .operations(operationReadList)
+        .operations(operationReadList.getOperations())
         .latestSyncJobCreatedAt(now.getEpochSecond())
         .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false);

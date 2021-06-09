@@ -12,7 +12,7 @@ import {
   Operation,
   OperatorType,
   Transformation,
-} from "core/domain/connector/operation";
+} from "core/domain/connection/operation";
 
 type ConnectionFormValues = ValuesProps;
 
@@ -106,7 +106,9 @@ function mapFormPropsToOperation(
         name: "Normalization",
         operatorConfiguration: {
           operatorType: OperatorType.Normalization,
-          normalization: values.normalization,
+          normalization: {
+            option: values.normalization,
+          },
         },
       });
     }

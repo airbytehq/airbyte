@@ -13,7 +13,7 @@ import useRouter from "../useRouterHook";
 import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspaceHook";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { Operation } from "core/domain/connector/operation";
+import { Operation } from "core/domain/connection/operation";
 
 export type ValuesProps = {
   frequency: string;
@@ -41,6 +41,7 @@ type UpdateConnection = {
     units: number;
     timeUnit: string;
   } | null;
+  operations?: Operation[];
   withRefreshedCatalog?: boolean;
 };
 
@@ -168,12 +169,8 @@ const useConnection = (): {
   };
 
   const updateConnection = async ({
-    connectionId,
-    syncCatalog,
-    status,
-    schedule,
-    prefix,
     withRefreshedCatalog,
+    ...formValues
   }: UpdateConnection) => {
     const withRefreshedCatalogCleaned = withRefreshedCatalog
       ? { withRefreshedCatalog }
@@ -182,11 +179,7 @@ const useConnection = (): {
     return await updateConnectionResource(
       {},
       {
-        connectionId,
-        syncCatalog,
-        status,
-        prefix,
-        schedule,
+        ...formValues,
         ...withRefreshedCatalogCleaned,
       }
     );

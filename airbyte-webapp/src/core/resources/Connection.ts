@@ -13,7 +13,7 @@ import { Source } from "./Source";
 import { Destination } from "./Destination";
 
 import BaseResource from "./BaseResource";
-import { Operation } from "../domain/connector/operation";
+import { Operation } from "core/domain/connection/operation";
 
 export type ScheduleProperties = {
   units: number;

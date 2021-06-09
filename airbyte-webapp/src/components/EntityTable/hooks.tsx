@@ -20,6 +20,7 @@ const useSyncActions = (): {
       syncCatalog: connection.syncCatalog,
       prefix: connection.prefix,
       schedule: connection.schedule || null,
+      operations: connection.operations,
       status:
         connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
     });

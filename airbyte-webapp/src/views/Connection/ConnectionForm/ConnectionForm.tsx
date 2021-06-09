@@ -33,7 +33,7 @@ import {
   Operation,
   OperatorType,
   Transformation,
-} from "core/domain/connector/operation";
+} from "core/domain/connection/operation";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -104,7 +104,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   additionalSchemaControl,
   source,
   destination,
-  operations,
+  operations = [],
   ...props
 }) => {
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
@@ -118,17 +118,17 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const transformations: Transformation[] | undefined = useMemo(
     () =>
-      operations?.filter(
+      operations.filter(
         (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
       ) as Transformation[],
     [operations]
   );
   const normalization = useMemo(
     () =>
-      (operations?.find(
+      (operations.find(
         (op) =>
           op.operatorConfiguration.operatorType === OperatorType.Normalization
-      ) as Normalization)?.operatorConfiguration?.normalization,
+      ) as Normalization)?.operatorConfiguration?.normalization?.option,
     [operations]
   );
 
@@ -246,12 +246,14 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             <FormattedMessage id="form.normalizationTransformation" />
           </SectionTitle>
           <Field name="normalization" component={NormalizationField} />
-          <FieldArray
-            name="transformations"
-            defaultTransformation={DEFAULT_TRANSFORMATION}
-            // @ts-ignore all additional props are passed to components
-            component={TransformationField}
-          />
+          <FieldArray name="transformations">
+            {(formProps) => (
+              <TransformationField
+                defaultTransformation={DEFAULT_TRANSFORMATION}
+                {...formProps}
+              />
+            )}
+          </FieldArray>
           {!isEditMode ? (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}

@@ -4,23 +4,23 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 
+import { Button } from "components";
 import ContentCard from "components/ContentCard";
 import FrequencyConfig from "data/FrequencyConfig.json";
 import useConnection, {
   useConnectionLoad,
   ValuesProps,
 } from "components/hooks/services/useConnectionHook";
-import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import DeleteBlock from "components/DeleteBlock";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import { equal } from "utils/objects";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
-import { Button } from "components";
 import LoadingSchema from "components/LoadingSchema";
-import EnabledControl from "./EnabledControl";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { SourceDefinition } from "core/resources/SourceDefinition";
+
+import { equal } from "utils/objects";
+import EnabledControl from "./EnabledControl";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -98,13 +98,6 @@ const SettingsView: React.FC<IProps> = ({
     activeUpdatingSchemaMode
   );
 
-  // TODO: check if it makes more sense to move it to frequencyform
-  const {
-    isLoading: loadingDestination,
-  } = useDestinationDefinitionSpecificationLoad(
-    connection?.destination?.destinationDefinitionId ?? null
-  );
-
   const onDelete = useCallback(() => deleteConnection({ connectionId }), [
     deleteConnection,
     connectionId,
@@ -129,10 +122,11 @@ const SettingsView: React.FC<IProps> = ({
     try {
       await updateConnection({
         connectionId: connectionId,
-        syncCatalog: values.syncCatalog,
         status: connection?.status || "",
+        syncCatalog: values.syncCatalog,
         schedule: frequencyData?.config || null,
         prefix: values.prefix,
+        operations: values.withOperations,
         withRefreshedCatalog: activeUpdatingSchemaMode,
       });
 
@@ -197,7 +191,7 @@ const SettingsView: React.FC<IProps> = ({
             <TitleContainer hasButton={!activeUpdatingSchemaMode}>
               <FormattedMessage id="connection.connectionSettings" />{" "}
             </TitleContainer>
-            {!connection ? null : (
+            {connection && (
               <EnabledControl
                 connection={connection}
                 frequencyText={frequencyText}
@@ -206,7 +200,7 @@ const SettingsView: React.FC<IProps> = ({
           </Title>
         }
       >
-        {!isLoadingConnection && !loadingDestination && connection ? (
+        {!isLoadingConnection && connection ? (
           <ConnectionForm
             isEditMode
             syncCatalog={connection.syncCatalog}

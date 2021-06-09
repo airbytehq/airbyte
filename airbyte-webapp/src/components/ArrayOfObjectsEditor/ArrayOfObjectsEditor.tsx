@@ -62,7 +62,7 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
 
   if (isEditMode) {
     const item =
-      editableItemIndex && typeof editableItemIndex === "number"
+      typeof editableItemIndex === "number"
         ? items[editableItemIndex]
         : undefined;
 

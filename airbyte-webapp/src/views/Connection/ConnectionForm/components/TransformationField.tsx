@@ -5,7 +5,7 @@ import { ArrayHelpers, FormikProps } from "formik";
 import TransformationForm from "views/Connection/TransformationForm";
 import GroupControls from "components/GroupControls";
 import ArrayOfObjectsEditor from "components/ArrayOfObjectsEditor";
-import { Transformation } from "core/domain/connector/operation";
+import { Transformation } from "core/domain/connection/operation";
 import { isDefined } from "utils/common";
 
 const TransformationField: React.FC<

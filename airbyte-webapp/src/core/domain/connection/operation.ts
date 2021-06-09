@@ -22,7 +22,9 @@ export interface Normalization extends Operation {
 
 export interface NormalizationOperationConfiguration {
   operatorType: OperatorType.Normalization;
-  normalization: NormalizationType;
+  normalization: {
+    option: NormalizationType;
+  };
 }
 
 export interface DbtConfiguration {

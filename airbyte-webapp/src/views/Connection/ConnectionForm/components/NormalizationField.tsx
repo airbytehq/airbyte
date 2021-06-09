@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { FieldProps } from "formik";
 
 import { LabeledRadioButton, Link } from "components";
-import { NormalizationType } from "core/domain/connector/operation";
+import { NormalizationType } from "core/domain/connection/operation";
 
 const Normalization = styled.div`
   margin: 16px 0;
