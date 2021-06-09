@@ -8,8 +8,8 @@ USAGE="
 Usage: $(basename "$0") <cmd>
 Available commands:
   scaffold
-  build  <integration_root_path> [<skip_tests>]
-  publish  <integration_root_path> [<skip_tests>]
+  build  <integration_root_path> [<run_tests>]
+  publish  <integration_root_path> [<run_tests>]
 "
 
 _check_tag_exists() {
@@ -29,13 +29,13 @@ cmd_build() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
-  local skip_tests=$1; shift || skip_tests=false
+  local run_tests=$1; shift || run_tests=true
 
   echo "Building $path"
   ./gradlew "$(_to_gradle_path "$path" clean)"
   ./gradlew "$(_to_gradle_path "$path" build)"
 
-  if [ "$skip_tests" = false ] ; then
+  if [ "$run_tests" = true ] ; then
     echo "Running integration tests..."
     ./gradlew "$(_to_gradle_path "$path" integrationTest)"
   else
@@ -47,9 +47,9 @@ cmd_publish() {
   local path=$1; shift || error "Missing target (root path of integration) $USAGE"
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
-  local skip_tests=$1; shift || skip_tests=false
+  local run_tests=$1; shift || run_tests=true
 
-  cmd_build "$path" "$skip_tests"
+  cmd_build "$path" "$run_tests"
 
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
   local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
