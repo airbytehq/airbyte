@@ -414,10 +414,12 @@ public class KubePodProcess extends Process {
 
   @Override
   public void destroy() {
+    LOGGER.info("Destroying Kube process: {}", podDefinition.getMetadata().getName());
     try {
       client.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
     } finally {
       close();
+      LOGGER.info("Destroyed Kube process: {}", podDefinition.getMetadata().getName());
     }
   }
 
@@ -445,6 +447,7 @@ public class KubePodProcess extends Process {
 
   private int getReturnCode(Pod pod) {
     Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).get();
+    // If the pod cannot be found, it either means the pod was alrady termianted, or wasn't started up in the first place.
     if (!isTerminal(refreshedPod)) {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
