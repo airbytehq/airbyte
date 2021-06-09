@@ -167,7 +167,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         frequency: frequencyValue || "",
         prefix: prefixValue || "",
         transformations: transformations ?? [],
-        normalization: normalization ?? NormalizationType.RAW,
+        normalization: normalization ?? NormalizationType.BASIC,
       }}
       validateOnBlur={true}
       validateOnChange={true}
