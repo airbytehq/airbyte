@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccessKeyId": {
+      "type": "string"
+    },
+    "CloudTrailEvent": {
+      "type": "string"
+    },
+    "EventId": {
+      "type": "string"
+    },
+    "EventName": {
+      "type": "string"
+    },
+    "EventSource": {
+      "type": "string"
+    },
+    "EventTime": {
+      "type": "string"
+    },
+    "ReadOnly": {
+      "type": "string"
+    },
+    "Resources": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "ResourceName": {
+            "type": "string"
+          },
+          "ResourceType": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Username": {
+      "type": "string"
+    }
+  }
+}
