@@ -80,8 +80,9 @@ public abstract class SourceComprehensiveTest extends SourceAbstractTest {
   }
 
   /**
-   * Provide a source namespace.
-   * It's allocated place for table creation. It also known ask "Database Schema" or "Dataset"
+   * Provide a source namespace. It's allocated place for table creation. It also known ask "Database
+   * Schema" or "Dataset"
+   *
    * @return source name space
    */
   protected abstract String getNameSpace();
