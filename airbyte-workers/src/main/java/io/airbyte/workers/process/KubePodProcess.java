@@ -331,6 +331,8 @@ public class KubePodProcess extends Process {
 
     LOGGER.info("Copying files...");
     Map<String, String> filesWithSuccess = new HashMap<>(files);
+
+    // we always copy the empty success file to ensure our waiting step can detect init container in RUNNING
     filesWithSuccess.put(SUCCESS_FILE_NAME, "");
     copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
 
