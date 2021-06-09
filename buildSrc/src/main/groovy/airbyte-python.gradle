@@ -1,6 +1,7 @@
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Exec
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
 class AirbytePythonConfiguration {
@@ -11,11 +12,11 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         def extension = project.extensions.create('airbytePython', AirbytePythonConfiguration)
-
+        def venvDirectoryName = '.venv'
         project.plugins.apply 'ru.vyarus.use-python'
 
         project.python {
-            envPath = '.venv'
+            envPath = venvDirectoryName
             minPythonVersion = '3.7'
             scope = 'VIRTUALENV'
             installVirtualenv = true
@@ -121,6 +122,18 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn project.installTestReqs
             dependsOn project.unitTest
         }
+
+        // Add a task that allows cleaning up venvs to every python project
+        project.task('cleanPythonVenv', type: Exec){
+            commandLine 'rm'
+            args '-rf', "$project.projectDir.absolutePath/$venvDirectoryName"
+        }
+
+        // Add a task which can be run at the root project level to delete all python venvs
+        if (!project.rootProject.hasProperty('cleanPythonVenvs')){
+            project.rootProject.task('cleanPythonVenvs')
+        }
+        project.rootProject.cleanPythonVenvs.dependsOn(project.cleanPythonVenv)
 
         project.assemble.dependsOn project.airbytePythonApply
         project.assemble.dependsOn project.airbytePythonTest
