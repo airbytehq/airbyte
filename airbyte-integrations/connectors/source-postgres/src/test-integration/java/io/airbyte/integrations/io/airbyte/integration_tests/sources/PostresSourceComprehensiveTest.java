@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,6 +76,10 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
     return database;
   }
 
+  @Override
+  protected String getNameSpace() {
+    return "test";
+  }
 
   @Override
   protected String getImageName() {
@@ -73,8 +101,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
             .addExpectedValues("-9223372036854775808", "9223372036854775807", "0", null)
@@ -83,30 +109,24 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigserial")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .addExpectedValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .build());
 
-    //BUG https://github.com/airbytehq/airbyte/issues/3932
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("bit")
-//            .createTablePatternSql(
-//                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
-//            .fullSourceDataType("BIT(3)")
-//            .airbyteType(JsonSchemaPrimitive.NUMBER)
-//            .addInsertValues("B'101'")
-//            .addExpectedValues("101")
-//            .build());
+    // BUG https://github.com/airbytehq/airbyte/issues/3932
+    // addDataTypeTestData(
+    // TestDataHolder.builder()
+    // .sourceType("bit")
+    // .fullSourceDataType("BIT(3)")
+    // .airbyteType(JsonSchemaPrimitive.NUMBER)
+    // .addInsertValues("B'101'")
+    // .addExpectedValues("101")
+    // .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit_varying")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .fullSourceDataType("BIT VARYING(5)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("B'101'", "null")
@@ -116,8 +136,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("boolean")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.BOOLEAN)
             .addInsertValues("true", "'yes'", "'1'", "false", "'no'", "'0'", "null")
             .addExpectedValues("true", "true", "true", "false", "false", "false", null)
@@ -126,8 +144,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bytea")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.OBJECT)
             .addInsertValues("decode('1234', 'hex')")
             .addExpectedValues("EjQ=")
@@ -136,8 +152,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("character")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'a'", "'*'", "null")
             .addExpectedValues("a", "*", null)
@@ -147,8 +161,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("character")
             .fullSourceDataType("character(8)")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'{asb123}'", "'{asb12}'")
             .addExpectedValues("{asb123}", "{asb12} ")
@@ -157,8 +169,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
                 "''", "null")
@@ -170,8 +180,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("varchar")
             .fullSourceDataType("character(12)")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
                 "''", "null")
@@ -182,8 +190,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("cidr")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "'192.168.100.128/25'", "'192.168/24'", "'192.168.1'",
                 "'128.1'", "'2001:4f8:3:ba::/64'")
@@ -202,12 +208,13 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .createTablePatternSql(
-                "CREATE TABLE test.%1$s(id integer primary key, test_column %2$s);")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'1999-01-08'")
-            .addExpectedValues("1999-01-08T00:00:00Z")
+            .addInsertValues("'1999-01-08'", "null") // "'199-10-10 BC'"
+            // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it doesnt suppose to handle BC
+            // dates
+            .addExpectedValues("1999-01-08T00:00:00Z", null) // , "199-10-10 BC")
             .build());
 
   }
+
 }
