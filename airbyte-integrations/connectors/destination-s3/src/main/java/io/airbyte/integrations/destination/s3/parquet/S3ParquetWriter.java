@@ -87,9 +87,16 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
         String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
     Path path = new Path(uri);
 
+    S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
+        .withCompressionCodec(formatConfig.getCompressionCodec())
+        .withRowGroupSize(formatConfig.getBlockSize())
+        .withMaxPaddingSize(formatConfig.getMaxPaddingSize())
+        .withPageSize(formatConfig.getPageSize())
+        .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
+        .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
         .build();
   }
 

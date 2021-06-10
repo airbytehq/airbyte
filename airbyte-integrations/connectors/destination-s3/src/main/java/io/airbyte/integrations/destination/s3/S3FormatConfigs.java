@@ -28,7 +28,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
+import io.airbyte.integrations.destination.s3.parquet.S3ParquetConstants;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 public class S3FormatConfigs {
 
@@ -42,10 +44,40 @@ public class S3FormatConfigs {
     }
 
     if (formatType == S3Format.PARQUET) {
-      return new S3ParquetFormatConfig();
+      CompressionCodecName compressionCodec = CompressionCodecName.valueOf(withDefault(formatConfig, "compression_codec", S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name()).toUpperCase());
+      int blockSize = withDefault(formatConfig, "block_size_mb", S3ParquetConstants.DEFAULT_BLOCK_SIZE_MB);
+      int maxPaddingSize = withDefault(formatConfig, "max_padding_size_mb", S3ParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB);
+      int pageSize = withDefault(formatConfig, "page_size_kb", S3ParquetConstants.DEFAULT_PAGE_SIZE_KB);
+      int dictionaryPageSize = withDefault(formatConfig, "dictionary_page_size_kb", S3ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB);
+      boolean dictionaryEncoding = withDefault(formatConfig, "dictionary_encoding", S3ParquetConstants.DEFAULT_DICTIONARY_ENCODING);
+      return new S3ParquetFormatConfig(compressionCodec, blockSize, maxPaddingSize, pageSize, dictionaryPageSize, dictionaryEncoding);
     }
 
     throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
+  }
+
+  private static String withDefault(JsonNode config, String property, String defaultValue) {
+    JsonNode value = config.get(property);
+    if (value == null || value.isNull()) {
+      return defaultValue;
+    }
+    return value.asText();
+  }
+
+  private static int withDefault(JsonNode config, String property, int defaultValue) {
+    JsonNode value = config.get(property);
+    if (value == null || value.isNull()) {
+      return defaultValue;
+    }
+    return value.asInt();
+  }
+
+  private static boolean withDefault(JsonNode config, String property, boolean defaultValue) {
+    JsonNode value = config.get(property);
+    if (value == null || value.isNull()) {
+      return defaultValue;
+    }
+    return value.asBoolean();
   }
 
 }

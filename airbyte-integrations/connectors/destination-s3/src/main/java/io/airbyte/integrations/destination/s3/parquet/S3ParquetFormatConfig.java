@@ -26,12 +26,53 @@ package io.airbyte.integrations.destination.s3.parquet;
 
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 public class S3ParquetFormatConfig implements S3FormatConfig {
+
+  private final CompressionCodecName compressionCodec;
+  private final int blockSize;
+  private final int maxPaddingSize;
+  private final int pageSize;
+  private final int dictionaryPageSize;
+  private final boolean dictionaryEncoding;
+
+  public S3ParquetFormatConfig(CompressionCodecName compressionCodec, int blockSizeMb, int maxPaddingSizeMb, int pageSizeKb, int dictionaryPageSizeKb, boolean dictionaryEncoding) {
+    this.compressionCodec = compressionCodec;
+    this.blockSize = blockSizeMb * 1024 * 1024;
+    this.maxPaddingSize = maxPaddingSizeMb * 1024 * 1024;
+    this.pageSize = pageSizeKb * 1024;
+    this.dictionaryPageSize = dictionaryPageSizeKb * 1024;
+    this.dictionaryEncoding = dictionaryEncoding;
+  }
 
   @Override
   public S3Format getFormat() {
     return S3Format.PARQUET;
+  }
+
+  public CompressionCodecName getCompressionCodec() {
+    return compressionCodec;
+  }
+
+  public int getBlockSize() {
+    return blockSize;
+  }
+
+  public int getMaxPaddingSize() {
+    return maxPaddingSize;
+  }
+
+  public int getPageSize() {
+    return pageSize;
+  }
+
+  public int getDictionaryPageSize() {
+    return dictionaryPageSize;
+  }
+
+  public boolean isDictionaryEncoding() {
+    return dictionaryEncoding;
   }
 
 }
