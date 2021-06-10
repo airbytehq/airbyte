@@ -115,14 +115,12 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const formatMessage = useIntl().formatMessage;
 
+  const supportsNormalization = destDefinition.supportsNormalization;
+  const supportsTransformations = destDefinition.supportsDbt;
+
   const initialSchema = useInitialSchema(props.syncCatalog);
-  const frequencies = useFrequencyDropdownData();
 
-  // TODO: pick from destinations when PR is merged
-  const supportsNormalization = true;
-  const supportsTransformations = true;
-
-  const transformations: Transformation[] | undefined = useMemo(
+  const initialTransformations: Transformation[] | undefined = useMemo(
     () =>
       operations.filter(
         (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
@@ -130,7 +128,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     [operations]
   );
 
-  const normalization = useMemo(() => {
+  const initialNormalization: NormalizationType | undefined = useMemo(() => {
     const normalization = (operations.find(
       (op) =>
         op.operatorConfiguration.operatorType === OperatorType.Normalization
@@ -141,7 +139,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       return NormalizationType.RAW;
     }
 
-    return normalization ?? NormalizationType.BASIC;
+    return normalization;
   }, [operations]);
 
   const onFormSubmit = useCallback(
@@ -177,8 +175,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     [editSchemeMode, initialSchema, isEditMode, onSubmit, operations]
   );
 
-  const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
-
   const initialValues: FormValues = {
     syncCatalog: initialSchema,
     frequency: frequencyValue || "",
@@ -186,12 +182,16 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   };
 
   if (supportsTransformations) {
-    initialValues.transformations = transformations ?? [];
+    initialValues.transformations = initialTransformations ?? [];
   }
 
   if (supportsNormalization) {
-    initialValues.normalization = normalization;
+    initialValues.normalization =
+      initialNormalization ?? NormalizationType.BASIC;
   }
+
+  const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
+  const frequencies = useFrequencyDropdownData();
 
   return (
     <Formik
