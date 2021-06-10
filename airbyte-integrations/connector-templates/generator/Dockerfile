@@ -8,5 +8,4 @@ ENV ENV_GID $GID
 RUN mkdir -p /airbyte
 WORKDIR /airbyte/airbyte-integrations/connector-templates/generator
 
-RUN npm install npm@7 --silent --no-update-notifier
-CMD npm run generate && chown -R $ENV_UID:$ENV_GID /airbyte/*
+CMD npm install --silent --no-update-notifier && npm run generate && chown -R $ENV_UID:$ENV_GID /airbyte/*
