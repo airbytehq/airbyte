@@ -154,42 +154,38 @@ class StreamAPI(ABC):
         # This block extends TicketsAPI Stream to overcome '300 page' server error.
 
         if stream == "Tickets":
-            page_break = 300  # the maximum page allowed to pull during pagination.
+            ticket_paginate_limit = 300  # the maximum page allowed to pull during pagination.
 
-            for page in range(1, self.maximum_page):
-                if page < page_break:
-                    batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
-                    yield from batch
-                    last_record = batch[0]["updated_at"]  # position 0, because the records are returned in 'desc'
-
-                    if len(batch) < self.result_return_limit:
-                        break
-                else:
-                    last_record = pendulum.parse(last_record).add(seconds=1)
-                    for more_page in range(1, self.maximum_page):
-                        batch = list(
-                            getter(
-                                params={
-                                    **params,
-                                    "order_by": "updated_at",
-                                    "updated_since": last_record,
-                                    "per_page": self.result_return_limit,
-                                    "page": more_page,
-                                }
-                            )
-                        )
-                        yield from batch
-
-                        if len(batch) < self.result_return_limit:
-                            break  # break nested loop
-                    break  # break main loop
-        else:
-            for page in range(1, self.maximum_page):
+            for page in range(1, ticket_paginate_limit):
                 batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
                 yield from batch
+                last_record = batch[0]["updated_at"]  # position 0, because the records are returned in 'desc'
 
                 if len(batch) < self.result_return_limit:
-                    break
+                    return iter(())
+            
+            for more_page in range(1, self.maximum_page):
+                last_record = pendulum.parse(last_record).add(seconds=1)
+                batch = list(getter(params={
+                                        **params,
+                                        "order_by": "updated_at",
+                                        "updated_since": last_record,
+                                        "per_page": self.result_return_limit,
+                                        "page": more_page,
+                                    }
+                                )
+                            )
+                yield from batch
+                
+                if len(batch) < self.result_return_limit:
+                    return iter(())
+
+        for page in range(1, self.maximum_page):
+            batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
+            yield from batch
+
+            if len(batch) < self.result_return_limit:
+                return iter(())
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
