@@ -2,7 +2,7 @@
 description: Common issues and their workarounds when trying to deploy Airbyte
 ---
 
-# On deployment
+# On deploying
 
 ## Stuck in onboarding, can’t skip or do anything
 To fully reset Airbyte, you also need to delete the docker volumes associated with Airbyte. This is where data is stored.
