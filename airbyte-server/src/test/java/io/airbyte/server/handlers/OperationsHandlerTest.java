@@ -208,7 +208,7 @@ class OperationsHandlerTest {
   }
 
   @Test
-  void deleteOperationsForConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+  void testDeleteOperationsForConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID operationId = UUID.randomUUID();
     final List<UUID> toDelete = List.of(standardSyncOperation.getOperationId(), operationId);
     final StandardSync sync = new StandardSync()
