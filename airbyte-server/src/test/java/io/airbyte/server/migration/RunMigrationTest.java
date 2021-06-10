@@ -73,7 +73,7 @@ public class RunMigrationTest {
           .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
           .toFile();
 
-      Path exportConfigRoot = Path.of(Resources.getResource("migration/data").toURI());
+      Path exportConfigRoot = Path.of(Resources.getResource("migration/dummy_data").toURI());
       JobPersistence jobPersistence = getJobPersistence(mockAirbyteDB.getDatabase(), file,
           INITIAL_VERSION);
       assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
@@ -119,12 +119,13 @@ public class RunMigrationTest {
     assertEquals(configRepository.listStandardSyncs().size(), 0);
     assertEquals(configRepository.listDestinationConnection().size(), 0);
     assertEquals(configRepository.listSourceConnection().size(), 0);
-    //since we write dummy data in import
+    // since we write dummy data in import
     assertEquals(configRepository.listStandardWorkspaces(true).size(), 1);
   }
 
   private void runMigration(JobPersistence jobPersistence,
-      Path exportConfigRoot, ArchiveHandler importArchiveHandler)
+                            Path exportConfigRoot,
+                            ArchiveHandler importArchiveHandler)
       throws IOException {
     try (RunMigration runMigration = new RunMigration(
         INITIAL_VERSION,
@@ -150,8 +151,8 @@ public class RunMigrationTest {
   }
 
   private JobPersistence getJobPersistence(Database database,
-      File file,
-      String version)
+                                           File file,
+                                           String version)
       throws IOException {
     DefaultJobPersistence jobPersistence = new DefaultJobPersistence(database);
     final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "db_init");

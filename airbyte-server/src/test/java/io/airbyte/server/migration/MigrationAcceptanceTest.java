@@ -55,13 +55,14 @@ public class MigrationAcceptanceTest {
 
   @Test
   public void testAutomaticMigration()
-      throws URISyntaxException, NoSuchFieldException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, ApiException, InterruptedException {
+      throws URISyntaxException, NoSuchFieldException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, ApiException,
+      InterruptedException {
     firstRun();
     secondRun();
   }
 
   private Consumer<OutputFrame> logConsumerForServer(String versionToCompare,
-      AtomicBoolean foundVersion) {
+                                                     AtomicBoolean foundVersion) {
     return c -> {
       if (c != null && c.getBytes() != null) {
         String log = new String(c.getBytes());
@@ -74,7 +75,8 @@ public class MigrationAcceptanceTest {
   }
 
   private void firstRun()
-      throws URISyntaxException, InterruptedException, ApiException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+      throws URISyntaxException, InterruptedException, ApiException, NoSuchFieldException, IllegalAccessException, NoSuchMethodException,
+      InvocationTargetException {
     Map<String, String> environmentVariables = getEnvironmentVariables("0.17.0-alpha");
     final File firstRun = Path
         .of(Resources.getResource("migration/docker-compose-migration-test-first-run.yaml").toURI())
@@ -103,16 +105,16 @@ public class MigrationAcceptanceTest {
   private void secondRun()
       throws URISyntaxException, InterruptedException, ApiException {
 
-    //Starting migrations. Current version: 0.17.0-alpha, Target version: 0.24.0-alpha
-    //Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.
-    //Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.
-    //Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.
-    //Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.
-    //Migrating from version: 0.20.0-alpha to version 0.21.0-alpha.
-    //Migrating from version: 0.21.0-alpha to version 0.22.0-alpha.
-    //Migrating from version: 0.22.0-alpha to version 0.23.0-alpha.
-    //Migrating from version: 0.23.0-alpha to version 0.24.0-alpha.
-    //Migrations complete. Now on version: 0.24.0-alpha
+    // Starting migrations. Current version: 0.17.0-alpha, Target version: 0.24.0-alpha
+    // Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.
+    // Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.
+    // Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.
+    // Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.
+    // Migrating from version: 0.20.0-alpha to version 0.21.0-alpha.
+    // Migrating from version: 0.21.0-alpha to version 0.22.0-alpha.
+    // Migrating from version: 0.22.0-alpha to version 0.23.0-alpha.
+    // Migrating from version: 0.23.0-alpha to version 0.24.0-alpha.
+    // Migrations complete. Now on version: 0.24.0-alpha
 
     Map<String, String> environmentVariables = getEnvironmentVariables("0.24.3-alpha");
     final File firstRun = Path

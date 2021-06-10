@@ -53,10 +53,10 @@ public class RunMigration implements Runnable, AutoCloseable {
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
   public RunMigration(String initialVersion,
-      Path exportConfigRoot,
-      ArchiveHandler importArchiveHandler,
-      JobPersistence jobPersistence,
-      String targetVersion) {
+                      Path exportConfigRoot,
+                      ArchiveHandler importArchiveHandler,
+                      JobPersistence jobPersistence,
+                      String targetVersion) {
     this.initialVersion = initialVersion;
     this.jobPersistence = jobPersistence;
     this.targetVersion = targetVersion;
