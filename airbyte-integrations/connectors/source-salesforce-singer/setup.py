@@ -38,7 +38,6 @@ setup(
         "base-singer",
         "pytest==6.1.2",
         "requests",
-        # TODO: update after merge PR into master branch
-        "tap-salesforce @ https://github.com/airbytehq/tap-salesforce/tarball/ykurochkin/salesforce-connector-exposing-sensitive-fields-in-logs",
+        "tap-salesforce @ https://github.com/airbytehq/tap-salesforce/tarball/v1.4.38-airbyte",
     ],
 )
