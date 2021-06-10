@@ -28,6 +28,7 @@ from datetime import datetime
 
 import boto3
 import botocore
+from botocore.config import Config
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
@@ -37,19 +38,31 @@ from airbyte_cdk.models import SyncMode
 
 class AwsCloudtrailStream(Stream, ABC):
 
-    limit: int = 50
+    limit: int = 25
 
-    def __init__(self, aws_key_id: str, aws_secret_key: str, **kwargs):
+    start_date_format = "%Y-%m-%d"
+
+    def __init__(self, aws_key_id: str, aws_secret_key: str, start_date: str, **kwargs):
         self.aws_secret_key = aws_secret_key
         self.aws_key_id = aws_key_id
-        self.start_time = kwargs.get('StartTime')
+        self.start_date = self.datetime_to_timestamp(datetime.strptime(start_date, self.start_date_format))
+
+        config = Config(
+            parameter_validation=False,
+            retries = dict(
+                # use similar configuration as in http source
+                max_attempts=5,
+                # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/retries.html#adaptive-retry-mode
+                mode='adaptive',
+            )
+        )
 
         self.client = boto3.client(
             'cloudtrail',
             aws_access_key_id=aws_key_id,
-            aws_secret_access_key=aws_secret_key
+            aws_secret_access_key=aws_secret_key,
+            config=config
         )
-        self._next_token = None
 
     def next_page_token(self, response: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         return response.get('NextToken')
@@ -59,14 +72,15 @@ class AwsCloudtrailStream(Stream, ABC):
     ) -> MutableMapping[str, Any]:
         params = {"MaxResults": self.limit}
 
-        if self.start_time:
-            params["StartTime"] = self.start_time
+        if self.start_date:
+            params["StartTime"] = self.start_date
         if next_page_token:
             params['NextToken'] = next_page_token
         return params
 
-    def parse_response(self, response: dict, **kwargs) -> Iterable[Mapping]:
-        yield from response[self.data_field]
+
+    def datetime_to_timestamp(self, date: datetime) -> int:
+        return int(datetime.timestamp(date))
 
 
 class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
@@ -79,8 +93,13 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
 
     state_checkpoint_interval = limit
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        record_time = datetime.timestamp(latest_record["EventTime"])
+    def get_updated_state(
+        self,
+        current_stream_state:
+        MutableMapping[str, Any],
+        latest_record: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
+        record_time = latest_record[self.time_field]
         return {self.cursor_field: max(record_time, current_stream_state.get(self.cursor_field, 0))}
 
     def request_params(self, stream_state=None, **kwargs):
@@ -112,22 +131,26 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
             if not next_page_token:
                 pagination_complete = True
 
-        # Always return an empty generator just in case no records were ever yielded
         yield from []
 
 
 class Events(IncrementalAwsCloudtrailStream):
 
-    # TODO: Fill in the cursor_field. Required.
     cursor_field = "StartTime"
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
+    primary_key = "EventId"
+
+    time_field = "EventTime"
 
     data_field = "Events"
 
     def send_request(self, **kwargs):
         return self.client.lookup_events(**kwargs)
+
+    def parse_response(self, response: dict, **kwargs) -> Iterable[Mapping]:
+        for event in response[self.data_field]:
+            event["EventTime"] = self.datetime_to_timestamp(event["EventTime"])
+            yield event
 
 
 class SourceAwsCloudtrail(AbstractSource):
