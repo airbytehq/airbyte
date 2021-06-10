@@ -33,7 +33,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SurveymonkeyStream(HttpStream, ABC):
-    url_base = "https://app.posthog.com/api/"
+    url_base = "https://api.surveymonkey.com/v3/"
     primary_key = "id"
     data_field = "data"
 
@@ -45,16 +45,17 @@ class SurveymonkeyStream(HttpStream, ABC):
             return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {"Content-Type": "application/json", "User-Agent": "posthog-python/1.4.0"}
+        return {"Content-Type": "application/json"}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
+        if response_json.get("error"):
+            raise Exception(response_json.get("error"))
         yield from response_json.get(self.data_field, [])
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {}
         if next_page_token:
             params.update(next_page_token)
@@ -70,8 +71,8 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
     state_checkpoint_interval = 1000
 
     def __init__(self, start_date: str, **kwargs):
+        self._start_date = pendulum.parse(start_date)  # convert to YYYY-MM-DDTHH:MM:SS
         super().__init__(**kwargs)
-        # place for some vars if needed
 
 
     @property
@@ -88,6 +89,14 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         """
         return super().next_page_token(response=response)
 
+    def request_params(self, stream_state: Mapping[str, Any],  **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["sort_order"] = "ASC"
+        params["sort_by"] = "date_modified"
+        since_value = stream_state.get(self.cursor_field) or self._start_date
+        since_value = max(since_value, self._start_date)
+        params["start_modified_at"] = since_value  # dont forget to format it to YYYY-MM-DDTHH:MM:SS
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
@@ -97,27 +106,14 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         current_state = current_stream_state.get(self.cursor_field) or latest_state
         return {self.cursor_field: max(latest_state, current_state)}
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
-        for record in data:
-            if record.get(self.cursor_field) >= stream_state.get(self.cursor_field, self._start_date):
-                yield record
-
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        since_value = stream_state.get(self.cursor_field) or self._start_date
-        since_value = max(since_value, self._start_date)
-        params["after"] = since_value
-        return params
-
 
 class Surveys(IncrementalSurveymonkeyStream):
     """
-    Docs: https://posthog.com/docs/api/annotations
+    Docs: https://developer.surveymonkey.com/api/v3/#surveys
     A source for stream slices. It does not contain useful info itself.
     """
 
-    cursor_field = "updated_at"
+    cursor_field = "date_modified"
 
     def path(self, **kwargs) -> str:
         return "surveys"
@@ -165,8 +161,6 @@ class SurveyQuestions(SurveymonkeyStream):
     Docs: https://posthog.com/docs/api/events
     """
 
-    cursor_field = "timestamp"
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         survey_id = stream_slice["survey_id"]
         page_id = stream_slice['page_id']
@@ -195,8 +189,7 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
     """
     Docs: https://posthog.com/docs/api/events
     """
-
-    data_field = "result"
+    cursor_field = "date_modified"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         survey_id = stream_slice['survey_id']

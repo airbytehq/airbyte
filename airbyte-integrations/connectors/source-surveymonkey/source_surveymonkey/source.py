@@ -38,6 +38,7 @@ from .streams import (
     SurveyPages,
     SurveyPagesDetails,
     SurveyQuestions,
+    SurveyQuestionsDetails,
     SurveyResponses
 )
 
@@ -58,7 +59,10 @@ class SourceSurveymonkey(AbstractSource):
         authenticator = TokenAuthenticator(token=config["access_token"])
         return [
             Surveys(authenticator=authenticator, start_date=config["start_date"]),
+            SurveysDetails(authenticator=authenticator),
             SurveyPages(authenticator=authenticator),
+            SurveyPagesDetails(authenticator=authenticator),
             SurveyQuestions(authenticator=authenticator),
+            SurveyQuestionsDetails(authenticator=authenticator),
             SurveyResponses(authenticator=authenticator, start_date=config["start_date"]),
         ]

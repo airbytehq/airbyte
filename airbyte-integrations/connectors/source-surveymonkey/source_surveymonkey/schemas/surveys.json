@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "nickname": {
+      "type": "string"
+    },
+    "href": {
+      "type": "string"
+    }
+  }
+}
