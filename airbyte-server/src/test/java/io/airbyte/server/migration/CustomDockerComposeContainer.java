@@ -42,6 +42,11 @@ public class CustomDockerComposeContainer {
     dockerComposeContainer.start();
   }
 
+  /**
+   * This method is hacked from {@link org.testcontainers.containers.DockerComposeContainer#stop()} We
+   * needed to do this to avoid removing the volumes when the container is stopped so that the data
+   * persists and can be tested against in the second run
+   */
   public void stop()
       throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     Class<? extends DockerComposeContainer> dockerComposeContainerClass = dockerComposeContainer

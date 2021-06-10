@@ -44,6 +44,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 
+// TODO: Write a test case which compares the output dump with the output of ArchiveHandler export
+// for the same data
 public class ConfigDumpExport {
 
   private static final String ARCHIVE_FILE_NAME = "airbyte_config_dump";
@@ -78,7 +80,7 @@ public class ConfigDumpExport {
 
   public void deleteOrphanDirectories() {
     try {
-    configDumpUtil.orphanDirectories();
+      configDumpUtil.orphanDirectories();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -126,8 +128,8 @@ public class ConfigDumpExport {
   }
 
   private void writeConfigsToArchive(final Path storageRoot,
-                                       final String schemaType,
-                                       final List<JsonNode> configList)
+                                     final String schemaType,
+                                     final List<JsonNode> configList)
       throws IOException {
     final Path configPath = buildConfigPath(storageRoot, schemaType);
     Files.createDirectories(configPath.getParent());

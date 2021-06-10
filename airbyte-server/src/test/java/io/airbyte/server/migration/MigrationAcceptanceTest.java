@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -98,6 +97,11 @@ public class MigrationAcceptanceTest {
         .withLogConsumer("server", logConsumerForServer(logsToExpect))
         .withEnv(environmentVariables);
 
+    /**
+     * We are using CustomDockerComposeContainer cause the
+     * {@link org.testcontainers.containers.DockerComposeContainer#stop()} method also deletes the
+     * volume but we dont want to delete the volume to test the automatic migration
+     */
     CustomDockerComposeContainer customDockerComposeContainer = new CustomDockerComposeContainer(
         dockerComposeContainer);
 
@@ -115,6 +119,7 @@ public class MigrationAcceptanceTest {
   private void secondRun()
       throws URISyntaxException, InterruptedException, ApiException {
 
+    // The version for second run should be changed to latest version once automatic migration is merged
     Map<String, String> environmentVariables = getEnvironmentVariables("0.24.3-alpha");
     final File firstRun = Path
         .of(Resources.getResource("migration/docker-compose-migration-test-second-run.yaml")
@@ -144,6 +149,7 @@ public class MigrationAcceptanceTest {
     healthCheck(getApiClient());
 
     assertTrue(logsToExpect.isEmpty());
+    // Should I assert data as well using the API?
     dockerComposeContainer.stop();
   }
 
