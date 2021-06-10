@@ -9,6 +9,7 @@ This is the changelog for Airbyte Platform. For our connector changelog, please 
 ## [06-09-2021 - 0.24.8 / 0.25.0](https://github.com/airbytehq/airbyte/releases/tag/v0.24.8-alpha)
 
 * Bugfix: Handle TINYINT(1) and BOOLEAN correctly and fix target file comparison for MySQL CDC.
+* Bugfix: Updating the source/destination name in the UI now works as intended.
 
 ## [06-04-2021 - 0.24.7](https://github.com/airbytehq/airbyte/releases/tag/v0.24.7-alpha)
 
