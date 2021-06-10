@@ -34,6 +34,7 @@ import {
   OperatorType,
   Transformation,
 } from "core/domain/connection/operation";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -64,15 +65,15 @@ type FormValues = {
 type ConnectionFormProps = {
   onSubmit: (values: ConnectionFormValues) => void;
   className?: string;
-  errorMessage?: React.ReactNode;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
   onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
+
+  /** Should be passed when connection is updated with withRefreshCatalog flag */
   editSchemeMode?: boolean;
   isEditMode?: boolean;
-  isLoading?: boolean;
   additionalSchemaControl?: React.ReactNode;
   sourceIcon?: string;
   destinationIcon?: string;
@@ -92,7 +93,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   sourceIcon,
   destinationIcon,
   className,
-  errorMessage,
   onDropDownSelect,
   frequencyValue,
   prefixValue,
@@ -100,17 +100,19 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   successMessage,
   additionBottomControls,
   editSchemeMode,
-  isLoading,
   additionalSchemaControl,
   source,
   destination,
   operations = [],
   ...props
 }) => {
-  const [modalIsOpen, setResetModalIsOpen] = useState(false);
   const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
     destination.destinationDefinitionId
   );
+
+  const [modalIsOpen, setResetModalIsOpen] = useState(false);
+  const [submitError, setSubmitError] = useState<Error | null>(null);
+
   const formatMessage = useIntl().formatMessage;
 
   const initialSchema = useInitialSchema(props.syncCatalog);
@@ -123,14 +125,20 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       ) as Transformation[],
     [operations]
   );
-  const normalization = useMemo(
-    () =>
-      (operations.find(
-        (op) =>
-          op.operatorConfiguration.operatorType === OperatorType.Normalization
-      ) as Normalization)?.operatorConfiguration?.normalization?.option,
-    [operations]
-  );
+
+  const normalization = useMemo(() => {
+    const normalization = (operations.find(
+      (op) =>
+        op.operatorConfiguration.operatorType === OperatorType.Normalization
+    ) as Normalization)?.operatorConfiguration?.normalization?.option;
+
+    // If no normalization was selected for already present normalization -> Raw is select
+    if (!normalization && isEditMode) {
+      return NormalizationType.RAW;
+    }
+
+    return normalization;
+  }, [operations]);
 
   const onFormSubmit = useCallback(
     async (values: FormValues) => {
@@ -147,18 +155,25 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         formValues.withOperations = newOperations;
       }
 
-      await onSubmit(formValues);
+      setSubmitError(null);
+      try {
+        await onSubmit(formValues);
 
-      const requiresReset =
-        isEditMode &&
-        !equal(initialSchema, values.syncCatalog) &&
-        !editSchemeMode;
-      if (requiresReset) {
-        setResetModalIsOpen(true);
+        const requiresReset =
+          isEditMode &&
+          !equal(initialSchema, values.syncCatalog) &&
+          !editSchemeMode;
+        if (requiresReset) {
+          setResetModalIsOpen(true);
+        }
+      } catch (e) {
+        setSubmitError(e);
       }
     },
     [editSchemeMode, initialSchema, isEditMode, onSubmit, operations]
   );
+
+  const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
 
   return (
     <Formik
@@ -172,7 +187,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       validationSchema={connectionValidationSchema}
       onSubmit={onFormSubmit}
     >
-      {({ isSubmitting, setFieldValue, values, isValid, dirty, resetForm }) => (
+      {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (
         <FormContainer className={className}>
           <ControlLabelsWithMargin>
             <ConnectorLabel
@@ -252,41 +267,29 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               />
             )}
           </FieldArray>
-          {!isEditMode ? (
+          {!isEditMode && (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}
             />
-          ) : null}
+          )}
           {isEditMode ? (
-            <>
-              <EditControls
-                isSubmitting={isLoading || isSubmitting}
-                dirty={dirty || !equal(initialSchema, values.syncCatalog)}
-                resetForm={() => {
-                  resetForm();
-                  if (onCancel) {
-                    onCancel();
-                  }
-                }}
-                successMessage={successMessage}
-                errorMessage={
-                  errorMessage || !isValid
-                    ? formatMessage({ id: "connectionForm.validation.error" })
-                    : null
+            <EditControls
+              isSubmitting={isSubmitting}
+              dirty={dirty}
+              resetForm={() => {
+                resetForm();
+                if (onCancel) {
+                  onCancel();
                 }
-                editSchemeMode={editSchemeMode}
-              />
-              {modalIsOpen && (
-                <ResetDataModal
-                  modalType={ModalTypes.RESET_CHANGED_COLUMN}
-                  onClose={() => setResetModalIsOpen(false)}
-                  onSubmit={async () => {
-                    await onReset?.();
-                    setResetModalIsOpen(false);
-                  }}
-                />
-              )}
-            </>
+              }}
+              successMessage={successMessage}
+              errorMessage={
+                errorMessage || !isValid
+                  ? formatMessage({ id: "connectionForm.validation.error" })
+                  : null
+              }
+              editSchemeMode={editSchemeMode}
+            />
           ) : (
             <CreateControls
               additionBottomControls={additionBottomControls}
@@ -297,6 +300,16 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   ? formatMessage({ id: "connectionForm.validation.error" })
                   : null
               }
+            />
+          )}
+          {modalIsOpen && (
+            <ResetDataModal
+              modalType={ModalTypes.RESET_CHANGED_COLUMN}
+              onClose={() => setResetModalIsOpen(false)}
+              onSubmit={async () => {
+                await onReset?.();
+                setResetModalIsOpen(false);
+              }}
             />
           )}
         </FormContainer>

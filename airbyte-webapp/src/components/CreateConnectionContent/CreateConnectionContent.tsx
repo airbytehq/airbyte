@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
@@ -9,7 +9,6 @@ import LoadingSchema from "components/LoadingSchema";
 import ContentCard from "components/ContentCard";
 import { JobsLogItem } from "components/JobItem";
 import ConnectionForm from "views/Connection/ConnectionForm";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { Button } from "components";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
@@ -53,7 +52,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
   additionBottomControls,
 }) => {
   const { createConnection } = useConnection();
-  const [errorStatusRequest, setErrorStatusRequest] = useState<number>(0);
   const {
     schema,
     isLoading,
@@ -98,27 +96,22 @@ const CreateConnectionContent: React.FC<IProps> = ({
   }
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
-    setErrorStatusRequest(0);
-    try {
-      await createConnection({
-        values,
-        source: source,
-        destination: destination,
-        sourceDefinition: {
-          name: source?.name ?? "",
-          sourceDefinitionId: source?.sourceDefinitionId ?? "",
-        },
-        destinationDefinition: {
-          name: destination?.name ?? "",
-          destinationDefinitionId: destination?.destinationDefinitionId ?? "",
-        },
-      });
+    await createConnection({
+      values,
+      source: source,
+      destination: destination,
+      sourceDefinition: {
+        name: source?.name ?? "",
+        sourceDefinitionId: source?.sourceDefinitionId ?? "",
+      },
+      destinationDefinition: {
+        name: destination?.name ?? "",
+        destinationDefinitionId: destination?.destinationDefinitionId ?? "",
+      },
+    });
 
-      if (afterSubmitConnection) {
-        afterSubmitConnection();
-      }
-    } catch (e) {
-      setErrorStatusRequest(e.status);
+    if (afterSubmitConnection) {
+      afterSubmitConnection();
     }
   };
 
@@ -150,7 +143,6 @@ const CreateConnectionContent: React.FC<IProps> = ({
           onDropDownSelect={onSelectFrequency}
           additionalSchemaControl={renderRefreshSchemaButton()}
           onSubmit={onSubmitConnectionStep}
-          errorMessage={createFormErrorMessage({ status: errorStatusRequest })}
           syncCatalog={schema}
           source={source}
           destination={destination}

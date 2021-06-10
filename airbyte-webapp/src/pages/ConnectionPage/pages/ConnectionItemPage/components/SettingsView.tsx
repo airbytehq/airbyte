@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
@@ -78,15 +78,12 @@ const SettingsView: React.FC<IProps> = ({
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
     false
   );
-  const formatMessage = useIntl().formatMessage;
   const [saved, setSaved] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [currentValues, setCurrentValues] = useState<ValuesProps>({
     frequency: "",
     prefix: "",
     syncCatalog: { streams: [] },
   });
-  const [errorMessage, setErrorMessage] = useState("");
   const {
     updateConnection,
     deleteConnection,
@@ -108,45 +105,29 @@ const SettingsView: React.FC<IProps> = ({
     connectionId,
   ]);
 
-  const schedule =
-    connection &&
-    FrequencyConfig.find((item) => equal(connection.schedule, item.config));
-
   const onSubmit = async (values: ValuesProps) => {
-    setIsLoading(true);
     const frequencyData = FrequencyConfig.find(
       (item) => item.value === values.frequency
     );
     const initialSyncSchema = connection?.syncCatalog;
 
-    try {
-      await updateConnection({
-        connectionId: connectionId,
-        status: connection?.status || "",
-        syncCatalog: values.syncCatalog,
-        schedule: frequencyData?.config || null,
-        prefix: values.prefix,
-        operations: values.withOperations,
-        withRefreshedCatalog: activeUpdatingSchemaMode,
-      });
+    await updateConnection({
+      connectionId: connectionId,
+      status: connection?.status || "",
+      syncCatalog: values.syncCatalog,
+      schedule: frequencyData?.config || null,
+      prefix: values.prefix,
+      operations: values.withOperations,
+      withRefreshedCatalog: activeUpdatingSchemaMode,
+    });
 
-      setSaved(true);
-      if (!equal(values.syncCatalog, initialSyncSchema)) {
-        onAfterSaveSchema();
-      }
+    setSaved(true);
+    if (!equal(values.syncCatalog, initialSyncSchema)) {
+      onAfterSaveSchema();
+    }
 
-      if (activeUpdatingSchemaMode) {
-        setActiveUpdatingSchemaMode(false);
-      }
-    } catch (e) {
-      setErrorMessage(
-        e.message ||
-          formatMessage({
-            id: "form.someError",
-          })
-      );
-    } finally {
-      setIsLoading(false);
+    if (activeUpdatingSchemaMode) {
+      setActiveUpdatingSchemaMode(false);
     }
   };
 
@@ -183,6 +164,10 @@ const SettingsView: React.FC<IProps> = ({
     );
   };
 
+  const schedule =
+    connection &&
+    FrequencyConfig.find((item) => equal(connection.schedule, item.config));
+
   return (
     <Content>
       <ContentCard
@@ -208,16 +193,14 @@ const SettingsView: React.FC<IProps> = ({
             source={connection.source}
             destination={connection.destination}
             operations={connection.operations}
+            frequencyValue={schedule?.value}
             onSubmit={onSubmitForm}
             onReset={onReset}
-            frequencyValue={schedule?.value}
-            errorMessage={errorMessage}
             successMessage={
               saved && <FormattedMessage id="form.changesSaved" />
             }
             onCancel={() => setActiveUpdatingSchemaMode(false)}
             editSchemeMode={activeUpdatingSchemaMode}
-            isLoading={isLoading}
             additionalSchemaControl={UpdateSchemaButton()}
             destinationIcon={destinationDefinition?.icon}
             sourceIcon={sourceDefinition?.icon}
