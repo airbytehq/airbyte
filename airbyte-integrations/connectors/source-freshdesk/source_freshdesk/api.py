@@ -163,20 +163,22 @@ class StreamAPI(ABC):
 
                 if len(batch) < self.result_return_limit:
                     return iter(())
-            
+
             for more_page in range(1, self.maximum_page):
                 last_record = pendulum.parse(last_record).add(seconds=1)
-                batch = list(getter(params={
-                                        **params,
-                                        "order_by": "updated_at",
-                                        "updated_since": last_record,
-                                        "per_page": self.result_return_limit,
-                                        "page": more_page,
-                                    }
-                                )
-                            )
+                batch = list(
+                    getter(
+                        params={
+                            **params,
+                            "order_by": "updated_at",
+                            "updated_since": last_record,
+                            "per_page": self.result_return_limit,
+                            "page": more_page,
+                        }
+                    )
+                )
                 yield from batch
-                
+
                 if len(batch) < self.result_return_limit:
                     return iter(())
 
