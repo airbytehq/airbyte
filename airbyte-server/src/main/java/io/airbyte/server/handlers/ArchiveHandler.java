@@ -65,10 +65,19 @@ public class ArchiveHandler {
                         final ConfigRepository configRepository,
                         final JobPersistence persistence,
                         final FileTtlManager fileTtlManager) {
+
+    this(version,configRepository,new ConfigFileArchiver(configRepository),new DatabaseArchiver(persistence),fileTtlManager);
+  }
+
+  public ArchiveHandler(final String version,
+      final ConfigRepository configRepository,
+      final ConfigFileArchiver configFileArchiver,
+      final DatabaseArchiver databaseArchiver,
+      final FileTtlManager fileTtlManager) {
     this.version = version;
     this.configRepository = configRepository;
-    configFileArchiver = new ConfigFileArchiver(configRepository);
-    databaseArchiver = new DatabaseArchiver(persistence);
+    this.configFileArchiver = configFileArchiver;
+    this.databaseArchiver = databaseArchiver;
     this.fileTtlManager = fileTtlManager;
   }
 

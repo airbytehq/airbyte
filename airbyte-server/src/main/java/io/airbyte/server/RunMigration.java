@@ -26,8 +26,6 @@ package io.airbyte.server;
 
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
-import io.airbyte.commons.io.FileTtlManager;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
 import io.airbyte.migrate.MigrationRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -38,7 +36,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,38 +43,26 @@ import org.slf4j.LoggerFactory;
 public class RunMigration implements Runnable, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RunMigration.class);
-  private final ArchiveHandler exportArchiveHandler;
   private final ArchiveHandler importArchiveHandler;
   private final JobPersistence jobPersistence;
   private final String targetVersion;
   private final String initialVersion;
   private boolean isSuccessful;
   private boolean dbVersionChanged;
+  private final ConfigDumpExport configDumpExport;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
   public RunMigration(String initialVersion,
-                      ConfigRepository configRepository,
-                      JobPersistence jobPersistence,
-                      String targetVersion) {
-    this(initialVersion,
-        new ArchiveHandler(initialVersion, configRepository, jobPersistence,
-            new FileTtlManager(10, TimeUnit.MINUTES, 10)),
-        new ArchiveHandler(targetVersion, configRepository, jobPersistence,
-            new FileTtlManager(10, TimeUnit.MINUTES, 10)),
-        jobPersistence,
-        targetVersion);
-  }
-
-  public RunMigration(String initialVersion,
-                      ArchiveHandler exportArchiveHandler,
-                      ArchiveHandler importArchiveHandler,
-                      JobPersistence jobPersistence,
-                      String targetVersion) {
+      Path exportConfigRoot,
+      ArchiveHandler importArchiveHandler,
+      JobPersistence jobPersistence,
+      String targetVersion) {
     this.initialVersion = initialVersion;
     this.jobPersistence = jobPersistence;
     this.targetVersion = targetVersion;
-    this.exportArchiveHandler = exportArchiveHandler;
+    this.configDumpExport = new ConfigDumpExport(exportConfigRoot, jobPersistence, initialVersion);
     this.importArchiveHandler = importArchiveHandler;
+
     this.isSuccessful = false;
     this.dbVersionChanged = false;
   }
@@ -86,7 +71,7 @@ public class RunMigration implements Runnable, AutoCloseable {
   public void run() {
     try {
       // Export data
-      File exportData = exportArchiveHandler.exportData();
+      File exportData = configDumpExport.dump();
       filesToBeCleanedUp.add(exportData);
 
       // Define output target

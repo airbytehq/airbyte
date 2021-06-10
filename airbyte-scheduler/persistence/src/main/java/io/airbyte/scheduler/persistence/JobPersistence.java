@@ -171,6 +171,8 @@ public interface JobPersistence {
    */
   Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException;
 
+  Map<String, Stream<JsonNode>> exportEverythingInDefaultSchema() throws IOException;
+
   /**
    * Import all SQL tables from streams of JsonNode objects.
    *

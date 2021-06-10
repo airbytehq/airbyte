@@ -454,6 +454,22 @@ public class DefaultJobPersistence implements JobPersistence {
     return exportDatabase(DEFAULT_SCHEMA);
   }
 
+  @Override
+  public Map<String, Stream<JsonNode>> exportEverythingInDefaultSchema() throws IOException {
+    return exportEverything(DEFAULT_SCHEMA);
+  }
+
+  private Map<String, Stream<JsonNode>> exportEverything(final String schema) throws IOException {
+    final List<String> tables = listTables(schema);
+    final Map<String, Stream<JsonNode>> result = new HashMap<>();
+
+    for (final String table : tables) {
+      result.put(table.toUpperCase(), exportTable(schema, table));
+    }
+
+    return result;
+  }
+
   private Map<DatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
     final List<String> tables = listTables(schema);
     final Map<DatabaseSchema, Stream<JsonNode>> result = new HashMap<>();

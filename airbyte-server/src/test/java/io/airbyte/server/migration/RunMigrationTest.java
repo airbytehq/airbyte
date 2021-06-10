@@ -26,9 +26,6 @@ package io.airbyte.server.migration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 import com.google.common.io.Resources;
 import io.airbyte.commons.io.Archives;
@@ -50,7 +47,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
@@ -77,27 +73,22 @@ public class RunMigrationTest {
           .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
           .toFile();
 
+      Path exportConfigRoot = Path.of(Resources.getResource("migration/data").toURI());
       JobPersistence jobPersistence = getJobPersistence(mockAirbyteDB.getDatabase(), file,
           INITIAL_VERSION);
       assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
 
-      ArchiveHandler exportArchiveHandler = mock(ArchiveHandler.class);
-      when(exportArchiveHandler.exportData()).thenReturn(file);
-
-      ConfigRepository configRepository = getConfigRepository();
-      assertPreMigrationConfigs(configRepository);
+      Path importRoot = getImportRoot();
+      assertPreMigrationConfigs(importRoot);
 
       ArchiveHandler importArchiveHandler = new ArchiveHandler(TARGET_VERSION,
-          configRepository, jobPersistence,
+          new ConfigRepository(new DefaultConfigPersistence(importRoot)), jobPersistence,
           new FileTtlManager(10, TimeUnit.MINUTES, 10));
-      ArchiveHandler spy = spy(importArchiveHandler);
-      when(spy.getCurrentCustomerId())
-          .thenReturn(Optional.of(UUID.fromString("17f90b72-5ae4-40b7-bc49-d6c2943aea57")));
 
-      runMigration(jobPersistence, exportArchiveHandler, spy);
+      runMigration(jobPersistence, exportConfigRoot, importArchiveHandler);
 
       assertDatabaseVersion(jobPersistence, TARGET_VERSION);
-      assertPostMigrationConfigs(configRepository);
+      assertPostMigrationConfigs(importRoot);
 
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -111,29 +102,33 @@ public class RunMigrationTest {
     assertEquals(versionFromDb.get(), version);
   }
 
-  private void assertPostMigrationConfigs(ConfigRepository configRepository)
+  private void assertPostMigrationConfigs(Path importRoot)
       throws IOException, JsonValidationException, ConfigNotFoundException {
+    ConfigRepository configRepository = new ConfigRepository(
+        new DefaultConfigPersistence(importRoot));
     assertEquals(configRepository.listStandardSyncs().size(), 2);
     assertEquals(configRepository.listDestinationConnection().size(), 2);
     assertEquals(configRepository.listSourceConnection().size(), 1);
     assertEquals(configRepository.listStandardWorkspaces(true).size(), 1);
   }
 
-  private void assertPreMigrationConfigs(ConfigRepository configRepository)
+  private void assertPreMigrationConfigs(Path importRoot)
       throws IOException, JsonValidationException, ConfigNotFoundException {
+    ConfigRepository configRepository = new ConfigRepository(
+        new DefaultConfigPersistence(importRoot));
     assertEquals(configRepository.listStandardSyncs().size(), 0);
     assertEquals(configRepository.listDestinationConnection().size(), 0);
     assertEquals(configRepository.listSourceConnection().size(), 0);
-    assertEquals(configRepository.listStandardWorkspaces(true).size(), 0);
+    //since we write dummy data in import
+    assertEquals(configRepository.listStandardWorkspaces(true).size(), 1);
   }
 
   private void runMigration(JobPersistence jobPersistence,
-                            ArchiveHandler exportArchiveHandler,
-                            ArchiveHandler importArchiveHandler)
+      Path exportConfigRoot, ArchiveHandler importArchiveHandler)
       throws IOException {
     try (RunMigration runMigration = new RunMigration(
         INITIAL_VERSION,
-        exportArchiveHandler,
+        exportConfigRoot,
         importArchiveHandler,
         jobPersistence,
         TARGET_VERSION)) {
@@ -143,16 +138,20 @@ public class RunMigrationTest {
   }
 
   @NotNull
-  private ConfigRepository getConfigRepository() throws IOException {
+  private Path getImportRoot() throws IOException {
     final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "final_config");
+    Path standard_workspace = tempFolder.resolve("config").resolve("STANDARD_WORKSPACE")
+        .resolve("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6.json");
+    Files.createDirectories(standard_workspace.getParent());
+    Files.writeString(standard_workspace,
+        "{\"workspaceId\":\"5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6\",\"customerId\":\"17f90b72-5ae4-40b7-bc49-d6c2943aea57\",\"name\":\"default\",\"slug\":\"default\",\"initialSetupComplete\":true,\"anonymousDataCollection\":false,\"news\":false,\"securityUpdates\":false,\"displaySetupWizard\":false}");
     resourceToBeCleanedUp.add(tempFolder.toFile());
-    return new ConfigRepository(
-        new DefaultConfigPersistence(tempFolder));
+    return tempFolder;
   }
 
   private JobPersistence getJobPersistence(Database database,
-                                           File file,
-                                           String version)
+      File file,
+      String version)
       throws IOException {
     DefaultJobPersistence jobPersistence = new DefaultJobPersistence(database);
     final Path tempFolder = Files.createTempDirectory(Path.of("/tmp"), "db_init");
