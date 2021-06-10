@@ -62,6 +62,7 @@ class OperationsHandlerTest {
   private Supplier<UUID> uuidGenerator;
 
   private OperationsHandler operationsHandler;
+  private StandardSync standardSync;
   private StandardSyncOperation standardSyncOperation;
 
   @SuppressWarnings("unchecked")
@@ -71,6 +72,7 @@ class OperationsHandlerTest {
     uuidGenerator = mock(Supplier.class);
 
     operationsHandler = new OperationsHandler(configRepository, uuidGenerator);
+    standardSync = mock(StandardSync.class);
     standardSyncOperation = new StandardSyncOperation()
         .withOperationId(UUID.randomUUID())
         .withName("presto to hudi")
@@ -203,6 +205,27 @@ class OperationsHandlerTest {
     spiedOperationsHandler.deleteOperation(operationIdRequestBody);
 
     verify(configRepository).writeStandardSyncOperation(standardSyncOperation.withTombstone(true));
+  }
+
+  @Test
+  void deleteOperationsForConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final UUID operationId = UUID.randomUUID();
+    final List<UUID> toDelete = List.of(standardSyncOperation.getOperationId(), operationId);
+    final StandardSync sync = new StandardSync()
+        .withConnectionId(UUID.randomUUID())
+        .withOperationIds(List.of(standardSyncOperation.getOperationId(), operationId));
+    when(configRepository.listStandardSyncs()).thenReturn(List.of(
+        sync,
+        new StandardSync()
+            .withConnectionId(UUID.randomUUID())
+            .withOperationIds(List.of(standardSyncOperation.getOperationId()))));
+    final StandardSyncOperation operation = new StandardSyncOperation().withOperationId(operationId);
+    when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
+    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
+
+    operationsHandler.deleteOperationsForConnection(sync, toDelete);
+
+    verify(configRepository).writeStandardSyncOperation(operation.withTombstone(true));
   }
 
   @Test
