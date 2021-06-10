@@ -4,9 +4,7 @@ description: Common issues when trying to set up a new connection (source/destin
 
 # Setting new connection
 
-## Onboarding
-
-### Airbyte is stuck while loading required configuration parameters for my connector
+## Airbyte is stuck while loading required configuration parameters for my connector
 
 Example of the issue:
 
@@ -24,11 +22,24 @@ One workaround is to manually pull the latest version of every connector you'll 
 
 If the above workaround does not fix your problem, please report it [here](https://github.com/airbytehq/airbyte/issues/1462) or in our [Slack](https://slack.airbyte.io).
 
-### **Connection refused errors when connecting to a local db**
+## Connection refused errors when connecting to a local db
 
 Depending on your Docker network configuration, you may not be able to connect to `localhost` or `127.0.0.1` directly.
 
 If you are running into connection refused errors when running Airbyte via Docker Compose on Mac, try using `host.docker.internal` as the host. On Linux, you may have to modify `docker-compose.yml` and add a host that maps to your local machine using [`extra_hosts`](https://docs.docker.com/compose/compose-file/compose-file-v3/#extra_hosts).
 
-### I don’t see a form when selecting a connector
+## I don’t see a form when selecting a connector
+
 We’ve had that issue once. (no spinner & 500 http error). We don’t know why. Resolution: try to stop airbyte (`docker-compose down`) & restart (`docker-compose up`)
+
+## Connection hangs when trying to run the discovery step
+
+You receive the error below when you tried to sync a database with a lot of tables (6000 or more).
+
+```bash
+airbyte-scheduler   | io.grpc.StatusRuntimeException: RESOURCE_EXHAUSTED: grpc: received message larger than max (<NUMBER> vs. 4194304)
+```
+There are two Github issues tracking this problem: [Issue #3942](https://github.com/airbytehq/airbyte/issues/3942) and [Issue #3943](https://github.com/airbytehq/airbyte/issues/3943) 
+
+The workaround for this is trying to transfer the tables you really want to use to another namespace.
+If you need all tables you should split them into separate namespaces and try to use two connections.
