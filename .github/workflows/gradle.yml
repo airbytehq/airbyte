@@ -2,21 +2,10 @@ name: Airbyte CI
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 */1 * * *'
   push:
 
 jobs:
-  launch_integration_tests:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Launch Integration Tests
-        run: ./tools/bin/ci_integration_workflow_launcher.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
-
   ## Gradle Build
   # In case of self-hosted EC2 errors, remove the `start-build-runner` block.
   start-build-runner:
@@ -286,41 +275,37 @@ jobs:
 
       - name: Run End-to-End Frontend Tests
         run: ./tools/bin/e2e_test.sh
+  test_kube:
+    runs-on: ubuntu-latest
+    name: Run Acceptance Tests (Kube)
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
 
-# DISABLED UNTIL WE HAVE TEMPORAL ON KUBE
-#  test_kube:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout Airbyte
-#        uses: actions/checkout@v2
-#
-#      - uses: actions/setup-java@v1
-#        with:
-#          java-version: '14'
-#
-#      - uses: actions/setup-node@v1
-#        with:
-#          node-version: '14.7'
-#
-#      - uses: actions/setup-python@v2
-#        with:
-#          python-version: '3.7'
-#
-#      - name: Setup Minikube
-#        uses: manusa/actions-setup-minikube@v2.3.0
-#        with:
-#          minikube version: 'v1.16.0'
-#          kubernetes version: 'v1.19.2'
-#
-#      - name: Install socat
-#        run: sudo apt-get install socat
-#
-#      - name: Build Core Docker Images and Run Tests
-#        run: CORE_ONLY=true ./gradlew --no-daemon composeBuild test -x :airbyte-webapp:test --scan
-#        env:
-#          GIT_REVISION: ${{ github.sha }}
-#          CORE_ONLY: true
-#
-#      - name: Run Kubernetes End-to-End Acceptance Tests
-#        run: |
-#          ./tools/bin/acceptance_test_kube.sh
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14'
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.7'
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Setup Minikube
+        uses: manusa/actions-setup-minikube@v2.4.1
+        with:
+          minikube version: 'v1.21.0-beta.0'
+          kubernetes version: 'v1.20.7'
+
+      - name: Install socat (required for port forwarding)
+        run: sudo apt-get install socat
+
+      - name: Build Core Docker Images and Run Tests
+        run: CORE_ONLY=true ./gradlew --no-daemon build --scan --rerun-tasks
+
+      - name: Run Kubernetes End-to-End Acceptance Tests
+        run: |
+          IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh

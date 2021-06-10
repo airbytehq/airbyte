@@ -1,7 +1,6 @@
-# Syncing a connection
+# On Running a Sync
 
-
-### One of your sync jobs is failing
+## One of your sync jobs is failing
 
 Several things to check:
 
@@ -10,7 +9,7 @@ Several things to check:
 
 If the above workaround does not fix your problem, please report it [here](https://github.com/airbytehq/airbyte/issues/1462) or in our [Slack](https://slack.airbyte.io).
 
-### Your incremental connection is not working
+## Your incremental connection is not working
 
 Our current version of incremental is [append](../understanding-airbyte/connections/incremental-append.md). It works from a cursor field. So you need to check which cursor field you're using and if it's well populated in every record in your table.
 
@@ -21,7 +20,7 @@ If this is true, then, there are still several things to check:
 
 If the above workaround does not fix your problem, please report it [here](https://github.com/airbytehq/airbyte/issues/1462) or in our [Slack](https://slack.airbyte.io).
 
-### **Airbyte says successful sync, but some records are missing**
+## Airbyte says successful sync, but some records are missing
 
 Several things to check:
 
