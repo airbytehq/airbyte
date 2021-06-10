@@ -1,4 +1,4 @@
-# Syncing a connection
+# On Running a Sync
 
 ## One of your sync jobs is failing
 
