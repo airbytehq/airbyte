@@ -24,7 +24,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, Optional, MutableMapping, List, Dict
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -45,7 +45,10 @@ class GitlabStream(HttpStream, ABC):
         self.api_url = api_url
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"page": self.page, "per_page": self.per_page}
         if next_page_token:
@@ -86,11 +89,11 @@ class GitlabStream(HttpStream, ABC):
 
     def _flatten_id(self, record: Dict[str, Any], target: str):
         if record.get(target):
-            record[target + '_id'] = record.pop(target, {}).pop('id', None)
+            record[target + "_id"] = record.pop(target, {}).pop("id", None)
         elif target in record:
-            record[target + '_id'] = record.pop(target)
+            record[target + "_id"] = record.pop(target)
         else:
-            record[target + '_id'] = None
+            record[target + "_id"] = None
 
     def _flatten_list(self, record: Dict[str, Any], target: str):
         record[target] = [target_data.get("id") for target_data in record.get(target, [])]
@@ -129,7 +132,6 @@ class GitlabSubStream(GitlabStream):
 
 
 class Groups(GitlabStream):
-
     def __init__(self, group_ids: List, **kwargs):
         super().__init__(**kwargs)
         self.group_ids = group_ids
@@ -143,9 +145,7 @@ class Groups(GitlabStream):
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         record["projects"] = [
-            {
-                "id": project["id"], "path_with_namespace": project["path_with_namespace"]
-            } for project in record.pop("projects", [])
+            {"id": project["id"], "path_with_namespace": project["path_with_namespace"]} for project in record.pop("projects", [])
         ]
         return record
 
@@ -176,14 +176,12 @@ class Milestones(GitlabSubStream):
 
 
 class Members(GitlabSubStream):
-
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
         return record
 
 
 class Labels(GitlabSubStream):
-
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
         return record
@@ -226,11 +224,11 @@ class MergeRequestCommits(GitlabSubStream):
     primary_key = ["project_id", "merge_request_iid", "id"]
     path_list = ["project_id", "iid"]
 
-    path_template = 'projects/{project_id}/merge_requests/{iid}'
+    path_template = "projects/{project_id}/merge_requests/{iid}"
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
-        record['project_id'] = stream_slice['project_id']
-        record['merge_request_iid'] = stream_slice['iid']
+        record["project_id"] = stream_slice["project_id"]
+        record["merge_request_iid"] = stream_slice["iid"]
 
         return record
 
@@ -242,7 +240,7 @@ class Releases(GitlabSubStream):
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         super().transform(record, stream_slice, **kwargs)
-        record['project_id'] = stream_slice["id"]
+        record["project_id"] = stream_slice["id"]
 
         return record
 
@@ -265,14 +263,14 @@ class Pipelines(GitlabSubStream):
 class PipelinesExtended(GitlabSubStream):
     primary_key = ["project_id", "id"]
     path_list = ["project_id", "id"]
-    path_template = 'projects/{project_id}/pipelines/{id}'
+    path_template = "projects/{project_id}/pipelines/{id}"
 
 
 class Jobs(GitlabSubStream):
     primary_key = ["project_id", "pipeline_id", "id"]
     flatten_id_keys = ["user", "pipeline", "runner", "commit"]
     path_list = ["project_id", "id"]
-    path_template = 'projects/{project_id}/pipelines/{id}/jobs'
+    path_template = "projects/{project_id}/pipelines/{id}/jobs"
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         super().transform(record, stream_slice, **kwargs)

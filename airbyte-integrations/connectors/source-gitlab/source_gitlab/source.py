@@ -33,15 +33,15 @@ from .auth import GitlabAuthenticator
 from .streams import (
     Branches,
     Commits,
-    Epics,
     EpicIssues,
+    Epics,
     Groups,
     Issues,
     Jobs,
     Labels,
     Members,
-    MergeRequests,
     MergeRequestCommits,
+    MergeRequests,
     Milestones,
     Pipelines,
     PipelinesExtended,
@@ -104,10 +104,7 @@ class SourceGitlab(AbstractSource):
         # Enabling additional streams according to the setting
         if config["ultimate_license"]:
             epics = Epics(parent_stream=groups, **auth_params)
-            streams += [
-                epics,
-                EpicIssues(parent_stream=epics, **auth_params)
-            ]
+            streams += [epics, EpicIssues(parent_stream=epics, **auth_params)]
 
         if config["fetch_merge_request_commits"]:
             streams.append(MergeRequestCommits(parent_stream=merge_requests, **auth_params))
