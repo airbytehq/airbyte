@@ -27,19 +27,24 @@ package io.airbyte.integrations.destination.jdbc.copy.s3;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class S3Config {
-
+  private final String endPoint;
   private final String bucketName;
   private final String accessKeyId;
   private final String secretAccessKey;
   private final String region;
   private final Integer partSize;
 
-  public S3Config(String bucketName, String accessKeyId, String secretAccessKey, String region, Integer partSize) {
+  public S3Config(String endPoint, String bucketName, String accessKeyId, String secretAccessKey, String region, Integer partSize) {
+    this.endPoint = endPoint;
     this.bucketName = bucketName;
     this.accessKeyId = accessKeyId;
     this.secretAccessKey = secretAccessKey;
     this.region = region;
     this.partSize = partSize;
+  }
+
+  public String getEndPoint() {
+    return endPoint;
   }
 
   public String getBucketName() {
@@ -68,6 +73,7 @@ public class S3Config {
       partSize = config.get("part_size").asInt();
     }
     return new S3Config(
+        config.get("s3_endpoint").asText(),
         config.get("s3_bucket_name").asText(),
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
