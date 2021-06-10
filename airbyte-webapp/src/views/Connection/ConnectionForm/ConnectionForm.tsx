@@ -58,8 +58,8 @@ type FormValues = {
   frequency: string;
   prefix: string;
   syncCatalog: SyncSchema;
-  transformations: Transformation[];
-  normalization: NormalizationType;
+  transformations?: Transformation[];
+  normalization?: NormalizationType;
 };
 
 type ConnectionFormProps = {
@@ -118,6 +118,10 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const initialSchema = useInitialSchema(props.syncCatalog);
   const frequencies = useFrequencyDropdownData();
 
+  // TODO: pick from destinations when PR is merged
+  const supportsNormalization = true;
+  const supportsTransformations = true;
+
   const transformations: Transformation[] | undefined = useMemo(
     () =>
       operations.filter(
@@ -137,7 +141,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       return NormalizationType.RAW;
     }
 
-    return normalization;
+    return normalization ?? NormalizationType.BASIC;
   }, [operations]);
 
   const onFormSubmit = useCallback(
@@ -175,15 +179,23 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
 
+  const initialValues: FormValues = {
+    syncCatalog: initialSchema,
+    frequency: frequencyValue || "",
+    prefix: prefixValue || "",
+  };
+
+  if (supportsTransformations) {
+    initialValues.transformations = transformations ?? [];
+  }
+
+  if (supportsNormalization) {
+    initialValues.normalization = normalization;
+  }
+
   return (
     <Formik
-      initialValues={{
-        syncCatalog: initialSchema,
-        frequency: frequencyValue || "",
-        prefix: prefixValue || "",
-        transformations: transformations ?? [],
-        normalization: normalization ?? NormalizationType.BASIC,
-      }}
+      initialValues={initialValues}
       validationSchema={connectionValidationSchema}
       onSubmit={onFormSubmit}
     >
@@ -255,18 +267,24 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             additionalControl={additionalSchemaControl}
             component={SchemaField}
           />
-          <SectionTitle>
-            <FormattedMessage id="form.normalizationTransformation" />
-          </SectionTitle>
-          <Field name="normalization" component={NormalizationField} />
-          <FieldArray name="transformations">
-            {(formProps) => (
-              <TransformationField
-                defaultTransformation={DEFAULT_TRANSFORMATION}
-                {...formProps}
-              />
-            )}
-          </FieldArray>
+          {supportsNormalization || supportsTransformations ? (
+            <SectionTitle>
+              <FormattedMessage id="form.normalizationTransformation" />
+            </SectionTitle>
+          ) : null}
+          {supportsNormalization && (
+            <Field name="normalization" component={NormalizationField} />
+          )}
+          {supportsTransformations && (
+            <FieldArray name="transformations">
+              {(formProps) => (
+                <TransformationField
+                  defaultTransformation={DEFAULT_TRANSFORMATION}
+                  {...formProps}
+                />
+              )}
+            </FieldArray>
+          )}
           {!isEditMode && (
             <EditLaterMessage
               message={<FormattedMessage id="form.dataSync.message" />}

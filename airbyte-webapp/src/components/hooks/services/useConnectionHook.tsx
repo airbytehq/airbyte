@@ -98,7 +98,7 @@ const useConnection = (): {
   resetConnection: (connId: string) => Promise<void>;
   deleteConnection: (payload: { connectionId: string }) => Promise<void>;
 } => {
-  const { push, history } = useRouter();
+  const { push } = useRouter();
   const { finishOnboarding, workspace } = useWorkspace();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
@@ -214,7 +214,7 @@ const useConnection = (): {
   }) => {
     await deleteConnectionResource({ connectionId });
 
-    history.length > 2 ? history.goBack() : push(Routes.Source);
+    push(Routes.Connections);
   };
 
   const resetConnection = useCallback(

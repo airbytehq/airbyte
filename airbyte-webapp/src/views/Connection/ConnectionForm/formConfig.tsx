@@ -86,14 +86,18 @@ const DEFAULT_TRANSFORMATION: Transformation = {
 
 function mapFormPropsToOperation(
   values: {
-    transformations: Transformation[];
-    normalization: NormalizationType;
+    transformations?: Transformation[];
+    normalization?: NormalizationType;
   },
   initialOperations: Operation[] = []
 ): Operation[] {
-  const newOperations: Operation[] = [...values.transformations];
+  const newOperations: Operation[] = [];
 
-  if (values.normalization !== NormalizationType.RAW) {
+  if (values.transformations) {
+    newOperations.push(...values.transformations);
+  }
+
+  if (values.normalization && values.normalization !== NormalizationType.RAW) {
     const normalizationOperation = initialOperations.find(
       (op) =>
         op.operatorConfiguration.operatorType === OperatorType.Normalization
