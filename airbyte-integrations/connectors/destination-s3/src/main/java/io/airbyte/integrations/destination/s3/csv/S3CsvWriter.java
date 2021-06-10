@@ -58,7 +58,8 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   public S3CsvWriter(S3DestinationConfig config,
                      AmazonS3 s3Client,
                      ConfiguredAirbyteStream configuredStream,
-                     Timestamp uploadTimestamp) throws IOException {
+                     Timestamp uploadTimestamp)
+      throws IOException {
     super(config, s3Client, configuredStream);
 
     S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();

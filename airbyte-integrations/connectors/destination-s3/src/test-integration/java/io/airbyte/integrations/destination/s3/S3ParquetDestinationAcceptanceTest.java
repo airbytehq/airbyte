@@ -57,7 +57,8 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
                                            String streamName,
                                            String namespace,
-                                           JsonNode streamSchema) throws IOException, URISyntaxException {
+                                           JsonNode streamSchema)
+      throws IOException, URISyntaxException {
     JsonSchemaConverter schemaConverter = new JsonSchemaConverter();
     schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
     JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
@@ -70,8 +71,7 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
       URI uri = new URI(String.format("s3a://%s/%s", object.getBucketName(), object.getKey()));
       var path = new org.apache.hadoop.fs.Path(uri);
       Configuration hadoopConfig = S3ParquetWriter.getHadoopConfig(config);
-      ParquetReader<GenericData.Record> parquetReader = ParquetReader
-          .<GenericData.Record>builder(new AvroReadSupport<>(), path)
+      ParquetReader<GenericData.Record> parquetReader = ParquetReader.<GenericData.Record>builder(new AvroReadSupport<>(), path)
           .withConf(hadoopConfig)
           .build();
 
@@ -91,8 +91,8 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
   /**
    * Convert an Airbyte JsonNode from Parquet to a plain one.
    * <li>Remove the airbyte id and emission timestamp fields.</li>
-   * <li>Remove null fields that must exist in Parquet but does not in original Json.</li>
-   * This function mutates the input Json.
+   * <li>Remove null fields that must exist in Parquet but does not in original Json.</li> This
+   * function mutates the input Json.
    */
   private static JsonNode pruneAirbyteJson(JsonNode input) {
     ObjectNode output = (ObjectNode) input;

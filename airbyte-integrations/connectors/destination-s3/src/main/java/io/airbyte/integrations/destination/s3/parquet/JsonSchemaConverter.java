@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.s3.parquet;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,8 +62,10 @@ public class JsonSchemaConverter {
   /**
    * @return - Avro schema based on the input {@code jsonSchema}.
    */
-  public Schema getAvroSchema(JsonNode jsonSchema, String name, @Nullable String namespace,
-      boolean appendAirbyteFields) {
+  public Schema getAvroSchema(JsonNode jsonSchema,
+                              String name,
+                              @Nullable String namespace,
+                              boolean appendAirbyteFields) {
     String stdName = NAME_TRANSFORMER.getIdentifier(name);
     RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
     if (!stdName.equals(name)) {
@@ -50,9 +76,7 @@ public class JsonSchemaConverter {
           String.format("%s%s%s",
               S3ParquetConstants.DOC_KEY_ORIGINAL_NAME,
               S3ParquetConstants.DOC_KEY_VALUE_DELIMITER,
-              name
-          )
-      );
+              name));
     }
     if (namespace != null) {
       builder = builder.namespace(namespace);
@@ -80,8 +104,7 @@ public class JsonSchemaConverter {
         fieldBuilder = fieldBuilder.doc(String.format("%s%s%s",
             S3ParquetConstants.DOC_KEY_ORIGINAL_NAME,
             S3ParquetConstants.DOC_KEY_VALUE_DELIMITER,
-            fieldName
-        ));
+            fieldName));
       }
       assembler = fieldBuilder.type(getFieldSchema(fieldName, fieldDefinition)).withDefault(null);
     }
@@ -121,8 +144,8 @@ public class JsonSchemaConverter {
   }
 
   /**
-   * Currently this method assumes that there are at most two type specification.
-   * E.g. ["null", "number"]. Fields like "allOf", "anyOf", "oneOf" are not supported.
+   * Currently this method assumes that there are at most two type specification. E.g. ["null",
+   * "number"]. Fields like "allOf", "anyOf", "oneOf" are not supported.
    */
   static List<JsonSchemaType> getTypes(String fieldName, JsonNode type) {
     if (type == null) {
