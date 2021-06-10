@@ -39,7 +39,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import org.jetbrains.annotations.NotNull;
@@ -61,14 +63,21 @@ public class MigrationAcceptanceTest {
     secondRun();
   }
 
-  private Consumer<OutputFrame> logConsumerForServer(String versionToCompare,
-                                                     AtomicBoolean foundVersion) {
+  private Consumer<OutputFrame> logConsumerForServer(Set<String> logs) {
     return c -> {
       if (c != null && c.getBytes() != null) {
         String log = new String(c.getBytes());
-        if (log.contains(versionToCompare)) {
-          foundVersion.set(true);
+
+        String keyToRemove = "";
+        for (String expected : logs) {
+          if (log.contains(expected)) {
+            keyToRemove = expected;
+          }
         }
+        if (!keyToRemove.isEmpty()) {
+          logs.remove(keyToRemove);
+        }
+
         LOGGER.info(log);
       }
     };
@@ -82,10 +91,11 @@ public class MigrationAcceptanceTest {
         .of(Resources.getResource("migration/docker-compose-migration-test-first-run.yaml").toURI())
         .toFile();
 
-    AtomicBoolean foundVersion17 = new AtomicBoolean(false);
+    Set<String> logsToExpect = new HashSet<>();
+    logsToExpect.add("Version: 0.17.0-alpha");
 
     DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(firstRun)
-        .withLogConsumer("server", logConsumerForServer("Version: 0.17.0-alpha", foundVersion17))
+        .withLogConsumer("server", logConsumerForServer(logsToExpect))
         .withEnv(environmentVariables);
 
     CustomDockerComposeContainer customDockerComposeContainer = new CustomDockerComposeContainer(
@@ -95,7 +105,7 @@ public class MigrationAcceptanceTest {
 
     Thread.sleep(10000);
 
-    assertTrue(foundVersion17.get());
+    assertTrue(logsToExpect.isEmpty());
     ApiClient apiClient = getApiClient();
     healthCheck(apiClient);
     populateDataForFirstRun(apiClient);
@@ -105,27 +115,26 @@ public class MigrationAcceptanceTest {
   private void secondRun()
       throws URISyntaxException, InterruptedException, ApiException {
 
-    // Starting migrations. Current version: 0.17.0-alpha, Target version: 0.24.0-alpha
-    // Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.
-    // Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.
-    // Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.
-    // Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.
-    // Migrating from version: 0.20.0-alpha to version 0.21.0-alpha.
-    // Migrating from version: 0.21.0-alpha to version 0.22.0-alpha.
-    // Migrating from version: 0.22.0-alpha to version 0.23.0-alpha.
-    // Migrating from version: 0.23.0-alpha to version 0.24.0-alpha.
-    // Migrations complete. Now on version: 0.24.0-alpha
-
     Map<String, String> environmentVariables = getEnvironmentVariables("0.24.3-alpha");
     final File firstRun = Path
         .of(Resources.getResource("migration/docker-compose-migration-test-second-run.yaml")
             .toURI())
         .toFile();
 
-    AtomicBoolean foundVersion24 = new AtomicBoolean(false);
+    Set<String> logsToExpect = new HashSet<>();
+    logsToExpect.add("Version: 0.24.3-alpha");
+    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha, Target version: 0.24.0-alpha");
+    logsToExpect.add("Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.");
+    logsToExpect.add("Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.");
+    logsToExpect.add("Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.");
+    logsToExpect.add("Migrating from version: 0.20.0-alpha to version 0.21.0-alpha.");
+    logsToExpect.add("Migrating from version: 0.22.0-alpha to version 0.23.0-alpha.");
+    logsToExpect.add("Migrations complete. Now on version: 0.24.0-alpha");
+    logsToExpect.add("Successful import of airbyte configs");
+    logsToExpect.add("Deleting directory /data/config/STANDARD_SYNC_SCHEDULE");
 
     DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(firstRun)
-        .withLogConsumer("server", logConsumerForServer("Version: 0.24.3-alpha", foundVersion24))
+        .withLogConsumer("server", logConsumerForServer(logsToExpect))
         .withEnv(environmentVariables);
 
     dockerComposeContainer.start();
@@ -134,7 +143,7 @@ public class MigrationAcceptanceTest {
 
     healthCheck(getApiClient());
 
-    assertTrue(foundVersion24.get());
+    assertTrue(logsToExpect.isEmpty());
     dockerComposeContainer.stop();
   }
 
