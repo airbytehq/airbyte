@@ -1842,6 +1842,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationSyncMode"
+        supportsDbt:
+          type: boolean
+        supportsNormalization:
+          type: boolean
     # DESTINATION
     DestinationId:
       type: string
