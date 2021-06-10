@@ -11,7 +11,6 @@ services:
   init:
     image: airbyte/init:${VERSION}
     logging: *default-logging
-    #    container_name: init-migration-test
     command: /bin/sh -c "./scripts/create_mount_directories.sh /local_parent ${HACK_LOCAL_ROOT_PARENT} ${LOCAL_ROOT}"
     environment:
       - LOCAL_ROOT=${LOCAL_ROOT}
@@ -21,7 +20,6 @@ services:
   db:
     image: airbyte/db:${VERSION}
     logging: *default-logging
-    #    container_name: airbyte-db-migration-test
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${DATABASE_USER}
@@ -30,7 +28,6 @@ services:
       - db:/var/lib/postgresql/data
   seed:
     image: airbyte/seed:${VERSION}
-    #    container_name: airbyte-data-seed-migration-test
     # Pre-populate the volume if it is empty.
     # See: https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
     volumes:
@@ -41,7 +38,6 @@ services:
       dockerfile: Dockerfile
       context: ../../../../
     logging: *default-logging
-    #    container_name: airbyte-server-migration-test
     restart: unless-stopped
     environment:
       - WEBAPP_URL=${WEBAPP_URL}
@@ -65,7 +61,6 @@ services:
   airbyte-temporal:
     image: temporalio/auto-setup:1.7.0
     logging: *default-logging
-    #    container_name: airbyte-temporal-migration-test
     restart: unless-stopped
     ports:
       - 6233:6233

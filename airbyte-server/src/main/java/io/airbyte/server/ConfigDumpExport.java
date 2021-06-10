@@ -76,6 +76,14 @@ public class ConfigDumpExport {
     }
   }
 
+  public void deleteOrphanDirectories() {
+    try {
+    configDumpUtil.orphanDirectories();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private void exportVersionFile(Path tempFolder) throws IOException {
     final File versionFile = Files.createFile(tempFolder.resolve(VERSION_FILE_NAME)).toFile();
     FileUtils.writeStringToFile(versionFile, version, Charset.defaultCharset());
@@ -117,7 +125,7 @@ public class ConfigDumpExport {
     }
   }
 
-  protected void writeConfigsToArchive(final Path storageRoot,
+  private void writeConfigsToArchive(final Path storageRoot,
                                        final String schemaType,
                                        final List<JsonNode> configList)
       throws IOException {
@@ -134,7 +142,7 @@ public class ConfigDumpExport {
     }
   }
 
-  protected static Path buildConfigPath(final Path storageRoot, final String schemaType) {
+  private static Path buildConfigPath(final Path storageRoot, final String schemaType) {
     return storageRoot.resolve(CONFIG_FOLDER_NAME)
         .resolve(String.format("%s.yaml", schemaType));
   }

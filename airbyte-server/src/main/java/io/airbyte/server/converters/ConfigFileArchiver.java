@@ -119,7 +119,7 @@ public class ConfigFileArchiver {
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeDestinationConnection(config)));
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC, StandardSync.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSync(config)));
-        LOGGER.debug("Successful import of airbyte configs");
+        LOGGER.info("Successful import of airbyte configs");
       }
     });
   }

@@ -98,6 +98,7 @@ public class RunMigration implements Runnable, AutoCloseable {
       }
 
       isSuccessful = true;
+      configDumpExport.deleteOrphanDirectories();
     } catch (IOException e) {
       throw new RuntimeException("Automatic migration failed", e);
     }
