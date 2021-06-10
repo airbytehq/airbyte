@@ -19,6 +19,11 @@
   dockerRepository: airbyte/destination-bigquery
   dockerImageTag: 0.3.5
   documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
+- destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
+  name: BigQuery Structured
+  dockerRepository: airbyte/destination-bigquery-struct
+  dockerImageTag: dev
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/bigquery
 - destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   name: Snowflake
   dockerRepository: airbyte/destination-snowflake

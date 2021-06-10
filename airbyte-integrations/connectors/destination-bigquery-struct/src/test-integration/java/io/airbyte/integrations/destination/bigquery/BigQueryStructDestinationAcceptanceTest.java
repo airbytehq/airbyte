@@ -43,10 +43,17 @@ import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,12 +64,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class BigQueryStructDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStructDestinationAcceptanceTest.class);
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
@@ -70,16 +79,17 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   private static final String CONFIG_PROJECT_ID = "project_id";
   private static final String CONFIG_DATASET_LOCATION = "dataset_location";
   private static final String CONFIG_CREDS = "credentials_json";
+  private static final List<String> AIRBYTE_COLUMNS = List.of(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
 
   private BigQuery bigquery;
   private Dataset dataset;
   private boolean tornDown;
   private JsonNode config;
-  private StandardNameTransformer namingResolver = new StandardNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-bigquery:dev";
+    return "airbyte/destination-bigquery-struct:dev";
   }
 
   @Override
@@ -91,11 +101,6 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   protected JsonNode getFailCheckConfig() throws Exception {
     ((ObjectNode) config).put(CONFIG_PROJECT_ID, "fake");
     return config;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
   }
 
   @Override
@@ -126,11 +131,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
                                            String namespace,
                                            JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
-        .stream()
-        .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())
-        .map(Jsons::deserialize)
-        .collect(Collectors.toList());
+    return new ArrayList<>(retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), namingResolver.getIdentifier(namespace)));
   }
 
   @Override
@@ -158,7 +159,9 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
           Map<String, Object> jsonMap = Maps.newHashMap();
           for (Field field : fields) {
             Object value = getTypedFieldValue(row, field);
-            jsonMap.put(field.getName(), value);
+            if (!isAirbyteColumn(field.getName()) && value != null) {
+              jsonMap.put(field.getName(), value);
+            }
           }
           return jsonMap;
         })
@@ -166,12 +169,19 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .collect(Collectors.toList());
   }
 
+  private boolean isAirbyteColumn(String name) {
+    if (AIRBYTE_COLUMNS.contains(name)) {
+      return true;
+    }
+    return name.startsWith("_airbyte") && name.endsWith("_hashid");
+  }
+
   private Object getTypedFieldValue(FieldValueList row, Field field) {
     FieldValue fieldValue = row.get(field.getName());
     if (fieldValue.getValue() != null) {
       return switch (field.getType().getStandardType()) {
         case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
-        case INT64 -> fieldValue.getLongValue();
+        case INT64 -> fieldValue.getNumericValue().intValue();
         case STRING -> fieldValue.getStringValue();
         case BOOL -> fieldValue.getBooleanValue();
         case STRUCT -> fieldValue.getRecordValue().toString();
@@ -274,6 +284,28 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Verify that the integration successfully writes normalized records successfully (without actually
+   * running the normalization module) Tests a wide variety of messages an schemas (aspirationally,
+   * anyway).
+   */
+  @ParameterizedTest
+  @ArgumentsSource(DataArgumentsProvider.class)
+  public void testSyncNormalizedWithoutNormalization(String messagesFilename, String catalogFilename) throws Exception {
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
+    final JsonNode config = getConfig();
+    // don't run normalization though
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
+
+    String defaultSchema = getDefaultSchema(config);
+    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    assertSameMessages(messages, actualMessages, true);
   }
 
 }
