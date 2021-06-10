@@ -12,7 +12,7 @@ import { equal } from "utils/objects";
 
 import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
 
-import BottomBlock from "./components/BottomBlock";
+import CreateControls from "./components/CreateControls";
 import Connector from "./components/Connector";
 import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
@@ -169,8 +169,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         transformations: transformations ?? [],
         normalization: normalization ?? NormalizationType.BASIC,
       }}
-      validateOnBlur={true}
-      validateOnChange={true}
       validationSchema={connectionValidationSchema}
       onSubmit={onFormSubmit}
     >
@@ -263,7 +261,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             <>
               <EditControls
                 isSubmitting={isLoading || isSubmitting}
-                isValid={isValid}
                 dirty={dirty || !equal(initialSchema, values.syncCatalog)}
                 resetForm={() => {
                   resetForm();
@@ -272,7 +269,11 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   }
                 }}
                 successMessage={successMessage}
-                errorMessage={errorMessage}
+                errorMessage={
+                  errorMessage || !isValid
+                    ? formatMessage({ id: "connectionForm.validation.error" })
+                    : null
+                }
                 editSchemeMode={editSchemeMode}
               />
               {modalIsOpen && (
@@ -287,11 +288,15 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               )}
             </>
           ) : (
-            <BottomBlock
+            <CreateControls
               additionBottomControls={additionBottomControls}
               isSubmitting={isSubmitting}
               isValid={isValid}
-              errorMessage={errorMessage}
+              errorMessage={
+                errorMessage || !isValid
+                  ? formatMessage({ id: "connectionForm.validation.error" })
+                  : null
+              }
             />
           )}
         </FormContainer>

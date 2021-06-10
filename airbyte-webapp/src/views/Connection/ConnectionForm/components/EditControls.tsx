@@ -6,7 +6,6 @@ import { Button, Spinner } from "components";
 
 type IProps = {
   isSubmitting: boolean;
-  isValid: boolean;
   dirty: boolean;
   resetForm: () => void;
   successMessage?: React.ReactNode;

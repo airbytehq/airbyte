@@ -2,12 +2,13 @@ import React from "react";
 import styled from "styled-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
-import { useFormik } from "formik";
+import { getIn, useFormik } from "formik";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
 import { Transformation } from "core/domain/connection/operation";
 import { operationService } from "core/domain/connection/OperationService";
 import { equal } from "utils/objects";
+import { FormikErrors } from "formik/dist/types";
 
 const Content = styled.div`
   display: flex;
@@ -54,6 +55,22 @@ const validationSchema = yup.object({
   }),
 });
 
+function prepareLabelFields(
+  errors: FormikErrors<Transformation>,
+  name: string
+): { error?: boolean; message?: React.ReactNode } {
+  const error = getIn(errors, name);
+
+  const fields: { error?: boolean; message?: React.ReactNode } = {};
+
+  if (error) {
+    fields.error = true;
+    fields.message = <FormattedMessage id={error} />;
+  }
+
+  return fields;
+}
+
 // enum with only one value for the moment
 const TransformationTypes = [{ value: "custom", text: "Custom DBT" }];
 
@@ -77,16 +94,31 @@ const TransformationForm: React.FC<TransformationProps> = ({
     <>
       <Content>
         <Column>
-          <Label label={<FormattedMessage id="form.transformationName" />}>
+          <Label
+            {...prepareLabelFields(formik.errors, "name")}
+            label={<FormattedMessage id="form.transformationName" />}
+          >
             <Input {...formik.getFieldProps("name")} />
           </Label>
 
-          <Label label={<FormattedMessage id="form.dockerUrl" />}>
+          <Label
+            {...prepareLabelFields(
+              formik.errors,
+              "operatorConfiguration.dbt.dockerImage"
+            )}
+            label={<FormattedMessage id="form.dockerUrl" />}
+          >
             <Input
               {...formik.getFieldProps("operatorConfiguration.dbt.dockerImage")}
             />
           </Label>
-          <Label label={<FormattedMessage id="form.repositoryUrl" />}>
+          <Label
+            {...prepareLabelFields(
+              formik.errors,
+              "operatorConfiguration.dbt.gitRepoUrl"
+            )}
+            label={<FormattedMessage id="form.repositoryUrl" />}
+          >
             <Input
               {...formik.getFieldProps("operatorConfiguration.dbt.gitRepoUrl")}
               placeholder={formatMessage({
@@ -106,6 +138,10 @@ const TransformationForm: React.FC<TransformationProps> = ({
           </Label>
           <Label
             label={<FormattedMessage id="form.entrypoint" />}
+            {...prepareLabelFields(
+              formik.errors,
+              "operatorConfiguration.dbt.dbtArguments"
+            )}
             message={
               <a
                 href="https://docs.getdbt.com/reference/dbt-commands"

@@ -9,11 +9,11 @@ import {
 
 import { SyncSchema } from "core/domain/catalog";
 import { CommonRequestError } from "core/request/CommonRequestError";
+import { Operation } from "core/domain/connection/operation";
 import { Source } from "./Source";
 import { Destination } from "./Destination";
 
 import BaseResource from "./BaseResource";
-import { Operation } from "core/domain/connection/operation";
 
 export type ScheduleProperties = {
   units: number;

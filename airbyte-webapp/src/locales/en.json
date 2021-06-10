@@ -109,6 +109,7 @@
   "form.gitBranch": "Git branch name",
   "form.selectType": "Select a type",
   "form.repositoryUrl.placeholder": "https://github.com/<organisation>/<git_repo>.git",
+  "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
 
   "preferences.headTitle": "Preferences",
   "preferences.title": "Specify your preferences",

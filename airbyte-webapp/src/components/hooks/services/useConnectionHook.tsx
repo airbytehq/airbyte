@@ -6,7 +6,7 @@ import { AnalyticsService } from "core/analytics/AnalyticsService";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
 import { SourceDefinition } from "core/resources/SourceDefinition";
-import FrequencyConfig from "data/FrequencyConfig.json";
+import FrequencyConfig from "config/FrequencyConfig.json";
 import { Source } from "core/resources/Source";
 import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";

@@ -6,7 +6,7 @@ import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
 import ContentCard from "components/ContentCard";
-import FrequencyConfig from "data/FrequencyConfig.json";
+import FrequencyConfig from "config/FrequencyConfig.json";
 import useConnection, {
   useConnectionLoad,
   ValuesProps,

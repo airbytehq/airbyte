@@ -1,7 +1,6 @@
 import { useFetcher } from "rest-hooks";
 
-import config from "config";
-import FrequencyConfig from "data/FrequencyConfig.json";
+import FrequencyConfig from "config/FrequencyConfig.json";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import useConnection from "components/hooks/services/useConnectionHook";
@@ -31,7 +30,6 @@ const useSyncActions = (): {
     );
 
     AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
       action:
         connection.status === "active"
           ? "Disable connection"
@@ -47,7 +45,6 @@ const useSyncActions = (): {
 
   const syncManualConnection = async (connection: Connection) => {
     AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
       action: "Full refresh sync",
       connector_source: connection.source?.sourceName,
       connector_source_id: connection.source?.sourceDefinitionId,
