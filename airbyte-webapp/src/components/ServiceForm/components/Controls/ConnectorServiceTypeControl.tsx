@@ -81,7 +81,7 @@ const ConnectorServiceTypeControl: React.FC<{
     [setValue, onChangeServiceType]
   );
 
-  const LS = React.forwardRef((listProps: any, ref) => (
+  const CustomList = React.forwardRef((listProps: any, ref) => (
     <>
       <List ref={ref} {...listProps} />
       <BottomElement>{bottomBlock}</BottomElement>
@@ -97,7 +97,7 @@ const ConnectorServiceTypeControl: React.FC<{
       >
         <DropDown
           {...field}
-          listComponent={LS}
+          listComponent={CustomList}
           error={!!fieldMeta.error && fieldMeta.touched}
           disabled={isEditMode && !allowChangeConnector}
           hasFilter
