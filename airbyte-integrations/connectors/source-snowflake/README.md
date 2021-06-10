@@ -19,4 +19,4 @@
 ```
 
 ## For Airbyte employees
-Put the contents of the `Snowflake Integration Test Config` secret on Rippling under the `Engineering` folder into `secrets/config.json` to be able to run integration tests locally.
+Put the contents of the `Snowflake Insert Test Creds` secret on Lastpass into `secrets/config.json` to be able to run integration tests locally.
