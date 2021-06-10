@@ -2,8 +2,68 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
     "tag_name": {
       "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "released_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "upcoming_release": {
+      "type": ["null", "boolean"]
+    },
+    "milestones": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "integer"
+      }
+    },
+    "commit_path": {
+      "type": ["null", "string"]
+    },
+    "tag_path": {
+      "type": ["null", "string"]
+    },
+    "assets": {
+      "type": ["null", "object"],
+      "properties": {
+        "count": {
+          "type": ["null", "integer"]
+        },
+        "sources": {
+          "type": ["null", "array"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "format": {
+                "type": ["null", "string"]
+              },
+              "url": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "links": {
+          "type": "array"
+        }
+      }
+    },
+    "evidences": {
+      "type": ["null", "array"]
+    },
+    "_links": {
+      "type": ["null", "object"]
     },
     "author_id": {
       "type": ["null", "integer"]
@@ -13,34 +73,6 @@
     },
     "project_id": {
       "type": ["null", "integer"]
-    },
-    "description": {
-      "type": ["null", "string"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "created_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "released_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
     }
   }
 }

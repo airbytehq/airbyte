@@ -11,71 +11,6 @@
     "project_id": {
       "type": ["null", "integer"]
     },
-    "milestone_id": {
-      "type": ["null", "integer"]
-    },
-    "author_id": {
-      "type": ["null", "integer"]
-    },
-    "assignee_id": {
-      "type": ["null", "integer"]
-    },
-    "assignees": {
-      "items": {
-        "type": ["null", "integer"]
-      },
-      "type": "array"
-    },
-    "merged_by_id": {
-      "type": ["null", "integer"]
-    },
-    "closed_by_id": {
-      "type": ["null", "integer"]
-    },
-    "created_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "updated_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "merged_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "closed_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
     "title": {
       "type": ["null", "string"]
     },
@@ -85,17 +20,30 @@
     "state": {
       "type": ["null", "string"]
     },
-    "target_project_id": {
-      "type": ["null", "integer"]
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "merged_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "closed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "target_branch": {
       "type": ["null", "string"]
     },
-    "source_project_id": {
-      "type": ["null", "integer"]
-    },
     "source_branch": {
       "type": ["null", "string"]
+    },
+    "user_notes_count": {
+      "type": ["null", "integer"]
     },
     "upvotes": {
       "type": ["null", "integer"]
@@ -103,11 +51,26 @@
     "downvotes": {
       "type": ["null", "integer"]
     },
+    "assignees": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "reviewers": {
+      "type": ["null", "array"]
+    },
+    "source_project_id": {
+      "type": ["null", "integer"]
+    },
+    "target_project_id": {
+      "type": ["null", "integer"]
+    },
     "labels": {
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
-      },
-      "type": "array"
+      }
     },
     "work_in_progress": {
       "type": ["null", "boolean"]
@@ -121,8 +84,14 @@
     "sha": {
       "type": ["null", "string"]
     },
-    "user_notes_count": {
-      "type": ["null", "integer"]
+    "merge_commit_sha": {
+      "type": ["null", "string"]
+    },
+    "squash_commit_sha": {
+      "type": ["null", "string"]
+    },
+    "discussion_locked": {
+      "type": ["null", "boolean"]
     },
     "should_remove_source_branch": {
       "type": ["null", "boolean"]
@@ -130,29 +99,47 @@
     "force_remove_source_branch": {
       "type": ["null", "boolean"]
     },
-    "allow_collaboration": {
-      "type": ["null", "boolean"]
+    "reference": {
+      "type": ["null", "string"]
     },
-    "allow_maintainer_to_push": {
-      "type": ["null", "boolean"]
+    "references": {
+      "type": ["null", "object"]
     },
     "web_url": {
       "type": ["null", "string"]
     },
+    "time_stats": {
+      "type": ["null", "object"]
+    },
     "squash": {
       "type": ["null", "boolean"]
     },
-    "time_estimate": {
+    "task_completion_status": {
+      "type": ["null", "object"]
+    },
+    "has_conflicts": {
+      "type": ["null", "boolean"]
+    },
+    "blocking_discussions_resolved": {
+      "type": ["null", "boolean"]
+    },
+    "approvals_before_merge": {
+      "type": ["null", "boolean", "string", "object"]
+    },
+    "author_id": {
       "type": ["null", "integer"]
     },
-    "total_time_spent": {
+    "assignee_id": {
       "type": ["null", "integer"]
     },
-    "human_time_estimate": {
-      "type": ["null", "string"]
+    "closed_by_id": {
+      "type": ["null", "integer"]
     },
-    "human_total_time_spent": {
-      "type": ["null", "string"]
+    "milestone_id": {
+      "type": ["null", "integer"]
+    },
+    "merged_by_id": {
+      "type": ["null", "integer"]
     }
   }
 }

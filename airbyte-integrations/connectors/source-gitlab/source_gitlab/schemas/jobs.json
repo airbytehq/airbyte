@@ -5,14 +5,60 @@
     "id": {
       "type": ["null", "integer"]
     },
-    "project_id": {
-      "type": ["null", "integer"]
+    "status": {
+      "type": ["null", "string"]
+    },
+    "stage": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "ref": {
+      "type": ["null", "string"]
+    },
+    "tag": {
+      "type": ["null", "boolean"]
+    },
+    "coverage": {
+      "type": ["null", "number", "string"]
+    },
+    "allow_failure": {
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "started_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "duration": {
+      "type": ["null", "number"]
+    },
+    "queued_duration": {
+      "type": ["null", "number"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "artifacts": {
+      "type": ["null", "array"]
+    },
+    "artifacts_expire_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "tag_list": {
+      "type": ["null", "array"]
     },
     "user_id": {
       "type": ["null", "integer"]
-    },
-    "commit_id": {
-      "type": ["null", "string"]
     },
     "pipeline_id": {
       "type": ["null", "integer"]
@@ -20,104 +66,11 @@
     "runner_id": {
       "type": ["null", "integer"]
     },
-    "name": {
+    "commit_id": {
       "type": ["null", "string"]
     },
-    "stage": {
-      "type": ["null", "string"]
-    },
-    "ref": {
-      "type": ["null", "string"]
-    },
-    "status": {
-      "anyOf": [
-        {
-          "type": "string",
-          "enum": [
-            "created",
-            "waiting_for_resource",
-            "pending",
-            "running",
-            "failed",
-            "success",
-            "canceled",
-            "skipped",
-            "manual"
-          ]
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "duration": {
-      "anyOf": [
-        {
-          "type": "number",
-          "format": "float"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "coverage": {
-      "anyOf": [
-        {
-          "type": "number",
-          "format": "float"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "allow_failure": {
-      "type": ["null", "boolean"]
-    },
-    "created_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "started_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "finished_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "artifacts_expire_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+    "project_id": {
+      "type": ["null", "integer"]
     }
   }
 }

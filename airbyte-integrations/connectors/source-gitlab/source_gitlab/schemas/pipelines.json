@@ -5,39 +5,28 @@
     "id": {
       "type": ["null", "integer"]
     },
-    "status": {
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "sha": {
       "type": ["null", "string"]
     },
     "ref": {
       "type": ["null", "string"]
     },
-    "sha": {
-      "type": ["null", "string"]
-    },
-    "web_url": {
+    "status": {
       "type": ["null", "string"]
     },
     "created_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "web_url": {
+      "type": ["null", "string"]
     }
   }
 }

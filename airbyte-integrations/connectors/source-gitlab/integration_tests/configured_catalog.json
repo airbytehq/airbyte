@@ -8,70 +8,37 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "path": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "visibility_level": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "lfs_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "avatar_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "web_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "request_access_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "full_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "full_path": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "projects": {
               "anyOf": [
@@ -81,10 +48,7 @@
                     "type": "object",
                     "properties": {
                       "id": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": ["null", "integer"]
                       }
                     }
                   }
@@ -96,14 +60,8 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -116,34 +74,19 @@
           "type": "object",
           "properties": {
             "approvals_before_merge": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "archived": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "avatar_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "builds_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "container_registry_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "created_at": {
               "anyOf": [
@@ -157,46 +100,25 @@
               ]
             },
             "creator_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "default_branch": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "forks_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "http_url_to_repo": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "issues_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "last_activity_at": {
               "anyOf": [
@@ -210,111 +132,60 @@
               ]
             },
             "lfs_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "merge_requests_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "merge_method": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "name_with_namespace": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "namespace": {
               "properties": {
                 "id": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "kind": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "name": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "path": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "full_path": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "parent_id": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 }
               },
               "type": "object"
             },
             "only_allow_merge_if_all_discussions_are_resolved": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "only_allow_merge_if_build_succeeds": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "open_issues_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "owner_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "path": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "path_with_namespace": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "permissions": {
               "properties": {
@@ -324,16 +195,10 @@
                       "type": "object",
                       "properties": {
                         "access_level": {
-                          "type": [
-                            "null",
-                            "integer"
-                          ]
+                          "type": ["null", "integer"]
                         },
                         "notification_level": {
-                          "type": [
-                            "null",
-                            "integer"
-                          ]
+                          "type": ["null", "integer"]
                         }
                       }
                     },
@@ -348,16 +213,10 @@
                       "type": "object",
                       "properties": {
                         "access_level": {
-                          "type": [
-                            "null",
-                            "integer"
-                          ]
+                          "type": ["null", "integer"]
                         },
                         "notification_level": {
-                          "type": [
-                            "null",
-                            "integer"
-                          ]
+                          "type": ["null", "integer"]
                         }
                       }
                     },
@@ -370,28 +229,16 @@
               "type": "object"
             },
             "public": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "public_builds": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "request_access_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "shared_runners_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "shared_with_groups": {
               "anyOf": [
@@ -401,22 +248,13 @@
                     "type": "object",
                     "properties": {
                       "group_id": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": ["null", "integer"]
                       },
                       "group_name": {
-                        "type": [
-                          "null",
-                          "string"
-                        ]
+                        "type": ["null", "string"]
                       },
                       "group_access_level": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": ["null", "integer"]
                       }
                     }
                   }
@@ -427,54 +265,30 @@
               ]
             },
             "snippets_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "ssh_url_to_repo": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "star_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "statistics": {
               "properties": {
                 "commit_count": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "storage_size": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "repository_size": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "lfs_objects_size": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "job_artifacts_size": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 }
               },
               "type": "object"
@@ -484,10 +298,7 @@
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 },
                 {
@@ -496,39 +307,21 @@
               ]
             },
             "visibility_level": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "visibility": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "web_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "wiki_enabled": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -541,69 +334,36 @@
           "type": "object",
           "properties": {
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "merged": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "protected": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "default": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "developers_can_push": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "developers_can_merge": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "can_push": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "commit_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -616,40 +376,22 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "short_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "title": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "author_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "author_email": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "authored_date": {
               "anyOf": [
@@ -663,16 +405,10 @@
               ]
             },
             "committer_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "committer_email": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "committed_date": {
               "anyOf": [
@@ -697,26 +433,17 @@
               ]
             },
             "message": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "allow_failure": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "parent_ids": {
               "anyOf": [
                 {
                   "type": "array",
                   "items": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 },
                 {
@@ -727,36 +454,21 @@
             "stats": {
               "properties": {
                 "additions": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "deletions": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 },
                 "total": {
-                  "type": [
-                    "null",
-                    "integer"
-                  ]
+                  "type": ["null", "integer"]
                 }
               },
               "type": "object"
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -769,80 +481,44 @@
           "type": "object",
           "properties": {
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "iid": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "milestone_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "author_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "assignee_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "assignees": {
               "items": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "type": "array"
             },
             "closed_by_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "title": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "state": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "labels": {
               "items": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "type": "array"
             },
@@ -880,111 +556,57 @@
               ]
             },
             "subscribed": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "upvotes": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "downvotes": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "merge_requests_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "user_notes_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "due_date": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "weight": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "web_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "confidential": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "discussion_locked": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "has_tasks": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "task_status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "time_estimate": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "total_time_spent": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "human_time_estimate": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "human_total_time_spent": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -997,58 +619,31 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "user_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "commit_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "pipeline_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "runner_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "stage": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "ref": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "status": {
               "anyOf": [
@@ -1094,10 +689,7 @@
               ]
             },
             "allow_failure": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "created_at": {
               "anyOf": [
@@ -1145,14 +737,8 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1165,58 +751,31 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "iid": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "group_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "title": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "start_date": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "due_date": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "state": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "created_at": {
               "anyOf": [
@@ -1242,14 +801,8 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1262,58 +815,31 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "iid": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "group_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "title": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "start_date": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "due_date": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "state": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "created_at": {
               "anyOf": [
@@ -1339,14 +865,8 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1359,39 +879,21 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "user_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "access_level": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1404,63 +906,33 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "group_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "user_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "username": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "access_level": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "expires_at": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "state": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1473,87 +945,45 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "color": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "text_color": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "open_issues_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "closed_issues_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "open_merge_requests_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "subscribed": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "priority": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "is_project_label": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1566,75 +996,39 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "group_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "color": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "text_color": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "open_issues_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "closed_issues_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "open_merge_requests_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "subscribed": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1647,61 +1041,34 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "iid": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "milestone_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "author_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "assignee_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "assignees": {
               "items": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               },
               "type": "array"
             },
             "merged_by_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "closed_by_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "created_at": {
               "anyOf": [
@@ -1748,168 +1115,254 @@
               ]
             },
             "title": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "state": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "target_project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "target_branch": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "source_project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "source_branch": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "upvotes": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "downvotes": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "labels": {
               "items": {
-                "type": [
-                  "null",
-                  "string"
-                ]
+                "type": ["null", "string"]
               },
               "type": "array"
             },
             "work_in_progress": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "merge_when_pipeline_succeeds": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "merge_status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sha": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "user_notes_count": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "should_remove_source_branch": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "force_remove_source_branch": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "allow_collaboration": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "allow_maintainer_to_push": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "web_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "squash": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "time_estimate": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "total_time_spent": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "human_time_estimate": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "human_total_time_spent": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "merge_request_commits",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "iid": {
+              "type": ["null", "integer"]
+            },
+            "project_id": {
+              "type": ["null", "integer"]
+            },
+            "milestone_id": {
+              "type": ["null", "integer"]
+            },
+            "author_id": {
+              "type": ["null", "integer"]
+            },
+            "assignee_id": {
+              "type": ["null", "integer"]
+            },
+            "assignees": {
+              "items": {
+                "type": ["null", "integer"]
+              },
+              "type": "array"
+            },
+            "merged_by_id": {
+              "type": ["null", "integer"]
+            },
+            "closed_by_id": {
+              "type": ["null", "integer"]
+            },
+            "created_at": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "updated_at": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "merged_at": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "closed_at": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "state": {
+              "type": ["null", "string"]
+            },
+            "target_project_id": {
+              "type": ["null", "integer"]
+            },
+            "target_branch": {
+              "type": ["null", "string"]
+            },
+            "source_project_id": {
+              "type": ["null", "integer"]
+            },
+            "source_branch": {
+              "type": ["null", "string"]
+            },
+            "upvotes": {
+              "type": ["null", "integer"]
+            },
+            "downvotes": {
+              "type": ["null", "integer"]
+            },
+            "labels": {
+              "items": {
+                "type": ["null", "string"]
+              },
+              "type": "array"
+            },
+            "work_in_progress": {
+              "type": ["null", "boolean"]
+            },
+            "merge_when_pipeline_succeeds": {
+              "type": ["null", "boolean"]
+            },
+            "merge_status": {
+              "type": ["null", "string"]
+            },
+            "sha": {
+              "type": ["null", "string"]
+            },
+            "user_notes_count": {
+              "type": ["null", "integer"]
+            },
+            "should_remove_source_branch": {
+              "type": ["null", "boolean"]
+            },
+            "force_remove_source_branch": {
+              "type": ["null", "boolean"]
+            },
+            "allow_collaboration": {
+              "type": ["null", "boolean"]
+            },
+            "allow_maintainer_to_push": {
+              "type": ["null", "boolean"]
+            },
+            "web_url": {
+              "type": ["null", "string"]
+            },
+            "squash": {
+              "type": ["null", "boolean"]
+            },
+            "time_estimate": {
+              "type": ["null", "integer"]
+            },
+            "total_time_spent": {
+              "type": ["null", "integer"]
+            },
+            "human_time_estimate": {
+              "type": ["null", "string"]
+            },
+            "human_total_time_spent": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1922,40 +1375,22 @@
           "type": "object",
           "properties": {
             "tag_name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "author_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "commit_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "description": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "created_at": {
               "anyOf": [
@@ -1981,14 +1416,8 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -2001,45 +1430,24 @@
           "type": "object",
           "properties": {
             "commit_id": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "target": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "message": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -2052,34 +1460,19 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "ref": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sha": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "web_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "created_at": {
               "anyOf": [
@@ -2105,14 +1498,8 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -2125,52 +1512,28 @@
           "type": "object",
           "properties": {
             "project_id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "status": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "ref": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "sha": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "before_sha": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "tag": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "yaml_errors": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "user": {
               "properties": {
@@ -2265,21 +1628,12 @@
               ]
             },
             "web_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -2292,51 +1646,27 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "username": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "state": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "avatar_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "web_url": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

@@ -2,19 +2,30 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "project_id": {
-      "type": ["null", "integer"]
-    },
     "id": {
       "type": ["null", "integer"]
     },
-    "status": {
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "sha": {
       "type": ["null", "string"]
     },
     "ref": {
       "type": ["null", "string"]
     },
-    "sha": {
+    "status": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "web_url": {
       "type": ["null", "string"]
     },
     "before_sha": {
@@ -27,99 +38,51 @@
       "type": ["null", "string"]
     },
     "user": {
+      "type": "object",
       "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "username": {
-          "type": "string"
-        },
-        "id": {
-          "type": "integer"
+          "type": ["null", "string"]
         },
         "state": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "created_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
+          "type": ["null", "string"]
         },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "updated_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
+        "avatar_url": {
+          "type": ["null", "string"]
         },
-        {
-          "type": "null"
+        "web_url": {
+          "type": ["null", "string"]
         }
-      ]
+      }
     },
     "started_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "finished_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "committed_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "duration": {
-      "anyOf": [
-        {
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "integer"]
+    },
+    "queued_duration": {
+      "type": ["null", "number", "string"]
     },
     "coverage": {
-      "anyOf": [
-        {
-          "type": "number"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "number", "string"]
     },
-    "web_url": {
-      "type": ["null", "string"]
+    "detailed_status": {
+      "type": ["null", "object"]
     }
   }
 }

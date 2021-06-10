@@ -8,9 +8,6 @@
     "iid": {
       "type": ["null", "integer"]
     },
-    "project_id": {
-      "type": ["null", "integer"]
-    },
     "group_id": {
       "type": ["null", "integer"]
     },
@@ -20,36 +17,30 @@
     "description": {
       "type": ["null", "string"]
     },
-    "start_date": {
-      "type": ["null", "string"]
-    },
-    "due_date": {
-      "type": ["null", "string"]
-    },
     "state": {
       "type": ["null", "string"]
     },
     "created_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "due_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "start_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "expired": {
+      "type": ["null", "boolean"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
     }
   }
 }

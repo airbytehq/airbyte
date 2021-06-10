@@ -5,10 +5,10 @@
     "id": {
       "type": ["null", "integer"]
     },
-    "username": {
+    "name": {
       "type": ["null", "string"]
     },
-    "name": {
+    "username": {
       "type": ["null", "string"]
     },
     "state": {

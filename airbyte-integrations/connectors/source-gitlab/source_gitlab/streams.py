@@ -23,8 +23,8 @@
 #
 
 
-from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from abc import ABC
+from typing import Any, Iterable, Mapping, Optional, MutableMapping, List, Dict
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -34,44 +34,80 @@ from airbyte_cdk.sources.utils import casing
 
 class GitlabStream(HttpStream, ABC):
     primary_key = "id"
+    stream_base_params = {}
+    flatten_id_keys = []
+    flatten_list_keys = []
+    page = 1
+    per_page = 30
 
-    def __init__(self, api_url, **kwargs):
+    def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
         self.api_url = api_url
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"page": self.page, "per_page": self.per_page}
+        if next_page_token:
+            params.update(next_page_token)
+        params.update(self.stream_base_params)
+        return params
+
     @property
     def url_base(self) -> str:
-        """
-        :return: URL base for the API endpoint
-        """
         return f"https://{self.api_url}//api/v4/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        response_data = response.json()
+        if isinstance(response_data, dict):
+            return None
+        if len(response_data) == self.per_page:
+            self.page += 1
+            return {"page": self.page}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_data = response.json()
         if isinstance(response_data, list):
-            yield from response_data
+            for record in response_data:
+                yield self.transform(record, **kwargs)
         elif isinstance(response_data, dict):
-            yield response_data
+            yield self.transform(response_data, **kwargs)
         else:
             Exception("TODO")
 
+    def transform(self, record: Dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
+        for key in self.flatten_id_keys:
+            self._flatten_id(record, key)
+
+        for key in self.flatten_list_keys:
+            self._flatten_list(record, key)
+
+        return record
+
+    def _flatten_id(self, record: Dict[str, Any], target: str):
+        if record.get(target):
+            record[target + '_id'] = record.pop(target, {}).pop('id', None)
+        elif target in record:
+            record[target + '_id'] = record.pop(target)
+        else:
+            record[target + '_id'] = None
+
+    def _flatten_list(self, record: Dict[str, Any], target: str):
+        record[target] = [target_data.get("id") for target_data in record.get(target, [])]
+
 
 class GitlabSubStream(GitlabStream):
-    def __init__(self, parent_stream: GitlabStream, parent_similar: bool = False, repo_url = False, **kwargs):
+    path_list = ["id"]
+
+    def __init__(self, parent_stream: GitlabStream, parent_similar: bool = False, repository_part: bool = False, **kwargs):
         super().__init__(**kwargs)
         self.parent_stream = parent_stream
         self.parent_similar = parent_similar
-        self.repo_url = repo_url
+        self.repo_url = repository_part
 
     @property
     def path_template(self) -> str:
-        """
-        :return: sub stream path template
-        """
-        template = [self.parent_stream.name, "{main_id}"]
+        template = [self.parent_stream.name] + ["{" + p + "}" for p in self.path_list]
         if self.repo_url:
             template.append("repository")
         template.append(casing.camel_to_snake(self.__class__.__name__))
@@ -79,9 +115,6 @@ class GitlabSubStream(GitlabStream):
 
     @property
     def name(self) -> str:
-        """
-        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
-        """
         if self.parent_similar:
             return f"{self.parent_stream.name[:-1]}_{super().name}"
         return super().name
@@ -89,15 +122,15 @@ class GitlabSubStream(GitlabStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                yield {"main_id": record["id"]}
+                yield {k: record[k] for k in self.path_list}
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return self.path_template.format(main_id=stream_slice["main_id"])
+        return self.path_template.format(**{k: stream_slice[k] for k in self.path_list})
 
 
 class Groups(GitlabStream):
 
-    def __init__(self, group_ids, **kwargs):
+    def __init__(self, group_ids: List, **kwargs):
         super().__init__(**kwargs)
         self.group_ids = group_ids
 
@@ -108,9 +141,19 @@ class Groups(GitlabStream):
         for gid in self.group_ids:
             yield {"id": gid}
 
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        record["projects"] = [
+            {
+                "id": project["id"], "path_with_namespace": project["path_with_namespace"]
+            } for project in record.pop("projects", [])
+        ]
+        return record
+
 
 class Projects(GitlabStream):
-    def __init__(self, project_ids, parent_stream=None, **kwargs):
+    stream_base_params = {"statistics": 1}
+
+    def __init__(self, project_ids: List = None, parent_stream: GitlabStream = None, **kwargs):
         super().__init__(**kwargs)
         self.project_ids = project_ids
         self.parent_stream = parent_stream
@@ -119,17 +162,12 @@ class Projects(GitlabStream):
         return f"projects/{stream_slice['id']}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        if self.parent_stream:
-            group_project_ids = set()
-            for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-                for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                    group_project_ids.update({i["path_with_namespace"] for i in record["projects"]})
-            for pid in self.project_ids:
-                if pid in group_project_ids:
-                    yield {"id": pid.replace("/", "%2F")}
-        else:
-            for pid in self.project_ids:
-                if pid in self.parent_stream.project_ids:
+        group_project_ids = set()
+        for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
+                group_project_ids.update({i["path_with_namespace"] for i in record["projects"]})
+            for pid in group_project_ids:
+                if not self.project_ids or self.project_ids and pid in self.project_ids:
                     yield {"id": pid.replace("/", "%2F")}
 
 
@@ -138,146 +176,124 @@ class Milestones(GitlabSubStream):
 
 
 class Members(GitlabSubStream):
-    pass
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
+        return record
 
 
 class Labels(GitlabSubStream):
-    pass
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
+        return record
 
 
 class Branches(GitlabSubStream):
-    pass
+    primary_key = ["project_id", "name"]
+    flatten_id_keys = ["commit"]
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
+        return record
 
 
 class Commits(GitlabSubStream):
-    pass
+    primary_key = ["project_id", "id"]
+    stream_base_params = {"with_stats": True}
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
+        return record
 
 
 class Issues(GitlabSubStream):
-    pass
+    primary_key = ["project_id", "id"]
+    stream_base_params = {"scope": "all"}
+    flatten_id_keys = ["author", "assignee", "closed_by", "milestone"]
+    flatten_list_keys = ["assignees"]
 
 
 class MergeRequests(GitlabSubStream):
-    pass
+    primary_key = ["project_id", "id"]
+    stream_base_params = {"scope": "all"}
+    flatten_id_keys = ["author", "assignee", "closed_by", "milestone", "merged_by"]
+    flatten_list_keys = ["assignees"]
+
+
+class MergeRequestCommits(GitlabSubStream):
+    primary_key = ["project_id", "merge_request_iid", "id"]
+    path_list = ["project_id", "iid"]
+
+    path_template = 'projects/{project_id}/merge_requests/{iid}'
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        record['project_id'] = stream_slice['project_id']
+        record['merge_request_iid'] = stream_slice['iid']
+
+        return record
 
 
 class Releases(GitlabSubStream):
-    pass
+    primary_key = ["project_id", "name"]
+    flatten_id_keys = ["author", "commit"]
+    flatten_list_keys = ["milestones"]
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        record['project_id'] = stream_slice["id"]
+
+        return record
 
 
 class Tags(GitlabSubStream):
-    pass
+    primary_key = ["project_id", "name"]
+    flatten_id_keys = ["commit"]
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        record["project_id"] = stream_slice["id"]
+
+        return record
 
 
 class Pipelines(GitlabSubStream):
-    pass
+    primary_key = ["project_id", "pipeline_id", "id"]
 
 
 class PipelinesExtended(GitlabSubStream):
-    path_template = "projects/{project_id}/pipelines/{pipeline_id}"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                yield {"project_id": record["project_id"], "pipeline_id": record["id"]}
-
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return self.path_template.format(project_id=stream_slice["project_id"], pipeline_id=stream_slice["pipeline_id"])
+    primary_key = ["project_id", "id"]
+    path_list = ["project_id", "id"]
+    path_template = 'projects/{project_id}/pipelines/{id}'
 
 
 class Jobs(GitlabSubStream):
-    path_template = "projects/{project_id}/pipelines/{pipeline_id}/jobs"
+    primary_key = ["project_id", "pipeline_id", "id"]
+    flatten_id_keys = ["user", "pipeline", "runner", "commit"]
+    path_list = ["project_id", "id"]
+    path_template = 'projects/{project_id}/pipelines/{id}/jobs'
 
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                yield {"project_id": record["project_id"], "pipeline_id": record["id"]}
-
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return self.path_template.format(project_id=stream_slice["project_id"], pipeline_id=stream_slice["pipeline_id"])
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        record["project_id"] = stream_slice["project_id"]
+        return record
 
 
 class Users(GitlabSubStream):
     pass
 
 
-# TODO: check this before merge
+# TODO: No permissions to check
 class Epics(GitlabSubStream):
-    path_template = "groups/{parent_id}/epics"
+    primary_key = ["id", "iid"]
+    flatten_id_keys = ["author"]
 
 
-# TODO: check this before merge
+# TODO: No permissions to check
 class EpicIssues(GitlabSubStream):
-    path_template = "groups/{group_id}/epics/{epic_id}/issues"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                yield {"group_id": record["group_id"], "epic_id": record["id"]}
-
-    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return self.path_template.format(project_id=stream_slice["project_id"], pipeline_id=stream_slice["pipeline_id"])
-#
-#
-# class IncrementalGitlabStream(GitlabStream, ABC):
-#     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-#     state_checkpoint_interval = None
-#
-#     @property
-#     def cursor_field(self) -> str:
-#         """
-#         TODO
-#         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-#         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-#
-#         :return str: The name of the cursor field.
-#         """
-#         return []
-#
-#     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-#         """
-#         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-#         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-#         """
-#         return {}
-#
-#
-# class Employees(IncrementalGitlabStream):
-#     """
-#     TODO: Change class name to match the table/data source this stream corresponds to.
-#     """
-#
-#     # TODO: Fill in the cursor_field. Required.
-#     cursor_field = "start_date"
-#
-#     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-#     primary_key = "employee_id"
-#
-#     def path(self, **kwargs) -> str:
-#         """
-#         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-#         return "single". Required.
-#         """
-#         return "employees"
-#
-#     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-#         """
-#         TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
-#
-#         Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-#         This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-#         section of the docs for more information.
-#
-#         The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-#         necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-#         This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-#
-#         An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-#         craft that specific request.
-#
-#         For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-#         this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-#         till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-#         the date query param.
-#         """
-#         raise NotImplementedError("Implement stream slices or delete this method!")
+    primary_key = ["project_id", "epic_issue_id"]
+    path_list = ["group_id", "id"]
+    flatten_id_keys = ["milestone", "assignee", "author"]
+    flatten_list_keys = ["assignees"]
+    path_template = "groups/{group_id}/epics/{id}/issues"

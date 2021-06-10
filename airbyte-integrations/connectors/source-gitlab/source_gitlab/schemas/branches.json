@@ -14,9 +14,6 @@
     "protected": {
       "type": ["null", "boolean"]
     },
-    "default": {
-      "type": ["null", "boolean"]
-    },
     "developers_can_push": {
       "type": ["null", "boolean"]
     },
@@ -25,6 +22,12 @@
     },
     "can_push": {
       "type": ["null", "boolean"]
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
     },
     "commit_id": {
       "type": ["null", "string"]

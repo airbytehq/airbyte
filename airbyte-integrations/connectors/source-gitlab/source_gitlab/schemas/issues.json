@@ -2,31 +2,13 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "project_id": {
-      "type": ["null", "integer"]
-    },
     "id": {
       "type": ["null", "integer"]
     },
     "iid": {
       "type": ["null", "integer"]
     },
-    "milestone_id": {
-      "type": ["null", "integer"]
-    },
-    "author_id": {
-      "type": ["null", "integer"]
-    },
-    "assignee_id": {
-      "type": ["null", "integer"]
-    },
-    "assignees": {
-      "items": {
-        "type": ["null", "integer"]
-      },
-      "type": "array"
-    },
-    "closed_by_id": {
+    "project_id": {
       "type": ["null", "integer"]
     },
     "title": {
@@ -38,47 +20,38 @@
     "state": {
       "type": ["null", "string"]
     },
-    "labels": {
-      "items": {
-        "type": ["null", "string"]
-      },
-      "type": "array"
-    },
     "created_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "closed_at": {
-      "anyOf": [
-        {
-          "type": "string",
-          "format": "date-time"
-        },
-        {
-          "type": "null"
-        }
-      ]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
-    "subscribed": {
-      "type": ["null", "boolean"]
+    "labels": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "assignees": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "user_notes_count": {
+      "type": ["null", "integer"]
+    },
+    "merge_requests_count": {
+      "type": ["null", "integer"]
     },
     "upvotes": {
       "type": ["null", "integer"]
@@ -86,19 +59,7 @@
     "downvotes": {
       "type": ["null", "integer"]
     },
-    "merge_requests_count": {
-      "type": ["null", "integer"]
-    },
-    "user_notes_count": {
-      "type": ["null", "integer"]
-    },
     "due_date": {
-      "type": ["null", "string"]
-    },
-    "weight": {
-      "type": ["null", "integer"]
-    },
-    "web_url": {
       "type": ["null", "string"]
     },
     "confidential": {
@@ -107,22 +68,55 @@
     "discussion_locked": {
       "type": ["null", "boolean"]
     },
+    "issue_type": {
+      "type": ["null", "string"]
+    },
+    "web_url": {
+      "type": ["null", "string"]
+    },
+    "time_stats": {
+      "type": ["null", "object"]
+    },
+    "task_completion_status": {
+      "type": ["null", "object"]
+    },
+    "blocking_issues_count": {
+      "type": ["null", "integer"]
+    },
     "has_tasks": {
       "type": ["null", "boolean"]
     },
+    "_links": {
+      "type": ["null", "object"]
+    },
+    "references": {
+      "type": ["null", "object"]
+    },
+    "moved_to_id": {
+      "type": ["null", "integer", "string"]
+    },
+    "service_desk_reply_to": {
+      "type": ["null", "string"]
+    },
+    "author_id": {
+      "type": ["null", "integer"]
+    },
+    "assignee_id": {
+      "type": ["null", "integer"]
+    },
+    "closed_by_id": {
+      "type": ["null", "integer"]
+    },
+    "milestone_id": {
+      "type": ["null", "integer"]
+    },
+    "subscribed": {
+      "type": ["null", "boolean"]
+    },
+    "weight": {
+      "type": ["null", "integer"]
+    },
     "task_status": {
-      "type": ["null", "string"]
-    },
-    "time_estimate": {
-      "type": ["null", "integer"]
-    },
-    "total_time_spent": {
-      "type": ["null", "integer"]
-    },
-    "human_time_estimate": {
-      "type": ["null", "string"]
-    },
-    "human_total_time_spent": {
       "type": ["null", "string"]
     }
   }

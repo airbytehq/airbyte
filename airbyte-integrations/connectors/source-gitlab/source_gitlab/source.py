@@ -25,17 +25,44 @@
 
 from typing import Any, List, Mapping, Tuple
 
+import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .auth import GitlabAuthenticator
-from .streams import Groups, Projects, Milestones, Members, Labels, Branches, Commits, Issues, Users, MergeRequests, \
-    Releases, Tags, Pipelines, PipelinesExtended, Jobs, Epics
+from .streams import (
+    Branches,
+    Commits,
+    Epics,
+    EpicIssues,
+    Groups,
+    Issues,
+    Jobs,
+    Labels,
+    Members,
+    MergeRequests,
+    MergeRequestCommits,
+    Milestones,
+    Pipelines,
+    PipelinesExtended,
+    Projects,
+    Releases,
+    Tags,
+    Users,
+)
 
 
 class SourceGitlab(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        return True, None
+        if not config["projects"] and not config["groups"]:
+            raise Exception("Either groups or projects need to be provided for connect to Gitlab API")
+
+        try:
+            response = requests.get(f"https://{config['api_url']}/api/v4/projects", params={"private_token": config["private_token"]})
+            response.raise_for_status()
+            return True, None
+        except Exception as error:
+            return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = GitlabAuthenticator(token=config["private_token"])
@@ -43,34 +70,49 @@ class SourceGitlab(AbstractSource):
         gids = list(filter(None, config["groups"].split(" ")))
         pids = list(filter(None, config["projects"].split(" ")))
 
-        groups = Groups(authenticator=auth, api_url=config["api_url"], group_ids=gids)
-        if pids:
-            projects = Projects(authenticator=auth, api_url=config["api_url"], project_ids=pids, parent_stream=groups)
-        else:
-            projects = Projects(authenticator=auth, api_url=config["api_url"], project_ids=pids)
+        auth_params = dict(authenticator=auth, api_url=config["api_url"])
 
-        pipelines = Pipelines(authenticator=auth, api_url=config["api_url"], parent_stream=projects)
+        groups = Groups(group_ids=gids, **auth_params)
+        if pids:
+            projects = Projects(project_ids=pids, parent_stream=groups, **auth_params)
+        else:
+            projects = Projects(parent_stream=groups, **auth_params)
+
+        pipelines = Pipelines(parent_stream=projects, **auth_params)
+        merge_requests = MergeRequests(parent_stream=projects, **auth_params)
 
         streams = [
             groups,
             projects,
-            Branches(authenticator=auth, api_url=config["api_url"], parent_stream=projects, repo_url=True),
-            Commits(authenticator=auth, api_url=config["api_url"], parent_stream=projects, repo_url=True),
-            Issues(authenticator=auth, api_url=config["api_url"], parent_stream=projects),
-            Epics(authenticator=auth, api_url=config["api_url"], parent_stream=groups),
-            Jobs(authenticator=auth, api_url=config["api_url"], parent_stream=pipelines),
-            Milestones(authenticator=auth, api_url=config["api_url"], parent_stream=projects, parent_similar=True),
-            Milestones(authenticator=auth, api_url=config["api_url"], parent_stream=groups, parent_similar=True),
-            Members(authenticator=auth, api_url=config["api_url"], parent_stream=projects, parent_similar=True),
-            Members(authenticator=auth, api_url=config["api_url"], parent_stream=groups, parent_similar=True),
-            Labels(authenticator=auth, api_url=config["api_url"], parent_stream=projects, parent_similar=True),
-            Labels(authenticator=auth, api_url=config["api_url"], parent_stream=groups, parent_similar=True),
-            MergeRequests(authenticator=auth, api_url=config["api_url"], parent_stream=projects),
-            Releases(authenticator=auth, api_url=config["api_url"], parent_stream=projects),
-            Tags(authenticator=auth, api_url=config["api_url"], parent_stream=projects, repo_url=True),
+            Branches(parent_stream=projects, repository_part=True, **auth_params),
+            Commits(parent_stream=projects, repository_part=True, **auth_params),
+            Issues(parent_stream=projects, **auth_params),
+            Jobs(parent_stream=pipelines, **auth_params),
+            Milestones(parent_stream=projects, parent_similar=True, **auth_params),
+            Milestones(parent_stream=groups, parent_similar=True, **auth_params),
+            Members(parent_stream=projects, parent_similar=True, **auth_params),
+            Members(parent_stream=groups, parent_similar=True, **auth_params),
+            Labels(parent_stream=projects, parent_similar=True, **auth_params),
+            Labels(parent_stream=groups, parent_similar=True, **auth_params),
+            merge_requests,
+            Releases(parent_stream=projects, **auth_params),
+            Tags(parent_stream=projects, repository_part=True, **auth_params),
             pipelines,
-            PipelinesExtended(authenticator=auth, api_url=config["api_url"], parent_stream=pipelines),
-            Users(authenticator=auth, api_url=config["api_url"], parent_stream=projects),
+            Users(parent_stream=projects, **auth_params),
         ]
+
+        # Enabling additional streams according to the setting
+        if config["ultimate_license"]:
+            epics = Epics(parent_stream=groups, **auth_params)
+            streams += [
+                epics,
+                EpicIssues(parent_stream=epics, **auth_params)
+            ]
+
+        if config["fetch_merge_request_commits"]:
+            streams.append(MergeRequestCommits(parent_stream=merge_requests, **auth_params))
+
+        if config["fetch_pipelines_extended"]:
+            streams.append(PipelinesExtended(parent_stream=pipelines, **auth_params))
 
         return streams
