@@ -31,6 +31,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.s3.parquet.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.parquet.JsonSchemaConverter;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import java.io.IOException;
 import java.net.URI;
@@ -56,6 +58,10 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema) throws IOException, URISyntaxException {
+    JsonSchemaConverter schemaConverter = new JsonSchemaConverter();
+    schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
+    JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+
     List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     List<JsonNode> jsonRecords = new LinkedList<>();
 
@@ -74,6 +80,7 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
       while ((record = parquetReader.read()) != null) {
         byte[] jsonBytes = converter.convertToJson(record);
         JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
+        jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
         jsonRecords.add(pruneAirbyteJson(jsonRecord));
       }
     }

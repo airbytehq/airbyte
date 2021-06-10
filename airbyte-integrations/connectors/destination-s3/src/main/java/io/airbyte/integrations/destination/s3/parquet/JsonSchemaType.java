@@ -2,6 +2,9 @@ package io.airbyte.integrations.destination.s3.parquet;
 
 import org.apache.avro.Schema;
 
+/**
+ * Mapping of JsonSchema types to Avro types.
+ */
 public enum JsonSchemaType {
 
   STRING("string", Schema.Type.STRING),

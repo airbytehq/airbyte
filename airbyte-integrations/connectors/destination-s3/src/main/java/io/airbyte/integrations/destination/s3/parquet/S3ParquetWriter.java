@@ -3,6 +3,7 @@ package io.airbyte.integrations.destination.s3.parquet;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.YYYY_MM_DD_FORMAT;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -37,6 +38,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   private static final ObjectWriter WRITER = MAPPER.writer();
 
   private final Schema schema;
+  private final JsonFieldNameUpdater nameUpdater;
   private final ParquetWriter<Record> parquetWriter;
   private final JsonAvroConverter converter = new JsonAvroConverter();
 
@@ -44,9 +46,11 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
                          AmazonS3 s3Client,
                          ConfiguredAirbyteStream configuredStream,
                          Timestamp uploadTimestamp,
-                         Schema schema) throws URISyntaxException, IOException {
+                         Schema schema,
+                         JsonFieldNameUpdater nameUpdater) throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
     this.schema = schema;
+    this.nameUpdater = nameUpdater;
 
     String outputFilename = getOutputFilename(uploadTimestamp);
     String objectKey = String.join("/", outputPrefix, outputFilename);
@@ -83,10 +87,13 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   @Override
   public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
+    JsonNode inputData = recordMessage.getData();
+    inputData = nameUpdater.getJsonWithStandardizedFieldNames(inputData);
+
     ObjectNode jsonRecord = MAPPER.createObjectNode();
     jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     jsonRecord.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    jsonRecord.setAll((ObjectNode) recordMessage.getData());
+    jsonRecord.setAll((ObjectNode) inputData);
 
     GenericData.Record avroRecord = converter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema);
     parquetWriter.write(avroRecord);
