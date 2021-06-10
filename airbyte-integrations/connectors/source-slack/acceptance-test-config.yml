@@ -11,15 +11,15 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/full_refresh_catalog.json"
+      configured_catalog_path: "integration_tests/full_refresh_catalog.json"
       validate_output_from_all_streams: yes
   incremental:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
 #      state_path: "sample_files/abnormal_state.json"
       cursor_paths:
         threads: ["ts"]
         channel_messages: ["ts"]
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/full_refresh_catalog.json"
+      configured_catalog_path: "integration_tests/full_refresh_catalog.json"

@@ -39,7 +39,13 @@ from pendulum import DateTime
 from slack_sdk import WebClient
 
 
-class SlackStream(HttpStream, ABC):
+class StreamWithPrimaryKey(HttpStream, ABC):
+    @property
+    def primary_key(self):
+        return None
+
+
+class SlackStream(StreamWithPrimaryKey, ABC):
     url_base = "https://slack.com/api/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -92,13 +98,9 @@ class Channels(SlackStream):
         return "conversations.list"
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        p = super().request_params(**kwargs)
-        p["types"] = "public_channel"
-        return p
-
-    @property
-    def primary_key(self):
-        return None
+        params = super().request_params(**kwargs)
+        params["types"] = "public_channel"
+        return params
 
 
 class ChannelMembers(SlackStream):
@@ -106,10 +108,6 @@ class ChannelMembers(SlackStream):
 
     def path(self, **kwargs) -> str:
         return "conversations.members"
-
-    @property
-    def primary_key(self):
-        return None
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -132,10 +130,6 @@ class Users(SlackStream):
 
     def path(self, **kwargs) -> str:
         return "users.list"
-
-    @property
-    def primary_key(self):
-        return None
 
 
 # Incremental Streams
@@ -219,10 +213,6 @@ class ChannelMessages(IncrementalMessageStream):
                 stream_slice["channel"] = channel_record["id"]
                 yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
-    @property
-    def primary_key(self):
-        return None
-
 
 class Threads(IncrementalMessageStream):
     def __init__(self, lookback_window: Mapping[str, int], **kwargs):
@@ -231,10 +221,6 @@ class Threads(IncrementalMessageStream):
 
     def path(self, **kwargs) -> str:
         return "conversations.replies"
-
-    @property
-    def primary_key(self):
-        return None
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         """
@@ -263,7 +249,7 @@ class Threads(IncrementalMessageStream):
             try:
                 messages_start_date = pendulum.from_timestamp(stream_state["ts"]).subtract(**self.messages_lookback_window)
             except TypeError:  # during second read we will have ts as a string date
-                messages_start_date = pendulum.parse(stream_state["ts"])
+                messages_start_date = pendulum.parse(stream_state["ts"]).subtract(**self.messages_lookback_window)
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
             messages_start_date = self._default_start_date
@@ -316,10 +302,6 @@ class SourceSlack(AbstractSource):
             return True, None
         else:
             return False, "There are no users in the given Slack instance"
-
-    @property
-    def primary_key(self):
-        return None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["api_token"])
