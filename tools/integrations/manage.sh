@@ -20,8 +20,7 @@ cmd_scaffold() {
   echo "Scaffolding connector"
   (
     cd airbyte-integrations/connector-templates/generator &&
-    npm install &&
-    npm run generate "$@"
+    ./generate.sh "$@"
   )
 }
 
