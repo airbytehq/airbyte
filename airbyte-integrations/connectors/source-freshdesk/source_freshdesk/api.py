@@ -149,10 +149,11 @@ class StreamAPI(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter"""
         params = params or {}
-
         stream = self.name
-        # This block extends TicketsAPI Stream to overcome '300 page' server error.
 
+        # This block extends TicketsAPI Stream to overcome '300 page' server error.
+        # Since the TicketsAPI Stream list has a 300 page pagination limit, after 300 pages, update the parameters with
+        # query using 'updated_since' = last_record, if there is more data remaining.
         if stream == "Tickets":
             ticket_paginate_limit = 300  # the maximum page allowed to pull during pagination.
 
@@ -181,7 +182,7 @@ class StreamAPI(ABC):
 
                 if len(batch) < self.result_return_limit:
                     return iter(())
-
+        # All other's Streams Flow goes using this paginator
         for page in range(1, self.maximum_page):
             batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
             yield from batch
