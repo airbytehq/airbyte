@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -44,7 +45,6 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.apache.commons.lang3.RandomStringUtils;
 
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -71,7 +71,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
             config.get("database").asText()),
         RedshiftSource.DRIVER_CLASS);
 
-    schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5)).toLowerCase();
+    schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     database.execute(connection -> {
       connection.createStatement().execute(createSchemaQuery);
