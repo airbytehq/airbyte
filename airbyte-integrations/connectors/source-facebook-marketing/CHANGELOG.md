@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.8
+## 0.2.9
 Add 80000 as a rate-limiting error code (#3996) 
 
 ## 0.2.7
