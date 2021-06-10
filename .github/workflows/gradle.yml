@@ -2,21 +2,10 @@ name: Airbyte CI
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 */1 * * *'
   push:
 
 jobs:
-  launch_integration_tests:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Launch Integration Tests
-        run: ./tools/bin/ci_integration_workflow_launcher.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
-
   ## Gradle Build
   # In case of self-hosted EC2 errors, remove the `start-build-runner` block.
   start-build-runner:
