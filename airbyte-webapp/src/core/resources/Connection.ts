@@ -8,7 +8,7 @@ import {
 } from "rest-hooks";
 
 import { SyncSchema } from "core/domain/catalog";
-import { NetworkError } from "core/request/NetworkError";
+import { CommonRequestError } from "core/request/CommonRequestError";
 import { Source } from "./Source";
 import { Destination } from "./Destination";
 
@@ -102,10 +102,7 @@ export default class ConnectionResource
         );
 
         if (result.status === "failure") {
-          const e = new NetworkError(result);
-          e.status = result.status;
-          e.message = result.message;
-          throw e;
+          throw new CommonRequestError(result, result.message);
         }
 
         return result;

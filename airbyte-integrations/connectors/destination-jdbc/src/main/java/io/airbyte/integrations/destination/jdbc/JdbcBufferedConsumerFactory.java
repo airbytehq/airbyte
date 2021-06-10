@@ -27,7 +27,6 @@ package io.airbyte.integrations.destination.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.text.Names;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
@@ -109,8 +108,8 @@ public class JdbcBufferedConsumerFactory {
       final String outputSchema = getOutputSchema(abStream, defaultSchemaName);
 
       final String streamName = abStream.getName();
-      final String tableName = Names.concatQuotedNames("_airbyte_raw_", namingResolver.getIdentifier(streamName));
-      String tmpTableName = Names.concatQuotedNames("_airbyte_" + now.toEpochMilli() + "_", tableName);
+      final String tableName = namingResolver.getRawTableName(streamName);
+      String tmpTableName = namingResolver.getTmpTableName(streamName);
 
       // TODO (#2948): Refactor into StandardNameTransformed , this is for MySQL destination, the table
       // names can't have more than 64 characters.

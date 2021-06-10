@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import Toggle from "components/Toggle";
+import { Toggle } from "components/base";
 
 type IProps = {
   message?: React.ReactNode;

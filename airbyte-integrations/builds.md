@@ -1,9 +1,15 @@
 # Build statuses
 
 # Sources 
+ Amazon Seller Partner   [![source-amazon-seller-partner](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amazon-seller-partner%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amazon-seller-partner)
+
+ Amplitude   [![source-amplitude](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-amplitude%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-amplitude)
+
  AppsFlyer   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appsflyer-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appsflyer-singer) 
 
- App Store   [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appstore-singer) 
+ App Store   [![source-appstore-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-appstore-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-appstore-singer)
+
+ Asana   [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-asana)
 
  Braintree   [![source-braintree-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-braintree-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-braintree-singer) 
 
@@ -88,6 +94,8 @@
  Slack   [![source-slack-singer](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-slack-singer%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-slack-singer) 
 
  Smartsheets   [![source-smartsheets](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-smartsheets%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-smartsheets) 
+
+ Snowflake   [![source-snowflake](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-snowflake%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-snowflake)
 
  Stripe   [![source-stripe](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-stripe%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-stripe) 
 

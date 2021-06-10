@@ -40,6 +40,7 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
@@ -51,7 +52,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -113,6 +114,8 @@ public class DefaultJobCreatorTest {
     STANDARD_SYNC = new StandardSync()
         .withConnectionId(connectionId)
         .withName("presto to hudi")
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withNamespaceFormat(null)
         .withPrefix("presto_to_hudi")
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(catalog)
@@ -202,6 +205,8 @@ public class DefaultJobCreatorTest {
   @Test
   void testCreateSyncJob() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
@@ -230,6 +235,8 @@ public class DefaultJobCreatorTest {
   @Test
   void testCreateSyncJobEnsureNoQueuing() throws IOException {
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
@@ -264,6 +271,8 @@ public class DefaultJobCreatorTest {
         });
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
@@ -295,6 +304,8 @@ public class DefaultJobCreatorTest {
         });
 
     final JobResetConnectionConfig JobResetConnectionConfig = new JobResetConnectionConfig()
+        .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
+        .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
         .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)

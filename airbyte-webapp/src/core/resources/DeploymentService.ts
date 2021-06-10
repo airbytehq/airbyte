@@ -4,7 +4,7 @@ export default class DeploymentService extends AirbyteRequestService {
   static path = "deployment";
 
   static getPath(subpath: string): string {
-    return `${this.rootUrl}${this.path}/${subpath}`;
+    return `${this.path}/${subpath}`;
   }
 
   static async exportDeployment(): Promise<string> {

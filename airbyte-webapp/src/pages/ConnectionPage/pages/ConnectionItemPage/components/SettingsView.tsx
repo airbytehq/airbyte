@@ -16,7 +16,7 @@ import { SyncSchema } from "core/domain/catalog";
 import { equal } from "utils/objects";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
-import Button from "components/Button";
+import { Button } from "components";
 import LoadingSchema from "components/LoadingSchema";
 import EnabledControl from "./EnabledControl";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
@@ -111,10 +111,10 @@ const SettingsView: React.FC<IProps> = ({
     connection?.destination?.destinationDefinitionId ?? null
   );
 
-  const onDelete = useCallback(
-    () => deleteConnection({ connectionId: connectionId }),
-    [deleteConnection, connectionId]
-  );
+  const onDelete = useCallback(() => deleteConnection({ connectionId }), [
+    deleteConnection,
+    connectionId,
+  ]);
 
   const onReset = useCallback(() => resetConnection(connectionId), [
     resetConnection,
