@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2021 Airbyte
+# Copyright (c) 2020 Airbyte
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,19 +21,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-import logging
-logging.basicConfig(level=logging.DEBUG)
 
+import logging
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from datetime import datetime, timedelta
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, Oauth2Authenticator, HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
+logging.basicConfig(level=logging.DEBUG)
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -96,12 +96,12 @@ class PaypalTransactionStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
         decoded_response = response.json()
-        total_pages = decoded_response.get('total_pages')
-        page_number = decoded_response.get('page')
+        total_pages = decoded_response.get("total_pages")
+        page_number = decoded_response.get("page")
         if page_number >= total_pages:
             return None
         else:
-            return {"page": page_number+1}
+            return {"page": page_number + 1}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -112,21 +112,17 @@ class PaypalTransactionStream(HttpStream, ABC):
         """
         page_number = 1
         if next_page_token:
-            page_number = next_page_token.get('page')
+            page_number = next_page_token.get("page")
 
-        print(f'stream_state {stream_state}')
-        print(f'stream_slice {stream_slice}')
-
-        start_date = stream_slice['date']
+        start_date = stream_slice["date"]
         end_date_dt = datetime.fromisoformat(start_date) + timedelta(days=self.stream_size_in_days)
+
+        date_time_now = datetime.now().astimezone()
+        if end_date_dt > date_time_now:
+            end_date_dt = date_time_now
+
         end_date = end_date_dt.isoformat()
-        return {
-            'start_date': start_date,
-            'end_date': end_date,
-            'fields': 'all',
-            'page_size': '1',
-            'page': page_number
-        }
+        return {"start_date": start_date, "end_date": end_date, "fields": "all", "page_size": "1", "page": page_number}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -137,14 +133,27 @@ class PaypalTransactionStream(HttpStream, ABC):
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         yield from records
 
+    @staticmethod
+    def get_field(record: Mapping[str, Any], field_path: List[str]):
+
+        data = record
+        for attr in field_path:
+            if data:
+                data = data.get(attr)
+            else:
+                break
+
+        return data
+
 
 class Transactions(PaypalTransactionStream):
     """
     Stream for Transactions /v1/reporting/transactions
     """
+
     data_field = "transaction_details"
     primary_key = "transaction_id"
-    cursor_field = "date"
+    cursor_field = ["transaction_info", "transaction_initiation_date"]
     stream_size_in_days = 1
 
     def __init__(self, start_date: datetime, **kwargs):
@@ -156,15 +165,24 @@ class Transactions(PaypalTransactionStream):
     ) -> str:
         return "transactions"
 
-    # def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-    #     # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-    #     # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
-    #     if current_stream_state is not None and 'date' in current_stream_state:
-    #         current_parsed_date = datetime.strptime(current_stream_state['date'], '%Y-%m-%d')
-    #         latest_record_date = datetime.strptime(latest_record['date'], '%Y-%m-%d')
-    #         return {'date': max(current_parsed_date, latest_record_date).strftime('%Y-%m-%d')}
-    #     else:
-    #         return {'date': self.start_date.strftime('%Y-%m-%d')}
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
+        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
+        latest_record_date_str = self.get_field(latest_record, self.cursor_field)
+
+        if current_stream_state and "date" in current_stream_state and latest_record_date_str:
+            if len(latest_record_date_str) == 24:
+                # Add ':' to timezone part to match iso format, example:
+                # python iso format:  2021-06-04T00:00:00+03:00
+                # format from record: 2021-06-04T00:00:00+0300
+                latest_record_date_str = ":".join([latest_record_date_str[:22], latest_record_date_str[22:]])
+
+            latest_record_date = datetime.fromisoformat(latest_record_date_str)
+            current_parsed_date = datetime.fromisoformat(current_stream_state["date"])
+
+            return {"date": max(current_parsed_date, latest_record_date).isoformat()}
+        else:
+            return {"date": self.start_date.isoformat()}
 
     def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
         """
@@ -172,11 +190,9 @@ class Transactions(PaypalTransactionStream):
         The return value is a list of dicts {'date': date_string}.
         """
         dates = []
-        while start_date < datetime.now().astimezone():
-            dates.append({'date': start_date.isoformat()})
+        while start_date < datetime.now().astimezone() - timedelta(days=2):
+            dates.append({"date": start_date.isoformat()})
             start_date += timedelta(days=self.stream_size_in_days)
-
-        print(f'dates {dates}')
         return dates
 
     def stream_slices(
@@ -184,8 +200,8 @@ class Transactions(PaypalTransactionStream):
     ) -> Iterable[Optional[Mapping[str, any]]]:
 
         start_date = self.start_date
-        if stream_state and 'date' in stream_state:
-            start_date = datetime.fromisoformat(stream_state['date'])
+        if stream_state and "date" in stream_state:
+            start_date = datetime.fromisoformat(stream_state["date"])
 
         return self._chunk_date_range(start_date)
 
@@ -214,11 +230,10 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
       -u "CLIENT_ID:SECRET" \
       -d "grant_type=client_credentials"
     """
+
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         """ Override to define additional parameters """
-        payload: MutableMapping[str, Any] = {
-            "grant_type": "client_credentials"
-        }
+        payload: MutableMapping[str, Any] = {"grant_type": "client_credentials"}
         return payload
 
     def refresh_access_token(self) -> Tuple[str, int]:
@@ -227,17 +242,9 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
         """
         try:
             data = "grant_type=client_credentials"
-            headers = {
-                'Accept': 'application/json',
-                'Accept-Language': 'en_US'
-            }
+            headers = {"Accept": "application/json", "Accept-Language": "en_US"}
             auth = (self.client_id, self.client_secret)
-            response = requests.request(
-                method="POST",
-                url=self.token_refresh_endpoint,
-                data=data,
-                headers=headers,
-                auth=auth)
+            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=data, headers=headers, auth=auth)
             response.raise_for_status()
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
@@ -246,7 +253,6 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
 
 
 class SourcePaypalTransaction(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -259,26 +265,28 @@ class SourcePaypalTransaction(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         token = PayPalOauth2Authenticator(
-            token_refresh_endpoint='https://api-m.sandbox.paypal.com/v1/oauth2/token',
+            token_refresh_endpoint="https://api-m.sandbox.paypal.com/v1/oauth2/token",
             client_id=config["client_id"],
             client_secret=config["secret"],
-            refresh_token='').get_access_token()
+            refresh_token="",
+        ).get_access_token()
         if not token:
-            return False, 'Unable to fetch Paypal API token due to incorrect client_id or secret'
+            return False, "Unable to fetch Paypal API token due to incorrect client_id or secret"
 
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
+        """58
         TODO: Replace the streams below with your own streams.
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         authenticator = PayPalOauth2Authenticator(
-            token_refresh_endpoint='https://api-m.sandbox.paypal.com/v1/oauth2/token',
+            token_refresh_endpoint="https://api-m.sandbox.paypal.com/v1/oauth2/token",
             client_id=config["client_id"],
             client_secret=config["secret"],
-            refresh_token='')
+            refresh_token="",
+        )
         start_date = datetime.strptime(config["start_date"], "%Y-%m-%d").astimezone()
-        #return [Transactions(authenticator=auth), Balances(authenticator=auth)]
+        # return [Transactions(authenticator=auth), Balances(authenticator=auth)]
         return [Transactions(authenticator=authenticator, start_date=start_date)]
