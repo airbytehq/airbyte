@@ -33,7 +33,7 @@ Here are the values we deeply believe in:
 
 ## **Our Investors**
 
-We are raised $31M seed and Series-A round with Benchmark, Accel, YCombinator, 8VC, and a few leaders in the data industry \(including the co-founder of Elastic, MongoDB, Segment, Liveramp, the former GM of Cloudera\).
+We have raised $31M seed and Series-A round with Benchmark, Accel, YCombinator, 8VC, and a few leaders in the data industry \(including the co-founder of Elastic, MongoDB, Segment, Liveramp, the former GM of Cloudera\).
 
 We have a lot of capital, but [we're a lean, strong team](https://handbook.airbyte.io/company/team) - so you've got the opportunity to have a huge impact.
 
