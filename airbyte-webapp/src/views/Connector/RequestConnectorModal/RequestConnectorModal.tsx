@@ -5,6 +5,9 @@ import { FormattedMessage } from "react-intl";
 import ConnectorForm from "./components/ConnectorForm";
 
 import { Modal } from "components";
+import useRequestConnector from "components/hooks/services/useRequestConnector";
+import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import { Values } from "./types";
 
 type RequestConnectorModalProps = {
   onClose: () => void;
@@ -19,7 +22,13 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
   onClose,
   connectorType,
 }) => {
-  const onSubmit = () => null;
+  const { requestConnector } = useRequestConnector();
+  const { workspace } = useWorkspace();
+
+  const onSubmit = (values: Values) => {
+    requestConnector(values);
+    onClose();
+  };
 
   return (
     <Modal
@@ -34,7 +43,7 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
             connectorType: connectorType,
             name: "",
             website: "",
-            email: "",
+            email: workspace.email,
           }}
         />
       </Content>

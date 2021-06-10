@@ -128,27 +128,29 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
               </ControlLabelsWithMargin>
             )}
           </Field>
-          <Field name="email">
-            {({ field, meta }: FieldProps<string>) => (
-              <ControlLabelsWithMargin
-                error={!!meta.error && meta.touched}
-                label={<FormattedMessage id="connector.email" />}
-                message={
-                  !!meta.error &&
-                  meta.touched && <FormattedMessage id={meta.error} />
-                }
-              >
-                <Input
-                  {...field}
-                  type="text"
+          {!currentValues?.email && (
+            <Field name="email">
+              {({ field, meta }: FieldProps<string>) => (
+                <ControlLabelsWithMargin
                   error={!!meta.error && meta.touched}
-                  placeholder={formatMessage({
-                    id: "connector.email.placeholder",
-                  })}
-                />
-              </ControlLabelsWithMargin>
-            )}
-          </Field>
+                  label={<FormattedMessage id="connector.email" />}
+                  message={
+                    !!meta.error &&
+                    meta.touched && <FormattedMessage id={meta.error} />
+                  }
+                >
+                  <Input
+                    {...field}
+                    type="text"
+                    error={!!meta.error && meta.touched}
+                    placeholder={formatMessage({
+                      id: "connector.email.placeholder",
+                    })}
+                  />
+                </ControlLabelsWithMargin>
+              )}
+            </Field>
+          )}
           <Buttons>
             <Button type="button" secondary onClick={onCancel}>
               <FormattedMessage id="form.cancel" />
