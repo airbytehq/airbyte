@@ -19,9 +19,16 @@ export enum DestinationSyncMode {
   Dedupted = "append_dedup",
 }
 
+export type SyncSchemaStreamInner = {
+  stream: AirbyteStream;
+  config: AirbyteStreamConfiguration;
+};
+
 export type SyncSchemaStream = {
   stream: AirbyteStream;
   config: AirbyteStreamConfiguration;
+
+  id: string;
 };
 
 export type AirbyteStream = {

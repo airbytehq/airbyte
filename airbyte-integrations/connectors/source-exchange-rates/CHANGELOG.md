@@ -1,4 +1,4 @@
 # Changelog
 
-## 0.2.0
-Move from `api.ratesapi.io/` to `api.exchangeratesapi.io/`. Add required field `access_key` to `config.json`. [Link](https://github.com/airbytehq/airbyte/pull/3566) to PR.
+## 0.2.2
+Adding clearer error message when a currency isn't supported. access_key field in spec.json was marked as sensitive

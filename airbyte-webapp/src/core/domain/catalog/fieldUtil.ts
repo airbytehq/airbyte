@@ -1,6 +1,6 @@
 import { JSONSchema7Definition } from "json-schema";
 import Status from "core/statuses";
-import { NetworkError } from "core/request/NetworkError";
+import { CommonRequestError } from "core/request/CommonRequestError";
 import { SourceDiscoverSchemaRead } from "./api";
 import { SyncSchemaField } from "./models";
 
@@ -10,9 +10,9 @@ export function toInnerModel(
 ): SourceDiscoverSchemaRead {
   if (result.jobInfo?.status === Status.FAILED || !result.catalog) {
     // @ts-ignore address this case
-    const e = new NetworkError(result);
+    const e = new CommonRequestError(result);
     // Generate error with failed status and received logs
-    e.status = 400;
+    e._status = 400;
     // @ts-ignore address this case
     e.response = result.jobInfo;
     throw e;

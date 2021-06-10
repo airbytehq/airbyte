@@ -1,6 +1,8 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
   "supportsIncremental": true,
+  "supportsNormalization": true,
+  "supportsDBT": true,
   "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -18,6 +20,41 @@
         "type": "string",
         "description": "Default BigQuery Dataset ID tables are replicated to if the source does not specify a namespace.",
         "title": "Default Dataset ID"
+      },
+      "dataset_location": {
+        "type": "string",
+        "description": "The location of the dataset. Warning: Changes made after creation will not be applied.",
+        "title": "Dataset Location",
+        "default": "US",
+        "enum": [
+          "US",
+          "EU",
+          "us-central1",
+          "us-west-1",
+          "us-west-2",
+          "us-west-3",
+          "us-west-4",
+          "us-east1",
+          "us-east4",
+          "northamerica-northeast1",
+          "southamerica-east1",
+          "europe-north1",
+          "europe-west1",
+          "europe-west2",
+          "europe-west3",
+          "europe-west4",
+          "europe-west6",
+          "europe-central2",
+          "asia-east1",
+          "asia-east2",
+          "asia-southeast2",
+          "asia-south1",
+          "asia-northeast1",
+          "asia-northeast2",
+          "asia-southeast1",
+          "asia-northeast3",
+          "australia-southeast1"
+        ]
       },
       "credentials_json": {
         "type": "string",
