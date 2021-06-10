@@ -2,7 +2,7 @@
 description: Common issues when trying to set up a new connection (source/destination)
 ---
 
-# Setting new connection
+# On Setting up a New Connection
 
 ## Airbyte is stuck while loading required configuration parameters for my connector
 
