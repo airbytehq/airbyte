@@ -98,7 +98,6 @@ const ConnectorServiceTypeControl: React.FC<{
         <DropDown
           {...field}
           listComponent={LS}
-          bottomBlock={bottomBlock}
           error={!!fieldMeta.error && fieldMeta.touched}
           disabled={isEditMode && !allowChangeConnector}
           hasFilter

@@ -20,7 +20,6 @@ type DropdownProps = {
   textButton?: string;
   className?: string;
   name?: string;
-  bottomBlock?: React.ReactNode;
 } & DropdownList.DropdownListProps;
 
 const StyledDropdownList = styled(DropdownList)<{
