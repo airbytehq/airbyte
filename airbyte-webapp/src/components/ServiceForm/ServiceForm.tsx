@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Formik } from "formik";
 import { JSONSchema7 } from "json-schema";
 
@@ -11,12 +11,14 @@ import {
 import { ServiceFormValues } from "./types";
 import { ServiceFormContextProvider } from "./serviceFormContext";
 import { FormRoot } from "./FormRoot";
+import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { FormBaseItem } from "../../core/form/types";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import { isSourceDefinition } from "../../core/domain/connector/source";
+import RequestConnectorBlock from "./components/RequestConnectorBlock";
 
 type ServiceFormProps = {
   formType: "source" | "destination";
@@ -42,6 +44,8 @@ const FormikPatch: React.FC = () => {
 };
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
+  const [isOpenRequestModal, setIsOpenRequestModal] = useState(false);
+
   const {
     specifications,
     formType,
@@ -84,6 +88,11 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             availableServices={props.availableServices}
             allowChangeConnector={props.allowChangeConnector}
             isEditMode={props.isEditMode}
+            bottomBlock={
+              <RequestConnectorBlock
+                onClick={() => setIsOpenRequestModal(true)}
+              />
+            }
           />
         ),
       },
@@ -135,40 +144,45 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   return (
-    <Formik
-      validateOnBlur={true}
-      validateOnChange={true}
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={onFormSubmit}
-    >
-      {({ values, setSubmitting }) => (
-        <ServiceFormContextProvider
-          widgetsInfo={uiWidgetsInfo}
-          setUiWidgetsInfo={setUiWidgetsInfo}
-          formType={formType}
-          isEditMode={props.isEditMode}
-          isLoadingSchema={props.isLoading}
-        >
-          <FormikPatch />
-          <FormRoot
-            {...props}
-            onRetest={async () => {
-              setSubmitting(true);
-              await onRetestForm(values);
-              setSubmitting(false);
-            }}
-            selectedService={props.availableServices.find(
-              (s) =>
-                (isSourceDefinition(s)
-                  ? s.sourceDefinitionId
-                  : s.destinationDefinitionId) === values.serviceType
-            )}
-            formFields={formFields}
-          />
-        </ServiceFormContextProvider>
-      )}
-    </Formik>
+    <>
+      <Formik
+        validateOnBlur={true}
+        validateOnChange={true}
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={onFormSubmit}
+      >
+        {({ values, setSubmitting }) => (
+          <ServiceFormContextProvider
+            widgetsInfo={uiWidgetsInfo}
+            setUiWidgetsInfo={setUiWidgetsInfo}
+            formType={formType}
+            isEditMode={props.isEditMode}
+            isLoadingSchema={props.isLoading}
+          >
+            <FormikPatch />
+            <FormRoot
+              {...props}
+              onRetest={async () => {
+                setSubmitting(true);
+                await onRetestForm(values);
+                setSubmitting(false);
+              }}
+              selectedService={props.availableServices.find(
+                (s) =>
+                  (isSourceDefinition(s)
+                    ? s.sourceDefinitionId
+                    : s.destinationDefinitionId) === values.serviceType
+              )}
+              formFields={formFields}
+            />
+          </ServiceFormContextProvider>
+        )}
+      </Formik>
+      {isOpenRequestModal ? (
+        <RequestConnectorModal onClose={() => setIsOpenRequestModal(false)} />
+      ) : null}
+    </>
   );
 };
 

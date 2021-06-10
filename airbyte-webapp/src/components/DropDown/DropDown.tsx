@@ -1,5 +1,7 @@
 import React from "react";
 import { DropdownList } from "react-widgets";
+// @ts-ignore
+import List from "react-widgets/lib/List";
 import styled from "styled-components";
 
 import "react-widgets/dist/css/react-widgets.css";
@@ -20,6 +22,7 @@ type DropdownProps = {
   textButton?: string;
   className?: string;
   name?: string;
+  bottomBlock?: React.ReactNode;
 } & DropdownList.DropdownListProps;
 
 const StyledDropdownList = styled(DropdownList)<{
@@ -125,6 +128,7 @@ const StyledDropdownList = styled(DropdownList)<{
 
   & > .rw-popup-container {
     min-width: 260px;
+    z-index: 9;
 
     & .rw-select {
       display: none;
@@ -179,12 +183,36 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 `;
 
+const BottomElement = styled.div`
+  background: ${(props) => props.theme.greyColor0};
+  padding: 6px 16px 8px;
+  width: 100%;
+  min-height: 34px;
+  border-top: 1px solid ${(props) => props.theme.greyColor20};
+`;
+
 const DropDown: React.FC<DropdownProps> = (props) => {
   const formatMessage = useIntl().formatMessage;
 
   const className = `${props.className} ${
     props.withButton ? "withButton" : ""
   }`;
+
+  const LS = React.forwardRef((listProps: any, ref) => (
+    <>
+      <List ref={ref} {...listProps} />
+      {props.bottomBlock && (
+        <BottomElement
+          onClick={(e) =>
+            // For close dropdown list. Main element lose focus
+            e.currentTarget.parentElement?.parentElement?.parentElement?.parentElement?.blur()
+          }
+        >
+          {props.bottomBlock}
+        </BottomElement>
+      )}
+    </>
+  ));
 
   return (
     <StyledDropdownList
@@ -220,6 +248,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
         <ListItem {...item} item={item} fullText={props.fullText} />
       )}
       onChange={props.onSelect}
+      listComponent={LS}
       // @ts-ignore wrong typing
       searchIcon=""
     />
