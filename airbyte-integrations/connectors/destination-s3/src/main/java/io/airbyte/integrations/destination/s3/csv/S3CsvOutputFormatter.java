@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.destination.s3.csv;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.YYYY_MM_DD_FORMAT;
-
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
@@ -46,8 +44,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -131,7 +131,9 @@ public class S3CsvOutputFormatter implements S3OutputFormatter {
   }
 
   static String getOutputFilename(Timestamp timestamp) {
-    return String.format("%s_%d_0.csv", YYYY_MM_DD_FORMAT.format(timestamp), timestamp.getTime());
+    var formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return String.format("%s_%d_0.csv", formatter.format(timestamp), timestamp.getTime());
   }
 
   /**
