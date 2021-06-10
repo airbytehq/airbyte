@@ -8,6 +8,7 @@ import { Modal } from "components";
 
 type RequestConnectorModalProps = {
   onClose: () => void;
+  connectorType: "source" | "destination";
 };
 const Content = styled.div`
   width: 492px;
@@ -16,6 +17,7 @@ const Content = styled.div`
 
 const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
   onClose,
+  connectorType,
 }) => {
   const onSubmit = () => null;
 
@@ -25,7 +27,16 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
       onClose={onClose}
     >
       <Content>
-        <ConnectorForm onSubmit={onSubmit} onCancel={onClose} />
+        <ConnectorForm
+          onSubmit={onSubmit}
+          onCancel={onClose}
+          currentValues={{
+            connectorType: connectorType,
+            name: "",
+            website: "",
+            email: "",
+          }}
+        />
       </Content>
     </Modal>
   );

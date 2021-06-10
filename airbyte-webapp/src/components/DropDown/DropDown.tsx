@@ -1,7 +1,5 @@
 import React from "react";
 import { DropdownList } from "react-widgets";
-// @ts-ignore
-import List from "react-widgets/lib/List";
 import styled from "styled-components";
 
 import "react-widgets/dist/css/react-widgets.css";
@@ -183,14 +181,6 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 `;
 
-const BottomElement = styled.div`
-  background: ${(props) => props.theme.greyColor0};
-  padding: 6px 16px 8px;
-  width: 100%;
-  min-height: 34px;
-  border-top: 1px solid ${(props) => props.theme.greyColor20};
-`;
-
 const DropDown: React.FC<DropdownProps> = (props) => {
   const formatMessage = useIntl().formatMessage;
 
@@ -198,24 +188,9 @@ const DropDown: React.FC<DropdownProps> = (props) => {
     props.withButton ? "withButton" : ""
   }`;
 
-  const LS = React.forwardRef((listProps: any, ref) => (
-    <>
-      <List ref={ref} {...listProps} />
-      {props.bottomBlock && (
-        <BottomElement
-          onClick={(e) =>
-            // For close dropdown list. Main element lose focus
-            e.currentTarget.parentElement?.parentElement?.parentElement?.parentElement?.blur()
-          }
-        >
-          {props.bottomBlock}
-        </BottomElement>
-      )}
-    </>
-  ));
-
   return (
     <StyledDropdownList
+      {...props}
       data-test-id={props.name}
       error={props.error}
       withBorder={props.withBorder}
@@ -248,7 +223,6 @@ const DropDown: React.FC<DropdownProps> = (props) => {
         <ListItem {...item} item={item} fullText={props.fullText} />
       )}
       onChange={props.onSelect}
-      listComponent={LS}
       // @ts-ignore wrong typing
       searchIcon=""
     />

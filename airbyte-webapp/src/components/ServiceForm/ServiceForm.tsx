@@ -180,7 +180,10 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         )}
       </Formik>
       {isOpenRequestModal ? (
-        <RequestConnectorModal onClose={() => setIsOpenRequestModal(false)} />
+        <RequestConnectorModal
+          connectorType={formType}
+          onClose={() => setIsOpenRequestModal(false)}
+        />
       ) : null}
     </>
   );

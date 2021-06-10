@@ -3,6 +3,8 @@ import { useIntl } from "react-intl";
 import { useField } from "formik";
 import styled from "styled-components";
 import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
+// @ts-ignore
+import List from "react-widgets/lib/List";
 
 import { FormBaseItem } from "core/form/types";
 import Instruction from "./Instruction";
@@ -12,6 +14,14 @@ import { isSourceDefinition } from "core/domain/connector/source";
 
 const DropdownLabels = styled(ControlLabels)`
   max-width: 202px;
+`;
+
+const BottomElement = styled.div`
+  background: ${(props) => props.theme.greyColor0};
+  padding: 6px 16px 8px;
+  width: 100%;
+  min-height: 34px;
+  border-top: 1px solid ${(props) => props.theme.greyColor20};
 `;
 
 const ConnectorServiceTypeControl: React.FC<{
@@ -71,6 +81,13 @@ const ConnectorServiceTypeControl: React.FC<{
     [setValue, onChangeServiceType]
   );
 
+  const LS = React.forwardRef((listProps: any, ref) => (
+    <>
+      <List ref={ref} {...listProps} />
+      <BottomElement>{bottomBlock}</BottomElement>
+    </>
+  ));
+
   return (
     <>
       <DropdownLabels
@@ -80,6 +97,7 @@ const ConnectorServiceTypeControl: React.FC<{
       >
         <DropDown
           {...field}
+          listComponent={LS}
           bottomBlock={bottomBlock}
           error={!!fieldMeta.error && fieldMeta.touched}
           disabled={isEditMode && !allowChangeConnector}

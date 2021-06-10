@@ -26,6 +26,7 @@ const ControlLabelsWithMargin = styled(ControlLabels)`
 type ConnectorFormProps = {
   onSubmit: (values: Values) => void;
   onCancel: () => void;
+  currentValues?: Values;
 };
 
 const requestConnectorValidationSchema = yup.object().shape({
@@ -38,16 +39,24 @@ const requestConnectorValidationSchema = yup.object().shape({
 const ConnectorForm: React.FC<ConnectorFormProps> = ({
   onSubmit,
   onCancel,
+  currentValues,
 }) => {
   const formatMessage = useIntl().formatMessage;
+  const dropdownData = [
+    { value: "source", text: <FormattedMessage id="connector.source" /> },
+    {
+      value: "destination",
+      text: <FormattedMessage id="connector.destination" />,
+    },
+  ];
 
   return (
     <Formik
       initialValues={{
-        connectorType: "",
-        name: "",
-        website: "",
-        email: "",
+        connectorType: currentValues?.connectorType || "",
+        name: currentValues?.name || "",
+        website: currentValues?.website || "",
+        email: currentValues?.email || "",
       }}
       validateOnBlur={true}
       validateOnChange={true}
@@ -70,7 +79,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
               >
                 <DropDown
                   {...field}
-                  data={[]}
+                  data={dropdownData}
                   placeholder={formatMessage({
                     id: "connector.type.placeholder",
                   })}
@@ -91,6 +100,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
               >
                 <Input
                   {...field}
+                  autoFocus
                   error={!!meta.error && meta.touched}
                   type="text"
                   placeholder={formatMessage({

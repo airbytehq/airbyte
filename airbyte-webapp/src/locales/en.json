@@ -307,6 +307,8 @@
   "connector.website.placeholder": "https://connector.website",
   "connector.email": "Your email address to get notified when it’s supported*",
   "connector.email.placeholder": "richard@piedpiper.com",
+  "connector.source": "Source",
+  "connector.destination": "Destination",
 
   "demo.message.title": "This Airbyte demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
