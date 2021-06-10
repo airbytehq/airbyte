@@ -26,6 +26,7 @@ package io.airbyte.commons.string;
 
 import com.google.common.collect.Streams;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class Strings {
 
@@ -33,6 +34,10 @@ public class Strings {
     return Streams.stream(iterable)
         .map(Object::toString)
         .collect(Collectors.joining(separator));
+  }
+
+  public static String addRandomSuffix(String base, String separator, int suffixLength) {
+    return base + separator + RandomStringUtils.randomAlphabetic(suffixLength).toLowerCase();
   }
 
 }
