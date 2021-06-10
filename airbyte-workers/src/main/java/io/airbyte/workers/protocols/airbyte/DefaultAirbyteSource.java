@@ -78,16 +78,13 @@ public class DefaultAirbyteSource implements AirbyteSource {
   public void start(StandardTapConfig input, Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
 
-    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(input.getSourceConnectionConfiguration()));
-    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, Jsons.serialize(input.getCatalog()));
-    if (input.getState() != null) {
-      IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState().getState()));
-    }
-
     sourceProcess = integrationLauncher.read(jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+        Jsons.serialize(input.getSourceConnectionConfiguration()),
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME);
+        Jsons.serialize(input.getCatalog()),
+        input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
+        input.getState() == null ? null : Jsons.serialize(input.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
 

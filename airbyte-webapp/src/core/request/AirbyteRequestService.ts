@@ -56,6 +56,7 @@ abstract class AirbyteRequestService {
       resultJsonResponse = await response.json();
     } catch (e) {
       // non json result
+      throw new CommonRequestError(response, "non-json response");
     }
 
     if (resultJsonResponse?.error) {

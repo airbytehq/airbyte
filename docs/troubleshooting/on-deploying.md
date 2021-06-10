@@ -1,11 +1,11 @@
 ---
-description: Common issues and their workarounds related when trying launch Airbyte
+description: Common issues and their workarounds when trying to deploy Airbyte
 ---
 
-# On deployment
+# On deploying
 
 ## Stuck in onboarding, can’t skip or do anything
-To full reset Airbyte, you need to also delete the docker volumes associated with Airbyte. This is where data is stored.
+To fully reset Airbyte, you also need to delete the docker volumes associated with Airbyte. This is where data is stored.
 Assuming that you are running Airbyte by running `docker-compose up`, then what you need to do is:
 * Turn off Airbyte completely: `docker-compose down -v`
 * Turn Airbyte back on: `docker-compose up`
@@ -14,7 +14,7 @@ that should handle you getting reset to the beginning.
 I would be curious if we can see the logs associated with the failure you are seeing. I would say if after you reset you run into it again we can debug that.
 
 
-### I have run `docker-compose up` and can not access the interface
+## I have run `docker-compose up` and can not access the interface
 
 - If you see a blank screen and not a loading icon:
   
@@ -49,7 +49,7 @@ This command will create a file in the current directory. We advise you to send 
 If there is no error printed in both cases, we recommend running: `docker restart airbyte-server airbyte-scheduler` <br>
 Wait a few moments and try to access the interface again.
 
-### `docker.errors.DockerException`: Error while fetching server API version
+## `docker.errors.DockerException`: Error while fetching server API version
 
 If you see the following error:
 
@@ -64,6 +64,6 @@ It usually means that Docker isn't running on your machine \(and a running Docke
 This happens (sometimes) on Windows system when you first install `docker`. You need to restart your machine.
 
 
-### Getting a weird error related to setting up the Airbyte server when running Docker Compose -- wondering if this is because I played around with Airbyte in a past version?
+## Getting a weird error related to setting up the Airbyte server when running Docker Compose -- wondering if this is because I played around with Airbyte in a past version?
 
 If you are okay with losing your previous Airbyte configurations, you can run `docker-compose down -v` and that should fix things then `docker-compose up`.
