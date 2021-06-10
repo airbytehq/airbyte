@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
@@ -22,12 +22,18 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
   onClose,
   connectorType,
 }) => {
+  const [hasFeedback, setHasFeedback] = useState(false);
   const { requestConnector } = useRequestConnector();
   const { workspace } = useWorkspace();
 
   const onSubmit = (values: Values) => {
     requestConnector(values);
-    onClose();
+    setHasFeedback(true);
+
+    setTimeout(() => {
+      setHasFeedback(false);
+      onClose();
+    }, 2000);
   };
 
   return (
@@ -45,6 +51,7 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
             website: "",
             email: workspace.email,
           }}
+          hasFeedback={hasFeedback}
         />
       </Content>
     </Modal>

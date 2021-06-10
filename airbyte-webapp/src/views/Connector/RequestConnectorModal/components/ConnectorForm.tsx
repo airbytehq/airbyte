@@ -23,10 +23,15 @@ const ControlLabelsWithMargin = styled(ControlLabels)`
   margin-bottom: 29px;
 `;
 
+const RequestButton = styled(Button)`
+  min-width: 105px;
+`;
+
 type ConnectorFormProps = {
   onSubmit: (values: Values) => void;
   onCancel: () => void;
   currentValues?: Values;
+  hasFeedback?: boolean;
 };
 
 const requestConnectorValidationSchema = yup.object().shape({
@@ -40,6 +45,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
   onSubmit,
   onCancel,
   currentValues,
+  hasFeedback,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const dropdownData = [
@@ -152,12 +158,21 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
             </Field>
           )}
           <Buttons>
-            <Button type="button" secondary onClick={onCancel}>
+            <Button
+              type="button"
+              secondary
+              onClick={onCancel}
+              disabled={hasFeedback}
+            >
               <FormattedMessage id="form.cancel" />
             </Button>
-            <Button type="submit">
-              <FormattedMessage id="connector.request" />
-            </Button>
+            <RequestButton type="submit" wasActive={hasFeedback}>
+              {hasFeedback ? (
+                <FormattedMessage id="connector.requested" />
+              ) : (
+                <FormattedMessage id="connector.request" />
+              )}
+            </RequestButton>
           </Buttons>
         </Form>
       )}

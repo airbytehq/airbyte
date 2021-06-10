@@ -297,6 +297,7 @@
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
   "connector.request": "Request",
+  "connector.requested": "Requested",
   "connector.type": "Connector type*",
   "connector.type.placeholder": "Select a type",
   "connector.name": "Connector name*",
