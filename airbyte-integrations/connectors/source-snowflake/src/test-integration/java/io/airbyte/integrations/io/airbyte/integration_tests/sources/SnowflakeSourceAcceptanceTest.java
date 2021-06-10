@@ -33,13 +33,14 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.SyncMode;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -112,7 +113,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     config = Jsons.clone(getStaticConfig());
     database = Databases.createJdbcDatabase(
         config.get("username").asText(),
