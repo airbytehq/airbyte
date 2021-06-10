@@ -74,9 +74,7 @@ Airbyte provides a code generator which bootstraps the scaffolding for our conne
 
 ```bash
 $ cd airbyte-integrations/connector-templates/generator
-# Install NPM from https://www.npmjs.com/get-npm if you don't have it
-$ npm install
-$ npm run generate
+$ ./generate.sh 
 ```
 
 We'll select the `generic` template and call the connector `stock-ticker-api`:
