@@ -20,8 +20,8 @@
       "s3_endpoint": {
         "title": "Endpoint",
         "type": "string",
-        "description": "this is end point url.( if you are working with aws, just type aws).",
-        "examples": ["localhost:9000", "aws"]
+        "description": "This is your s3 endpoint url.( if you are working with aws, just type aws).",
+        "examples": ["http://localhost:9000", "aws"]
       },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",

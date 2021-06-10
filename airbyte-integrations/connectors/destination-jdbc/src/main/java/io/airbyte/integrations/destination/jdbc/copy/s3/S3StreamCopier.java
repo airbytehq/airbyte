@@ -213,14 +213,14 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   public static AmazonS3 getAmazonS3(S3Config s3Config) {
-    var endPoint = s3Config.getEndPoint();
+    var endpoint = s3Config.getEndpoint();
     var region = s3Config.getRegion();
     var accessKeyId = s3Config.getAccessKeyId();
     var secretAccessKey = s3Config.getSecretAccessKey();
 
     var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
-    if (endPoint.equals("aws")) {
+    if (endpoint.equalsIgnoreCase("aws")) {
       return AmazonS3ClientBuilder.standard()
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .withRegion(s3Config.getRegion())
@@ -233,7 +233,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
       return AmazonS3ClientBuilder
           .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, region))
+          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
           .withPathStyleAccessEnabled(true)
           .withClientConfiguration(clientConfiguration)
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))

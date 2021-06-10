@@ -70,12 +70,12 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void startTracked() throws Exception {
 
-    var endPoint = s3DestinationConfig.getEndPoint();
+    var endpoint = s3DestinationConfig.getEndpoint();
 
     AWSCredentials awsCreds = new BasicAWSCredentials(s3DestinationConfig.getAccessKeyId(), s3DestinationConfig.getSecretAccessKey());
     AmazonS3 s3Client = null;
 
-    if (endPoint.equals("aws")) {
+    if (endpoint.equalsIgnoreCase("aws")) {
       s3Client = AmazonS3ClientBuilder.standard()
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .withRegion(s3DestinationConfig.getBucketRegion())
@@ -87,7 +87,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
 
       s3Client = AmazonS3ClientBuilder
           .standard()
-          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, s3DestinationConfig.getBucketRegion()))
+          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, s3DestinationConfig.getBucketRegion()))
           .withPathStyleAccessEnabled(true)
           .withClientConfiguration(clientConfiguration)
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
