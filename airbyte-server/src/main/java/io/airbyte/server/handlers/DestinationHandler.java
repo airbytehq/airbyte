@@ -150,7 +150,7 @@ public class DestinationHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
     final DestinationConnection updatedDestination = configurationUpdate
-        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getConnectionConfiguration());
+        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getName(), destinationUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpec(updatedDestination.getDestinationDefinitionId());
 

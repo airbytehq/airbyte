@@ -167,7 +167,8 @@ public class SchedulerHandler {
 
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceConnection updatedSource = configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getConnectionConfiguration());
+    final SourceConnection updatedSource =
+        configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getName(), sourceUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpecFromSourceDefinitionId(updatedSource.getSourceDefinitionId());
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedSource.getConfiguration());
@@ -202,7 +203,7 @@ public class SchedulerHandler {
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(DestinationUpdate destinationUpdate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationConnection updatedDestination = configurationUpdate
-        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getConnectionConfiguration());
+        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getName(), destinationUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpecFromDestinationDefinitionId(updatedDestination.getDestinationDefinitionId());
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedDestination.getConfiguration());
@@ -273,6 +274,8 @@ public class SchedulerHandler {
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
+        .supportsNormalization(spec.getSupportsNormalization())
+        .supportsDbt(spec.getSupportsDBT())
         .destinationDefinitionId(destinationDefinitionId);
   }
 

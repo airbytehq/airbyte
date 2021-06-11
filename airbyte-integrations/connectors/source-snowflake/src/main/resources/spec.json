@@ -1,0 +1,69 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/snowflake",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Snowflake Source Spec",
+    "type": "object",
+    "required": [
+      "host",
+      "role",
+      "warehouse",
+      "database",
+      "schema",
+      "username",
+      "password"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "host": {
+        "description": "Host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com).",
+        "examples": ["accountname.us-east-2.aws.snowflakecomputing.com"],
+        "type": "string",
+        "title": "Account name",
+        "order": 0
+      },
+      "role": {
+        "description": "The role you created for Airbyte to access Snowflake.",
+        "examples": ["AIRBYTE_ROLE"],
+        "type": "string",
+        "title": "Role",
+        "order": 1
+      },
+      "warehouse": {
+        "description": "The warehouse you created for Airbyte to access data into.",
+        "examples": ["AIRBYTE_WAREHOUSE"],
+        "type": "string",
+        "title": "Warehouse",
+        "order": 2
+      },
+      "database": {
+        "description": "The database you created for Airbyte to access data into.",
+        "examples": ["AIRBYTE_DATABASE"],
+        "type": "string",
+        "title": "Database",
+        "order": 3
+      },
+      "schema": {
+        "description": "The source Snowflake schema tables.",
+        "examples": ["AIRBYTE_SCHEMA"],
+        "type": "string",
+        "title": "Schema",
+        "order": 4
+      },
+      "username": {
+        "description": "The username you created to allow Airbyte to access the database.",
+        "examples": ["AIRBYTE_USER"],
+        "type": "string",
+        "title": "Username",
+        "order": 5
+      },
+      "password": {
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "title": "Password",
+        "order": 6
+      }
+    }
+  }
+}

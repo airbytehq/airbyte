@@ -45,7 +45,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
 
-  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.32";
+  public static final String NORMALIZATION_IMAGE_NAME = "airbyte/normalization:0.1.33";
 
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
