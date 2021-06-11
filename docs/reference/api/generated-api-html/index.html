@@ -187,7 +187,7 @@ font-style: italic;
 <ul>
 <li>All endpoints are http POST methods.</li>
 <li>All endpoints accept data via <code>application/json</code> request bodies. The API does not accept any data via query params.</li>
-<li>The naming convention for endpoints is: localhost:8001/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. <code>localhost:8001/v1/connections/create</code>.</li>
+<li>The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. <code>localhost:8000/v1/connections/create</code>.</li>
 <li>For all <code>update</code> method, the whole object must be passed in, even the fields that did not change.</li>
 </ul>
 <p>Change Management:</p>
@@ -280,6 +280,7 @@ font-style: italic;
   </ul>
   <h4><a href="#Operation">Operation</a></h4>
   <ul>
+  <li><a href="#checkOperation"><code><span class="http-method">post</span> /v1/operations/check</code></a></li>
   <li><a href="#createOperation"><code><span class="http-method">post</span> /v1/operations/create</code></a></li>
   <li><a href="#deleteOperation"><code><span class="http-method">post</span> /v1/operations/delete</code></a></li>
   <li><a href="#getOperation"><code><span class="http-method">post</span> /v1/operations/get</code></a></li>
@@ -317,6 +318,7 @@ font-style: italic;
   </ul>
   <h4><a href="#WebBackend">WebBackend</a></h4>
   <ul>
+  <li><a href="#webBackendCreateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/create</code></a></li>
   <li><a href="#webBackendGetConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/get</code></a></li>
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
   <li><a href="#webBackendRecreateDestination"><code><span class="http-method">post</span> /v1/web_backend/destinations/recreate</code></a></li>
@@ -410,6 +412,7 @@ font-style: italic;
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
   "operationIds" : [ null, null ],
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -549,6 +552,7 @@ font-style: italic;
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
   "operationIds" : [ null, null ],
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -708,6 +712,7 @@ font-style: italic;
       } ]
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
     "operationIds" : [ null, null ],
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   }, {
@@ -752,6 +757,7 @@ font-style: italic;
       } ]
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
     "operationIds" : [ null, null ],
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
   } ]
@@ -1029,6 +1035,7 @@ font-style: italic;
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
   "operationIds" : [ null, null ],
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
 }</code></pre>
@@ -1917,12 +1924,14 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "documentationUrl" : "documentationUrl",
+  "supportsNormalization" : true,
   "connectionSpecification" : {
     "user" : {
       "type" : "string"
     }
   },
   "supportedDestinationSyncModes" : [ null, null ],
+  "supportsDbt" : true,
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "jobInfo" : {
     "createdAt" : 0,
@@ -2426,6 +2435,62 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="Operation">Operation</a></h1>
+  <div class="method"><a name="checkOperation"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/operations/check</code></pre></div>
+    <div class="method-summary">Check if an operation to be created is valid (<span class="nickname">checkOperation</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">OperationCreateOrUpdate <a href="#OperationCreateOrUpdate">OperationCreateOrUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#CheckOperationRead">CheckOperationRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "message" : "message",
+  "status" : "succeeded"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#CheckOperationRead">CheckOperationRead</a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="createOperation"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -3908,11 +3973,11 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   <h1><a name="WebBackend">WebBackend</a></h1>
-  <div class="method"><a name="webBackendGetConnection"/>
+  <div class="method"><a name="webBackendCreateConnection"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/get</code></pre></div>
-    <div class="method-summary">Get a connection (<span class="nickname">webBackendGetConnection</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/create</code></pre></div>
+    <div class="method-summary">Create a connection (<span class="nickname">webBackendCreateConnection</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -3924,7 +3989,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">WebBackendConnectionRequestBody <a href="#WebBackendConnectionRequestBody">WebBackendConnectionRequestBody</a> (required)</div>
+      <div class="param">WebBackendConnectionCreate <a href="#WebBackendConnectionCreate">WebBackendConnectionCreate</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -3935,7 +4000,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#WbConnectionRead">WbConnectionRead</a>
+      <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
       
     </div>
 
@@ -4039,6 +4104,7 @@ font-style: italic;
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
   "operationIds" : [ null, null ]
 }</code></pre>
 
@@ -4052,7 +4118,158 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#WbConnectionRead">WbConnectionRead</a>
+        <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
+    <h4 class="field-label">422</h4>
+    Invalid Input
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="webBackendGetConnection"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/get</code></pre></div>
+    <div class="method-summary">Get a connection (<span class="nickname">webBackendGetConnection</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WebBackendConnectionRequestBody <a href="#WebBackendConnectionRequestBody">WebBackendConnectionRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "latestSyncJobCreatedAt" : 0,
+  "prefix" : "prefix",
+  "destination" : {
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "destinationName" : "destinationName",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "isSyncing" : true,
+  "source" : {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceName" : "sourceName",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "schedule" : {
+    "units" : 0,
+    "timeUnit" : "minutes"
+  },
+  "operations" : {
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      }
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      }
+    } ]
+  },
+  "name" : "name",
+  "syncCatalog" : {
+    "streams" : [ {
+      "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
+        "name" : "name",
+        "namespace" : "namespace",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+      }
+    }, {
+      "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
+        "name" : "name",
+        "namespace" : "namespace",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+      }
+    } ]
+  },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
+  "operationIds" : [ null, null ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
     <h4 class="field-label">404</h4>
     Connection not found
         <a href="#"></a>
@@ -4088,7 +4305,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#WbConnectionReadList">WbConnectionReadList</a>
+      <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
       
     </div>
 
@@ -4193,6 +4410,7 @@ font-style: italic;
       } ]
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
     "operationIds" : [ null, null ]
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
@@ -4290,6 +4508,7 @@ font-style: italic;
       } ]
     },
     "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "namespaceFormat" : "${SOURCE_NAMESPACE}",
     "operationIds" : [ null, null ]
   } ]
 }</code></pre>
@@ -4304,7 +4523,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#WbConnectionReadList">WbConnectionReadList</a>
+        <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
     <h4 class="field-label">404</h4>
     Workspace not found
         <a href="#"></a>
@@ -4464,7 +4683,7 @@ font-style: italic;
 
     <h3 class="field-label">Return type</h3>
     <div class="return-type">
-      <a href="#ConnectionRead">ConnectionRead</a>
+      <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
       
     </div>
 
@@ -4474,11 +4693,65 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "latestSyncJobCreatedAt" : 0,
+  "prefix" : "prefix",
+  "destination" : {
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "destinationName" : "destinationName",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "isSyncing" : true,
+  "source" : {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceName" : "sourceName",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "schedule" : {
     "units" : 0,
     "timeUnit" : "minutes"
   },
-  "prefix" : "prefix",
+  "operations" : {
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      }
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
+        }
+      }
+    } ]
+  },
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -4514,8 +4787,8 @@ font-style: italic;
     } ]
   },
   "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-  "operationIds" : [ null, null ],
-  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
+  "operationIds" : [ null, null ]
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -4528,7 +4801,7 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">200</h4>
     Successful operation
-        <a href="#ConnectionRead">ConnectionRead</a>
+        <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
     <h4 class="field-label">422</h4>
     Invalid Input
         <a href="#"></a>
@@ -4892,6 +5165,7 @@ font-style: italic;
     <li><a href="#AttemptRead"><code>AttemptRead</code> - </a></li>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
+    <li><a href="#CheckOperationRead"><code>CheckOperationRead</code> - </a></li>
     <li><a href="#ConnectionCreate"><code>ConnectionCreate</code> - </a></li>
     <li><a href="#ConnectionIdRequestBody"><code>ConnectionIdRequestBody</code> - </a></li>
     <li><a href="#ConnectionRead"><code>ConnectionRead</code> - </a></li>
@@ -4928,10 +5202,12 @@ font-style: italic;
     <li><a href="#LogRead"><code>LogRead</code> - </a></li>
     <li><a href="#LogType"><code>LogType</code> - </a></li>
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
+    <li><a href="#NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a></li>
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
     <li><a href="#OperationCreate"><code>OperationCreate</code> - </a></li>
+    <li><a href="#OperationCreateOrUpdate"><code>OperationCreateOrUpdate</code> - </a></li>
     <li><a href="#OperationIdRequestBody"><code>OperationIdRequestBody</code> - </a></li>
     <li><a href="#OperationRead"><code>OperationRead</code> - </a></li>
     <li><a href="#OperationReadList"><code>OperationReadList</code> - </a></li>
@@ -4959,8 +5235,10 @@ font-style: italic;
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#SyncMode"><code>SyncMode</code> - </a></li>
     <li><a href="#SynchronousJobRead"><code>SynchronousJobRead</code> - </a></li>
-    <li><a href="#WbConnectionRead"><code>WbConnectionRead</code> - </a></li>
-    <li><a href="#WbConnectionReadList"><code>WbConnectionReadList</code> - </a></li>
+    <li><a href="#WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a></li>
+    <li><a href="#WebBackendConnectionCreate_allOf"><code>WebBackendConnectionCreate_allOf</code> - </a></li>
+    <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
+    <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate"><code>WebBackendConnectionUpdate</code> - </a></li>
     <li><a href="#WebBackendConnectionUpdate_allOf"><code>WebBackendConnectionUpdate_allOf</code> - </a></li>
@@ -5049,10 +5327,22 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="CheckOperationRead"><code>CheckOperationRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">succeeded</div><div class="param-enum">failed</div>
+<div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="ConnectionCreate"><code>ConnectionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Optional name of the connection </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
+<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
@@ -5075,6 +5365,8 @@ font-style: italic;
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
+<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
@@ -5120,6 +5412,8 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
+<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
@@ -5197,6 +5491,8 @@ font-style: italic;
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">supportedDestinationSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">array[DestinationSyncMode]</a></span>  </div>
+<div class="param">supportsDbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">supportsNormalization (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5359,6 +5655,12 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>Method used for computing final namespace in destination</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="Notification"><code>Notification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -5387,6 +5689,15 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="OperationCreateOrUpdate"><code>OperationCreateOrUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">operationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">operatorConfiguration </div><div class="param-desc"><span class="param-type"><a href="#OperatorConfiguration">OperatorConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -5625,12 +5936,38 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="WbConnectionRead"><code>WbConnectionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Optional name of the connection </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
+<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
+<div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
+<div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
+<div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
+<div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
+<div class="param">withOperations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionCreate_allOf"><code>WebBackendConnectionCreate_allOf</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">withOperations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
+<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
+<div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
@@ -5646,10 +5983,10 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="WbConnectionReadList"><code>WbConnectionReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">connections </div><div class="param-desc"><span class="param-type"><a href="#WbConnectionRead">array[WbConnectionRead]</a></span>  </div>
+      <div class="param">connections </div><div class="param-desc"><span class="param-type"><a href="#WebBackendConnectionRead">array[WebBackendConnectionRead]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5665,12 +6002,15 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">namespaceDefinition (optional)</div><div class="param-desc"><span class="param-type"><a href="#NamespaceDefinitionType">NamespaceDefinitionType</a></span>  </div>
+<div class="param">namespaceFormat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If &quot;${SOURCE_NAMESPACE}&quot; then behaves like namespaceDefinition = 'source'. </div>
 <div class="param">prefix (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Prefix that will be prepended to the name of each stream when it is written to the destination. </div>
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">syncCatalog </div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreateOrUpdate">array[OperationCreateOrUpdate]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5678,6 +6018,7 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreateOrUpdate">array[OperationCreateOrUpdate]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

@@ -23,70 +23,36 @@
 #
 
 
-import json
-from typing import DefaultDict, Dict, Generator
+import base64
+from typing import Any, List, Mapping, Tuple
 
-from airbyte_protocol import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    Status,
-    SyncMode,
-)
-from base_python import AirbyteLogger, Source
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from mailchimp3 import MailChimp
 
-from .client import Client
+from .streams import Campaigns, EmailActivity, Lists
 
 
-class SourceMailchimp(Source):
-    """
-    Mailchimp API Reference: https://mailchimp.com/developer/api/
-    """
+class HttpBasicAuthenticator(TokenAuthenticator):
+    def __init__(self, auth: Tuple[str, str], auth_method: str = "Basic", **kwargs):
+        auth_string = f"{auth[0]}:{auth[1]}".encode("utf8")
+        b64_encoded = base64.b64encode(auth_string).decode("utf8")
+        super().__init__(token=b64_encoded, auth_method=auth_method, **kwargs)
 
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
-        client = self._client(config)
-        alive, error = client.health_check()
-        if not alive:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"{error.title}: {error.detail}")
 
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+class SourceMailchimp(AbstractSource):
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        try:
+            client = MailChimp(mc_api=config["apikey"], mc_user=config["username"])
+            client.ping.get()
+            return True, None
+        except Exception as e:
+            return False, repr(e)
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        client = self._client(config)
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        authenticator = HttpBasicAuthenticator(auth=("anystring", config["apikey"]))
+        streams_ = [Lists(authenticator=authenticator), Campaigns(authenticator=authenticator), EmailActivity(authenticator=authenticator)]
 
-        return AirbyteCatalog(streams=client.get_streams())
-
-    def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
-    ) -> Generator[AirbyteMessage, None, None]:
-        client = self._client(config)
-
-        logger.info("Starting syncing mailchimp")
-        for configured_stream in catalog.streams:
-            yield from self._read_record(client=client, configured_stream=configured_stream, state=state)
-
-        logger.info("Finished syncing mailchimp")
-
-    def _client(self, config: json):
-        client = Client(username=config["username"], apikey=config["apikey"])
-
-        return client
-
-    @staticmethod
-    def _read_record(
-        client: Client, configured_stream: ConfiguredAirbyteStream, state: DefaultDict[str, any]
-    ) -> Generator[AirbyteMessage, None, None]:
-        entity_map = {
-            "Lists": client.lists,
-            "Campaigns": client.campaigns,
-        }
-
-        stream_name = configured_stream.stream.name
-
-        if configured_stream.sync_mode == SyncMode.full_refresh:
-            state.pop(stream_name, None)
-
-        for record in entity_map[stream_name](state=state):
-            yield record
+        return streams_

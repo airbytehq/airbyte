@@ -14,12 +14,12 @@ Here is what we will cover:
 
 We will produce the following charts in Tableau:
 
-* Evolution of the number of meetings per week in a team
-* Evolution of the number of hours a team spends in meetings per week
+* Meetings per week in a team
+* Hours a team spends in meetings per week
 * Listing of team members with the number of meetings per week and number of hours spent in meetings, ranked
-* Evolution of the number of webinars per week in a team
-* Evolution of the number of hours a team spends in webinars per week
-* Evolution of the number of participants for all webinars in a team per week
+* Webinars per week in a team
+* Hours a team spends in webinars per week
+* Participants for all webinars in a team per week
 * Listing of team members with the number of webinars per week and number of hours spent in meetings, ranked 
 
 Let’s get started by replicating Zoom data using Airbyte.
@@ -164,7 +164,7 @@ Now that we have replicated our Zoom data into a PostgreSQL database using Airby
 
 ## Step 3: Create the charts on Tableau with the Zoom data
 
-### Evolution of the number of meetings per week in a team
+### Meetings per week in a team
 
 To create this chart, we will need to use the count of the meetings and the **createdAt** field of the **meetings** table. Currently, we haven’t selected a table to work on in Tableau. So you will see a prompt to **Drag tables here**.
 
@@ -206,7 +206,7 @@ To create our Dashboard, we can right click on the sheet we just renamed and cho
 
 Now that we have this first chart out of the way, we just need to replicate most of the process we used for this one to create the other charts. Because the steps are so similar, we will mostly be showing the finished screenshots of the charts except when we need to conform to the chart requirements.
 
-### Evolution of the number of hours a team spends in meetings per week
+### Hours a team spends in meetings per week
 
 For this chart, we need the sum of the duration spent in weekly meetings. We already have a Duration field, which is currently displaying durations in minutes. We can derive a calculated field off this field since we want the duration in hours \(we just need to divide the duration field by 60\).
 
@@ -218,7 +218,7 @@ So now we can drag the Duration in Hours and Created At fields onto your sheet l
 
 Note: We are adding a filter on the Duration to filter out null values. You can do this by right clicking on the **SUM\(Duration\)** pill and clicking filter, then make sure the **include null values** checkbox is unchecked.
 
-### Evolution of the number of participants for all meetings per week
+### Participants for all meetings per week
 
 For this chart, we will need to have a calculated field called **\# of meetings attended**, which will be an aggregate of the counts of rows matching a particular user's email in the `report_meeting_participants` table plotted against the **Created At** field of the **meetings** table. To get this done, right click on the **User Email** field. Select **create** and click on **calculatedField**, then enter the title of the field as **\# of meetings attended**. Next, enter the below formula:
 
@@ -236,21 +236,21 @@ To get this chart, we need to create a relationship between the **meetings table
 
 Note: To achieve the ranking, we simply use the sort menu icon on the top menu bar.
 
-### Evolution of the number of webinars per week in a team
+### Webinars per week in a team
 
-The rest of the charts will be needing the **webinars** and `report_webinar_participants` tables. Similar to the evolution of the number of meetings per week in a team, we will be plotting the Count of webinars against the **Created At** property.
+The rest of the charts will be needing the **webinars** and `report_webinar_participants` tables. Similar to the number of meetings per week in a team, we will be plotting the Count of webinars against the **Created At** property.
 
 ![](../.gitbook/assets/30_weekly-webinars.png)
 
-### Evolution of the number of hours a week spends in webinars per week
+### Hours a week spends in webinars per week
 
 For this chart, as for the meeting’s counterpart, we will get a calculated field off the Duration field to get the **Webinar Duration in Hours**, and then plot **Created At** against the **Sum of Webinar Duration in Hours**, as shown in the screenshot below. Note: Make sure you create a new sheet for each of these graphs.
 
 ![](../.gitbook/assets/duration-spent-in-weekly-webinars%20%283%29%20%283%29.png)
 
-### Evolution of the number of participants for all webinars per week
+### Participants for all webinars per week
 
-This calculation is the same as the evolution of the number of participants for all meetings per week, but instead of using the **meetings** and `report_meeting_participants` tables, we will use the webinars and `report_webinar_participants` tables.
+This calculation is the same as the number of participants for all meetings per week, but instead of using the **meetings** and `report_meeting_participants` tables, we will use the webinars and `report_webinar_participants` tables.
 
 Also, the formula will now be:
 

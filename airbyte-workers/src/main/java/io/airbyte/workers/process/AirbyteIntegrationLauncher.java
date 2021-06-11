@@ -24,10 +24,15 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,86 +43,115 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final String jobId;
   private final int attempt;
   private final String imageName;
-  private final ProcessBuilderFactory pbf;
+  private final ProcessFactory processFactory;
 
-  public AirbyteIntegrationLauncher(long jobId, int attempt, final String imageName, final ProcessBuilderFactory pbf) {
-    this(String.valueOf(jobId), attempt, imageName, pbf);
+  public AirbyteIntegrationLauncher(long jobId, int attempt, final String imageName, final ProcessFactory processFactory) {
+    this(String.valueOf(jobId), attempt, imageName, processFactory);
   }
 
-  public AirbyteIntegrationLauncher(String jobId, int attempt, final String imageName, final ProcessBuilderFactory pbf) {
+  public AirbyteIntegrationLauncher(String jobId, int attempt, final String imageName, final ProcessFactory processFactory) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
-    this.pbf = pbf;
+    this.processFactory = processFactory;
   }
 
   @Override
-  public ProcessBuilder spec(final Path jobRoot) throws WorkerException {
-    return pbf.create(
+  public Process spec(final Path jobRoot) throws WorkerException {
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        false,
+        Collections.emptyMap(),
         null,
         "spec");
   }
 
   @Override
-  public ProcessBuilder check(final Path jobRoot, final String configFilename) throws WorkerException {
-    return pbf.create(
+  public Process check(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        false,
+        ImmutableMap.of(configFilename, configContents),
         null,
         "check",
         "--config", configFilename);
   }
 
   @Override
-  public ProcessBuilder discover(final Path jobRoot, final String configFilename) throws WorkerException {
-    return pbf.create(
+  public Process discover(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        false,
+        ImmutableMap.of(configFilename, configContents),
         null,
         "discover",
         "--config", configFilename);
   }
 
   @Override
-  public ProcessBuilder read(final Path jobRoot,
-                             final String configFilename,
-                             final String catalogFilename,
-                             final String stateFilename)
+  public Process read(final Path jobRoot,
+                      final String configFilename,
+                      final String configContents,
+                      final String catalogFilename,
+                      final String catalogContents,
+                      final String stateFilename,
+                      final String stateContents)
       throws WorkerException {
     final List<String> arguments = Lists.newArrayList(
         "read",
         "--config", configFilename,
         "--catalog", catalogFilename);
 
+    final Map<String, String> files = new HashMap<>();
+    files.put(configFilename, configContents);
+    files.put(catalogFilename, catalogContents);
+
     if (stateFilename != null) {
       arguments.add("--state");
       arguments.add(stateFilename);
+
+      Preconditions.checkNotNull(stateContents);
+      files.put(stateFilename, stateContents);
     }
 
-    return pbf.create(
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        false,
+        files,
         null,
         arguments);
   }
 
   @Override
-  public ProcessBuilder write(Path jobRoot, String configFilename, String catalogFilename) throws WorkerException {
-    return pbf.create(
+  public Process write(final Path jobRoot,
+                       final String configFilename,
+                       final String configContents,
+                       final String catalogFilename,
+                       final String catalogContents)
+      throws WorkerException {
+    final Map<String, String> files = ImmutableMap.of(
+        configFilename, configContents,
+        catalogFilename, catalogContents);
+
+    return processFactory.create(
         jobId,
         attempt,
         jobRoot,
         imageName,
+        true,
+        files,
         null,
         "write",
         "--config", configFilename,
