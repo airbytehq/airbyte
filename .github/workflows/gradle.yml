@@ -322,7 +322,13 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
-
+      - name: Log
+        run: |
+          echo "USER=$USER"
+          whoami
+          echo "HOME=$HOME"
+          cd ~
+          echo $(pwd)
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@v2.4.1
         with:
