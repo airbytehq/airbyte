@@ -111,59 +111,56 @@ public class JsonToAvroSchemaConverter {
             S3ParquetConstants.DOC_KEY_VALUE_DELIMITER,
             fieldName));
       }
-      assembler = fieldBuilder.type(getFieldType(fieldName, fieldDefinition)).withDefault(null);
+      assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition)).withDefault(null);
     }
 
     return assembler.endRecord();
   }
 
-  /**
-   * @param fieldDefinition - Json schema field definition. E.g. { type: "number" }.
-   */
-  Schema getFieldType(String fieldName, JsonNode fieldDefinition) {
-    List<JsonSchemaType> fieldTypes = getTypes(fieldName, fieldDefinition.get("type"));
-    // Currently we assume there are at most two type specifications for each field.
-    // So the primary type is the last element in the "type" property.
-    JsonSchemaType primaryType = fieldTypes.get(fieldTypes.size() - 1);
+  Schema getSingleFieldType(String fieldName, JsonSchemaType fieldType, JsonNode fieldDefinition) {
     Schema fieldSchema;
-    switch (primaryType) {
-      case NULL -> {
-        return Schema.create(Schema.Type.NULL);
-      }
-      case STRING, NUMBER, INTEGER, BOOLEAN -> {
-        fieldSchema = Schema.create(primaryType.getAvroType());
-      }
+    switch (fieldType) {
+      case NULL -> throw new IllegalStateException("Null types should have been filtered out");
+      case STRING, NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case ARRAY -> {
         JsonNode items = fieldDefinition.get("items");
         Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
         fieldSchema = Schema
-            .createArray(getFieldType(String.format("%s.items", fieldName), items));
+            .createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
       }
-      case OBJECT -> {
-        fieldSchema = getAvroSchema(fieldDefinition, fieldName, null, false);
-      }
-      default -> {
-        throw new IllegalStateException(
-            String.format("Unexpected type for field %s: %s", fieldName, primaryType));
-      }
+      case OBJECT -> fieldSchema = getAvroSchema(fieldDefinition, fieldName, null, false);
+      default -> throw new IllegalStateException(
+          String.format("Unexpected type for field %s: %s", fieldName, fieldType));
     }
-    // Mark every field as nullable to prevent missing value exceptions from Parquet.
-    return Schema.createUnion(Schema.create(Schema.Type.NULL), fieldSchema);
+    return fieldSchema;
   }
 
   /**
-   * Currently this method assumes that there are at most two type specification. E.g. ["null",
-   * "number"]. Fields like "allOf", "anyOf", "oneOf" are not supported.
+   * @param fieldDefinition - Json schema field definition. E.g. { type: "number" }.
    */
+  Schema getNullableFieldTypes(String fieldName, JsonNode fieldDefinition) {
+    List<Schema> nonNullFieldTypes =  getTypes(fieldName, fieldDefinition.get("type")).stream()
+        // Filter out null types, which will be added back in the end.
+        .filter(fieldType -> fieldType != JsonSchemaType.NULL)
+        .map(fieldType -> getSingleFieldType(fieldName, fieldType, fieldDefinition))
+        .collect(Collectors.toList());
+
+    if (nonNullFieldTypes.isEmpty()) {
+      return Schema.create(Schema.Type.NULL);
+    } else {
+      // Mark every field as nullable to prevent missing value exceptions from Parquet.
+      nonNullFieldTypes.add(0, Schema.create(Schema.Type.NULL));
+      return Schema.createUnion(nonNullFieldTypes);
+    }
+  }
+
   static List<JsonSchemaType> getTypes(String fieldName, JsonNode type) {
     if (type == null) {
       throw new IllegalStateException(String.format("Field %s has no type", fieldName));
     } else if (type.isArray()) {
-      List<JsonSchemaType> types = MoreIterators.toList(type.elements()).stream()
+      return MoreIterators.toList(type.elements()).stream()
           .map(s -> JsonSchemaType.fromJsonSchemaType(s.asText()))
           .collect(Collectors.toList());
-      Preconditions.checkState(type.size() <= 2, "Unsupported types: " + types);
-      return types;
     } else if (type.isTextual()) {
       return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(type.asText()));
     } else {

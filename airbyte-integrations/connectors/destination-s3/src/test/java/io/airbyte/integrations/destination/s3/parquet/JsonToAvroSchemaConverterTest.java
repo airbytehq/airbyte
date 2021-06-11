@@ -52,7 +52,7 @@ class JsonToAvroSchemaConverterTest {
     JsonToAvroSchemaConverter converter = new JsonToAvroSchemaConverter();
     assertEquals(
         avroFieldType,
-        Jsons.deserialize(converter.getFieldType(fieldName, jsonFieldSchema).toString()),
+        Jsons.deserialize(converter.getNullableFieldTypes(fieldName, jsonFieldSchema).toString()),
         String.format("Test for %s failed", fieldName)
     );
   }

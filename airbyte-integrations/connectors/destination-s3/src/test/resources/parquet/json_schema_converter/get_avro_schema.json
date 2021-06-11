@@ -182,5 +182,38 @@
         }
       ]
     }
+  },
+  {
+    "schemaName": "record_with_array",
+    "namespace": "namespace5",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": [
+            "null",
+            "number",
+            "string"
+          ]
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "record_with_array",
+      "namespace": "namespace5",
+      "fields": [
+        {
+          "name": "identifier",
+          "type": [
+            "null",
+            "double",
+            "string"
+          ],
+          "default": null
+        }
+      ]
+    }
   }
 ]
