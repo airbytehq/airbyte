@@ -45,17 +45,25 @@ public class DestinationHelpers {
   }
 
   public static DestinationConnection generateDestination(UUID destinationDefinitionId) throws IOException {
-    return generateDestination(destinationDefinitionId, false);
+    return generateDestination(destinationDefinitionId, "my default dest name", false);
+  }
+
+  public static DestinationConnection generateDestination(UUID destinationDefinitionId, String name) throws IOException {
+    return generateDestination(destinationDefinitionId, name, false);
   }
 
   public static DestinationConnection generateDestination(UUID destinationDefinitionId, boolean tombstone) throws IOException {
+    return generateDestination(destinationDefinitionId, "my default dest name", tombstone);
+  }
+
+  public static DestinationConnection generateDestination(UUID destinationDefinitionId, String name, boolean tombstone) throws IOException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
 
     final JsonNode implementationJson = getTestDestinationJson();
 
     return new DestinationConnection()
-        .withName("my db2 instance")
+        .withName(name)
         .withWorkspaceId(workspaceId)
         .withDestinationDefinitionId(destinationDefinitionId)
         .withDestinationId(destinationId)

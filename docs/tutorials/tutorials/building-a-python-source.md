@@ -57,9 +57,7 @@ Airbyte provides a code generator which bootstraps the scaffolding for our conne
 
 ```bash
 $ cd airbyte-integrations/connector-templates/generator # assumes you are starting from the root of the Airbyte project.
-# Install NPM from https://www.npmjs.com/get-npm if you don't have it
-$ npm install
-$ npm run generate
+$ ./generate.sh
 ```
 
 Select the `python` template and then input the name of your connector. For this walk through we will refer to our source as `example-python`
