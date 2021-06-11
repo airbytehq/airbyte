@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -92,7 +93,7 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
 
   // Filename: <upload-date>_<upload-millis>_0.csv
   static String getOutputFilename(Timestamp timestamp) {
-    var formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+    DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format("%s_%d_0.csv", formatter.format(timestamp), timestamp.getTime());
   }

@@ -24,8 +24,6 @@
 
 package io.airbyte.integrations.destination.s3.parquet;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.YYYY_MM_DD_FORMAT;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -41,6 +40,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 import java.util.UUID;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -112,8 +114,10 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
   }
 
   static String getOutputFilename(Timestamp timestamp) {
+    DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String
-        .format("%s_%d_0.parquet", YYYY_MM_DD_FORMAT.format(timestamp), timestamp.getTime());
+        .format("%s_%d_0.parquet", formatter.format(timestamp), timestamp.getTime());
   }
 
   @Override
