@@ -76,7 +76,10 @@ const EditControls: React.FC<IProps> = ({
           <FormattedMessage id="connection.warningUpdateSchema" />
         </Warning>
       )}
-      <Button type="submit" disabled={isSubmitting || !dirty}>
+      <Button
+        type="submit"
+        disabled={(isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)}
+      >
         {editSchemeMode ? (
           <FormattedMessage id="connection.saveAndReset" />
         ) : (

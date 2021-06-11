@@ -140,7 +140,7 @@ export default class ConnectionResource
     return {
       ...super.listShape(),
       getFetchKey: (params: { workspaceId: string }) =>
-        "POST /web_backend/list" + JSON.stringify(params),
+        "POST /web_backend/connections/list" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<{ connections: Connection[] }> =>

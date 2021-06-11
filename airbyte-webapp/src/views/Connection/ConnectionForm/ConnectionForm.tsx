@@ -161,6 +161,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     <Formik
       initialValues={initialValues}
       validationSchema={connectionValidationSchema}
+      enableReinitialize={true}
       onSubmit={onFormSubmit}
     >
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm }) => (

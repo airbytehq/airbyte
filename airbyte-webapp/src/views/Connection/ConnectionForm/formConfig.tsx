@@ -230,44 +230,44 @@ const useInitialValues = (props: {
   } = props;
   const initialSchema = useInitialSchema(syncCatalog);
 
-  const initialTransformations: Transformation[] | undefined = useMemo(
-    () =>
-      operations.filter(
-        (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
-      ) as Transformation[],
-    [operations]
-  );
+  return useMemo<FormikConnectionFormValues>(() => {
+    const initialValues: FormikConnectionFormValues = {
+      syncCatalog: initialSchema,
+      frequency: frequencyValue || "",
+      prefix: prefixValue || "",
+    };
 
-  const initialNormalization: NormalizationType | undefined = useMemo(() => {
-    const normalization = (operations.find(
-      (op) =>
-        op.operatorConfiguration.operatorType === OperatorType.Normalization
-    ) as Normalization)?.operatorConfiguration?.normalization?.option;
-
-    // If no normalization was selected for already present normalization -> Raw is select
-    if (!normalization && isEditMode) {
-      return NormalizationType.RAW;
+    if (destDefinition.supportsDbt) {
+      initialValues.transformations =
+        (operations.filter(
+          (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
+        ) as Transformation[]) ?? [];
     }
 
-    return normalization;
-  }, [operations]);
+    if (destDefinition.supportsNormalization) {
+      let initialNormalization = (operations.find(
+        (op) =>
+          op.operatorConfiguration.operatorType === OperatorType.Normalization
+      ) as Normalization)?.operatorConfiguration?.normalization?.option;
 
-  const initialValues: FormikConnectionFormValues = {
-    syncCatalog: initialSchema,
-    frequency: frequencyValue || "",
-    prefix: prefixValue || "",
-  };
+      // If no normalization was selected for already present normalization -> Raw is select
+      if (!initialNormalization && isEditMode) {
+        initialNormalization = NormalizationType.RAW;
+      }
 
-  if (destDefinition.supportsDbt) {
-    initialValues.transformations = initialTransformations ?? [];
-  }
+      initialValues.normalization =
+        initialNormalization ?? NormalizationType.BASIC;
+    }
 
-  if (destDefinition.supportsNormalization) {
-    initialValues.normalization =
-      initialNormalization ?? NormalizationType.BASIC;
-  }
-
-  return initialValues;
+    return initialValues;
+  }, [
+    initialSchema,
+    frequencyValue,
+    prefixValue,
+    isEditMode,
+    destDefinition,
+    operations,
+  ]);
 };
 
 const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
