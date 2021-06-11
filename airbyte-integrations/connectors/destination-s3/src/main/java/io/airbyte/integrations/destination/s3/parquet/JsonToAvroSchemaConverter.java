@@ -49,6 +49,9 @@ import org.slf4j.LoggerFactory;
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
  * standardize schema names, and keep track of a mapping from the original names to the standardized
  * ones.
+ * <p/>
+ * For limitations of this converter, see the README of this connector:
+ * https://docs.airbyte.io/integrations/destinations/s3#parquet
  */
 public class JsonToAvroSchemaConverter {
 
@@ -156,16 +159,6 @@ public class JsonToAvroSchemaConverter {
           fieldSchema = Schema
               .createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
         } else if (items.isArray()) {
-          // In Json schema, when items property is an array, it means means each element in the
-          // array should follow its own schema sequentially.
-          // For example, the following specification means the first item in the array should be
-          // a string, and the second a number.
-          // "items": [
-          //   { "type": "string" },
-          //   { "type": "number" },
-          // ]
-          // This is not supported in Avro schema. As a compromise, the converter creates a union,
-          // ["string", "number"], which is less stringent.
           List<Schema> arrayElementTypes = MoreIterators.toList(items.elements())
               .stream()
               .flatMap(itemDefinition ->
