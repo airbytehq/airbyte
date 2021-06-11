@@ -274,38 +274,29 @@ class TicketsAPI(IncrementalStreamAPI):
         params = params or {}
         # the maximum page allowed to pull during pagination.
         ticket_paginate_limit = 300
+        # Start page
+        page = 1
+        # Initial request parameters
+        params = {**params, "per_page": self.result_return_limit}
 
-        # Reading Tickets up to the `ticket_paginate_limit`
-        for page in range(1, ticket_paginate_limit):
-            batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
+        while True:
+            params["page"] = page
+            batch = list(getter(params=params))
             yield from batch
 
             if len(batch) < self.result_return_limit:
-                return iter(())
+                return False
             else:
-                # position 0, because the records are returned in 'desc'
-                last_record = batch[0]["updated_at"]
+                last_record = batch[0]["updated_at"]  # pos. 0, because of DESC order of records
 
-        # if there is more after 300 pages
-        # Define last_record = `updated_at` + 1 sec
-        # query using 'updated_since' = last_record + pagination
-        last_record = pendulum.parse(last_record).add(seconds=1)
-        for more_page in range(1, self.maximum_page):
-            batch = list(
-                getter(
-                    params={
-                        **params,
-                        "order_by": "updated_at",
-                        "updated_since": last_record,
-                        "per_page": self.result_return_limit,
-                        "page": more_page,
-                    }
-                )
-            )
-            yield from batch
-
-            if len(batch) < self.result_return_limit:
-                return iter(())
+            if page == ticket_paginate_limit:
+                page = 0  # reset page counter
+                last_record = pendulum.parse(last_record).add(seconds=1)
+                # updating request parameters with last_record state
+                params["order_by"] = "updated_at"
+                params["updated_since"] = last_record
+            # Increment page
+            page += 1
 
     # Override the super().read() method with modified read for tickets
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
