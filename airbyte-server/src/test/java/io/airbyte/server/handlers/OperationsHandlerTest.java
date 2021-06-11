@@ -62,7 +62,6 @@ class OperationsHandlerTest {
   private Supplier<UUID> uuidGenerator;
 
   private OperationsHandler operationsHandler;
-  private StandardSync standardSync;
   private StandardSyncOperation standardSyncOperation;
 
   @SuppressWarnings("unchecked")
@@ -72,7 +71,6 @@ class OperationsHandlerTest {
     uuidGenerator = mock(Supplier.class);
 
     operationsHandler = new OperationsHandler(configRepository, uuidGenerator);
-    standardSync = mock(StandardSync.class);
     standardSyncOperation = new StandardSyncOperation()
         .withOperationId(UUID.randomUUID())
         .withName("presto to hudi")
