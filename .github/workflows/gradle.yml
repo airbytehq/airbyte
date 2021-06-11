@@ -322,21 +322,15 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
-      - name: Log
-        run: |
-          echo "USER=$USER"
-          whoami
-          echo "HOME=$HOME"
-          cd ~
-          echo $(pwd)
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@v2.4.1
         with:
           minikube version: 'v1.21.0-beta.0'
           kubernetes version: 'v1.20.7'
+        # In case of elf-hosted EC2 errors, remove this env block.
         env:
-          USER: runner
-          HOME: /home/runner
+          USER: root
+          HOME: /root
 
       - name: Install socat (required for port forwarding)
         run: sudo apt-get install socat
