@@ -7,7 +7,6 @@
     "title": "S3 Destination Spec",
     "type": "object",
     "required": [
-      "s3_endpoint",
       "s3_bucket_name",
       "s3_bucket_path",
       "s3_bucket_region",
@@ -20,8 +19,9 @@
       "s3_endpoint": {
         "title": "Endpoint",
         "type": "string",
-        "description": "This is your s3 endpoint url.( if you are working with aws, just type aws).",
-        "examples": ["http://localhost:9000", "aws"]
+        "default": "",
+        "description": "This is your S3 endpoint url.(if you are working with AWS S3, just leave empty).",
+        "examples": ["http://localhost:9000"]
       },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",

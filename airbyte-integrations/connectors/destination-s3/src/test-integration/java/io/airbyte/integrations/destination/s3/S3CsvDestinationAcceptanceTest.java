@@ -219,7 +219,7 @@ public class S3CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
     AWSCredentials awsCreds = new BasicAWSCredentials(config.getAccessKeyId(),
         config.getSecretAccessKey());
 
-    if (endpoint.equalsIgnoreCase("aws")) {
+    if (endpoint.isEmpty()) {
       this.s3Client = AmazonS3ClientBuilder.standard()
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .withRegion(config.getBucketRegion())

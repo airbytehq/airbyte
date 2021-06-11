@@ -220,7 +220,7 @@ public abstract class S3StreamCopier implements StreamCopier {
 
     var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
 
-    if (endpoint.equalsIgnoreCase("aws")) {
+    if (endpoint.isEmpty()) {
       return AmazonS3ClientBuilder.standard()
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .withRegion(s3Config.getRegion())

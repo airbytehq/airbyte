@@ -75,7 +75,7 @@ public class S3Consumer extends FailureTrackingAirbyteMessageConsumer {
     AWSCredentials awsCreds = new BasicAWSCredentials(s3DestinationConfig.getAccessKeyId(), s3DestinationConfig.getSecretAccessKey());
     AmazonS3 s3Client = null;
 
-    if (endpoint.equalsIgnoreCase("aws")) {
+    if (endpoint.isEmpty()) {
       s3Client = AmazonS3ClientBuilder.standard()
           .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
           .withRegion(s3DestinationConfig.getBucketRegion())
