@@ -19,14 +19,15 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 class JsonToAvroSchemaConverterTest {
 
   @Test
-  public void testGetTypes() {
-    // single type
+  public void testGetSingleTypes() {
     JsonNode input1 = Jsons.deserialize("{ \"type\": \"number\" }");
     assertEquals(
         Collections.singletonList(JsonSchemaType.NUMBER),
         JsonToAvroSchemaConverter.getTypes("field", input1.get("type")));
+  }
 
-    // type union
+  @Test
+  public void testGetUnionTypes() {
     JsonNode input2 = Jsons.deserialize("{ \"type\": [\"null\", \"string\"] }");
     assertEquals(
         Lists.newArrayList(JsonSchemaType.NULL, JsonSchemaType.STRING),
