@@ -170,14 +170,12 @@ public class OperationsHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<OperationRead> operationReads = Lists.newArrayList();
     final StandardSync standardSync = configRepository.getStandardSync(connectionIdRequestBody.getConnectionId());
-    for (StandardSyncOperation standardSyncOperation : configRepository.listStandardSyncOperations()) {
+    for (UUID operationId : standardSync.getOperationIds()) {
+      final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
       if (standardSyncOperation.getTombstone() != null && standardSyncOperation.getTombstone()) {
         continue;
       }
-      if (!standardSync.getOperationIds().contains(standardSyncOperation.getOperationId())) {
-        continue;
-      }
-      operationReads.add(buildOperationRead(standardSyncOperation.getOperationId()));
+      operationReads.add(buildOperationRead(standardSyncOperation));
     }
     return new OperationReadList().operations(operationReads);
   }
