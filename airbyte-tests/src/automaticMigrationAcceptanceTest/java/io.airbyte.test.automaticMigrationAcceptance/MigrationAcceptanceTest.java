@@ -22,18 +22,18 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.migration;
+package io.airbyte.test.automaticMigrationAcceptance;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.io.Resources;
-import io.airbyte.api.client.DeploymentApi;
 import io.airbyte.api.client.HealthApi;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
 import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.api.client.model.ImportRead;
 import io.airbyte.api.client.model.ImportRead.StatusEnum;
+import io.airbyte.commons.version.AirbyteVersion;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
@@ -43,7 +43,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +57,9 @@ public class MigrationAcceptanceTest {
   public void testAutomaticMigration()
       throws URISyntaxException, NoSuchFieldException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, ApiException,
       InterruptedException {
+    String targetVersion = System.getenv("MIGRATION_TEST_VERSION");
     firstRun();
-    secondRun();
+    secondRun(targetVersion);
   }
 
   private Consumer<OutputFrame> logConsumerForServer(Set<String> logs) {
@@ -87,7 +87,7 @@ public class MigrationAcceptanceTest {
       InvocationTargetException {
     Map<String, String> environmentVariables = getEnvironmentVariables("0.17.0-alpha");
     final File firstRun = Path
-        .of(Resources.getResource("migration/docker-compose-migration-test-first-run.yaml").toURI())
+        .of(Resources.getResource("docker-compose-migration-test-first-run.yaml").toURI())
         .toFile();
 
     Set<String> logsToExpect = new HashSet<>();
@@ -96,45 +96,59 @@ public class MigrationAcceptanceTest {
     DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(firstRun)
         .withLogConsumer("server", logConsumerForServer(logsToExpect))
         .withEnv(environmentVariables);
+    try {
+      /**
+       * We are using CustomDockerComposeContainer cause the
+       * {@link org.testcontainers.containers.DockerComposeContainer#stop()} method also deletes the
+       * volume but we dont want to delete the volume to test the automatic migration
+       */
+      CustomDockerComposeContainer customDockerComposeContainer = new CustomDockerComposeContainer(
+          dockerComposeContainer);
 
-    /**
-     * We are using CustomDockerComposeContainer cause the
-     * {@link org.testcontainers.containers.DockerComposeContainer#stop()} method also deletes the
-     * volume but we dont want to delete the volume to test the automatic migration
-     */
-    CustomDockerComposeContainer customDockerComposeContainer = new CustomDockerComposeContainer(
-        dockerComposeContainer);
+      customDockerComposeContainer.start();
 
-    customDockerComposeContainer.start();
+      Thread.sleep(10000);
 
-    Thread.sleep(10000);
-
-    assertTrue(logsToExpect.isEmpty());
-    ApiClient apiClient = getApiClient();
-    healthCheck(apiClient);
-    populateDataForFirstRun(apiClient);
-    customDockerComposeContainer.stop();
+      assertTrue(logsToExpect.isEmpty());
+      ApiClient apiClient = getApiClient();
+      healthCheck(apiClient);
+      populateDataForFirstRun(apiClient);
+      customDockerComposeContainer.stop();
+    } catch (Exception e) {
+      dockerComposeContainer.stop();
+      throw e;
+    }
   }
 
-  private void secondRun()
+  private String targetVersionWithoutPatch(String targetVersion) {
+    AirbyteVersion airbyteVersion = new AirbyteVersion(targetVersion);
+    return "" + airbyteVersion.getMajorVersion()
+        + "."
+        + airbyteVersion.getMinorVersion()
+        + ".0-"
+        + airbyteVersion.getVersion().replace("\n", "").strip().split("-")[1];
+
+  }
+
+  private void secondRun(String targetVersion)
       throws URISyntaxException, InterruptedException, ApiException {
 
-    // The version for second run should be changed to latest version once automatic migration is merged
-    Map<String, String> environmentVariables = getEnvironmentVariables("0.24.3-alpha");
+    Map<String, String> environmentVariables = getEnvironmentVariables(targetVersion);
     final File firstRun = Path
-        .of(Resources.getResource("migration/docker-compose-migration-test-second-run.yaml")
+        .of(Resources.getResource("docker-compose-migration-test-second-run.yaml")
             .toURI())
         .toFile();
 
     Set<String> logsToExpect = new HashSet<>();
-    logsToExpect.add("Version: 0.24.3-alpha");
-    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha, Target version: 0.24.0-alpha");
+    logsToExpect.add("Version: " + targetVersion);
+    logsToExpect.add("Starting migrations. Current version: 0.17.0-alpha, Target version: "
+        + targetVersionWithoutPatch(targetVersion));
     logsToExpect.add("Migrating from version: 0.17.0-alpha to version 0.18.0-alpha.");
     logsToExpect.add("Migrating from version: 0.18.0-alpha to version 0.19.0-alpha.");
     logsToExpect.add("Migrating from version: 0.19.0-alpha to version 0.20.0-alpha.");
     logsToExpect.add("Migrating from version: 0.20.0-alpha to version 0.21.0-alpha.");
     logsToExpect.add("Migrating from version: 0.22.0-alpha to version 0.23.0-alpha.");
-    logsToExpect.add("Migrations complete. Now on version: 0.24.0-alpha");
+    logsToExpect.add("Migrations complete. Now on version: " + targetVersionWithoutPatch(targetVersion));
     logsToExpect.add("Successful import of airbyte configs");
     logsToExpect.add("Deleting directory /data/config/STANDARD_SYNC_SCHEDULE");
 
@@ -142,22 +156,25 @@ public class MigrationAcceptanceTest {
         .withLogConsumer("server", logConsumerForServer(logsToExpect))
         .withEnv(environmentVariables);
 
-    dockerComposeContainer.start();
+    try {
+      dockerComposeContainer.start();
 
-    Thread.sleep(50000);
+      Thread.sleep(50000);
 
-    healthCheck(getApiClient());
+      healthCheck(getApiClient());
 
-    assertTrue(logsToExpect.isEmpty());
-    // Should I assert data as well using the API?
-    dockerComposeContainer.stop();
+      assertTrue(logsToExpect.isEmpty());
+      // Should I assert data as well using the API?
+    } finally {
+      dockerComposeContainer.stop();
+    }
   }
 
   private void populateDataForFirstRun(ApiClient apiClient)
       throws ApiException, URISyntaxException {
-    DeploymentApi deploymentApi = new DeploymentApi(apiClient);
+    ImportApi deploymentApi = new ImportApi(apiClient);
     final File file = Path
-        .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
+        .of(Resources.getResource("03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
         .toFile();
     ImportRead importRead = deploymentApi.importArchive(file);
     assertTrue(importRead.getStatus() == StatusEnum.SUCCEEDED);
@@ -177,7 +194,6 @@ public class MigrationAcceptanceTest {
     return apiClient;
   }
 
-  @NotNull
   private Map<String, String> getEnvironmentVariables(String version) {
     Map<String, String> env = new HashMap<>();
     env.put("VERSION", version);

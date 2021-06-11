@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.server.migration;
+package io.airbyte.test.automaticMigrationAcceptance;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

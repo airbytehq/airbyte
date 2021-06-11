@@ -9,7 +9,7 @@ services:
   # hook in case we need to add init behavior
   # every root service (no depends_on) should depend on init
   init:
-    image: airbyte/init:${VERSION}
+    image: airbyte/init:dev
     logging: *default-logging
     command: /bin/sh -c "./scripts/create_mount_directories.sh /local_parent ${HACK_LOCAL_ROOT_PARENT} ${LOCAL_ROOT}"
     environment:
@@ -18,7 +18,7 @@ services:
     volumes:
       - ${HACK_LOCAL_ROOT_PARENT}:/local_parent
   db:
-    image: airbyte/db:${VERSION}
+    image: airbyte/db:dev
     logging: *default-logging
     restart: unless-stopped
     environment:
@@ -33,11 +33,7 @@ services:
     volumes:
       - data:/app/seed
   server:
-    image: airbyte/server:migration-test
-    # Once automatic migration is merged, change this to use that image version so that we dont have to build
-    build:
-      dockerfile: Dockerfile
-      context: ../../../../
+    image: airbyte/server:dev
     logging: *default-logging
     restart: unless-stopped
     environment:
