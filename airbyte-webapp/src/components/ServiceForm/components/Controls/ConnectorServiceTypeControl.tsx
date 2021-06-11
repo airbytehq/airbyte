@@ -88,7 +88,7 @@ const ConnectorServiceTypeControl: React.FC<{
             id: "form.searchName",
           })}
           data={sortedDropDownData}
-          onSelect={handleSelect}
+          onChange={handleSelect}
         />
       </DropdownLabels>
       {selectedService && documentationUrl && (

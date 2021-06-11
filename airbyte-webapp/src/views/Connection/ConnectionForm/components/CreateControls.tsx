@@ -59,7 +59,7 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const BottomBlock: React.FC<IProps> = ({
+const CreateControls: React.FC<IProps> = ({
   isSubmitting,
   errorMessage,
   additionBottomControls,
@@ -98,4 +98,4 @@ const BottomBlock: React.FC<IProps> = ({
   );
 };
 
-export default BottomBlock;
+export default CreateControls;
