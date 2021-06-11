@@ -303,9 +303,9 @@ jobs:
           security-group-id: sg-0793f3c9413f21970
   kube-acceptance-test:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
-    needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
-    #    runs-on: ubuntu-latest
+#    needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
+#    runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
+    runs-on: ubuntu-latest
     name: Acceptance Tests (Kube)
     steps:
       - name: Checkout Airbyte
@@ -341,7 +341,7 @@ jobs:
       - name: List files in HOME to see what we need to add to PATH
         run: |
           find /home/runner
-          ls /usr/local/bin/
+          ls -alh /usr/local/bin/
           find / | grep kubectl
           echo $PATH
           kubectl get pods
