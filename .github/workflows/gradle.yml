@@ -338,7 +338,7 @@ jobs:
           HOME: /home/runner
           CHANGE_MINIKUBE_NONE_USER: true
 
-      - name: List files in HOME to see what we need to add to PATH
+      - name: Manual Minikube Linking and Starting for EC2
         run: |
           ln -s $(which minikube) /usr/local/bin/kubectl
           minikube start
