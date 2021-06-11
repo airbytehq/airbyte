@@ -25,7 +25,7 @@ import useRouter from "components/hooks/useRouterHook";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
 import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
-import { useApiHealthPoll } from "../components/hooks/services/Health";
+import { useApiHealthPoll } from "components/hooks/services/Health";
 
 export enum Routes {
   Preferences = "/preferences",
