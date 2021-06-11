@@ -1,3 +1,6 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "aws_key_id": "123",
+  "aws_secret_key": "123",
+  "aws_region_name": "eu-west-1",
+  "start_date": "2020-06-09"
 }

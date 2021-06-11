@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,53 +20,54 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from datetime import datetime
-
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import boto3
 import botocore
-from botocore.config import Config
-
+import botocore.exceptions
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import SyncMode
+from botocore.config import Config
+
+
+class Client:
+    def __init__(self, aws_key_id: str, aws_secret_key: str, aws_region_name: str):
+        config = Config(
+            parameter_validation=False,
+            retries=dict(
+                # use similar configuration as in http source
+                max_attempts=5,
+                # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/retries.html#adaptive-retry-mode
+                mode="adaptive",
+            ),
+        )
+
+        self.session: botocore.client.CloudTrail = boto3.client(
+            "cloudtrail", aws_access_key_id=aws_key_id, aws_secret_access_key=aws_secret_key, region_name=aws_region_name, config=config
+        )
 
 
 class AwsCloudtrailStream(Stream, ABC):
 
-    limit: int = 25
+    limit: int = 50
 
     start_date_format = "%Y-%m-%d"
 
-    def __init__(self, aws_key_id: str, aws_secret_key: str, start_date: str, **kwargs):
+    def __init__(self, aws_key_id: str, aws_secret_key: str, aws_region_name: str, start_date: str, **kwargs):
         self.aws_secret_key = aws_secret_key
         self.aws_key_id = aws_key_id
         self.start_date = self.datetime_to_timestamp(datetime.strptime(start_date, self.start_date_format))
-
-        config = Config(
-            parameter_validation=False,
-            retries = dict(
-                # use similar configuration as in http source
-                max_attempts=5,
-                # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/retries.html#adaptive-retry-mode
-                mode='adaptive',
-            )
-        )
-
-        self.client = boto3.client(
-            'cloudtrail',
-            aws_access_key_id=aws_key_id,
-            aws_secret_access_key=aws_secret_key,
-            config=config
-        )
+        self.client = Client(aws_key_id, aws_secret_key, aws_region_name)
 
     def next_page_token(self, response: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        return response.get('NextToken')
+        return response.get("NextToken")
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -75,9 +77,8 @@ class AwsCloudtrailStream(Stream, ABC):
         if self.start_date:
             params["StartTime"] = self.start_date
         if next_page_token:
-            params['NextToken'] = next_page_token
+            params["NextToken"] = next_page_token
         return params
-
 
     def datetime_to_timestamp(self, date: datetime) -> int:
         return int(datetime.timestamp(date))
@@ -91,14 +92,10 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
     def limit(self):
         return super().limit
 
+    # emits a STATE message for each page
     state_checkpoint_interval = limit
 
-    def get_updated_state(
-        self,
-        current_stream_state:
-        MutableMapping[str, Any],
-        latest_record: Mapping[str, Any]
-    ) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         record_time = latest_record[self.time_field]
         return {self.cursor_field: max(record_time, current_stream_state.get(self.cursor_field, 0))}
 
@@ -122,11 +119,18 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
 
         next_page_token = None
         while not pagination_complete:
-            params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            response = self.send_request(**params)
+            params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            try:
+                response = self.send_request(**params)
+            except botocore.exceptions.ClientError as err:
+                # returns no records if either the start time occurs after the end time
+                # or the time range is outside the range of possible values.
+                if err.response["Error"]["Code"] == "InvalidTimeRangeException":
+                    break
+                else:
+                    raise err
 
             yield from self.parse_response(response)
-
             next_page_token = self.next_page_token(response)
             if not next_page_token:
                 pagination_complete = True
@@ -145,7 +149,7 @@ class Events(IncrementalAwsCloudtrailStream):
     data_field = "Events"
 
     def send_request(self, **kwargs):
-        return self.client.lookup_events(**kwargs)
+        return self.client.session.lookup_events(**kwargs)
 
     def parse_response(self, response: dict, **kwargs) -> Iterable[Mapping]:
         for event in response[self.data_field]:
@@ -155,9 +159,9 @@ class Events(IncrementalAwsCloudtrailStream):
 
 class SourceAwsCloudtrail(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        client = boto3.client('cloudtrail', aws_access_key_id=config['aws_key_id'], aws_secret_access_key=config['aws_secret_key'])
+        client = Client(config["aws_key_id"], config["aws_secret_key"], config["aws_region_name"])
         try:
-            client.lookup_events(MaxResults=1)
+            client.session.lookup_events(MaxResults=1)
         except botocore.exceptions.ClientError as error:
             return False, error
 
