@@ -322,6 +322,11 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
+
+      - name: Fix EC-2 Runner
+        run: |
+          mkdir -p /home/runner
+
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@v2.4.1
         with:
@@ -330,7 +335,7 @@ jobs:
         # In case of elf-hosted EC2 errors, remove this env block.
         env:
           USER: root
-          HOME: /root
+          HOME: /home/runner
 
       - name: Install socat (required for port forwarding)
         run: sudo apt-get install socat
@@ -359,7 +364,7 @@ jobs:
       - name: Stop EC2 runner
         uses: machulav/ec2-github-runner@v2.1.0
         with:
-          mode: stop
+          mode: stopt
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
           label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
