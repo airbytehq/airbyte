@@ -44,11 +44,16 @@ import org.apache.avro.SchemaBuilder.RecordBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The main function of this class is to convert a JsonSchema to Avro schema. It can also
+ * standardize schema names, and keep track of a mapping from the original names to the
+ * standardized ones.
+ */
 public class JsonSchemaConverter {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaConverter.class);
   public static final Schema UUID_SCHEMA = LogicalTypes.uuid()
       .addToSchema(Schema.create(Type.STRING));
-  private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaConverter.class);
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
       .addToSchema(Schema.create(Type.LONG));
   private static final StandardNameTransformer NAME_TRANSFORMER = new StandardNameTransformer();

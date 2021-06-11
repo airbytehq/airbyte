@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  * This helper class tracks whether a Json has special field name that needs to be replaced with a
- * standardized one.
+ * standardized one, and can perform the replacement when necessary.
  */
 public class JsonFieldNameUpdater {
 
