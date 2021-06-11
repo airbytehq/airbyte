@@ -47,7 +47,7 @@ class JsonSchemaConverterTest {
 
   @ParameterizedTest
   @ArgumentsSource(GetFieldTypeTestCaseProvider.class)
-  public void testGetFieldSchema(String fieldName, JsonNode jsonFieldSchema, JsonNode avroFieldType) {
+  public void testGetFieldType(String fieldName, JsonNode jsonFieldSchema, JsonNode avroFieldType) {
     JsonSchemaConverter converter = new JsonSchemaConverter();
     assertEquals(
         avroFieldType,

@@ -82,10 +82,10 @@
       "null",
       {
         "type": "record",
-        "fieldName": "object_field",
+        "name": "object_field",
         "fields": [
-          { "fieldName": "id", "type": ["null", "int"], "default":null },
-          { "fieldName": "node_id", "type": ["null", "string"], "default":null }
+          { "name": "id", "type": ["null", "int"], "default":null },
+          { "name": "node_id", "type": ["null", "string"], "default":null }
         ]
       }
     ]
