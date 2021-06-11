@@ -138,51 +138,9 @@ class StreamAPI(ABC):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Iterate over entities"""
 
-    @property
-    def name(self):
-        """Name of the stream"""
-        stream_name = self.__class__.__name__
-        if stream_name.endswith("API"):
-            stream_name = stream_name[:-3]
-        return stream_name
-
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter"""
         params = params or {}
-        stream = self.name
-
-        # This block extends TicketsAPI Stream to overcome '300 page' server error.
-        # Since the TicketsAPI Stream list has a 300 page pagination limit, after 300 pages, update the parameters with
-        # query using 'updated_since' = last_record, if there is more data remaining.
-        if stream == "Tickets":
-            ticket_paginate_limit = 300  # the maximum page allowed to pull during pagination.
-
-            for page in range(1, ticket_paginate_limit):
-                batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
-                yield from batch
-                last_record = batch[0]["updated_at"]  # position 0, because the records are returned in 'desc'
-
-                if len(batch) < self.result_return_limit:
-                    return iter(())
-
-            for more_page in range(1, self.maximum_page):
-                last_record = pendulum.parse(last_record).add(seconds=1)
-                batch = list(
-                    getter(
-                        params={
-                            **params,
-                            "order_by": "updated_at",
-                            "updated_since": last_record,
-                            "per_page": self.result_return_limit,
-                            "page": more_page,
-                        }
-                    )
-                )
-                yield from batch
-
-                if len(batch) < self.result_return_limit:
-                    return iter(())
-        # All other's Streams Flow goes using this paginator
         for page in range(1, self.maximum_page):
             batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
             yield from batch
@@ -215,6 +173,14 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         if self._state:
             return {self.state_filter: self._state}
         return {}
+
+    @property
+    def name(self):
+        """Name of the stream"""
+        stream_name = self.__class__.__name__
+        if stream_name.endswith("API"):
+            stream_name = stream_name[:-3]
+        return stream_name
 
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter, patched to respect current state"""
@@ -299,6 +265,65 @@ class TicketsAPI(IncrementalStreamAPI):
         """Iterate over entities"""
         params = {"include": "description"}
         yield from self.read(partial(self._api_get, url="tickets"), params=params)
+
+    # This block extends TicketsAPI Stream to overcome '300 page' server error.
+    # Since the TicketsAPI Stream list has a 300 page pagination limit, after 300 pages, update the parameters with
+    # query using 'updated_since' = last_record, if there is more data remaining.
+    def get_tickets(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Read using getter"""
+        params = params or {}
+        # the maximum page allowed to pull during pagination.
+        ticket_paginate_limit = 300
+
+        # Reading Tickets up to the `ticket_paginate_limit`
+        for page in range(1, ticket_paginate_limit):
+            batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
+            yield from batch
+
+            if len(batch) < self.result_return_limit:
+                return iter(())
+            else:
+                # position 0, because the records are returned in 'desc'
+                last_record = batch[0]["updated_at"]
+
+        # if there is more after 300 pages
+        # Define last_record = `updated_at` + 1 sec
+        # query using 'updated_since' = last_record + pagination
+        last_record = pendulum.parse(last_record).add(seconds=1)
+        for more_page in range(1, self.maximum_page):
+            batch = list(
+                getter(
+                    params={
+                        **params,
+                        "order_by": "updated_at",
+                        "updated_since": last_record,
+                        "per_page": self.result_return_limit,
+                        "page": more_page,
+                    }
+                )
+            )
+            yield from batch
+
+            if len(batch) < self.result_return_limit:
+                return iter(())
+
+    # Override the super().read() method with modified read for tickets
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Read using getter, patched to respect current state"""
+        params = params or {}
+        params = {**params, **self._state_params()}
+        latest_cursor = None
+        for record in self.get_tickets(getter, params):
+            cursor = pendulum.parse(record[self.state_pk])
+            # filter out records older then state
+            if self._state and self._state >= cursor:
+                continue
+            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+            yield record
+
+        if latest_cursor:
+            logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+            self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
 class TimeEntriesAPI(ClientIncrementalStreamAPI):
