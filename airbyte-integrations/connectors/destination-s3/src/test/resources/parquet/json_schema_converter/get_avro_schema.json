@@ -31,7 +31,7 @@
     }
   },
   {
-    "schemaName": "nested_records",
+    "schemaName": "nested_record",
     "namespace": "namespace2",
     "appendAirbyteFields": false,
     "jsonSchema": {
@@ -61,7 +61,7 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "nested_records",
+      "name": "nested_record",
       "namespace": "namespace2",
       "fields": [
         {
@@ -106,7 +106,7 @@
     }
   },
   {
-    "schemaName": "with_airbyte_fields",
+    "schemaName": "record_with_airbyte_fields",
     "namespace": "namespace3",
     "appendAirbyteFields": true,
     "jsonSchema": {
@@ -122,7 +122,7 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "with_airbyte_fields",
+      "name": "record_with_airbyte_fields",
       "namespace": "namespace3",
       "fields": [
         {
@@ -151,7 +151,7 @@
     }
   },
   {
-    "schemaName": "schema_with:spécial:characters",
+    "schemaName": "name_with:spécial:characters",
     "namespace": "namespace4",
     "appendAirbyteFields": false,
     "jsonSchema": {
@@ -167,9 +167,9 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "schema_with_special_characters",
+      "name": "name_with_special_characters",
       "namespace": "namespace4",
-      "doc": "_airbyte_original_name:schema_with:spécial:characters",
+      "doc": "_airbyte_original_name:name_with:spécial:characters",
       "fields": [
         {
           "name": "node_id",
@@ -184,7 +184,7 @@
     }
   },
   {
-    "schemaName": "record_with_array",
+    "schemaName": "record_with_union_type",
     "namespace": "namespace5",
     "appendAirbyteFields": false,
     "jsonSchema": {
@@ -201,7 +201,7 @@
     },
     "avroSchema": {
       "type": "record",
-      "name": "record_with_array",
+      "name": "record_with_union_type",
       "namespace": "namespace5",
       "fields": [
         {
@@ -210,6 +210,93 @@
             "null",
             "double",
             "string"
+          ],
+          "default": null
+        }
+      ]
+    }
+  },
+  {
+    "schemaName": "array_with_same_type",
+    "namespace": "namespace6",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_with_same_type",
+      "namespace": "namespace6",
+      "fields": [
+        {
+          "name": "identifier",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": [
+                "null",
+                "string"
+              ]
+            }
+          ],
+          "default": null
+        }
+      ]
+    }
+  },
+  {
+    "schemaName": "array_with_union_type",
+    "namespace": "namespace7",
+    "appendAirbyteFields": false,
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifiers": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "avroSchema": {
+      "type": "record",
+      "name": "array_with_union_type",
+      "namespace": "namespace7",
+      "fields": [
+        {
+          "name": "identifiers",
+          "type": [
+            "null",
+            {
+              "type": "array",
+              "items": [
+                "null",
+                "string",
+                "int",
+                "boolean"
+              ]
+            }
           ],
           "default": null
         }

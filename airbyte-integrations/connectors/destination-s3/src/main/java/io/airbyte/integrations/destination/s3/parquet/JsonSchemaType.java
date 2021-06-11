@@ -31,19 +31,21 @@ import org.apache.avro.Schema;
  */
 public enum JsonSchemaType {
 
-  STRING("string", Schema.Type.STRING),
-  NUMBER("number", Schema.Type.DOUBLE),
-  INTEGER("integer", Schema.Type.INT),
-  BOOLEAN("boolean", Schema.Type.BOOLEAN),
-  NULL("null", Schema.Type.NULL),
-  OBJECT("object", Schema.Type.RECORD),
-  ARRAY("array", Schema.Type.ARRAY);
+  STRING("string", true, Schema.Type.STRING),
+  NUMBER("number", true, Schema.Type.DOUBLE),
+  INTEGER("integer", true, Schema.Type.INT),
+  BOOLEAN("boolean", true, Schema.Type.BOOLEAN),
+  NULL("null", true, Schema.Type.NULL),
+  OBJECT("object", false, Schema.Type.RECORD),
+  ARRAY("array", false, Schema.Type.ARRAY);
 
   private final String jsonSchemaType;
+  private final boolean isPrimitive;
   private final Schema.Type avroType;
 
-  JsonSchemaType(String jsonSchemaType, Schema.Type avroType) {
+  JsonSchemaType(String jsonSchemaType, boolean isPrimitive, Schema.Type avroType) {
     this.jsonSchemaType = jsonSchemaType;
+    this.isPrimitive = isPrimitive;
     this.avroType = avroType;
   }
 
@@ -58,6 +60,10 @@ public enum JsonSchemaType {
 
   public String getJsonSchemaType() {
     return jsonSchemaType;
+  }
+
+  public boolean isPrimitive() {
+    return isPrimitive;
   }
 
   public Schema.Type getAvroType() {

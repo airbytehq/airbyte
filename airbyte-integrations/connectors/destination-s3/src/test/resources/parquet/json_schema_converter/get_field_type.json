@@ -39,7 +39,11 @@
   {
     "fieldName": "union_field",
     "jsonFieldSchema": {
-      "type": ["null", "number","string"]
+      "type": [
+        "null",
+        "number",
+        "string"
+      ]
     },
     "avroFieldType": [
       "null",
@@ -48,7 +52,7 @@
     ]
   },
   {
-    "fieldName": "array_field",
+    "fieldName": "array_field_single_type",
     "jsonFieldSchema": {
       "type": "array",
       "items": {
@@ -59,7 +63,35 @@
       "null",
       {
         "type": "array",
-        "items": ["null", "string"]
+        "items": [
+          "null",
+          "string"
+        ]
+      }
+    ]
+  },
+  {
+    "fieldName": "array_field_multiple_types",
+    "jsonFieldSchema": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": [
+          "null",
+          "string",
+          "double"
+        ]
       }
     ]
   },
@@ -85,8 +117,22 @@
         "type": "record",
         "name": "object_field",
         "fields": [
-          { "name": "id", "type": ["null", "int"], "default":null },
-          { "name": "node_id", "type": ["null", "string"], "default":null }
+          {
+            "name": "id",
+            "type": [
+              "null",
+              "int"
+            ],
+            "default": null
+          },
+          {
+            "name": "node_id",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          }
         ]
       }
     ]

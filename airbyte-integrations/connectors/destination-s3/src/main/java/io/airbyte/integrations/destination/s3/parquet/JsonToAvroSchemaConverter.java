@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
@@ -46,19 +47,38 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The main function of this class is to convert a JsonSchema to Avro schema. It can also
- * standardize schema names, and keep track of a mapping from the original names to the
- * standardized ones.
+ * standardize schema names, and keep track of a mapping from the original names to the standardized
+ * ones.
  */
 public class JsonToAvroSchemaConverter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JsonToAvroSchemaConverter.class);
   public static final Schema UUID_SCHEMA = LogicalTypes.uuid()
       .addToSchema(Schema.create(Type.STRING));
+  private static final Logger LOGGER = LoggerFactory.getLogger(JsonToAvroSchemaConverter.class);
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()
       .addToSchema(Schema.create(Type.LONG));
   private static final StandardNameTransformer NAME_TRANSFORMER = new StandardNameTransformer();
 
   private final Map<String, String> standardizedNames = new HashMap<>();
+
+  static List<JsonSchemaType> getNonNullTypes(String fieldName, JsonNode typeProperty) {
+    return getTypes(fieldName, typeProperty).stream()
+        .filter(type -> type != JsonSchemaType.NULL).collect(Collectors.toList());
+  }
+
+  static List<JsonSchemaType> getTypes(String fieldName, JsonNode typeProperty) {
+    if (typeProperty == null) {
+      throw new IllegalStateException(String.format("Field %s has no type", fieldName));
+    } else if (typeProperty.isArray()) {
+      return MoreIterators.toList(typeProperty.elements()).stream()
+          .map(s -> JsonSchemaType.fromJsonSchemaType(s.asText()))
+          .collect(Collectors.toList());
+    } else if (typeProperty.isTextual()) {
+      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText()));
+    } else {
+      throw new IllegalStateException("Unexpected type: " + typeProperty);
+    }
+  }
 
   public Map<String, String> getStandardizedNames() {
     return standardizedNames;
@@ -68,9 +88,9 @@ public class JsonToAvroSchemaConverter {
    * @return - Avro schema based on the input {@code jsonSchema}.
    */
   public Schema getAvroSchema(JsonNode jsonSchema,
-                              String name,
-                              @Nullable String namespace,
-                              boolean appendAirbyteFields) {
+      String name,
+      @Nullable String namespace,
+      boolean appendAirbyteFields) {
     String stdName = NAME_TRANSFORMER.getIdentifier(name);
     RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
     if (!stdName.equals(name)) {
@@ -111,22 +131,55 @@ public class JsonToAvroSchemaConverter {
             S3ParquetConstants.DOC_KEY_VALUE_DELIMITER,
             fieldName));
       }
-      assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition)).withDefault(null);
+      assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition))
+          .withDefault(null);
     }
 
     return assembler.endRecord();
   }
 
-  Schema getSingleFieldType(String fieldName, JsonSchemaType fieldType, JsonNode fieldDefinition) {
+  Schema getSingleFieldType(String fieldName, JsonSchemaType fieldType, JsonNode fieldDefinition,
+      boolean canBeComposite) {
+    Preconditions
+        .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
+    Preconditions
+        .checkState(canBeComposite || fieldType.isPrimitive(), "Field %s has invalid type %s",
+            fieldName, fieldType);
     Schema fieldSchema;
     switch (fieldType) {
-      case NULL -> throw new IllegalStateException("Null types should have been filtered out");
       case STRING, NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case ARRAY -> {
         JsonNode items = fieldDefinition.get("items");
         Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
-        fieldSchema = Schema
-            .createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
+
+        if (items.isObject()) {
+          fieldSchema = Schema
+              .createArray(getNullableFieldTypes(String.format("%s.items", fieldName), items));
+        } else if (items.isArray()) {
+          // In Json schema, when items property is an array, it means means each element in the
+          // array should follow its own schema sequentially.
+          // For example, the following specification means the first item in the array should be
+          // a string, and the second a number.
+          // "items": [
+          //   { "type": "string" },
+          //   { "type": "number" },
+          // ]
+          // This is not supported in Avro schema. As a compromise, the converter creates a union,
+          // ["string", "number"], which is less stringent.
+          List<Schema> arrayElementTypes = MoreIterators.toList(items.elements())
+              .stream()
+              .flatMap(itemDefinition ->
+                  getNonNullTypes(fieldName, itemDefinition.get("type")).stream()
+                      .map(type -> getSingleFieldType(fieldName, type, itemDefinition, false))
+              )
+              .distinct()
+              .collect(Collectors.toList());
+          arrayElementTypes.add(0, Schema.create(Schema.Type.NULL));
+          fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
+        } else {
+          throw new IllegalStateException(
+              String.format("Array field %s has invalid items property: %s", fieldName, items));
+        }
       }
       case OBJECT -> fieldSchema = getAvroSchema(fieldDefinition, fieldName, null, false);
       default -> throw new IllegalStateException(
@@ -139,10 +192,18 @@ public class JsonToAvroSchemaConverter {
    * @param fieldDefinition - Json schema field definition. E.g. { type: "number" }.
    */
   Schema getNullableFieldTypes(String fieldName, JsonNode fieldDefinition) {
-    List<Schema> nonNullFieldTypes =  getTypes(fieldName, fieldDefinition.get("type")).stream()
-        // Filter out null types, which will be added back in the end.
-        .filter(fieldType -> fieldType != JsonSchemaType.NULL)
-        .map(fieldType -> getSingleFieldType(fieldName, fieldType, fieldDefinition))
+    // Filter out null types, which will be added back in the end.
+    List<Schema> nonNullFieldTypes = getNonNullTypes(fieldName, fieldDefinition.get("type"))
+        .stream()
+        .flatMap(fieldType -> {
+          Schema singleFieldSchema = getSingleFieldType(fieldName, fieldType, fieldDefinition, true);
+          if (singleFieldSchema.isUnion()) {
+            return singleFieldSchema.getTypes().stream();
+          } else {
+            return Stream.of(singleFieldSchema);
+          }
+        })
+        .distinct()
         .collect(Collectors.toList());
 
     if (nonNullFieldTypes.isEmpty()) {
@@ -151,20 +212,6 @@ public class JsonToAvroSchemaConverter {
       // Mark every field as nullable to prevent missing value exceptions from Parquet.
       nonNullFieldTypes.add(0, Schema.create(Schema.Type.NULL));
       return Schema.createUnion(nonNullFieldTypes);
-    }
-  }
-
-  static List<JsonSchemaType> getTypes(String fieldName, JsonNode type) {
-    if (type == null) {
-      throw new IllegalStateException(String.format("Field %s has no type", fieldName));
-    } else if (type.isArray()) {
-      return MoreIterators.toList(type.elements()).stream()
-          .map(s -> JsonSchemaType.fromJsonSchemaType(s.asText()))
-          .collect(Collectors.toList());
-    } else if (type.isTextual()) {
-      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(type.asText()));
-    } else {
-      throw new IllegalStateException("Unexpected type: " + type);
     }
   }
 
