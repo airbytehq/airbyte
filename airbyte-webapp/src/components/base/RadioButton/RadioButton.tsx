@@ -36,12 +36,7 @@ const RadioButton: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
       onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
     >
       {props.checked && <Check />}
-      <RadioButtonInput
-        {...props}
-        type="radio"
-        checked={props.checked}
-        onChange={props.onChange}
-      />
+      <RadioButtonInput {...props} type="radio" />
     </RadioButtonContainer>
   );
 };

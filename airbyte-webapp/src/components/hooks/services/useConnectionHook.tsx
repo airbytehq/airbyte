@@ -6,19 +6,20 @@ import { AnalyticsService } from "core/analytics/AnalyticsService";
 import ConnectionResource, { Connection } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
 import { SourceDefinition } from "core/resources/SourceDefinition";
-import FrequencyConfig from "data/FrequencyConfig.json";
+import FrequencyConfig from "config/FrequencyConfig.json";
 import { Source } from "core/resources/Source";
 import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
 import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspaceHook";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { Operation } from "core/domain/connection/operation";
 
-type ValuesProps = {
+export type ValuesProps = {
   frequency: string;
   prefix: string;
   syncCatalog: SyncSchema;
-  source?: { name: string; sourceId: string };
+  withOperations?: Operation[];
 };
 
 type CreateConnectionProps = {
@@ -40,6 +41,7 @@ type UpdateConnection = {
     units: number;
     timeUnit: string;
   } | null;
+  operations?: Operation[];
   withRefreshedCatalog?: boolean;
 };
 
@@ -96,7 +98,7 @@ const useConnection = (): {
   resetConnection: (connId: string) => Promise<void>;
   deleteConnection: (payload: { connectionId: string }) => Promise<void>;
 } => {
-  const { push, history } = useRouter();
+  const { push } = useRouter();
   const { finishOnboarding, workspace } = useWorkspace();
 
   const createConnectionResource = useFetcher(ConnectionResource.createShape());
@@ -120,18 +122,7 @@ const useConnection = (): {
 
     try {
       const result = await createConnectionResource(
-        {
-          source: {
-            sourceId: source?.sourceId || "",
-            sourceName: source?.sourceName || "",
-            name: source?.name || "",
-          },
-          destination: {
-            destinationId: destination?.destinationId || "",
-            destinationName: destination?.destinationName || "",
-            name: destination?.name || "",
-          },
-        },
+        {},
         {
           sourceId: source?.sourceId,
           destinationId: destination?.destinationId,
@@ -139,6 +130,7 @@ const useConnection = (): {
           prefix: values.prefix,
           status: "active",
           syncCatalog: values.syncCatalog,
+          withOperations: values.withOperations,
         },
         [
           [
@@ -177,12 +169,8 @@ const useConnection = (): {
   };
 
   const updateConnection = async ({
-    connectionId,
-    syncCatalog,
-    status,
-    schedule,
-    prefix,
     withRefreshedCatalog,
+    ...formValues
   }: UpdateConnection) => {
     const withRefreshedCatalogCleaned = withRefreshedCatalog
       ? { withRefreshedCatalog }
@@ -191,11 +179,7 @@ const useConnection = (): {
     return await updateConnectionResource(
       {},
       {
-        connectionId,
-        syncCatalog,
-        status,
-        prefix,
-        schedule,
+        ...formValues,
         ...withRefreshedCatalogCleaned,
       }
     );
@@ -230,7 +214,7 @@ const useConnection = (): {
   }) => {
     await deleteConnectionResource({ connectionId });
 
-    history.length > 2 ? history.goBack() : push(Routes.Source);
+    push(Routes.Connections);
   };
 
   const resetConnection = useCallback(

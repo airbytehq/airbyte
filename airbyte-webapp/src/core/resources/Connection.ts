@@ -9,6 +9,7 @@ import {
 
 import { SyncSchema } from "core/domain/catalog";
 import { CommonRequestError } from "core/request/CommonRequestError";
+import { Operation } from "core/domain/connection/operation";
 import { Source } from "./Source";
 import { Destination } from "./Destination";
 
@@ -30,9 +31,11 @@ export interface Connection {
   syncCatalog: SyncSchema;
   source: Source;
   destination: Destination;
+  operations: Operation[];
   latestSyncJobCreatedAt?: number | null;
   isSyncing?: boolean;
   latestSyncJobStatus: string | null;
+  operationIds: string[];
 }
 
 export default class ConnectionResource
@@ -46,12 +49,14 @@ export default class ConnectionResource
   readonly status: string = "";
   readonly message: string = "";
   readonly schedule: ScheduleProperties | null = null;
+  readonly operations: Operation[] = [];
   readonly source: Source = {} as Source;
   readonly destination: Destination = {} as Destination;
   readonly latestSyncJobCreatedAt: number | undefined | null = null;
   readonly latestSyncJobStatus: string | null = null;
   readonly syncCatalog: SyncSchema = { streams: [] };
   readonly isSyncing: boolean = false;
+  readonly operationIds: string[] = [];
 
   pk(): string {
     return this.connectionId?.toString();
@@ -118,15 +123,13 @@ export default class ConnectionResource
       ...super.createShape(),
       schema: this,
       fetch: async (
-        params: Readonly<Record<string, string>>,
+        _: Readonly<Record<string, string>>,
         body: Readonly<Record<string, unknown>>
       ): Promise<Connection> =>
-        await this.fetch("post", `${this.url(params)}/create`, body).then(
-          (response) => ({
-            ...response,
-            // will remove it if BE returns resource in /web_backend/get format
-            ...params,
-          })
+        await this.fetch(
+          "post",
+          `${super.rootUrl()}web_backend/connections/create`,
+          body
         ),
     };
   }
@@ -137,7 +140,7 @@ export default class ConnectionResource
     return {
       ...super.listShape(),
       getFetchKey: (params: { workspaceId: string }) =>
-        "POST /web_backend/list" + JSON.stringify(params),
+        "POST /web_backend/connections/list" + JSON.stringify(params),
       fetch: async (
         params: Readonly<Record<string, string | number>>
       ): Promise<{ connections: Connection[] }> =>

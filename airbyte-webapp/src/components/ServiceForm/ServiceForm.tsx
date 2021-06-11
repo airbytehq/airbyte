@@ -13,10 +13,10 @@ import { ServiceFormContextProvider } from "./serviceFormContext";
 import { FormRoot } from "./FormRoot";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
-import { FormBaseItem } from "../../core/form/types";
+import { FormBaseItem } from "core/form/types";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
-import { isSourceDefinition } from "../../core/domain/connector/source";
+import { isSourceDefinition } from "core/domain/connector/source";
 
 type ServiceFormProps = {
   formType: "source" | "destination";

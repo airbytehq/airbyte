@@ -8,6 +8,8 @@ export interface DestinationDefinitionSpecification {
   connectionSpecification: ConnectionSpecification;
   documentationUrl: string;
   supportedDestinationSyncModes: DestinationSyncMode[];
+  supportsDbt: boolean;
+  supportsNormalization: boolean;
 }
 
 export default class DestinationDefinitionSpecificationResource
@@ -20,6 +22,8 @@ export default class DestinationDefinitionSpecificationResource
     required: [""],
   };
   readonly supportedDestinationSyncModes: DestinationSyncMode[] = [];
+  readonly supportsDbt: boolean = false;
+  readonly supportsNormalization: boolean = false;
 
   pk(): string {
     return this.destinationDefinitionId?.toString();

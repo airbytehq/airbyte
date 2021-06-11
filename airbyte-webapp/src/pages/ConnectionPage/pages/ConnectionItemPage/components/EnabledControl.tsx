@@ -5,8 +5,8 @@ import styled from "styled-components";
 import { Toggle } from "components";
 import { Connection } from "core/resources/Connection";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import config from "config";
 import useConnection from "components/hooks/services/useConnectionHook";
+import { Status } from "../../../../../components/EntityTable/types";
 
 const ToggleLabel = styled.label`
   text-transform: uppercase;
@@ -39,11 +39,12 @@ const EnabledControl: React.FC<IProps> = ({ connection, frequencyText }) => {
       syncCatalog: connection.syncCatalog,
       schedule: connection.schedule,
       prefix: connection.prefix,
-      status: connection.status === "active" ? "inactive" : "active",
+      operations: connection.operations,
+      status:
+        connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,
     });
 
     AnalyticsService.track("Source - Action", {
-      user_id: config.ui.workspaceId,
       action:
         connection.status === "active"
           ? "Disable connection"

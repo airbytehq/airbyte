@@ -49,7 +49,7 @@ const EditorRow: React.FC<EditorRowProps> = ({
     <Content>
       <div>{name || id}</div>
       <div>
-        <Button secondary onClick={() => onEdit(id)}>
+        <Button secondary onClick={() => onEdit(id)} type="button">
           <FormattedMessage id="form.edit" />
         </Button>
         <Delete icon={faTimes} onClick={() => onRemove(id)} />

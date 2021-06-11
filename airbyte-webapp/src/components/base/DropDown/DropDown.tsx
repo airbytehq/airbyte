@@ -219,9 +219,8 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       itemComponent={({ item }) => (
         <ListItem {...item} item={item} fullText={props.fullText} />
       )}
-      onChange={props.onSelect}
-      // @ts-ignore wrong typing
-      searchIcon=""
+      onChange={props.onChange}
+      onSelect={props.onSelect}
     />
   );
 };

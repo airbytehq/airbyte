@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { setIn, useField } from "formik";
+import { FieldProps, setIn } from "formik";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -9,6 +9,7 @@ import { SyncSchemaStream } from "core/domain/catalog";
 import { Cell, Header, LightCell } from "components/SimpleTableComponents";
 import CatalogTree from "./CatalogTree";
 import Search from "./Search";
+import SectionTitle from "./SectionTitle";
 import { naturalComparatorBy } from "utils/objects";
 
 const TreeViewContainer = styled.div`
@@ -16,6 +17,8 @@ const TreeViewContainer = styled.div`
   background: ${({ theme }) => theme.greyColor0};
   margin-bottom: 29px;
   border-radius: 4px;
+  max-height: 600px;
+  overflow-y: auto;
 `;
 
 const SchemaHeader = styled(Header)`
@@ -23,27 +26,29 @@ const SchemaHeader = styled(Header)`
   margin-bottom: 5px;
 `;
 
-const SchemaTitle = styled.div`
+const SchemaTitle = styled(SectionTitle)`
   display: inline-block;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
   margin: 0 11px 13px 0;
 `;
 
 type SchemaViewProps = {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
-};
+} & FieldProps<SyncSchemaStream[]>;
 
-const SchemaField: React.FC<SchemaViewProps> = ({
+const SyncCatalogField: React.FC<SchemaViewProps> = ({
   destinationSupportedSyncModes,
   additionalControl,
+  field,
+  form,
 }) => {
-  const [field, , form] = useField<SyncSchemaStream[]>("schema.streams");
-  const streams = field.value;
-  const onChangeSchema = form.setValue;
+  const { value: streams, name: fieldName } = field;
+
   const [searchString, setSearchString] = useState("");
+  const onChangeSchema = useCallback(
+    (newValue: SyncSchemaStream[]) => form.setFieldValue(fieldName, newValue),
+    [fieldName, form.setFieldValue]
+  );
 
   const sortedSchema = useMemo(
     () =>
@@ -128,4 +133,4 @@ const SchemaField: React.FC<SchemaViewProps> = ({
   );
 };
 
-export default React.memo(SchemaField);
+export default React.memo(SyncCatalogField);

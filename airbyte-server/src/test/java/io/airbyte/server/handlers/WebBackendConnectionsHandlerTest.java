@@ -184,7 +184,7 @@ class WebBackendConnectionsHandlerTest {
         .schedule(connectionRead.getSchedule())
         .source(sourceRead)
         .destination(destinationRead)
-        .operations(operationReadList)
+        .operations(operationReadList.getOperations())
         .latestSyncJobCreatedAt(now.getEpochSecond())
         .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false);
@@ -413,6 +413,7 @@ class WebBackendConnectionsHandlerTest {
             .syncCatalog(expected.getSyncCatalog())
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));
+    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
 
     WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
@@ -457,6 +458,7 @@ class WebBackendConnectionsHandlerTest {
             .status(expected.getStatus())
             .schedule(expected.getSchedule()));
     when(operationsHandler.updateOperation(operationUpdate)).thenReturn(new OperationRead().operationId(operationUpdate.getOperationId()));
+    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     WebBackendConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(connectionRead.getOperationIds(), actualConnectionRead.getOperationIds());
@@ -475,6 +477,7 @@ class WebBackendConnectionsHandlerTest {
         .syncCatalog(expectedWithNewSchema.getSyncCatalog())
         .withRefreshedCatalog(true);
 
+    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     when(connectionsHandler.getConnection(new ConnectionIdRequestBody().connectionId(expected.getConnectionId()))).thenReturn(
         new ConnectionRead().connectionId(expected.getConnectionId()));
     when(connectionsHandler.updateConnection(any())).thenReturn(

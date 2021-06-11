@@ -12,7 +12,7 @@ export * from "./PageTitle";
 export * from "./LoadingPage";
 export * from "./ArrayOfObjectsEditor";
 export * from "./ContentCard";
-export * from "./PreferencesForm";
 export * from "./DefaultLogoCatalog";
 export * from "./ContentCard";
 export * from "./ImageBlock";
+export * from "./LabeledRadioButton";

@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { ContentCard, PreferencesForm } from "components";
+import { ContentCard } from "components";
+import { PreferencesForm } from "views/Settings/PreferencesForm";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
 import WebHookForm from "./WebHookForm";
 

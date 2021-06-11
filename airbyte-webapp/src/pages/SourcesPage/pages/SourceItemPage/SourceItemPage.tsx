@@ -16,7 +16,7 @@ import {
   ItemTabs,
   StepsTypes,
   TableItemTitle,
-} from "components/SourceAndDestinationsBlocks";
+} from "components/ConnectorBlocks";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 

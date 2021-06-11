@@ -13,7 +13,7 @@ import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import config from "config";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import FrequencyConfig from "data/FrequencyConfig.json";
+import FrequencyConfig from "config/FrequencyConfig.json";
 import Link from "components/Link";
 import { Routes } from "../../../routes";
 import DestinationDefinitionResource from "core/resources/DestinationDefinition";

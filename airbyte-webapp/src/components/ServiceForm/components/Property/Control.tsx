@@ -91,7 +91,7 @@ const Control: React.FC<IProps> = ({
           text: dataItem?.toString() ?? "",
           value: dataItem?.toString() ?? "",
         }))}
-        onSelect={(selectedItem) => form.setValue(selectedItem.value)}
+        onChange={(selectedItem) => form.setValue(selectedItem.value)}
         value={value}
       />
     );
