@@ -342,6 +342,7 @@ jobs:
         run: |
           find /home/runner
           ls /usr/local/bin/
+          find / | grep kubectl
           echo $PATH
           kubectl get pods
 
