@@ -25,6 +25,7 @@
 package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
@@ -80,14 +81,11 @@ public class DbtTransformationRunner implements AutoCloseable {
     try {
       final Map<String, String> files = ImmutableMap.of(DBT_ENTRYPOINT_SH, MoreResources.readResource("dbt_transformation_entrypoint.sh"));
       final List<String> dbtArguments = new ArrayList<>();
-      dbtArguments.add("/data/job/transform/" + DBT_ENTRYPOINT_SH);
+      dbtArguments.add(DBT_ENTRYPOINT_SH);
+      if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
+        throw new WorkerException("Dbt Arguments are required");
+      }
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
-      if (!dbtConfig.getDbtArguments().contains("--profiles-dir=")) {
-        dbtArguments.add("--profiles-dir=/data/job/transform/");
-      }
-      if (!dbtConfig.getDbtArguments().contains("--project-dir=")) {
-        dbtArguments.add("--project-dir=/data/job/transform/git_repo/");
-      }
       process = processFactory.create(jobId, attempt, jobRoot, dbtConfig.getDockerImage(), false, files, "/bin/bash", dbtArguments);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
