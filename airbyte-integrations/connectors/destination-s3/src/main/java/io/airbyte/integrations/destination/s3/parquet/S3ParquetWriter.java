@@ -80,8 +80,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     this.schema = schema;
     this.nameUpdater = nameUpdater;
 
-    S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    String outputFilename = getOutputFilename(uploadTimestamp, formatConfig.getCompressionCodec());
+    String outputFilename = getOutputFilename(uploadTimestamp);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
@@ -91,6 +90,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
         String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));
     Path path = new Path(uri);
 
+    S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
     Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
@@ -114,14 +114,13 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     return hadoopConfig;
   }
 
-  static String getOutputFilename(Timestamp timestamp, CompressionCodecName compressionCodec) {
+  static String getOutputFilename(Timestamp timestamp) {
     DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
-        "%s_%d_0.parquet%s",
+        "%s_%d_0.parquet",
         formatter.format(timestamp),
-        timestamp.getTime(),
-        compressionCodec.getExtension()
+        timestamp.getTime()
     );
   }
 
