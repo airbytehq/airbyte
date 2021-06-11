@@ -238,6 +238,10 @@ jobs:
       - name: Run Docker End-to-End Acceptance Tests
         run: |
           ./tools/bin/acceptance_test.sh
+
+      - name: Automatic Migration Acceptance Test
+        run: |
+          ./tools/bin/automatic_migration_acceptance_test.sh
   # In case of self-hosted EC2 errors, remove the `stop-build-runner` block.
   stop-acceptance-test-runner:
     name: Stop Acceptance Test EC2 Runner
