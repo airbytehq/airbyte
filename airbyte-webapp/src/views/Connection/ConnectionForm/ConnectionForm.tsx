@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
@@ -16,24 +16,20 @@ import CreateControls from "./components/CreateControls";
 import Connector from "./components/Connector";
 import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
-import { useFrequencyDropdownData, useInitialSchema } from "./useInitialSchema";
 import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
   DEFAULT_TRANSFORMATION,
+  FormikConnectionFormValues,
   mapFormPropsToOperation,
+  useFrequencyDropdownData,
+  useInitialValues,
 } from "./formConfig";
 import NormalizationField from "./components/NormalizationField";
 import SectionTitle from "./components/SectionTitle";
 import { TransformationField } from "./components/TransformationField";
-import {
-  Normalization,
-  NormalizationType,
-  Operation,
-  OperatorType,
-  Transformation,
-} from "core/domain/connection/operation";
+import { Operation } from "core/domain/connection/operation";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 
 const FormContainer = styled(Form)`
@@ -53,14 +49,6 @@ const ConnectorLabel = styled(ControlLabels)`
   margin-right: 20px;
   vertical-align: top;
 `;
-
-type FormValues = {
-  frequency: string;
-  prefix: string;
-  syncCatalog: SyncSchema;
-  transformations?: Transformation[];
-  normalization?: NormalizationType;
-};
 
 type ConnectionFormProps = {
   onSubmit: (values: ConnectionFormValues) => void;
@@ -103,8 +91,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   additionalSchemaControl,
   source,
   destination,
-  operations = [],
-  ...props
+  operations,
+  syncCatalog,
 }) => {
   const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
     destination.destinationDefinitionId
@@ -118,32 +106,17 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const supportsNormalization = destDefinition.supportsNormalization;
   const supportsTransformations = destDefinition.supportsDbt;
 
-  const initialSchema = useInitialSchema(props.syncCatalog);
-
-  const initialTransformations: Transformation[] | undefined = useMemo(
-    () =>
-      operations.filter(
-        (op) => op.operatorConfiguration.operatorType === OperatorType.Dbt
-      ) as Transformation[],
-    [operations]
-  );
-
-  const initialNormalization: NormalizationType | undefined = useMemo(() => {
-    const normalization = (operations.find(
-      (op) =>
-        op.operatorConfiguration.operatorType === OperatorType.Normalization
-    ) as Normalization)?.operatorConfiguration?.normalization?.option;
-
-    // If no normalization was selected for already present normalization -> Raw is select
-    if (!normalization && isEditMode) {
-      return NormalizationType.RAW;
-    }
-
-    return normalization;
-  }, [operations]);
+  const initialValues = useInitialValues({
+    operations,
+    frequencyValue,
+    prefixValue,
+    isEditMode,
+    destDefinition,
+    syncCatalog,
+  });
 
   const onFormSubmit = useCallback(
-    async (values: FormValues) => {
+    async (values: FormikConnectionFormValues) => {
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(
         values,
         {
@@ -163,7 +136,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
         const requiresReset =
           isEditMode &&
-          !equal(initialSchema, values.syncCatalog) &&
+          !equal(initialValues.syncCatalog, values.syncCatalog) &&
           !editSchemeMode;
         if (requiresReset) {
           setResetModalIsOpen(true);
@@ -172,23 +145,14 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         setSubmitError(e);
       }
     },
-    [editSchemeMode, initialSchema, isEditMode, onSubmit, operations]
+    [
+      editSchemeMode,
+      initialValues.syncCatalog,
+      isEditMode,
+      onSubmit,
+      operations,
+    ]
   );
-
-  const initialValues: FormValues = {
-    syncCatalog: initialSchema,
-    frequency: frequencyValue || "",
-    prefix: prefixValue || "",
-  };
-
-  if (supportsTransformations) {
-    initialValues.transformations = initialTransformations ?? [];
-  }
-
-  if (supportsNormalization) {
-    initialValues.normalization =
-      initialNormalization ?? NormalizationType.BASIC;
-  }
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
   const frequencies = useFrequencyDropdownData();
@@ -228,7 +192,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                     {...field}
                     error={!!meta.error && meta.touched}
                     data={frequencies}
-                    onSelect={(item) => {
+                    onChange={(item) => {
                       if (onDropDownSelect) {
                         onDropDownSelect(item);
                       }
@@ -269,7 +233,14 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           />
           {supportsNormalization || supportsTransformations ? (
             <SectionTitle>
-              <FormattedMessage id="form.normalizationTransformation" />
+              {[
+                supportsNormalization &&
+                  formatMessage({ id: "connectionForm.normalization.title" }),
+                supportsTransformations &&
+                  formatMessage({ id: "connectionForm.transformation.title" }),
+              ]
+                .filter(Boolean)
+                .join(" & ")}
             </SectionTitle>
           ) : null}
           {supportsNormalization && (
@@ -336,4 +307,5 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   );
 };
 
+export type { ConnectionFormProps };
 export default ConnectionForm;
