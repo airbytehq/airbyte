@@ -106,7 +106,7 @@ public class JsonSchemaConverter {
             S3ParquetConstants.DOC_KEY_VALUE_DELIMITER,
             fieldName));
       }
-      assembler = fieldBuilder.type(getFieldSchema(fieldName, fieldDefinition)).withDefault(null);
+      assembler = fieldBuilder.type(getFieldType(fieldName, fieldDefinition)).withDefault(null);
     }
 
     return assembler.endRecord();
@@ -115,21 +115,24 @@ public class JsonSchemaConverter {
   /**
    * @param fieldDefinition - Json schema field definition. E.g. { type: "number" }.
    */
-  Schema getFieldSchema(String fieldName, JsonNode fieldDefinition) {
+  Schema getFieldType(String fieldName, JsonNode fieldDefinition) {
     List<JsonSchemaType> fieldTypes = getTypes(fieldName, fieldDefinition.get("type"));
     // Currently we assume there are at most two type specifications for each field.
     // So the primary type is the last element in the "type" property.
     JsonSchemaType primaryType = fieldTypes.get(fieldTypes.size() - 1);
     Schema fieldSchema;
     switch (primaryType) {
-      case STRING, NUMBER, INTEGER, BOOLEAN, NULL -> {
+      case NULL -> {
+        return Schema.create(Schema.Type.NULL);
+      }
+      case STRING, NUMBER, INTEGER, BOOLEAN -> {
         fieldSchema = Schema.create(primaryType.getAvroType());
       }
       case ARRAY -> {
         JsonNode items = fieldDefinition.get("items");
         Preconditions.checkNotNull(items, "Array field %s misses the items property.", fieldName);
         fieldSchema = Schema
-            .createArray(getFieldSchema(String.format("%s.items", fieldName), items));
+            .createArray(getFieldType(String.format("%s.items", fieldName), items));
       }
       case OBJECT -> {
         fieldSchema = getAvroSchema(fieldDefinition, fieldName, null, false);

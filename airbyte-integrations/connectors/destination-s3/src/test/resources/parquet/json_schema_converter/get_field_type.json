@@ -1,0 +1,93 @@
+[
+  {
+    "fieldName": "string_field",
+    "jsonFieldSchema": {
+      "type": "string"
+    },
+    "avroFieldType": [
+      "null",
+      "string"
+    ]
+  },
+  {
+    "fieldName": "integer_field",
+    "jsonFieldSchema": {
+      "type": "integer"
+    },
+    "avroFieldType": [
+      "null",
+      "int"
+    ]
+  },
+  {
+    "fieldName": "number_field",
+    "jsonFieldSchema": {
+      "type": "number"
+    },
+    "avroFieldType": [
+      "null",
+      "double"
+    ]
+  },
+  {
+    "fieldName": "null_field",
+    "jsonFieldSchema": {
+      "type": "null"
+    },
+    "avroFieldType": "null"
+  },
+  {
+    "fieldName": "union_field",
+    "jsonFieldSchema": {
+      "type": ["null", "string"]
+    },
+    "avroFieldType": [
+      "null",
+      "string"
+    ]
+  },
+  {
+    "fieldName": "array_field",
+    "jsonFieldSchema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "array",
+        "items": ["null", "string"]
+      }
+    ]
+  },
+  {
+    "fieldName": "object_field",
+    "jsonFieldSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "node_id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "avroFieldType": [
+      "null",
+      {
+        "type": "record",
+        "fieldName": "object_field",
+        "fields": [
+          { "fieldName": "id", "type": ["null", "int"], "default":null },
+          { "fieldName": "node_id", "type": ["null", "string"], "default":null }
+        ]
+      }
+    ]
+  }
+]
