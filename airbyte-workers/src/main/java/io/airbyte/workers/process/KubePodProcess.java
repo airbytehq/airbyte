@@ -156,8 +156,7 @@ public class KubePodProcess extends Process {
 
     var envVal = logs.split("=")[1].strip();
     if (envVal.isEmpty()) {
-      // default to returning default entrypoint in bases
-      return "/airbyte/base.sh";
+      throw new RuntimeException("No AIRBYTE_ENTRYPOINT environment variable found. Connectors must have this set in order to run on Kubernetes.");
     }
 
     return envVal;
