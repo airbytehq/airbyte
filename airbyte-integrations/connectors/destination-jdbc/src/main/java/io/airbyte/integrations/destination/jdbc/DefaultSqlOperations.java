@@ -62,11 +62,11 @@ public class DefaultSqlOperations implements SqlOperations {
 
   @Override
   public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws SQLException {
-    database.execute(createTableQuery(schemaName, tableName));
+    database.execute(createTableQuery(database, schemaName, tableName));
   }
 
   @Override
-  public String createTableQuery(String schemaName, String tableName) {
+  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -127,12 +127,12 @@ public class DefaultSqlOperations implements SqlOperations {
   }
 
   @Override
-  public String truncateTableQuery(String schemaName, String tableName) {
+  public String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
   }
 
   @Override
-  public String copyTableQuery(String schemaName, String srcTableName, String dstTableName) {
+  public String copyTableQuery(JdbcDatabase database, String schemaName, String srcTableName, String dstTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
   }
 

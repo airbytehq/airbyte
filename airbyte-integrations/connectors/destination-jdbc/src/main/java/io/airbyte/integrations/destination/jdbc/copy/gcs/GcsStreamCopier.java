@@ -163,10 +163,10 @@ public abstract class GcsStreamCopier implements StreamCopier {
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
     var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
-      queries.append(sqlOperations.truncateTableQuery(schemaName, destTableName));
+      queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.", destTableName, schemaName);
     }
-    queries.append(sqlOperations.copyTableQuery(schemaName, tmpTableName, destTableName));
+    queries.append(sqlOperations.copyTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
   }
 
