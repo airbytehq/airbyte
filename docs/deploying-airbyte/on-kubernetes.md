@@ -28,7 +28,7 @@ All commands should be run from the root Airbyte source directory.
    * Latest stable version
      1. Apply with `kubectl apply -k kube/overlays/stable`
 3. Wait for pods to be "Running" on `kubectl get pods | grep airbyte`
-4. Run `kubectl port-forward svc/airbyte-server-svc 8001:8001` in a new terminal window.
+4. Run `kubectl port-forward svc/airbyte-server-svc 8000:8000` in a new terminal window.
    * This exposes `airbyte-server`, the Airbyte api server.
    * If you redeploy `airbyte-server`, you will need to re-run this process.
 5. Run `kubectl port-forward svc/airbyte-webapp-svc 8000:80` in a new terminal window.

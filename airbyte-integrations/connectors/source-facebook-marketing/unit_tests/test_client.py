@@ -61,7 +61,7 @@ def fb_call_rate_response_fixture():
         "type": "OAuthException",
         "code": 80000,
         "error_subcode": 2446079,
-        "fbtrace_id": "Fz54k3GZrio"
+        "fbtrace_id": "Fz54k3GZrio",
     }
 
     headers = {"x-app-usage": json.dumps({"call_count": 28, "total_time": 25, "total_cputime": 25})}
