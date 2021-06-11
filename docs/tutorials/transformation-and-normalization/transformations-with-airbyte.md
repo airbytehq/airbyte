@@ -17,7 +17,16 @@ After replication of data from a source connector (Extract) to a destination con
 2. Customized normalization transformations as edited by the user (the default generated normalization one should therefore be disabled)
 3. Customized business transformations as specified by the user.
 
-Let's connect my mono-repo Business Intelligence project stored in a private git repository to update the related tables and dashboards when my Airbyte syncs complete.
+## Public Git repository
+In the connection settings page, I can add new Transformations steps to apply after [normalization](../../understanding-airbyte/basic-normalization.md). For example, I want to run my custom dbt project [jaffle_shop](https://github.com/fishtown-analytics/jaffle_shop), whenever my sync is done replicating and normalizing my data.
+
+![](../../.gitbook/assets/custom-dbt-transformations-seed.png)
+
+![](../../.gitbook/assets/custom-dbt-transformations.png)
+
+
+## Private Git repository
+Now, let's connect my mono-repo Business Intelligence project stored in a private git repository to update the related tables and dashboards when my Airbyte syncs complete.
 
 Note that if you need to connect to a private git repository, the recommended way to do so is to generate a `Personal Access Token` that can be used instead of a password. Then, you'll be able to include the credentials in the git repository url:
 
