@@ -1,7 +1,8 @@
 FROM airbyte/integration-base-singer:0.1.1
 
-RUN apt-get update && apt-get install -y \
-    bash \
+RUN apt-get update \
+    && apt-get install -y bash \
+    && apt-get install -y gcc \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CODE_PATH="source_salesforce_singer"
