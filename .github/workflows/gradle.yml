@@ -341,6 +341,7 @@ jobs:
       - name: List files in HOME to see what we need to add to PATH
         run: |
           ln -s $(which minikube) /usr/local/bin/kubectl
+          minikube start
           kubectl get pods
 
       - name: Install socat (required for port forwarding)
