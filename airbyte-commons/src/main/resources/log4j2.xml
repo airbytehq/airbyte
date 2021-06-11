@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO">
+<Configuration status="TRACE">
     <Properties>
         <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
         <Property name="default-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %m%n</Property>
@@ -9,6 +9,7 @@
         <Console name="Default" target="SYSTEM_OUT">
             <PatternLayout pattern="${default-pattern}"/>
         </Console>
+
         <Routing name="LogSplit">
             <Routes pattern="$${ctx:job_root}">
                 <!-- Don't split logs if job_root isn't defined -->
@@ -16,13 +17,38 @@
                     <Null name="/dev/null"/>
                 </Route>
                 <Route>
-                    <File name="${ctx:job_root}" fileName="${ctx:job_root}/${ctx:job_log_filename}">
+                    <File name="${ctx:job_root}-local" fileName="${ctx:job_root}/${ctx:job_log_filename}">
                         <PatternLayout pattern="${default-worker-file-pattern}"/>
                     </File>
                 </Route>
             </Routes>
             <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
         </Routing>
+        <Routing name="LogSplitCloud">
+            <Routes pattern="$${ctx:job_root}">
+                <!-- Don't split logs if job_root isn't defined -->
+                <Route key="$${ctx:job_root}">
+                    <Null name="/dev/null"/>
+                </Route>
+                <Route>
+                    <Log4j2Appender name="${ctx:job_root}-cloud">
+                        <PatternLayout>
+                            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
+                        </PatternLayout>
+                        <stagingBufferSize>10</stagingBufferSize>
+
+                        <s3Bucket>davin-kube-logging-test-bucket</s3Bucket>
+                        <s3Path>job-logging/</s3Path>
+                        <s3Region>us-west-2</s3Region>
+
+                        <s3AwsKey></s3AwsKey>
+                        <s3AwsSecret></s3AwsSecret>
+                    </Log4j2Appender>
+                </Route>
+            </Routes>
+            <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
+        </Routing>
+
         <Routing name="AppLogSplit">
             <Routes pattern="$${ctx:workspace_app_root}">
                 <!-- Don't split logs if workspace_app_log_root isn't defined -->
@@ -31,7 +57,7 @@
                 </Route>
                 <Route>
                     <RollingFile
-                            name="${ctx:workspace_app_root}"
+                            name="${ctx:workspace_app_root}-local"
                             fileName="${ctx:workspace_app_root}/logs.log"
                             filePattern="${ctx:workspace_app_root}/logs.%i.log.gz"
                             ignoreExceptions="false">
@@ -47,13 +73,39 @@
             </Routes>
             <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
         </Routing>
+        <Routing name="AppLogSplitCloud">
+            <Routes pattern="$${ctx:workspace_app_root}">
+                <!-- Don't split logs if workspace_app_log_root isn't defined -->
+                <Route key="$${ctx:workspace_app_root}">
+                    <Null name="/dev/null"/>
+                </Route>
+                <Route>
+                    <Log4j2Appender name="${ctx:workspace_app_root}-cloud">
+                        <PatternLayout>
+                            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
+                        </PatternLayout>
+                        <stagingBufferSize>1000</stagingBufferSize>
+
+                        <s3Bucket>davin-kube-logging-test-bucket</s3Bucket>
+                        <s3Path>app-logging/</s3Path>
+                        <s3Region>us-west-2</s3Region>
+
+                        <s3AwsKey></s3AwsKey>
+                        <s3AwsSecret></s3AwsSecret>
+                    </Log4j2Appender>
+                </Route>
+            </Routes>
+            <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
+        </Routing>
     </Appenders>
 
     <Loggers>
         <Root level="INFO">
             <AppenderRef ref="Default"/>
             <AppenderRef ref="LogSplit"/>
+            <AppenderRef ref="LogSplitCloud"/>
             <AppenderRef ref="AppLogSplit"/>
+            <AppenderRef ref="AppLogSplitCloud"/>
         </Root>
 
         <Logger name="org.eclipse.jetty" level="INFO" />
