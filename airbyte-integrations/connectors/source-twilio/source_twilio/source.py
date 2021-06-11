@@ -20,7 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import base64
-from abc import ABC
+from abc import ABC, abstractmethod
+from collections import OrderedDict
+from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse, parse_qsl
 
@@ -29,12 +31,13 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_protocol import SyncMode
 
 
 class TwilioStream(HttpStream, ABC):
     url_base = "https://api.twilio.com/2010-04-01/"
     primary_key = "sid"
-    page_size = 1
+    page_size = 100
 
     @property
     def data_field(self):
@@ -45,12 +48,11 @@ class TwilioStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
-        # if next_page_uri is not None then there is another page exists
-        if stream_data.get("next_page_uri"):
-            next_page = stream_data.get("page") + 1
-            return {
-                "Page": next_page
-            }
+        next_page_uri = stream_data.get("next_page_uri")
+        if next_page_uri:
+            next_url = urlparse(next_page_uri)
+            next_page_params = dict(parse_qsl(next_url.query))
+            return next_page_params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -67,23 +69,148 @@ class TwilioStream(HttpStream, ABC):
         return params
 
 
-class TwilioStreamSliced(TwilioStream):
-    def path(self, stream_slice: Optional[Mapping[str, Any]], **kwargs):
-        return f"{self.name.title()}/{stream_slice['parent_id']}.json"
+class TwilioNestedStream(TwilioStream):
+    url_base = "https://api.twilio.com"
+    media_exist_validation = {}
 
-    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        parent_stream = type(self.parent_stream_name, (HarvestStreamWithPagination,), {})
-        items = parent_stream(authenticator=self.authenticator)
-        for item in items.read_records(sync_mode=sync_mode):
-            yield {"parent_id": item["id"]}
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return stream_slice['subresource_uri']
+
+    @property
+    def subresource_uri_key(self):
+        return self.data_field
+
+    @property
+    @abstractmethod
+    def parent_stream(self) -> TwilioStream:
+        """
+        :return: parent stream class
+        """
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        stream_instance = self.parent_stream(authenticator=self.authenticator)
+        stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
+        for stream_slice in stream_slices:
+            for item in stream_instance.read_records(
+                    sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field):
+                if item.get('subresource_uris', {}).get(self.subresource_uri_key):
+                    validated = True
+                    for key, value in self.media_exist_validation.items():
+                        validated = item.get(key) and item.get(key) != value
+                        if not validated:
+                            break
+                    if validated:
+                        yield {'subresource_uri': item['subresource_uris'][self.subresource_uri_key]}
 
 
 class Accounts(TwilioStream):
     pass
 
 
-class Addresses(TwilioStream):
-    pass
+class Addresses(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class DependentPhoneNumbers(TwilioNestedStream):
+    parent_stream = Addresses
+    url_base = "https://api.twilio.com/2010-04-01/"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Accounts/{stream_slice['account_sid']}/Addresses/{stream_slice['sid']}/DependentPhoneNumbers.json"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        stream_instance = self.parent_stream(authenticator=self.authenticator)
+        stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
+        for stream_slice in stream_slices:
+            for item in stream_instance.read_records(
+                    sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field):
+                yield {'sid': item['sid'], 'account_sid': item['account_sid']}
+
+
+class Applications(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class AvailablePhoneNumberCountries(TwilioNestedStream):
+    parent_stream = Accounts
+    data_field = "countries"
+    subresource_uri_key = 'available_phone_numbers'
+
+
+class AvailablePhoneNumbersLocal(TwilioNestedStream):
+    parent_stream = AvailablePhoneNumberCountries
+    data_field = "available_phone_numbers"
+    subresource_uri_key = 'local'
+
+
+class AvailablePhoneNumbersMobile(TwilioNestedStream):
+    parent_stream = AvailablePhoneNumberCountries
+    data_field = "available_phone_numbers"
+    subresource_uri_key = 'mobile'
+
+
+class AvailablePhoneNumbersTollFree(TwilioNestedStream):
+    parent_stream = AvailablePhoneNumberCountries
+    data_field = "available_phone_numbers"
+    subresource_uri_key = 'toll_free'
+
+
+class IncomingPhoneNumbers(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class Keys(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class Calls(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class Conferences(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class ConferenceParticipants(TwilioNestedStream):
+    parent_stream = Conferences
+
+
+class OutgoingCallerIds(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class Recordings(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class Transcriptions(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class Queues(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class Messages(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class MessageMedia(TwilioNestedStream):
+    parent_stream = Messages
+    data_field = 'media'
+    media_exist_validation = {"num_media": "0"}
+
+
+class UsageRecords(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class UsageTriggers(TwilioNestedStream):
+    parent_stream = Accounts
+
+
+class Alerts(TwilioStream):
+    url_base = "https://monitor.twilio.com/v1/"
 
 
 class Customers(TwilioStream):
@@ -204,7 +331,33 @@ class SourceTwilio(AbstractSource):
         streams = [
             Accounts(authenticator=auth),
             Addresses(authenticator=auth),
-            # Customers(authenticator=auth),
-            # Employees(authenticator=auth),
+            DependentPhoneNumbers(authenticator=auth),
+            Applications(authenticator=auth),
+            AvailablePhoneNumberCountries(authenticator=auth),
+            AvailablePhoneNumbersLocal(authenticator=auth),
+            AvailablePhoneNumbersMobile(authenticator=auth),
+            AvailablePhoneNumbersTollFree(authenticator=auth),
+            IncomingPhoneNumbers(authenticator=auth),
+            Keys(authenticator=auth),
+            Calls(authenticator=auth),
+            Conferences(authenticator=auth),
+            ConferenceParticipants(authenticator=auth),
+            OutgoingCallerIds(authenticator=auth),
+            Recordings(authenticator=auth),
+            Transcriptions(authenticator=auth),
+            Queues(authenticator=auth),
+            Messages(authenticator=auth),
+            MessageMedia(authenticator=auth),
+            UsageRecords(authenticator=auth),
+            UsageTriggers(authenticator=auth),
+            Alerts(authenticator=auth),
         ]
         return streams
+
+
+# ['addresses', 'conferences', 'signing_keys', 'transcriptions',
+# 'connect_apps', 'sip', 'authorized_connect_apps',
+# 'usage', 'keys', 'applications', 'recordings',
+# 'short_codes', 'calls', 'notifications',
+# 'incoming_phone_numbers', 'queues', 'messages',
+# 'outgoing_caller_ids', 'available_phone_numbers', 'balance']
