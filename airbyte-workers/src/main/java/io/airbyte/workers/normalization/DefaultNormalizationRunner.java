@@ -26,6 +26,7 @@ package io.airbyte.workers.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -68,12 +69,23 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   public boolean configureDbt(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) throws Exception {
     final Map<String, String> files = ImmutableMap.of(
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
-
-    return runProcess(jobId, attempt, jobRoot, files, "configure-dbt",
-        "--integration-type", destinationType.toString().toLowerCase(),
-        "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        "--git-repo", dbtConfig.getGitRepoUrl(),
-        "--git-branch", dbtConfig.getGitRepoBranch());
+    final String gitRepoUrl = dbtConfig.getGitRepoUrl();
+    if (Strings.isNullOrEmpty(gitRepoUrl)) {
+      throw new WorkerException("Git Repo Url is required");
+    }
+    final String gitRepoBranch = dbtConfig.getGitRepoBranch();
+    if (Strings.isNullOrEmpty(gitRepoBranch)) {
+      return runProcess(jobId, attempt, jobRoot, files, "configure-dbt",
+          "--integration-type", destinationType.toString().toLowerCase(),
+          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+          "--git-repo", gitRepoUrl);
+    } else {
+      return runProcess(jobId, attempt, jobRoot, files, "configure-dbt",
+          "--integration-type", destinationType.toString().toLowerCase(),
+          "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+          "--git-repo", gitRepoUrl,
+          "--git-branch", gitRepoBranch);
+    }
   }
 
   @Override
