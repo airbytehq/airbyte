@@ -31,53 +31,26 @@ import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetConstants;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class S3FormatConfigs {
 
+  protected static final Logger LOGGER = LoggerFactory.getLogger(S3FormatConfigs.class);
+
   public static S3FormatConfig getS3FormatConfig(JsonNode config) {
     JsonNode formatConfig = config.get("format");
+    LOGGER.info("S3 format config: {}", formatConfig.toString());
     S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     if (formatType == S3Format.CSV) {
-      Flattening flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
-      return new S3CsvFormatConfig(flattening);
+      return new S3CsvFormatConfig(formatConfig);
     }
-
     if (formatType == S3Format.PARQUET) {
-      CompressionCodecName compressionCodec = CompressionCodecName.valueOf(withDefault(formatConfig, "compression_codec", S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name()).toUpperCase());
-      int blockSize = withDefault(formatConfig, "block_size_mb", S3ParquetConstants.DEFAULT_BLOCK_SIZE_MB);
-      int maxPaddingSize = withDefault(formatConfig, "max_padding_size_mb", S3ParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB);
-      int pageSize = withDefault(formatConfig, "page_size_kb", S3ParquetConstants.DEFAULT_PAGE_SIZE_KB);
-      int dictionaryPageSize = withDefault(formatConfig, "dictionary_page_size_kb", S3ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB);
-      boolean dictionaryEncoding = withDefault(formatConfig, "dictionary_encoding", S3ParquetConstants.DEFAULT_DICTIONARY_ENCODING);
-      return new S3ParquetFormatConfig(compressionCodec, blockSize, maxPaddingSize, pageSize, dictionaryPageSize, dictionaryEncoding);
+      return new S3ParquetFormatConfig(formatConfig);
     }
 
     throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
-  }
-
-  private static String withDefault(JsonNode config, String property, String defaultValue) {
-    JsonNode value = config.get(property);
-    if (value == null || value.isNull()) {
-      return defaultValue;
-    }
-    return value.asText();
-  }
-
-  private static int withDefault(JsonNode config, String property, int defaultValue) {
-    JsonNode value = config.get(property);
-    if (value == null || value.isNull()) {
-      return defaultValue;
-    }
-    return value.asInt();
-  }
-
-  private static boolean withDefault(JsonNode config, String property, boolean defaultValue) {
-    JsonNode value = config.get(property);
-    if (value == null || value.isNull()) {
-      return defaultValue;
-    }
-    return value.asBoolean();
   }
 
 }
