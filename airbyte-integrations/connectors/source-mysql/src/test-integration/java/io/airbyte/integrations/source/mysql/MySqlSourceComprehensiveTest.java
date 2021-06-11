@@ -196,6 +196,16 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.00")
+            .addInsertValues("1700000.00")
+            .build());
+
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("bit")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "1", "0")

@@ -24,6 +24,7 @@
 
 package io.airbyte.db.jdbc;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import java.sql.Connection;
@@ -36,7 +37,7 @@ import java.util.stream.Stream;
 /**
  * Database object for interacting with a JDBC connection.
  */
-public interface JdbcDatabase extends AutoCloseable {
+public interface JdbcDatabase extends SqlDatabase {
 
   /**
    * Execute a database query.
@@ -46,6 +47,7 @@ public interface JdbcDatabase extends AutoCloseable {
    */
   void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException;
 
+  @Override
   default void execute(String sql) throws SQLException {
     execute(connection -> connection.createStatement().execute(sql));
   }
@@ -109,7 +111,7 @@ public interface JdbcDatabase extends AutoCloseable {
    *        just pass the {@link ResultSet} through. it is a stateful object will not be accessible if
    *        returned from recordTransform.
    * @param <T> type that each record will be mapped to.
-   * @return Result of the query mapped to a stream.
+   * @return Result of the query mapped to a stream.void execute(String sql)
    * @throws SQLException SQL related exceptions.
    */
   <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
@@ -131,4 +133,16 @@ public interface JdbcDatabase extends AutoCloseable {
     }
   }
 
+  @Override
+  default Stream<JsonNode> query(String sql, String... params) throws SQLException {
+    return query(connection -> {
+      PreparedStatement statement = connection.prepareStatement(sql);
+      int i = 1;
+      for (String param : params) {
+        statement.setString(i, param);
+        ++i;
+      }
+      return statement;
+    }, JdbcUtils::rowToJson);
+  }
 }
