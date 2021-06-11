@@ -26,21 +26,26 @@
 import math
 import urllib.parse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, List
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+import pendulum
+import vcr
 
 
 class SurveymonkeyStream(HttpStream, ABC):
     url_base = "https://api.surveymonkey.com/v3/"
     primary_key = "id"
     data_field = "data"
+    cached_survey_ids = []
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
-        if resp_json.get("next"):
-            next_query_string = urllib.parse.urlsplit(resp_json["next"]).query
+        links = resp_json.get("links", {})
+        if links.get('next'):
+            next_query_string = urllib.parse.urlsplit(links["next"]).query
             params = dict(urllib.parse.parse_qsl(next_query_string))
             return params
 
@@ -50,8 +55,9 @@ class SurveymonkeyStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
-            raise Exception(response_json.get("error"))
-        yield from response_json.get(self.data_field, [])
+            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+        result = response.json.get(self.data_field, [])
+        yield from result
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -61,12 +67,23 @@ class SurveymonkeyStream(HttpStream, ABC):
             params.update(next_page_token)
         return params
 
+    def read_records(
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        with vcr.use_cassette('sy4ara.yaml', record_mode='new_episodes'):
+            yield from super().read_records(
+                sync_mode=sync_mode,
+                cursor_field=cursor_field,
+                stream_slice=stream_slice,
+                stream_state=stream_state
+            )
+
 
 class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
-    """
-    Because endpoints has descending order we need to save initial state value to know when to stop pagination.
-    start_date is used to as a min date to filter on.
-    """
 
     state_checkpoint_interval = 1000
 
@@ -83,19 +100,17 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         and define a cursor field.
         """
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Return next page token until we reach the page with records older than state/start_date
-        """
-        return super().next_page_token(response=response)
-
     def request_params(self, stream_state: Mapping[str, Any],  **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["sort_order"] = "ASC"
         params["sort_by"] = "date_modified"
-        since_value = stream_state.get(self.cursor_field) or self._start_date
+        params["per_page"] = 1000 # maybe as user input or bigger value
+        since_value = pendulum.parse(stream_state.get(self.cursor_field)) \
+                if stream_state.get(self.cursor_field) \
+                else self._start_date
+
         since_value = max(since_value, self._start_date)
-        params["start_modified_at"] = since_value  # dont forget to format it to YYYY-MM-DDTHH:MM:SS
+        params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -104,7 +119,9 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         """
         latest_state = latest_record.get(self.cursor_field)
         current_state = current_stream_state.get(self.cursor_field) or latest_state
-        return {self.cursor_field: max(latest_state, current_state)}
+        if current_state:
+            return {self.cursor_field: max(latest_state, current_state)}
+        return {}
 
 
 class Surveys(IncrementalSurveymonkeyStream):
@@ -118,13 +135,19 @@ class Surveys(IncrementalSurveymonkeyStream):
     def path(self, **kwargs) -> str:
         return "surveys"
 
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        params["order"] = f"-{self.cursor_field}"  # sort descending
-        return params
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
 
 
-class SurveysDetails(SurveymonkeyStream):
+        response_json = response.json()
+        if response_json.get("error"):
+            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+        result = response_json.get(self.data_field, [])
+        self.cached_survey_ids += [i['id'] for i in result]
+        print('DEBUG: appeanded and got cache:', self.cached_survey_ids)
+        yield from result
+
+
+class SurveyDetails(SurveymonkeyStream):
     """
     Actually stream above can just filter, sort and enumarate survey ids.
     It does not contain the needed information. I will need it as stream slice source
@@ -132,57 +155,63 @@ class SurveysDetails(SurveymonkeyStream):
     """
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         survey_id = stream_slice["survey_id"]
-        return f"reports/{survey_id}"
+        return f"surveys/{survey_id}/details"
+
+    def stream_slices(self, **kwargs):
+        for survey_id in self.cached_survey_ids:
+            yield {"survey_id": survey_id}
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        if response_json.get("error"):
+            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+        output = {k: v for k, v in response_json.items() if k!="pages"}
+        yield output
 
 
 class SurveyPages(SurveymonkeyStream):
-    """
-    """
+    """should be filled from SurveyDetails"""
+    data_field = "pages"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         survey_id = stream_slice["survey_id"]
-        return f"surveys{survey_id}/pages"
+        return f"surveys/{survey_id}/details"
 
     def stream_slices(self, **kwargs):
-        campaign_stream = Campaigns(authenticator=self.authenticator)
-        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"campaign_id": campaign["id"]}
+        for survey_id in self.cached_survey_ids:
+            yield {"survey_id": survey_id}
 
-
-class SurveyPagesDetails(SurveymonkeyStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        survey_id = stream_slice["survey_id"]
-        page_id = stream_slice['page_id']
-        return f"surveys{survey_id}/pages/{page_id}"
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[
+        Mapping]:
+        response_json = response.json()
+        if response_json.get("error"):
+            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+        data = response_json.get(self.data_field)
+        page_data = [{k:v for k,v in i.items() if k!="questions"} for i in data ]
+        yield from page_data
 
 
 class SurveyQuestions(SurveymonkeyStream):
-    """
-    Docs: https://posthog.com/docs/api/events
-    """
+    """should be filled from SurveyDetails"""
+    data_field = "pages"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         survey_id = stream_slice["survey_id"]
-        page_id = stream_slice['page_id']
-        return f"surveys{survey_id}/pages/{page_id}/questions"
+        return f"surveys/{survey_id}/details"
 
     def stream_slices(self, **kwargs):
-        campaign_stream = Campaigns(authenticator=self.authenticator)
-        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"campaign_id": campaign["id"]}
+        for survey_id in self.cached_survey_ids:
+            yield {"survey_id": survey_id}
 
-
-class SurveyQuestionsDetails(SurveymonkeyStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        survey_id = stream_slice["survey_id"]
-        page_id = stream_slice['page_id']
-        question_id = stream_slice['question_id']
-        return f"surveys{survey_id}/pages/{page_id}/questions/{question_id}"
-
-    def stream_slices(self, **kwargs):
-        campaign_stream = Campaigns(authenticator=self.authenticator)
-        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"campaign_id": campaign["id"]}
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[
+        Mapping]:
+        response_json = response.json()
+        if response_json.get("error"):
+            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+        data = response_json.get(self.data_field)
+        question_data = [i["questions"] for i in data]
+        merged_questions = sum(question_data, []) # data is list of list, each inner list = page questions. Need to merge
+        yield from merged_questions
 
 
 class SurveyResponses(IncrementalSurveymonkeyStream):
@@ -195,11 +224,12 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         survey_id = stream_slice['survey_id']
         return f"surveys/{survey_id}/responses/bulk"
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        resp_json = response.json()
-        return resp_json.get("pagination")
-
     def stream_slices(self, **kwargs):
-        campaign_stream = Campaigns(authenticator=self.authenticator)
-        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"campaign_id": campaign["id"]}
+        for survey_id in self.cached_survey_ids:
+            yield {"survey_id": survey_id}
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        if response_json.get("error"):
+            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+        yield from response_json.get(self.data_field, [])

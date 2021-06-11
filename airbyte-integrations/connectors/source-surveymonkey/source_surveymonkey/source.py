@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-
+import os
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -34,11 +34,9 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .streams import (
     Surveys,
-    SurveysDetails,
+    SurveyDetails,
     SurveyPages,
-    SurveyPagesDetails,
     SurveyQuestions,
-    SurveyQuestionsDetails,
     SurveyResponses
 )
 
@@ -48,21 +46,25 @@ class SourceSurveymonkey(AbstractSource):
         try:
             _ = pendulum.parse(config["start_date"], strict=True)
             authenticator = TokenAuthenticator(token=config["access_token"])
-            stream = Surveys(authenticator=authenticator)
+            stream = Surveys(authenticator=authenticator, start_date=config["start_date"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             _ = next(records)
             return True, None
         except Exception as e:
+            print('error happened!!!')
+            import traceback
+            print(traceback.format_exc())
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"])
-        return [
+        streams = [
             Surveys(authenticator=authenticator, start_date=config["start_date"]),
-            SurveysDetails(authenticator=authenticator),
+            SurveyDetails(authenticator=authenticator),
             SurveyPages(authenticator=authenticator),
-            SurveyPagesDetails(authenticator=authenticator),
             SurveyQuestions(authenticator=authenticator),
-            SurveyQuestionsDetails(authenticator=authenticator),
             SurveyResponses(authenticator=authenticator, start_date=config["start_date"]),
         ]
+        # if os.path.exists('sy4ara.yaml'):
+        #    os.remove('sy4ara.yaml')
+        return streams
