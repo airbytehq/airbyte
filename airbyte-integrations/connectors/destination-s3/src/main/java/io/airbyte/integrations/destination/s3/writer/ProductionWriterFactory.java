@@ -29,7 +29,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.parquet.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.s3.parquet.JsonSchemaConverter;
+import io.airbyte.integrations.destination.s3.parquet.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -54,7 +54,7 @@ public class ProductionWriterFactory implements S3WriterFactory {
     }
     if (format == S3Format.PARQUET) {
       AirbyteStream stream = configuredStream.getStream();
-      JsonSchemaConverter schemaConverter = new JsonSchemaConverter();
+      JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
       Schema avroSchema = schemaConverter.getAvroSchema(stream.getJsonSchema(), stream.getName(), stream.getNamespace(), true);
       JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
 

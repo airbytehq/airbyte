@@ -49,9 +49,9 @@ import org.slf4j.LoggerFactory;
  * standardize schema names, and keep track of a mapping from the original names to the
  * standardized ones.
  */
-public class JsonSchemaConverter {
+public class JsonToAvroSchemaConverter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaConverter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JsonToAvroSchemaConverter.class);
   public static final Schema UUID_SCHEMA = LogicalTypes.uuid()
       .addToSchema(Schema.create(Type.STRING));
   private static final Schema TIMESTAMP_MILLIS_SCHEMA = LogicalTypes.timestampMillis()

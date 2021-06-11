@@ -16,7 +16,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
-class JsonSchemaConverterTest {
+class JsonToAvroSchemaConverterTest {
 
   @Test
   public void testGetTypes() {
@@ -24,13 +24,13 @@ class JsonSchemaConverterTest {
     JsonNode input1 = Jsons.deserialize("{ \"type\": \"number\" }");
     assertEquals(
         Collections.singletonList(JsonSchemaType.NUMBER),
-        JsonSchemaConverter.getTypes("field", input1.get("type")));
+        JsonToAvroSchemaConverter.getTypes("field", input1.get("type")));
 
     // type union
     JsonNode input2 = Jsons.deserialize("{ \"type\": [\"null\", \"string\"] }");
     assertEquals(
         Lists.newArrayList(JsonSchemaType.NULL, JsonSchemaType.STRING),
-        JsonSchemaConverter.getTypes("field", input2.get("type")));
+        JsonToAvroSchemaConverter.getTypes("field", input2.get("type")));
   }
 
   public static class GetFieldTypeTestCaseProvider implements ArgumentsProvider {
@@ -48,7 +48,7 @@ class JsonSchemaConverterTest {
   @ParameterizedTest
   @ArgumentsSource(GetFieldTypeTestCaseProvider.class)
   public void testGetFieldType(String fieldName, JsonNode jsonFieldSchema, JsonNode avroFieldType) {
-    JsonSchemaConverter converter = new JsonSchemaConverter();
+    JsonToAvroSchemaConverter converter = new JsonToAvroSchemaConverter();
     assertEquals(
         avroFieldType,
         Jsons.deserialize(converter.getFieldType(fieldName, jsonFieldSchema).toString()),
@@ -73,7 +73,7 @@ class JsonSchemaConverterTest {
   @ParameterizedTest
   @ArgumentsSource(GetAvroSchemaTestCaseProvider.class)
   public void testGetAvroSchema(String schemaName, String namespace, boolean appendAirbyteFields, JsonNode jsonSchema, JsonNode avroSchema) {
-    JsonSchemaConverter converter = new JsonSchemaConverter();
+    JsonToAvroSchemaConverter converter = new JsonToAvroSchemaConverter();
     assertEquals(
         avroSchema,
         Jsons.deserialize(converter.getAvroSchema(jsonSchema, schemaName, namespace, appendAirbyteFields).toString()),

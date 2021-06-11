@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.parquet.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.s3.parquet.JsonSchemaConverter;
+import io.airbyte.integrations.destination.s3.parquet.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import java.io.IOException;
 import java.net.URI;
@@ -59,7 +59,7 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
                                            String namespace,
                                            JsonNode streamSchema)
       throws IOException, URISyntaxException {
-    JsonSchemaConverter schemaConverter = new JsonSchemaConverter();
+    JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
     schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
     JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
 
