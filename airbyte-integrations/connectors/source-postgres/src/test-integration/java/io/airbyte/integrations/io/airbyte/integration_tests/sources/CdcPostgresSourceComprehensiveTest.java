@@ -33,33 +33,49 @@ import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import java.sql.SQLException;
 import org.jooq.SQLDialect;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
-public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
+// todo (cgardens) - Sanity check that when configured for CDC that postgres performs like any other
+// incremental source. As we have more sources support CDC we will find a more reusable way of doing
+// this, but for now this is a solid sanity check.
+
+/**
+ * None of the tests in this class use the cdc path (run the tests and search for `using CDC: false`
+ * in logs). This is exact same as {@link PostgresSourceAcceptanceTest}
+ */
+public class CdcPostgresSourceComprehensiveTest extends SourceComprehensiveTest {
+
+  private static final String SLOT_NAME_BASE = "debezium_slot";
+  private static final String STREAM_NAME = "public.id_and_name";
+  private static final String STREAM_NAME2 = "public.starships";
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(PostresSourceComprehensiveTest.class);
 
   @Override
-  protected Database setupDatabase() throws SQLException {
-    container = new PostgreSQLContainer<>("postgres:13-alpine");
+  protected Database setupDatabase() throws Exception {
+
+    container = new PostgreSQLContainer<>("postgres:13-alpine")
+        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
+            "/etc/postgresql/postgresql.conf")
+        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
 
+    /**
+     * The publication is not being set as part of the config and because of it
+     * {@link io.airbyte.integrations.source.postgres.PostgresSource#isCdc(JsonNode)} returns false, as
+     * a result no test in this class runs through the cdc path.
+     */
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
-        .put("ssl", false)
+        .put("replication_method", ImmutableMap.of("replication_slot", SLOT_NAME_BASE))
         .build());
-    LOGGER.warn("PPP:config:" + config);
 
     final Database database = Databases.createDatabase(
         config.get("username").asText(),
@@ -354,15 +370,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("99999", "5.1", "0", null)
             .build());
 
-    // TODO check: This is function and result may be different depends on DB state
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("pg_lsn")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("pg_current_wal_lsn()")
-            .addExpectedValues("0/1641110")
-            .build());
-
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
@@ -421,7 +428,8 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("tsvector")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
-            .addExpectedValues("'brown':3 'dog':9 'fox':4 'jump':5 'lazi':8 'quick':2")
+            .addExpectedValues(
+                "'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
             .build());
 
     addDataTypeTestData(
