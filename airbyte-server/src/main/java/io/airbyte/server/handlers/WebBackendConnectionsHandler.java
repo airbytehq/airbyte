@@ -154,7 +154,7 @@ public class WebBackendConnectionsHandler {
         .schedule(connectionRead.getSchedule())
         .source(source)
         .destination(destination)
-        .operations(operations);
+        .operations(operations.getOperations());
   }
 
   private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {

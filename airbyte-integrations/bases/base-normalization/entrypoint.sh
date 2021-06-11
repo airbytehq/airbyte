@@ -37,18 +37,17 @@ function configuredbt() {
   else
     # Use git repository as a base workspace folder for dbt projects
     if [[ -d git_repo ]]; then
-      echo "git_repo already exists in ${PROJECT_DIR}"
+      rm -rf git_repo
+    fi
+    # Make a shallow clone of the latest git repository in the workspace folder
+    if [[ -z "${GIT_BRANCH}" ]]; then
+      # Checkout a particular branch from the git repository
+      echo "Running: git clone --depth ${GIT_HISTORY_DEPTH} --single-branch  \$GIT_REPO git_repo"
+      git clone --depth ${GIT_HISTORY_DEPTH} --single-branch  "${GIT_REPO}" git_repo
     else
-      # Make a shallow clone of the latest git repository in the workspace folder
-      if [[ -z "${GIT_BRANCH}" ]]; then
-        # Checkout a particular branch from the git repository
-        echo "Running: git clone --depth ${GIT_HISTORY_DEPTH} --single-branch  \$GIT_REPO git_repo"
-        git clone --depth ${GIT_HISTORY_DEPTH} --single-branch  "${GIT_REPO}" git_repo
-      else
-        # No git branch specified, use the default branch of the git repository
-        echo "Running: git clone --depth ${GIT_HISTORY_DEPTH} -b ${GIT_BRANCH} --single-branch  \$GIT_REPO git_repo"
-        git clone --depth ${GIT_HISTORY_DEPTH} -b "${GIT_BRANCH}" --single-branch  "${GIT_REPO}" git_repo
-      fi
+      # No git branch specified, use the default branch of the git repository
+      echo "Running: git clone --depth ${GIT_HISTORY_DEPTH} -b ${GIT_BRANCH} --single-branch  \$GIT_REPO git_repo"
+      git clone --depth ${GIT_HISTORY_DEPTH} -b "${GIT_BRANCH}" --single-branch  "${GIT_REPO}" git_repo
     fi
     # Print few history logs to make it easier for users to verify the right code version has been checked out from git
     echo "Last 5 commits in git_repo:"
@@ -64,7 +63,6 @@ function main() {
   CMD="$1"
   shift 1 || error "command not specified."
 
-  ARGS=
   while [ $# -ne 0 ]; do
     case "$1" in
     --config)
