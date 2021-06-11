@@ -337,6 +337,10 @@ jobs:
           USER: root
           HOME: /home/runner
 
+      - name: List files in HOME to see what we need to add to PATH
+        run: |
+          find /home/runner
+
       - name: Install socat (required for port forwarding)
         run: sudo apt-get install socat
 
