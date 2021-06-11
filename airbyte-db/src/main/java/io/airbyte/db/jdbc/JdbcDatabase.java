@@ -145,4 +145,5 @@ public interface JdbcDatabase extends SqlDatabase {
       return statement;
     }, JdbcUtils::rowToJson);
   }
+
 }

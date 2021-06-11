@@ -203,7 +203,6 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .addInsertValues("1700000.00")
             .build());
 
-
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
