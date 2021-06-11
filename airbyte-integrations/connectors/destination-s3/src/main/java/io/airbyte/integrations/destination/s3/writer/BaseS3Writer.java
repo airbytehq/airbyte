@@ -30,12 +30,18 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.S3DestinationConstants;
+import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +101,18 @@ public abstract class BaseS3Writer implements S3Writer {
             stream.getName());
       }
     }
+  }
+
+  // Filename: <upload-date>_<upload-millis>_0.<format-extension>
+  public static String getOutputFilename(Timestamp timestamp, S3Format format) {
+    DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return String.format(
+        "%s_%d_0.%s",
+        formatter.format(timestamp),
+        timestamp.getTime(),
+        format.getFileExtension()
+    );
   }
 
 }

@@ -28,7 +28,7 @@ import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3DestinationConstants;
+import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -37,9 +37,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 import java.util.UUID;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -67,7 +64,7 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
         formatConfig);
 
-    String outputFilename = getOutputFilename(uploadTimestamp);
+    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
@@ -89,13 +86,6 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
         CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
             .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
-  }
-
-  // Filename: <upload-date>_<upload-millis>_0.csv
-  static String getOutputFilename(Timestamp timestamp) {
-    DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
-    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-    return String.format("%s_%d_0.csv", formatter.format(timestamp), timestamp.getTime());
   }
 
   @Override

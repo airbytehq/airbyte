@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3DestinationConstants;
+import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -40,9 +40,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 import java.util.UUID;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -52,7 +49,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.s3a.Constants;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +76,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     this.schema = schema;
     this.nameUpdater = nameUpdater;
 
-    String outputFilename = getOutputFilename(uploadTimestamp);
+    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
@@ -112,16 +108,6 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     hadoopConfig.set(Constants.AWS_CREDENTIALS_PROVIDER,
         "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
     return hadoopConfig;
-  }
-
-  static String getOutputFilename(Timestamp timestamp) {
-    DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
-    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-    return String.format(
-        "%s_%d_0.parquet",
-        formatter.format(timestamp),
-        timestamp.getTime()
-    );
   }
 
   @Override
