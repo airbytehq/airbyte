@@ -27,10 +27,7 @@ package io.airbyte.integrations.destination.s3;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetConstants;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,14 +40,17 @@ public class S3FormatConfigs {
     LOGGER.info("S3 format config: {}", formatConfig.toString());
     S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
-    if (formatType == S3Format.CSV) {
-      return new S3CsvFormatConfig(formatConfig);
+    switch (formatType) {
+      case CSV -> {
+        return new S3CsvFormatConfig(formatConfig);
+      }
+      case PARQUET -> {
+        return new S3ParquetFormatConfig(formatConfig);
+      }
+      default -> {
+        throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
+      }
     }
-    if (formatType == S3Format.PARQUET) {
-      return new S3ParquetFormatConfig(formatConfig);
-    }
-
-    throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
   }
 
 }
