@@ -62,7 +62,7 @@ const TableItemTitle: React.FC<IProps> = ({
           <FormattedMessage id="tables.connections" />
         </H5>
         <DropDown
-          onSelect={onSelect}
+          onChange={onSelect}
           data={[
             {
               text: formatMessage({
