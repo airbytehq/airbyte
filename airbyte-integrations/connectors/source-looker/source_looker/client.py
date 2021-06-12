@@ -47,6 +47,7 @@ class Client(BaseClient):
             "Accept": "application/json",
         }
         
+        # Maps Looker types to JSON Schema types for run_look JSON schema 
         self._field_type_mapping = {
             "string": "string", "date_date": "datetime", "date_raw": "datetime",
             "date": "datetime", "date_week": "datetime", "date_day_of_week": "string",
@@ -60,10 +61,14 @@ class Client(BaseClient):
             "date_time_of_day": "string", "date_hour": "string",
             "date_hour_of_day": "integer", "date_minute": "datetime", 
             "date_second": "datetime", "date_millisecond": "datetime",
-            "date_microsecond": "datetime", "number": "number", "int": "integer"
+            "date_microsecond": "datetime", "number": "number", "int": "integer",
+            "list": "array", "yesno": "boolean"
         }
+
+        # Helpers for the self.stream__run_looks function
         self._run_look_explore_fields = {}
         self._run_looks, self._run_looks_connect_error = self.get_run_look_info(run_look_ids)
+
         self._dashboard_ids = []
         self._project_ids = []
         self._role_ids = []
@@ -74,6 +79,11 @@ class Client(BaseClient):
 
     @property    
     def streams(self) -> Generator[AirbyteStream, None, None]: 
+        """
+        Uses the default streams except for the run_look endpoint, where we have
+        to generate its JSON Schema on the fly for the given look
+        """
+
         streams = super().streams
         for stream in streams:
             if len(self._run_looks) > 0 and stream.name == "run_looks":
@@ -94,6 +104,10 @@ class Client(BaseClient):
             return None, str(error)
 
     def get_run_look_info(self, run_look_ids):
+        """
+        Checks that the look IDs entered exist and can be queried
+        and returns the LookML model for each (needed for JSON Schema creation)
+        """
         looks = []
         for look_id in run_look_ids:
             resp = self._request(f"{self.BASE_URL}/looks/{look_id}?fields=model(id)")
@@ -124,6 +138,10 @@ class Client(BaseClient):
         return []
 
     def _get_explore_fields(self, model, explore):
+        """
+        For a given LookML model and explore, looks up its dimensions/measures
+        and their types for run_look endpoint JSON Schema generation
+        """
         if (model, explore) not in self._run_look_explore_fields:
             self._run_look_explore_fields[(model, explore)] =  self._request(f"{self.BASE_URL}/lookml_models/{model}/explores/{explore}?fields=fields(dimensions(name,type),measures(name,type))")[0]['fields']
         
@@ -131,19 +149,26 @@ class Client(BaseClient):
 
 
     def _get_look_field_schema(self, model, field):
+        """
+        For a given LookML model and field, looks up its type and generates
+        its properties for the run_look endpoint JSON Schema
+        """
         explore = field.split(".")[0]
         
         fields = self._get_explore_fields(model, explore)
 
-        looker_field_type = "string" # default to string
+        field_type = "string" # default to string
         for dimension in fields['dimensions']:
             if field == dimension['name']:
                 field_type = self._field_type_mapping[dimension['type']]
         for measure in fields['measures']:
             if field == measure['name']:
+                # Default to number except for list, date, and yesno
                 field_type = "number"
+                field_type = self._field_type_mapping[measure['type']]
 
         if field_type == 'datetime':
+            # no datetime type for JSON Schema
             return {
                 "type": ["null", "string"],
                 "format": "date-time"
@@ -155,6 +180,10 @@ class Client(BaseClient):
         
         
     def _get_run_look_json_schema(self):
+        """
+        Generates a JSON Schema for the run_look endpoint based on the Look IDs
+        entered in configuration
+        """
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": True,
