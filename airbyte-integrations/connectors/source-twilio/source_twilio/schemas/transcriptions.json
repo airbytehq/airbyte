@@ -3,10 +3,7 @@
     "account_sid": {
       "type": ["null", "string"]
     },
-    "city": {
-      "type": ["null", "string"]
-    },
-    "customer_name": {
+    "api_version": {
       "type": ["null", "string"]
     },
     "date_created": {
@@ -17,32 +14,30 @@
       "format": "date-time",
       "type": ["null", "string"]
     },
-    "emergency_enabled": {
-      "type": ["null", "boolean"]
+    "duration": {
+      "type": ["null", "integer"]
     },
-    "friendly_name": {
+    "price": {
+      "multipleOf": 1e-8,
+      "type": ["null", "number"]
+    },
+    "price_unit": {
       "type": ["null", "string"]
     },
-    "iso_country": {
-      "type": ["null", "string"]
-    },
-    "postal_code": {
-      "type": ["null", "string"]
-    },
-    "region": {
+    "recording_sid": {
       "type": ["null", "string"]
     },
     "sid": {
       "type": ["null", "string"]
     },
-    "street": {
+    "status": {
       "type": ["null", "string"]
     },
-    "validated": {
-      "type": ["null", "boolean"]
+    "transcription_text": {
+      "type": ["null", "string"]
     },
-    "verified": {
-      "type": ["null", "boolean"]
+    "type": {
+      "type": ["null", "string"]
     },
     "uri": {
       "type": ["null", "string"]

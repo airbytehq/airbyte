@@ -3,12 +3,6 @@
     "account_sid": {
       "type": ["null", "string"]
     },
-    "city": {
-      "type": ["null", "string"]
-    },
-    "customer_name": {
-      "type": ["null", "string"]
-    },
     "date_created": {
       "format": "date-time",
       "type": ["null", "string"]
@@ -17,32 +11,14 @@
       "format": "date-time",
       "type": ["null", "string"]
     },
-    "emergency_enabled": {
-      "type": ["null", "boolean"]
-    },
     "friendly_name": {
       "type": ["null", "string"]
     },
-    "iso_country": {
-      "type": ["null", "string"]
-    },
-    "postal_code": {
-      "type": ["null", "string"]
-    },
-    "region": {
+    "phone_number": {
       "type": ["null", "string"]
     },
     "sid": {
       "type": ["null", "string"]
-    },
-    "street": {
-      "type": ["null", "string"]
-    },
-    "validated": {
-      "type": ["null", "boolean"]
-    },
-    "verified": {
-      "type": ["null", "boolean"]
     },
     "uri": {
       "type": ["null", "string"]

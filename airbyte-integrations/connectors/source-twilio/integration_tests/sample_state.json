@@ -1,5 +1,50 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "accounts": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "addresses": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "dependent_phone_numbers": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "applications": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "incoming_phone_numbers": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "keys": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "calls": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "conferences": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "outgoing_caller_ids": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "recordings": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "transcriptions": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "queues": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "messages": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "message_media": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "usage_records": {
+    "date_updated": "2020-10-01T00:00:00Z"
+  },
+  "usage_triggers": {
+    "date_updated": "2020-10-01T00:00:00Z"
   }
 }

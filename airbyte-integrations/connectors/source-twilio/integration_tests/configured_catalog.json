@@ -126,7 +126,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -190,7 +190,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -301,10 +301,14 @@
           },
           "type": "object",
           "additionalProperties": false
-        }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_updated"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "cursor_field": ["date_updated"],
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -377,7 +381,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -839,7 +843,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -873,7 +877,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -1007,7 +1011,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["end_time"]
       },
@@ -1075,7 +1079,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -1137,7 +1141,6 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
-
     {
       "stream": {
         "name": "outgoing_caller_ids",
@@ -1170,7 +1173,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -1291,7 +1294,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_created"]
       },
@@ -1350,7 +1353,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -1418,7 +1421,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -1527,7 +1530,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_sent"]
       },
@@ -1706,7 +1709,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["end_date"]
       },
@@ -1775,7 +1778,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },
@@ -1840,7 +1843,7 @@
           "type": "object",
           "additionalProperties": false
         },
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
       },

@@ -1,50 +1,51 @@
 {
   "properties": {
-    "account_sid": {
+    "log_level": {
       "type": ["null", "string"]
     },
-    "city": {
-      "type": ["null", "string"]
-    },
-    "customer_name": {
-      "type": ["null", "string"]
-    },
-    "date_created": {
-      "format": "date-time",
+    "resource_sid": {
       "type": ["null", "string"]
     },
     "date_updated": {
       "format": "date-time",
       "type": ["null", "string"]
     },
-    "emergency_enabled": {
-      "type": ["null", "boolean"]
-    },
-    "friendly_name": {
+    "account_sid": {
       "type": ["null", "string"]
     },
-    "iso_country": {
+    "url": {
       "type": ["null", "string"]
     },
-    "postal_code": {
+    "request_method": {
       "type": ["null", "string"]
     },
-    "region": {
+    "date_generated": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "alert_text": {
       "type": ["null", "string"]
     },
     "sid": {
       "type": ["null", "string"]
     },
-    "street": {
+    "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
-    "validated": {
-      "type": ["null", "boolean"]
+    "request_url": {
+      "type": ["null", "string"]
     },
-    "verified": {
-      "type": ["null", "boolean"]
+    "service_sid": {
+      "type": ["null", "string"]
     },
-    "uri": {
+    "error_code": {
+      "type": ["null", "string"]
+    },
+    "api_version": {
+      "type": ["null", "string"]
+    },
+    "more_info": {
       "type": ["null", "string"]
     }
   },

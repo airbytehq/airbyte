@@ -3,10 +3,10 @@
     "account_sid": {
       "type": ["null", "string"]
     },
-    "city": {
+    "call_sid": {
       "type": ["null", "string"]
     },
-    "customer_name": {
+    "conference_sid": {
       "type": ["null", "string"]
     },
     "date_created": {
@@ -17,32 +17,26 @@
       "format": "date-time",
       "type": ["null", "string"]
     },
-    "emergency_enabled": {
+    "end_conference_on_exit": {
       "type": ["null", "boolean"]
     },
-    "friendly_name": {
-      "type": ["null", "string"]
-    },
-    "iso_country": {
-      "type": ["null", "string"]
-    },
-    "postal_code": {
-      "type": ["null", "string"]
-    },
-    "region": {
-      "type": ["null", "string"]
-    },
-    "sid": {
-      "type": ["null", "string"]
-    },
-    "street": {
-      "type": ["null", "string"]
-    },
-    "validated": {
+    "muted": {
       "type": ["null", "boolean"]
     },
-    "verified": {
+    "hold": {
       "type": ["null", "boolean"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "start_conference_on_enter": {
+      "type": ["null", "boolean"]
+    },
+    "coaching": {
+      "type": ["null", "boolean"]
+    },
+    "call_sid_to_coach": {
+      "type": ["null", "string"]
     },
     "uri": {
       "type": ["null", "string"]
