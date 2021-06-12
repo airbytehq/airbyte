@@ -47,7 +47,13 @@ class Client(BaseClient):
             "Accept": "application/json",
         }
         
-        self._run_look_ids, self._run_looks_connect_error = self.get_run_look_ids(run_look_ids)
+        self._field_type_mapping = {
+            "string": "string",
+            "date_date": "date",
+            "date_raw": "datetime",
+            "number": "number"
+        }
+        self._run_looks, self._run_looks_connect_error = self.get_run_look_info(run_look_ids)
         self._dashboard_ids = []
         self._project_ids = []
         self._role_ids = []
@@ -60,7 +66,7 @@ class Client(BaseClient):
     def streams(self) -> Generator[AirbyteStream, None, None]: 
         streams = super().streams
         for stream in streams:
-            if len(self._run_look_ids) > 0 and stream.name == "run_looks":
+            if len(self._run_looks) > 0 and stream.name == "run_looks":
                 stream.json_schema = self._get_run_look_json_schema()
             yield stream
 
@@ -77,17 +83,21 @@ class Client(BaseClient):
         except ConnectionError as error:
             return None, str(error)
 
-    def get_run_look_ids(self, run_look_ids):
+    def get_run_look_info(self, run_look_ids):
+        looks = []
         for look_id in run_look_ids:
-            resp = self._request(f"{self.BASE_URL}/looks/{look_id}?fields=id")
+            resp = self._request(f"{self.BASE_URL}/looks/{look_id}?fields=model(id)")
             if resp == []:
                 return [], f"Unable to find look {look_id}. Verify that you have entered a valid look ID and that you have permission to run it."
-        return run_look_ids, None
+            else:
+                looks.append((resp[0]["model"]["id"], look_id))
+
+        return looks, None
 
     def health_check(self) -> Tuple[bool, str]:
         if self._connect_error:
             return False, self._connect_error
-        if self._run_looks_connect_error:
+        elif self._run_looks_connect_error:
             return False, self._run_looks_connect_error
         return True, ""
 
@@ -103,6 +113,22 @@ class Client(BaseClient):
                 return [response_data]
         return []
 
+    def _get_look_field_type(self, model, field):
+        explore = field.split(".")[0]
+        
+        fields = self._request(f"{self.BASE_URL}/lookml_models/{model}/explores/{explore}?fields=fields(dimensions(name,type),measures(name,type))")[0]['fields']
+
+        field_type = "string" # default to string
+        for dimension in fields['dimensions']:
+            if field == dimension['name']:
+                field_type = self._field_type_mapping[dimension['type']]
+        for measure in fields['measures']:
+            if field == measure['name']:
+                field_type = "number"
+
+        return field_type
+        
+        
     def _get_run_look_json_schema(self):
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -111,12 +137,12 @@ class Client(BaseClient):
             "properties": {
                 look_id: {
                     "properties": {
-                        field_name: {"type": ["null", "object"]} for field_name in self._get_look_fields(look_id)
+                        field: {"type": ["null", self._get_look_field_type(model, field)]} for field in self._get_look_fields(look_id)
                     },
                     "type": ["null", "object"],
                     "additionalProperties": False
                 }
-                for look_id in self._run_look_ids
+                for (model, look_id) in self._run_looks
             }
         }
         return json_schema
@@ -240,7 +266,7 @@ class Client(BaseClient):
             yield from self._request(f"{self.BASE_URL}/roles/{role_id}/groups")
 
     def stream__run_looks(self, fields):
-        for look_id in self._run_look_ids:
+        for (model, look_id) in self._run_looks:
             yield from [{look_id: row} for row in self._request(f"{self.BASE_URL}/looks/{look_id}/run/json")]
 
     def stream__scheduled_plans(self, fields):
