@@ -53,6 +53,7 @@ class Client(BaseClient):
             "date_raw": "datetime",
             "number": "number"
         }
+        self._run_look_explore_fields = {}
         self._run_looks, self._run_looks_connect_error = self.get_run_look_info(run_look_ids)
         self._dashboard_ids = []
         self._project_ids = []
@@ -113,10 +114,17 @@ class Client(BaseClient):
                 return [response_data]
         return []
 
+    def _get_explore_fields(self, model, explore):
+        if (model, explore) not in self._run_look_explore_fields:
+            self._run_look_explore_fields[(model, explore)] =  self._request(f"{self.BASE_URL}/lookml_models/{model}/explores/{explore}?fields=fields(dimensions(name,type),measures(name,type))")[0]['fields']
+        
+        return self._run_look_explore_fields[(model, explore)]
+
+
     def _get_look_field_type(self, model, field):
         explore = field.split(".")[0]
         
-        fields = self._request(f"{self.BASE_URL}/lookml_models/{model}/explores/{explore}?fields=fields(dimensions(name,type),measures(name,type))")[0]['fields']
+        fields = self._get_explore_fields(model, explore)
 
         field_type = "string" # default to string
         for dimension in fields['dimensions']:
