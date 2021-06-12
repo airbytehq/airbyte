@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "client_key": {
+      "type": ["null", "string"]
+    },
+    "number": {
+      "type": ["null", "string"]
+    },
+    "purchase_order": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "tax": {
+      "type": ["null", "number"]
+    },
+    "tax_amount": {
+      "type": ["null", "number"]
+    },
+    "tax2": {
+      "type": ["null", "number"]
+    },
+    "tax2_amount": {
+      "type": ["null", "number"]
+    },
+    "discount": {
+      "type": ["null", "number"]
+    },
+    "discount_amount": {
+      "type": ["null", "number"]
+    },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "notes": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "issue_date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "sent_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "accepted_at": {
+      "type": ["null", "string"]
+    },
+    "declined_at": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "client": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "creator": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "line_items": {
+      "type": ["null", "array"]
+    }
+  }
+}

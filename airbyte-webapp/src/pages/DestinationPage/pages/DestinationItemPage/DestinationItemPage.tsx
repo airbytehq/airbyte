@@ -17,7 +17,7 @@ import {
   ItemTabs,
   StepsTypes,
   TableItemTitle,
-} from "components/SourceAndDestinationsBlocks";
+} from "components/ConnectorBlocks";
 import DestinationSettings from "./components/DestinationSettings";
 import LoadingPage from "components/LoadingPage";
 import SourceResource from "core/resources/Source";

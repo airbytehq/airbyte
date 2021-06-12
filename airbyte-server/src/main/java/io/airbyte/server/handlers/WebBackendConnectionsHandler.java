@@ -146,13 +146,15 @@ public class WebBackendConnectionsHandler {
         .destinationId(connectionRead.getDestinationId())
         .operationIds(connectionRead.getOperationIds())
         .name(connectionRead.getName())
+        .namespaceDefinition(connectionRead.getNamespaceDefinition())
+        .namespaceFormat(connectionRead.getNamespaceFormat())
         .prefix(connectionRead.getPrefix())
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
         .source(source)
         .destination(destination)
-        .operations(operations);
+        .operations(operations.getOperations());
   }
 
   private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
@@ -319,11 +321,16 @@ public class WebBackendConnectionsHandler {
   protected static ConnectionCreate toConnectionCreate(WebBackendConnectionCreate webBackendConnectionCreate, List<UUID> operationIds) {
     ConnectionCreate connectionCreate = new ConnectionCreate();
 
-    connectionCreate.setPrefix(webBackendConnectionCreate.getPrefix());
-    connectionCreate.setSchedule(webBackendConnectionCreate.getSchedule());
-    connectionCreate.setStatus(webBackendConnectionCreate.getStatus());
-    connectionCreate.setSyncCatalog(webBackendConnectionCreate.getSyncCatalog());
-    connectionCreate.setOperationIds(operationIds);
+    connectionCreate.name(webBackendConnectionCreate.getName());
+    connectionCreate.namespaceDefinition(webBackendConnectionCreate.getNamespaceDefinition());
+    connectionCreate.namespaceFormat(webBackendConnectionCreate.getNamespaceFormat());
+    connectionCreate.prefix(webBackendConnectionCreate.getPrefix());
+    connectionCreate.sourceId(webBackendConnectionCreate.getSourceId());
+    connectionCreate.destinationId(webBackendConnectionCreate.getDestinationId());
+    connectionCreate.operationIds(operationIds);
+    connectionCreate.syncCatalog(webBackendConnectionCreate.getSyncCatalog());
+    connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
+    connectionCreate.status(webBackendConnectionCreate.getStatus());
 
     return connectionCreate;
   }
@@ -332,12 +339,14 @@ public class WebBackendConnectionsHandler {
   protected static ConnectionUpdate toConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate, List<UUID> operationIds) {
     ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
-    connectionUpdate.setPrefix(webBackendConnectionUpdate.getPrefix());
-    connectionUpdate.setConnectionId(webBackendConnectionUpdate.getConnectionId());
-    connectionUpdate.setOperationIds(operationIds);
-    connectionUpdate.setSchedule(webBackendConnectionUpdate.getSchedule());
-    connectionUpdate.setStatus(webBackendConnectionUpdate.getStatus());
-    connectionUpdate.setSyncCatalog(webBackendConnectionUpdate.getSyncCatalog());
+    connectionUpdate.connectionId(webBackendConnectionUpdate.getConnectionId());
+    connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
+    connectionUpdate.namespaceFormat(webBackendConnectionUpdate.getNamespaceFormat());
+    connectionUpdate.prefix(webBackendConnectionUpdate.getPrefix());
+    connectionUpdate.operationIds(operationIds);
+    connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
+    connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
+    connectionUpdate.status(webBackendConnectionUpdate.getStatus());
 
     return connectionUpdate;
   }
