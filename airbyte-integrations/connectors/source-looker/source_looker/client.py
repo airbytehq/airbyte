@@ -110,11 +110,11 @@ class Client(BaseClient):
         """
         looks = []
         for look_id in run_look_ids:
-            resp = self._request(f"{self.BASE_URL}/looks/{look_id}?fields=model(id)")
+            resp = self._request(f"{self.BASE_URL}/looks/{look_id}?fields=model(id),title")
             if resp == []:
                 return [], f"Unable to find look {look_id}. Verify that you have entered a valid look ID and that you have permission to run it."
             else:
-                looks.append((resp[0]["model"]["id"], look_id))
+                looks.append((resp[0]["model"]["id"], look_id, resp[0]["title"]))
 
         return looks, None
 
@@ -136,6 +136,9 @@ class Client(BaseClient):
             else:
                 return [response_data]
         return []
+
+    def _get_run_look_key(self, look_id, look_name):
+        return f"{look_id} - {look_name}"
 
     def _get_explore_fields(self, model, explore):
         """
@@ -159,13 +162,14 @@ class Client(BaseClient):
 
         field_type = "string" # default to string
         for dimension in fields['dimensions']:
-            if field == dimension['name']:
+            if field == dimension['name'] and dimension['type'] in self._field_type_mapping:
                 field_type = self._field_type_mapping[dimension['type']]
         for measure in fields['measures']:
             if field == measure['name']:
                 # Default to number except for list, date, and yesno
                 field_type = "number"
-                field_type = self._field_type_mapping[measure['type']]
+                if measure['type'] in self._field_type_mapping:
+                    field_type = self._field_type_mapping[measure['type']]
 
         if field_type == 'datetime':
             # no datetime type for JSON Schema
@@ -189,14 +193,15 @@ class Client(BaseClient):
             "additionalProperties": True,
             "type": "object",
             "properties": {
-                look_id: {
+                self._get_run_look_key(look_id, look_name): {
+                    "title": look_name,
                     "properties": {
                         field: self._get_look_field_schema(model, field) for field in self._get_look_fields(look_id)
                     },
                     "type": ["null", "object"],
                     "additionalProperties": False
                 }
-                for (model, look_id) in self._run_looks
+                for (model, look_id, look_name) in self._run_looks
             }
         }
         return json_schema
@@ -320,8 +325,9 @@ class Client(BaseClient):
             yield from self._request(f"{self.BASE_URL}/roles/{role_id}/groups")
 
     def stream__run_looks(self, fields):
-        for (model, look_id) in self._run_looks:
-            yield from [{look_id: row} for row in self._request(f"{self.BASE_URL}/looks/{look_id}/run/json")]
+        for (model, look_id, look_name) in self._run_looks:
+            yield from [{self._get_run_look_key(look_id, look_name): row} 
+            for row in self._request(f"{self.BASE_URL}/looks/{look_id}/run/json")]
 
     def stream__scheduled_plans(self, fields):
         yield from self._request(f"{self.BASE_URL}/scheduled_plans?all_users=true")
