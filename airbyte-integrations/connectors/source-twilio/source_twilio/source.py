@@ -24,24 +24,47 @@
 
 from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.logger import AirbyteLogger
 from source_twilio.auth import HttpBasicAuthenticator
-from source_twilio.streams import Accounts, Addresses, DependentPhoneNumbers, Applications, AvailablePhoneNumberCountries, \
-    AvailablePhoneNumbersLocal, AvailablePhoneNumbersMobile, AvailablePhoneNumbersTollFree, IncomingPhoneNumbers, Keys, Calls, Conferences, \
-    ConferenceParticipants, OutgoingCallerIds, Recordings, Transcriptions, Queues, Messages, MessageMedia, UsageRecords, UsageTriggers, \
-    Alerts
+from source_twilio.streams import (
+    Accounts,
+    Addresses,
+    Alerts,
+    Applications,
+    AvailablePhoneNumberCountries,
+    AvailablePhoneNumbersLocal,
+    AvailablePhoneNumbersMobile,
+    AvailablePhoneNumbersTollFree,
+    Calls,
+    ConferenceParticipants,
+    Conferences,
+    DependentPhoneNumbers,
+    IncomingPhoneNumbers,
+    Keys,
+    MessageMedia,
+    Messages,
+    OutgoingCallerIds,
+    Queues,
+    Recordings,
+    Transcriptions,
+    UsageRecords,
+    UsageTriggers,
+)
 
 
 class SourceTwilio(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            auth = HttpBasicAuthenticator((config["account_sid"], config["auth_token"],),)
-            accounts_gen = Accounts(authenticator=auth, start_date=config["start_date"]).read_records(
-                sync_mode=SyncMode.full_refresh
+            auth = HttpBasicAuthenticator(
+                (
+                    config["account_sid"],
+                    config["auth_token"],
+                ),
             )
+            accounts_gen = Accounts(authenticator=auth, start_date=config["start_date"]).read_records(sync_mode=SyncMode.full_refresh)
             next(accounts_gen)
             return True, None
         except Exception as error:
@@ -51,7 +74,12 @@ class SourceTwilio(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        auth = HttpBasicAuthenticator((config["account_sid"], config["auth_token"],),)
+        auth = HttpBasicAuthenticator(
+            (
+                config["account_sid"],
+                config["auth_token"],
+            ),
+        )
 
         streams = [
             Accounts(authenticator=auth, start_date=config["start_date"]),
