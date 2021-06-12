@@ -48,10 +48,19 @@ class Client(BaseClient):
         }
         
         self._field_type_mapping = {
-            "string": "string",
-            "date_date": "date",
-            "date_raw": "datetime",
-            "number": "number"
+            "string": "string", "date_date": "datetime", "date_raw": "datetime",
+            "date": "datetime", "date_week": "datetime", "date_day_of_week": "string",
+            "date_day_of_week_index": "integer", "date_month": "string",
+            "date_month_num": "integer", "date_month_name": "string",
+            "date_day_of_month": "integer", "date_fiscal_month_num": "integer",
+            "date_quarter": "string", "date_quarter_of_year": "string",
+            "date_fiscal_quarter": "string", "date_fiscal_quarter_of_year": "string",
+            "date_year": "integer", "date_day_of_year": "integer",
+            "date_week_of_year": "integer", "date_fiscal_year": "integer",
+            "date_time_of_day": "string", "date_hour": "string",
+            "date_hour_of_day": "integer", "date_minute": "datetime", 
+            "date_second": "datetime", "date_millisecond": "datetime",
+            "date_microsecond": "datetime", "number": "number", "int": "integer"
         }
         self._run_look_explore_fields = {}
         self._run_looks, self._run_looks_connect_error = self.get_run_look_info(run_look_ids)
@@ -121,12 +130,12 @@ class Client(BaseClient):
         return self._run_look_explore_fields[(model, explore)]
 
 
-    def _get_look_field_type(self, model, field):
+    def _get_look_field_schema(self, model, field):
         explore = field.split(".")[0]
         
         fields = self._get_explore_fields(model, explore)
 
-        field_type = "string" # default to string
+        looker_field_type = "string" # default to string
         for dimension in fields['dimensions']:
             if field == dimension['name']:
                 field_type = self._field_type_mapping[dimension['type']]
@@ -134,7 +143,15 @@ class Client(BaseClient):
             if field == measure['name']:
                 field_type = "number"
 
-        return field_type
+        if field_type == 'datetime':
+            return {
+                "type": ["null", "string"],
+                "format": "date-time"
+            }
+        else:
+            return {
+                "type": ["null", field_type]
+            }
         
         
     def _get_run_look_json_schema(self):
@@ -145,7 +162,7 @@ class Client(BaseClient):
             "properties": {
                 look_id: {
                     "properties": {
-                        field: {"type": ["null", self._get_look_field_type(model, field)]} for field in self._get_look_fields(look_id)
+                        field: self._get_look_field_schema(model, field) for field in self._get_look_fields(look_id)
                     },
                     "type": ["null", "object"],
                     "additionalProperties": False
