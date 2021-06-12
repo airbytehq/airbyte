@@ -46,13 +46,13 @@ class Client(BaseClient):
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
-
+        
+        self._run_look_ids, self._run_looks_connect_error = self.get_run_look_ids(run_look_ids)
         self._dashboard_ids = []
         self._project_ids = []
         self._role_ids = []
         self._user_attribute_ids = []
         self._user_ids = []
-        self._run_look_ids = run_look_ids
         self._context_metadata_mapping = {"dashboards": [], "folders": [], "homepages": [], "looks": [], "spaces": []}
         super().__init__()
 
@@ -77,9 +77,18 @@ class Client(BaseClient):
         except ConnectionError as error:
             return None, str(error)
 
+    def get_run_look_ids(self, run_look_ids):
+        for look_id in run_look_ids:
+            resp = self._request(f"{self.BASE_URL}/looks/{look_id}?fields=id")
+            if resp == []:
+                return [], f"Unable to find look {look_id}. Verify that you have entered a valid look ID and that you have permission to run it."
+        return run_look_ids, None
+
     def health_check(self) -> Tuple[bool, str]:
         if self._connect_error:
             return False, self._connect_error
+        if self._run_looks_connect_error:
+            return False, self._run_looks_connect_error
         return True, ""
 
     @backoff.on_exception(backoff.expo, requests.exceptions.ConnectionError, max_tries=7)
@@ -102,7 +111,7 @@ class Client(BaseClient):
             "properties": {
                 look_id: {
                     "properties": {
-                        field_name: {"type": ["null", "string"]} for field_name in self._get_look_fields(look_id)
+                        field_name: {"type": ["null", "object"]} for field_name in self._get_look_fields(look_id)
                     },
                     "type": ["null", "object"],
                     "additionalProperties": False
@@ -119,7 +128,7 @@ class Client(BaseClient):
         return self._dashboard_ids
 
     def _get_look_fields(self, look_id) -> List[str]:
-        return self._request(f"{self.BASE_URL}/looks/{look_id}?fields=query")[0]["query"]["fields"]
+        return self._request(f"{self.BASE_URL}/looks/{look_id}?fields=query(fields)")[0]["query"]["fields"]
 
     def _get_project_ids(self) -> List[int]:
         if not self._project_ids:
