@@ -57,6 +57,10 @@ services:
       - AIRBYTE_VERSION=${VERSION}
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_REGION=${S3_REGION}
+      - S3_AWS_KEY=${S3_AWS_KEY}
+      - S3_AWS_SECRET=${S3_AWS_SECRET}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
@@ -81,6 +85,10 @@ services:
       - AIRBYTE_VERSION=${VERSION}
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_REGION=${S3_REGION}
+      - S3_AWS_KEY=${S3_AWS_KEY}
+      - S3_AWS_SECRET=${S3_AWS_SECRET}
     ports:
       - 8001:8001
     volumes:
