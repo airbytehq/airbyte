@@ -24,7 +24,7 @@ import { Connection, ScheduleProperties } from "core/resources/Connection";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
 type FormikConnectionFormValues = {
-  frequency?: ScheduleProperties | null;
+  schedule?: ScheduleProperties | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: ConnectionNamespaceDefinition;
@@ -54,12 +54,25 @@ const DEFAULT_TRANSFORMATION: Transformation = {
 };
 
 const connectionValidationSchema = yup.object({
-  frequency: yup
+  schedule: yup
     .object({
       units: yup.number(),
       timeUnit: yup.string(),
     })
+    .nullable()
     .defined("form.empty.error"),
+  namespaceDefinition: yup
+    .string()
+    .oneOf([
+      ConnectionNamespaceDefinition.Source,
+      ConnectionNamespaceDefinition.Destination,
+      ConnectionNamespaceDefinition.CustomFormat,
+    ])
+    .required("form.empty.error"),
+  namespaceFormat: yup.string().when("namespaceDefinition", {
+    is: ConnectionNamespaceDefinition.CustomFormat,
+    then: yup.string().required("form.empty.error"),
+  }),
   prefix: yup.string(),
   syncCatalog: yup.object({
     streams: yup.array().of(
@@ -234,7 +247,7 @@ const useInitialValues = (
   return useMemo<FormikConnectionFormValues>(() => {
     const initialValues: FormikConnectionFormValues = {
       syncCatalog: initialSchema,
-      frequency: connection.schedule ?? undefined,
+      schedule: connection.schedule,
       prefix: connection.prefix || "",
       namespaceDefinition:
         connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
@@ -287,7 +300,7 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
                 }
               ),
       })),
-    [formatMessage]
+    []
   );
 };
 

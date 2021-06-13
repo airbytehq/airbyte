@@ -1,13 +1,17 @@
 import styled from "styled-components";
 
-import { Link as ReactLink } from "react-router-dom";
+import {
+  Link as ReactLink,
+  // LinkProps as ReactLinkProps,
+} from "react-router-dom";
 
 export type ILinkProps = {
   bold?: boolean;
   clear?: boolean;
 };
 
-const Link = styled(ReactLink)<ILinkProps>`
+// TODO: fix typings
+const Link = styled(ReactLink)<ILinkProps /*& ReactLinkProps */>`
   color: ${({ theme }) => theme.primaryColor};
 
   font-weight: ${({ bold }) => (bold ? "bold" : "normal")};

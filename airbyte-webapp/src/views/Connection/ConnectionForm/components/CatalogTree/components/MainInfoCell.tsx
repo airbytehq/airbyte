@@ -23,11 +23,11 @@ const ArrowContainer = styled.span`
   display: inline-block;
 `;
 
-const Arrow = styled(FontAwesomeIcon)<{ isOpen?: boolean }>`
+const Arrow = styled(FontAwesomeIcon)<{ $isOpen?: boolean }>`
   font-size: 16px;
   line-height: 16px;
   color: ${({ theme }) => theme.darkPrimaryColor};
-  transform: ${({ isOpen }) => isOpen && "rotate(90deg)"};
+  transform: ${({ $isOpen }) => $isOpen && "rotate(90deg)"};
   transition: 0.3s;
   cursor: pointer;
 `;
@@ -68,7 +68,7 @@ const MainInfoCell: React.FC<MainInfoCellProps> = ({
             {(isItemHasChildren || !onExpand) && (
               <Arrow
                 icon={faChevronRight}
-                isOpen={isItemOpen}
+                $isOpen={isItemOpen}
                 onClick={onExpand}
               />
             )}

@@ -20,13 +20,14 @@ import {
   ConnectionNamespaceDefinition,
 } from "core/domain/connection";
 import { Operation } from "core/domain/connection/operation";
+import { equal } from "utils/objects";
 
 export type ValuesProps = {
-  frequency: ScheduleProperties | null;
+  schedule: ScheduleProperties | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition: ConnectionNamespaceDefinition;
-  namespaceFormat: string;
+  namespaceFormat?: string;
   withOperations?: Operation[];
 };
 
@@ -43,12 +44,11 @@ type CreateConnectionProps = {
 type UpdateConnection = {
   connectionId: string;
   syncCatalog?: SyncSchema;
+  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceFormat?: string;
   status: string;
   prefix: string;
-  schedule: {
-    units: number;
-    timeUnit: string;
-  } | null;
+  schedule?: ScheduleProperties | null;
   operations?: Operation[];
   withRefreshedCatalog?: boolean;
 };
@@ -130,11 +130,8 @@ const useConnection = (): {
         {
           sourceId: source?.sourceId,
           destinationId: destination?.destinationId,
-          schedule: values.frequency,
-          prefix: values.prefix,
+          ...values,
           status: "active",
-          syncCatalog: values.syncCatalog,
-          withOperations: values.withOperations,
         },
         [
           [
@@ -152,8 +149,9 @@ const useConnection = (): {
           ],
         ]
       );
-      const frequencyData = FrequencyConfig.find(
-        (item) => item.config === values.frequency
+
+      const frequencyData = FrequencyConfig.find((item) =>
+        equal(item.config, values.schedule)
       );
 
       AnalyticsService.track("New Connection - Action", {

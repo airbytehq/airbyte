@@ -1,7 +1,8 @@
 import React from "react";
+import { Field, FieldProps } from "formik";
 
 import { DropDown, Input } from "components";
-import { Field, FieldProps } from "formik";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
 const NamespaceField: React.FC<{}> = ({}) => {
   return (
@@ -12,22 +13,22 @@ const NamespaceField: React.FC<{}> = ({}) => {
             <DropDown
               data={[
                 {
-                  value: "source",
+                  value: ConnectionNamespaceDefinition.Source,
                   text: "source",
                 },
                 {
-                  value: "destination",
+                  value: ConnectionNamespaceDefinition.Destination,
                   text: "destination",
                 },
                 {
-                  value: "custom",
+                  value: ConnectionNamespaceDefinition.CustomFormat,
                   text: "custom",
                 },
               ]}
               value={field.value}
               onChange={({ value }) => form.setFieldValue(field.name, value)}
             />
-            {field.value === "custom" && (
+            {field.value === ConnectionNamespaceDefinition.CustomFormat && (
               <Field name="namespaceFormat" component={Input} />
             )}
           </>

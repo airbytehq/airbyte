@@ -28,10 +28,7 @@ import CreateControls from "./components/CreateControls";
 import Connector from "./components/Connector";
 import SchemaField from "./components/SyncCatalogField";
 import EditControls from "./components/EditControls";
-import {
-  Connection,
-  ScheduleProperties,
-} from "../../../core/resources/Connection";
+import { Connection, ScheduleProperties } from "core/resources/Connection";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -173,7 +170,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             >
               <Connector name={destination.name} icon={destinationIcon} />
             </ConnectorLabel>
-            <Field name="frequency">
+            <Field name="schedule">
               {({ field, meta }: FieldProps<ScheduleProperties>) => (
                 <ConnectorLabel
                   error={!!meta.error && meta.touched}
@@ -183,9 +180,10 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 >
                   <DropDown
                     {...field}
-                    value={FrequencyConfig.find(
-                      (f) => f.config === field.value
-                    )}
+                    value={
+                      FrequencyConfig.find((f) => equal(f.config, field.value))
+                        ?.value
+                    }
                     error={!!meta.error && meta.touched}
                     data={frequencies}
                     onChange={(item) => {
@@ -194,7 +192,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       }
                       setFieldValue(field.name, item.config);
                     }}
-                    valueField="config"
                   />
                 </ConnectorLabel>
               )}

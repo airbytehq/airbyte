@@ -6,7 +6,6 @@ import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
 import ContentCard from "components/ContentCard";
-import FrequencyConfig from "config/FrequencyConfig.json";
 import useConnection, {
   useConnectionLoad,
   ValuesProps,
@@ -21,7 +20,7 @@ import { SourceDefinition } from "core/resources/SourceDefinition";
 
 import { equal } from "utils/objects";
 import EnabledControl from "./EnabledControl";
-import { ConnectionNamespaceDefinition } from "../../../../../core/domain/connection";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -83,7 +82,7 @@ const SettingsView: React.FC<IProps> = ({
   const [currentValues, setCurrentValues] = useState<ValuesProps>({
     namespaceDefinition: ConnectionNamespaceDefinition.Source,
     namespaceFormat: "",
-    frequency: null,
+    schedule: null,
     prefix: "",
     syncCatalog: { streams: [] },
   });
@@ -109,18 +108,12 @@ const SettingsView: React.FC<IProps> = ({
   ]);
 
   const onSubmit = async (values: ValuesProps) => {
-    const frequencyData = FrequencyConfig.find(
-      (item) => item.config === values.frequency
-    );
     const initialSyncSchema = connection?.syncCatalog;
 
     await updateConnection({
+      ...values,
       connectionId: connectionId,
       status: connection?.status || "",
-      syncCatalog: values.syncCatalog,
-      schedule: frequencyData?.config || null,
-      prefix: values.prefix,
-      operations: values.withOperations,
       withRefreshedCatalog: activeUpdatingSchemaMode,
     });
 
