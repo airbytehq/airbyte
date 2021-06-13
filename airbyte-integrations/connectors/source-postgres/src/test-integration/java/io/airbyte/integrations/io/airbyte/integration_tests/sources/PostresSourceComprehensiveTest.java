@@ -194,9 +194,9 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("varchar")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
-                "''", "null")
+                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                null)
+                null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     addDataTypeTestData(
@@ -354,15 +354,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("99999", "5.1", "0", null)
             .build());
 
-    // TODO check: This is function and result may be different depends on DB state
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("pg_lsn")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("pg_current_wal_lsn()")
-            .addExpectedValues("0/1641110")
-            .build());
-
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
@@ -376,8 +367,8 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("text")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
-                "''", "null")
-            .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null)
+                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.

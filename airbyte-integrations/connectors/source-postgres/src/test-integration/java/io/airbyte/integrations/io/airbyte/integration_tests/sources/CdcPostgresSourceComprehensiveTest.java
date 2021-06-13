@@ -37,10 +37,6 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-// todo (cgardens) - Sanity check that when configured for CDC that postgres performs like any other
-// incremental source. As we have more sources support CDC we will find a more reusable way of doing
-// this, but for now this is a solid sanity check.
-
 /**
  * None of the tests in this class use the cdc path (run the tests and search for `using CDC: false`
  * in logs). This is exact same as {@link PostgresSourceAcceptanceTest}
@@ -210,9 +206,9 @@ public class CdcPostgresSourceComprehensiveTest extends SourceComprehensiveTest 
             .sourceType("varchar")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
-                "''", "null")
+                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-                null)
+                null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     addDataTypeTestData(
@@ -383,8 +379,8 @@ public class CdcPostgresSourceComprehensiveTest extends SourceComprehensiveTest 
             .sourceType("text")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
-                "''", "null")
-            .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null)
+                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
     // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
