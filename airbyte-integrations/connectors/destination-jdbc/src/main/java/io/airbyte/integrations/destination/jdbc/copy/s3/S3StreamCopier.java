@@ -26,8 +26,10 @@ package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -211,13 +213,32 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   public static AmazonS3 getAmazonS3(S3Config s3Config) {
+    var endpoint = s3Config.getEndpoint();
+    var region = s3Config.getRegion();
     var accessKeyId = s3Config.getAccessKeyId();
     var secretAccessKey = s3Config.getSecretAccessKey();
+
     var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-    return AmazonS3ClientBuilder.standard()
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-        .withRegion(s3Config.getRegion())
-        .build();
+
+    if (endpoint.isEmpty()) {
+      return AmazonS3ClientBuilder.standard()
+          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+          .withRegion(s3Config.getRegion())
+          .build();
+
+    } else {
+
+      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+
+      return AmazonS3ClientBuilder
+          .standard()
+          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
+          .withPathStyleAccessEnabled(true)
+          .withClientConfiguration(clientConfiguration)
+          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+          .build();
+    }
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,
