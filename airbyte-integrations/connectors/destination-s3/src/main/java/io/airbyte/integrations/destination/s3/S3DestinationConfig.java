@@ -55,7 +55,7 @@ public class S3DestinationConfig {
 
   public static S3DestinationConfig getS3DestinationConfig(JsonNode config) {
     return new S3DestinationConfig(
-        config.get("s3_endpoint") == null ? "" : config.get("s3_endpoint").asText()
+        config.get("s3_endpoint") == null ? "" : config.get("s3_endpoint").asText(),
         config.get("s3_bucket_name").asText(),
         config.get("s3_bucket_path").asText(),
         config.get("s3_bucket_region").asText(),
