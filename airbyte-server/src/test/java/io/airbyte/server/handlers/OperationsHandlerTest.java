@@ -206,6 +206,27 @@ class OperationsHandlerTest {
   }
 
   @Test
+  void testDeleteOperationsForConnection() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final UUID operationId = UUID.randomUUID();
+    final List<UUID> toDelete = List.of(standardSyncOperation.getOperationId(), operationId);
+    final StandardSync sync = new StandardSync()
+        .withConnectionId(UUID.randomUUID())
+        .withOperationIds(List.of(standardSyncOperation.getOperationId(), operationId));
+    when(configRepository.listStandardSyncs()).thenReturn(List.of(
+        sync,
+        new StandardSync()
+            .withConnectionId(UUID.randomUUID())
+            .withOperationIds(List.of(standardSyncOperation.getOperationId()))));
+    final StandardSyncOperation operation = new StandardSyncOperation().withOperationId(operationId);
+    when(configRepository.getStandardSyncOperation(operationId)).thenReturn(operation);
+    when(configRepository.getStandardSyncOperation(standardSyncOperation.getOperationId())).thenReturn(standardSyncOperation);
+
+    operationsHandler.deleteOperationsForConnection(sync, toDelete);
+
+    verify(configRepository).writeStandardSyncOperation(operation.withTombstone(true));
+  }
+
+  @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorType.class, io.airbyte.config.StandardSyncOperation.OperatorType.class));
     assertTrue(Enums.isCompatible(io.airbyte.api.model.OperatorNormalization.OptionEnum.class, io.airbyte.config.OperatorNormalization.Option.class));

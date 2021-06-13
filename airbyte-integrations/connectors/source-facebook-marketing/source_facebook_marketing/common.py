@@ -30,8 +30,10 @@ import pendulum
 from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
 from facebook_business.exceptions import FacebookRequestError
 
+# The Facebook API error codes indicating rate-limiting are listed at
+# https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
+FACEBOOK_RATE_LIMIT_ERROR_CODES = (4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008)
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
-FACEBOOK_API_CALL_LIMIT_ERROR_CODES = (4, 17, 32, 613, 8000, 80001, 80002, 80003, 80004, 80005, 80006, 80008)
 DEFAULT_SLEEP_INTERVAL = pendulum.Interval(minutes=1)
 
 
@@ -57,6 +59,9 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
+            if exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
+                return handle_call_rate_response(exc)
+            return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
             call_rate_limit_error = exc.api_error_code() in FACEBOOK_API_CALL_LIMIT_ERROR_CODES
             return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE or call_rate_limit_error
         return True

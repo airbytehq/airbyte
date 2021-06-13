@@ -13,5 +13,5 @@ COPY setup.py ./
 RUN pip install https://github.com/airbytehq/tap-shopify/tarball/1.2.8-airbyte
 RUN pip install .
 
-LABEL io.airbyte.version=0.2.2
+LABEL io.airbyte.version=0.2.3
 LABEL io.airbyte.name=airbyte/source-shopify-singer
