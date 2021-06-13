@@ -74,7 +74,7 @@ public class S3Config {
       partSize = config.get("part_size").asInt();
     }
     return new S3Config(
-        config.get("s3_endpoint").asText(),
+        config.get("s3_endpoint") == null ? "" : config.get("s3_endpoint").asText()
         config.get("s3_bucket_name").asText(),
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
