@@ -28,7 +28,7 @@ Given that we'll pulling currency data for our example source, we'll define the 
       },
       "base": {
         "type": "string",
-        "examples": ["USD", "EUR"]
+        "examples": ["USD", "EUR"],
         "description": "ISO reference currency. See <a href=\"https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html\">here</a>."
       }
     }
