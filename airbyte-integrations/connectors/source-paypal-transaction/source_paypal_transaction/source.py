@@ -78,6 +78,8 @@ class PaypalTransactionStream(HttpStream, ABC):
     """
 
     url_base = "https://api-m.sandbox.paypal.com/v1/reporting/"
+    page_size = "500"  # API limit
+
     # url_base = "https://api-m.paypal.com/v1/reporting/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -114,15 +116,13 @@ class PaypalTransactionStream(HttpStream, ABC):
         if next_page_token:
             page_number = next_page_token.get("page")
 
-        start_date = stream_slice["date"]
-        end_date_dt = datetime.fromisoformat(start_date) + timedelta(days=self.stream_size_in_days)
-
-        date_time_now = datetime.now().astimezone()
-        if end_date_dt > date_time_now:
-            end_date_dt = date_time_now
-
-        end_date = end_date_dt.isoformat()
-        return {"start_date": start_date, "end_date": end_date, "fields": "all", "page_size": "1", "page": page_number}
+        return {
+            "start_date": stream_slice["start_date"],
+            "end_date": stream_slice["end_date"],
+            "fields": "all",
+            "page_size": self.page_size,
+            "page": page_number,
+        }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -154,11 +154,46 @@ class Transactions(PaypalTransactionStream):
     data_field = "transaction_details"
     primary_key = "transaction_id"
     cursor_field = ["transaction_info", "transaction_initiation_date"]
-    stream_size_in_days = 1
 
-    def __init__(self, start_date: datetime, **kwargs):
+    stream_slice_period: Mapping[str, int] = {
+        "days": 1
+    }
+    # Date limits are needed to prevent API error: Data for the given start date is not available
+    start_date_limits: Mapping[str, Mapping] = {
+        "min_date": {"days": 3 * 364},  # 3 years
+        "max_date": {"hours": 12}
+    }
+
+    def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)
+
+        self._validate_input_dates(start_date=start_date, end_date=end_date)
+
         self.start_date = start_date
+        self.end_date = end_date
+
+    def _validate_input_dates(self, start_date, end_date):
+
+        # Validate input dates
+        if start_date > end_date:
+            raise Exception(f"start_date {start_date} is greater than end_date {end_date}")
+
+        current_date = datetime.now().replace(microsecond=0).astimezone()
+        current_date_delta = current_date - start_date
+
+        # Check for minimal possible start_date
+        if current_date_delta > timedelta(**self.start_date_limits.get("min_date")):
+            raise Exception(
+                f"Start_date {start_date.isoformat()} is too old. "
+                f"Min date limit is {self.start_date_limits.get('min_date')} before now:{current_date.isoformat()}."
+            )
+
+        # Check for maximum possible start_date
+        if current_date_delta < timedelta(**self.start_date_limits.get("max_date")):
+            raise Exception(
+                f"Start_date {start_date.isoformat()} is too close to now. "
+                f"Max date limit is {self.start_date_limits.get('max_date')} before now:{current_date.isoformat()}."
+            )
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -166,6 +201,7 @@ class Transactions(PaypalTransactionStream):
         return "transactions"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
         # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
         latest_record_date_str = self.get_field(latest_record, self.cursor_field)
@@ -186,13 +222,21 @@ class Transactions(PaypalTransactionStream):
 
     def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
         """
-        Returns a list of each day between the start date and now.
-        The return value is a list of dicts {'date': date_string}.
+        Returns a list of each day (by default) between the start date and end date.
+        The return value is a list of dicts {'start_date': date_string, 'end_date': date_string}.
         """
         dates = []
-        while start_date < datetime.now().astimezone() - timedelta(days=2):
-            dates.append({"date": start_date.isoformat()})
-            start_date += timedelta(days=self.stream_size_in_days)
+
+        # start date should not be less than 12 hrs before current time, otherwise API throws an error:
+        #   'message': 'Data for the given start date is not available.'
+        start_date_limit_max = self.end_date - timedelta(**self.start_date_limits.get("max_date")) - timedelta(**self.stream_slice_period)
+        while start_date < start_date_limit_max:
+            end_date = start_date + timedelta(**self.stream_slice_period)
+            dates.append({"start_date": start_date.isoformat(), "end_date": end_date.isoformat()})
+            start_date = end_date
+
+        dates.append({"start_date": start_date.isoformat(), "end_date": self.end_date.isoformat()})
+
         return dates
 
     def stream_slices(
@@ -253,6 +297,7 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
 
 
 class SourcePaypalTransaction(AbstractSource):
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -264,14 +309,29 @@ class SourcePaypalTransaction(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        token = PayPalOauth2Authenticator(
+        start_date = datetime.fromisoformat(config["start_date"])
+        end_date_str = config["end_date"]
+        if end_date_str:
+            end_date = datetime.fromisoformat(end_date_str)
+        else:
+            end_date = datetime.now().replace(microsecond=0).astimezone()
+
+        authenticator = PayPalOauth2Authenticator(
             token_refresh_endpoint="https://api-m.sandbox.paypal.com/v1/oauth2/token",
             client_id=config["client_id"],
             client_secret=config["secret"],
             refresh_token="",
-        ).get_access_token()
+        )
+        # Try to get API TOKEN
+        token = authenticator.get_access_token()
         if not token:
             return False, "Unable to fetch Paypal API token due to incorrect client_id or secret"
+
+        # Try to initiate a stream and validate input date params
+        try:
+            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date)
+        except Exception as e:
+            return False, e
 
         return True, None
 
@@ -287,6 +347,12 @@ class SourcePaypalTransaction(AbstractSource):
             client_secret=config["secret"],
             refresh_token="",
         )
-        start_date = datetime.strptime(config["start_date"], "%Y-%m-%d").astimezone()
+
+        start_date = datetime.fromisoformat(config["start_date"])
+        end_date_str = config["end_date"]
+        if end_date_str:
+            end_date = datetime.fromisoformat(end_date_str)
+        else:
+            end_date = datetime.now().replace(microsecond=0).astimezone()
         # return [Transactions(authenticator=auth), Balances(authenticator=auth)]
-        return [Transactions(authenticator=authenticator, start_date=start_date)]
+        return [Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date)]
