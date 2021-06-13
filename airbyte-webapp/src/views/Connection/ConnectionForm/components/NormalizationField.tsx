@@ -47,4 +47,4 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({
   );
 };
 
-export default NormalizationField;
+export { NormalizationField };

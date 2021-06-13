@@ -42,7 +42,7 @@
     "sanitize-html": "^2.3.3",
     "styled-components": "^5.1.1",
     "typesafe-actions": "^5.1.0",
-    "yup": "^0.28.1"
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.4",
@@ -64,7 +64,6 @@
     "@types/react-widgets": "4.4.4",
     "@types/sanitize-html": "^1.27.0",
     "@types/styled-components": "5.1.2",
-    "@types/yup": "^0.26.32",
     "@typescript-eslint/eslint-plugin": "^4.15.1",
     "@typescript-eslint/parser": "^4.15.1",
     "eslint-config-prettier": "^7.2.0",

@@ -20,11 +20,15 @@ import {
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { DestinationDefinitionSpecification } from "core/resources/DestinationDefinitionSpecification";
+import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
 type FormikConnectionFormValues = {
-  frequency: string;
+  frequency?: ScheduleProperties | null;
   prefix: string;
   syncCatalog: SyncSchema;
+  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceFormat: string;
   transformations?: Transformation[];
   normalization?: NormalizationType;
 };
@@ -49,12 +53,17 @@ const DEFAULT_TRANSFORMATION: Transformation = {
   },
 };
 
-const connectionValidationSchema = yup.object<ConnectionFormValues>({
-  frequency: yup.string().required("form.empty.error"),
+const connectionValidationSchema = yup.object({
+  frequency: yup
+    .object({
+      units: yup.number(),
+      timeUnit: yup.string(),
+    })
+    .defined("form.empty.error"),
   prefix: yup.string(),
-  syncCatalog: yup.object<SyncSchema>({
+  syncCatalog: yup.object({
     streams: yup.array().of(
-      yup.object<SyncSchemaStream>({
+      yup.object({
         id: yup
           .string()
           // This is required to get rid of id fields we are using to detect stream for edition
@@ -212,30 +221,27 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
     [schema.streams]
   );
 
-const useInitialValues = (props: {
-  syncCatalog: SyncSchema;
-  destDefinition: DestinationDefinitionSpecification;
-  operations?: Operation[];
-  prefixValue?: string;
-  isEditMode?: boolean;
-  frequencyValue?: string;
-}) => {
-  const {
-    syncCatalog,
-    frequencyValue,
-    prefixValue,
-    isEditMode,
-    destDefinition,
-    operations = [],
-  } = props;
-  const initialSchema = useInitialSchema(syncCatalog);
+const useInitialValues = (
+  connection:
+    | Connection
+    | (Partial<Connection> &
+        Pick<Connection, "syncCatalog" | "source" | "destination">),
+  destDefinition: DestinationDefinitionSpecification,
+  isEditMode?: boolean
+) => {
+  const initialSchema = useInitialSchema(connection.syncCatalog);
 
   return useMemo<FormikConnectionFormValues>(() => {
     const initialValues: FormikConnectionFormValues = {
       syncCatalog: initialSchema,
-      frequency: frequencyValue || "",
-      prefix: prefixValue || "",
+      frequency: connection.schedule ?? undefined,
+      prefix: connection.prefix || "",
+      namespaceDefinition:
+        connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
+      namespaceFormat: connection.namespaceFormat ?? "",
     };
+
+    const { operations = [] } = connection;
 
     if (destDefinition.supportsDbt) {
       initialValues.transformations =
@@ -260,16 +266,8 @@ const useInitialValues = (props: {
     }
 
     return initialValues;
-  }, [
-    initialSchema,
-    frequencyValue,
-    prefixValue,
-    isEditMode,
-    destDefinition,
-    operations,
-  ]);
+  }, [initialSchema, connection, isEditMode, destDefinition]);
 };
-
 const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
   const formatMessage = useIntl().formatMessage;
 

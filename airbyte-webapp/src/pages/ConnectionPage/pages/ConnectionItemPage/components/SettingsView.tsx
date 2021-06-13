@@ -21,6 +21,7 @@ import { SourceDefinition } from "core/resources/SourceDefinition";
 
 import { equal } from "utils/objects";
 import EnabledControl from "./EnabledControl";
+import { ConnectionNamespaceDefinition } from "../../../../../core/domain/connection";
 
 type IProps = {
   onAfterSaveSchema: () => void;
@@ -80,7 +81,9 @@ const SettingsView: React.FC<IProps> = ({
   );
   const [saved, setSaved] = useState(false);
   const [currentValues, setCurrentValues] = useState<ValuesProps>({
-    frequency: "",
+    namespaceDefinition: ConnectionNamespaceDefinition.Source,
+    namespaceFormat: "",
+    frequency: null,
     prefix: "",
     syncCatalog: { streams: [] },
   });
@@ -107,7 +110,7 @@ const SettingsView: React.FC<IProps> = ({
 
   const onSubmit = async (values: ValuesProps) => {
     const frequencyData = FrequencyConfig.find(
-      (item) => item.value === values.frequency
+      (item) => item.config === values.frequency
     );
     const initialSyncSchema = connection?.syncCatalog;
 
@@ -164,10 +167,6 @@ const SettingsView: React.FC<IProps> = ({
     );
   };
 
-  const schedule =
-    connection &&
-    FrequencyConfig.find((item) => equal(connection.schedule, item.config));
-
   return (
     <Content>
       <ContentCard
@@ -188,12 +187,7 @@ const SettingsView: React.FC<IProps> = ({
         {!isLoadingConnection && connection ? (
           <ConnectionForm
             isEditMode
-            syncCatalog={connection.syncCatalog}
-            prefixValue={connection.prefix}
-            source={connection.source}
-            destination={connection.destination}
-            operations={connection.operations}
-            frequencyValue={schedule?.value}
+            connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}
             successMessage={

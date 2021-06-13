@@ -3,7 +3,10 @@ import { useFetcher, useResource } from "rest-hooks";
 
 import config from "config";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import ConnectionResource, { Connection } from "core/resources/Connection";
+import ConnectionResource, {
+  Connection,
+  ScheduleProperties,
+} from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import FrequencyConfig from "config/FrequencyConfig.json";
@@ -12,13 +15,18 @@ import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
 import { Destination } from "core/resources/Destination";
 import useWorkspace from "./useWorkspaceHook";
-import { ConnectionConfiguration } from "core/domain/connection";
+import {
+  ConnectionConfiguration,
+  ConnectionNamespaceDefinition,
+} from "core/domain/connection";
 import { Operation } from "core/domain/connection/operation";
 
 export type ValuesProps = {
-  frequency: string;
+  frequency: ScheduleProperties | null;
   prefix: string;
   syncCatalog: SyncSchema;
+  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceFormat: string;
   withOperations?: Operation[];
 };
 
@@ -116,17 +124,13 @@ const useConnection = (): {
     sourceDefinition,
     destinationDefinition,
   }: CreateConnectionProps) => {
-    const frequencyData = FrequencyConfig.find(
-      (item) => item.value === values.frequency
-    );
-
     try {
       const result = await createConnectionResource(
         {},
         {
           sourceId: source?.sourceId,
           destinationId: destination?.destinationId,
-          schedule: frequencyData?.config,
+          schedule: values.frequency,
           prefix: values.prefix,
           status: "active",
           syncCatalog: values.syncCatalog,
@@ -148,6 +152,10 @@ const useConnection = (): {
           ],
         ]
       );
+      const frequencyData = FrequencyConfig.find(
+        (item) => item.config === values.frequency
+      );
+
       AnalyticsService.track("New Connection - Action", {
         user_id: config.ui.workspaceId,
         action: "Set up connection",
