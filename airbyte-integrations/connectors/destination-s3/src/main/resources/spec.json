@@ -18,6 +18,13 @@
     ],
     "additionalProperties": false,
     "properties": {
+      "s3_endpoint": {
+        "title": "Endpoint",
+        "type": "string",
+        "default": "",
+        "description": "This is your S3 endpoint url.(if you are working with AWS S3, just leave empty).",
+        "examples": ["http://localhost:9000"]
+      },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",
         "type": "string",

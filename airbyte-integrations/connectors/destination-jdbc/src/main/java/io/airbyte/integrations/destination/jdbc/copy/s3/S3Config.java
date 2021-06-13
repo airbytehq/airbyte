@@ -28,18 +28,24 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class S3Config {
 
+  private final String endpoint;
   private final String bucketName;
   private final String accessKeyId;
   private final String secretAccessKey;
   private final String region;
   private final Integer partSize;
 
-  public S3Config(String bucketName, String accessKeyId, String secretAccessKey, String region, Integer partSize) {
+  public S3Config(String endpoint, String bucketName, String accessKeyId, String secretAccessKey, String region, Integer partSize) {
+    this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.accessKeyId = accessKeyId;
     this.secretAccessKey = secretAccessKey;
     this.region = region;
     this.partSize = partSize;
+  }
+
+  public String getEndpoint() {
+    return endpoint;
   }
 
   public String getBucketName() {
@@ -68,6 +74,7 @@ public class S3Config {
       partSize = config.get("part_size").asInt();
     }
     return new S3Config(
+        config.get("s3_endpoint") == null ? "" : config.get("s3_endpoint").asText(),
         config.get("s3_bucket_name").asText(),
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
