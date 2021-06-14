@@ -54,4 +54,4 @@ If the first approach fails or if your Airbyte instance is running on a remote s
 1. List files containing the replicated data using `ls`
 1. Execute `cat {filename}` to display the data in a particular file
 
-Note: Above steps is also applicable if you are running Airbyte on Windows OS with WSL2 and Docker.
+Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](../tutorials/locating-files-local-destination.md) for an alternative approach.
