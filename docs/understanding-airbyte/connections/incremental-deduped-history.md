@@ -168,5 +168,5 @@ Additionally, this sync mode is only supported for destinations where DBT/normal
 The de-duplicating logic is indeed implemented as DBT models as part of a sequence of transformations applied after the Extract and Load activities (thus, an ELT approach).
 Nevertheless, it is theoretically possible that destinations can handle directly this logic (maybe in the future) before actually writing records to the destination (as in traditional ETL manner), but that's not the way it is implemented at this time.
 
-If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../tutorials/transformation-and-normalization/transformations-with-sql.md)
+If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../operator-guides/transformation-and-normalization/transformations-with-sql.md)
 

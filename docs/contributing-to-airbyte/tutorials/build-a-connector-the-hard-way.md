@@ -9,7 +9,7 @@ This tutorial walks you through building a simple Airbyte source without using a
 * [The Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](beginners-guide-to-catalog.md)
 * [Packaging your connector](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/contributing-to-airbyte/contributing-to-airbyte/building-new-connector/README.md#1-implement--package-the-connector)
-* [Testing your connector](../../contributing-to-airbyte/building-new-connector/testing-connectors.md)
+* [Testing your connector](../building-new-connector/testing-connectors.md)
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
 
@@ -887,7 +887,7 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608628424000}}
 ```
 
-and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Standard Test suite](../../contributing-to-airbyte/building-new-connector/testing-connectors.md).
+and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Standard Test suite](../building-new-connector/testing-connectors.md).
 
 ### 4. Test the connector
 
@@ -1058,7 +1058,7 @@ Armed with the knowledge you gained in this guide, here are some places you can 
 This section is not yet complete and will be completed soon. Please reach out to us on [Slack](https://slack.airbyte.io) or [Github](https://github.com/airbytehq/airbyte) if you need the information promised by these sections immediately.
 
 ### Incremental sync
-Follow the [next tutorial](./adding-incremental-sync.md) to implement incremental sync. 
+Follow the [next tutorial](adding-incremental-sync.md) to implement incremental sync. 
 
 ### Connector Development Kit
 Like we mention at the beginning of the tutorial, this guide is meant more for understanding than as a blueprint for implementing production connectors. See the [Connector Development Kit](../../../airbyte-cdk/python/docs/tutorials/README.md) for the frameworks you should use to build production-ready connectors. 
