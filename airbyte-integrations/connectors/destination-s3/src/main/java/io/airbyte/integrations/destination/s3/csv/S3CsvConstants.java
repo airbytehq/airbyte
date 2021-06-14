@@ -22,28 +22,18 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.s3.csv;
 
-import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.integrations.destination.s3.csv.S3CsvOutputFormatter;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import java.io.IOException;
-import java.sql.Timestamp;
+public class S3CsvConstants {
 
-public class S3OutputFormatterProductionFactory implements S3OutputFormatterFactory {
-
-  @Override
-  public S3OutputFormatter create(S3DestinationConfig config,
-                                  AmazonS3 s3Client,
-                                  ConfiguredAirbyteStream configuredStream,
-                                  Timestamp uploadTimestamp)
-      throws IOException {
-    S3Format format = config.getFormatConfig().getFormat();
-    if (format == S3Format.CSV) {
-      return new S3CsvOutputFormatter(config, s3Client, configuredStream, uploadTimestamp);
-    }
-
-    throw new RuntimeException("Unexpected S3 destination format: " + format);
-  }
+  // These parameters are used by {@link StreamTransferManager}.
+  // See this doc about how they affect memory usage:
+  // https://alexmojaki.github.io/s3-stream-upload/javadoc/apidocs/alex/mojaki/s3upload/StreamTransferManager.html
+  // Total memory = (numUploadThreads + queueCapacity) * partSize + numStreams * (partSize + 6MB)
+  // = 31 MB at current configurations
+  public static final int DEFAULT_UPLOAD_THREADS = 2;
+  public static final int DEFAULT_QUEUE_CAPACITY = 2;
+  public static final int DEFAULT_PART_SIZE_MB = 5;
+  public static final int DEFAULT_NUM_STREAMS = 1;
 
 }
