@@ -2,9 +2,9 @@
 
 ## Overview
 
-This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using specialized transformation tool: DBT.
+This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using specialized transformation tool: dbt.
 
-This tutorial is the second part of the previous tutorial [Transformations with dbt](transformations-with-sql.md). Next, we'll wrap-up with a third part on submitting transformations back in Airbyte: [Transformations with Airbyte](transformations-with-airbyte.md).
+This tutorial is the second part of the previous tutorial [Transformations with SQL](transformations-with-sql.md). Next, we'll wrap-up with a third part on submitting transformations back in Airbyte: [Transformations with Airbyte](transformations-with-airbyte.md).
 
 (Example outputs are updated with Airbyte version 0.23.0-alpha from May 2021)
 

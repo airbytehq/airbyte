@@ -74,11 +74,11 @@ NORMALIZE_WORKSPACE=`docker run --rm -i -v airbyte_workspace:/data  busybox find
 
 ## Export Plain SQL files
 
-Airbyte is internally using a specialized tool for handling transformations called DBT.
+Airbyte is internally using a specialized tool for handling transformations called dbt.
 
 The Airbyte Python module reads the `destination_catalog.json` file and generates dbt code responsible for interpreting and transforming the raw data.
 
-The final output of DBT is producing SQL files that can be run on top of the destination that you selected.
+The final output of dbt is producing SQL files that can be run on top of the destination that you selected.
 
 Therefore, it is possible to extract these SQL files, modify them and run it yourself manually outside Airbyte!
 
@@ -313,4 +313,4 @@ create view "postgres"."public"."covid_epidemiology" as (
 
 Then you can run in your preferred SQL editor or tool!
 
-If you are familiar with DBT or want to learn more about it, you can continue with the following [tutorial using DBT](transformations-with-dbt.md)...
+If you are familiar with dbt or want to learn more about it, you can continue with the following [tutorial using dbt](transformations-with-dbt.md)...
