@@ -95,16 +95,15 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
 
   @Override
   public void close(boolean hasFailed) throws IOException {
+    csvPrinter.close();
+    outputStream.close();
+
     if (hasFailed) {
       LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
-      csvPrinter.close();
-      outputStream.close();
       uploadManager.abort();
       LOGGER.warn("Upload of stream '{}' aborted.", stream.getName());
     } else {
       LOGGER.info("Uploading remaining data for stream '{}'.", stream.getName());
-      csvPrinter.close();
-      outputStream.close();
       uploadManager.complete();
       LOGGER.info("Upload completed for stream '{}'.", stream.getName());
     }
