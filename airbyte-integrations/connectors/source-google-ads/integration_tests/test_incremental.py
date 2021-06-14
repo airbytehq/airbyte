@@ -25,7 +25,6 @@
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
-
 from source_google_ads.source import SourceGoogleAds
 
 SAMPLE_CATALOG = {
@@ -66,6 +65,7 @@ SAMPLE_CATALOG = {
         }
     ]
 }
+
 
 def test_incremental_sync(config):
     google_ads_client = SourceGoogleAds()
