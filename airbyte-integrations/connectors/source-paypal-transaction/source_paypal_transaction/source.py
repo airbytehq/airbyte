@@ -25,7 +25,7 @@
 import logging
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Callable
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -33,135 +33,26 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
+from dateutil.parser import isoparse
+
+# TODO remove
 logging.basicConfig(level=logging.DEBUG)
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
-
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
-"""
 
 
-# Basic full refresh stream
 class PaypalTransactionStream(HttpStream, ABC):
-    """
-    TODO remove this comment
 
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
+    sandbox = True
 
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class PaypalTransactionStream(HttpStream, ABC)` which is the current class
-    `class Customers(PaypalTransactionStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(PaypalTransactionStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalPaypalTransactionStream((PaypalTransactionStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    url_base = "https://api-m.sandbox.paypal.com/v1/reporting/"
     page_size = "500"  # API limit
 
-    # url_base = "https://api-m.paypal.com/v1/reporting/"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-        decoded_response = response.json()
-        total_pages = decoded_response.get("total_pages")
-        page_number = decoded_response.get("page")
-        if page_number >= total_pages:
-            return None
-        else:
-            return {"page": page_number + 1}
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        page_number = 1
-        if next_page_token:
-            page_number = next_page_token.get("page")
-
-        return {
-            "start_date": stream_slice["start_date"],
-            "end_date": stream_slice["end_date"],
-            "fields": "all",
-            "page_size": self.page_size,
-            "page": page_number,
-        }
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        json_response = response.json()
-        records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-        yield from records
-
-    @staticmethod
-    def get_field(record: Mapping[str, Any], field_path: List[str]):
-
-        data = record
-        for attr in field_path:
-            if data:
-                data = data.get(attr)
-            else:
-                break
-
-        return data
-
-
-class Transactions(PaypalTransactionStream):
-    """
-    Stream for Transactions /v1/reporting/transactions
-    """
-
-    data_field = "transaction_details"
-    primary_key = "transaction_id"
-    cursor_field = ["transaction_info", "transaction_initiation_date"]
+    # Date limits are needed to prevent API error: Data for the given start date is not available
+    start_date_limits: Mapping[str, Mapping] = {
+        "min_date": {"days": 3 * 364},  # API limit - 3 years
+        "max_date": {"hours": 12}
+    }
 
     stream_slice_period: Mapping[str, int] = {
         "days": 1
-    }
-    # Date limits are needed to prevent API error: Data for the given start date is not available
-    start_date_limits: Mapping[str, Mapping] = {
-        "min_date": {"days": 3 * 364},  # 3 years
-        "max_date": {"hours": 12}
     }
 
     def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
@@ -195,30 +86,82 @@ class Transactions(PaypalTransactionStream):
                 f"Max date limit is {self.start_date_limits.get('max_date')} before now:{current_date.isoformat()}."
             )
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "transactions"
+    @property
+    def url_base(self) -> str:
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-
-        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
-        latest_record_date_str = self.get_field(latest_record, self.cursor_field)
-
-        if current_stream_state and "date" in current_stream_state and latest_record_date_str:
-            if len(latest_record_date_str) == 24:
-                # Add ':' to timezone part to match iso format, example:
-                # python iso format:  2021-06-04T00:00:00+03:00
-                # format from record: 2021-06-04T00:00:00+0300
-                latest_record_date_str = ":".join([latest_record_date_str[:22], latest_record_date_str[22:]])
-
-            latest_record_date = datetime.fromisoformat(latest_record_date_str)
-            current_parsed_date = datetime.fromisoformat(current_stream_state["date"])
-
-            return {"date": max(current_parsed_date, latest_record_date).isoformat()}
+        if self.sandbox:
+            url_base = "https://api-m.sandbox.paypal.com/v1/reporting/"
         else:
-            return {"date": self.start_date.isoformat()}
+            url_base = "https://api-m.paypal.com/v1/reporting/"
+
+        return url_base
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+
+        return {'Content-Type': 'application/json'}
+
+    def parse_response__(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        json_response = response.json()
+        if self.data_field is not None:
+            yield from json_response.get(self.data_field, [])
+        else:
+            yield json_response
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        json_response = response.json()
+        if self.data_field is not None:
+            data = json_response.get(self.data_field, [])
+        else:
+            data = [json_response]
+
+        for record in data:
+            # In order to support direct datetime string comparison (which is performed in incremental acceptance tests)
+            # convert any date format to python iso format string for date based cursors
+            self.update_field(record, self.cursor_field, lambda x: isoparse(x).isoformat())
+            yield record
+
+    @staticmethod
+    def update_field(record: Mapping[str, Any], field_path: List[str], update: Callable[[Any], None]):
+
+        data = record
+        if not isinstance(field_path, List):
+            field_path = [field_path]
+
+        for attr in field_path[:-1]:
+            if data and isinstance(data, dict):
+                data = data.get(attr)
+            else:
+                break
+
+        last_field = field_path[-1]
+        data[last_field] = update(data[last_field])
+
+        return data
+
+    @staticmethod
+    def get_field(record: Mapping[str, Any], field_path: List[str]):
+
+        data = record
+        if not isinstance(field_path, List):
+            field_path = [field_path]
+
+        for attr in field_path:
+            if data and isinstance(data, dict):
+                data = data.get(attr)
+            else:
+                break
+
+        return data
 
     def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
         """
@@ -245,9 +188,69 @@ class Transactions(PaypalTransactionStream):
 
         start_date = self.start_date
         if stream_state and "date" in stream_state:
-            start_date = datetime.fromisoformat(stream_state["date"])
+            start_date = isoparse(stream_state["date"])
 
         return self._chunk_date_range(start_date)
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+
+        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
+        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
+        latest_record_date_str: str = self.get_field(latest_record, self.cursor_field)
+
+        if current_stream_state and "date" in current_stream_state and latest_record_date_str:
+            # isoparse supports different formats, like:
+            # python iso format:               2021-06-04T00:00:00+03:00
+            # format from transactions record: 2021-06-04T00:00:00+0300
+            # format from balances record:     2021-06-02T00:00:00Z
+            latest_record_date = isoparse(latest_record_date_str)
+            current_parsed_date = isoparse(current_stream_state["date"])
+
+            return {"date": max(current_parsed_date, latest_record_date).isoformat()}
+        else:
+            return {"date": self.start_date.isoformat()}
+
+
+class Transactions(PaypalTransactionStream):
+    """
+    Stream for Transactions /v1/reporting/transactions
+    """
+
+    data_field = "transaction_details"
+    primary_key = ["transaction_info", "transaction_id"]
+    cursor_field = ["transaction_info", "transaction_initiation_date"]
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        return "transactions"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+
+        decoded_response = response.json()
+        total_pages = decoded_response.get("total_pages")
+        page_number = decoded_response.get("page")
+        if page_number >= total_pages:
+            return None
+        else:
+            return {"page": page_number + 1}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        page_number = 1
+        if next_page_token:
+            page_number = next_page_token.get("page")
+
+        return {
+            "start_date": stream_slice["start_date"],
+            "end_date": stream_slice["end_date"],
+            "fields": "all",
+            "page_size": self.page_size,
+            "page": page_number,
+        }
 
 
 class Balances(PaypalTransactionStream):
@@ -255,15 +258,28 @@ class Balances(PaypalTransactionStream):
     Stream for Balances /v1/reporting/balances
     """
 
-    data_field = "transaction_details"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "as_of_time"
+    cursor_field = "as_of_time"
+    data_field = None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
+
         return "balances"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        return {
+            "as_of_time": stream_slice["start_date"],
+            # "currency_code": "USD"
+        }
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+
+        return None
 
 
 class PayPalOauth2Authenticator(Oauth2Authenticator):
@@ -309,10 +325,10 @@ class SourcePaypalTransaction(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        start_date = datetime.fromisoformat(config["start_date"])
+        start_date = isoparse(config["start_date"])
         end_date_str = config["end_date"]
         if end_date_str:
-            end_date = datetime.fromisoformat(end_date_str)
+            end_date = isoparse(end_date_str)
         else:
             end_date = datetime.now().replace(microsecond=0).astimezone()
 
@@ -348,11 +364,14 @@ class SourcePaypalTransaction(AbstractSource):
             refresh_token="",
         )
 
-        start_date = datetime.fromisoformat(config["start_date"])
+        start_date = isoparse(config["start_date"])
         end_date_str = config["end_date"]
         if end_date_str:
-            end_date = datetime.fromisoformat(end_date_str)
+            end_date = isoparse(end_date_str)
         else:
             end_date = datetime.now().replace(microsecond=0).astimezone()
-        # return [Transactions(authenticator=auth), Balances(authenticator=auth)]
-        return [Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date)]
+
+        return [
+            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date),
+            Balances(authenticator=authenticator, start_date=start_date, end_date=end_date)
+        ]

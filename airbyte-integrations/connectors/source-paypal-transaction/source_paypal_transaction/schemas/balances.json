@@ -1,38 +1,59 @@
 {
+  "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "account_id": {
-      "type": ["null", "string"]
-    },
-    "as_of_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "last_refresh_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
     "balance": {
-      "type": ["object", "null"],
+      "type": "object",
       "properties": {
         "currency": {
-          "type": ["null", "string"]
+          "type": "string"
         },
         "primary": {
-          "type": ["boolean"]
+          "type": "boolean"
         },
         "total_balance": {
-          "type": ["object", "null"],
+          "type": "object",
           "properties": {
             "currency_code": {
-              "type": ["null", "string"]
+              "type": "string"
             },
             "value": {
-              "type": ["null", "string"]
+              "type": "string"
+            }
+          }
+        },
+        "available_balance": {
+          "type": "object",
+          "properties": {
+            "currency_code": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        "withheld_balance": {
+          "type": "object",
+          "properties": {
+            "currency_code": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
             }
           }
         }
       }
+    },
+    "account_id": {
+      "type": "string"
+    },
+    "as_of_time": {
+      "type": "datetime"
+    },
+    "last_refresh_time": {
+      "type": "datetime"
     }
   }
 }
