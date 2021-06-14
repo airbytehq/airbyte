@@ -10,7 +10,9 @@ Here's a 6-minute video showing you how you can do it.
 
 {% embed url="https://www.youtube.com/watch?v=Rcpt5SVsMpk" caption="" %}
 
-First of all, make sure you have Docker and Docker Compose installed. If this isn't the case, then run the following commands:
+First of all, make sure you have Docker and Docker Compose installed. If this isn't the case, follow the [guide](../deploying-airbyte/local-deployment.md) for recommended approach to install Docker. 
+
+Once Docker is installed successfully run the following commands:
 
 ```text
 git clone https://github.com/airbytehq/airbyte.git
@@ -22,7 +24,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/
 
 ## 1. Set up your preferences
 
-You should see an onboarding page. Enter your email if you want updates about Airbyte and continue.
+You should see an onboarding page. Enter your email. Choose other options if you want updates about Airbyte. And continue.
 
 ![](../.gitbook/assets/airbyte_get-started.png)
 
