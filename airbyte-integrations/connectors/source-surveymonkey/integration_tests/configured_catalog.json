@@ -125,13 +125,12 @@
           }
         },
         "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
+          "full_refresh"
         ],
         "source_defined_cursor": true,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
@@ -221,13 +220,12 @@
           }
         },
         "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
+          "full_refresh"
         ],
         "source_defined_cursor": true,
         "default_cursor_field": []
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "cursor_field": [],
       "destination_sync_mode": "append"
     },
