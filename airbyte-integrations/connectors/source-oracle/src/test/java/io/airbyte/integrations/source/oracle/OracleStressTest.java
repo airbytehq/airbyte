@@ -131,7 +131,7 @@ class OracleStressTest extends JdbcStressTest {
     }
 
     @Override
-    public Set<String> getExcludedInternalSchemas() {
+    public Set<String> getExcludedInternalNameSpaces() {
       // need to add SYSTEM too but for that need create another user when creating the container.
       return Set.of("APEX_040000", "CTXSYS", "FLOWS_FILES", "HR", "MDSYS", "OUTLN", "SYS", "XDB");
     }

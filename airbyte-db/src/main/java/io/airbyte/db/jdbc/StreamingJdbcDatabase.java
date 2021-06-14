@@ -27,6 +27,7 @@ package io.airbyte.db.jdbc;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,6 +50,11 @@ public class StreamingJdbcDatabase implements JdbcDatabase {
     this.dataSource = dataSource;
     this.database = database;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
+  }
+
+  @Override
+  public DatabaseMetaData getMetaData() throws SQLException {
+    return database.getMetaData();
   }
 
   @Override

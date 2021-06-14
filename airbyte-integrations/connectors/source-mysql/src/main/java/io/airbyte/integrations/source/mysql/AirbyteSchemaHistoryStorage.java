@@ -27,8 +27,8 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.jdbc.JdbcStateManager;
 import io.airbyte.integrations.source.jdbc.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.debezium.document.Document;
 import io.debezium.document.DocumentReader;
 import io.debezium.document.DocumentWriter;
@@ -152,7 +152,7 @@ public class AirbyteSchemaHistoryStorage {
     }
   }
 
-  static AirbyteSchemaHistoryStorage initializeDBHistory(JdbcStateManager stateManager) {
+  static AirbyteSchemaHistoryStorage initializeDBHistory(StateManager stateManager) {
     final Path dbHistoryWorkingDir;
     try {
       dbHistoryWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-db-history");

@@ -44,7 +44,9 @@ import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.JdbcStateManager;
+import io.airbyte.integrations.source.relationaldb.StateManager;
+import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.AbstractField;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -57,6 +59,7 @@ import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -110,7 +113,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 
@@ -198,7 +201,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
     }
   }
 
-  private AirbyteFileOffsetBackingStore initializeState(JdbcStateManager stateManager) {
+  private AirbyteFileOffsetBackingStore initializeState(StateManager stateManager) {
     final Path cdcWorkingDir;
     try {
       cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc");
@@ -213,11 +216,10 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
-                                                                             JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfoInternal> tableNameToTable,
-                                                                             JdbcStateManager stateManager,
+                                                                             Map<String, TableInfo<AbstractField<JDBCType>>> tableNameToTable,
+                                                                             StateManager stateManager,
                                                                              Instant emittedAt) {
     /**
      * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
@@ -227,7 +229,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
      * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
      * part
      */
-    if (isCdc(config)) {
+    if (isCdc(getJdbcConfig())) {
       // State works differently in CDC than it does in convention incremental. The state is written to an
       // offset file that debezium reads from. Then once all records are replicated, we read back that
       // offset file (which will have been updated by debezium) and set it in the state. There is no
@@ -239,7 +241,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
       final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
 
-      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(config, catalog, offsetManager);
+      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(getJdbcConfig(), catalog, offsetManager);
       publisher.start(queue);
 
       // handle state machine around pub/sub logic.
@@ -273,7 +275,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
       return Collections.singletonList(messageIteratorWithStateDecorator);
     } else {
-      return super.getIncrementalIterators(config, database, catalog, tableNameToTable, stateManager, emittedAt);
+      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 

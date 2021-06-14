@@ -55,7 +55,7 @@ public class ScaffoldJavaJdbcSource extends AbstractJdbcSource implements Source
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     // TODO Add tables to exaclude, Ex "INFORMATION_SCHEMA", "sys", "spt_fallback_db", etc
     return Set.of("");
   }

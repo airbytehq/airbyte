@@ -67,7 +67,7 @@ public class SnowflakeSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
         "INFORMATION_SCHEMA");
   }

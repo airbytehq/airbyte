@@ -22,24 +22,24 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.source.relationaldb;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JdbcCdcStateManager {
+public class CdcStateManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStateManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StateManager.class);
 
   private final CdcState initialState;
 
   private CdcState currentState;
 
   @VisibleForTesting
-  JdbcCdcStateManager(CdcState serialized) {
+  CdcStateManager(CdcState serialized) {
     this.initialState = serialized;
     this.currentState = serialized;
 

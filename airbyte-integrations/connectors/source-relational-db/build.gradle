@@ -1,55 +1,39 @@
+import org.jsonschema2pojo.SourceType
+
 plugins {
-//    id 'application'
-//    id 'airbyte-docker'
-//    id 'airbyte-integration-test-java'
     id "java-library"
-    // https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures
-//    id "java-test-fixtures"
-//    id 'com.github.eirnym.js2p' version '1.0'
+    id "com.github.eirnym.js2p" version "1.0"
 }
-
-//application {
-//    mainClass = 'io.airbyte.integrations.source.jdbc.JdbcSource'
-//}
-
-//project.configurations {
-//    testFixturesImplementation.extendsFrom implementation
-//    testFixturesRuntimeOnly.extendsFrom runtimeOnly
-//}
 
 dependencies {
     implementation project(':airbyte-commons')
     implementation project(':airbyte-db')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-integrations:connectors:source-jdbc')
+    implementation project(':airbyte-json-validation')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor('org.projectlombok:lombok:1.18.20')
 
     testImplementation project(':airbyte-test-utils')
 
     testImplementation "org.postgresql:postgresql:42.2.18"
     testImplementation "org.testcontainers:postgresql:1.15.1"
 
-//    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-//    integrationTestJavaImplementation "org.testcontainers:postgresql:1.15.1"
-//
-//    testFixturesImplementation project(':airbyte-protocol:models')
-//    testFixturesImplementation project(':airbyte-db')
-//    testFixturesImplementation project(':airbyte-integrations:bases:base-java')
-//    testFixturesImplementation project(':airbyte-integrations:connectors:source-jdbc')
-
-    // todo (cgardens) - the java-test-fixtures plugin doesn't by default extend from test.
-    //  we cannot make it depend on the dependencies of source-jdbc:test, because source-jdbc:test
-    //  is going to depend on these fixtures. need to find a way to get fixtures to inherit the
-    //  common test classes without duplicating them. this should be part of whatever solution we
-    //  decide on for a "test-java-lib". the current implementation is leveraging the existing
-    //  plugin, but we can something different if we don't like this tool.
-//    testFixturesRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
-//    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
-//    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
-//    testFixturesImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
-
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+}
+
+jsonSchema2Pojo {
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/jdbc_models")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+    removeOldOutput = true
+
+    targetPackage = 'io.airbyte.integrations.source.relationaldb.models'
+
+    useLongIntegers = true
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
 }

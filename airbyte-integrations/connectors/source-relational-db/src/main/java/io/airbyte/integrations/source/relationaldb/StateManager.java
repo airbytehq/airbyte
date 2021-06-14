@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.source.relationaldb;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -30,8 +30,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.source.jdbc.models.JdbcState;
-import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
+import io.airbyte.integrations.source.relationaldb.models.JdbcState;
+import io.airbyte.integrations.source.relationaldb.models.JdbcStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,20 +48,20 @@ import org.slf4j.LoggerFactory;
 /**
  * Handles the state machine for the state of jdbc source implementations.
  */
-public class JdbcStateManager {
+public class StateManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStateManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StateManager.class);
 
   private final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfo;
   private Boolean isCdc;
-  private final JdbcCdcStateManager cdcStateManager;
+  private final CdcStateManager cdcStateManager;
 
   public static JdbcState emptyState() {
     return new JdbcState();
   }
 
-  public JdbcStateManager(JdbcState serialized, ConfiguredAirbyteCatalog catalog) {
-    this.cdcStateManager = new JdbcCdcStateManager(serialized.getCdcState());
+  public StateManager(JdbcState serialized, ConfiguredAirbyteCatalog catalog) {
+    this.cdcStateManager = new CdcStateManager(serialized.getCdcState());
     this.isCdc = serialized.getCdc();
     if (serialized.getCdc() == null) {
       this.isCdc = false;
@@ -78,12 +77,12 @@ public class JdbcStateManager {
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStreamNameNamespacePair::fromAirbyteSteam)
         .collect(Collectors.toSet());
-    allStreamNames.addAll(serialized.getStreams().stream().map(JdbcStateManager::toAirbyteStreamNameNamespacePair).collect(Collectors.toSet()));
+    allStreamNames.addAll(serialized.getStreams().stream().map(StateManager::toAirbyteStreamNameNamespacePair).collect(Collectors.toSet()));
 
     final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new HashMap<>();
     final Map<AirbyteStreamNameNamespacePair, JdbcStreamState> pairToState = serialized.getStreams()
         .stream()
-        .collect(Collectors.toMap(JdbcStateManager::toAirbyteStreamNameNamespacePair, a -> a));
+        .collect(Collectors.toMap(StateManager::toAirbyteStreamNameNamespacePair, a -> a));
     final Map<AirbyteStreamNameNamespacePair, ConfiguredAirbyteStream> pairToConfiguredAirbyteStream = catalog.getStreams().stream()
         .collect(Collectors.toMap(AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam, s -> s));
 
@@ -190,7 +189,7 @@ public class JdbcStateManager {
     }
   }
 
-  public JdbcCdcStateManager getCdcStateManager() {
+  public CdcStateManager getCdcStateManager() {
     return cdcStateManager;
   }
 
@@ -212,74 +211,6 @@ public class JdbcStateManager {
         .withCdcState(cdcStateManager.getCdcState());
 
     return new AirbyteStateMessage().withData(Jsons.jsonNode(jdbcState));
-  }
-
-  @VisibleForTesting
-  static class CursorInfo {
-
-    private final String originalCursorField;
-    private final String originalCursor;
-
-    private final String cursorField;
-    private String cursor;
-
-    public CursorInfo(String originalCursorField, String originalCursor, String cursorField, String cursor) {
-      this.originalCursorField = originalCursorField;
-      this.originalCursor = originalCursor;
-      this.cursorField = cursorField;
-      this.cursor = cursor;
-    }
-
-    public String getOriginalCursorField() {
-      return originalCursorField;
-    }
-
-    public String getOriginalCursor() {
-      return originalCursor;
-    }
-
-    public String getCursorField() {
-      return cursorField;
-    }
-
-    public String getCursor() {
-      return cursor;
-    }
-
-    @SuppressWarnings("UnusedReturnValue")
-    public CursorInfo setCursor(String cursor) {
-      this.cursor = cursor;
-      return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      CursorInfo that = (CursorInfo) o;
-      return Objects.equals(originalCursorField, that.originalCursorField) && Objects.equals(originalCursor, that.originalCursor)
-          && Objects.equals(cursorField, that.cursorField) && Objects.equals(cursor, that.cursor);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(originalCursorField, originalCursor, cursorField, cursor);
-    }
-
-    @Override
-    public String toString() {
-      return "CursorInfo{" +
-          "originalCursorField='" + originalCursorField + '\'' +
-          ", originalCursor='" + originalCursor + '\'' +
-          ", cursorField='" + cursorField + '\'' +
-          ", cursor='" + cursor + '\'' +
-          '}';
-    }
-
   }
 
 }

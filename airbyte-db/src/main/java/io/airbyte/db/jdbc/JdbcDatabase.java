@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -145,5 +146,7 @@ public interface JdbcDatabase extends SqlDatabase {
       return statement;
     }, JdbcUtils::rowToJson);
   }
+
+  DatabaseMetaData getMetaData() throws SQLException;
 
 }

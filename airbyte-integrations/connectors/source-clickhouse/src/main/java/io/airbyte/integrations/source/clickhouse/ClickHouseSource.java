@@ -104,7 +104,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     return Collections.singleton("system");
   }
 

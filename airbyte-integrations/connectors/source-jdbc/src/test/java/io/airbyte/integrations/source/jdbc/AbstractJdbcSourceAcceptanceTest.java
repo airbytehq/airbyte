@@ -131,7 +131,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
 
     @Override
-    public Set<String> getExcludedInternalSchemas() {
+    public Set<String> getExcludedInternalNameSpaces() {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
     }
 

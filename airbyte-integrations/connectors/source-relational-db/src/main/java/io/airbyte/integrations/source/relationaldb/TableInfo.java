@@ -33,7 +33,7 @@ import lombok.Getter;
  */
 @Getter
 @Builder
-class TableInfo<T> {
+public class TableInfo<T> {
 
   private final String nameSpace;
   private final String name;
