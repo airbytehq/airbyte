@@ -22,8 +22,9 @@
 # SOFTWARE.
 #
 
-from source_google_ads.utils import Utils
 import pendulum
+from source_google_ads.utils import Utils
+
 
 def test_get_date_params():
     stream_slice = {"date": "2020-01-01"}
@@ -32,7 +33,7 @@ def test_get_date_params():
     response = Utils.get_date_params(stream_slice, cursor_field, pendulum.parse("2020-02-15"))
     assert response == ("2020-01-02", "2020-02-01")
 
-    stream_slice = {"date": "2029-01-01"}   
+    stream_slice = {"date": "2029-01-01"}
     cursor_field = "date"
 
     response = Utils.get_date_params(stream_slice, cursor_field)
