@@ -6,14 +6,22 @@ In order to test the D3 destination, you need an AWS account (or alternative S3 
 
 As a community contributor, you will need access to AWS to run the integration tests.
 
-1. Create an S3 bucket for testing.
-1. Get your `access_key_id` and `secret_access_key` that can read and write to the above bucket.
-1. Paste the bucket and key information into the config files under [`./sample_secrets`](./sample_secrets).
-1. Rename the directory from `sample_secrets` to `secrets`.
-1. Feel free to modify the config files with different settings in the acceptance test file (e.g. `S3CsvDestinationAcceptanceTest.java`, method `getFormatConfig`), as long as they follow the schema defined in [spec.json](src/main/resources/spec.json).
+- Create an S3 bucket for testing.
+- Get your `access_key_id` and `secret_access_key` that can read and write to the above bucket.
+- Paste the bucket and key information into the config files under [`./sample_secrets`](./sample_secrets).
+- Rename the directory from `sample_secrets` to `secrets`.
+- Feel free to modify the config files with different settings in the acceptance test file (e.g. `S3CsvDestinationAcceptanceTest.java`, method `getFormatConfig`), as long as they follow the schema defined in [spec.json](src/main/resources/spec.json).
 
 ## Airbyte Employee
 
-1. Access the `destination s3 * creds` secrets on Last Pass. The `*` here represents the different file format.
-1. Replace the `config.json` under `sample_secrets`.
-1. Rename the directory from `sample_secrets` to `secrets`.
+- Access the `destination s3 * creds` secrets on Last Pass. The `*` here represents the different file format.
+- Replace the `config.json` under `sample_secrets`.
+- Rename the directory from `sample_secrets` to `secrets`.
+
+## Add New Output Format
+- Add a new enum in `S3Format`.
+- Modify `spec.json` to specify the configuration of this new format.
+- Update `S3FormatConfigs` to be able to construct a config for this new format.
+- Create a new package under `io.airbyte.integrations.destination.s3`.
+- Implement a new `S3Writer`. The implementation can extend `BaseS3Writer`.
+- Write an acceptance test for the new output format. The test can extend `S3DestinationAcceptanceTest`.
