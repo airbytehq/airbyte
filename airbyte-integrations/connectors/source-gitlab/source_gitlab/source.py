@@ -78,15 +78,15 @@ class SourceGitlab(AbstractSource):
         else:
             projects = Projects(parent_stream=groups, **auth_params)
 
-        pipelines = Pipelines(parent_stream=projects, **auth_params)
-        merge_requests = MergeRequests(parent_stream=projects, **auth_params)
+        pipelines = Pipelines(parent_stream=projects, start_date=config["start_date"], **auth_params)
+        merge_requests = MergeRequests(parent_stream=projects, start_date=config["start_date"], **auth_params)
 
         streams = [
             groups,
             projects,
             Branches(parent_stream=projects, repository_part=True, **auth_params),
-            Commits(parent_stream=projects, repository_part=True, **auth_params),
-            Issues(parent_stream=projects, **auth_params),
+            Commits(parent_stream=projects, repository_part=True, start_date=config["start_date"], **auth_params),
+            Issues(parent_stream=projects, start_date=config["start_date"], **auth_params),
             Jobs(parent_stream=pipelines, **auth_params),
             Milestones(parent_stream=projects, parent_similar=True, **auth_params),
             Milestones(parent_stream=groups, parent_similar=True, **auth_params),

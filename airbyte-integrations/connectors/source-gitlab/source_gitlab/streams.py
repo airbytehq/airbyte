@@ -76,7 +76,7 @@ class GitlabStream(HttpStream, ABC):
         elif isinstance(response_data, dict):
             yield self.transform(response_data, **kwargs)
         else:
-            Exception("TODO")
+            Exception(f"Unsupported type of response data for stream {self.name}")
 
     def transform(self, record: Dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
         for key in self.flatten_id_keys:
@@ -99,7 +99,7 @@ class GitlabStream(HttpStream, ABC):
         record[target] = [target_data.get("id") for target_data in record.get(target, [])]
 
 
-class GitlabSubStream(GitlabStream):
+class GitlabChildStream(GitlabStream):
     path_list = ["id"]
 
     def __init__(self, parent_stream: GitlabStream, parent_similar: bool = False, repository_part: bool = False, **kwargs):
@@ -129,6 +129,43 @@ class GitlabSubStream(GitlabStream):
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return self.path_template.format(**{k: stream_slice[k] for k in self.path_list})
+
+
+class IncrementalGitlabChildStream(GitlabChildStream):
+    state_checkpoint_interval = 100
+    cursor_field = "updated_at"
+    filter_field = "updated_after"
+
+    def __init__(self, start_date, **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = start_date
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        project_id = latest_record.get("project_id")
+        latest_cursor_value = latest_record.get(self.cursor_field)
+        current_state = current_stream_state.get(str(project_id))
+        if current_state:
+            current_state = current_state.get(self.cursor_field)
+        current_state_value = current_state or latest_cursor_value
+        current_stream_state[str(project_id)] = {self.cursor_field: max(current_state_value, latest_cursor_value)}
+        return current_stream_state
+
+    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state, stream_slice, **kwargs)
+
+        start_point = self._start_date
+        state_project_value = stream_state.get(str(stream_slice["id"]))
+        if state_project_value:
+            state_value = state_project_value.get(self.cursor_field)
+            if state_value:
+                start_point = max(start_point, state_value)
+        params[self.filter_field] = start_point
+        return params
 
 
 class Groups(GitlabStream):
@@ -171,23 +208,23 @@ class Projects(GitlabStream):
                     yield {"id": pid.replace("/", "%2F")}
 
 
-class Milestones(GitlabSubStream):
+class Milestones(GitlabChildStream):
     pass
 
 
-class Members(GitlabSubStream):
+class Members(GitlabChildStream):
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
         return record
 
 
-class Labels(GitlabSubStream):
+class Labels(GitlabChildStream):
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
         record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
         return record
 
 
-class Branches(GitlabSubStream):
+class Branches(GitlabChildStream):
     primary_key = ["project_id", "name"]
     flatten_id_keys = ["commit"]
 
@@ -197,7 +234,9 @@ class Branches(GitlabSubStream):
         return record
 
 
-class Commits(GitlabSubStream):
+class Commits(IncrementalGitlabChildStream):
+    cursor_field = "created_at"
+    filter_field = "since"
     primary_key = ["project_id", "id"]
     stream_base_params = {"with_stats": True}
 
@@ -206,21 +245,21 @@ class Commits(GitlabSubStream):
         return record
 
 
-class Issues(GitlabSubStream):
+class Issues(IncrementalGitlabChildStream):
     primary_key = ["project_id", "id"]
     stream_base_params = {"scope": "all"}
     flatten_id_keys = ["author", "assignee", "closed_by", "milestone"]
     flatten_list_keys = ["assignees"]
 
 
-class MergeRequests(GitlabSubStream):
+class MergeRequests(IncrementalGitlabChildStream):
     primary_key = ["project_id", "id"]
     stream_base_params = {"scope": "all"}
     flatten_id_keys = ["author", "assignee", "closed_by", "milestone", "merged_by"]
     flatten_list_keys = ["assignees"]
 
 
-class MergeRequestCommits(GitlabSubStream):
+class MergeRequestCommits(GitlabChildStream):
     primary_key = ["project_id", "merge_request_iid", "id"]
     path_list = ["project_id", "iid"]
 
@@ -233,7 +272,7 @@ class MergeRequestCommits(GitlabSubStream):
         return record
 
 
-class Releases(GitlabSubStream):
+class Releases(GitlabChildStream):
     primary_key = ["project_id", "name"]
     flatten_id_keys = ["author", "commit"]
     flatten_list_keys = ["milestones"]
@@ -245,7 +284,7 @@ class Releases(GitlabSubStream):
         return record
 
 
-class Tags(GitlabSubStream):
+class Tags(GitlabChildStream):
     primary_key = ["project_id", "name"]
     flatten_id_keys = ["commit"]
 
@@ -256,17 +295,17 @@ class Tags(GitlabSubStream):
         return record
 
 
-class Pipelines(GitlabSubStream):
+class Pipelines(IncrementalGitlabChildStream):
     primary_key = ["project_id", "pipeline_id", "id"]
 
 
-class PipelinesExtended(GitlabSubStream):
+class PipelinesExtended(GitlabChildStream):
     primary_key = ["project_id", "id"]
     path_list = ["project_id", "id"]
     path_template = "projects/{project_id}/pipelines/{id}"
 
 
-class Jobs(GitlabSubStream):
+class Jobs(GitlabChildStream):
     primary_key = ["project_id", "pipeline_id", "id"]
     flatten_id_keys = ["user", "pipeline", "runner", "commit"]
     path_list = ["project_id", "id"]
@@ -278,18 +317,18 @@ class Jobs(GitlabSubStream):
         return record
 
 
-class Users(GitlabSubStream):
+class Users(GitlabChildStream):
     pass
 
 
 # TODO: No permissions to check
-class Epics(GitlabSubStream):
+class Epics(GitlabChildStream):
     primary_key = ["id", "iid"]
     flatten_id_keys = ["author"]
 
 
 # TODO: No permissions to check
-class EpicIssues(GitlabSubStream):
+class EpicIssues(GitlabChildStream):
     primary_key = ["project_id", "epic_issue_id"]
     path_list = ["group_id", "id"]
     flatten_id_keys = ["milestone", "assignee", "author"]
