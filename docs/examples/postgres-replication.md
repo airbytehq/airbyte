@@ -10,9 +10,7 @@ Here's a 6-minute video showing you how you can do it.
 
 {% embed url="https://www.youtube.com/watch?v=Rcpt5SVsMpk" caption="" %}
 
-First of all, make sure you have Docker and Docker Compose installed. If this isn't the case, follow the [guide](../local-deployment.md) for recommended approach to install Docker. 
-
-Once Docker is installed successfully run the following commands:
+First of all, make sure you have Docker and Docker Compose installed. If this isn't the case, then run the following commands:
 
 ```text
 git clone https://github.com/airbytehq/airbyte.git

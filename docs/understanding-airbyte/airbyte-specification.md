@@ -178,7 +178,7 @@ read(Config, AirbyteCatalog, State) -> Stream<AirbyteMessage>
 
 ### Destination
 
-A destination is implemented as a Docker container. The container must adhere to the following interface.
+* A source is implemented as a Docker container. The container must adhere to the following interface.
 
 **How the container will be called:**
 

@@ -22,14 +22,11 @@ docker-compose up
 
 We recommend following [this guide](https://docs.docker.com/docker-for-windows/install/) to install Docker on Windows. After installing the WSL 2 backend and Docker you should be able to run containers using Windows PowerShell. Additionally, as we note frequently, you will need `docker-compose` to build Airbyte from source. The suggested guide already installs `docker-compose` on Windows. 
 
-### Handling long filename error
-If you are cloning the repo, you might run into a problem where git indicates that certain Filenames are too long and it therefore can't create the local file. Assuming repository has been cloned but you received long filename error, run the following command in *git bash*:
+If you are cloning the repo, you might run into a problem where git indicates that certain Filenames are too long and it therefore can't create the local file. Running the following command in *git bash*:
 ```bash
-cd airbyte
-git config core.longpaths true
-git reset --hard HEAD
+git config --system core.longpaths true
 ```
-However it's worth pointing out that the above setting is defaulted to false for a reason, so use with caution. To localize the effect of this settings, git configuration is only changed within the cloned Airbyte repo. Find more details on [this stack overflow question](https://stackoverflow.com/questions/22575662/filename-too-long-in-git-for-windows).
+and performing a system reboot seems to solve this limitation. However it's worth pointing out that the above setting is defaulted to false for a reason, so use with caution. Find more details on [this stack overflow question](https://stackoverflow.com/questions/22575662/filename-too-long-in-git-for-windows).
 
 Instead of cloning the repo, you can alternatively download the latest Airbyte release [here](https://github.com/airbytehq/airbyte/releases). Unzip the downloaded file, access the unzipped file using PowerShell terminal, and run `docker-compose up`. After this, you should see the Airbyte containers in the Docker application as in the image below.
 
