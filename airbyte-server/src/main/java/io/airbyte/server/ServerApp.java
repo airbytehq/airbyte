@@ -231,9 +231,11 @@ public class ServerApp {
     }
   }
 
-  private static void runAutomaticMigration(Path configRoot, ConfigRepository configRepository,
-      JobPersistence jobPersistence, String airbyteVersion,
-      String airbyteDatabaseVersion) {
+  private static void runAutomaticMigration(Path configRoot,
+                                            ConfigRepository configRepository,
+                                            JobPersistence jobPersistence,
+                                            String airbyteVersion,
+                                            String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
     ArchiveHandler importArchiveHandler = new ArchiveHandler(airbyteVersion, configRepository,
         jobPersistence,
@@ -250,7 +252,7 @@ public class ServerApp {
     AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
     AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
 
-    if(databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) > 0) {
+    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) > 0) {
       return true;
     }
 

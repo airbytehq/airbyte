@@ -38,4 +38,5 @@ public interface ConfigPersistence {
   <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException;
 
   void deleteOrphanDirectories() throws IOException;
+
 }

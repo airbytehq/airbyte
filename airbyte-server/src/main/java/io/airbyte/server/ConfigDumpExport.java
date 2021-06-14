@@ -48,11 +48,12 @@ import org.apache.commons.io.FileUtils;
 // for the same data
 
 /**
- * This class acts like export method of ArchiveHandler but the difference is
- * 1. It takes a full dump of whatever is available in the config directory without any schema validation.
- * We dont want schema validation because in case of automatic migration, the code that is going to do the schema validation is from new version but the data
- * in the config files is old. Thus schema validation would fail.
- * 2. Unlike ArchiveHandler, this doesn't take the dump of specific files but looks at the config directory and  takes the full dump of whatever is available
+ * This class acts like export method of ArchiveHandler but the difference is 1. It takes a full
+ * dump of whatever is available in the config directory without any schema validation. We dont want
+ * schema validation because in case of automatic migration, the code that is going to do the schema
+ * validation is from new version but the data in the config files is old. Thus schema validation
+ * would fail. 2. Unlike ArchiveHandler, this doesn't take the dump of specific files but looks at
+ * the config directory and takes the full dump of whatever is available
  */
 public class ConfigDumpExport {
 

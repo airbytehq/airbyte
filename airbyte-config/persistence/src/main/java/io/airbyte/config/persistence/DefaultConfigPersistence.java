@@ -55,7 +55,6 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   private final Path storageRoot;
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultConfigPersistence.class);
 
-
   public DefaultConfigPersistence(final Path storageRoot) {
     this(storageRoot, new JsonSchemaValidator());
   }
