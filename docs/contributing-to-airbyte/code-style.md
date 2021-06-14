@@ -15,5 +15,6 @@ Install it in IntelliJ:‌
    1. `Import Scheme > IntelliJ IDEA code style XML`
    2. Select the file we just downloaded
 3. Select `GoogleStyle` in the drop down
-4. You're done!
+4. Change default `Hard wrap at` in `Wrapping and Braces` tab to **150**.
+5. You're done!
 
