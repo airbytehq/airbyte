@@ -34,7 +34,6 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .streams import (
     Surveys,
-    SurveyDetails,
     SurveyPages,
     SurveyQuestions,
     SurveyResponses
@@ -49,10 +48,8 @@ class SourceSurveymonkey(AbstractSource):
             stream = Surveys(authenticator=authenticator, start_date=config["start_date"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             _ = next(records)
-            print('gotta:', _)
             return True, None
         except Exception as e:
-            print('error happened!!!')
             import traceback
             print(traceback.format_exc())
             return False, repr(e)
