@@ -324,3 +324,8 @@
   dockerRepository: airbyte/source-snowflake
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/snowflake
+- sourceDefinitionId: d68b3ff6-da54-44e4-9be9-862f577c5f90
+  name: Google Ads
+  dockerRepository: airbyte/source-google-ads
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/source-google-ads
