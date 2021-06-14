@@ -265,10 +265,15 @@ As mentioned in the overview:
 - If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`.
 - In certain pathological cases, basic normalization is required to generate large models with many columns and multiple intermediate transformation steps for a stream. This may break down the "ephemeral" materialization strategy and require the use of additional intermediate views or tables instead. As a result, you may notice additional temporary tables being generated in the destination to handle these checkpoints.
 
-## Extending normalization
+## UI Configurations
 
-Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. To do so, you can follow the following tutorial
+To enable basic normalization (which is optional), you can toggle it on or disable it in the "Normalization and Transformation" section when setting up your connection:
 
-* to build a [custom SQL view](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
-* to export, edit and run [custom DBT normalization](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
+![](../.gitbook/assets/basic-normalization-configuration.png)
 
+## Extending Basic Normalization
+
+Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overridden by your own custom choices. To do so, you can follow the following tutorials:
+
+* to build a [custom SQL view](../tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
+* to export, edit and run [custom DBT normalization](../tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself

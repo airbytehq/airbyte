@@ -2,7 +2,7 @@
 
 ## Overview
 
-Airbyte supports syncing data in **Incremental Append** mode i.e: syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source.
+Airbyte supports syncing data in **Incremental Append** mode i.e: syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. If the sync is running for the first time, it is equivalent to a [Full Refresh](full-refresh-append.md) since all data will be considered as _new_.
 
 In this flavor of incremental, records in the warehouse destination will never be deleted or mutated. A copy of each new or updated record is _appended_ to the data in the warehouse. This means you can find multiple copies of the same record in the destination warehouse. We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
 
