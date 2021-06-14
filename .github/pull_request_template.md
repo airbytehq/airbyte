@@ -28,6 +28,7 @@ Expand the checklist which is relevant for this PR.
     - [ ] README
     - [ ] CHANGELOG.md
     - [ ] Reference docs in the `docs/integrations/` directory.
+    - [ ] Build status added to [build page](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md)
 - [ ] Build is successful
 - [ ] Connector version bumped like described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)
 - [ ] New Connector version released on Dockerhub by running the `/publish` command described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)

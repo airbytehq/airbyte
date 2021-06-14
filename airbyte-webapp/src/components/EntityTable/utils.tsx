@@ -7,8 +7,8 @@ import {
   EntityTableDataItem,
   Status as ConnectionStatus,
 } from "./types";
-import { SourceDefinition } from "../../core/resources/SourceDefinition";
-import { DestinationDefinition } from "../../core/resources/DestinationDefinition";
+import { SourceDefinition } from "core/resources/SourceDefinition";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<

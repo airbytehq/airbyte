@@ -9,7 +9,12 @@ docker container rm -f airbyte-connector-bootstrap >/dev/null 2>&1
 docker build --build-arg UID="$(id -u)" --build-arg GID="$(id -g)" . -t airbyte/connector-bootstrap
 
 # Run the container and mount the airbyte folder
-docker run -it --name airbyte-connector-bootstrap -v "$(pwd)/../../../.":/airbyte airbyte/connector-bootstrap
+if [ $# -eq 2 ]; then
+  echo "2 arguments supplied: 1=$1 2=$2"
+  docker run --name airbyte-connector-bootstrap -e package_desc="$1" -e package_name="$2" -v "$(pwd)/../../../.":/airbyte airbyte/connector-bootstrap
+else
+  docker run -it --name airbyte-connector-bootstrap -v "$(pwd)/../../../.":/airbyte airbyte/connector-bootstrap
+fi
 
 # Remove container after coping files
 docker container rm -f airbyte-connector-bootstrap >/dev/null 2>&1
