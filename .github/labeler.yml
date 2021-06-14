@@ -2,6 +2,10 @@ area/frontend:
   - airbyte-webapp/*
   - airbyte-webapp/**/*
 
+area/api:
+  - airbyte-api/*
+  - airbyte-api/**/*
+
 area/core:
   - airbyte-server/*
   - airbyte-server/**/*
