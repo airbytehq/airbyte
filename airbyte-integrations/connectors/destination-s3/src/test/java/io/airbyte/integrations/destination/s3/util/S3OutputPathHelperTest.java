@@ -22,38 +22,27 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.csv;
+package io.airbyte.integrations.destination.s3.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.protocol.models.AirbyteStream;
-import java.sql.Timestamp;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("S3CsvOutputFormatter")
-class S3CsvOutputFormatterTest {
+class S3OutputPathHelperTest {
 
   @Test
   @DisplayName("getOutputPrefix")
   public void testGetOutputPrefix() {
     // No namespace
-    assertEquals("bucket_path/stream_name", S3CsvOutputFormatter
+    assertEquals("bucket_path/stream_name", S3OutputPathHelper
         .getOutputPrefix("bucket_path", new AirbyteStream().withName("stream_name")));
 
     // With namespace
-    assertEquals("bucket_path/namespace/stream_name", S3CsvOutputFormatter
+    assertEquals("bucket_path/namespace/stream_name", S3OutputPathHelper
         .getOutputPrefix("bucket_path",
             new AirbyteStream().withNamespace("namespace").withName("stream_name")));
-  }
-
-  @Test
-  @DisplayName("getOutputFilename")
-  public void testGetOutputFilename() {
-    Timestamp timestamp = new Timestamp(1471461319000L);
-    assertEquals(
-        "2016_08_17_1471461319000_0.csv",
-        S3CsvOutputFormatter.getOutputFilename(timestamp));
   }
 
 }
