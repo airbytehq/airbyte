@@ -129,4 +129,4 @@ def test_get_cursor_or_none():
     cursor_name = "update-date"
     assert "2021-03-04" == BaseClient._get_cursor_or_none(state, stream_name, cursor_name)
     state = {"stream_name-2": {"update-date": "2021-03-04"}}
-    assert BaseClient._get_cursor_or_none(state, stream_name, cursor_name) is None
+    assert None is BaseClient._get_cursor_or_none(state, stream_name, cursor_name)

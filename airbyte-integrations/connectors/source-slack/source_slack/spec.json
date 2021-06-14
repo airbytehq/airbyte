@@ -28,7 +28,7 @@
       },
       "join_channels": {
         "type": "boolean",
-        "default": false,
+        "default": true,
         "title": "Join channels",
         "description": "Whether to join all channels or to sync data only from channels the bot is already in."
       }
