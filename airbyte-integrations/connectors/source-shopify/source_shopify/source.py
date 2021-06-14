@@ -205,6 +205,33 @@ class Transactions(IncrementalShopifyStream):
             yield from super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
 
 
+class Pages(IncrementalShopifyStream):
+    data_field = "pages"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class PriceRules(IncrementalShopifyStream):
+    data_field = "price_rules"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class DiscountCodes(IncrementalShopifyStream):
+    data_field = "discount_codes"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        price_rule_id = stream_slice["price_rule_id"]
+        return f"price_rules/{price_rule_id}/{self.data_field}.json"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        price_rules_stream = PriceRules(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
+        for data in price_rules_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield from super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
+
+
 class ShopifyAuthenticator(HttpAuthenticator):
 
     """
@@ -260,4 +287,7 @@ class SourceShopify(AbstractSource):
             OrderRefunds(**args),
             OrderRisks(**args),
             Transactions(**args),
+            Pages(**args),
+            PriceRules(**args),
+            DiscountCodes(**args)
         ]
