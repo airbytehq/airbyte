@@ -85,7 +85,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(JsonNode config) {
 
     List<String> additionalParameters = new ArrayList<>();
 

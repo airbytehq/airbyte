@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 /**
  * Database object for interacting with a JDBC connection.
  */
-public interface JdbcDatabase extends SqlDatabase {
+public abstract class JdbcDatabase extends SqlDatabase {
 
   /**
    * Execute a database query.
@@ -46,14 +46,14 @@ public interface JdbcDatabase extends SqlDatabase {
    * @param query the query to execute against the database.
    * @throws SQLException SQL related exceptions.
    */
-  void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException;
+  public abstract void execute(CheckedConsumer<Connection, SQLException> query) throws SQLException;
 
   @Override
-  default void execute(String sql) throws SQLException {
+  public void execute(String sql) throws SQLException {
     execute(connection -> connection.createStatement().execute(sql));
   }
 
-  default void executeWithinTransaction(List<String> queries) throws SQLException {
+  public void executeWithinTransaction(List<String> queries) throws SQLException {
     execute(connection -> {
       connection.setAutoCommit(false);
       for (String s : queries) {
@@ -77,8 +77,8 @@ public interface JdbcDatabase extends SqlDatabase {
    * @return Result of the query mapped to a list.
    * @throws SQLException SQL related exceptions.
    */
-  <T> List<T> bufferedResultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                                     CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public abstract <T> List<T> bufferedResultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
+                                                     CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
   /**
@@ -96,8 +96,8 @@ public interface JdbcDatabase extends SqlDatabase {
    * @return Result of the query mapped to a stream.
    * @throws SQLException SQL related exceptions.
    */
-  <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
-                               CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public abstract <T> Stream<T> resultSetQuery(CheckedFunction<Connection, ResultSet, SQLException> query,
+                                               CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
   /**
@@ -115,11 +115,11 @@ public interface JdbcDatabase extends SqlDatabase {
    * @return Result of the query mapped to a stream.void execute(String sql)
    * @throws SQLException SQL related exceptions.
    */
-  <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                      CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public abstract <T> Stream<T> query(CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                      CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
-  default int queryInt(String sql, String... params) throws SQLException {
+  public int queryInt(String sql, String... params) throws SQLException {
     try (Stream<Integer> q = query(c -> {
       PreparedStatement statement = c.prepareStatement(sql);
       int i = 1;
@@ -135,7 +135,7 @@ public interface JdbcDatabase extends SqlDatabase {
   }
 
   @Override
-  default Stream<JsonNode> query(String sql, String... params) throws SQLException {
+  public Stream<JsonNode> query(String sql, String... params) throws SQLException {
     return query(connection -> {
       PreparedStatement statement = connection.prepareStatement(sql);
       int i = 1;
@@ -147,6 +147,6 @@ public interface JdbcDatabase extends SqlDatabase {
     }, JdbcUtils::rowToJson);
   }
 
-  DatabaseMetaData getMetaData() throws SQLException;
+  public abstract DatabaseMetaData getMetaData() throws SQLException;
 
 }

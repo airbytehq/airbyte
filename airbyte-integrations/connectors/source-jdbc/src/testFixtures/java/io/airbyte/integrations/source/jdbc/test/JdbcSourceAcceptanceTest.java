@@ -168,7 +168,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public void setup() throws Exception {
     source = getSource();
     config = getConfig();
-    final JsonNode jdbcConfig = source.toJdbcConfig(config);
+    final JsonNode jdbcConfig = source.toDatabaseConfig(config);
 
     streamName = TABLE_NAME;
 

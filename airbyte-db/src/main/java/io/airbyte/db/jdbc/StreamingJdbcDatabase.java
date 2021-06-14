@@ -40,7 +40,7 @@ import javax.sql.DataSource;
  * allows the developer to specify the correct configuration in order for a
  * {@link PreparedStatement} to execute as in a streaming / chunked manner.
  */
-public class StreamingJdbcDatabase implements JdbcDatabase {
+public class StreamingJdbcDatabase extends JdbcDatabase {
 
   private final DataSource dataSource;
   private final JdbcDatabase database;

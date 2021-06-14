@@ -190,7 +190,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(JsonNode config) {
     final StringBuilder jdbc_url = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
@@ -229,14 +229,15 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
                                                                              Map<String, TableInfo<AbstractField<JDBCType>>> tableNameToTable,
                                                                              StateManager stateManager,
                                                                              Instant emittedAt) {
-    if (isCdc(getJdbcConfig()) && shouldUseCDC(catalog)) {
+    JsonNode sourceConfig = database.getSourceConfig();
+    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
       // TODO: Figure out how to set the isCDC of stateManager to true. Its always false
       final AirbyteFileOffsetBackingStore offsetManager = initializeState(stateManager);
       AirbyteSchemaHistoryStorage schemaHistoryManager = initializeDBHistory(stateManager);
-      FilteredFileDatabaseHistory.setDatabaseName(getJdbcConfig().get("database").asText());
+      FilteredFileDatabaseHistory.setDatabaseName(sourceConfig.get("database").asText());
       final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(getJdbcConfig(), catalog, offsetManager, schemaHistoryManager);
+      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(sourceConfig, catalog, offsetManager, schemaHistoryManager);
       publisher.start(queue);
 
       Optional<TargetFilePosition> targetFilePosition = TargetFilePosition

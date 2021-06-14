@@ -42,7 +42,7 @@ public class JdbcSource extends AbstractJdbcSource implements Source {
 
   // no-op for JdbcSource since the config it receives is designed to be use for JDBC.
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(JsonNode config) {
     return config;
   }
 

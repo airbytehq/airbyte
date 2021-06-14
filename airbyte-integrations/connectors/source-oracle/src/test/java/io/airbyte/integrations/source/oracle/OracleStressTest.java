@@ -115,7 +115,7 @@ class OracleStressTest extends JdbcStressTest {
     }
 
     @Override
-    public JsonNode toJdbcConfig(JsonNode config) {
+    public JsonNode toDatabaseConfig(JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
           .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/xe",

@@ -46,7 +46,7 @@ public class RedshiftSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode redshiftConfig) {
+  public JsonNode toDatabaseConfig(JsonNode redshiftConfig) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("username", redshiftConfig.get("username").asText())
         .put("password", redshiftConfig.get("password").asText())

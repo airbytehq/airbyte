@@ -120,7 +120,7 @@ class PostgresStressTest extends JdbcStressTest {
     }
 
     @Override
-    public JsonNode toJdbcConfig(JsonNode config) {
+    public JsonNode toDatabaseConfig(JsonNode config) {
       ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
           .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",

@@ -35,6 +35,7 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.SqlDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -80,25 +81,11 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   private final String driverClass;
   private final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration;
-  private JsonNode jdbcConfig;
   private String quoteString;
 
   public AbstractJdbcSource(final String driverClass, final JdbcStreamingQueryConfiguration jdbcStreamingQueryConfiguration) {
     this.driverClass = driverClass;
     this.jdbcStreamingQueryConfiguration = jdbcStreamingQueryConfiguration;
-  }
-
-  /**
-   * Map a database implementation-specific configuration to json object that adheres to the
-   * AbstractJdbcSource config spec. See resources/spec.json.
-   *
-   * @param config database implementation-specific configuration.
-   * @return jdbc spec.
-   */
-  public abstract JsonNode toJdbcConfig(JsonNode config);
-
-  public JsonNode getJdbcConfig() {
-    return jdbcConfig;
   }
 
   /**
@@ -129,8 +116,8 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     return result;
   }
 
-  private String getCatalog() {
-    return (jdbcConfig.has("database") ? jdbcConfig.get("database").asText() : null);
+  private String getCatalog(SqlDatabase database) {
+    return (database.getSourceConfig().has("database") ? database.getSourceConfig().get("database").asText() : null);
 
   }
 
@@ -139,7 +126,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
       throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
     return database.bufferedResultSetQuery(
-        conn -> conn.getMetaData().getColumns(getCatalog(), null, null, null),
+        conn -> conn.getMetaData().getColumns(getCatalog(database), null, null, null),
         resultSet -> Jsons.jsonNode(ImmutableMap.<String, Object>builder()
             // we always want a namespace, if we cannot get a schema, use db name.
             .put(INTERNAL_SCHEMA_NAME,
@@ -195,7 +182,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-          conn -> conn.getMetaData().getPrimaryKeys(getCatalog(), null, null),
+          conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), null, null),
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
@@ -217,7 +204,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
               final String streamName = JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-                    conn -> conn.getMetaData().getPrimaryKeys(getCatalog(), tableInfo.getNameSpace(), tableInfo.getName()),
+                    conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
                     r -> new SimpleImmutableEntry<>(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME))));
                 return primaryKeys.getOrDefault(streamName, Collections.emptyList());
               } catch (SQLException e) {
@@ -266,7 +253,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   @Override
   public JdbcDatabase createDatabase(JsonNode config) throws SQLException {
-    jdbcConfig = toJdbcConfig(config);
+    JsonNode jdbcConfig = toDatabaseConfig(config);
 
     JdbcDatabase database = Databases.createStreamingJdbcDatabase(
         jdbcConfig.get("username").asText(),
@@ -276,7 +263,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
         jdbcStreamingQueryConfiguration,
         jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null);
 
-    quoteString = database.getMetaData().getIdentifierQuoteString();
+    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
 
     return database;
   }

@@ -80,7 +80,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    try (final K database = createDatabase(config)) {
+    try (final K database = createDatabaseInternal(config)) {
       for (CheckedConsumer<K, Exception> checkOperation : getCheckOperations(config)) {
         checkOperation.accept(database);
       }
@@ -95,6 +95,15 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
   }
 
   /**
+   * Map a database implementation-specific configuration to json object that adheres to the
+   * AbstractJdbcSource config spec. See resources/spec.json.
+   *
+   * @param config database implementation-specific configuration.
+   * @return jdbc spec.
+   */
+  public abstract JsonNode toDatabaseConfig(JsonNode config);
+
+  /**
    * Configures a list of operations that can be used to check the connection to the source.
    *
    * @return list of consumers that run queries for the check command.
@@ -103,7 +112,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
 
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
-    try (final K database = createDatabase(config)) {
+    try (final K database = createDatabaseInternal(config)) {
       List<AirbyteStream> streams = getTables(database).stream()
           .map(tableInfo -> CatalogHelpers
               .createAirbyteStream(tableInfo.getName(), tableInfo.getNameSpace(), tableInfo.getFields())
@@ -121,7 +130,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
         catalog);
     final Instant emittedAt = Instant.now();
 
-    final K database = createDatabase(config);
+    final K database = createDatabaseInternal(config);
 
     final Map<String, TableInfo<AbstractField<T>>> fullyQualifiedTableNameToInfo =
         discoverWithoutSystemTables(database)
@@ -430,6 +439,13 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
                                                                         String cursorField,
                                                                         T cursorFieldType,
                                                                         String cursor);
+
+  private K createDatabaseInternal(JsonNode sourceConfig) throws Exception {
+    K database = createDatabase(sourceConfig);
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return database;
+  }
 
   protected abstract K createDatabase(JsonNode config) throws Exception;
 

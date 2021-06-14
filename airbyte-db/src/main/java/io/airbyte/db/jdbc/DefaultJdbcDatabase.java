@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Database object for interacting with a JDBC connection. Can be used for any JDBC compliant db.
  */
-public class DefaultJdbcDatabase implements JdbcDatabase {
+public class DefaultJdbcDatabase extends JdbcDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJdbcDatabase.class);
 
