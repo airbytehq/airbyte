@@ -44,27 +44,39 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * When adding a new S3 destination acceptance test, extend this class and do the following:
+ * <li>Implement {@link #getFormatConfig} that returns a {@link S3FormatConfig}</li>
+ * <li>Implement {@link #retrieveRecords} that returns the Json records for the test</li>
+ *
+ * Under the hood, a {@link S3DestinationConfig} is constructed as follows:
+ * <li>Retrieve the secrets from "secrets/config.json"</li>
+ * <li>Get the S3 bucket path from the constructor</li>
+ * <li>Get the format config from {@link #getFormatConfig}</li>
+ */
 public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(S3DestinationAcceptanceTest.class);
   protected static final ObjectMapper MAPPER = new ObjectMapper();
 
-  protected final String secretFilePath;
+  protected final String secretFilePath = "secrets/config.json";
+  protected final S3Format outputFormat;
   protected JsonNode configJson;
   protected S3DestinationConfig config;
   protected AmazonS3 s3Client;
 
-  protected JsonNode getBaseConfigJson() {
-    return Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)));
+  protected S3DestinationAcceptanceTest(S3Format outputFormat) {
+    this.outputFormat = outputFormat;
   }
 
-  protected S3DestinationAcceptanceTest(String secretFilePath) {
-    this.secretFilePath = secretFilePath;
+  protected JsonNode getBaseConfigJson() {
+    return Jsons.deserialize(IOs.readFile(Path.of(secretFilePath)));
   }
 
   @Override
@@ -105,16 +117,20 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
     return objectSummaries;
   }
 
+  protected abstract JsonNode getFormatConfig();
+
   @Override
   protected void setup(TestDestinationEnv testEnv) {
     JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random s3 bucket path for each integration test
     JsonNode configJson = Jsons.clone(baseConfigJson);
     String testBucketPath = String.format(
-        "%s_%s",
-        configJson.get("s3_bucket_path").asText(),
+        "%s_test_%s",
+        outputFormat.name().toLowerCase(Locale.ROOT),
         RandomStringUtils.randomAlphanumeric(5));
-    ((ObjectNode) configJson).put("s3_bucket_path", testBucketPath);
+    ((ObjectNode) configJson)
+        .put("s3_bucket_path", testBucketPath)
+        .set("format", getFormatConfig());
     this.configJson = configJson;
     this.config = S3DestinationConfig.getS3DestinationConfig(configJson);
     LOGGER.info("Test full path: {}/{}", config.getBucketName(), config.getBucketPath());

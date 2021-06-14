@@ -47,8 +47,16 @@ import org.apache.commons.csv.QuoteMode;
 
 public class S3CsvDestinationAcceptanceTest extends S3DestinationAcceptanceTest {
 
-  protected S3CsvDestinationAcceptanceTest() {
-    super("secrets/config_csv.json");
+  public S3CsvDestinationAcceptanceTest() {
+    super(S3Format.CSV);
+  }
+
+  @Override
+  protected JsonNode getFormatConfig() {
+    return Jsons.deserialize("{\n"
+        + "  \"format_type\": \"CSV\",\n"
+        + "  \"flattening\": \"Root level flattening\"\n"
+        + "}");
   }
 
   /**

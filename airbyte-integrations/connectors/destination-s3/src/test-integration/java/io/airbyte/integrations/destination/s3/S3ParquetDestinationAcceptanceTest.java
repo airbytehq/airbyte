@@ -29,6 +29,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.parquet.JsonFieldNameUpdater;
@@ -50,7 +51,15 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
   private final JsonAvroConverter converter = new JsonAvroConverter();
 
   protected S3ParquetDestinationAcceptanceTest() {
-    super("secrets/config_parquet.json");
+    super(S3Format.PARQUET);
+  }
+
+  @Override
+  protected JsonNode getFormatConfig() {
+    return Jsons.deserialize("{\n"
+        + "  \"format_type\": \"Parquet\",\n"
+        + "  \"compression_codec\": \"GZIP\"\n"
+        + "}");
   }
 
   @Override

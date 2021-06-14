@@ -109,8 +109,7 @@ jobs:
           ZENDESK_TALK_TEST_CREDS: ${{ secrets.ZENDESK_TALK_TEST_CREDS }}
           ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
           PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
-          DESTINATION_S3_CSV_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_CSV_INTEGRATION_TEST_CREDS }}
-          DESTINATION_S3_PARQUET_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_PARQUET_INTEGRATION_TEST_CREDS }}
+          DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
       - run: |
           ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
         name: test ${{ github.event.inputs.connector }}
