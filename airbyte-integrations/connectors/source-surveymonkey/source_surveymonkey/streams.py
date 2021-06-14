@@ -23,16 +23,15 @@
 #
 
 
-import math
 import urllib.parse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, List
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
+import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-import pendulum
-import vcr
 
 
 class SurveymonkeyStream(HttpStream, ABC):
@@ -44,7 +43,7 @@ class SurveymonkeyStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
         links = resp_json.get("links", {})
-        if links.get('next'):
+        if links.get("next"):
             next_query_string = urllib.parse.urlsplit(links["next"]).query
             params = dict(urllib.parse.parse_qsl(next_query_string))
             return params
@@ -67,21 +66,17 @@ class SurveymonkeyStream(HttpStream, ABC):
             params.update(next_page_token)
         return params
 
-    def read_records( # TODO remove this (caching) in final commit
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+    def read_records(  # TODO remove this (caching) in final commit
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        with vcr.use_cassette('pretty_name.yaml', record_mode='new_episodes'):
+        with vcr.use_cassette("pretty_name.yaml", record_mode="new_episodes"):
             yield from super().read_records(
-                sync_mode=sync_mode,
-                cursor_field=cursor_field,
-                stream_slice=stream_slice,
-                stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
-
 
 
 class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
@@ -92,7 +87,6 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         self._start_date = pendulum.parse(start_date)  # convert to YYYY-MM-DDTHH:MM:SS
         super().__init__(**kwargs)
 
-
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -101,14 +95,12 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         and define a cursor field.
         """
 
-    def request_params(self, stream_state: Mapping[str, Any],  **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["sort_order"] = "ASC"
         params["sort_by"] = "date_modified"
-        params["per_page"] = 1000 # maybe as user input or bigger value
-        since_value = pendulum.parse(stream_state.get(self.cursor_field)) \
-                if stream_state.get(self.cursor_field) \
-                else self._start_date
+        params["per_page"] = 1000  # maybe as user input or bigger value
+        since_value = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state.get(self.cursor_field) else self._start_date
 
         since_value = max(since_value, self._start_date)
         params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
@@ -143,8 +135,8 @@ class Surveys(IncrementalSurveymonkeyStream):
             raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
         result = response_json.get(self.data_field, [])
         for record in result:
-            self.cached_survey_ids.append(record['id'])
-            substream = SurveyDetails(survey_id=record['id'], authenticator=self.authenticator)
+            self.cached_survey_ids.append(record["id"])
+            substream = SurveyDetails(survey_id=record["id"], authenticator=self.authenticator)
             child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
             yield from child_record
 
@@ -160,7 +152,6 @@ class SurveyDetails(SurveymonkeyStream):
         self.survey_id = survey_id
         super().__init__(**kwargs)
 
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"surveys/{self.survey_id}/details"
 
@@ -168,12 +159,13 @@ class SurveyDetails(SurveymonkeyStream):
         response_json = response.json()
         if response_json.get("error"):
             raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
-        output = {k: v for k, v in response_json.items() if k!="pages"}
+        output = {k: v for k, v in response_json.items() if k != "pages"}
         yield output
 
 
 class SurveyPages(SurveymonkeyStream):
     """should be filled from SurveyDetails"""
+
     data_field = "pages"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -184,18 +176,18 @@ class SurveyPages(SurveymonkeyStream):
         for survey_id in self.cached_survey_ids:
             yield {"survey_id": survey_id}
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[
-        Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
             raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
         data = response_json.get(self.data_field)
-        page_data = [{k:v for k,v in i.items() if k!="questions"} for i in data ]
+        page_data = [{k: v for k, v in i.items() if k != "questions"} for i in data]
         yield from page_data
 
 
 class SurveyQuestions(SurveymonkeyStream):
     """should be filled from SurveyDetails"""
+
     data_field = "pages"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -206,14 +198,13 @@ class SurveyQuestions(SurveymonkeyStream):
         for survey_id in self.cached_survey_ids:
             yield {"survey_id": survey_id}
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[
-        Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
             raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
         data = response_json.get(self.data_field)
         question_data = [i["questions"] for i in data]
-        merged_questions = sum(question_data, []) # data is list of list, each inner list = page questions. Need to merge
+        merged_questions = sum(question_data, [])  # data is list of list, each inner list = page questions. Need to merge
         yield from merged_questions
 
 
@@ -221,10 +212,11 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
     """
     Docs: https://posthog.com/docs/api/events
     """
+
     cursor_field = "date_modified"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        survey_id = stream_slice['survey_id']
+        survey_id = stream_slice["survey_id"]
         return f"surveys/{survey_id}/responses/bulk"
 
     def stream_slices(self, **kwargs):
@@ -260,9 +252,9 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
 
         since_value_surv = stream_state.get(stream_slice["survey_id"])
         if since_value_surv:
-            since_value = pendulum.parse(since_value_surv.get(self.cursor_field)) \
-                if since_value_surv.get(self.cursor_field) \
-                else self._start_date
+            since_value = (
+                pendulum.parse(since_value_surv.get(self.cursor_field)) if since_value_surv.get(self.cursor_field) else self._start_date
+            )
             since_value = max(since_value, self._start_date)
         else:
             since_value = self._start_date

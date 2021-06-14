@@ -22,7 +22,6 @@
 # SOFTWARE.
 #
 
-import os
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -32,12 +31,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import (
-    Surveys,
-    SurveyPages,
-    SurveyQuestions,
-    SurveyResponses
-)
+from .streams import SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 
 class SourceSurveymonkey(AbstractSource):
@@ -51,6 +45,7 @@ class SourceSurveymonkey(AbstractSource):
             return True, None
         except Exception as e:
             import traceback
+
             print(traceback.format_exc())
             return False, repr(e)
 
@@ -58,7 +53,7 @@ class SourceSurveymonkey(AbstractSource):
         authenticator = TokenAuthenticator(token=config["access_token"])
         streams = [
             Surveys(authenticator=authenticator, start_date=config["start_date"]),
-            #SurveyDetails(authenticator=authenticator),
+            # SurveyDetails(authenticator=authenticator),
             SurveyPages(authenticator=authenticator),
             SurveyQuestions(authenticator=authenticator),
             SurveyResponses(authenticator=authenticator, start_date=config["start_date"]),
