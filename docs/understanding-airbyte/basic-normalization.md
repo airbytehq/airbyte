@@ -269,6 +269,6 @@ As mentioned in the overview:
 
 Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. To do so, you can follow the following tutorial
 
-* to build a [custom SQL view](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
-* to export, edit and run [custom DBT normalization](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
+* to build a [custom SQL view](../tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
+* to export, edit and run [custom DBT normalization](../tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
 
