@@ -4,7 +4,7 @@
 
 This tutorial will describe how to push a custom dbt transformation project back to Airbyte to use during syncs.
 
-This tutorial is the last part of the tutorial series on transformations after [Transformations with dbt](transformations-with-sql.md) and 
+This tutorial is the last part of the tutorial series on transformations after [Transformations with sql](transformations-with-sql.md) and 
 [connecting EL with T using DBT](transformations-with-dbt.md).
 
 (Example outputs are updated with Airbyte version 0.23.0-alpha from May 2021)
