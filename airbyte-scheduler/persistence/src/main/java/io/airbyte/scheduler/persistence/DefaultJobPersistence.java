@@ -458,6 +458,9 @@ public class DefaultJobPersistence implements JobPersistence {
     return exportDatabase(DEFAULT_SCHEMA);
   }
 
+  /**
+   * This is different from {@link #exportDatabase()} cause it exports all the tables in all the schemas available
+   */
   @Override
   public Map<String, Stream<JsonNode>> dump() throws IOException {
     final Map<String, Stream<JsonNode>> result = new HashMap<>();

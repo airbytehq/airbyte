@@ -1,3 +1,4 @@
+#The file is used for testing ans is from version 0.17.0-alpha
 version: "3.7"
 #https://github.com/compose-spec/compose-spec/blob/master/spec.md#using-extensions-as-fragments
 x-logging: &default-logging

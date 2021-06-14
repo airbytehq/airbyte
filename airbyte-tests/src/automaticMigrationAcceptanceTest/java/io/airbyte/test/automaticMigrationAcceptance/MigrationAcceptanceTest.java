@@ -24,15 +24,27 @@
 
 package io.airbyte.test.automaticMigrationAcceptance;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.io.Resources;
+import io.airbyte.api.client.DestinationApi;
 import io.airbyte.api.client.HealthApi;
+import io.airbyte.api.client.SourceApi;
+import io.airbyte.api.client.WorkspaceApi;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
+import io.airbyte.api.client.model.DestinationRead;
+import io.airbyte.api.client.model.DestinationReadList;
 import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.api.client.model.ImportRead;
 import io.airbyte.api.client.model.ImportRead.StatusEnum;
+import io.airbyte.api.client.model.SourceRead;
+import io.airbyte.api.client.model.SourceReadList;
+import io.airbyte.api.client.model.WorkspaceIdRequestBody;
+import io.airbyte.api.client.model.WorkspaceRead;
 import io.airbyte.commons.version.AirbyteVersion;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -42,6 +54,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -128,7 +141,7 @@ public class MigrationAcceptanceTest {
       throws URISyntaxException, InterruptedException, ApiException {
 
     Map<String, String> environmentVariables = getEnvironmentVariables(targetVersion);
-    final File firstRun = Path
+    final File secondRun = Path
         .of(Resources.getResource("docker-compose-migration-test-second-run.yaml")
             .toURI())
         .toFile();
@@ -146,7 +159,7 @@ public class MigrationAcceptanceTest {
     logsToExpect.add("Successful import of airbyte configs");
     logsToExpect.add("Deleting directory /data/config/STANDARD_SYNC_SCHEDULE");
 
-    DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(firstRun)
+    DockerComposeContainer dockerComposeContainer = new DockerComposeContainer(secondRun)
         .withLogConsumer("server", logConsumerForServer(logsToExpect))
         .withEnv(environmentVariables);
 
@@ -155,13 +168,85 @@ public class MigrationAcceptanceTest {
 
       Thread.sleep(50000);
 
-      healthCheck(getApiClient());
+      ApiClient apiClient = getApiClient();
+      healthCheck(apiClient);
 
       assertTrue(logsToExpect.isEmpty());
-      // Should I assert data as well using the API?
+      assertDataFromApi(apiClient);
     } finally {
       dockerComposeContainer.stop();
     }
+  }
+
+  private void assertDataFromApi(ApiClient apiClient) throws ApiException {
+    WorkspaceIdRequestBody workspaceIdRequestBody = assertWorkspaceInformation(apiClient);
+    assertDestinationInformation(apiClient, workspaceIdRequestBody);
+    assertSourceInformation(apiClient, workspaceIdRequestBody);
+  }
+
+  private void assertSourceInformation(ApiClient apiClient, WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws ApiException {
+    SourceApi sourceApi = new SourceApi(apiClient);
+    SourceReadList sourceReadList = sourceApi.listSourcesForWorkspace(workspaceIdRequestBody);
+    assertEquals(sourceReadList.getSources().size(), 1);
+    SourceRead sourceRead = sourceReadList.getSources().get(0);
+    assertEquals(sourceRead.getName(), "MySQL localhost");
+    assertEquals(sourceRead.getSourceDefinitionId().toString(), "435bb9a5-7887-4809-aa58-28c27df0d7ad");
+    assertEquals(sourceRead.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
+    assertEquals(sourceRead.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
+    assertEquals(sourceRead.getConnectionConfiguration().get("username").asText(), "root");
+    assertEquals(sourceRead.getConnectionConfiguration().get("password").asText(), "password");
+    assertEquals(sourceRead.getConnectionConfiguration().get("database").asText(), "localhost_test");
+    assertEquals(sourceRead.getConnectionConfiguration().get("port").asInt(), 3306);
+    assertEquals(sourceRead.getConnectionConfiguration().get("host").asText(), "host.docker.internal");
+  }
+
+  private void assertDestinationInformation(ApiClient apiClient, WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws ApiException {
+    DestinationApi destinationApi = new DestinationApi(apiClient);
+    DestinationReadList destinationReadList = destinationApi.listDestinationsForWorkspace(
+        workspaceIdRequestBody);
+    assertEquals(destinationReadList.getDestinations().size(), 2);
+    for (DestinationRead destination : destinationReadList.getDestinations()) {
+      if (destination.getDestinationId().toString().equals("4e00862d-5484-4f50-9860-f3bbb4317397")) {
+        assertEquals(destination.getName(), "Postgres Docker");
+        assertEquals(destination.getDestinationDefinitionId().toString(), "25c5221d-dce2-4163-ade9-739ef790f503");
+        assertEquals(destination.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
+        assertEquals(destination.getConnectionConfiguration().get("username").asText(), "postgres");
+        assertEquals(destination.getConnectionConfiguration().get("password").asText(), "password");
+        assertEquals(destination.getConnectionConfiguration().get("database").asText(), "database");
+        assertEquals(destination.getConnectionConfiguration().get("schema").asText(), "public");
+        assertEquals(destination.getConnectionConfiguration().get("port").asInt(), 3000);
+        assertEquals(destination.getConnectionConfiguration().get("host").asText(), "localhost");
+        assertNull(destination.getConnectionConfiguration().get("basic_normalization"));
+      } else if (destination.getDestinationId().toString().equals("5434615d-a3b7-4351-bc6b-a9a695555a30")) {
+        assertEquals(destination.getName(), "CSV");
+        assertEquals(destination.getDestinationDefinitionId().toString(), "8be1cf83-fde1-477f-a4ad-318d23c9f3c6");
+        assertEquals(destination.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
+        assertEquals(destination.getConnectionConfiguration().get("destination_path").asText(), "csv_data");
+      } else {
+        fail("Unknown destination found with dsetination id : " + destination.getDestinationId().toString());
+      }
+    }
+  }
+
+  private WorkspaceIdRequestBody assertWorkspaceInformation(ApiClient apiClient)
+      throws ApiException {
+    WorkspaceApi workspaceApi = new WorkspaceApi(apiClient);
+    WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody()
+        .workspaceId(UUID.fromString("5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6"));
+    WorkspaceRead workspace = workspaceApi.getWorkspace(workspaceIdRequestBody);
+    assertEquals(workspace.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
+    assertEquals(workspace.getCustomerId().toString(), "17f90b72-5ae4-40b7-bc49-d6c2943aea57");
+    assertEquals(workspace.getName(), "default");
+    assertEquals(workspace.getSlug(), "default");
+    assertEquals(workspace.getInitialSetupComplete(), true);
+    assertEquals(workspace.getAnonymousDataCollection(), true);
+    assertEquals(workspace.getAnonymousDataCollection(), false);
+    assertEquals(workspace.getNews(), false);
+    assertEquals(workspace.getSecurityUpdates(), false);
+    assertEquals(workspace.getDisplaySetupWizard(), false);
+    return workspaceIdRequestBody;
   }
 
   private void populateDataForFirstRun(ApiClient apiClient)
