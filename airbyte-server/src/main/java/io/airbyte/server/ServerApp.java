@@ -216,16 +216,8 @@ public class ServerApp {
     if (airbyteDatabaseVersion.isPresent() && !AirbyteVersion
         .isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
         && !isDatabaseVersionAheadOfAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
-      LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion.get() + " to version : " + airbyteVersion);
-      ArchiveHandler importArchiveHandler = new ArchiveHandler(airbyteVersion, configRepository,
-          jobPersistence,
-          new FileTtlManager(10, TimeUnit.MINUTES, 10));
-      try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion.get(),
-          configRoot, importArchiveHandler, jobPersistence, airbyteVersion)) {
-        runMigration.run();
-      } catch (Exception e) {
-        LOGGER.error("Automatic Migration failed ", e);
-      }
+      runAutomaticMigration(configRoot, configRepository, jobPersistence, airbyteVersion,
+          airbyteDatabaseVersion.get());
       // After migration, upgrade the DB version
       airbyteDatabaseVersion = jobPersistence.getVersion();
     }
@@ -236,6 +228,21 @@ public class ServerApp {
     } else {
       LOGGER.info("Start serving version mismatch errors. Automatic migration must have failed");
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
+    }
+  }
+
+  private static void runAutomaticMigration(Path configRoot, ConfigRepository configRepository,
+      JobPersistence jobPersistence, String airbyteVersion,
+      String airbyteDatabaseVersion) {
+    LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
+    ArchiveHandler importArchiveHandler = new ArchiveHandler(airbyteVersion, configRepository,
+        jobPersistence,
+        new FileTtlManager(10, TimeUnit.MINUTES, 10));
+    try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion,
+        configRoot, importArchiveHandler, jobPersistence, airbyteVersion)) {
+      runMigration.run();
+    } catch (Exception e) {
+      LOGGER.error("Automatic Migration failed ", e);
     }
   }
 
