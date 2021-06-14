@@ -9,6 +9,8 @@
         <Property name="s3-aws-key">$${env:S3_AWS_KEY}</Property>
         <Property name="s3-aws-secret">$${env:S3_AWS_SECRET}</Property>
 
+        <Property name="gcp-storage-bucket">$${env:GCP_STORAGE_BUCKET}</Property>
+
     </Properties>
 
     <Appenders>
@@ -38,9 +40,11 @@
                 </Route>
                 <Route>
                     <Log4j2Appender name="${ctx:job_root}-cloud"
+                      verbose="true"
                       stagingBufferSize="20"
                       s3Bucket="${s3-bucket}" s3Path="job-logging${ctx:job_root}/${ctx:job_log_filename}" s3Region="${s3-region}"
-                      s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}">
+                      s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
+                      gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:job_root}/${ctx:job_log_filename}">
                         <PatternLayout>
                             <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
                         </PatternLayout>
@@ -84,7 +88,8 @@
                     <Log4j2Appender name="app-logging/${ctx:workspace_app_root}-cloud/"
                       stagingBufferSize="20"
                       s3Bucket="${s3-bucket}" s3Path="app-logging${ctx:workspace_app_root}" s3Region="${s3-region}"
-                      s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}">
+                      s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
+                      gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="app-logging${ctx:workspace_app_root}">
                         <PatternLayout>
                             <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
                         </PatternLayout>

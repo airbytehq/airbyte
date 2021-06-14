@@ -61,6 +61,8 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_AWS_KEY=${S3_AWS_KEY}
       - S3_AWS_SECRET=${S3_AWS_SECRET}
+      - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
@@ -89,11 +91,14 @@ services:
       - S3_REGION=${S3_REGION}
       - S3_AWS_KEY=${S3_AWS_KEY}
       - S3_AWS_SECRET=${S3_AWS_SECRET}
+      - GCP_STORAGE_BUCKET=${GCP_STORAGE_BUCKET}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
     ports:
       - 8001:8001
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
+      - ${LOCAL_ROOT}:${LOCAL_ROOT}
   webapp:
     image: airbyte/webapp:${VERSION}
     logging: *default-logging
