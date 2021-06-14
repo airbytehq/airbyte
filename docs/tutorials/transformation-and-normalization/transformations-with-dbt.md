@@ -1,37 +1,43 @@
-# Transformations with DBT \(Part 2/2\)
+# Transformations with DBT \(Part 2/3\)
 
 ## Overview
 
 This tutorial will describe how to integrate SQL based transformations with Airbyte syncs using specialized transformation tool: DBT.
 
-This tutorial is the second part of the previous tutorial [Connecting EL with T using SQL](transformations-with-sql.md).
+This tutorial is the second part of the previous tutorial [Transformations with dbt](transformations-with-sql.md). Next, we'll wrap-up with a third part on submitting transformations back in Airbyte: [Transformations with Airbyte](transformations-with-airbyte.md).
 
-## Run Transformations with DBT
+(Example outputs are updated with Airbyte version 0.23.0-alpha from May 2021)
+
+## Transformations with dbt
 
 The tool in charge of transformation behind the scenes is actually called [DBT](https://blog.getdbt.com/what--exactly--is-dbt-/) \(Data Build Tool\).
 
-Before generating the SQL files as we've seen previously, Airbyte is setting up internally a Docker image where DBT is installed, and a DBT project is created as described in their [documentation](https://docs.getdbt.com/docs/building-a-dbt-project/projects). It is run afterward, thanks to [DBT CLI](https://docs.getdbt.com/dbt-cli/cli-overview).
+Before generating the SQL files as we've seen in the previous tutorial, Airbyte sets up a dbt Docker instance and automatically generates a dbt project for us. This is created as specified in the [dbt project documentation page](https://docs.getdbt.com/docs/building-a-dbt-project/projects) with the right credentials for the target destination. The dbt models are then run afterward, thanks to the [dbt CLI](https://docs.getdbt.com/dbt-cli/cli-overview).
+However, for now, let's run through working with the dbt tool.
 
-In the future, we will work on improving this DBT integration further... For example, it would probably be easier to customize and import your own DBT project within the Airbyte pipeline or connect with the [DBT Cloud](https://docs.getdbt.com/docs/dbt-cloud/cloud-overview).
+### Validate dbt project settings
 
-However, for now, let's see how to interact with the DBT tool.
+Let's say we identified our workspace (as shown in the previous tutorial [Transformations with SQL](transformations-with-sql.md)), and we have a workspace ID of:
 
-Since the whole DBT project is properly configured, it is possible to invoke the CLI from within the docker image to trigger transformation processing:
+```bash
+NORMALIZE_WORKSPACE="5/0/"
+```
+
+We can verify that the dbt project is properly configured for that workspace:
 
 ```bash
 #!/usr/bin/env bash
 docker run --rm -i -v airbyte_workspace:/data -w /data/$NORMALIZE_WORKSPACE/normalize --network host --entrypoint /usr/local/bin/dbt airbyte/normalization debug --profiles-dir=. --project-dir=.
-docker run --rm -i -v airbyte_workspace:/data -w /data/$NORMALIZE_WORKSPACE/normalize --network host --entrypoint /usr/local/bin/dbt airbyte/normalization run --profiles-dir=. --project-dir=.
 ```
 
 Example Output:
 
 ```text
-Running with dbt=0.18.1
-dbt version: 0.18.1
-python version: 3.7.0
+Running with dbt=0.19.1
+dbt version: 0.19.1
+python version: 3.8.8
 python path: /usr/local/bin/python
-os info: Linux-4.19.121-linuxkit-x86_64-with-debian-10.6
+os info: Linux-5.10.25-linuxkit-x86_64-with-glibc2.2.5
 Using profiles.yml file at ./profiles.yml
 Using dbt_project.yml file at /data/5/0/normalize/dbt_project.yml
 
@@ -52,21 +58,34 @@ Connection:
   keepalives_idle: 0
   sslmode: None
   Connection test: OK connection ok
+```
+### Compile and build dbt normalization models
 
-Running with dbt=0.18.1
-Found 1 model, 0 tests, 0 snapshots, 0 analyses, 302 macros, 0 operations, 0 seed files, 1 source
+If the previous command does not show any errors or discrepancies, it is now possible to invoke the CLI from within the docker image to trigger transformation processing:
 
-14:37:10 | Concurrency: 32 threads (target='prod')
-14:37:10 | 
-14:37:10 | 1 of 1 START table model quarantine.covid_epidemiology....................................................... [RUN]
-14:37:11 | 1 of 1 OK created table model quarantine.covid_epidemiology.................................................. [SELECT 17911 in 0.33s]
-14:37:11 | 
-14:37:11 | Finished running 1 table model in 0.50s.
+```bash
+#!/usr/bin/env bash
+docker run --rm -i -v airbyte_workspace:/data -w /data/$NORMALIZE_WORKSPACE/normalize --network host --entrypoint /usr/local/bin/dbt airbyte/normalization run --profiles-dir=. --project-dir=.
+```
+
+Example Output:
+
+```text
+Running with dbt=0.19.1
+Found 4 models, 0 tests, 0 snapshots, 0 analyses, 364 macros, 0 operations, 0 seed files, 1 source, 0 exposures
+
+Concurrency: 32 threads (target='prod')
+
+1 of 1 START table model quarantine.covid_epidemiology....................................................... [RUN]
+1 of 1 OK created table model quarantine.covid_epidemiology.................................................. [SELECT 35822 in 0.47s]
+ 
+Finished running 1 table model in 0.74s.
 
 Completed successfully
 
 Done. PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1
 ```
+### Exporting dbt normalization project outside Airbyte
 
 As seen in the tutorial on [exploring workspace folder](../browsing-output-logs.md), it is possible to browse the `normalize` folder and examine further logs if an error occurs.
 
@@ -83,50 +102,85 @@ docker cp airbyte-server:/tmp/workspace/$NORMALIZE_WORKSPACE/normalize/ $TUTORIA
 
 NORMALIZE_DIR=$TUTORIAL_DIR/normalization-files/normalize
 cd $NORMALIZE_DIR
-cat $NORMALIZE_DIR/models/generated/*.sql
+cat $NORMALIZE_DIR/models/generated/**/*.sql
 ```
 
 Example Output:
 
 ```text
-with 
-covid_epidemiology_node as (
-  select 
-    _airbyte_emitted_at,
-    {{ dbt_utils.current_timestamp_in_utc()  }} as _airbyte_normalized_at,
-    cast({{ json_extract_scalar('_airbyte_data', ['date'])  }} as {{ dbt_utils.type_string()  }}) as date,
-    cast({{ json_extract_scalar('_airbyte_data', ['new_recovered'])  }} as {{ dbt_utils.type_float()  }}) as new_recovered,
-    cast({{ json_extract_scalar('_airbyte_data', ['new_tested'])  }} as {{ dbt_utils.type_float()  }}) as new_tested,
-    cast({{ json_extract_scalar('_airbyte_data', ['total_deceased'])  }} as {{ dbt_utils.type_float()  }}) as total_deceased,
-    cast({{ json_extract_scalar('_airbyte_data', ['new_deceased'])  }} as {{ dbt_utils.type_float()  }}) as new_deceased,
-    cast({{ json_extract_scalar('_airbyte_data', ['new_confirmed'])  }} as {{ dbt_utils.type_float()  }}) as new_confirmed,
-    cast({{ json_extract_scalar('_airbyte_data', ['total_confirmed'])  }} as {{ dbt_utils.type_float()  }}) as total_confirmed,
-    cast({{ json_extract_scalar('_airbyte_data', ['total_tested'])  }} as {{ dbt_utils.type_float()  }}) as total_tested,
-    cast({{ json_extract_scalar('_airbyte_data', ['total_recovered'])  }} as {{ dbt_utils.type_float()  }}) as total_recovered,
-    cast({{ json_extract_scalar('_airbyte_data', ['key'])  }} as {{ dbt_utils.type_string()  }}) as key
-  from {{ source('quarantine', 'covid_epidemiology_raw')  }}
-),
-covid_epidemiology_with_id as (
-  select
+{{ config(alias="covid_epidemiology_ab1", schema="_airbyte_quarantine", tags=["top-level-intermediate"]) }}
+-- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+select
+    {{ json_extract_scalar('_airbyte_data', ['key']) }} as {{ adapter.quote('key') }},
+    {{ json_extract_scalar('_airbyte_data', ['date']) }} as {{ adapter.quote('date') }},
+    {{ json_extract_scalar('_airbyte_data', ['new_tested']) }} as new_tested,
+    {{ json_extract_scalar('_airbyte_data', ['new_deceased']) }} as new_deceased,
+    {{ json_extract_scalar('_airbyte_data', ['total_tested']) }} as total_tested,
+    {{ json_extract_scalar('_airbyte_data', ['new_confirmed']) }} as new_confirmed,
+    {{ json_extract_scalar('_airbyte_data', ['new_recovered']) }} as new_recovered,
+    {{ json_extract_scalar('_airbyte_data', ['total_deceased']) }} as total_deceased,
+    {{ json_extract_scalar('_airbyte_data', ['total_confirmed']) }} as total_confirmed,
+    {{ json_extract_scalar('_airbyte_data', ['total_recovered']) }} as total_recovered,
+    _airbyte_emitted_at
+from {{ source('quarantine', '_airbyte_raw_covid_epidemiology') }}
+-- covid_epidemiology
+
+{{ config(alias="covid_epidemiology_ab2", schema="_airbyte_quarantine", tags=["top-level-intermediate"]) }}
+-- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+select
+    cast({{ adapter.quote('key') }} as {{ dbt_utils.type_string() }}) as {{ adapter.quote('key') }},
+    cast({{ adapter.quote('date') }} as {{ dbt_utils.type_string() }}) as {{ adapter.quote('date') }},
+    cast(new_tested as {{ dbt_utils.type_float() }}) as new_tested,
+    cast(new_deceased as {{ dbt_utils.type_float() }}) as new_deceased,
+    cast(total_tested as {{ dbt_utils.type_float() }}) as total_tested,
+    cast(new_confirmed as {{ dbt_utils.type_float() }}) as new_confirmed,
+    cast(new_recovered as {{ dbt_utils.type_float() }}) as new_recovered,
+    cast(total_deceased as {{ dbt_utils.type_float() }}) as total_deceased,
+    cast(total_confirmed as {{ dbt_utils.type_float() }}) as total_confirmed,
+    cast(total_recovered as {{ dbt_utils.type_float() }}) as total_recovered,
+    _airbyte_emitted_at
+from {{ ref('covid_epidemiology_ab1_558') }}
+-- covid_epidemiology
+
+{{ config(alias="covid_epidemiology_ab3", schema="_airbyte_quarantine", tags=["top-level-intermediate"]) }}
+-- SQL model to build a hash column based on the values of this record
+select
     *,
     {{ dbt_utils.surrogate_key([
-        'date',
-        'new_recovered',
+        adapter.quote('key'),
+        adapter.quote('date'),
         'new_tested',
-        'total_deceased',
         'new_deceased',
-        'new_confirmed',
-        'total_confirmed',
         'total_tested',
+        'new_confirmed',
+        'new_recovered',
+        'total_deceased',
+        'total_confirmed',
         'total_recovered',
-        'key'
-    ])  }} as _airbyte_covid_epidemiology_hashid
-    from covid_epidemiology_node
-)
-select * from covid_epidemiology_with_id
+    ]) }} as _airbyte_covid_epidemiology_hashid
+from {{ ref('covid_epidemiology_ab2_558') }}
+-- covid_epidemiology
+
+{{ config(alias="covid_epidemiology", schema="quarantine", tags=["top-level"]) }}
+-- Final base SQL model
+select
+    {{ adapter.quote('key') }},
+    {{ adapter.quote('date') }},
+    new_tested,
+    new_deceased,
+    total_tested,
+    new_confirmed,
+    new_recovered,
+    total_deceased,
+    total_confirmed,
+    total_recovered,
+    _airbyte_emitted_at,
+    _airbyte_covid_epidemiology_hashid
+from {{ ref('covid_epidemiology_ab3_558') }}
+-- covid_epidemiology from {{ source('quarantine', '_airbyte_raw_covid_epidemiology') }}
 ```
 
-If you have [DBT installed](https://docs.getdbt.com/dbt-cli/installation/) on your machine, you can then view, edit, customize and run the dbt models in your project if you want to bypass the normalization steps generated by Airbyte!
+If you have [dbt installed](https://docs.getdbt.com/dbt-cli/installation/) locally on your machine, you can then view, edit, version, customize, and run the dbt models in your project outside Airbyte syncs.
 
 ```bash
 #!/usr/bin/env bash 
@@ -138,30 +192,25 @@ dbt run --profiles-dir=$NORMALIZE_DIR --project-dir=$NORMALIZE_DIR --full-refres
 Example Output:
 
 ```text
-Running with dbt=0.18.1
-Installing https://github.com/fishtown-analytics/dbt-utils.git@0.6.2
-  Installed from revision 0.6.2
+Running with dbt=0.19.1
+Installing https://github.com/fishtown-analytics/dbt-utils.git@0.6.4
+  Installed from revision 0.6.4
 
-Running with dbt=0.18.1
-Found 1 model, 0 tests, 0 snapshots, 0 analyses, 302 macros, 0 operations, 0 seed files, 1 source
+Running with dbt=0.19.1
+Found 4 models, 0 tests, 0 snapshots, 0 analyses, 364 macros, 0 operations, 0 seed files, 1 source, 0 exposures
 
-15:37:54 | Concurrency: 32 threads (target='prod')
-15:37:54 | 
-15:37:55 | 1 of 1 START table model quarantine.covid_epidemiology....................................................... [RUN]
-15:37:55 | 1 of 1 OK created table model quarantine.covid_epidemiology.................................................. [SELECT 17911 in 0.30s]
-15:37:55 | 
-15:37:55 | Finished running 1 table model in 0.51s.
+Concurrency: 32 threads (target='prod')
+
+1 of 1 START table model quarantine.covid_epidemiology....................................................... [RUN]
+1 of 1 OK created table model quarantine.covid_epidemiology.................................................. [SELECT 35822 in 0.44s]
+
+Finished running 1 table model in 0.63s.
 
 Completed successfully
 
 Done. PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1
 ```
 
-## Going further
+Now, that you've exported the generated normalization models, you can edit and tweak them as necessary.
 
-For the moment, it is not possible to make changes to the generated DBT models and commit them back so Airbyte can use it in its next sync of a certain source/destination combination. But, we'll work on such integration in the near future!
-
-Our DBT models are currently composed of only one model per final table to replicate, we would probably refine this and grow the transformation steps further, adding UI elements to configure what should be included or not in the normalization step.
-
-However, if you have ideas on what to do with DBT from this point on, we would be glad to hear your feedbacks and ideas. Thank you!
-
+If you want to know how to push your modifications back to Airbyte and use your updated dbt project during Airbyte syncs, you can continue with the following [tutorial on importing transformations into Airbyte](transformations-with-airbyte.md)...
