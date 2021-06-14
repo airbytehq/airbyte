@@ -859,7 +859,8 @@ public abstract class DestinationAcceptanceTest {
     return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
   }
 
-  private void runSyncAndVerifyStateOutput(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization) throws Exception {
+  private void runSyncAndVerifyStateOutput(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization)
+      throws Exception {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog, runNormalization);
     final AirbyteMessage expectedStateMessage = MoreLists.reversed(messages)
         .stream()

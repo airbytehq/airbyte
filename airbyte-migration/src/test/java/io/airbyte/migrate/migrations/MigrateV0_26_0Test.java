@@ -24,9 +24,9 @@
 
 package io.airbyte.migrate.migrations;
 
-import static io.airbyte.migrate.migrations.MigrationV0_25_0.DESTINATION_CONNECTION_RESOURCE_ID;
-import static io.airbyte.migrate.migrations.MigrationV0_25_0.STANDARD_SYNC_OPERATION_RESOURCE_ID;
-import static io.airbyte.migrate.migrations.MigrationV0_25_0.STANDARD_SYNC_RESOURCE_ID;
+import static io.airbyte.migrate.migrations.MigrationV0_26_0.DESTINATION_CONNECTION_RESOURCE_ID;
+import static io.airbyte.migrate.migrations.MigrationV0_26_0.STANDARD_SYNC_OPERATION_RESOURCE_ID;
+import static io.airbyte.migrate.migrations.MigrationV0_26_0.STANDARD_SYNC_RESOURCE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -51,10 +51,10 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 
-public class MigrateV0_25_0Test {
+public class MigrateV0_26_0Test {
 
-  private static final String INPUT_CONFIG_PATH = "migrations/migrationV0_25_0/input_config";
-  private static final String OUTPUT_CONFIG_PATH = "migrations/migrationV0_25_0/output_config";
+  private static final String INPUT_CONFIG_PATH = "migrations/migrationV0_26_0/input_config";
+  private static final String OUTPUT_CONFIG_PATH = "migrations/migrationV0_26_0/output_config";
   public static final ResourceId STANDARD_WORKSPACE_RESOURCE_ID = ResourceId
       .fromConstantCase(ResourceType.CONFIG, "STANDARD_WORKSPACE");
 
@@ -67,9 +67,9 @@ public class MigrateV0_25_0Test {
 
   @Test
   void testMigration() throws IOException {
-    MigrationV0_25_0 migration = (MigrationV0_25_0) Migrations.MIGRATIONS
+    MigrationV0_26_0 migration = (MigrationV0_26_0) Migrations.MIGRATIONS
         .stream()
-        .filter(m -> m instanceof MigrationV0_25_0)
+        .filter(m -> m instanceof MigrationV0_26_0)
         .findAny()
         .orElse(null);
     assertNotNull(migration);
@@ -110,7 +110,7 @@ public class MigrateV0_25_0Test {
     assertEquals(expectedOutput, outputAsList);
   }
 
-  public static class MigrationTest extends MigrationV0_25_0 {
+  public static class MigrationTest extends MigrationV0_26_0 {
 
     public MigrationTest(Migration previousMigration) {
       super(previousMigration);
