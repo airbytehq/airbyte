@@ -151,7 +151,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   @Override
   public void deleteOrphanDirectories() throws IOException {
-    Set<String> configSchemas = Arrays.asList(ConfigSchema.values()).stream().map(Enum::toString).collect(Collectors.toSet());
+    Set<String> configSchemas = Arrays.stream(ConfigSchema.values()).map(Enum::toString).collect(Collectors.toSet());
     for (String directory : listDirectories()) {
       if (!configSchemas.contains(directory)) {
         File file = storageRoot.resolve(directory).toFile();

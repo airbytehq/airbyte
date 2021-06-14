@@ -62,6 +62,9 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.output.OutputFrame;
 
+/**
+ * In order to run this test from intellij, build the docker images via ./gradlew composeBuild and replace System.getenv("MIGRATION_TEST_VERSION") with the version in your .env file
+ */
 public class MigrationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationAcceptanceTest.class);
@@ -241,7 +244,6 @@ public class MigrationAcceptanceTest {
     assertEquals(workspace.getName(), "default");
     assertEquals(workspace.getSlug(), "default");
     assertEquals(workspace.getInitialSetupComplete(), true);
-    assertEquals(workspace.getAnonymousDataCollection(), true);
     assertEquals(workspace.getAnonymousDataCollection(), false);
     assertEquals(workspace.getNews(), false);
     assertEquals(workspace.getSecurityUpdates(), false);

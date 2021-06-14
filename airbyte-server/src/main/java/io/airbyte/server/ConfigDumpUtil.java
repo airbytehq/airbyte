@@ -27,18 +27,13 @@ package io.airbyte.server;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,21 +54,6 @@ public class ConfigDumpUtil {
           .collect(Collectors.toList());
       return directoryName;
 
-    }
-  }
-
-  public void orphanDirectories() throws IOException {
-    Set<String> configSchemas = Arrays.asList(ConfigSchema.values()).stream().map(c -> c.toString())
-        .collect(
-            Collectors.toSet());
-    for (String directory : listDirectories()) {
-      if (!configSchemas.contains(directory)) {
-        File file = storageRoot.resolve(directory).toFile();
-        LOGGER.info("Deleting directory " + file);
-        if (!FileUtils.deleteQuietly(file)) {
-          LOGGER.warn("Could not delete directory " + file);
-        }
-      }
     }
   }
 

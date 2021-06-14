@@ -87,14 +87,6 @@ public class ConfigDumpExport {
     }
   }
 
-  public void deleteOrphanDirectories() {
-    try {
-      configDumpUtil.orphanDirectories();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   private void exportVersionFile(Path tempFolder) throws IOException {
     final File versionFile = Files.createFile(tempFolder.resolve(VERSION_FILE_NAME)).toFile();
     FileUtils.writeStringToFile(versionFile, version, Charset.defaultCharset());
