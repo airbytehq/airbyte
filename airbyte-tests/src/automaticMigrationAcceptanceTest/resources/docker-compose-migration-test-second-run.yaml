@@ -60,7 +60,7 @@ services:
     logging: *default-logging
     restart: unless-stopped
     ports:
-      - 6233:6233
+      - 7233:7233
     environment:
       - DB=postgresql
       - DB_PORT=5432

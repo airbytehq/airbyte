@@ -293,7 +293,7 @@ public class MigrationAcceptanceTest {
     env.put("HACK_LOCAL_ROOT_PARENT", "/tmp");
     env.put("WEBAPP_URL", "http://localhost:7000/");
     env.put("API_URL", "http://localhost:7001/api/v1/");
-    env.put("TEMPORAL_HOST", "airbyte-temporal:6233");
+    env.put("TEMPORAL_HOST", "airbyte-temporal:7233");
     env.put("INTERNAL_API_HOST", "airbyte-server:7001");
     return env;
   }
