@@ -24,66 +24,7 @@
 
 package io.airbyte.server.apis;
 
-import io.airbyte.api.model.CheckConnectionRead;
-import io.airbyte.api.model.CheckOperationRead;
-import io.airbyte.api.model.ConnectionCreate;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.ConnectionState;
-import io.airbyte.api.model.ConnectionUpdate;
-import io.airbyte.api.model.DestinationCoreConfig;
-import io.airbyte.api.model.DestinationCreate;
-import io.airbyte.api.model.DestinationDefinitionCreate;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationDefinitionRead;
-import io.airbyte.api.model.DestinationDefinitionReadList;
-import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.model.DestinationDefinitionUpdate;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.DestinationRecreate;
-import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.api.model.HealthCheckRead;
-import io.airbyte.api.model.ImportRead;
-import io.airbyte.api.model.JobIdRequestBody;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobListRequestBody;
-import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.LogsRequestBody;
-import io.airbyte.api.model.Notification;
-import io.airbyte.api.model.NotificationRead;
-import io.airbyte.api.model.OperationCreate;
-import io.airbyte.api.model.OperationCreateOrUpdate;
-import io.airbyte.api.model.OperationIdRequestBody;
-import io.airbyte.api.model.OperationRead;
-import io.airbyte.api.model.OperationReadList;
-import io.airbyte.api.model.OperationUpdate;
-import io.airbyte.api.model.SlugRequestBody;
-import io.airbyte.api.model.SourceCoreConfig;
-import io.airbyte.api.model.SourceCreate;
-import io.airbyte.api.model.SourceDefinitionCreate;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SourceDefinitionReadList;
-import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceDefinitionUpdate;
-import io.airbyte.api.model.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.SourceRecreate;
-import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.api.model.WebBackendConnectionCreate;
-import io.airbyte.api.model.WebBackendConnectionRead;
-import io.airbyte.api.model.WebBackendConnectionReadList;
-import io.airbyte.api.model.WebBackendConnectionRequestBody;
-import io.airbyte.api.model.WebBackendConnectionUpdate;
-import io.airbyte.api.model.WorkspaceCreate;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.api.model.WorkspaceRead;
-import io.airbyte.api.model.WorkspaceUpdate;
+import io.airbyte.api.model.*;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.config.Configs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -110,7 +51,6 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendDestinationHandler;
 import io.airbyte.server.handlers.WebBackendSourceHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -160,11 +100,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
         configs.getWorkspaceRoot(),
         jobNotifier,
         temporalService);
-    final DockerImageValidator dockerImageValidator = new DockerImageValidator(synchronousSchedulerClient);
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
+    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, specFetcher, synchronousSchedulerClient);
     connectionsHandler = new ConnectionsHandler(configRepository);
     operationsHandler = new OperationsHandler(configRepository);
-    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, dockerImageValidator, synchronousSchedulerClient);
+    destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, specFetcher, synchronousSchedulerClient);
     destinationHandler = new DestinationHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     sourceHandler = new SourceHandler(configRepository, schemaValidator, specFetcher, connectionsHandler);
     workspacesHandler = new WorkspacesHandler(configRepository, connectionsHandler, destinationHandler, sourceHandler);
@@ -238,12 +177,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public SourceDefinitionRead createSourceDefinition(@Valid SourceDefinitionCreate sourceDefinitionCreate) {
+  public SourceDefinitionReadWithJobInfo createSourceDefinition(@Valid SourceDefinitionCreate sourceDefinitionCreate) {
     return execute(() -> sourceDefinitionsHandler.createSourceDefinition(sourceDefinitionCreate));
   }
 
   @Override
-  public SourceDefinitionRead updateSourceDefinition(@Valid SourceDefinitionUpdate sourceDefinitionUpdate) {
+  public SourceDefinitionReadWithJobInfo updateSourceDefinition(@Valid SourceDefinitionUpdate sourceDefinitionUpdate) {
     return execute(() -> sourceDefinitionsHandler.updateSourceDefinition(sourceDefinitionUpdate));
   }
 
@@ -317,12 +256,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
   }
 
   @Override
-  public DestinationDefinitionRead createDestinationDefinition(@Valid DestinationDefinitionCreate destinationDefinitionCreate) {
+  public DestinationDefinitionReadWithJobInfo createDestinationDefinition(@Valid DestinationDefinitionCreate destinationDefinitionCreate) {
     return execute(() -> destinationDefinitionsHandler.createDestinationDefinition(destinationDefinitionCreate));
   }
 
   @Override
-  public DestinationDefinitionRead updateDestinationDefinition(@Valid DestinationDefinitionUpdate destinationDefinitionUpdate) {
+  public DestinationDefinitionReadWithJobInfo updateDestinationDefinition(@Valid DestinationDefinitionUpdate destinationDefinitionUpdate) {
     return execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
   }
 

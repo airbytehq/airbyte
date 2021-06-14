@@ -25,19 +25,20 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.api.model.SourceDefinitionCreate;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SourceDefinitionReadList;
-import io.airbyte.api.model.SourceDefinitionUpdate;
+import com.google.common.base.Preconditions;
+import io.airbyte.api.model.*;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -50,7 +51,7 @@ import java.util.stream.Collectors;
 
 public class SourceDefinitionsHandler {
 
-  private final DockerImageValidator imageValidator;
+  private final SpecFetcher specFetcher;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final AirbyteGithubStore githubStore;
@@ -58,20 +59,20 @@ public class SourceDefinitionsHandler {
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
-                                  final DockerImageValidator imageValidator,
+                                  final SpecFetcher specFetcher,
                                   final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
+    this(configRepository, specFetcher, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   public SourceDefinitionsHandler(
                                   final ConfigRepository configRepository,
-                                  final DockerImageValidator imageValidator,
+                                  final SpecFetcher specFetcher,
                                   final Supplier<UUID> uuidSupplier,
                                   final CachingSynchronousSchedulerClient schedulerSynchronousClient,
                                   final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
+    this.specFetcher = specFetcher;
     this.uuidSupplier = uuidSupplier;
-    this.imageValidator = imageValidator;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
   }
@@ -87,6 +88,17 @@ public class SourceDefinitionsHandler {
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()));
     } catch (URISyntaxException | NullPointerException e) {
+      throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
+    }
+  }
+
+  @VisibleForTesting
+  static SourceDefinitionReadWithJobInfo buildSourceDefinitionReadWithJobInfo(StandardSourceDefinition standardSourceDefinition, SynchronousJobRead jobInfo) {
+    try {
+      return new SourceDefinitionReadWithJobInfo()
+              .sourceDefinitionRead(buildSourceDefinitionRead(standardSourceDefinition))
+              .jobInfo(jobInfo);
+    } catch (NullPointerException e) {
       throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
     }
   }
@@ -121,12 +133,21 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
-  public SourceDefinitionRead createSourceDefinition(SourceDefinitionCreate sourceDefinitionCreate) throws JsonValidationException, IOException {
-    imageValidator.assertValidIntegrationImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
+  public SourceDefinitionReadWithJobInfo createSourceDefinition(SourceDefinitionCreate sourceDefinitionCreate) throws JsonValidationException, IOException {
+    // Validates that the docker image exists and can generate a compatible spec by running a getSpec
+    // job on the provided image and checking that getOutput() worked.
+    SynchronousResponse<ConnectorSpecification> response = null;
+    try {
+      response = specFetcher.executeWithResponse(DockerUtils.getTaggedImageName(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag()));
+      Preconditions.checkNotNull(response, "Get Spec job returned null response");
+      Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
+      Preconditions.checkNotNull(response.getOutput(), "Get Spec job returned null spec");
+    } catch (NullPointerException npe) {
+      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s", sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag(), npe.toString() + " " + npe.getMessage()), npe);
+    }
 
-    final UUID id = uuidSupplier.get();
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-        .withSourceDefinitionId(id)
+        .withSourceDefinitionId(uuidSupplier.get())
         .withDockerRepository(sourceDefinitionCreate.getDockerRepository())
         .withDockerImageTag(sourceDefinitionCreate.getDockerImageTag())
         .withDocumentationUrl(sourceDefinitionCreate.getDocumentationUrl().toString())
@@ -135,14 +156,24 @@ public class SourceDefinitionsHandler {
 
     configRepository.writeStandardSource(sourceDefinition);
 
-    return buildSourceDefinitionRead(sourceDefinition);
+    return buildSourceDefinitionReadWithJobInfo(sourceDefinition, JobConverter.getSynchronousJobRead(response));
   }
 
-  public SourceDefinitionRead updateSourceDefinition(SourceDefinitionUpdate sourceDefinitionUpdate)
+  public SourceDefinitionReadWithJobInfo updateSourceDefinition(SourceDefinitionUpdate sourceDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition currentSourceDefinition =
         configRepository.getStandardSourceDefinition(sourceDefinitionUpdate.getSourceDefinitionId());
-    imageValidator.assertValidIntegrationImage(currentSourceDefinition.getDockerRepository(), sourceDefinitionUpdate.getDockerImageTag());
+    // Validates that the docker image exists and can generate a compatible spec by running a getSpec
+    // job on the provided image and checking that getOutput() worked.
+    SynchronousResponse<ConnectorSpecification> response = null;
+    try {
+      response = specFetcher.executeWithResponse(DockerUtils.getTaggedImageName(currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag()));
+      Preconditions.checkNotNull(response, "Get Spec job returned null response");
+      Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
+      Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
+    } catch (NullPointerException e) {
+      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s", currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
+    }
 
     final StandardSourceDefinition newSource = new StandardSourceDefinition()
         .withSourceDefinitionId(currentSourceDefinition.getSourceDefinitionId())
@@ -155,7 +186,7 @@ public class SourceDefinitionsHandler {
     configRepository.writeStandardSource(newSource);
     // we want to re-fetch the spec for updated definitions.
     schedulerSynchronousClient.resetCache();
-    return buildSourceDefinitionRead(newSource);
+    return buildSourceDefinitionReadWithJobInfo(newSource, JobConverter.getSynchronousJobRead(response));
   }
 
   public static String loadIcon(String name) {

@@ -25,19 +25,20 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.api.model.DestinationDefinitionCreate;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationDefinitionRead;
-import io.airbyte.api.model.DestinationDefinitionReadList;
-import io.airbyte.api.model.DestinationDefinitionUpdate;
+import com.google.common.base.Preconditions;
+import io.airbyte.api.model.*;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
+import io.airbyte.scheduler.client.SynchronousResponse;
+import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
-import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
@@ -50,26 +51,26 @@ import java.util.stream.Collectors;
 
 public class DestinationDefinitionsHandler {
 
-  private final DockerImageValidator imageValidator;
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
+  private final SpecFetcher specFetcher;
   private final CachingSynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final DockerImageValidator imageValidator,
+                                       final SpecFetcher specFetcher,
                                        final CachingSynchronousSchedulerClient schedulerSynchronousClient) {
-    this(configRepository, imageValidator, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production());
+    this(configRepository, UUID::randomUUID, specFetcher, schedulerSynchronousClient, AirbyteGithubStore.production());
   }
 
   @VisibleForTesting
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final DockerImageValidator imageValidator,
                                        final Supplier<UUID> uuidSupplier,
+                                       final SpecFetcher specFetcher,
                                        final CachingSynchronousSchedulerClient schedulerSynchronousClient,
                                        final AirbyteGithubStore githubStore) {
     this.configRepository = configRepository;
-    this.imageValidator = imageValidator;
+    this.specFetcher = specFetcher;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
@@ -86,6 +87,17 @@ public class DestinationDefinitionsHandler {
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardDestinationDefinition.getIcon()));
     } catch (URISyntaxException | NullPointerException e) {
+      throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
+    }
+  }
+
+  @VisibleForTesting
+  static DestinationDefinitionReadWithJobInfo buildDestinationDefinitionReadWithJobInfo(StandardDestinationDefinition standardDestinationDefinition, SynchronousJobRead jobInfo) {
+    try {
+      return new DestinationDefinitionReadWithJobInfo()
+              .destinationDefinitionRead(buildDestinationDefinitionRead(standardDestinationDefinition))
+              .jobInfo(jobInfo);
+    } catch (NullPointerException e) {
       throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
     }
   }
@@ -121,12 +133,21 @@ public class DestinationDefinitionsHandler {
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  public DestinationDefinitionRead createDestinationDefinition(DestinationDefinitionCreate destinationDefinitionCreate)
+  public DestinationDefinitionReadWithJobInfo createDestinationDefinition(DestinationDefinitionCreate destinationDefinitionCreate)
       throws JsonValidationException, IOException {
-    imageValidator.assertValidIntegrationImage(destinationDefinitionCreate.getDockerRepository(),
-        destinationDefinitionCreate.getDockerImageTag());
+    // Validates that the docker image exists and can generate a compatible spec by running a getSpec
+    // job on the provided image and checking that getOutput() worked.
+    SynchronousResponse<ConnectorSpecification> response = null;
+    try {
+      response = specFetcher.executeWithResponse(DockerUtils.getTaggedImageName(destinationDefinitionCreate.getDockerRepository(), destinationDefinitionCreate.getDockerImageTag()));
+      Preconditions.checkNotNull(response, "Get Spec job returned null response");
+      Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
+      Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
+    } catch (NullPointerException e) {
+      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s", destinationDefinitionCreate.getDockerRepository(), destinationDefinitionCreate.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
+    }
 
-    final UUID id = uuidSupplier.get();
+      final UUID id = uuidSupplier.get();
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
         .withDestinationDefinitionId(id)
         .withDockerRepository(destinationDefinitionCreate.getDockerRepository())
@@ -137,15 +158,25 @@ public class DestinationDefinitionsHandler {
 
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
 
-    return buildDestinationDefinitionRead(destinationDefinition);
+    return buildDestinationDefinitionReadWithJobInfo(destinationDefinition, JobConverter.getSynchronousJobRead(response));
   }
 
-  public DestinationDefinitionRead updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
+  public DestinationDefinitionReadWithJobInfo updateDestinationDefinition(DestinationDefinitionUpdate destinationDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition currentDestination = configRepository
         .getStandardDestinationDefinition(destinationDefinitionUpdate.getDestinationDefinitionId());
-    imageValidator.assertValidIntegrationImage(currentDestination.getDockerRepository(),
-        destinationDefinitionUpdate.getDockerImageTag());
+
+    // Validates that the docker image exists and can generate a compatible spec by running a getSpec
+    // job on the provided image and checking that getOutput() worked.
+    SynchronousResponse<ConnectorSpecification> response = null;
+    try {
+      response = specFetcher.executeWithResponse(DockerUtils.getTaggedImageName(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag()));
+      Preconditions.checkNotNull(response, "Get Spec job returned null response");
+      Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
+      Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
+    } catch (NullPointerException e) {
+      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s", currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
+    }
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
         .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
@@ -158,7 +189,7 @@ public class DestinationDefinitionsHandler {
     configRepository.writeStandardDestinationDefinition(newDestination);
     // we want to re-fetch the spec for updated definitions.
     schedulerSynchronousClient.resetCache();
-    return buildDestinationDefinitionRead(newDestination);
+    return buildDestinationDefinitionReadWithJobInfo(newDestination, JobConverter.getSynchronousJobRead(response));
   }
 
   public static String loadIcon(String name) {

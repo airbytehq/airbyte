@@ -499,7 +499,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
+                $ref: "#/components/schemas/DestinationDefinitionReadWithJobInfo"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/destination_definitions/update:
@@ -520,7 +520,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
+                $ref: "#/components/schemas/DestinationDefinitionReadWithJobInfo"
         "404":
           description: DestinationDefinition not found
         "422":
@@ -1799,6 +1799,16 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         dockerImageTag:
           type: string
+    DestinationDefinitionReadWithJobInfo:
+      type: object
+      required:
+        - destinationDefinitionRead
+        - jobInfo
+      properties:
+        destinationDefinitionRead:
+          $ref: "#/components/schemas/DestinationDefinitionRead"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"      
     DestinationDefinitionRead:
       type: object
       required:
