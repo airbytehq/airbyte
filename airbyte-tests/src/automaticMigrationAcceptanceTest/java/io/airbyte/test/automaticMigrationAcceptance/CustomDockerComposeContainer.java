@@ -30,6 +30,10 @@ import java.lang.reflect.Method;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.SocatContainer;
 
+/**
+ * we need this class to hack the method {@link org.testcontainers.containers.DockerComposeContainer#stop()}
+ * so that we can do a docker compose down without removing the volumes
+ */
 public class CustomDockerComposeContainer {
 
   private final DockerComposeContainer dockerComposeContainer;

@@ -25,6 +25,7 @@
 package io.airbyte.test.automaticMigrationAcceptance;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.io.Resources;
 import io.airbyte.api.client.HealthApi;
@@ -121,13 +122,7 @@ public class MigrationAcceptanceTest {
   }
 
   private String targetVersionWithoutPatch(String targetVersion) {
-    AirbyteVersion airbyteVersion = new AirbyteVersion(targetVersion);
-    return "" + airbyteVersion.getMajorVersion()
-        + "."
-        + airbyteVersion.getMinorVersion()
-        + ".0-"
-        + airbyteVersion.getVersion().replace("\n", "").strip().split("-")[1];
-
+    return AirbyteVersion.versionWithoutPatch(targetVersion).getVersion();
   }
 
   private void secondRun(String targetVersion)

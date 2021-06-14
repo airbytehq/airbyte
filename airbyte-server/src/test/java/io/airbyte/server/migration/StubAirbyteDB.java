@@ -30,7 +30,7 @@ import java.io.IOException;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-public class MockAirbyteDB implements AutoCloseable {
+public class StubAirbyteDB implements AutoCloseable {
 
   private final PostgreSQLContainer<?> container;
   private final Database database;
@@ -39,7 +39,7 @@ public class MockAirbyteDB implements AutoCloseable {
     return database;
   }
 
-  public MockAirbyteDB() throws IOException, InterruptedException {
+  public StubAirbyteDB() throws IOException, InterruptedException {
     container =
         new PostgreSQLContainer<>("postgres:13-alpine")
             .withDatabaseName("airbyte")

@@ -30,13 +30,19 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class DefaultConfigPersistence implements ConfigPersistence {
@@ -47,6 +53,8 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   private final JsonSchemaValidator jsonSchemaValidator;
   private final Path storageRoot;
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultConfigPersistence.class);
+
 
   public DefaultConfigPersistence(final Path storageRoot) {
     this(storageRoot, new JsonSchemaValidator());
@@ -140,6 +148,27 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
     JsonNode schema = JsonSchemaValidator.getSchema(configType.getFile());
     jsonSchemaValidator.ensure(schema, Jsons.jsonNode(config));
+  }
+
+  @Override
+  public void deleteOrphanDirectories() throws IOException {
+    Set<String> configSchemas = Arrays.asList(ConfigSchema.values()).stream().map(Enum::toString).collect(Collectors.toSet());
+    for (String directory : listDirectories()) {
+      if (!configSchemas.contains(directory)) {
+        File file = storageRoot.resolve(directory).toFile();
+        LOGGER.info("Deleting directory " + file);
+        if (!FileUtils.deleteQuietly(file)) {
+          LOGGER.warn("Could not delete directory " + file);
+        }
+      }
+    }
+  }
+
+  private List<String> listDirectories() throws IOException {
+    try (Stream<Path> files = Files.list(storageRoot)) {
+      return files.map(c -> c.getFileName().toString())
+          .collect(Collectors.toList());
+    }
   }
 
 }

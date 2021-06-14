@@ -213,7 +213,9 @@ public class ServerApp {
     }
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    if (airbyteDatabaseVersion.isPresent() && !AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
+    if (airbyteDatabaseVersion.isPresent() && !AirbyteVersion
+        .isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
+        && !isDatabaseVersionAheadOfAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion.get() + " to version : " + airbyteVersion);
       ArchiveHandler importArchiveHandler = new ArchiveHandler(airbyteVersion, configRepository,
           jobPersistence,
@@ -235,6 +237,17 @@ public class ServerApp {
       LOGGER.info("Start serving version mismatch errors. Automatic migration must have failed");
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
+  }
+
+  public static boolean isDatabaseVersionAheadOfAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
+    AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
+    AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
+
+    if(databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) > 0) {
+      return true;
+    }
+
+    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) > 0;
   }
 
 }

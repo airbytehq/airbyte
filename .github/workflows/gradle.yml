@@ -229,8 +229,7 @@ jobs:
           ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
-        run: |
-          ./tools/bin/automatic_migration_acceptance_test.sh
+        run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") ./gradlew --no-daemon :airbyte-tests:automaticMigrationAcceptanceTest --rerun-tasks --scan -i
   # In case of self-hosted EC2 errors, remove the `stop-build-runner` block.
   stop-acceptance-test-runner:
     name: Stop Acceptance Test EC2 Runner

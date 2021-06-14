@@ -48,16 +48,8 @@ public class MigrationRunner {
 
   public static void run(MigrateConfig migrateConfig) throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_migrate");
-    AirbyteVersion airbyteVersion = new AirbyteVersion(migrateConfig.getTargetVersion());
-    if (!airbyteVersion.getPatchVersion().equals("0")) {
-      String targetVersionWithoutPatch = "" + airbyteVersion.getMajorVersion()
-          + "."
-          + airbyteVersion.getMinorVersion()
-          + ".0-"
-          + airbyteVersion.getVersion().replace("\n", "").strip().split("-")[1];
-      migrateConfig = new MigrateConfig(migrateConfig.getInputPath(), migrateConfig.getOutputPath(),
-          targetVersionWithoutPatch);
-    }
+    migrateConfig = new MigrateConfig(migrateConfig.getInputPath(),migrateConfig.getOutputPath(), AirbyteVersion.versionWithoutPatch(migrateConfig.getTargetVersion()).getVersion());
+
     if (migrateConfig.getInputPath().toString().endsWith(".gz")) {
       LOGGER.info("Unpacking tarball");
       final Path uncompressedInputPath = Files.createDirectories(workspaceRoot.resolve("uncompressed"));

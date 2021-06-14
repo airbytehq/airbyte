@@ -26,13 +26,13 @@ dependencies {
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-db')
     implementation project(":airbyte-json-validation")
+    implementation project(':airbyte-migration')
     implementation project(':airbyte-notification')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:client')
     implementation project(':airbyte-scheduler:models')
     implementation project(':airbyte-scheduler:persistence')
     implementation project(':airbyte-workers')
-    implementation project(':airbyte-migration')
 
     testImplementation "org.postgresql:postgresql:42.2.18"
 

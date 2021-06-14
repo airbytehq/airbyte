@@ -98,10 +98,6 @@ public class RunMigration implements Runnable, AutoCloseable {
       }
 
       isSuccessful = true;
-      // Delete configs that we have removed in the new version so that in future full dumps, they are not
-      // present
-      // TODO: Ask someone should we do something similar for database?
-      configDumpExport.deleteOrphanDirectories();
     } catch (IOException e) {
       throw new RuntimeException("Automatic migration failed", e);
     }

@@ -68,13 +68,13 @@ public class RunMigrationTest {
 
   @Test
   public void testRunMigration() {
-    try (MockAirbyteDB mockAirbyteDB = new MockAirbyteDB()) {
+    try (StubAirbyteDB stubAirbyteDB = new StubAirbyteDB()) {
       final File file = Path
           .of(Resources.getResource("migration/03a4c904-c91d-447f-ab59-27a43b52c2fd.gz").toURI())
           .toFile();
 
       Path exportConfigRoot = Path.of(Resources.getResource("migration/dummy_data").toURI());
-      JobPersistence jobPersistence = getJobPersistence(mockAirbyteDB.getDatabase(), file,
+      JobPersistence jobPersistence = getJobPersistence(stubAirbyteDB.getDatabase(), file,
           INITIAL_VERSION);
       assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
 

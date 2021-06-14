@@ -133,6 +133,7 @@ public class ArchiveHandler {
         checkImport(tempFolder);
         databaseArchiver.importDatabaseFromArchive(tempFolder, version);
         configFileArchiver.importConfigsFromArchive(tempFolder, false);
+        configRepository.deleteOrphanDirectories();
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());

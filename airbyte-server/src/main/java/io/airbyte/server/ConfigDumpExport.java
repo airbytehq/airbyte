@@ -46,6 +46,14 @@ import org.apache.commons.io.FileUtils;
 
 // TODO: Write a test case which compares the output dump with the output of ArchiveHandler export
 // for the same data
+
+/**
+ * This class acts like export method of ArchiveHandler but the difference is
+ * 1. It takes a full dump of whatever is available in the config directory without any schema validation.
+ * We dont want schema validation because in case of automatic migration, the code that is going to do the schema validation is from new version but the data
+ * in the config files is old. Thus schema validation would fail.
+ * 2. Unlike ArchiveHandler, this doesn't take the dump of specific files but looks at the config directory and  takes the full dump of whatever is available
+ */
 public class ConfigDumpExport {
 
   private static final String ARCHIVE_FILE_NAME = "airbyte_config_dump";
@@ -92,7 +100,7 @@ public class ConfigDumpExport {
   }
 
   private void dumpDatabase(Path parentFolder) throws Exception {
-    final Map<String, Stream<JsonNode>> tables = jobPersistence.exportEverythingInDefaultSchema();
+    final Map<String, Stream<JsonNode>> tables = jobPersistence.dump();
     Files.createDirectories(parentFolder.resolve(DB_FOLDER_NAME));
     for (Map.Entry<String, Stream<JsonNode>> table : tables.entrySet()) {
       final Path tablePath = buildTablePath(parentFolder, table.getKey());

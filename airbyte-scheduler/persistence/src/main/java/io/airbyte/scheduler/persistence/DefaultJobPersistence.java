@@ -85,6 +85,10 @@ import org.slf4j.LoggerFactory;
 public class DefaultJobPersistence implements JobPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
+  private static final Set<String> SYSTEM_SCHEMA = Set
+      .of("pg_toast", "information_schema", "pg_catalog", "import_backup", "pg_internal",
+          "catalog_history");
+
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   protected static final String DEFAULT_SCHEMA = "public";
   private static final String BACKUP_SCHEMA = "import_backup";
@@ -455,16 +459,17 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Map<String, Stream<JsonNode>> exportEverythingInDefaultSchema() throws IOException {
-    return exportEverything(DEFAULT_SCHEMA);
-  }
-
-  private Map<String, Stream<JsonNode>> exportEverything(final String schema) throws IOException {
-    final List<String> tables = listTables(schema);
+  public Map<String, Stream<JsonNode>> dump() throws IOException {
     final Map<String, Stream<JsonNode>> result = new HashMap<>();
+    for (String schema : listSchemas()) {
+      final List<String> tables = listAllTables(schema);
 
-    for (final String table : tables) {
-      result.put(table.toUpperCase(), exportTable(schema, table));
+      for (final String table : tables) {
+        if (result.containsKey(table)) {
+          throw new RuntimeException("Multiple tables found with the same name " + table);
+        }
+        result.put(table.toUpperCase(), exportTable(schema, table));
+      }
     }
 
     return result;
@@ -494,6 +499,25 @@ public class DefaultJobPersistence implements JobPersistence {
     } else {
       return List.of();
     }
+  }
+
+  private List<String> listAllTables(final String schema) throws IOException {
+    if (schema != null) {
+      return database.query(context -> context.meta().getSchemas(schema).stream()
+          .flatMap(s -> context.meta(s).getTables().stream())
+          .map(Named::getName)
+          .collect(Collectors.toList()));
+    } else {
+      return List.of();
+    }
+  }
+
+  private List<String> listSchemas() throws IOException {
+    return database.query(context -> context.meta().getSchemas().stream()
+        .map(Named::getName)
+        .filter(c -> !SYSTEM_SCHEMA.contains(c))
+        .collect(Collectors.toList()));
+
   }
 
   private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {
