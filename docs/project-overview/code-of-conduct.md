@@ -21,7 +21,7 @@ If you ask a question and don’t get a response, review your question for clari
 This is a public forum; do not contact individual members of this community without their explicit permission, independent of reason.
 
 ## Rule 5: No soliciting!
-If you’re a vendor, you may advertise your product in #shameless-plugs. Advertising your product anywhere else, especially in DMs, is strictly against the rules. We are appreciative when recruiters and vendors identify themselves through their Slack username.
+If you’re a vendor, you may advertise your product in #shameless-plugs. Advertising your product anywhere else, especially in direct messages (DMs), is strictly against the rules. We are appreciative when recruiters and vendors identify themselves through their Slack username.
 
 ## Rule 6: Don't spam tags.
 
