@@ -54,8 +54,8 @@ class SourceSurveymonkey(AbstractSource):
         streams = [
             Surveys(authenticator=authenticator, start_date=config["start_date"]),
             # SurveyDetails(authenticator=authenticator),
-            SurveyPages(authenticator=authenticator),
-            SurveyQuestions(authenticator=authenticator),
+            SurveyPages(authenticator=authenticator, start_date=config["start_date"]),
+            SurveyQuestions(authenticator=authenticator, start_date=config["start_date"]),
             SurveyResponses(authenticator=authenticator, start_date=config["start_date"]),
         ]
         # if os.path.exists('sy4ara.yaml'):

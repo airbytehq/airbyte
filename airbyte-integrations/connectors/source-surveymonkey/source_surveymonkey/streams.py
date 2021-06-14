@@ -38,7 +38,12 @@ class SurveymonkeyStream(HttpStream, ABC):
     url_base = "https://api.surveymonkey.com/v3/"
     primary_key = "id"
     data_field = "data"
-    cached_survey_ids = []
+
+    def __init__(self, start_date: str, **kwargs):
+        if isinstance(start_date, str):
+            start_date = pendulum.parse(start_date)  # convert to YYYY-MM-DDTHH:MM:SS
+        self._start_date = start_date
+        super().__init__(**kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
@@ -82,10 +87,6 @@ class SurveymonkeyStream(HttpStream, ABC):
 class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
 
     state_checkpoint_interval = 1000
-
-    def __init__(self, start_date: str, **kwargs):
-        self._start_date = pendulum.parse(start_date)  # convert to YYYY-MM-DDTHH:MM:SS
-        super().__init__(**kwargs)
 
     @property
     @abstractmethod
@@ -135,8 +136,7 @@ class Surveys(IncrementalSurveymonkeyStream):
             raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
         result = response_json.get(self.data_field, [])
         for record in result:
-            self.cached_survey_ids.append(record["id"])
-            substream = SurveyDetails(survey_id=record["id"], authenticator=self.authenticator)
+            substream = SurveyDetails(survey_id=record["id"], start_date=self._start_date, authenticator=self.authenticator)
             child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
             yield from child_record
 
@@ -148,9 +148,9 @@ class SurveyDetails(SurveymonkeyStream):
     in all of endpoints
     """
 
-    def __init__(self, survey_id, **kwargs):
+    def __init__(self, survey_id, start_date, **kwargs):
         self.survey_id = survey_id
-        super().__init__(**kwargs)
+        super().__init__(start_date=start_date, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"surveys/{self.survey_id}/details"
@@ -173,8 +173,9 @@ class SurveyPages(SurveymonkeyStream):
         return f"surveys/{survey_id}/details"
 
     def stream_slices(self, **kwargs):
-        for survey_id in self.cached_survey_ids:
-            yield {"survey_id": survey_id}
+        survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
+        for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"survey_id": survey["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -195,8 +196,9 @@ class SurveyQuestions(SurveymonkeyStream):
         return f"surveys/{survey_id}/details"
 
     def stream_slices(self, **kwargs):
-        for survey_id in self.cached_survey_ids:
-            yield {"survey_id": survey_id}
+        survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
+        for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"survey_id": survey["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -220,8 +222,9 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         return f"surveys/{survey_id}/responses/bulk"
 
     def stream_slices(self, **kwargs):
-        for survey_id in self.cached_survey_ids:
-            yield {"survey_id": survey_id}
+        survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
+        for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"survey_id": survey["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
