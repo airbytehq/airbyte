@@ -124,15 +124,6 @@ public interface SyncWorkflow {
             throw new IllegalArgumentException(message);
           }
         }
-      } else {
-        // TODO chris: Normalization operations should be defined at connection level in the
-        // operationSequence of StandardSyncInput. We keep this code for backward compatibility until we
-        // fully migrate normalization settings from destination to connection level
-        final NormalizationInput normalizationInput = new NormalizationInput()
-            .withDestinationConfiguration(syncInput.getDestinationConfiguration())
-            .withCatalog(run.getOutputCatalog());
-
-        normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
       }
 
       return run;
@@ -319,7 +310,7 @@ public interface SyncWorkflow {
       final TemporalAttemptExecution<NormalizationInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
           workspaceRoot,
           jobRunConfig,
-          getWorkerFactory(destinationLauncherConfig, jobRunConfig, input),
+          getWorkerFactory(destinationLauncherConfig, jobRunConfig),
           inputSupplier,
           new CancellationHandler.TemporalCancellationHandler());
 
@@ -327,15 +318,13 @@ public interface SyncWorkflow {
     }
 
     private CheckedSupplier<Worker<NormalizationInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                          JobRunConfig jobRunConfig,
-                                                                                          NormalizationInput normalizationInput) {
+                                                                                          JobRunConfig jobRunConfig) {
       return () -> new DefaultNormalizationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),
           NormalizationRunnerFactory.create(
               destinationLauncherConfig.getDockerImage(),
-              processFactory,
-              normalizationInput.getDestinationConfiguration()));
+              processFactory));
     }
 
   }
@@ -380,7 +369,7 @@ public interface SyncWorkflow {
       final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
           workspaceRoot,
           jobRunConfig,
-          getWorkerFactory(destinationLauncherConfig, jobRunConfig, input),
+          getWorkerFactory(destinationLauncherConfig, jobRunConfig),
           inputSupplier,
           new CancellationHandler.TemporalCancellationHandler());
 
@@ -388,16 +377,14 @@ public interface SyncWorkflow {
     }
 
     private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                        JobRunConfig jobRunConfig,
-                                                                                        OperatorDbtInput operatorDbtInput) {
+                                                                                        JobRunConfig jobRunConfig) {
       return () -> new DbtTransformationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),
           new DbtTransformationRunner(
               processFactory, NormalizationRunnerFactory.create(
                   destinationLauncherConfig.getDockerImage(),
-                  processFactory,
-                  operatorDbtInput.getDestinationConfiguration())));
+                  processFactory)));
     }
 
   }

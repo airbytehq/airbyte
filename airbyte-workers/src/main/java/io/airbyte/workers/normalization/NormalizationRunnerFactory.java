@@ -24,13 +24,9 @@
 
 package io.airbyte.workers.normalization;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.normalization.NormalizationRunner.NoOpNormalizationRunner;
 import io.airbyte.workers.process.ProcessFactory;
 import java.util.Map;
-import java.util.Optional;
 
 public class NormalizationRunnerFactory {
 
@@ -42,10 +38,7 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .build();
 
-  public static NormalizationRunner create(String imageName, ProcessFactory processFactory, JsonNode config) {
-    if (!shouldNormalize(config)) {
-      return new NoOpNormalizationRunner();
-    }
+  public static NormalizationRunner create(String imageName, ProcessFactory processFactory) {
 
     final String imageNameWithoutTag = imageName.split(":")[0];
 
@@ -55,21 +48,6 @@ public class NormalizationRunnerFactory {
       throw new IllegalStateException(
           String.format("Requested normalization for %s, but it is not included in the normalization mapping.", imageName));
     }
-  }
-
-  /**
-   * Check if destination configuration enabled the basic normalization feature
-   *
-   * @param config destination json config object
-   * @return the value of the basic normalization key
-   *
-   * @deprecated As this should not be configured at the destination level but connection level
-   *             (StandardSync) instead
-   */
-  private static boolean shouldNormalize(JsonNode config) {
-    return Optional.ofNullable(config.get(WorkerConstants.BASIC_NORMALIZATION_KEY))
-        .map(JsonNode::asBoolean)
-        .orElse(false);
   }
 
 }

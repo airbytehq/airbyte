@@ -90,7 +90,12 @@ public class PostgresDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected boolean implementsBasicNormalization() {
+  protected boolean supportsNormalization() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsDBT() {
     return true;
   }
 

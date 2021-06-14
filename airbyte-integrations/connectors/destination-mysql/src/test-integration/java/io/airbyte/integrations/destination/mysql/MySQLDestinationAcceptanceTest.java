@@ -53,6 +53,11 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
+  protected boolean supportsDBT() {
+    return true;
+  }
+
+  @Override
   protected boolean implementsNamespaces() {
     return true;
   }

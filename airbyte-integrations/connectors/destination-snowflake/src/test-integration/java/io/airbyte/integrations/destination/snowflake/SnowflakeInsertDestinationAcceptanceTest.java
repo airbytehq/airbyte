@@ -85,7 +85,12 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected boolean implementsBasicNormalization() {
+  protected boolean supportsNormalization() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsDBT() {
     return true;
   }
 
