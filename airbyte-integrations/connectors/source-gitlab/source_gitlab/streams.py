@@ -225,7 +225,7 @@ class Labels(GitlabChildStream):
 
 
 class Branches(GitlabChildStream):
-    primary_key = ["project_id", "name"]
+    primary_key = "name"
     flatten_id_keys = ["commit"]
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
@@ -237,7 +237,6 @@ class Branches(GitlabChildStream):
 class Commits(IncrementalGitlabChildStream):
     cursor_field = "created_at"
     filter_field = "since"
-    primary_key = ["project_id", "id"]
     stream_base_params = {"with_stats": True}
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
@@ -246,21 +245,18 @@ class Commits(IncrementalGitlabChildStream):
 
 
 class Issues(IncrementalGitlabChildStream):
-    primary_key = ["project_id", "id"]
     stream_base_params = {"scope": "all"}
     flatten_id_keys = ["author", "assignee", "closed_by", "milestone"]
     flatten_list_keys = ["assignees"]
 
 
 class MergeRequests(IncrementalGitlabChildStream):
-    primary_key = ["project_id", "id"]
     stream_base_params = {"scope": "all"}
     flatten_id_keys = ["author", "assignee", "closed_by", "milestone", "merged_by"]
     flatten_list_keys = ["assignees"]
 
 
 class MergeRequestCommits(GitlabChildStream):
-    primary_key = ["project_id", "merge_request_iid", "id"]
     path_list = ["project_id", "iid"]
 
     path_template = "projects/{project_id}/merge_requests/{iid}"
@@ -273,7 +269,7 @@ class MergeRequestCommits(GitlabChildStream):
 
 
 class Releases(GitlabChildStream):
-    primary_key = ["project_id", "name"]
+    primary_key = "name"
     flatten_id_keys = ["author", "commit"]
     flatten_list_keys = ["milestones"]
 
@@ -285,7 +281,7 @@ class Releases(GitlabChildStream):
 
 
 class Tags(GitlabChildStream):
-    primary_key = ["project_id", "name"]
+    primary_key = "name"
     flatten_id_keys = ["commit"]
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
@@ -296,17 +292,15 @@ class Tags(GitlabChildStream):
 
 
 class Pipelines(IncrementalGitlabChildStream):
-    primary_key = ["project_id", "pipeline_id", "id"]
+    pass
 
 
 class PipelinesExtended(GitlabChildStream):
-    primary_key = ["project_id", "id"]
     path_list = ["project_id", "id"]
     path_template = "projects/{project_id}/pipelines/{id}"
 
 
 class Jobs(GitlabChildStream):
-    primary_key = ["project_id", "pipeline_id", "id"]
     flatten_id_keys = ["user", "pipeline", "runner", "commit"]
     path_list = ["project_id", "id"]
     path_template = "projects/{project_id}/pipelines/{id}/jobs"
@@ -323,13 +317,13 @@ class Users(GitlabChildStream):
 
 # TODO: No permissions to check
 class Epics(GitlabChildStream):
-    primary_key = ["id", "iid"]
+    primary_key = "iid"
     flatten_id_keys = ["author"]
 
 
 # TODO: No permissions to check
 class EpicIssues(GitlabChildStream):
-    primary_key = ["project_id", "epic_issue_id"]
+    primary_key = "epic_issue_id"
     path_list = ["group_id", "id"]
     flatten_id_keys = ["milestone", "assignee", "author"]
     flatten_list_keys = ["assignees"]
