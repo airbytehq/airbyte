@@ -60,14 +60,6 @@
         "type": "boolean",
         "default": false,
         "order": 6
-      },
-      "basic_normalization": {
-        "title": "Basic Normalization",
-        "type": "boolean",
-        "default": true,
-        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
-        "examples": [true, false],
-        "order": 7
       }
     }
   }

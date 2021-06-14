@@ -28,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.migrate.migrations.MigrationV0_14_0.ConfigKeys;
-import io.airbyte.migrate.migrations.MigrationV0_14_0.JobKeys;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -88,6 +86,23 @@ public class MigrationCurrentSchemaTest {
     for (Map.Entry<ResourceId, JsonNode> lastMigrationEntry : lastMigrationOutputSchemaCleanedSorted) {
       assertEquals(lastMigrationEntry.getValue(), currentSchemas.get(lastMigrationEntry.getKey()));
     }
+  }
+
+  public enum ConfigKeys {
+    STANDARD_WORKSPACE,
+    STANDARD_SOURCE_DEFINITION,
+    STANDARD_DESTINATION_DEFINITION,
+    SOURCE_CONNECTION,
+    DESTINATION_CONNECTION,
+    STANDARD_SYNC,
+    STANDARD_SYNC_SCHEDULE,
+    STANDARD_SYNC_OPERATION,
+  }
+
+  public enum JobKeys {
+    JOBS,
+    ATTEMPTS,
+    AIRBYTE_METADATA
   }
 
 }
