@@ -116,4 +116,19 @@ public interface JdbcDatabase extends AutoCloseable {
                       CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
+  default int queryInt(String sql, String... params) throws SQLException {
+    try (Stream<Integer> q = query(c -> {
+      PreparedStatement statement = c.prepareStatement(sql);
+      int i = 1;
+      for (String param : params) {
+        statement.setString(i, param);
+        ++i;
+      }
+      return statement;
+    },
+        rs -> rs.getInt(1))) {
+      return q.findFirst().get();
+    }
+  }
+
 }

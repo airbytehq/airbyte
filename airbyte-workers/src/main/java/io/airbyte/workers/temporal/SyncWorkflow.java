@@ -259,7 +259,7 @@ public interface SyncWorkflow {
             jobRunConfig.getJobId(),
             Math.toIntExact(jobRunConfig.getAttemptId()),
             airbyteSource,
-            new NamespacingMapper(syncInput.getPrefix()),
+            new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
             new DefaultAirbyteDestination(destinationLauncher),
             new AirbyteMessageTracker(),
             new AirbyteMessageTracker());

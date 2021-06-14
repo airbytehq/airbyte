@@ -4,17 +4,43 @@ description: Be sure to not miss out on new features and improvements!
 
 # Platform
 
-This is the changelog for Airbyte core. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
+This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
-If you're interested in our progress on the Airbyte platform, please read below!
+## [06-09-2021 - 0.24.8 / 0.25.0](https://github.com/airbytehq/airbyte/releases/tag/v0.24.8-alpha)
 
-* We now handle nested tables with the normalization steps. Check out the video below to see how it works. 
+* Bugfix: Handle TINYINT(1) and BOOLEAN correctly and fix target file comparison for MySQL CDC.
+* Bugfix: Updating the source/destination name in the UI now works as intended.
+
+## [06-04-2021 - 0.24.7](https://github.com/airbytehq/airbyte/releases/tag/v0.24.7-alpha)
+
+* Bugfix: Ensure that logs from threads created by replication workers are added to the log file.
+
+## [06-03-2021 - 0.24.5](https://github.com/airbytehq/airbyte/releases/tag/v0.24.5-alpha)
+
+* Remove hash from table names when it's not necessary for normalization outputs.
+
+## [06-03-2021 - 0.24.4](https://github.com/airbytehq/airbyte/releases/tag/v0.24.4-alpha)
+
+* PythonCDK: change minimum Python version to 3.7.0
+
+## [05-28-2021 - 0.24.3](https://github.com/airbytehq/airbyte/releases/tag/v0.24.3-alpha)
+
+* Minor fixes to documentation
+* Reliability updates in preparation for custom transformations  
+* Limit Docker log size to 500 MB ([#3702](https://github.com/airbytehq/airbyte/pull/3702))
+
+## [05-26-2021 - 0.24.2](https://github.com/airbytehq/airbyte/releases/tag/v0.24.2-alpha)
+
+* Fix for file names being too long in Windows deployments ([#3625](https://github.com/airbytehq/airbyte/pull/3625))
+* Allow users to access the API and WebApp from the same port ([#3603](https://github.com/airbytehq/airbyte/pull/3603))
+
+## [05-25-2021 - 0.24.1](https://github.com/airbytehq/airbyte/releases/tag/v0.24.1-alpha)
+
+* **Checkpointing for incremental syncs** that will now continue where they left off even if they fail! ([#3290](https://github.com/airbytehq/airbyte/pull/3290))
 
 ## [05-25-2021 - 0.24.0](https://github.com/airbytehq/airbyte/releases/tag/v0.24.0-alpha)
 
-* **Checkpointing for incremental syncs** that will now continue where they left off even if they fail! ([#3290](https://github.com/airbytehq/airbyte/pull/3290))
 * Avoid dbt runtime exception "maximum recursion depth exceeded" in ephemeral materialization ([#3470](https://github.com/airbytehq/airbyte/pull/3470))
-
 
 ## [05-18-2021 - 0.23.0](https://github.com/airbytehq/airbyte/releases/tag/v0.23.0-alpha)
 

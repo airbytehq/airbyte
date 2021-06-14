@@ -26,7 +26,6 @@ package io.airbyte.test.acceptance;
 
 import static io.airbyte.api.client.model.ConnectionSchedule.TimeUnitEnum.MINUTES;
 import static java.lang.Thread.sleep;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -70,6 +69,7 @@ import io.airbyte.api.client.model.JobRead;
 import io.airbyte.api.client.model.JobStatus;
 import io.airbyte.api.client.model.LogType;
 import io.airbyte.api.client.model.LogsRequestBody;
+import io.airbyte.api.client.model.NamespaceDefinitionType;
 import io.airbyte.api.client.model.OperationCreate;
 import io.airbyte.api.client.model.OperationIdRequestBody;
 import io.airbyte.api.client.model.OperationRead;
@@ -92,6 +92,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
@@ -108,7 +109,6 @@ import java.util.stream.Collectors;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
-import org.junit.Assume;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -131,10 +131,12 @@ public class AcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AcceptanceTests.class);
 
-  // Skip networking related failures on kube using this flag
   private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
+  private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
 
-  private static final String OUTPUT_NAMESPACE = "output_";
+  private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
+  private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
+  private static final String OUTPUT_STREAM_PREFIX = "output_table_";
   private static final String TABLE_NAME = "id_and_name";
   private static final String STREAM_NAME = TABLE_NAME;
   private static final String COLUMN_ID = "id";
@@ -454,9 +456,6 @@ public class AcceptanceTests {
   @Test
   @Order(9)
   public void testScheduledSync() throws Exception {
-    // skip with Kube. HTTP client error with port forwarding
-    Assume.assumeFalse(IS_KUBE);
-
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
     final UUID destinationId = createDestination().getDestinationId();
@@ -472,7 +471,10 @@ public class AcceptanceTests {
 
     // When a new connection is created, Airbyte might sync it immediately (before the sync interval).
     // Then it will wait the sync interval.
-    sleep(Duration.of(30, SECONDS).toMillis());
+    // todo: wait for two attempts in the UI
+    // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
+    // syncs in progress
+    sleep(Duration.ofMinutes(2).toMillis());
     assertSourceAndTargetDbInSync(sourcePsql, false);
   }
 
@@ -706,10 +708,12 @@ public class AcceptanceTests {
     final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = sourceTables.stream().flatMap(x -> {
       final String cleanedNameStream = x.tableName.replace(".", "_");
       final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
-          new SchemaTableNamePair(x.schemaName, String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, cleanedNameStream)),
-          new SchemaTableNamePair(x.schemaName, String.format("%s%s", OUTPUT_NAMESPACE, cleanedNameStream))));
+          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName,
+              String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream)),
+          new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s", OUTPUT_STREAM_PREFIX, cleanedNameStream))));
       if (withScdTable) {
-        explodedStreamNames.add(new SchemaTableNamePair(x.schemaName, String.format("%s%s_scd", OUTPUT_NAMESPACE, cleanedNameStream)));
+        explodedStreamNames
+            .add(new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + x.schemaName, String.format("%s%s_scd", OUTPUT_STREAM_PREFIX, cleanedNameStream)));
       }
       return explodedStreamNames.stream();
     }).collect(Collectors.toSet());
@@ -732,7 +736,7 @@ public class AcceptanceTests {
 
   private void assertNormalizedDestinationContains(final List<JsonNode> sourceRecords) throws Exception {
     final Database destination = getDatabase(destinationPsql);
-    final String finalDestinationTable = String.format("%s%s", OUTPUT_NAMESPACE, STREAM_NAME.replace(".", "_"));
+    final String finalDestinationTable = String.format("%spublic.%s%s", OUTPUT_NAMESPACE_PREFIX, OUTPUT_STREAM_PREFIX, STREAM_NAME.replace(".", "_"));
     final List<JsonNode> destinationRecords = retrieveSourceRecords(destination, finalDestinationTable);
 
     assertEquals(sourceRecords.size(), destinationRecords.size(),
@@ -764,7 +768,9 @@ public class AcceptanceTests {
             .schedule(schedule)
             .operationIds(operationIds)
             .name(name)
-            .prefix(OUTPUT_NAMESPACE));
+            .namespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
+            .namespaceFormat(OUTPUT_NAMESPACE)
+            .prefix(OUTPUT_STREAM_PREFIX));
     connectionIds.add(connection.getConnectionId());
     return connection;
   }
@@ -811,8 +817,7 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveSourceRecords(Database database, String table) throws SQLException {
-    final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", cleanedName)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
         .map(Jsons::jsonNode)
@@ -820,8 +825,7 @@ public class AcceptanceTests {
   }
 
   private List<JsonNode> retrieveDestinationRecords(Database database, String table) throws SQLException {
-    final String cleanedName = table.replace("public.", "");
-    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", cleanedName)))
+    return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
         .map(r -> r.get(COLUMN_NAME_DATA))
@@ -836,8 +840,8 @@ public class AcceptanceTests {
     final Database destination = getDatabase(destinationPsql);
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
-    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_NAMESPACE, pair.tableName.replace(".", "_"));
-    final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(pair.schemaName, rawStreamName);
+    final String rawStreamName = String.format("_airbyte_raw_%s%s", OUTPUT_STREAM_PREFIX, pair.tableName.replace(".", "_"));
+    final SchemaTableNamePair rawTablePair = new SchemaTableNamePair(OUTPUT_NAMESPACE_PREFIX + pair.schemaName, rawStreamName);
     assertTrue(namePairs.contains(rawTablePair), "can't find a non-normalized version (raw) of " + rawTablePair.getFullyQualifiedTableName());
 
     return retrieveDestinationRecords(destination, rawTablePair.getFullyQualifiedTableName());
@@ -863,11 +867,18 @@ public class AcceptanceTests {
     try {
       final Map<Object, Object> dbConfig = new HashMap<>();
 
-      // todo (cgardens) - hack to get building passing in CI. need to follow up on why this was necessary
-      // (and affect on the k8s version of these tests).
-      dbConfig.put("host", "localhost");
-      // necessary for minikube tests on Github Actions instead of psql.getHost()
-      // dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+      // don't use psql.getHost() directly since the ip we need differs depending on environment
+      if (IS_KUBE) {
+        if (IS_MINIKUBE) {
+          // used with minikube driver=none instance
+          dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+        } else {
+          // used on a single node with docker driver
+          dbConfig.put("host", "host.docker.internal");
+        }
+      } else {
+        dbConfig.put("host", "localhost");
+      }
 
       if (hiddenPassword) {
         dbConfig.put("password", "**********");
@@ -956,7 +967,7 @@ public class AcceptanceTests {
   private static JobRead waitForJob(JobsApi jobsApi, JobRead originalJob, Set<JobStatus> jobStatuses) throws InterruptedException, ApiException {
     JobRead job = originalJob;
     int count = 0;
-    while (count < 60 && jobStatuses.contains(job.getStatus())) {
+    while (count < 200 && jobStatuses.contains(job.getStatus())) {
       sleep(1000);
       count++;
 

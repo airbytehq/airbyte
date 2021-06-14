@@ -11,7 +11,7 @@ Exchangerates API as an example since it is both simple but demonstrates a lot o
 * Docker
 * NodeJS (only used to generate the connector). We'll remove the NodeJS dependency soon.
 
-All the commands below assume that `python` points to a version of python >=3.7.9. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
+All the commands below assume that `python` points to a version of python >=3.7.0. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
 
 ## Checklist
 * Step 1: Create the source using the template
@@ -33,9 +33,7 @@ Airbyte provides a code generator which bootstraps the scaffolding for our conne
 
 ```bash
 $ cd airbyte-integrations/connector-templates/generator # assumes you are starting from the root of the Airbyte project.
-# Install NPM from https://www.npmjs.com/get-npm if you don't have it
-$ npm install
-$ npm run generate
+$ ./generate.sh
 ```
 
 Select the `Python HTTP CDK Source` template and then input the name of your connector. For this walk-through we will refer to our source as `python-http-example`. The finalized source code for this tutorial can be found [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-python-http-tutorial).

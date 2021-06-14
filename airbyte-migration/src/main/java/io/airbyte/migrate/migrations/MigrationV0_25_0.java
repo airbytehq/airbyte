@@ -24,39 +24,32 @@
 
 package io.airbyte.migrate.migrations;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.migrate.Migration;
 import io.airbyte.migrate.MigrationUtils;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+// This migration does the following:
+// 1. Add fields to StandardSync.
 public class MigrationV0_25_0 extends BaseMigration implements Migration {
 
-  protected static final ResourceId DESTINATION_CONNECTION_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "DESTINATION_CONNECTION");
+  private static final Logger LOGGER = LoggerFactory.getLogger(MigrationV0_25_0.class);
+
   protected static final ResourceId STANDARD_SYNC_RESOURCE_ID = ResourceId
       .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC");
-  protected static final ResourceId STANDARD_SYNC_OPERATION_RESOURCE_ID = ResourceId
-      .fromConstantCase(ResourceType.CONFIG, "STANDARD_SYNC_OPERATION");
 
   private static final String MIGRATION_VERSION = "0.25.0-alpha";
-  @VisibleForTesting
-  protected final Migration previousMigration;
+  private static final Path CONFIG_PATH = Path.of("migrations/migrationV0_25_0");
+
+  private final Migration previousMigration;
 
   public MigrationV0_25_0(Migration previousMigration) {
     super(previousMigration);
@@ -68,76 +61,25 @@ public class MigrationV0_25_0 extends BaseMigration implements Migration {
     return MIGRATION_VERSION;
   }
 
-  private static final Path RESOURCE_PATH = Path.of("migrations/migrationV0_25_0/airbyte-config");
-
   @Override
   public Map<ResourceId, JsonNode> getOutputSchema() {
-    JsonNode schemaFromResourcePath = MigrationUtils.getSchemaFromResourcePath(RESOURCE_PATH, STANDARD_SYNC_OPERATION_RESOURCE_ID);
-
-    HashMap<ResourceId, JsonNode> resourceIdJsonNodeHashMap = new HashMap<>(previousMigration.getOutputSchema());
-    resourceIdJsonNodeHashMap.put(STANDARD_SYNC_OPERATION_RESOURCE_ID, schemaFromResourcePath);
-
-    return resourceIdJsonNodeHashMap;
+    final Map<ResourceId, JsonNode> outputSchema = new HashMap<>(previousMigration.getOutputSchema());
+    outputSchema.put(
+        STANDARD_SYNC_RESOURCE_ID,
+        MigrationUtils.getSchemaFromResourcePath(CONFIG_PATH, STANDARD_SYNC_RESOURCE_ID));
+    return outputSchema;
   }
 
   @Override
-  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData,
-                      Map<ResourceId, Consumer<JsonNode>> outputData) {
+  public void migrate(Map<ResourceId, Stream<JsonNode>> inputData, Map<ResourceId, Consumer<JsonNode>> outputData) {
+    for (final Map.Entry<ResourceId, Stream<JsonNode>> entry : inputData.entrySet()) {
+      final Consumer<JsonNode> recordConsumer = outputData.get(entry.getKey());
 
-    Set<String> destinationIds = new HashSet<>();
-
-    inputData.getOrDefault(DESTINATION_CONNECTION_RESOURCE_ID, Stream.empty())
-        .forEach(destinationConnection -> {
-          JsonNode configuration = destinationConnection.get("configuration");
-          boolean basicNormalization = ((ObjectNode) configuration).remove("basic_normalization")
-              .asBoolean();
-          ((ObjectNode) destinationConnection).set("configuration", configuration);
-          if (basicNormalization) {
-            destinationIds.add(destinationConnection.get("destinationId").asText());
-          }
-
-          final Consumer<JsonNode> destinationConnectionConsumer = outputData
-              .get(DESTINATION_CONNECTION_RESOURCE_ID);
-          if (destinationConnectionConsumer == null) {
-            throw new RuntimeException("Could not find consumer for DESTINATION_CONNECTION");
-          }
-          destinationConnectionConsumer.accept(destinationConnection);
-        });
-
-    for (final Map.Entry<ResourceId, Stream<JsonNode>> inputEntry : inputData.entrySet()) {
-      if (inputEntry.getKey().equals(DESTINATION_CONNECTION_RESOURCE_ID)) {
-        continue;
-      }
-
-      inputEntry.getValue().forEach(jsonNode -> {
-        if (inputEntry.getKey().equals(STANDARD_SYNC_RESOURCE_ID) && destinationIds
-            .contains(jsonNode.get("destinationId").asText())) {
-          Map<String, Object> standardSyncOperation = new LinkedHashMap<>();
-          String operationId = uuid();
-          standardSyncOperation.put("operationId", operationId);
-          standardSyncOperation.put("name", "default-normalization");
-          standardSyncOperation.put("operatorType", "normalization");
-          standardSyncOperation
-              .put("operatorNormalization", Jsons.jsonNode(ImmutableMap.of("option", "basic")));
-          standardSyncOperation
-              .put("tombstone", false);
-          JsonNode standardSyncOperationAsJson = Jsons.jsonNode(standardSyncOperation);
-          outputData.get(STANDARD_SYNC_OPERATION_RESOURCE_ID).accept(standardSyncOperationAsJson);
-
-          List<String> operationIds = Jsons
-              .object(jsonNode.get("operationIds"), new TypeReference<List<String>>() {});
-          operationIds.add(operationId);
-          ((ObjectNode) jsonNode).set("operationIds", Jsons.jsonNode(operationIds));
-        }
-        final Consumer<JsonNode> outputConsumer = outputData.get(inputEntry.getKey());
-        outputConsumer.accept(jsonNode);
+      entry.getValue().forEach(r -> {
+        // empty migration
+        recordConsumer.accept(r);
       });
     }
-  }
-
-  @VisibleForTesting
-  protected String uuid() {
-    return UUID.randomUUID().toString();
   }
 
 }

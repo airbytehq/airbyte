@@ -31,33 +31,33 @@ public interface IntegrationLauncher {
 
   Process spec(final Path jobRoot) throws WorkerException;
 
-  Process check(final Path jobRoot, final String configFilename) throws WorkerException;
+  Process check(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException;
 
-  Process discover(final Path jobRoot, final String configFilename) throws WorkerException;
+  Process discover(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException;
 
   Process read(final Path jobRoot,
                final String configFilename,
+               final String configContents,
                final String catalogFilename,
-               final String stateFilename)
+               final String catalogContents,
+               final String stateFilename,
+               final String stateContents)
       throws WorkerException;
 
   default Process read(final Path jobRoot,
                        final String configFilename,
-                       final String catalogFilename)
+                       final String configContents,
+                       final String catalogFilename,
+                       final String catalogContents)
       throws WorkerException {
-    return read(jobRoot, configFilename, catalogFilename, null);
+    return read(jobRoot, configFilename, configContents, catalogFilename, catalogContents, null, null);
   }
 
   Process write(final Path jobRoot,
                 final String configFilename,
-                final String catalogFilename)
+                final String configContents,
+                final String catalogFilename,
+                final String catalogContents)
       throws WorkerException;
-
-  // TODO: this version should be removed once we've moved away from singer protocol
-  default Process write(final Path jobRoot,
-                        final String configFilename)
-      throws WorkerException {
-    return write(jobRoot, configFilename, null);
-  }
 
 }

@@ -28,7 +28,7 @@ To run this tutorial, you'll need:
 
 ```bash
 $ python --version
-Python 3.7.9
+Python 3.7.0
 ```
 
 On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
@@ -74,9 +74,7 @@ Airbyte provides a code generator which bootstraps the scaffolding for our conne
 
 ```bash
 $ cd airbyte-integrations/connector-templates/generator
-# Install NPM from https://www.npmjs.com/get-npm if you don't have it
-$ npm install
-$ npm run generate
+$ ./generate.sh 
 ```
 
 We'll select the `generic` template and call the connector `stock-ticker-api`:

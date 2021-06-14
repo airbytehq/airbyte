@@ -6,7 +6,6 @@ import { Button, Spinner } from "components";
 
 type IProps = {
   isSubmitting: boolean;
-  isValid: boolean;
   dirty: boolean;
   resetForm: () => void;
   successMessage?: React.ReactNode;
@@ -47,7 +46,6 @@ const SpinnerContainer = styled.div`
 
 const EditControls: React.FC<IProps> = ({
   isSubmitting,
-  isValid,
   dirty,
   resetForm,
   successMessage,
@@ -73,12 +71,15 @@ const EditControls: React.FC<IProps> = ({
 
   return (
     <Controls>
-      {editSchemeMode ? (
+      {editSchemeMode && (
         <Warning>
           <FormattedMessage id="connection.warningUpdateSchema" />
         </Warning>
-      ) : null}
-      <Button type="submit" disabled={isSubmitting || !isValid || !dirty}>
+      )}
+      <Button
+        type="submit"
+        disabled={(isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)}
+      >
         {editSchemeMode ? (
           <FormattedMessage id="connection.saveAndReset" />
         ) : (
@@ -90,12 +91,11 @@ const EditControls: React.FC<IProps> = ({
           type="button"
           secondary
           disabled={
-            (isSubmitting || !isValid || !dirty) &&
-            (!editSchemeMode || isSubmitting)
+            (isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)
           }
           onClick={resetForm}
         >
-          <FormattedMessage id={`form.cancel`} />
+          <FormattedMessage id="form.cancel" />
         </Button>
       </ButtonContainer>
       {showStatusMessage()}

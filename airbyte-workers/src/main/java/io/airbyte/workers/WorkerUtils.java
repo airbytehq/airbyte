@@ -113,7 +113,7 @@ public class WorkerUtils {
       try {
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
-        LOGGER.error("Exception during grace period for process to finish", e);
+        LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
       }
     }
 

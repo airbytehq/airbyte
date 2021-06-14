@@ -57,7 +57,7 @@ class Client(BaseClient):
             "contact_lists": ContactListStream(**common_params),
             "contacts": CRMObjectStream(entity="contact", **common_params),
             "deal_pipelines": DealPipelineStream(**common_params),
-            "deals": CRMObjectStream(entity="deal", **common_params),
+            "deals": CRMObjectStream(entity="deal", associations=["contacts", "companies"], **common_params),
             "email_events": EmailEventStream(**common_params),
             "engagements": EngagementStream(**common_params),
             "forms": FormStream(**common_params),
@@ -82,7 +82,7 @@ class Client(BaseClient):
             properties = self._apis[stream.name].properties
             if properties:
                 stream.json_schema["properties"]["properties"] = {"type": "object", "properties": properties}
-            stream.default_cursor_field = [self._apis[stream.name].updated_at_field]
+                stream.default_cursor_field = [self._apis[stream.name].updated_at_field]
             yield stream
 
     def stream_has_state(self, name: str) -> bool:
