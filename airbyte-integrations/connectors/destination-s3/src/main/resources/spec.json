@@ -140,7 +140,7 @@
                 "title": "Max Padding Size (MB)",
                 "description": "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB.",
                 "type": "integer",
-                "default": "8",
+                "default": 8,
                 "examples": [8]
               },
               "page_size_kb": {
