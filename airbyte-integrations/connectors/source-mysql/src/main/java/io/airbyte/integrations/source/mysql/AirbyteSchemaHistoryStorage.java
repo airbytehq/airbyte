@@ -27,8 +27,8 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.integrations.source.mysql.MySqlSource.MYSQL_DB_HISTORY;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.StateManager;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.debezium.document.Document;
 import io.debezium.document.DocumentReader;
 import io.debezium.document.DocumentWriter;
