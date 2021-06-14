@@ -22,34 +22,35 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.s3.parquet;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.MoreIterators;
+import java.io.IOException;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
 
-public class S3FormatConfigs {
+class JsonFieldNameUpdaterTest {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(S3FormatConfigs.class);
+  @Test
+  public void testFieldNameUpdate() throws IOException {
+    JsonNode testCases = Jsons.deserialize(MoreResources.readResource("parquet/json_field_name_updater/test_case.json"));
+    for (JsonNode testCase : testCases) {
+      JsonNode nameMap = testCase.get("nameMap");
+      JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(
+          MoreIterators.toList(nameMap.fields()).stream()
+              .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().asText())));
 
-  public static S3FormatConfig getS3FormatConfig(JsonNode config) {
-    JsonNode formatConfig = config.get("format");
-    LOGGER.info("S3 format config: {}", formatConfig.toString());
-    S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
+      JsonNode original = testCase.get("original");
+      JsonNode updated = testCase.get("updated");
 
-    switch (formatType) {
-      case CSV -> {
-        return new S3CsvFormatConfig(formatConfig);
-      }
-      case PARQUET -> {
-        return new S3ParquetFormatConfig(formatConfig);
-      }
-      default -> {
-        throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
-      }
+      assertEquals(updated, nameUpdater.getJsonWithStandardizedFieldNames(original));
+      assertEquals(original, nameUpdater.getJsonWithOriginalFieldNames(updated));
     }
   }
 

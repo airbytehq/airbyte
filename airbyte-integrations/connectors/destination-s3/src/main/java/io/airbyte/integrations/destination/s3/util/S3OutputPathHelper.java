@@ -22,22 +22,35 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3;
+package io.airbyte.integrations.destination.s3.util;
 
-import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import java.io.IOException;
-import java.sql.Timestamp;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.NAME_TRANSFORMER;
 
-/**
- * Create different {@link S3OutputFormatter} based on {@link S3DestinationConfig}.
- */
-public interface S3OutputFormatterFactory {
+import io.airbyte.protocol.models.AirbyteStream;
+import java.util.LinkedList;
+import java.util.List;
 
-  S3OutputFormatter create(S3DestinationConfig config,
-                           AmazonS3 s3Client,
-                           ConfiguredAirbyteStream configuredStream,
-                           Timestamp uploadTimestamp)
-      throws IOException;
+public class S3OutputPathHelper {
+
+  public static String getOutputPrefix(String bucketPath, AirbyteStream stream) {
+    return getOutputPrefix(bucketPath, stream.getNamespace(), stream.getName());
+  }
+
+  /**
+   * Prefix: <bucket-path>/<source-namespace-if-present>/<stream-name>
+   */
+  public static String getOutputPrefix(String bucketPath, String namespace, String streamName) {
+    List<String> paths = new LinkedList<>();
+
+    if (bucketPath != null) {
+      paths.add(bucketPath);
+    }
+    if (namespace != null) {
+      paths.add(NAME_TRANSFORMER.convertStreamName(namespace));
+    }
+    paths.add(NAME_TRANSFORMER.convertStreamName(streamName));
+
+    return String.join("/", paths);
+  }
 
 }
