@@ -459,7 +459,8 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   /**
-   * This is different from {@link #exportDatabase()} cause it exports all the tables in all the schemas available
+   * This is different from {@link #exportDatabase()} cause it exports all the tables in all the
+   * schemas available
    */
   @Override
   public Map<String, Stream<JsonNode>> dump() throws IOException {
