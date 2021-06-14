@@ -28,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import java.util.Locale;
 
 public class S3CsvFormatConfig implements S3FormatConfig {
 

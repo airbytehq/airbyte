@@ -41,10 +41,12 @@ public class S3ParquetFormatConfig implements S3FormatConfig {
   public S3ParquetFormatConfig(JsonNode formatConfig) {
     int blockSizeMb = S3FormatConfig.withDefault(formatConfig, "block_size_mb", S3ParquetConstants.DEFAULT_BLOCK_SIZE_MB);
     int maxPaddingSizeMb = S3FormatConfig.withDefault(formatConfig, "max_padding_size_mb", S3ParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB);
-    int pageSizeKb = S3FormatConfig. withDefault(formatConfig, "page_size_kb", S3ParquetConstants.DEFAULT_PAGE_SIZE_KB);
-    int dictionaryPageSizeKb = S3FormatConfig.withDefault(formatConfig, "dictionary_page_size_kb", S3ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB);
+    int pageSizeKb = S3FormatConfig.withDefault(formatConfig, "page_size_kb", S3ParquetConstants.DEFAULT_PAGE_SIZE_KB);
+    int dictionaryPageSizeKb =
+        S3FormatConfig.withDefault(formatConfig, "dictionary_page_size_kb", S3ParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB);
 
-    this.compressionCodec = CompressionCodecName.valueOf(S3FormatConfig.withDefault(formatConfig, "compression_codec", S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name()).toUpperCase());
+    this.compressionCodec = CompressionCodecName
+        .valueOf(S3FormatConfig.withDefault(formatConfig, "compression_codec", S3ParquetConstants.DEFAULT_COMPRESSION_CODEC.name()).toUpperCase());
     this.blockSize = blockSizeMb * 1024 * 1024;
     this.maxPaddingSize = maxPaddingSizeMb * 1024 * 1024;
     this.pageSize = pageSizeKb * 1024;

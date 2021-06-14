@@ -118,7 +118,15 @@
                 "title": "Compression Algorithm",
                 "description": "The compression algorithm used to compress data pages.",
                 "type": "string",
-                "enum": ["UNCOMPRESSED", "SNAPPY", "GZIP", "LZO", "BROTLI", "LZ4", "ZSTD"],
+                "enum": [
+                  "UNCOMPRESSED",
+                  "SNAPPY",
+                  "GZIP",
+                  "LZO",
+                  "BROTLI",
+                  "LZ4",
+                  "ZSTD"
+                ],
                 "default": "UNCOMPRESSED"
               },
               "block_size_mb": {

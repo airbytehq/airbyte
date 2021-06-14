@@ -25,6 +25,7 @@
 package io.airbyte.integrations.destination.s3;
 
 public enum S3Format {
+
   CSV("csv"),
   PARQUET("parquet");
 
@@ -37,4 +38,5 @@ public enum S3Format {
   public String getFileExtension() {
     return fileExtension;
   }
+
 }

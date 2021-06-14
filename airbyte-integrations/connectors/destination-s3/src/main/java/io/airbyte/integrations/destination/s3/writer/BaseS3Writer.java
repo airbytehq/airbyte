@@ -111,8 +111,7 @@ public abstract class BaseS3Writer implements S3Writer {
         "%s_%d_0.%s",
         formatter.format(timestamp),
         timestamp.getTime(),
-        format.getFileExtension()
-    );
+        format.getFileExtension());
   }
 
 }

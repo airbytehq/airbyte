@@ -4,30 +4,21 @@
     "jsonFieldSchema": {
       "type": "string"
     },
-    "avroFieldType": [
-      "null",
-      "string"
-    ]
+    "avroFieldType": ["null", "string"]
   },
   {
     "fieldName": "integer_field",
     "jsonFieldSchema": {
       "type": "integer"
     },
-    "avroFieldType": [
-      "null",
-      "int"
-    ]
+    "avroFieldType": ["null", "int"]
   },
   {
     "fieldName": "number_field",
     "jsonFieldSchema": {
       "type": "number"
     },
-    "avroFieldType": [
-      "null",
-      "double"
-    ]
+    "avroFieldType": ["null", "double"]
   },
   {
     "fieldName": "null_field",
@@ -39,17 +30,9 @@
   {
     "fieldName": "union_field",
     "jsonFieldSchema": {
-      "type": [
-        "null",
-        "number",
-        "string"
-      ]
+      "type": ["null", "number", "string"]
     },
-    "avroFieldType": [
-      "null",
-      "double",
-      "string"
-    ]
+    "avroFieldType": ["null", "double", "string"]
   },
   {
     "fieldName": "array_field_single_type",
@@ -63,10 +46,7 @@
       "null",
       {
         "type": "array",
-        "items": [
-          "null",
-          "string"
-        ]
+        "items": ["null", "string"]
       }
     ]
   },
@@ -87,11 +67,7 @@
       "null",
       {
         "type": "array",
-        "items": [
-          "null",
-          "string",
-          "double"
-        ]
+        "items": ["null", "string", "double"]
       }
     ]
   },
@@ -104,10 +80,7 @@
           "type": "integer"
         },
         "node_id": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       }
     },
@@ -119,18 +92,12 @@
         "fields": [
           {
             "name": "id",
-            "type": [
-              "null",
-              "int"
-            ],
+            "type": ["null", "int"],
             "default": null
           },
           {
             "name": "node_id",
-            "type": [
-              "null",
-              "string"
-            ],
+            "type": ["null", "string"],
             "default": null
           }
         ]

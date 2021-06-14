@@ -23,6 +23,7 @@
  */
 
 package io.airbyte.integrations.destination.s3;
+
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 public final class S3DestinationConstants {

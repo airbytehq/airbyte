@@ -91,9 +91,9 @@ public class JsonToAvroSchemaConverter {
    * @return - Avro schema based on the input {@code jsonSchema}.
    */
   public Schema getAvroSchema(JsonNode jsonSchema,
-      String name,
-      @Nullable String namespace,
-      boolean appendAirbyteFields) {
+                              String name,
+                              @Nullable String namespace,
+                              boolean appendAirbyteFields) {
     String stdName = NAME_TRANSFORMER.getIdentifier(name);
     RecordBuilder<Schema> builder = SchemaBuilder.record(stdName);
     if (!stdName.equals(name)) {
@@ -141,8 +141,10 @@ public class JsonToAvroSchemaConverter {
     return assembler.endRecord();
   }
 
-  Schema getSingleFieldType(String fieldName, JsonSchemaType fieldType, JsonNode fieldDefinition,
-      boolean canBeComposite) {
+  Schema getSingleFieldType(String fieldName,
+                            JsonSchemaType fieldType,
+                            JsonNode fieldDefinition,
+                            boolean canBeComposite) {
     Preconditions
         .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
     Preconditions
@@ -161,10 +163,8 @@ public class JsonToAvroSchemaConverter {
         } else if (items.isArray()) {
           List<Schema> arrayElementTypes = MoreIterators.toList(items.elements())
               .stream()
-              .flatMap(itemDefinition ->
-                  getNonNullTypes(fieldName, itemDefinition.get("type")).stream()
-                      .map(type -> getSingleFieldType(fieldName, type, itemDefinition, false))
-              )
+              .flatMap(itemDefinition -> getNonNullTypes(fieldName, itemDefinition.get("type")).stream()
+                  .map(type -> getSingleFieldType(fieldName, type, itemDefinition, false)))
               .distinct()
               .collect(Collectors.toList());
           arrayElementTypes.add(0, Schema.create(Schema.Type.NULL));
