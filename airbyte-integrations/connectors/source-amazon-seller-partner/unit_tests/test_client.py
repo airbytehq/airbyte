@@ -66,21 +66,6 @@ def test_check_connection(mocker):
 
     assert ORDERS_RESPONSE == base_client.check_connection()
 
-
-def test_get_cursor_state():
-    cursor_value = "2021-05-02"
-    end_date = "2021-06-02"
-
-    base_client = get_base_client(SP_CREDENTIALS)
-
-    assert "2021-05-03" == base_client._get_cursor_state(cursor_value=cursor_value, end_date=end_date)
-
-    cursor_value = "2021-02-28"
-    end_date = "2021-03-02"
-
-    assert "2021-03-03" == base_client._get_cursor_state(cursor_value=cursor_value, end_date=end_date)
-
-
 def test_get_records():
     data = {"document": "name\ttest\nairbyte\t1"}
     base_client = get_base_client(SP_CREDENTIALS)
