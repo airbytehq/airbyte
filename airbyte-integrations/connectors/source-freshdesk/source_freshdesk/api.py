@@ -40,12 +40,21 @@ from source_freshdesk.errors import (
     FreshdeskServerError,
     FreshdeskUnauthorized,
 )
-from source_freshdesk.utils import CallCredit, retry_after_handler, retry_connection_handler
+from source_freshdesk.utils import (
+    CallCredit,
+    retry_after_handler,
+    retry_connection_handler,
+)
 
 
 class API:
     def __init__(
-        self, domain: str, api_key: str, requests_per_minute: int = None, verify: bool = True, proxies: MutableMapping[str, Any] = None
+        self,
+        domain: str,
+        api_key: str,
+        requests_per_minute: int = None,
+        verify: bool = True,
+        proxies: MutableMapping[str, Any] = None,
     ):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
@@ -58,10 +67,14 @@ class API:
             "User-Agent": "Airbyte",
         }
 
-        self._call_credit = CallCredit(balance=requests_per_minute) if requests_per_minute else None
+        self._call_credit = (
+            CallCredit(balance=requests_per_minute) if requests_per_minute else None
+        )
 
         if domain.find("freshdesk.com") < 0:
-            raise AttributeError("Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs")
+            raise AttributeError(
+                "Freshdesk v2 API works only via Freshdesk domains and not via custom CNAMEs"
+            )
 
     @staticmethod
     def _parse_and_handle_errors(response):
@@ -79,13 +92,21 @@ class API:
             error_message = f"{body.get('code')}: {body['message']}"
 
         if response.status_code == 400:
-            raise FreshdeskBadRequest(error_message or "Wrong input, check your data", response=response)
+            raise FreshdeskBadRequest(
+                error_message or "Wrong input, check your data", response=response
+            )
         elif response.status_code == 401:
-            raise FreshdeskUnauthorized(error_message or "Invalid credentials", response=response)
+            raise FreshdeskUnauthorized(
+                error_message or "Invalid credentials", response=response
+            )
         elif response.status_code == 403:
-            raise FreshdeskAccessDenied(error_message or "You don't have enough permissions", response=response)
+            raise FreshdeskAccessDenied(
+                error_message or "You don't have enough permissions", response=response
+            )
         elif response.status_code == 404:
-            raise FreshdeskNotFound(error_message or "Resource not found", response=response)
+            raise FreshdeskNotFound(
+                error_message or "Resource not found", response=response
+            )
         elif response.status_code == 429:
             retry_after = response.headers.get("Retry-After")
             raise FreshdeskRateLimited(
@@ -94,7 +115,9 @@ class API:
                 response=response,
             )
         elif 500 <= response.status_code < 600:
-            raise FreshdeskServerError(f"{response.status_code}: Server Error", response=response)
+            raise FreshdeskServerError(
+                f"{response.status_code}: Server Error", response=response
+            )
 
         # Catch any other errors
         try:
@@ -142,7 +165,15 @@ class StreamAPI(ABC):
         """Read using getter"""
         params = params or {}
         for page in range(1, self.maximum_page):
-            batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
+            batch = list(
+                getter(
+                    params={
+                        **params,
+                        "per_page": self.result_return_limit,
+                        "page": page,
+                    }
+                )
+            )
             yield from batch
 
             if len(batch) < self.result_return_limit:
@@ -196,8 +227,12 @@ class IncrementalStreamAPI(StreamAPI, ABC):
             yield record
 
         if latest_cursor:
-            logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
-            self._state = max(latest_cursor, self._state) if self._state else latest_cursor
+            logger.info(
+                f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}"
+            )
+            self._state = (
+                max(latest_cursor, self._state) if self._state else latest_cursor
+            )
 
 
 class ClientIncrementalStreamAPI(IncrementalStreamAPI, ABC):
@@ -269,7 +304,9 @@ class TicketsAPI(IncrementalStreamAPI):
     # This block extends TicketsAPI Stream to overcome '300 page' server error.
     # Since the TicketsAPI Stream list has a 300 page pagination limit, after 300 pages, update the parameters with
     # query using 'updated_since' = last_record, if there is more data remaining.
-    def get_tickets(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+    def get_tickets(
+        self, getter: Callable, params: Mapping[str, Any] = None
+    ) -> Iterator:
         """Read using getter"""
         params = params or {}
         # the maximum page allowed to pull during pagination.
@@ -285,10 +322,12 @@ class TicketsAPI(IncrementalStreamAPI):
             yield from batch
 
             if len(batch) < self.result_return_limit:
-                return False
-            else:
-                last_record = batch[0]["updated_at"]  # pos. 0, because of DESC order of records
+                return iter(())
 
+            # get last_record from latest batch, pos. 0, because of DESC order of records
+            last_record = batch[0]["updated_at"]
+
+            # checkpoint & switch the pagination
             if page == ticket_paginate_limit:
                 page = 0  # reset page counter
                 last_record = pendulum.parse(last_record).add(seconds=1)
@@ -313,8 +352,12 @@ class TicketsAPI(IncrementalStreamAPI):
             yield record
 
         if latest_cursor:
-            logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
-            self._state = max(latest_cursor, self._state) if self._state else latest_cursor
+            logger.info(
+                f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}"
+            )
+            self._state = (
+                max(latest_cursor, self._state) if self._state else latest_cursor
+            )
 
 
 class TimeEntriesAPI(ClientIncrementalStreamAPI):
