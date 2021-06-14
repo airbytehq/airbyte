@@ -8,6 +8,7 @@ export type ControlLabelsProps = {
   error?: boolean;
   success?: boolean;
   message?: React.ReactNode;
+  errorMessage?: React.ReactNode;
   labelAdditionLength?: number;
   label?: React.ReactNode;
 };

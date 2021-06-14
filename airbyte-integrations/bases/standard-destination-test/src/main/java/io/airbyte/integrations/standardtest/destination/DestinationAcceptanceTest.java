@@ -60,7 +60,6 @@ import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.DbtTransformationRunner;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.DefaultGetSpecWorker;
-import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
@@ -189,6 +188,26 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
+  protected boolean normalizationFromSpec() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportsNormalization() != null) {
+      return spec.getSupportsNormalization();
+    } else {
+      return false;
+    }
+  }
+
+  protected boolean dbtFromSpec() throws WorkerException {
+    final ConnectorSpecification spec = runSpec();
+    assertNotNull(spec);
+    if (spec.getSupportsDBT() != null) {
+      return spec.getSupportsDBT();
+    } else {
+      return false;
+    }
+  }
+
   /**
    * Detects if a destination implements append dedup mode from the spec.json that should include
    * 'supportedDestinationSyncMode'
@@ -205,18 +224,12 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  /**
-   * Override to return true to if the destination implements basic normalization and it should be
-   * tested here.
-   *
-   * @return - a boolean.
-   */
-  protected boolean implementsBasicNormalization() {
+  protected boolean supportsNormalization() {
     return false;
   }
 
-  private boolean supportsDBT() {
-    return implementsBasicNormalization();
+  protected boolean supportsDBT() {
+    return false;
   }
 
   /**
@@ -231,7 +244,7 @@ public abstract class DestinationAcceptanceTest {
    * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String, JsonNode)}. Except this
    * method should pull records from the table that contains the normalized records and convert them
    * back into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override
-   * this method if {@link #implementsBasicNormalization} returns true.
+   * this method if {@link #normalizationFromSpec} returns true.
    *
    * @param testEnv - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
@@ -330,7 +343,7 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
-    runSyncAndVerifyStateOutput(config, messages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
@@ -345,7 +358,7 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     final JsonNode config = getConfig();
-    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
@@ -364,7 +377,7 @@ public abstract class DestinationAcceptanceTest {
             .withType(Type.STATE)
             .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
 
-    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false);
     final String defaultSchema = getDefaultSchema(config);
     retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
   }
@@ -397,9 +410,19 @@ public abstract class DestinationAcceptanceTest {
             .withType(Type.STATE)
             .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
 
-    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false);
     final String defaultSchema = getDefaultSchema(config);
     retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
+  }
+
+  @Test
+  public void specNormalizationValueShouldBeCorrect() throws WorkerException {
+    assertEquals(normalizationFromSpec(), supportsNormalization());
+  }
+
+  @Test
+  public void specDBTValueShouldBeCorrect() throws WorkerException {
+    assertEquals(dbtFromSpec(), supportsDBT());
   }
 
   /**
@@ -424,7 +447,7 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     final JsonNode config = getConfig();
-    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
@@ -442,7 +465,7 @@ public abstract class DestinationAcceptanceTest {
         new AirbyteMessage()
             .withType(Type.STATE)
             .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
-    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false);
 
     final List<AirbyteMessage> expectedMessagesAfterSecondSync = new ArrayList<>();
     expectedMessagesAfterSecondSync.addAll(firstSyncMessages);
@@ -459,7 +482,7 @@ public abstract class DestinationAcceptanceTest {
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(String messagesFilename, String catalogFilename) throws Exception {
-    if (!implementsBasicNormalization()) {
+    if (!normalizationFromSpec()) {
       return;
     }
 
@@ -468,8 +491,8 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
 
-    final JsonNode config = getConfigWithBasicNormalization();
-    runSyncAndVerifyStateOutput(config, messages, configuredCatalog);
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
     String defaultSchema = getDefaultSchema(config);
     final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
@@ -503,8 +526,8 @@ public abstract class DestinationAcceptanceTest {
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-    final JsonNode config = getConfigWithBasicNormalization();
-    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog);
+    final JsonNode config = getConfig();
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, true);
 
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
@@ -534,7 +557,7 @@ public abstract class DestinationAcceptanceTest {
         new AirbyteMessage()
             .withType(Type.STATE)
             .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))));
-    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, true);
 
     final List<AirbyteMessage> expectedMessagesAfterSecondSync = new ArrayList<>();
     expectedMessagesAfterSecondSync.addAll(firstSyncMessages);
@@ -620,7 +643,7 @@ public abstract class DestinationAcceptanceTest {
     final List<AirbyteMessage> allMessages = new ArrayList<>();
     allMessages.add(bigMessage);
     allMessages.addAll(messages);
-    runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
@@ -642,16 +665,18 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformations() throws Exception {
-    if (!supportsDBT()) {
+    if (!normalizationFromSpec() || !dbtFromSpec()) {
+      // TODO : Fix this, this test should not be restricted to destinations that support normalization
+      // to do so, we need to inject extra packages for dbt to run with dbt community adapters depending
+      // on the destination
       return;
     }
 
-    final JsonNode config = getConfigWithBasicNormalization();
+    final JsonNode config = getConfig();
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
-        processFactory,
-        config));
+        processFactory));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -706,16 +731,21 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
-    if (!supportsDBT()) {
+    if (!normalizationFromSpec()) {
+      // TODO : Fix this, this test should not be restricted to destinations that support normalization
+      // to do so, we need to inject extra packages for dbt to run with dbt community adapters depending
+      // on the destination
+      return;
+    }
+    if (!dbtFromSpec()) {
       return;
     }
 
-    final JsonNode config = getConfigWithBasicNormalization();
+    final JsonNode config = getConfig();
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory, NormalizationRunnerFactory.create(
         getImageName(),
-        processFactory,
-        config));
+        processFactory));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -759,7 +789,7 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
-    runSyncAndVerifyStateOutput(config, messages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
   }
 
@@ -811,7 +841,7 @@ public abstract class DestinationAcceptanceTest {
 
     final JsonNode config = getConfig();
     final String defaultSchema = getDefaultSchema(config);
-    runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog);
+    runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
   }
 
@@ -829,8 +859,9 @@ public abstract class DestinationAcceptanceTest {
     return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
   }
 
-  private void runSyncAndVerifyStateOutput(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog) throws Exception {
-    final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog);
+  private void runSyncAndVerifyStateOutput(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization)
+      throws Exception {
+    final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog, runNormalization);
     final AirbyteMessage expectedStateMessage = MoreLists.reversed(messages)
         .stream()
         .filter(m -> m.getType() == Type.STATE)
@@ -849,7 +880,8 @@ public abstract class DestinationAcceptanceTest {
     assertEquals(expectedStateMessage, actualStateMessage);
   }
 
-  private List<AirbyteMessage> runSync(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog) throws Exception {
+  private List<AirbyteMessage> runSync(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization)
+      throws Exception {
 
     final StandardTargetConfig targetConfig = new StandardTargetConfig()
         .withConnectionId(UUID.randomUUID())
@@ -869,15 +901,13 @@ public abstract class DestinationAcceptanceTest {
 
     destination.close();
 
-    // skip if basic normalization is not configured to run (either not set or false).
-    if (!config.hasNonNull(WorkerConstants.BASIC_NORMALIZATION_KEY) || !config.get(WorkerConstants.BASIC_NORMALIZATION_KEY).asBoolean()) {
+    if (!runNormalization) {
       return destinationOutput;
     }
 
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
-        processFactory,
-        targetConfig.getDestinationConnectionConfiguration());
+        processFactory);
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog())) {
@@ -1015,12 +1045,6 @@ public abstract class DestinationAcceptanceTest {
         ((ObjectNode) json).remove(key);
       }
     }
-  }
-
-  private JsonNode getConfigWithBasicNormalization() throws Exception {
-    final JsonNode config = getConfig();
-    ((ObjectNode) config).put(WorkerConstants.BASIC_NORMALIZATION_KEY, true);
-    return config;
   }
 
   public static class TestDestinationEnv {
