@@ -3,25 +3,25 @@
   "type": "object",
   "properties": {
     "AccessKeyId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "CloudTrailEvent": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "EventId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "EventName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "EventSource": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "EventTime": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "ReadOnly": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "Resources": {
       "type": ["null", "array"],
@@ -29,16 +29,16 @@
         "type": ["null", "object"],
         "properties": {
           "ResourceName": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "ResourceType": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "Username": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

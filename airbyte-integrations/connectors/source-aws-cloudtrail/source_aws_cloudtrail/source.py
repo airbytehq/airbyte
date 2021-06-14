@@ -23,6 +23,7 @@
 #
 
 
+import math
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -60,11 +61,14 @@ class AwsCloudtrailStream(Stream, ABC):
 
     start_date_format = "%Y-%m-%d"
 
+    cursor_field = "StartTime"
+
     def __init__(self, aws_key_id: str, aws_secret_key: str, aws_region_name: str, start_date: str, **kwargs):
         self.aws_secret_key = aws_secret_key
         self.aws_key_id = aws_key_id
         self.start_date = self.datetime_to_timestamp(datetime.strptime(start_date, self.start_date_format))
         self.client = Client(aws_key_id, aws_secret_key, aws_region_name)
+        self.records_left = kwargs.get("records_limit", math.inf)
 
     def next_page_token(self, response: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         return response.get("NextToken")
@@ -75,7 +79,7 @@ class AwsCloudtrailStream(Stream, ABC):
         params = {"MaxResults": self.limit}
 
         if self.start_date:
-            params["StartTime"] = self.start_date
+            params[self.cursor_field] = self.start_date
         if next_page_token:
             params["NextToken"] = next_page_token
         return params
@@ -85,9 +89,6 @@ class AwsCloudtrailStream(Stream, ABC):
 
 
 class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
-
-    cursor_field = "StartTime"
-
     @property
     def limit(self):
         return super().limit
@@ -102,7 +103,8 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
     def request_params(self, stream_state=None, **kwargs):
         params = super().request_params(stream_state=stream_state, **kwargs)
         cursor_data = stream_state.get(self.cursor_field)
-        if cursor_data:
+        # ignores state if start_date option is higher than cursor
+        if cursor_data and cursor_data > self.start_date:
             params[self.cursor_field] = cursor_data
 
         return params
@@ -130,17 +132,22 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
                 else:
                     raise err
 
-            yield from self.parse_response(response)
             next_page_token = self.next_page_token(response)
             if not next_page_token:
                 pagination_complete = True
+
+            for record in self.parse_response(response):
+                yield record
+                self.records_left -= 1
+
+                if self.records_left <= 0:
+                    pagination_complete = True
+                    break
 
         yield from []
 
 
 class Events(IncrementalAwsCloudtrailStream):
-
-    cursor_field = "StartTime"
 
     primary_key = "EventId"
 
@@ -153,7 +160,7 @@ class Events(IncrementalAwsCloudtrailStream):
 
     def parse_response(self, response: dict, **kwargs) -> Iterable[Mapping]:
         for event in response[self.data_field]:
-            event["EventTime"] = self.datetime_to_timestamp(event["EventTime"])
+            event[self.time_field] = self.datetime_to_timestamp(event[self.time_field])
             yield event
 
 
