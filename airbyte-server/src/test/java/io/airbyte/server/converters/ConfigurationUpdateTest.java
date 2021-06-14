@@ -110,7 +110,7 @@ class ConfigurationUpdateTest {
     when(specFetcher.execute(IMAGE_NAME)).thenReturn(CONNECTOR_SPECIFICATION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
 
-    final SourceConnection actual = configurationUpdate.source(UUID1, NEW_CONFIGURATION);
+    final SourceConnection actual = configurationUpdate.source(UUID1, ORIGINAL_SOURCE_CONNECTION.getName(), NEW_CONFIGURATION);
 
     assertEquals(NEW_SOURCE_CONNECTION, actual);
   }
@@ -122,7 +122,7 @@ class ConfigurationUpdateTest {
     when(specFetcher.execute(IMAGE_NAME)).thenReturn(CONNECTOR_SPECIFICATION);
     when(secretsProcessor.copySecrets(ORIGINAL_CONFIGURATION, NEW_CONFIGURATION, SPEC)).thenReturn(NEW_CONFIGURATION);
 
-    final DestinationConnection actual = configurationUpdate.destination(UUID1, NEW_CONFIGURATION);
+    final DestinationConnection actual = configurationUpdate.destination(UUID1, ORIGINAL_DESTINATION_CONNECTION.getName(), NEW_CONFIGURATION);
 
     assertEquals(NEW_DESTINATION_CONNECTION, actual);
   }

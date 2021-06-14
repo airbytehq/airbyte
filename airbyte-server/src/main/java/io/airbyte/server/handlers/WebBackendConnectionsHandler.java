@@ -154,7 +154,7 @@ public class WebBackendConnectionsHandler {
         .schedule(connectionRead.getSchedule())
         .source(source)
         .destination(destination)
-        .operations(operations);
+        .operations(operations.getOperations());
   }
 
   private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
@@ -321,13 +321,16 @@ public class WebBackendConnectionsHandler {
   protected static ConnectionCreate toConnectionCreate(WebBackendConnectionCreate webBackendConnectionCreate, List<UUID> operationIds) {
     ConnectionCreate connectionCreate = new ConnectionCreate();
 
+    connectionCreate.name(webBackendConnectionCreate.getName());
     connectionCreate.namespaceDefinition(webBackendConnectionCreate.getNamespaceDefinition());
     connectionCreate.namespaceFormat(webBackendConnectionCreate.getNamespaceFormat());
     connectionCreate.prefix(webBackendConnectionCreate.getPrefix());
+    connectionCreate.sourceId(webBackendConnectionCreate.getSourceId());
+    connectionCreate.destinationId(webBackendConnectionCreate.getDestinationId());
+    connectionCreate.operationIds(operationIds);
+    connectionCreate.syncCatalog(webBackendConnectionCreate.getSyncCatalog());
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
-    connectionCreate.syncCatalog(webBackendConnectionCreate.getSyncCatalog());
-    connectionCreate.operationIds(operationIds);
 
     return connectionCreate;
   }
@@ -336,14 +339,14 @@ public class WebBackendConnectionsHandler {
   protected static ConnectionUpdate toConnectionUpdate(WebBackendConnectionUpdate webBackendConnectionUpdate, List<UUID> operationIds) {
     ConnectionUpdate connectionUpdate = new ConnectionUpdate();
 
+    connectionUpdate.connectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.namespaceDefinition(webBackendConnectionUpdate.getNamespaceDefinition());
     connectionUpdate.namespaceFormat(webBackendConnectionUpdate.getNamespaceFormat());
     connectionUpdate.prefix(webBackendConnectionUpdate.getPrefix());
-    connectionUpdate.connectionId(webBackendConnectionUpdate.getConnectionId());
     connectionUpdate.operationIds(operationIds);
+    connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
-    connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
 
     return connectionUpdate;
   }

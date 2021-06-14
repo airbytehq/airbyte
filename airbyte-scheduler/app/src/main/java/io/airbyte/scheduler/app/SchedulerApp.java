@@ -49,6 +49,8 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalPool;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -56,8 +58,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -161,7 +165,9 @@ public class SchedulerApp {
 
   private static ProcessFactory getProcessBuilderFactory(Configs configs) {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      return new KubeProcessFactory(configs.getWorkspaceRoot());
+      final KubernetesClient kubeClient = new DefaultKubernetesClient();
+      final BlockingQueue<Integer> ports = new LinkedBlockingDeque<>(configs.getTemporalWorkerPorts());
+      return new KubeProcessFactory("default", kubeClient, ports);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),

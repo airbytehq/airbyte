@@ -1,6 +1,8 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/s3",
   "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
   "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -16,6 +18,13 @@
     ],
     "additionalProperties": false,
     "properties": {
+      "s3_endpoint": {
+        "title": "Endpoint",
+        "type": "string",
+        "default": "",
+        "description": "This is your S3 endpoint url.(if you are working with AWS S3, just leave empty).",
+        "examples": ["http://localhost:9000"]
+      },
       "s3_bucket_name": {
         "title": "S3 Bucket Name",
         "type": "string",
