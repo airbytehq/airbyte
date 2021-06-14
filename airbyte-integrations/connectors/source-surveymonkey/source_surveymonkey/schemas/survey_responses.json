@@ -64,10 +64,12 @@
       "type": "integer"
     },
     "date_modified": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "date_created": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "href": {
       "type": "string"

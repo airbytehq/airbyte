@@ -49,6 +49,7 @@ class SourceSurveymonkey(AbstractSource):
             stream = Surveys(authenticator=authenticator, start_date=config["start_date"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             _ = next(records)
+            print('gotta:', _)
             return True, None
         except Exception as e:
             print('error happened!!!')
@@ -60,7 +61,7 @@ class SourceSurveymonkey(AbstractSource):
         authenticator = TokenAuthenticator(token=config["access_token"])
         streams = [
             Surveys(authenticator=authenticator, start_date=config["start_date"]),
-            SurveyDetails(authenticator=authenticator),
+            #SurveyDetails(authenticator=authenticator),
             SurveyPages(authenticator=authenticator),
             SurveyQuestions(authenticator=authenticator),
             SurveyResponses(authenticator=authenticator, start_date=config["start_date"]),

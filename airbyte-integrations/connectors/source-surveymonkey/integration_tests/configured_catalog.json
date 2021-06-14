@@ -1,55 +1,359 @@
-// TODO: Construct a configured catalog that can be used for testing. Each stream's `json_schema` field should match the corresponding json schema file.
 {
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "surveys",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": {
-              "type": ["null", "string"]
+            "title": {
+              "type": "string"
             },
-            "name": {
-              "type": ["null", "string"]
+            "nickname": {
+              "type": "string"
             },
-            "signup_date": {
-              "type": ["null", "string"],
+            "language": {
+              "type": "string"
+            },
+            "folder_id": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "question_count": {
+              "type": "integer"
+            },
+            "page_count": {
+              "type": "integer"
+            },
+            "response_count": {
+              "type": "integer"
+            },
+            "date_created": {
+              "type": "string",
               "format": "date-time"
+            },
+            "date_modified": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "id": {
+              "type": "string"
+            },
+            "buttons_text": {
+              "type": "object",
+              "properties": {
+                "next_button": {
+                  "type": "string"
+                },
+                "prev_button": {
+                  "type": "string"
+                },
+                "done_button": {
+                  "type": "string"
+                },
+                "exit_button": {
+                  "type": "string"
+                }
+              }
+            },
+            "is_owner": {
+              "type": "boolean"
+            },
+            "footer": {
+              "type": "boolean"
+            },
+            "custom_variables": {
+              "type": "object"
+            },
+            "href": {
+              "type": "string"
+            },
+            "analyze_url": {
+              "type": "string"
+            },
+            "edit_url": {
+              "type": "string"
+            },
+            "collect_url": {
+              "type": "string"
+            },
+            "summary_url": {
+              "type": "string"
+            },
+            "preview": {
+              "type": "string"
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
-        "name": "employees",
+        "name": "survey_pages",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "position": {
+              "type": "integer"
+            },
+            "question_count": {
+              "type": "integer"
+            },
             "id": {
-              "type": ["null", "string"]
+              "type": "string"
             },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "years_of_service": {
-              "type": ["null", "integer"]
-            },
-            "start_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
+            "href": {
+              "type": "string"
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
       },
       "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "survey_questions",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "position": {
+              "type": "integer"
+            },
+            "visible": {
+              "type": "boolean"
+            },
+            "family": {
+              "type": "string"
+            },
+            "subtype": {
+              "type": "string"
+            },
+            "layout": {
+              "type": "string"
+            },
+            "sorting": {
+              "type": "string"
+            },
+            "required": {
+              "type": "string"
+            },
+            "validation": {
+              "type": "string"
+            },
+            "forced_ranking": {
+              "type": "boolean"
+            },
+            "headings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "href": {
+              "type": "string"
+            },
+            "answers": {
+              "type": "object",
+              "properties": {
+                "choices": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "position": {
+                        "type": "integer"
+                      },
+                      "visible": {
+                        "type": "boolean"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "quiz_options": {
+                        "type": "object",
+                        "properties": {
+                          "score": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "survey_responses",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "recipient_id": {
+              "type": "string"
+            },
+            "collection_mode": {
+              "type": "string"
+            },
+            "response_status": {
+              "type": "string"
+            },
+            "custom_value": {
+              "type": "string"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            },
+            "email_address": {
+              "type": "string"
+            },
+            "ip_address": {
+              "type": "string"
+            },
+            "logic_path": {
+              "type": "object"
+            },
+            "metadata": {
+              "type": "object",
+              "properties": {
+                "contact": {
+                  "type": "object"
+                }
+              }
+            },
+            "page_path": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "collector_id": {
+              "type": "string"
+            },
+            "survey_id": {
+              "type": "string"
+            },
+            "custom_variables": {
+              "type": "object"
+            },
+            "edit_url": {
+              "type": "string"
+            },
+            "analyze_url": {
+              "type": "string"
+            },
+            "total_time": {
+              "type": "integer"
+            },
+            "date_modified": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "date_created": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "href": {
+              "type": "string"
+            },
+            "pages": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "questions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "answers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "choice_id": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": [],
       "destination_sync_mode": "append"
     }
   ]

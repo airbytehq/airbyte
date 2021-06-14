@@ -20,6 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from airbyte_cdk.logger import AirbyteLogger
+from source_surveymonkey import SourceSurveymonkey
 
-def test_example_method():
-    assert True
+def test_client_wrong_credentials():
+    source = SourceSurveymonkey()
+    status, error = source.check_connection(logger=AirbyteLogger(), config={"access_token": "blahblah", "start_date": "2021-01-01-T00:00:00.000000Z"})
+    assert not status

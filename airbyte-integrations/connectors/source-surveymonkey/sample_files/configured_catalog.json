@@ -6,37 +6,6 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "id": {
-              "type": "string"
-            },
-            "title": {
-              "type": "string"
-            },
-            "nickname": {
-              "type": "string"
-            },
-            "href": {
-              "type": "string"
-            }
-          }
-        },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "incremental",
-      "cursor_field": [],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "survey_details",
-        "json_schema": {
-          "type": "object",
-          "properties": {
             "title": {
               "type": "string"
             },
@@ -62,10 +31,12 @@
               "type": "integer"
             },
             "date_created": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "date_modified": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "id": {
               "type": "string"
@@ -329,10 +300,12 @@
               "type": "integer"
             },
             "date_modified": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "date_created": {
-              "type": "string"
+              "type": "string",
+              "format": "date-time"
             },
             "href": {
               "type": "string"

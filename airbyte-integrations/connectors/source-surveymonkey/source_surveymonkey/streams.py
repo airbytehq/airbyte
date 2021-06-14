@@ -55,7 +55,7 @@ class SurveymonkeyStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
-            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+            raise Exception(repr(response_json.get("error")))  # TODO: apply ShouldRetry
         result = response.json.get(self.data_field, [])
         yield from result
 
@@ -67,20 +67,21 @@ class SurveymonkeyStream(HttpStream, ABC):
             params.update(next_page_token)
         return params
 
-    def read_records(
+    def read_records( # TODO remove this (caching) in final commit
             self,
             sync_mode: SyncMode,
             cursor_field: List[str] = None,
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        with vcr.use_cassette('sy4ara.yaml', record_mode='new_episodes'):
+        with vcr.use_cassette('pretty_name.yaml', record_mode='new_episodes'):
             yield from super().read_records(
                 sync_mode=sync_mode,
                 cursor_field=cursor_field,
                 stream_slice=stream_slice,
                 stream_state=stream_state
             )
+
 
 
 class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
@@ -111,6 +112,7 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
 
         since_value = max(since_value, self._start_date)
         params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
+        return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -136,15 +138,15 @@ class Surveys(IncrementalSurveymonkeyStream):
         return "surveys"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-
-
         response_json = response.json()
         if response_json.get("error"):
             raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
         result = response_json.get(self.data_field, [])
-        self.cached_survey_ids += [i['id'] for i in result]
-        print('DEBUG: appeanded and got cache:', self.cached_survey_ids)
-        yield from result
+        for record in result:
+            self.cached_survey_ids.append(record['id'])
+            substream = SurveyDetails(survey_id=record['id'], authenticator=self.authenticator)
+            child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
+            yield from child_record
 
 
 class SurveyDetails(SurveymonkeyStream):
@@ -153,13 +155,14 @@ class SurveyDetails(SurveymonkeyStream):
     It does not contain the needed information. I will need it as stream slice source
     in all of endpoints
     """
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        survey_id = stream_slice["survey_id"]
-        return f"surveys/{survey_id}/details"
 
-    def stream_slices(self, **kwargs):
-        for survey_id in self.cached_survey_ids:
-            yield {"survey_id": survey_id}
+    def __init__(self, survey_id, **kwargs):
+        self.survey_id = survey_id
+        super().__init__(**kwargs)
+
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"surveys/{self.survey_id}/details"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -233,3 +236,35 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         if response_json.get("error"):
             raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
         yield from response_json.get(self.data_field, [])
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the campaign_id and cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        survey_id = latest_record.get("survey_id")
+        latest_cursor_value = latest_record.get(self.cursor_field)
+        current_stream_state = current_stream_state or {}
+        current_state = current_stream_state.get(survey_id) if current_stream_state else None
+        if current_state:
+            current_state = current_state.get(self.cursor_field)
+        current_state_value = current_state or latest_cursor_value
+        max_value = max(current_state_value, latest_cursor_value)
+        new_value = {self.cursor_field: max_value}
+
+        current_stream_state[survey_id] = new_value
+        return current_stream_state
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
+
+        since_value_surv = stream_state.get(stream_slice["survey_id"])
+        if since_value_surv:
+            since_value = pendulum.parse(since_value_surv.get(self.cursor_field)) \
+                if since_value_surv.get(self.cursor_field) \
+                else self._start_date
+            since_value = max(since_value, self._start_date)
+        else:
+            since_value = self._start_date
+        params["start_modified_at"] = since_value.strftime("%Y-%m-%dT%H:%M:%S")
+        return params
