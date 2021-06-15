@@ -31,28 +31,19 @@ from genson import SchemaBuilder
 from genson.schema.strategies.object import Object
 
 
-def to_schema(self):
-    """
-    Dirty override.
-    THis is a stripped native Object.to_schema method.
-    The library does no provide a way to
-    avoid "required = [a,b,c]" in json schema within some parameter
-    in `SchemaBuilder` constructor or this need investigation.
-    So the dirty fix is to strip original method
-    and not to add unwanted extra field `required`.
-    Without further recursive looping over document and deleting this field
-    I just do not create it.
-    """
-    schema = super(Object, self).to_schema()
-    schema["type"] = "object"
-    if self._properties:
-        schema["properties"] = self._properties_to_schema(self._properties)
-    if self._pattern_properties:
-        schema["patternProperties"] = self._properties_to_schema(self._pattern_properties)
-    return schema
+class NoRequiredObj(Object):
+    def to_schema(self):
+        schema = super(Object, self).to_schema()
+        schema["type"] = "object"
+        if self._properties:
+            schema["properties"] = self._properties_to_schema(self._properties)
+        if self._pattern_properties:
+            schema["patternProperties"] = self._properties_to_schema(self._pattern_properties)
+        return schema
 
 
-Object.to_schema = to_schema
+class NoRequiredSchemaBuilder(SchemaBuilder):
+    EXTRA_STRATEGIES = (NoRequiredObj,)
 
 
 def main():
@@ -68,7 +59,7 @@ def main():
         if message.type == Type.RECORD:
             stream_name = message.record.stream
             if stream_name not in builders:
-                builder = SchemaBuilder()
+                builder = NoRequiredSchemaBuilder()
                 builders[stream_name] = builder
             else:
                 builder = builders[stream_name]
