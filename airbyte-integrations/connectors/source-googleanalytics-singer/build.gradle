@@ -13,7 +13,7 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
 }
-}
+
 
 // TODO(sherifnada) re-enable tests. Currently they're disabled because they hog up so much bandwidth that they prevent local iteration at times. 
 // airbyteStandardSourceTestFile {
