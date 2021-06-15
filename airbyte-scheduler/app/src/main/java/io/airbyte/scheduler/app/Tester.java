@@ -11,21 +11,16 @@ import org.slf4j.MDC;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class Tester {
-    public static void main(String[] args) throws WorkerException, InterruptedException {
+    public static void main(String[] args) throws Exception {
         System.out.println("testing...");
 
-        Executors.newSingleThreadExecutor().submit(
-                () -> {
-                    try {
-                        new WorkerHeartbeatServer(4000).start();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+        WorkerHeartbeatServer server = new WorkerHeartbeatServer(4000);
+        server.startBackground();
 
         final KubernetesClient kubeClient = new DefaultKubernetesClient();
         final BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(List.of(4001, 4002, 4003));
@@ -40,7 +35,14 @@ public class Tester {
                 ImmutableMap.of(),
                 "python /airbyte/integration_code/main.py",
                 "spec");
+        // "while true; do echo hi; sleep 1; done" todo: test failures
 
+        System.out.println("waiting for process...");
         process.waitFor();
+
+        System.out.println("shutting down server...");
+        server.stop();
+
+        System.out.println("done!");
     }
 }

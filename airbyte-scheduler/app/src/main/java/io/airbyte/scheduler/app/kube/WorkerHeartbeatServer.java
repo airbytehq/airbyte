@@ -18,15 +18,26 @@ import java.util.Map;
 public class WorkerHeartbeatServer {
 
     private final int port;
+    private Server server;
 
     public WorkerHeartbeatServer(int port) {
         this.port = port;
     }
 
+
     public void start() throws Exception {
-        final Server server = getServer();
+        server = getServer();
         server.start();
         server.join();
+    }
+
+    public void startBackground() throws Exception {
+        server = getServer();
+        server.start();
+    }
+
+    public void stop() throws Exception {
+        server.stop();
     }
 
     protected Server getServer() {

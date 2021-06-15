@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,6 +62,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+
+import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +109,8 @@ public class KubeJobProcess extends Process {
   private static final String STDERR_PIPE_FILE = PIPES_DIR + "/stderr";
   private static final String CONFIG_DIR = "/config";
   private static final String TERMINATION_DIR = "/termination";
+  private static final String TERMINATION_FILE_MAIN = TERMINATION_DIR + "/main";
+  private static final String TERMINATION_FILE_CHECK = TERMINATION_DIR + "/check";
   private static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
 
   // 143 is the typical SIGTERM exit code.
@@ -201,8 +206,8 @@ public class KubeJobProcess extends Process {
 
   private static Container getMain(String image, boolean usesStdin, String entrypoint, List<VolumeMount> mainVolumeMounts, String[] args) {
     var argsStr = String.join(" ", args);
-    var entrypointStr = entrypoint + " " + argsStr + " ";
-    var trap = "trap \"touch " + TERMINATION_DIR + "/exit\" EXIT\n";
+    var entrypointStr = entrypoint + " " + argsStr;
+    var trap = "trap \"touch " + TERMINATION_FILE_MAIN + "\" EXIT\n";
 
     var entrypointStrWithPipes = trap + entrypointStr + String.format(" 2> %s > %s", STDERR_PIPE_FILE, STDOUT_PIPE_FILE);
     if (usesStdin) {
@@ -320,29 +325,33 @@ public class KubeJobProcess extends Process {
     Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
     Container main = getMain(image, usesStdin, entrypoint, List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount), args);
 
+    final String remoteStdinCommand = wrapWithHappyFileCloser("socat -d -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE, TERMINATION_FILE_MAIN);
     Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage("alpine/socat:1.7.4.1-r1")
         .withCommand("sh", "-c", "socat -d -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
-        .withVolumeMounts(pipeVolumeMount)
+        .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
     var localIp = InetAddress.getLocalHost().getHostAddress();
+    String relayStdoutCommand = wrapWithHappyFileCloser(String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, localIp, stdoutLocalPort), TERMINATION_FILE_MAIN);
     Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage("alpine/socat:1.7.4.1-r1")
         .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, localIp, stdoutLocalPort))
-        .withVolumeMounts(pipeVolumeMount)
+        .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
+
+    String relayStderrCommand = wrapWithHappyFileCloser(String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, localIp, stderrLocalPort), TERMINATION_FILE_MAIN);
     Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage("alpine/socat:1.7.4.1-r1")
         .withCommand("sh", "-c", String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, localIp, stderrLocalPort))
-        .withVolumeMounts(pipeVolumeMount)
+        .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
     final String heartbeatUrl = "host.docker.internal:" + heartbeatPort; // todo: switch back to: localIp + ":" + heartbeatPort;
-    final String heartbeatCommand = "set -e; while true; do if [[ -f \"/termination/exit\" ]]; then exit 0; else curl " + heartbeatUrl + "; sleep 1; fi; done";
+    final String heartbeatCommand = wrapWithHappyFileCloser("set -e; while true; do curl " + heartbeatUrl + "; sleep 1; done", TERMINATION_FILE_MAIN);
     System.out.println("heartbeatCommand = " + heartbeatCommand);
     Container callHeartbeatServer = new ContainerBuilder()
             .withName("call-heartbeat-server")
@@ -352,7 +361,8 @@ public class KubeJobProcess extends Process {
             .withVolumeMounts(terminationVolumeMount)
             .build();
 
-    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer) : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
+//  todo:  List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer) : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
+    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr) : List.of(main, relayStdout, relayStderr);
 
     final Job job = new JobBuilder()
             .withApiVersion("batch/v1")
@@ -393,7 +403,10 @@ public class KubeJobProcess extends Process {
     copyFilesToKubeConfigVolume(client, podDefinition.getMetadata().getName(), namespace, filesWithSuccess);
 
     LOGGER.info("Waiting until pod is ready...");
-    client.resource(podDefinition).waitUntilReady(30, TimeUnit.MINUTES);
+    client.resource(podDefinition).waitUntilCondition(p -> {
+      boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
+      return isReady || isTerminal(p); // todo: fixes too fast completion, but what do we do for failure/error?
+    }, 10, TimeUnit.DAYS);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -408,6 +421,10 @@ public class KubeJobProcess extends Process {
       LOGGER.info("Using null stdin output stream...");
       this.stdin = NullOutputStream.NULL_OUTPUT_STREAM;
     }
+  }
+
+  private static String wrapWithHappyFileCloser(String command, String file) {
+    return "(" + command + ") &\nCHILD_PID=$!\n(while true; do if [[ -f " + file + "]]; then kill $CHILD_PID; fi; sleep 1; done) &\nwait $CHILD_PID\nif [[ -f " + file + " ]]; then exit 0; fi";
   }
 
   private void setupStdOutAndStdErrListeners() {
