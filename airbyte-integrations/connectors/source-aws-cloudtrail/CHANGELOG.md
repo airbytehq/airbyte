@@ -3,5 +3,5 @@
 ## 0.1.0
 Initial Release.
 
-Added the Events incremental stream: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html
+Added Management Events incremental stream: https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html
 

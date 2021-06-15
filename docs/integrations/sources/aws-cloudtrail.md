@@ -12,6 +12,7 @@ This Source is capable of syncing the following core Streams:
 
 * [Events](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail.html#CloudTrail.Client.lookup_events)
 
+Only Management events supported right now.
 
 ### Data type mapping
 

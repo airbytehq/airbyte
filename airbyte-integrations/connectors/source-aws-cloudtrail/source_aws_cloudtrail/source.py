@@ -56,12 +56,9 @@ class Client:
 
 
 class AwsCloudtrailStream(Stream, ABC):
-
     limit: int = 50
 
     start_date_format = "%Y-%m-%d"
-
-    cursor_field = "StartTime"
 
     def __init__(self, aws_key_id: str, aws_secret_key: str, aws_region_name: str, start_date: str, **kwargs):
         self.aws_secret_key = aws_secret_key
@@ -79,7 +76,7 @@ class AwsCloudtrailStream(Stream, ABC):
         params = {"MaxResults": self.limit}
 
         if self.start_date:
-            params[self.cursor_field] = self.start_date
+            params["StartTime"] = self.start_date
         if next_page_token:
             params["NextToken"] = next_page_token
         return params
@@ -105,7 +102,7 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
         cursor_data = stream_state.get(self.cursor_field)
         # ignores state if start_date option is higher than cursor
         if cursor_data and cursor_data > self.start_date:
-            params[self.cursor_field] = cursor_data
+            params["StartTime"] = cursor_data
 
         return params
 
@@ -147,11 +144,12 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
         yield from []
 
 
-class Events(IncrementalAwsCloudtrailStream):
-
+class ManagementEvents(IncrementalAwsCloudtrailStream):
     primary_key = "EventId"
 
     time_field = "EventTime"
+
+    cursor_field = "EventTime"
 
     data_field = "Events"
 
@@ -175,4 +173,4 @@ class SourceAwsCloudtrail(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Events(**config)]
+        return [ManagementEvents(**config)]

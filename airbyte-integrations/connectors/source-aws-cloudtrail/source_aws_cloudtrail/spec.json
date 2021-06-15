@@ -36,7 +36,7 @@
       "records_limit": {
         "type": "integer",
         "minimum": 1,
-        "description": "Use this option to limit amount of fetched records per each stream."
+        "description": "Use this option to limit amount of fetched records per each stream. Limit is disabled if option is empty."
       }
     }
   }
