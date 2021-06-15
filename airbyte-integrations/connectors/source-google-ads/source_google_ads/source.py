@@ -66,7 +66,7 @@ class GoogleAdsStream(Stream, ABC):
     def __init__(self, config):
         self.config = config
         self.google_ads_client = GoogleAds(**config)
-        self.conversion_window_days = self.config.get('conversion_window_days', self.DEFAULT_CONVERSION_WINDOW_DAYS)
+        self.conversion_window_days = self.config.get("conversion_window_days", self.DEFAULT_CONVERSION_WINDOW_DAYS)
 
     def parse_response(self, response: SearchGoogleAdsResponse) -> Iterable[Mapping]:
         for result in response:

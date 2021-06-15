@@ -47,4 +47,3 @@ def test_get_updated_state(config):
     latest_record = {"segments.date": "2020-02-01"}
     new_stream_state = client.get_updated_state(current_state_stream, latest_record)
     assert new_stream_state == {"segments.date": "2020-02-01"}
-
