@@ -12,7 +12,7 @@ Here's a 6-minute video showing you how you can do it.
 
 First of all, make sure you have Docker and Docker Compose installed. If this isn't the case, follow the [guide](../deploying-airbyte/local-deployment.md) for recommended approach to install Docker. 
 
-Once Docker is installed successfully run the following commands:
+Once Docker is installed successfully, run the following commands:
 
 ```text
 git clone https://github.com/airbytehq/airbyte.git
