@@ -61,7 +61,7 @@ public class OracleOperations implements SqlOperations {
   public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
     try {
       if (!tableExists(database, schemaName, tableName)) {
-        database.execute(createTableQuery(schemaName, tableName));
+        database.execute(createTableQuery(database, schemaName, tableName));
       }
     } catch (Exception e) {
       LOGGER.error("Error while creating table.", e);
@@ -70,7 +70,7 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public String createTableQuery(String schemaName, String tableName) {
+  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     return String.format(
         "CREATE TABLE %s.%s ( \n"
             + "%s VARCHAR(64) PRIMARY KEY,\n"
@@ -102,7 +102,7 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public String truncateTableQuery(String schemaName, String tableName) {
+  public String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     return String.format("DELETE FROM %s.%s\n", schemaName, tableName);
   }
 
@@ -161,7 +161,7 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(String schemaName, String sourceTableName, String destinationTableName) {
+  public String copyTableQuery(JdbcDatabase database, String schemaName, String sourceTableName, String destinationTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s\n", schemaName, destinationTableName, schemaName, sourceTableName);
   }
 
