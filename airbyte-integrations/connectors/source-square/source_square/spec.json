@@ -2,14 +2,17 @@
   "documentationUrl": "https://docsurl.com",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Square Spec",
+    "title": "Square Source CDK Specifications",
     "type": "object",
-    "required": ["TODO"],
+    "required": [
+      "api_key"
+    ],
     "additionalProperties": false,
     "properties": {
-      "TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {
+      "api_key": {
         "type": "string",
-        "description": "describe me"
+        "description": "The API key for a Square application",
+        "airbyte_secret": true
       }
     }
   }

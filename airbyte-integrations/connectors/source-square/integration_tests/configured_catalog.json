@@ -1,56 +1,114 @@
-// TODO: Construct a configured catalog that can be used for testing. Each stream's `json_schema` field should match the corresponding json schema file.
 {
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "locations",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "signup_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
+            "locations": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "address": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "address_line_1": {
+                        "type": ["null", "string"]
+                      },
+                      "locality": {
+                        "type": ["null", "string"]
+                      },
+                      "administrative_district_level_1": {
+                        "type": ["null", "string"]
+                      },
+                      "postal_code": {
+                        "type": ["null", "string"]
+                      },
+                      "country": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "timezone": {
+                    "type": ["null", "string"]
+                  },
+                  "capabilities": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  "status": {
+                    "type": ["null", "string"]
+                  },
+                  "created_at": {
+                    "type": ["null", "string"]
+                  },
+                  "merchant_id": {
+                    "type": ["null", "string"]
+                  },
+                  "country": {
+                    "type": ["null", "string"]
+                  },
+                  "language_code": {
+                    "type": ["null", "string"]
+                  },
+                  "currency": {
+                    "type": ["null", "string"]
+                  },
+                  "phone_number": {
+                    "type": ["null", "string"]
+                  },
+                  "business_name": {
+                    "type": ["null", "string"]
+                  },
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "website_url": {
+                    "type": ["null", "string"]
+                  },
+                  "business_hours": {
+                    "type": ["null", "object"]
+                  },
+                  "business_email": {
+                    "type": ["null", "string"]
+                  },
+                  "description": {
+                    "type": ["null", "string"]
+                  },
+                  "twitter_username": {
+                    "type": ["null", "string"]
+                  },
+                  "instagram_username": {
+                    "type": ["null", "string"]
+                  },
+                  "facebook_url": {
+                    "type": ["null", "string"]
+                  },
+                  "mcc": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
       },
       "sync_mode": "full_refresh",
+      "cursor_field": ["id"],
       "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "employees",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "years_of_service": {
-              "type": ["null", "integer"]
-            },
-            "start_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
     }
   ]
 }

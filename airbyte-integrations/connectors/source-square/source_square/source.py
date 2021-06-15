@@ -73,59 +73,118 @@ class SquareStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    data_field = None
+    # TODO Change this to the prod version https://connect.squareup.com/v2/
+    url_base = "https://connect.squareupsandbox.com/v2/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
+        next_page_cursor = response.json().get("cursor", False)
+        if next_page_cursor:
+            return {"cursor": next_page_cursor}
 
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
+        if next_page_token:
+            return next_page_token
+
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
+        json_response = response.json()
+        records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+        yield from records
 
 
-class Customers(SquareStream):
+class Items(SquareStream):
     """
-    TODO: Change class name to match the table/data source this stream corresponds to.
     """
+    data_field = "objects"
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    primary_key = "id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
+        should return "catalog/list?types=ITEM". Required.
         """
-        return "customers"
+        return "catalog/list?types=ITEM"
+
+
+class Discounts(SquareStream):
+    """
+    """
+    data_field = "objects"
+
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "catalog/list?types=ITEM". Required.
+        """
+        return "catalog/list?types=DISCOUNT"
+
+
+class Categories(SquareStream):
+    """
+    """
+    data_field = "objects"
+
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "catalog/list?types=CATEGORY". Required.
+        """
+        return "catalog/list?types=CATEGORY"
+
+
+class Taxes(SquareStream):
+    """
+    """
+    data_field = "objects"
+
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "catalog/list?types=CATEGORY". Required.
+        """
+        return "catalog/list?types=Tax"
+
+
+class Locations(SquareStream):
+    """
+    """
+    data_field = "locations"
+
+    primary_key = "id"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "catalog/list?types=CATEGORY". Required.
+        """
+        return "locations"
 
 
 # Basic incremental stream
@@ -149,7 +208,8 @@ class IncrementalSquareStream(SquareStream, ABC):
         """
         return []
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+            Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
@@ -202,8 +262,6 @@ class Employees(IncrementalSquareStream):
 class SourceSquare(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
@@ -211,14 +269,34 @@ class SourceSquare(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        return True, None
+
+        api_key = config["api_key"]
+        api_version = "2021-05-13"  # Latest Stable Release
+
+        headers = {
+            "Square-Version": api_version,
+            "Authorization": "Bearer {}".format(api_key),
+            "Content-Type": "application/json"
+        }
+
+        url = f"https://connect.squareupsandbox.com/v2/catalog/info"
+
+        try:
+            session = requests.get(url, headers=headers)
+            session.raise_for_status()
+            return True, None
+        except requests.exceptions.RequestException as error:
+            return False, error
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        auth = TokenAuthenticator(token=config["api_key"])
+        return [
+            Items(authenticator=auth),
+            Categories(authenticator=auth),
+            Discounts(authenticator=auth),
+            Taxes(authenticator=auth),
+            Locations(authenticator=auth)
+        ]
