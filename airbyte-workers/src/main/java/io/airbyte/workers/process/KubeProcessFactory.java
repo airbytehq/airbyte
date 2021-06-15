@@ -42,13 +42,15 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private final String namespace;
   private final KubernetesClient kubeClient;
-  private final BlockingQueue<Integer> ports;
+  private final int heartbeatPort;
+  private final BlockingQueue<Integer> workerPorts;
   private final Set<Integer> claimedPorts = new HashSet<>();
 
-  public KubeProcessFactory(String namespace, KubernetesClient kubeClient, BlockingQueue<Integer> ports) {
+  public KubeProcessFactory(String namespace, KubernetesClient kubeClient, int heartbeatPort, BlockingQueue<Integer> workerPorts) {
     this.namespace = namespace;
     this.kubeClient = kubeClient;
-    this.ports = ports;
+    this.heartbeatPort = heartbeatPort;
+    this.workerPorts = workerPorts;
   }
 
   @Override
@@ -66,17 +68,17 @@ public class KubeProcessFactory implements ProcessFactory {
       final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
       final String podName = "airbyte-worker-" + jobId + "-" + attempt + "-" + suffix;
 
-      final int stdoutLocalPort = ports.take();
+      final int stdoutLocalPort = workerPorts.take();
       claimedPorts.add(stdoutLocalPort);
       LOGGER.info("stdoutLocalPort = " + stdoutLocalPort);
 
-      final int stderrLocalPort = ports.take();
+      final int stderrLocalPort = workerPorts.take();
       claimedPorts.add(stderrLocalPort);
       LOGGER.info("stderrLocalPort = " + stderrLocalPort);
 
       final Consumer<Integer> portReleaser = port -> {
-        if (!ports.contains(port)) {
-          ports.add(port);
+        if (!workerPorts.contains(port)) {
+          workerPorts.add(port);
           LOGGER.info("Port consumer releasing: " + port);
         } else {
           LOGGER.info("Port consumer skipping releasing: " + port);
@@ -91,6 +93,7 @@ public class KubeProcessFactory implements ProcessFactory {
           imageName,
           stdoutLocalPort,
           stderrLocalPort,
+          heartbeatPort,
           usesStdin,
           files,
           entrypoint,

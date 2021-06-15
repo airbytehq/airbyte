@@ -251,6 +251,7 @@ public class KubePodProcess extends Process {
                         String image,
                         int stdoutLocalPort,
                         int stderrLocalPort,
+                        int heartbeatPort,
                         boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypointOverride,
@@ -318,7 +319,15 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(pipeVolumeMount)
         .build();
 
-    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr) : List.of(main, relayStdout, relayStderr);
+    final String heartbeatUrl = localIp + ":" + heartbeatPort;
+    Container callHeartbeatServer = new ContainerBuilder()
+            .withName("call-heartbeat-server")
+            .withImage("curlimages/curl:7.77.0")
+            .withCommand("sh")
+            .withArgs("-c", "while true; do curl " + heartbeatUrl + "; sleep 1; done") // todo: kill this container when other pods stop so it's not stuck in notready
+            .build();
+
+    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer) : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
     Pod pod = new PodBuilder()
         .withApiVersion("v1")

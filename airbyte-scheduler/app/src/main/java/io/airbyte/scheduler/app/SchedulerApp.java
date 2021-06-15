@@ -36,6 +36,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
+import io.airbyte.scheduler.app.kube.WorkerHeartbeatServer;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -84,6 +85,7 @@ public class SchedulerApp {
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
+  private static final int KUBE_HEARTBEAT_PORT = 9000;
 
   private final Path workspaceRoot;
   private final ProcessFactory processFactory;
@@ -166,8 +168,8 @@ public class SchedulerApp {
   private static ProcessFactory getProcessBuilderFactory(Configs configs) {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final KubernetesClient kubeClient = new DefaultKubernetesClient();
-      final BlockingQueue<Integer> ports = new LinkedBlockingDeque<>(configs.getTemporalWorkerPorts());
-      return new KubeProcessFactory("default", kubeClient, ports);
+      final BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(configs.getTemporalWorkerPorts());
+      return new KubeProcessFactory("default", kubeClient, KUBE_HEARTBEAT_PORT, workerPorts);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
@@ -208,6 +210,19 @@ public class SchedulerApp {
         workspaceRoot,
         jobPersistence);
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
+
+    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
+      Map<String, String> mdc = MDC.getCopyOfContextMap();
+      Executors.newSingleThreadExecutor().submit(
+              () -> {
+                MDC.setContextMap(mdc);
+                try {
+                  new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
+                } catch (Exception e) {
+                  throw new RuntimeException(e);
+                }
+              });
+    }
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
