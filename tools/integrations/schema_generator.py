@@ -55,27 +55,30 @@ def to_schema(self):
 Object.to_schema = to_schema
 
 
-data = sys.stdin.readlines()
+def main():
+    data = sys.stdin.readlines()
 
-default_folder = os.path.join(os.getcwd(), "_schemas")
-if not os.path.exists(default_folder):
-    os.mkdir(default_folder)
+    default_folder = os.path.join(os.getcwd(), "schemas")
+    if not os.path.exists(default_folder):
+        os.mkdir(default_folder)
 
-messages = [AirbyteMessage.parse_raw(line) for line in data]
-record_messages = [i for i in messages if i.type == Type.RECORD]
-builders = {}  # "stream_name": builder_instance, "stream_name2: builder_instance2...}
+    builders = {}
+    for line in data:
+        message = AirbyteMessage.parse_raw(line)
+        if message.type == Type.RECORD:
+            stream_name = message.record.stream
+            if stream_name not in builders:
+                builder = SchemaBuilder()
+                builders[stream_name] = builder
+            else:
+                builder = builders[stream_name]
+            builder.add_object(message.record.data)
+    for stream_name, builder in builders.items():
+        schema = builder.to_schema()
+        output_file_name = os.path.join(default_folder, stream_name + ".json")
+        with open(output_file_name, "w") as outfile:
+            json.dump(schema, outfile, indent=2, sort_keys=True)
 
-for record in record_messages:
-    stream_name = record.record.stream
-    if stream_name not in builders:
-        builder = SchemaBuilder()
-        builders[stream_name] = builder
-    else:
-        builder = builders[stream_name]
-    builder.add_object(record.record.data)
 
-for stream_name, builder in builders.items():
-    schema = builder.to_schema()
-    output_file_name = os.path.join(default_folder, stream_name + ".json")
-    with open(output_file_name, "w") as outfile:
-        json.dump(schema, outfile, indent=2)
+if __name__ == "__main__":
+    main()
