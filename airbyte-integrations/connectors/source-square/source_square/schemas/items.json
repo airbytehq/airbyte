@@ -30,9 +30,6 @@
           "present_at_all_locations": {
             "type": ["null", "boolean"]
           },
-          "image_id": {
-            "type": ["null", "string"]
-          },
           "item_data": {
             "type": ["null", "object"],
             "properties": {
@@ -181,8 +178,17 @@
               },
               "ecom_visibility": {
                 "type": ["null", "string"]
+              },
+              "tax_ids": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
               }
             }
+          },
+          "image_id": {
+            "type": ["null", "string"]
           },
           "present_at_location_ids": {
             "type": ["null", "array"],
@@ -192,6 +198,9 @@
           }
         }
       }
+    },
+    "latest_time": {
+      "type": ["null", "string"]
     }
   }
 }
