@@ -229,7 +229,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
      * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
      * part
      */
-    if (isCdc(getJdbcConfig())) {
+    if (isCdc(database.getSourceConfig())) {
       // State works differently in CDC than it does in convention incremental. The state is written to an
       // offset file that debezium reads from. Then once all records are replicated, we read back that
       // offset file (which will have been updated by debezium) and set it in the state. There is no
@@ -241,7 +241,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
 
       final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
 
-      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(getJdbcConfig(), catalog, offsetManager);
+      final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(database.getSourceConfig(), catalog, offsetManager);
       publisher.start(queue);
 
       // handle state machine around pub/sub logic.
