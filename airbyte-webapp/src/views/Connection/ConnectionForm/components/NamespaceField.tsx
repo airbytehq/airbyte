@@ -1,17 +1,21 @@
 import React, { useMemo } from "react";
 import { Field, FieldProps } from "formik";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import { ControlLabels, DropDown, Input } from "components";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
 const NamespaceConfigurationLabel = styled(ControlLabels)`
-  width: 360px;
+  flex: 3 0 0;
+  & a {
+    color: ${({ theme }) => theme.greyColor40};
+  }
 `;
 
 const NamespaceFormatLabel = styled(ControlLabels)`
   margin-left: 21px;
+  flex: 5 0 0;
 `;
 
 const Row = styled.div`
@@ -20,19 +24,21 @@ const Row = styled.div`
 `;
 
 const NamespaceField: React.FC<{}> = ({}) => {
+  const formatMessage = useIntl().formatMessage;
+
   const definitions = useMemo(
     () => [
       {
         value: ConnectionNamespaceDefinition.Source,
-        text: "source",
+        text: <FormattedMessage id="connectionForm.sourceFormat" />,
       },
       {
         value: ConnectionNamespaceDefinition.Destination,
-        text: "destination",
+        text: <FormattedMessage id="connectionForm.destinationFormat" />,
       },
       {
         value: ConnectionNamespaceDefinition.CustomFormat,
-        text: "custom",
+        text: <FormattedMessage id="connectionForm.customFormat" />,
       },
     ],
     []
@@ -43,11 +49,22 @@ const NamespaceField: React.FC<{}> = ({}) => {
         {({ field, form }: FieldProps<string>) => (
           <>
             <NamespaceConfigurationLabel
+              labelAdditionLength={0}
               label={
                 <FormattedMessage id="connectionForm.namespaceDefinition.title" />
               }
               message={
-                <FormattedMessage id="connectionForm.namespaceDefinition.subtitle" />
+                <FormattedMessage
+                  id="connectionForm.namespaceDefinition.subtitle"
+                  values={{
+                    lnk: (...lnk: React.ReactNode[]) => (
+                      // TODO: add href url
+                      <a target="_blank" href="/">
+                        {lnk}
+                      </a>
+                    ),
+                  }}
+                />
               }
             >
               <DropDown
@@ -56,8 +73,9 @@ const NamespaceField: React.FC<{}> = ({}) => {
                 onChange={({ value }) => form.setFieldValue(field.name, value)}
               />
             </NamespaceConfigurationLabel>
-            {field.value === ConnectionNamespaceDefinition.CustomFormat && (
+            {field.value === ConnectionNamespaceDefinition.CustomFormat ? (
               <NamespaceFormatLabel
+                nextLine
                 label={
                   <FormattedMessage id="connectionForm.namespaceFormat.title" />
                 }
@@ -65,8 +83,16 @@ const NamespaceField: React.FC<{}> = ({}) => {
                   <FormattedMessage id="connectionForm.namespaceFormat.subtitle" />
                 }
               >
-                <Field name="namespaceFormat" component={Input} />
+                <Field
+                  name="namespaceFormat"
+                  component={Input}
+                  placeholder={formatMessage({
+                    id: "connectionForm.namespaceFormat.placeholder",
+                  })}
+                />
               </NamespaceFormatLabel>
+            ) : (
+              <NamespaceFormatLabel as="div" />
             )}
           </>
         )}
