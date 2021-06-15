@@ -4,7 +4,6 @@
   workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6"
   destinationId: "51755adc-32c3-4c97-ad5e-d163e48f78d9"
   configuration:
-    basic_normalization: true
     ssl: false
     password: "password"
     username: "postgres"
