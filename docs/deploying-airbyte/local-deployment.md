@@ -29,7 +29,7 @@ cd airbyte
 git config core.longpaths true
 git reset --hard HEAD
 ```
-However it's worth pointing out that the above setting is defaulted to false for a reason, so use with caution. To localize the effect of this settings, git configuration is only changed within the cloned Airbyte repo. Find more details on [this stack overflow question](https://stackoverflow.com/questions/22575662/filename-too-long-in-git-for-windows).
+However it's worth pointing out that the `core.longpaths` option is defaulted to false for a reason, so use with caution. This git configuration is only changed within the cloned Airbyte repo, so you won't need to worry about changing this setting for other repositories. Find more details about this issue in [this stack overflow question](https://stackoverflow.com/questions/22575662/filename-too-long-in-git-for-windows).
 
 Instead of cloning the repo, you can alternatively download the latest Airbyte release [here](https://github.com/airbytehq/airbyte/releases). Unzip the downloaded file, access the unzipped file using PowerShell terminal, and run `docker-compose up`. After this, you should see the Airbyte containers in the Docker application as in the image below.
 
@@ -46,4 +46,3 @@ If you can successfully run Airbyte using a MacBook with the M1 chip, let us kno
 **Other issues**
 
 If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploy.md) section in our docs for common problems.
-
