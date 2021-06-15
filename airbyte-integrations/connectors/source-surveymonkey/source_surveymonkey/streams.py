@@ -176,10 +176,12 @@ class SurveyPages(SurveymonkeyStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
+        data = response_json.get(self.data_field)
         if response_json.get("error"):
             raise Exception(response_json.get("error"))
-        response_json.pop("questions", None)
-        yield from response_json
+        for record in data:
+            record.pop("questions", None)
+            yield record
 
 
 class SurveyQuestions(SurveymonkeyStream):
