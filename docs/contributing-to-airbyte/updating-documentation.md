@@ -18,7 +18,7 @@ Our documentation uses [GitBook](https://gitbook.com), and all the [Markdown](ht
    ```
 
 {% hint style="info" %}
-While cloning on Windows, you might encounter errors about long filenames. Refer the instruction [here](../deploying-airbyte/local-deployment.md#handling-long-filename-error) to correct it.
+While cloning on Windows, you might encounter errors about long filenames. Refer to the instructions [here](../deploying-airbyte/local-deployment.md#handling-long-filename-error) to correct it.
 {% endhint %}
 
 3. Modify the documentation.
