@@ -14,7 +14,14 @@ kubectl apply -k kube/overlays/dev
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
 kubectl wait --for=condition=Available deployment/airbyte-scheduler --timeout=300s || (kubectl describe pods && exit 1)
 
-sleep 20s
+# allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
+sleep 120s
+
+server_logs () { echo "server logs:" && kubectl logs deployment.apps/airbyte-server; }
+scheduler_logs () { echo "scheduler logs:" && kubectl logs deployment.apps/airbyte-scheduler; }
+print_all_logs () { server_logs; scheduler_logs; }
+
+trap "echo 'kube logs:' && print_all_logs" EXIT
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 

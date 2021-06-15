@@ -78,3 +78,4 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Postgres](./destinations/postgres.md)| Certified |
 |[Redshift](./destinations/redshift.md)| Certified |
 |[Snowflake](./destinations/snowflake.md)| Certified |
+|[Oracle](./destinations/oracle.md)| Alpha |

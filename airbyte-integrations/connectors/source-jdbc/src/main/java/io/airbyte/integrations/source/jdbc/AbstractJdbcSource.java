@@ -578,7 +578,8 @@ public abstract class AbstractJdbcSource extends BaseConnector implements Source
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         jdbcConfig.get("jdbc_url").asText(),
         driverClass,
-        jdbcStreamingQueryConfiguration);
+        jdbcStreamingQueryConfiguration,
+        jdbcConfig.has("connection_properties") ? jdbcConfig.get("connection_properties").asText() : null);
   }
 
   /**

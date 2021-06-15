@@ -3,7 +3,7 @@ Cypress.Commands.add("createTestConnection", (sourceName, destinationName) => {
   cy.intercept("/api/v1/destinations/check_connection").as("checkConnectionDestination");
 
   cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");
-  cy.intercept("/api/v1/connections/create").as("createConnection");
+  cy.intercept("/api/v1/web_backend/connections/create").as("createConnection");
 
   cy.createTestSource(sourceName);
   cy.createTestDestination(destinationName);

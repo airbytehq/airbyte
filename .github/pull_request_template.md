@@ -28,6 +28,7 @@ Expand the checklist which is relevant for this PR.
     - [ ] README
     - [ ] CHANGELOG.md
     - [ ] Reference docs in the `docs/integrations/` directory.
+    - [ ] Build status added to [build page](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md)
 - [ ] Build is successful
 - [ ] Connector version bumped like described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)
 - [ ] New Connector version released on Dockerhub by running the `/publish` command described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)
@@ -40,6 +41,7 @@ Expand the checklist which is relevant for this PR.
 
 <details><summary> <strong> Connector Generator checklist </strong> </summary>
 <p>
+   
 - [ ] Issue acceptance criteria met
 - [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
 - [ ] If adding a new generator, add it to the [list of scaffold modules being tested](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/build.gradle#L41)
