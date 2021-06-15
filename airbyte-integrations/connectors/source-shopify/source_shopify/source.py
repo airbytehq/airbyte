@@ -134,6 +134,12 @@ class Orders(IncrementalShopifyStream):
             }
         return params
 
+class DraftOrders(IncrementalShopifyStream):
+    data_field = "draft_orders"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
 
 class Products(IncrementalShopifyStream):
     data_field = "products"
@@ -316,6 +322,7 @@ class SourceShopify(AbstractSource):
         return [
             Customers(**args),
             Orders(**args),
+            DraftOrders(**args),
             Products(**args),
             AbandonedCheckouts(**args),
             Metafields(**args),
