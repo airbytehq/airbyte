@@ -33,15 +33,16 @@ public class Tester {
                 "airbyte/source-exchange-rates:0.2.3",
                 false,
                 ImmutableMap.of(),
-                "python /airbyte/integration_code/main.py",
-                "spec");
-        // "while true; do echo hi; sleep 1; done" todo: test failures
+                "while true; do echo hi; sleep 1; done");
 
-        System.out.println("waiting for process...");
-        process.waitFor();
+        System.out.println("sleeping...");
+        Thread.sleep(5000);
 
         System.out.println("shutting down server...");
         server.stop();
+
+        System.out.println("waiting for process...");
+        process.waitFor();
 
         System.out.println("done!");
     }

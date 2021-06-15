@@ -351,7 +351,7 @@ public class KubeJobProcess extends Process {
         .build();
 
     final String heartbeatUrl = "host.docker.internal:" + heartbeatPort; // todo: switch back to: localIp + ":" + heartbeatPort;
-    final String heartbeatCommand = wrapWithHappyFileCloser("set -e; while true; do curl " + heartbeatUrl + "; sleep 1; done", TERMINATION_FILE_MAIN);
+    final String heartbeatCommand = wrapWithSadFileCloser("set -e; while true; do curl " + heartbeatUrl + "; sleep 1; done", TERMINATION_FILE_MAIN);
     System.out.println("heartbeatCommand = " + heartbeatCommand);
     Container callHeartbeatServer = new ContainerBuilder()
             .withName("call-heartbeat-server")
@@ -361,8 +361,7 @@ public class KubeJobProcess extends Process {
             .withVolumeMounts(terminationVolumeMount)
             .build();
 
-//  todo:  List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer) : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
-    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr) : List.of(main, relayStdout, relayStderr);
+    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer) : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
     final Job job = new JobBuilder()
             .withApiVersion("batch/v1")
@@ -425,6 +424,10 @@ public class KubeJobProcess extends Process {
 
   private static String wrapWithHappyFileCloser(String command, String file) {
     return "(" + command + ") &\nCHILD_PID=$!\n(while true; do if [[ -f " + file + "]]; then kill $CHILD_PID; fi; sleep 1; done) &\nwait $CHILD_PID\nif [[ -f " + file + " ]]; then exit 0; fi";
+  }
+
+  private static String wrapWithSadFileCloser(String command, String file) {
+    return "(" + command + ") &\nCHILD_PID=$!\n(while true; do if [[ -f " + file + "]]; then exit 0; fi; sleep 1; done) &\nwait $CHILD_PID\nexit 1";
   }
 
   private void setupStdOutAndStdErrListeners() {
