@@ -24,7 +24,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/
 
 ## 1. Set up your preferences
 
-You should see an onboarding page. Enter your email. Choose other options if you want updates about Airbyte. And continue.
+You should see an onboarding page. Enter your email and continue.
 
 ![](../.gitbook/assets/airbyte_get-started.png)
 
@@ -112,4 +112,3 @@ And there you have it. You've taken data from one database and replicated it to 
 That's it! This is just the beginning of Airbyte. If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
 
 Thank you and we hope you enjoy using Airbyte.
-
