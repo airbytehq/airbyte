@@ -27,7 +27,10 @@ class ApiErrorBoundary extends React.Component<unknown, BoundaryState> {
       return { errorId: ErrorId.VersionMismatch, message: error.message };
     }
 
-    if (error.message === "Failed to fetch") {
+    const isNetworkBoundaryMessage = error.message === "Failed to fetch";
+    const is502 = error.status === 502;
+
+    if (isNetworkBoundaryMessage || is502) {
       return { errorId: ErrorId.ServerUnavailable };
     }
 

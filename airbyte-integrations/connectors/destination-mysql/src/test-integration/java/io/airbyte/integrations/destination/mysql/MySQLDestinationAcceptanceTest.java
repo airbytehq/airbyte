@@ -53,6 +53,11 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
+  protected boolean supportsDBT() {
+    return true;
+  }
+
+  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
@@ -90,7 +95,8 @@ public class MySQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
                                            String streamName,
-                                           String namespace)
+                                           String namespace,
+                                           JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
