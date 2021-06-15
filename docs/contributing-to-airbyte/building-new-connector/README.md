@@ -50,7 +50,7 @@ and choose the relevant template. This will generate a new connector in the `air
 
 Search the generated directory for "TODO"s and follow them to implement your connector.
 
-If you are developing a Python connector, you may find the [building a Python connector tutorial](../../tutorials/tutorials/building-a-python-source.md) helpful.
+If you are developing a Python connector, you may find the [building a Python connector tutorial](../tutorials/building-a-python-source.md) helpful.
 
 ### 2. Integration tests
 
