@@ -43,17 +43,17 @@ public class SqlServerOperations implements SqlOperations {
 
   @Override
   public void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception {
-    database.execute(createTableQuery(schemaName, tableName));
+    database.execute(createTableQuery(database, schemaName, tableName));
   }
 
   @Override
-  public String createTableQuery(String schemaName, String tableName) {
+  public String createTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     return String.format(
         "IF NOT EXISTS (SELECT * FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id "
             + "WHERE s.name = '%s' AND t.name = '%s') "
             + "CREATE TABLE %s.%s ( \n"
             + "%s VARCHAR(64) PRIMARY KEY,\n"
-            + "%s VARCHAR(MAX),\n"
+            + "%s NVARCHAR(MAX),\n" // Microsoft SQL Server specific: NVARCHAR can store Unicode meanwhile VARCHAR - not
             + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET()\n"
             + ");\n",
         schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA,
@@ -71,7 +71,7 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public String truncateTableQuery(String schemaName, String tableName) {
+  public String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName) {
     return String.format("TRUNCATE TABLE %s.%s\n", schemaName, tableName);
   }
 
@@ -91,7 +91,7 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(String schemaName, String sourceTableName, String destinationTableName) {
+  public String copyTableQuery(JdbcDatabase database, String schemaName, String sourceTableName, String destinationTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, destinationTableName, schemaName, sourceTableName);
   }
 

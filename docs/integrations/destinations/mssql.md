@@ -12,7 +12,11 @@ Each stream will be output into its own table in SQL Server. Each table will con
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in SQL Server is `VARCHAR(64)`.
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in SQL Server is `DATETIMEOFFSET(7)`.
-* `_airbyte_data`: a JSON blob representing with the event data. The column type in SQL Server is `VARCHAR(MAX)`.
+* `_airbyte_data`: a JSON blob representing with the event data. The column type in SQL Server is `NVARCHAR(MAX)`.
+
+#####  Microsoft SQL Server specifics or why NVARCHAR type is used here:
+* NVARCHAR is Unicode - 2 bytes per character, therefore max. of 1 billion characters; will handle East Asian, Arabic, Hebrew, Cyrillic etc. characters just fine.
+* VARCHAR is non-Unicode - 1 byte per character, max. capacity is 2 billion characters, but limited to the character set you're SQL Server is using, basically - no support for those languages mentioned before
 
 #### Features
 

@@ -26,8 +26,10 @@ package io.airbyte.integrations.destination.jdbc.copy.s3;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -163,10 +165,10 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
     var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
-      queries.append(sqlOperations.truncateTableQuery(schemaName, destTableName));
+      queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
-    queries.append(sqlOperations.copyTableQuery(schemaName, tmpTableName, destTableName));
+    queries.append(sqlOperations.copyTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
   }
 
@@ -198,7 +200,7 @@ public abstract class S3StreamCopier implements StreamCopier {
     LOGGER.info("All data for {} stream uploaded.", streamName);
   }
 
-  public static void attemptWriteToPersistence(S3Config s3Config) {
+  public static void attemptS3WriteAndDelete(S3Config s3Config) {
     final String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteS3Object(s3Config, outputTableName);
   }
@@ -211,13 +213,32 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   public static AmazonS3 getAmazonS3(S3Config s3Config) {
+    var endpoint = s3Config.getEndpoint();
+    var region = s3Config.getRegion();
     var accessKeyId = s3Config.getAccessKeyId();
     var secretAccessKey = s3Config.getSecretAccessKey();
+
     var awsCreds = new BasicAWSCredentials(accessKeyId, secretAccessKey);
-    return AmazonS3ClientBuilder.standard()
-        .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
-        .withRegion(s3Config.getRegion())
-        .build();
+
+    if (endpoint.isEmpty()) {
+      return AmazonS3ClientBuilder.standard()
+          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+          .withRegion(s3Config.getRegion())
+          .build();
+
+    } else {
+
+      ClientConfiguration clientConfiguration = new ClientConfiguration();
+      clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+
+      return AmazonS3ClientBuilder
+          .standard()
+          .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
+          .withPathStyleAccessEnabled(true)
+          .withClientConfiguration(clientConfiguration)
+          .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+          .build();
+    }
   }
 
   public abstract void copyS3CsvFileIntoTable(JdbcDatabase database,

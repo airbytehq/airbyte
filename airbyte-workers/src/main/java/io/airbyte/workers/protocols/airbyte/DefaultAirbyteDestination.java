@@ -74,17 +74,16 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   @Override
   public void start(StandardTargetConfig destinationConfig, Path jobRoot) throws IOException, WorkerException {
     Preconditions.checkState(destinationProcess == null);
-    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()));
-    IOs.writeFile(jobRoot, WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(destinationConfig.getCatalog()));
 
     LOGGER.info("Running destination...");
     destinationProcess = integrationLauncher.write(
         jobRoot,
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME).start();
+        Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
+        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
+        Jsons.serialize(destinationConfig.getCatalog()));
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error);
+    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination");
 
     writer = new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8));
 
@@ -111,7 +110,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void close() throws WorkerException, IOException {
+  public void close() throws IOException {
     if (destinationProcess == null) {
       return;
     }
@@ -123,7 +122,9 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(destinationProcess, 10, TimeUnit.HOURS);
     if (destinationProcess.isAlive() || destinationProcess.exitValue() != 0) {
-      throw new WorkerException("destination process wasn't successful");
+      LOGGER.warn(
+          "Destination process might not have shut down correctly. destination process alive: {}, destination process exit value: {}. This warning is normal if the job was cancelled.",
+          destinationProcess.isAlive(), destinationProcess.exitValue());
     }
   }
 

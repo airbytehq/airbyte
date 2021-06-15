@@ -31,7 +31,7 @@ dbt files.
 This class is testing the transform config functionality that converts a destination_config.json into the adequate profiles.yml file for dbt to use
 see [related dbt docs on profiles.yml](https://docs.getdbt.com/reference/profiles.yml) for more context on what it actually is.
 
-#### test_stream_processor.py and test_stream_processor_naming.py:
+#### test_stream_processor.py and test_table_name_registry.py:
 
 These unit tests functions check how each stream is converted to dbt models files.
 For example, one big focus area is around how table names are chosen.

@@ -1,17 +1,16 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import ContentCard from "components/ContentCard";
 import ServiceForm from "components/ServiceForm";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import config from "config";
 import useRouter from "components/hooks/useRouterHook";
 import { useDestinationDefinitionSpecificationLoad } from "components/hooks/services/useDestinationHook";
 import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { DestinationDefinition } from "../../../../../core/resources/DestinationDefinition";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
 
 type IProps = {
   onSubmit: (values: {
@@ -37,16 +36,6 @@ const DestinationForm: React.FC<IProps> = ({
 }) => {
   const { location } = useRouter();
 
-  const availableServices = useMemo(
-    () =>
-      destinationDefinitions.map((item) => ({
-        text: item.name,
-        value: item.destinationDefinitionId,
-        icon: item.icon,
-      })),
-    [destinationDefinitions]
-  );
-
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     location.state?.destinationDefinitionId || ""
   );
@@ -56,8 +45,8 @@ const DestinationForm: React.FC<IProps> = ({
   } = useDestinationDefinitionSpecificationLoad(destinationDefinitionId);
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
-    const connector = availableServices.find(
-      (item) => item.value === destinationDefinitionId
+    const connector = destinationDefinitions.find(
+      (item) => item.destinationDefinitionId === destinationDefinitionId
     );
 
     if (afterSelectConnector) {
@@ -65,9 +54,8 @@ const DestinationForm: React.FC<IProps> = ({
     }
 
     AnalyticsService.track("New Destination - Action", {
-      user_id: config.ui.workspaceId,
       action: "Select a connector",
-      connector_destination_definition: connector?.text,
+      connector_destination_definition: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,
     });
   };
@@ -88,19 +76,20 @@ const DestinationForm: React.FC<IProps> = ({
   return (
     <ContentCard title={<FormattedMessage id="onboarding.destinationSetUp" />}>
       <ServiceForm
-        onDropDownSelect={onDropDownSelect}
+        onServiceSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         formType="destination"
-        availableServices={availableServices}
+        availableServices={destinationDefinitions}
         specifications={
           destinationDefinitionSpecification?.connectionSpecification
         }
+        documentationUrl={destinationDefinitionSpecification?.documentationUrl}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         isLoading={isLoading}
         formValues={
           destinationDefinitionId
-            ? { serviceType: destinationDefinitionId, name: "" }
+            ? { serviceType: destinationDefinitionId }
             : undefined
         }
         allowChangeConnector

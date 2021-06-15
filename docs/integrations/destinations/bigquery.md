@@ -57,7 +57,7 @@ BigQuery is typically enabled automatically in new projects. If this is not the 
 
 Airbyte needs a location in BigQuery to write the data being synced from your data sources. If you already have a Dataset into which Airbyte should sync data, skip this section. Otherwise, follow the Google Cloud guide for [Creating a Dataset via the Console UI](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset) to achieve this.
 
-Note that queries written in BigQueries can only reference Datasets in the same physical location. So if you plan on combining the data Airbyte synced with data from other datasets in your queries, make sure you create the datasets in the same location on Google Cloud. See the [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro) section for more info on considerations around creating Datasets.
+Note that queries written in BigQuery can only reference Datasets in the same physical location. So if you plan on combining the data Airbyte synced with data from other datasets in your queries, make sure you create the datasets in the same location on Google Cloud. See the [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro) section for more info on considerations around creating Datasets.
 
 #### Service account
 
@@ -80,9 +80,9 @@ Follow the [Creating and Managing Service Account Keys](https://cloud.google.com
 You should now have all the requirements needed to configure BigQuery as a destination in the UI. You'll need the following information to configure the BigQuery destination:
 
 * **Project ID**
-* **Dataset ID**
+* **Dataset Location**
+* **Dataset ID**: the name of the schema where the tables will be created.
 * **Service Account Key**: the contents of your Service Account Key JSON file
-* **Default Target Schema:** the name of the schema where the tables will be created. In most cases, this should match the Dataset ID. 
 
 Once you've configured BigQuery as a destination, delete the Service Account Key from your computer.
 
@@ -101,4 +101,3 @@ When you create a dataset in BigQuery, the dataset name must be unique for each 
 * Dataset names cannot contain spaces or special characters such as -, &, @, or %.
 
 Therefore, Airbyte BigQuery destination will convert any invalid characters into '\_' characters when writing data.
-

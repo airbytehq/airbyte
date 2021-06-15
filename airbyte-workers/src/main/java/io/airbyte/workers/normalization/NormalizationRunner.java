@@ -28,8 +28,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public interface NormalizationRunner extends AutoCloseable {
 
@@ -69,28 +67,5 @@ public interface NormalizationRunner extends AutoCloseable {
    *         caller.
    */
   boolean normalize(String jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
-
-  class NoOpNormalizationRunner implements NormalizationRunner {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NoOpNormalizationRunner.class);
-
-    @Override
-    public boolean configureDbt(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) {
-      LOGGER.info("Running no op logger");
-      return true;
-    }
-
-    @Override
-    public boolean normalize(String jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) {
-      LOGGER.info("Running no op logger");
-      return true;
-    }
-
-    @Override
-    public void close() {
-      // no op.
-    }
-
-  }
 
 }
