@@ -65,6 +65,15 @@ public interface Configs {
 
   Set<Integer> getTemporalWorkerPorts();
 
+  // The following methods retrieve logging related information.
+  String getS3LogBucket();
+
+  String getS3LogBucketRegion();
+
+  String getS3AwsKey();
+
+  String getS3AwsSecret();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

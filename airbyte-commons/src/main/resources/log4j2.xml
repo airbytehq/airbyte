@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="TRACE">
+<!--<Configuration status="TRACE">-->
+<Configuration status="INFO">
     <Properties>
         <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
         <Property name="default-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %m%n</Property>
 
-        <Property name="s3-bucket">$${env:S3_BUCKET}</Property>
-        <Property name="s3-region">$${env:S3_REGION}</Property>
+        <Property name="s3-bucket">$${env:S3_LOG_BUCKET}</Property>
+        <Property name="s3-region">$${env:S3_LOG_BUCKET_REGION}</Property>
         <Property name="s3-aws-key">$${env:S3_AWS_KEY}</Property>
         <Property name="s3-aws-secret">$${env:S3_AWS_SECRET}</Property>
 

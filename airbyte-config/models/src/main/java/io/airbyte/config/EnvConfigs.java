@@ -25,6 +25,7 @@
 package io.airbyte.config;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.config.helpers.LogHelpers;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
@@ -175,6 +176,26 @@ public class EnvConfigs implements Configs {
     return Arrays.stream(getEnvOrDefault(TEMPORAL_WORKER_PORTS, "").split(","))
         .map(Integer::valueOf)
         .collect(Collectors.toSet());
+  }
+
+  @Override
+  public String getS3LogBucket() {
+    return getEnsureEnv(LogHelpers.S3_LOG_BUCKET);
+  }
+
+  @Override
+  public String getS3LogBucketRegion() {
+    return getEnsureEnv(LogHelpers.S3_LOG_BUCKET_REGION);
+  }
+
+  @Override
+  public String getS3AwsKey() {
+    return getEnsureEnv(LogHelpers.S3_AWS_KEY);
+  }
+
+  @Override
+  public String getS3AwsSecret() {
+    return getEnsureEnv(LogHelpers.S3_AWS_SECRET);
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {
