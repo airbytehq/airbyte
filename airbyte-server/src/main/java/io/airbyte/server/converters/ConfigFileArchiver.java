@@ -109,6 +109,7 @@ public class ConfigFileArchiver {
         readConfigsFromArchive(storageRoot, ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
         readConfigsFromArchive(storageRoot, ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC, StandardSync.class);
+        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
       } else {
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardWorkspace(config)));
@@ -122,6 +123,8 @@ public class ConfigFileArchiver {
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeDestinationConnection(config)));
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC, StandardSync.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSync(config)));
+        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class)
+            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSyncOperation(config)));;
         LOGGER.debug("Successful import of airbyte configs");
       }
     });
