@@ -45,21 +45,25 @@ public class CockroachDBContainerHelper {
       String scriptPath = "/etc/" + UUID.randomUUID() + ".sql";
       db.copyFileToContainer(file, scriptPath);
       db.execInContainer(
-          "cockroach sql", "-d", db.getDatabaseName(), "-U", db.getUsername(), "-a", "-f", scriptPath);
+          "cockroach", "sql", "-d", db.getDatabaseName(), "-u", db.getUsername(), "-f", scriptPath,
+          "--insecure");
 
     } catch (InterruptedException | IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(CockroachContainer psqlDb) {
+  public static JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(
+      CockroachContainer psqlDb) {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     return createDatabaseAndGetPostgresConfig(psqlDb, dbName);
   }
 
-  public static JsonNode createDatabaseAndGetPostgresConfig(CockroachContainer psqlDb, String dbName) {
+  public static JsonNode createDatabaseAndGetPostgresConfig(CockroachContainer psqlDb,
+      String dbName) {
     final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+    final String tmpFilePath = IOs
+        .writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     CockroachDBContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), psqlDb);
 
     return getDestinationConfig(psqlDb, dbName);
