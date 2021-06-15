@@ -13,14 +13,15 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "sample_files/configured_catalog.json"
       validate_output_from_all_streams: yes
-  incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "sample_files/configured_catalog.json"
-      state_path: "sample_files/abnormal_state.json"
-      cursor_paths:
-        website_overview: ["report_start_date"]
-        traffic_sources: ["report_start_date"]
-        pages: ["report_start_date"]
+# Commented out due to the state structure is not supported by the SAT
+#  incremental:
+#    - config_path: "secrets/config.json"
+#      configured_catalog_path: "sample_files/configured_catalog.json"
+#      state_path: "sample_files/abnormal_state.json"
+#      cursor_paths:
+#        website_overview: ["report_start_date"]
+#        traffic_sources: ["report_start_date"]
+#        pages: ["report_start_date"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
