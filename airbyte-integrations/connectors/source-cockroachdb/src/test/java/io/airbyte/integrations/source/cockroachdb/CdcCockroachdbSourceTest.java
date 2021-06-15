@@ -144,9 +144,9 @@
 //
 //  @BeforeAll
 //  static void init() {
-//    PSQL_DB = new CockroachContainer("cockroachdb/cockroach")
-//        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
-//        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
+//    PSQL_DB = new CockroachContainer("cockroachdb/cockroach");
+////        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
+////        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
 //    PSQL_DB.start();
 //  }
 //
@@ -169,6 +169,7 @@
 //    final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
 //    database = getDatabaseFromConfig(config);
 //    database.query(ctx -> {
+//      ctx.execute("SET CLUSTER SETTING kv.rangefeed.enabled = true;");
 //      ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', 'pgoutput');");
 //      ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
 //      ctx.execute("CREATE SCHEMA " + MODELS_SCHEMA + ";");
@@ -197,7 +198,7 @@
 //
 //    return Jsons.jsonNode(ImmutableMap.builder()
 //        .put("host", psqlDb.getHost())
-//        .put("port", psqlDb.getFirstMappedPort())
+//        .put("port", psqlDb.getFirstMappedPort() - 1)
 //        .put("database", dbName)
 //        .put("username", psqlDb.getUsername())
 //        .put("password", psqlDb.getPassword())

@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.source.jdbc.test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,6 +71,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -338,9 +340,8 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessages);
     List<AirbyteMessage> expectedMessages = getTestMessages();
-    assertTrue(expectedMessages.size() == actualMessages.size());
-    assertTrue(expectedMessages.containsAll(actualMessages));
-    assertTrue(actualMessages.containsAll(expectedMessages));
+    assertThat(expectedMessages, Matchers.containsInAnyOrder(actualMessages.toArray()));
+    assertThat(actualMessages, Matchers.containsInAnyOrder(expectedMessages.toArray()));
   }
 
   @Test
@@ -780,7 +781,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return catalog;
   }
 
-  private AirbyteCatalog getCatalog(final String defaultNamespace) {
+  protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
@@ -809,7 +810,7 @@ public abstract class JdbcSourceAcceptanceTest {
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
-  private List<AirbyteMessage> getTestMessages() {
+  protected List<AirbyteMessage> getTestMessages() {
     return Lists.newArrayList(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
@@ -902,7 +903,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return supportsSchemas() ? SCHEMA_NAME : null;
   }
 
-  private String getDefaultNamespace() {
+  protected String getDefaultNamespace() {
     // mysql does not support schemas. it namespaces using database names instead.
     if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
       return config.get("database").asText();
