@@ -23,13 +23,17 @@
 #
 
 
+import tempfile
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
+import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils import casing
+
+cache_file = tempfile.NamedTemporaryFile()
 
 
 class GitlabStream(HttpStream, ABC):
@@ -38,11 +42,15 @@ class GitlabStream(HttpStream, ABC):
     flatten_id_keys = []
     flatten_list_keys = []
     page = 1
-    per_page = 30
+    per_page = 50
 
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
         self.api_url = api_url
+
+    @vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json")
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        yield from super().read_records(**kwargs)
 
     def request_params(
         self,
