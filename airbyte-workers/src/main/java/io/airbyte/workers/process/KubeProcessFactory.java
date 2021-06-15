@@ -85,7 +85,7 @@ public class KubeProcessFactory implements ProcessFactory {
         }
       };
 
-      return new KubePodProcess(
+      return new KubeJobProcess(
           kubeClient,
           portReleaser,
           podName,
@@ -99,6 +99,7 @@ public class KubeProcessFactory implements ProcessFactory {
           entrypoint,
           args);
     } catch (Exception e) {
+      e.printStackTrace(); // todo: remove
       throw new WorkerException(e.getMessage());
     }
   }

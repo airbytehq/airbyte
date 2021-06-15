@@ -24,18 +24,24 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.api.model.batch.Job;
+import io.fabric8.kubernetes.api.model.batch.JobBuilder;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,14 +54,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The
@@ -83,10 +92,11 @@ import org.slf4j.LoggerFactory;
  * See the constructor for more information.
  */
 
+// todo: revert change to make this a job-based process
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
-public class KubePodProcess extends Process {
+public class KubeJobProcess extends Process {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KubeJobProcess.class);
 
   private static final String INIT_CONTAINER_NAME = "init";
 
@@ -95,6 +105,7 @@ public class KubePodProcess extends Process {
   private static final String STDOUT_PIPE_FILE = PIPES_DIR + "/stdout";
   private static final String STDERR_PIPE_FILE = PIPES_DIR + "/stderr";
   private static final String CONFIG_DIR = "/config";
+  private static final String TERMINATION_DIR = "/termination";
   private static final String SUCCESS_FILE_NAME = "FINISHED_UPLOADING";
 
   // 143 is the typical SIGTERM exit code.
@@ -191,8 +202,9 @@ public class KubePodProcess extends Process {
   private static Container getMain(String image, boolean usesStdin, String entrypoint, List<VolumeMount> mainVolumeMounts, String[] args) {
     var argsStr = String.join(" ", args);
     var entrypointStr = entrypoint + " " + argsStr + " ";
+    var trap = "trap \"touch " + TERMINATION_DIR + "/exit\" EXIT\n";
 
-    var entrypointStrWithPipes = entrypointStr + String.format(" 2> %s > %s", STDERR_PIPE_FILE, STDOUT_PIPE_FILE);
+    var entrypointStrWithPipes = trap + entrypointStr + String.format(" 2> %s > %s", STDERR_PIPE_FILE, STDOUT_PIPE_FILE);
     if (usesStdin) {
       entrypointStrWithPipes = String.format("cat %s | ", STDIN_PIPE_FILE) + entrypointStrWithPipes;
     }
@@ -215,6 +227,8 @@ public class KubePodProcess extends Process {
         tmpFile = Path.of(IOs.writeFileToRandomTmpDir(file.getKey(), file.getValue()));
 
         LOGGER.info("Uploading file: " + file.getKey());
+
+        System.out.println("podName = " + podName);
 
         client.pods().inNamespace(namespace).withName(podName).inContainer(INIT_CONTAINER_NAME)
             .file(CONFIG_DIR + "/" + file.getKey())
@@ -244,7 +258,7 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
-  public KubePodProcess(KubernetesClient client,
+  public KubeJobProcess(KubernetesClient client,
                         Consumer<Integer> portReleaser,
                         String podName,
                         String namespace,
@@ -292,11 +306,19 @@ public class KubePodProcess extends Process {
         .withMountPath(CONFIG_DIR)
         .build();
 
-    var volumes = List.of(pipeVolume, configVolume);
-    var mainVolumeMounts = List.of(pipeVolumeMount, configVolumeMount);
+      Volume terminationVolume = new VolumeBuilder()
+              .withName("airbyte-termination")
+              .withNewEmptyDir()
+              .endEmptyDir()
+              .build();
 
-    Container init = getInit(usesStdin, mainVolumeMounts);
-    Container main = getMain(image, usesStdin, entrypoint, mainVolumeMounts, args);
+      VolumeMount terminationVolumeMount = new VolumeMountBuilder()
+              .withName("airbyte-termination")
+              .withMountPath(TERMINATION_DIR)
+              .build();
+
+    Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
+    Container main = getMain(image, usesStdin, entrypoint, List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount), args);
 
     Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
@@ -319,31 +341,47 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(pipeVolumeMount)
         .build();
 
-    final String heartbeatUrl = localIp + ":" + heartbeatPort;
+    final String heartbeatUrl = "host.docker.internal:" + heartbeatPort; // todo: switch back to: localIp + ":" + heartbeatPort;
+    final String heartbeatCommand = "set -e; while true; do if [[ -f \"/termination/exit\" ]]; then exit 0; else curl " + heartbeatUrl + "; sleep 1; fi; done";
+    System.out.println("heartbeatCommand = " + heartbeatCommand);
     Container callHeartbeatServer = new ContainerBuilder()
             .withName("call-heartbeat-server")
             .withImage("curlimages/curl:7.77.0")
             .withCommand("sh")
-            .withArgs("-c", "while true; do curl " + heartbeatUrl + "; sleep 1; done") // todo: kill this container when other pods stop so it's not stuck in notready
+            .withArgs("-c", heartbeatCommand) // todo: kill this container when other pods stop so it's not stuck in notready
+            .withVolumeMounts(terminationVolumeMount)
             .build();
 
     List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer) : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
-    Pod pod = new PodBuilder()
-        .withApiVersion("v1")
-        .withNewMetadata()
-        .withName(podName)
-        .endMetadata()
-        .withNewSpec()
-        .withRestartPolicy("Never")
-        .withInitContainers(init)
-        .withContainers(containers)
-        .withVolumes(volumes)
-        .endSpec()
-        .build();
+    final Job job = new JobBuilder()
+            .withApiVersion("batch/v1")
+            .withNewMetadata()
+            .withName("job-" + podName) // todo: figure out how naming works here
+            .endMetadata()
+            .withNewSpec()
+//            .withCompletions(3) // one for each non-check container? failure still should be caught for check container
+            // todo: add ttlSecondsAfterFinished for cleaning up old jobs
+            .withNewTemplate()
+            .withNewSpec()
+            .withRestartPolicy("Never")
+            .withInitContainers(init)
+            .withContainers(containers)
+            .withVolumes(pipeVolume, configVolume, terminationVolume)
+            .endSpec()
+            .endTemplate()
+            .endSpec()
+            .build();
 
     LOGGER.info("Creating pod...");
-    this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
+    final Job jobDefinition = client.batch().jobs().inNamespace(namespace).createOrReplace(job);
+
+    // todo: does this need to wait?
+    final PodList podList = client.pods().inNamespace(namespace).withLabel("job-name", jobDefinition.getMetadata().getName()).list();
+
+    this.podDefinition = podList.getItems().get(0);
+
+    // todo: get podDefinition
     waitForInitPodToRun(client, podDefinition);
 
     LOGGER.info("Copying files...");
@@ -352,14 +390,14 @@ public class KubePodProcess extends Process {
     // We always copy the empty success file to ensure our waiting step can detect the init container in
     // RUNNING. Otherwise, the container can complete and exit before we are able to detect it.
     filesWithSuccess.put(SUCCESS_FILE_NAME, "");
-    copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
+    copyFilesToKubeConfigVolume(client, podDefinition.getMetadata().getName(), namespace, filesWithSuccess);
 
     LOGGER.info("Waiting until pod is ready...");
     client.resource(podDefinition).waitUntilReady(30, TimeUnit.MINUTES);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
-    var podIp = getPodIP(client, podName, namespace);
+    var podIp = getPodIP(client, podDefinition.getMetadata().getName(), namespace);
     LOGGER.info("Pod IP: {}", podIp);
 
     if (usesStdin) {
