@@ -49,9 +49,4 @@ class SourceSurveymonkey(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"])
         args = {"authenticator": authenticator, "start_date": config["start_date"]}
-        return [
-            Surveys(**args),
-            SurveyPages(**args),
-            SurveyQuestions(**args),
-            SurveyResponses(**args)
-        ]
+        return [Surveys(**args), SurveyPages(**args), SurveyQuestions(**args), SurveyResponses(**args)]

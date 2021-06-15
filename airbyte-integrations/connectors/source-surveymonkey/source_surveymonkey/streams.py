@@ -25,7 +25,7 @@
 
 import urllib.parse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -66,7 +66,6 @@ class SurveymonkeyStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {}
         return next_page_token or {}
 
     def read_records(  # TODO remove this (caching) in final commit
@@ -179,7 +178,6 @@ class SurveyPages(SurveymonkeyStream):
         response_json = response.json()
         if response_json.get("error"):
             raise Exception(response_json.get("error"))
-        data = response_json.get(self.data_field)
         response_json.pop("questions", None)
         yield from response_json
 
