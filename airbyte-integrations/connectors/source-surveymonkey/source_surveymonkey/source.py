@@ -37,27 +37,21 @@ from .streams import SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 class SourceSurveymonkey(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            _ = pendulum.parse(config["start_date"], strict=True)
+            pendulum.parse(config["start_date"], strict=True)
             authenticator = TokenAuthenticator(token=config["access_token"])
             stream = Surveys(authenticator=authenticator, start_date=config["start_date"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            _ = next(records)
+            next(records)
             return True, None
         except Exception as e:
-            import traceback
-
-            print(traceback.format_exc())
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"])
-        streams = [
-            Surveys(authenticator=authenticator, start_date=config["start_date"]),
-            # SurveyDetails(authenticator=authenticator),
-            SurveyPages(authenticator=authenticator, start_date=config["start_date"]),
-            SurveyQuestions(authenticator=authenticator, start_date=config["start_date"]),
-            SurveyResponses(authenticator=authenticator, start_date=config["start_date"]),
+        args = {"authenticator": authenticator, "start_date": config["start_date"]}
+        return [
+            Surveys(**args),
+            SurveyPages(**args),
+            SurveyQuestions(**args),
+            SurveyResponses(**args)
         ]
-        # if os.path.exists('sy4ara.yaml'):
-        #    os.remove('sy4ara.yaml')
-        return streams

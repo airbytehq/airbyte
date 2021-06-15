@@ -39,7 +39,7 @@ class SurveymonkeyStream(HttpStream, ABC):
     primary_key = "id"
     data_field = "data"
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: Union[str, Any], **kwargs):
         if isinstance(start_date, str):
             start_date = pendulum.parse(start_date)  # convert to YYYY-MM-DDTHH:MM:SS
         self._start_date = start_date
@@ -59,17 +59,15 @@ class SurveymonkeyStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
-            raise Exception(repr(response_json.get("error")))  # TODO: apply ShouldRetry
-        result = response.json.get(self.data_field, [])
+            raise Exception(repr(response_json.get("error")))
+        result = response_json.get(self.data_field, [])
         yield from result
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {}
-        if next_page_token:
-            params.update(next_page_token)
-        return params
+        return next_page_token or {}
 
     def read_records(  # TODO remove this (caching) in final commit
         self,
@@ -158,9 +156,9 @@ class SurveyDetails(SurveymonkeyStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
-            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
-        output = {k: v for k, v in response_json.items() if k != "pages"}
-        yield output
+            raise Exception(response_json.get("error"))
+        response_json.pop("pages", None)
+        yield response_json
 
 
 class SurveyPages(SurveymonkeyStream):
@@ -180,10 +178,10 @@ class SurveyPages(SurveymonkeyStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
-            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+            raise Exception(response_json.get("error"))
         data = response_json.get(self.data_field)
-        page_data = [{k: v for k, v in i.items() if k != "questions"} for i in data]
-        yield from page_data
+        response_json.pop("questions", None)
+        yield from response_json
 
 
 class SurveyQuestions(SurveymonkeyStream):
@@ -203,7 +201,7 @@ class SurveyQuestions(SurveymonkeyStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
-            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+            raise Exception(response_json.get("error"))
         data = response_json.get(self.data_field)
         question_data = [i["questions"] for i in data]
         merged_questions = sum(question_data, [])  # data is list of list, each inner list = page questions. Need to merge
@@ -229,7 +227,7 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
-            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+            raise Exception(response_json.get("error"))
         yield from response_json.get(self.data_field, [])
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:

@@ -1,4 +1,2 @@
--e ../../bases/airbyte-protocol
--e ../../bases/base-python
 -e ../../bases/source-acceptance-test
 -e .

@@ -4,6 +4,7 @@
       "stream": {
         "name": "surveys",
         "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "title": {
@@ -89,16 +90,17 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["date_modified"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["date_modified"],
       "destination_sync_mode": "append"
     },
     {
       "stream": {
         "name": "survey_pages",
         "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "title": {
@@ -133,6 +135,7 @@
       "stream": {
         "name": "survey_questions",
         "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -226,6 +229,7 @@
       "stream": {
         "name": "survey_responses",
         "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "id": {
@@ -338,10 +342,10 @@
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["date_modified"]
       },
       "sync_mode": "incremental",
-      "cursor_field": [],
+      "cursor_field": ["date_modified"],
       "destination_sync_mode": "append"
     }
   ]
