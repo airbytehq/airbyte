@@ -111,7 +111,7 @@ public class CockroachdbSource extends AbstractJdbcSource implements Source {
 
   @Override
   public Set<String> getExcludedInternalSchemas() {
-    return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+    return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history", "pg_extension", "crdb_internal");
   }
 
   @Override
