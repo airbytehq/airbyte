@@ -193,7 +193,7 @@ public class OracleSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("DATE")
             .airbyteType(JsonSchemaPrimitive.STRING)
-              .addInsertValues("to_date('-4700/01/01','syyyy/mm/dd')", "to_date('9999/12/31 23:59:59','yyyy/mm/dd hh24:mi:ss')", "null")
+            .addInsertValues("to_date('-4700/01/01','syyyy/mm/dd')", "to_date('9999/12/31 23:59:59','yyyy/mm/dd hh24:mi:ss')", "null")
             .addExpectedValues("4700-01-01T00:00:00Z", "9999-12-31T23:59:59Z", null)
             .build());
 
