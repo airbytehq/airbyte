@@ -14,7 +14,7 @@
         "timestamp": {
           "type": ["null", "string"],
           "format": "date-time"
-         },
+        },
         "versions": {
           "type": ["null", "array"],
           "items": {

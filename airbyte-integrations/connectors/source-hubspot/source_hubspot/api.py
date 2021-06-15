@@ -466,19 +466,19 @@ class DealStageHistoryStream(Stream):
     The v1 endpoint requires the contacts scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals
     """
-    
+
     url = "/deals/v1/deal/paged"
     more_key = "hasMore"
     data_field = "deals"
     updated_at_field = "timestamp"
-    
+
     def _transform(self, records: Iterable) -> Iterable:
         for record in super()._transform(records):
             dealstage = record.get("properties", {}).get("dealstage", {})
             updated_at = dealstage.get(self.updated_at_field)
             if updated_at:
                 yield {"id": record.get("dealId"), "dealstage": dealstage, self.updated_at_field: updated_at}
-    
+
     def list(self, fields) -> Iterable:
         params = {"propertiesWithHistory": "dealstage"}
         yield from self.read(partial(self._api.get, url=self.url), params)
@@ -486,19 +486,19 @@ class DealStageHistoryStream(Stream):
 
 class DealStream(CRMObjectStream):
     """Deals, API v3"""
-    
+
     def __init__(self, **kwargs):
         super().__init__(entity="deal", **kwargs)
         self._stage_history = DealStageHistoryStream(**kwargs)
-    
+
     def list(self, fields) -> Iterable:
         history_by_id = {}
         for record in self._stage_history.list(fields):
             if all(field in record for field in ("id", "dealstage")):
                 history_by_id[record["id"]] = record["dealstage"]
         for record in super().list(fields):
-            if record.get("id") in history_by_id:
-                record["dealstage"] = history_by_id[record.get("id")]
+            if record.get("id") and int(record["id"]) in history_by_id:
+                record["dealstage"] = history_by_id[int(record["id"])]
             yield record
 
 
