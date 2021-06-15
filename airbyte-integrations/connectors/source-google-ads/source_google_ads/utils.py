@@ -25,12 +25,12 @@
 from typing import Any, Mapping
 
 import pendulum
-from pendulum import DateTime
+from pendulum import datetime
 
 
 class Utils:
     @staticmethod
-    def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: DateTime = pendulum.yesterday()):
+    def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: datetime = pendulum.yesterday()):
         start_date = pendulum.parse(stream_slice.get(cursor_field))
         if start_date > pendulum.now():
             return start_date.to_date_string(), start_date.add(days=1).to_date_string()
