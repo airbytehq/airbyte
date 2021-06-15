@@ -54,7 +54,7 @@
       "seller_id": {
         "title": "Seller ID",
         "type": "string",
-        "description": "This is used as an identifier if passed. Not used inside API"
+        "description": "Amazon doesn't return seller_id in the response thus seller_id is added to each row as an identifier. Note: It is not used in querying the data."
       },
       "marketplace": {
         "title": "Marketplace",

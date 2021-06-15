@@ -27,7 +27,7 @@ import pkgutil
 import time
 from datetime import datetime
 import pendulum
-from typing import Any, Dict, Generator, MutableMapping, Tuple
+from typing import Any, Dict, Generator, MutableMapping, Tuple, List
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, Type
@@ -38,7 +38,6 @@ from .amazon import AmazonClient
 
 
 class BaseClient:
-    MAX_SLEEP_TIME = 512
     CONVERSION_WINDOW_DAYS = 14
 
     def __init__(
@@ -134,7 +133,7 @@ class BaseClient:
             reportId = response["reportId"]
 
             # Wait for the report status
-            status, document_id = self._wait_for_report(logger, self._amazon_client, reportId)
+            status, document_id = BaseClient._wait_for_report(logger, self._amazon_client, reportId)
 
             # Move to next month when the report is CANCELLED
             if status == False:
@@ -156,7 +155,18 @@ class BaseClient:
 
             current_date = self._increase_date_by_month(current_date)
 
-    def _wait_for_report(self, logger, amazon_client: AmazonClient, reportId: str):
+    def _get_records(self, data: Dict[str, Any]):
+        records = data["document"].splitlines()
+        headers = records[0].split("\t")
+        records = records[1:]
+        return self._convert_array_into_dict(headers, records)
+
+    def _apply_conversion_window(self, current_date: str) -> str:
+        return pendulum.parse(current_date).subtract(days=self.CONVERSION_WINDOW_DAYS).to_date_string()
+
+    @staticmethod
+    def _wait_for_report(logger, amazon_client: AmazonClient, reportId: str):
+        MAX_SLEEP_TIME = 512
         current_sleep_time = 4
 
         logger.info(f"Waiting for the report {reportId}")
@@ -173,7 +183,7 @@ class BaseClient:
                 logger.info(f"Report CANCELLED: {reportId}")
                 return False, None
 
-            if current_sleep_time > self.MAX_SLEEP_TIME:
+            if current_sleep_time > MAX_SLEEP_TIME:
                 logger.error("Max wait reached")
                 raise Exception("Max wait time reached")
 
@@ -181,24 +191,15 @@ class BaseClient:
             time.sleep(current_sleep_time)
             current_sleep_time = current_sleep_time * 2
 
-    def _get_records(self, data):
-        records = data["document"].splitlines()
-        headers = records[0].split("\t")
-        records = records[1:]
-        return self._convert_array_into_dict(headers, records)
-
-    def _apply_conversion_window(self, current_date: str) -> str:
-        return pendulum.parse(current_date).subtract(days=self.CONVERSION_WINDOW_DAYS).to_date_string()
-
     @staticmethod
-    def _convert_array_into_dict(headers, values):
+    def _convert_array_into_dict(headers: List[Dict[str, Any]], values: List[Dict[str, Any]]):
         records = []
         for value in values:
             records.append(dict(zip(headers, value.split("\t"))))
         return records
 
     @staticmethod
-    def _increase_date_by_month(current_date: str):
+    def _increase_date_by_month(current_date: str) -> str:
         return pendulum.parse(current_date).add(months=1).to_date_string()
 
     @staticmethod
