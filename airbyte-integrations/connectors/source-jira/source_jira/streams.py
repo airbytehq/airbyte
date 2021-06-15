@@ -535,7 +535,7 @@ class TimeTracking(JiraStream):
 
 class Users(JiraStream):
     def path(self, **kwargs) -> str:
-        return "users/search"
+        return "user/search?query="
 
 
 class Workflows(JiraStream):
