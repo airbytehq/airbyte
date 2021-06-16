@@ -23,7 +23,7 @@
 #
 
 
-from typing import Any, Mapping, Tuple, List
+from typing import Any, List, Mapping, Tuple
 
 import pendulum as pendulum
 
