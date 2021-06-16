@@ -98,6 +98,8 @@ jobs:
 
       - name: Run Logging Tests
         run: ./tools/bin/logging_test.sh
+        env:
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
