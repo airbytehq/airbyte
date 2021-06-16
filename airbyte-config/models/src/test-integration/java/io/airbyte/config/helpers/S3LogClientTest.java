@@ -24,13 +24,13 @@
 
 package io.airbyte.config.helpers;
 
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
+import org.junit.jupiter.api.Test;
 
 public class S3LogClientTest {
 
@@ -46,7 +46,8 @@ public class S3LogClientTest {
   @Test
   public void testRetrieveAllLogs() {
     var configs = new EnvConfigs();
-    new S3Logs().downloadCloudLog(configs, "logs/");
+    var data = new S3Logs().downloadCloudLog(configs, "logging-test");
+    System.out.println(new String(data));
   }
 
 }

@@ -60,7 +60,6 @@ public class S3Logs implements CloudLogs {
     }
 
     var s3Bucket = configs.getS3LogBucket();
-    // Name? Make sure this location can be written to.
     var randomName = Strings.addRandomSuffix("logs", "-", 5);
     var tmpOutputFile = new File("/tmp/" + randomName);
     try {

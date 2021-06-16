@@ -24,19 +24,12 @@
 
 package io.airbyte.config.helpers;
 
-import io.airbyte.commons.string.Strings;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 
 public class LogHelpers {
 
@@ -66,7 +59,7 @@ public class LogHelpers {
 
     if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
       var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
-      return downloadCloudLog(configs, cloudLogPath);
+      return new S3Logs().downloadCloudLog(configs, cloudLogPath);
     }
 
     return logPathBase.resolve(LOG_FILENAME).toFile();
@@ -78,46 +71,10 @@ public class LogHelpers {
     if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
       var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
 
-      return downloadCloudLog(configs, cloudLogPath);
+      return new S3Logs().downloadCloudLog(configs, cloudLogPath);
     }
 
     return logPathBase.resolve(LOG_FILENAME).toFile();
   }
-
-  private static File downloadCloudLog(Configs configs, String logPath) {
-    LOGGER.info("Retrieving logs from cloud path: {}", logPath);
-
-    var s3Bucket = configs.getS3LogBucket();
-    var s3Region = configs.getS3LogBucketRegion();
-
-    var s3client = S3Client.builder().region(Region.of(s3Region)).build();
-
-    // Name? Make sure this location can be written to.
-    var randomName = Strings.addRandomSuffix("logs", "-", 5);
-    var tmpOutputFile = new File("/tmp/" + randomName);
-    try {
-      var os = new FileOutputStream(tmpOutputFile);
-
-      var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
-      LOGGER.info("Done making cloud storage list request.");
-      for (var page : s3client.listObjectsV2Paginator(listObjReq)) {
-        for (var objMetadata : page.contents()) {
-          var getObjReq = GetObjectRequest.builder()
-              .key(objMetadata.key())
-              .bucket(s3Bucket)
-              .build();
-          var data = s3client.getObjectAsBytes(getObjReq).asByteArray();
-          os.write(data);
-        }
-      }
-      os.close();
-    } catch (IOException e) {
-      throw new RuntimeException("Error retrieving log file: " + logPath + " from cloud", e);
-    }
-    LOGGER.info("Done retrieving logs from cloud.");
-    return tmpOutputFile;
-  }
-
-  public static void main(String[] args) throws IOException {}
 
 }
