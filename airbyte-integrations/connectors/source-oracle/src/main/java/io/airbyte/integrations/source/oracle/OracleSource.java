@@ -43,6 +43,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
 
   public OracleSource() {
     super(DRIVER_CLASS, new OracleJdbcStreamingQueryConfiguration());
+    System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
   }
 
   @Override
