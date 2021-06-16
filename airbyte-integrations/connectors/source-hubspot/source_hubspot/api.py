@@ -69,8 +69,9 @@ def retry_after_handler(**kwargs):
 
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
-        if isinstance(exc, HubspotRateLimited) and exc.response.headers.get("Retry-After"):
-            retry_after = int(exc.response.headers["Retry-After"])
+        if isinstance(exc, HubspotRateLimited):
+            # Hubspot API does not always return Retry-After value for 429 HTTP error
+            retry_after = int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
 
@@ -176,8 +177,11 @@ class API:
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
     def get(self, url: str, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-        response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
-        return self._parse_and_handle_errors(response)
+        for i in range(10000):
+            response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
+            if response.status_code == 429:
+
+                return self._parse_and_handle_errors(response)
 
     def post(self, url: str, data: Mapping[str, Any], params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
         response = self._session.post(self.BASE_URL + url, params=self._add_auth(params), json=data)
