@@ -113,6 +113,9 @@ def test_resolve_names(destination_type: DestinationType, catalog_file: str):
     else:
         expected_names = read_json(f"resources/{catalog_file}_expected_names.json", apply_function)
 
+    print(f"actual: {tables_registry.to_dict(apply_function)}")
+    print(f"expect: {expected_names}")
+
     assert tables_registry.to_dict(apply_function) == expected_names
 
 
@@ -141,13 +144,13 @@ def read_json(input_path: str, apply_function=(lambda x: x)):
             ["The parent stream has a nested column with a", "short_substream_name"],
             "the_parent_stream_ha___short_substream_name",
             "The_parent_stream_has_a_nested_column_with_a_short_substream_name",
-            "The_parent_stream_has_a_nested_column_with_a_short_substream_name",
+            "the_parent_stream_has___short_substream_name",
         ),
         (
             ["The parent stream has a nested column with a", "substream with a rather long name"],
             "the_parent_stream_ha__th_a_rather_long_name",
             "The_parent_stream_has_a_nested_column_with_a_substream_with_a_rather_long_name",
-            "The_parent_stream_has_a_nested_column_with_a_substream_with_a_rather_long_name",
+            "the_parent_stream_has__th_a_rather_long_name",
         ),
     ],
 )

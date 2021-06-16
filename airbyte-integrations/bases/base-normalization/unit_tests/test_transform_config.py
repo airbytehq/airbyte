@@ -138,7 +138,7 @@ class TestTransformConfig:
 
         actual = TransformConfig().transform_mysql(input)
         expected = {
-            "type": "postgres",
+            "type": "mysql5",
             "server": "airbyte.io",
             "port": 5432,
             "schema": "my_db",
@@ -147,7 +147,8 @@ class TestTransformConfig:
         }
 
         assert expected == actual
-        assert extract_schema(actual) == "public"
+        # DBT schema is equivalent to MySQL database
+        assert extract_schema(actual) == "my_db"
 
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):

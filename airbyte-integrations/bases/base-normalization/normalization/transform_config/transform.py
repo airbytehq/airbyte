@@ -177,6 +177,7 @@ class TransformConfig:
             "type": config.get("type", "mysql"),
             "server": config["host"],
             "port": config["port"],
+            # DBT schema is equivalent to MySQL database
             "schema": config["database"],
             "username": config["username"],
             "password": config.get("password", ""),
