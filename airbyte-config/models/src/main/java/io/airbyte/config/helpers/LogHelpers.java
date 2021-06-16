@@ -24,25 +24,18 @@
 
 package io.airbyte.config.helpers;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 
 public class LogHelpers {
@@ -84,6 +77,7 @@ public class LogHelpers {
 
     if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
       var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
+
       return downloadCloudLog(configs, cloudLogPath);
     }
 
@@ -106,7 +100,7 @@ public class LogHelpers {
 
       var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
       LOGGER.info("Done making cloud storage list request.");
-      for (var page: s3client.listObjectsV2Paginator(listObjReq)) {
+      for (var page : s3client.listObjectsV2Paginator(listObjReq)) {
         for (var objMetadata : page.contents()) {
           var getObjReq = GetObjectRequest.builder()
               .key(objMetadata.key())
@@ -125,4 +119,5 @@ public class LogHelpers {
   }
 
   public static void main(String[] args) throws IOException {}
+
 }
