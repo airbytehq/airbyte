@@ -19,8 +19,7 @@
         "type": "boolean",
         "description": "Determines the sandbox (true) or production (false) API version",
         "examples": [true, false],
-        "default": true,
-        "airbyte_secret": true
+        "default": true
       },
       "start_date": {
         "type": "string",

@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from abc import ABC
@@ -45,27 +47,22 @@ The approach here is not authoritative, and devs are free to use their own judge
 There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
 """
 
-import logging
-
-logging.basicConfig(level=logging.DEBUG)
-
 
 class SquareStream(HttpStream, ABC):
-
     def __init__(self, is_sandbox: bool, api_version: str, start_date: str, **kwargs):
         super().__init__(**kwargs)
         self.is_sandbox = is_sandbox
         self.api_version = api_version
         # Converting users ISO 8601 format (YYYY-MM-DD) to RFC 3339 (2021-06-14T13:47:56.799Z)
         # Because this standard is used in 'updated_at' records field
-        self.start_date = '{}'.format(pendulum.parse(start_date))
+        self.start_date = "{}".format(pendulum.parse(start_date))
 
     data_field = None
-    primary_key = 'id'
+    primary_key = "id"
 
     @property
     def url_base(self) -> str:
-        return "https://connect.squareup{}.com/v2/".format('sandbox' if self.is_sandbox else '')
+        return "https://connect.squareup{}.com/v2/".format("sandbox" if self.is_sandbox else "")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page_cursor = response.json().get("cursor", False)
@@ -73,14 +70,12 @@ class SquareStream(HttpStream, ABC):
             return {"cursor": next_page_cursor}
 
     def request_headers(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return {'Square-Version': self.api_version, "Content-Type": "application/json"}
+        return {"Square-Version": self.api_version, "Content-Type": "application/json"}
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return next_page_token if next_page_token else {}
 
@@ -117,36 +112,31 @@ class SquareCatalogObjectsStream(SquareStream):
     See the reference docs for the full list of configurable options.
     """
 
-    data_field = 'objects'
-    http_method = 'POST'
+    data_field = "objects"
+    http_method = "POST"
     limit = 1000
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "catalog/search"
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-        json_payload = {
-            "include_deleted_objects": True,
-            "include_related_objects": False,
-            "limit": self.limit
-        }
+        # TODO make a variable include_deleted_objects
+        json_payload = {"include_deleted_objects": True, "include_related_objects": False, "limit": self.limit}
 
         if next_page_token:
-            json_payload.update({'cursor': next_page_token['cursor']})
+            json_payload.update({"cursor": next_page_token["cursor"]})
 
         return json_payload
 
@@ -156,8 +146,7 @@ class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
 
     cursor_field = "updated_at"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
-            Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
@@ -166,6 +155,12 @@ class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
             return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
         else:
             return {self.cursor_field: self.start_date}
+
+    def request_body_json(self, *args, **kwargs) -> Optional[Mapping]:
+        return {
+            **super(IncrementalSquareCatalogObjectsStream, self).request_body_json(*args, **kwargs),
+            "begin_time": kwargs["stream_state"][self.cursor_field],
+        }
 
 
 class Items(IncrementalSquareCatalogObjectsStream):
@@ -192,8 +187,7 @@ class Locations(SquareStream):
     data_field = "locations"
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "locations"
 
@@ -215,10 +209,11 @@ class SourceSquare(AbstractSource):
         headers = {
             "Square-Version": self.api_version,
             "Authorization": "Bearer {}".format(config["api_key"]),
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        url = "https://connect.squareup{}.com/v2/catalog/info".format('sandbox' if config['is_sandbox'] else '')
+        url = "https://connect.squareup{}.com/v2/catalog/info".format("sandbox" if config["is_sandbox"] else "")
 
+        # TODO replace this with endpoint info
         try:
             session = requests.get(url, headers=headers)
             session.raise_for_status()
@@ -231,14 +226,10 @@ class SourceSquare(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         auth = TokenAuthenticator(token=config["api_key"])
-        args = {'authenticator': auth,
-                'is_sandbox': config['is_sandbox'],
-                'api_version': self.api_version,
-                'start_date': config['start_date']}
-        return [
-            Items(**args),
-            Categories(**args),
-            Discounts(**args),
-            Taxes(**args),
-            Locations(**args)
-        ]
+        args = {
+            "authenticator": auth,
+            "is_sandbox": config["is_sandbox"],
+            "api_version": self.api_version,
+            "start_date": config["start_date"],
+        }
+        return [Items(**args), Categories(**args), Discounts(**args), Taxes(**args), Locations(**args)]
