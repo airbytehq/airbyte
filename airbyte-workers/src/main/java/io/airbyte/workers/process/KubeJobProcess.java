@@ -27,6 +27,7 @@ package io.airbyte.workers.process;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.api.model.Container;
@@ -204,20 +205,23 @@ public class KubeJobProcess extends Process {
         .build();
   }
 
-  private static Container getMain(String image, boolean usesStdin, String entrypoint, List<VolumeMount> mainVolumeMounts, String[] args) {
+  private static Container getMain(String image, boolean usesStdin, String entrypoint, List<VolumeMount> mainVolumeMounts, String[] args) throws IOException {
     var argsStr = String.join(" ", args);
-    var entrypointStr = entrypoint + " " + argsStr;
-    var trap = "trap \"touch " + TERMINATION_FILE_MAIN + "\" EXIT\n";
+    var entrypointWithArgs = entrypoint + " " + argsStr;
+    var optionalStdin = usesStdin ? String.format("cat %s | ", STDIN_PIPE_FILE): "";
 
-    var entrypointStrWithPipes = trap + entrypointStr + String.format(" 2> %s > %s", STDERR_PIPE_FILE, STDOUT_PIPE_FILE);
-    if (usesStdin) {
-      entrypointStrWithPipes = String.format("cat %s | ", STDIN_PIPE_FILE) + entrypointStrWithPipes;
-    }
+    var mainCommand = MoreResources.readResource("entrypoints/main.sh")
+            .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
+            .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
+            .replaceAll("OPTIONAL_STDIN", optionalStdin)
+            .replaceAll("ENTRYPOINT", entrypointWithArgs)
+            .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
+            .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
     return new ContainerBuilder()
         .withName("main")
         .withImage(image)
-        .withCommand("sh", "-c", entrypointStrWithPipes)
+        .withCommand("sh", "-c", mainCommand)
         .withWorkingDir(CONFIG_DIR)
         .withVolumeMounts(mainVolumeMounts)
         .build();
@@ -334,7 +338,7 @@ public class KubeJobProcess extends Process {
         .build();
 
     var localIp = InetAddress.getLocalHost().getHostAddress();
-    String relayStdoutCommand = wrapWithHappyFileCloser(String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, localIp, stdoutLocalPort), TERMINATION_FILE_MAIN);
+    String relayStdoutCommand = wrapWithHappyFileCloser(String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, localIp, stdoutLocalPort), TERMINATION_FILE_MAIN); // todo remove
     Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage("alpine/socat:1.7.4.1-r1")
@@ -342,7 +346,7 @@ public class KubeJobProcess extends Process {
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
-    String relayStderrCommand = wrapWithHappyFileCloser(String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, localIp, stderrLocalPort), TERMINATION_FILE_MAIN);
+    String relayStderrCommand = wrapWithHappyFileCloser(String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, localIp, stderrLocalPort), TERMINATION_FILE_MAIN); // todo remove
     Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage("alpine/socat:1.7.4.1-r1")
@@ -351,13 +355,16 @@ public class KubeJobProcess extends Process {
         .build();
 
     final String heartbeatUrl = "host.docker.internal:" + heartbeatPort; // todo: switch back to: localIp + ":" + heartbeatPort;
-    final String heartbeatCommand = wrapWithSadFileCloser("set -e; while true; do curl " + heartbeatUrl + "; sleep 1; done", TERMINATION_FILE_MAIN);
-    System.out.println("heartbeatCommand = " + heartbeatCommand);
+    final String heartbeatCommand = MoreResources.readResource("entrypoints/check.sh")
+        .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
+        .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
+        .replaceAll("HEARTBEAT_URL", heartbeatUrl);
+
     Container callHeartbeatServer = new ContainerBuilder()
             .withName("call-heartbeat-server")
             .withImage("curlimages/curl:7.77.0")
             .withCommand("sh")
-            .withArgs("-c", heartbeatCommand) // todo: kill this container when other pods stop so it's not stuck in notready
+            .withArgs("-c", heartbeatCommand)
             .withVolumeMounts(terminationVolumeMount)
             .build();
 

@@ -34,7 +34,6 @@ public class Tester {
                 false,
                 ImmutableMap.of(),
                 "while true; do echo hi; sleep 1; done");
-
         System.out.println("sleeping...");
         Thread.sleep(5000);
 
@@ -43,6 +42,22 @@ public class Tester {
 
         System.out.println("waiting for process...");
         process.waitFor();
+
+//        Process process = processFactory.create(
+//                "some-id",
+//                0,
+//                Path.of("/tmp/job-root"),
+//                "airbyte/source-exchange-rates:0.2.3",
+//                false,
+//                ImmutableMap.of(),
+//                "python /airbyte/integration_code/main.py",
+//                "spec");
+//
+//        System.out.println("waiting for process...");
+//        process.waitFor();
+//
+//        System.out.println("shutting down server...");
+//        server.stop();
 
         System.out.println("done!");
     }
