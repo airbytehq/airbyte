@@ -127,8 +127,9 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
     def limit(self):
         return super().limit
 
-    # emits a STATE message for each page
-    state_checkpoint_interval = limit
+    # API does not support read in ascending order
+    # save state only once after full read
+    state_checkpoint_interval = None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         record_time = latest_record[self.time_field]

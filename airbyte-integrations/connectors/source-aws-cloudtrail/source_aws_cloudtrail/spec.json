@@ -36,7 +36,7 @@
       "records_limit": {
         "type": "integer",
         "minimum": 1,
-        "description": "Use this option to limit amount of fetched records per each stream. Limit is disabled if option is empty."
+        "description": "Use this option to limit amount of fetched records per each stream. Limit is disabled if option is empty. Be aware of using this parameter with incremental sync, as it may lead to data loss."
       }
     }
   }
