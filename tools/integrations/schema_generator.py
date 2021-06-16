@@ -47,14 +47,12 @@ class NoRequiredSchemaBuilder(SchemaBuilder):
 
 
 def main():
-    data = sys.stdin.readlines()
-
     default_folder = os.path.join(os.getcwd(), "schemas")
     if not os.path.exists(default_folder):
         os.mkdir(default_folder)
 
     builders = {}
-    for line in data:
+    for line in sys.stdin:
         message = AirbyteMessage.parse_raw(line)
         if message.type == Type.RECORD:
             stream_name = message.record.stream
