@@ -70,9 +70,9 @@ public interface Configs {
 
   String getS3LogBucketRegion();
 
-  String getS3AwsKey();
+  String getAwsAccessKey();
 
-  String getS3AwsSecret();
+  String getAwsSecretAccessKey();
 
   enum TrackingStrategy {
     SEGMENT,

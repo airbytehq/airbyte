@@ -27,7 +27,7 @@ package io.airbyte.config.helpers;
 import io.airbyte.config.Configs;
 import java.io.File;
 
-public interface CloudClient {
+public interface CloudLogs {
 
   File downloadCloudLog(Configs configs, String logPath);
 

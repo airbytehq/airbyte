@@ -36,17 +36,23 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 
-public class S3LogClient implements CloudClient {
+public class S3Logs implements CloudLogs {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3LogClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(S3Logs.class);
 
   private static S3Client S3;
+
+  private static void checkValidCredentials(Configs configs) {
+    configs.getAwsAccessKey();
+    configs.getAwsSecretAccessKey();
+  }
 
   @Override
   public File downloadCloudLog(Configs configs, String logPath) {
     LOGGER.info("Retrieving logs from S3 path: {}", logPath);
 
     if (S3 == null) {
+      checkValidCredentials(configs);
       var s3Region = configs.getS3LogBucketRegion();
       S3 = S3Client.builder().region(Region.of(s3Region)).build();
     }

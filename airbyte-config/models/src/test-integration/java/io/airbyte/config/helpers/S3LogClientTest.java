@@ -24,15 +24,28 @@
 
 package io.airbyte.config.helpers;
 
+import io.airbyte.config.Configs;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class S3LogClientTest {
 
   @Test
-  public void testA() {
+  public void testMissingAwsCredentials() {
+    var configs = mock(Configs.class);
+    when(configs.getAwsAccessKey()).thenReturn("");
+    when(configs.getAwsSecretAccessKey()).thenReturn("");
+
+    assertThrows(RuntimeException.class, () -> new S3Logs().downloadCloudLog(configs, "this-path-should-not-matter"));
+  }
+
+  @Test
+  public void testRetrieveAllLogs() {
     // mock Configs and return the right bucket
 
-    // make sure the client can be created
   }
 
 }
