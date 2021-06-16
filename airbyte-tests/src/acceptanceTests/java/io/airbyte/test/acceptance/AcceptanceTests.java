@@ -665,6 +665,7 @@ public class AcceptanceTests {
     assertTrue(hasRedacted);
   }
 
+  // verify that when the worker uses backpressure from pipes that no records are lost.
   @Test
   @Order(15)
   public void testBackpressure() throws Exception {
@@ -703,14 +704,7 @@ public class AcceptanceTests {
     final UUID sourceId = source.getSourceId();
     final UUID destinationId = destination.getDestinationId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
-    // final AirbyteStream stream = catalog.getStreams().get(0).getStream();
 
-    // final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    // final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
-    // catalog.getStreams().forEach(s -> s.getConfig()
-    // .syncMode(syncMode)
-    // .cursorField(List.of(COLUMN_ID))
-    // .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
         createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null, SyncMode.FULL_REFRESH)
             .getConnectionId();
