@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 public interface MessageTracker<T> extends Consumer<T> {
 
   @Override
-  public void accept(T message);
+  void accept(T message);
 
   long getRecordCount();
 

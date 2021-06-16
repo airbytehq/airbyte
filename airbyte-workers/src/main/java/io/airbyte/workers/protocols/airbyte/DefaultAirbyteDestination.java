@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
@@ -72,7 +72,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void start(StandardTargetConfig destinationConfig, Path jobRoot) throws IOException, WorkerException {
+  public void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws IOException, WorkerException {
     Preconditions.checkState(destinationProcess == null);
 
     LOGGER.info("Running destination...");

@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
@@ -75,16 +75,16 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public void start(StandardTapConfig input, Path jobRoot) throws Exception {
+  public void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
 
     sourceProcess = integrationLauncher.read(jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-        Jsons.serialize(input.getSourceConnectionConfiguration()),
+        Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        Jsons.serialize(input.getCatalog()),
-        input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
-        input.getState() == null ? null : Jsons.serialize(input.getState().getState()));
+        Jsons.serialize(sourceConfig.getCatalog()),
+        sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
+        sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
 
