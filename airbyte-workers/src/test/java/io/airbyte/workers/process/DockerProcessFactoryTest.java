@@ -47,9 +47,9 @@ class DockerProcessFactoryTest {
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   /**
-   * {@link DockerProcessFactoryTest#testImageExists()} will fail if JQ is not installed. The logs get
+   * {@link DockerProcessFactoryTest#testImageExists()} will fail if jq is not installed. The logs get
    * swallowed when run from gradle. This test exists to explicitly fail with a clear error message
-   * when JQ is not installed.
+   * when jq is not installed.
    */
   @Test
   public void testJqExists() throws IOException {
@@ -61,11 +61,12 @@ class DockerProcessFactoryTest {
 
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
-    assertEquals(0, process.exitValue(), String.format("Error while checking for JQ. STDOUT: %s STDERR: %s", out, err));
+    assertEquals(0, process.exitValue(),
+        String.format("Error while checking for jq. STDOUT: %s STDERR: %s Please make sure jq is installed (used by testImageExists)", out, err));
   }
 
   /**
-   * This test will fail if JQ is not installed. If run from gradle the log line that mentions the JQ
+   * This test will fail if jq is not installed. If run from gradle the log line that mentions the jq
    * issue will be swallowed. The exception is visible if run from intellij or with STDERR logging
    * turned on in gradle.
    */
