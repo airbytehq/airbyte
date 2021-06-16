@@ -10,7 +10,7 @@
     "properties": {
       "seller_id": {
         "type": "string",
-        "title": "seller_id",
+        "title": "seller_id"
       },
       "AmazonOrderId": {
         "type": ["null", "string"]

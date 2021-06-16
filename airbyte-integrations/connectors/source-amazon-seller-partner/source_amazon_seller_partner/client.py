@@ -26,13 +26,11 @@ import json
 import pkgutil
 import time
 from datetime import datetime
-import pendulum
-from typing import Any, Dict, Generator, MutableMapping, Tuple, List
+from typing import Any, Dict, Generator, List, MutableMapping, Tuple
 
+import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStream, Type
-from dateutil import parser
-from dateutil.relativedelta import relativedelta
 
 from .amazon import AmazonClient
 
@@ -136,7 +134,7 @@ class BaseClient:
             status, document_id = BaseClient._wait_for_report(logger, self._amazon_client, reportId)
 
             # Move to next month when the report is CANCELLED
-            if status == False:
+            if status is False:
                 current_date = self._increase_date_by_month(current_date)
                 continue
 
@@ -178,7 +176,7 @@ class BaseClient:
                 return True, document_id
             elif response["processingStatus"] == "CANCELLED" or response["processingStatus"] == "FATAL":
                 # The report was cancelled. There are two ways a report can be cancelled:
-                # an explicit cancellation request before the report starts processing, 
+                # an explicit cancellation request before the report starts processing,
                 # or an automatic cancellation if there is no data to return.
                 logger.info(f"Report CANCELLED: {reportId}")
                 return False, None

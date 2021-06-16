@@ -22,9 +22,9 @@
 # SOFTWARE.
 #
 
+import abc
 from datetime import datetime
 from typing import Mapping
-import abc
 
 from airbyte_cdk.logger import AirbyteLogger
 from dateutil.relativedelta import relativedelta
@@ -58,28 +58,33 @@ class MockAmazonClient:
 
     def fetch_orders(updated_after, page_count, next_token=None):
         return ORDERS_RESPONSE
-    
-    @abc.abstractmethod 
+
+    @abc.abstractmethod
     def get_report(self, reportId):
-        return 
+        return
+
 
 class AmazonSuccess(MockAmazonClient):
     def get_report(self, reportId):
         if self.COUNT == 3:
-            return { "processingStatus": "DONE", "reportDocumentId": 1 }
+            return {"processingStatus": "DONE", "reportDocumentId": 1}
         else:
             self.COUNT = self.COUNT + 1
-            return { "processingStatus": "IN_PROGRESS" } 
+            return {"processingStatus": "IN_PROGRESS"}
+
+
 class AmazonCancelled(MockAmazonClient):
     def get_report(self, reportId):
         if self.COUNT == 3:
-            return { "processingStatus": "CANCELLED" }
+            return {"processingStatus": "CANCELLED"}
         else:
             self.COUNT = self.COUNT + 1
-            return { "processingStatus": "IN_PROGRESS" } 
+            return {"processingStatus": "IN_PROGRESS"}
+
 
 def get_base_client(config: Mapping):
     return BaseClient(**config)
+
 
 def test_wait_for_report(mocker):
     reportId = "123"
@@ -88,17 +93,19 @@ def test_wait_for_report(mocker):
     wait_response = BaseClient._wait_for_report(AirbyteLogger(), amazon_client, reportId)
 
     assert wait_response == (False, None)
-    
+
     amazon_client = AmazonSuccess(credentials={}, marketplace="USA")
 
     wait_response = BaseClient._wait_for_report(AirbyteLogger(), amazon_client, reportId)
     assert wait_response == (True, 1)
+
 
 def test_check_connection(mocker):
     mocker.patch("source_amazon_seller_partner.client.AmazonClient", return_value=MockAmazonClient)
     base_client = get_base_client(SP_CREDENTIALS)
 
     assert ORDERS_RESPONSE == base_client.check_connection()
+
 
 def test_get_records():
     data = {"document": "name\ttest\nairbyte\t1"}
