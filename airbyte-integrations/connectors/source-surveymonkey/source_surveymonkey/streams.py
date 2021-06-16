@@ -39,7 +39,7 @@ class SurveymonkeyStream(HttpStream, ABC):
     primary_key = "id"
     data_field = "data"
 
-    def __init__(self, start_date: "pendulum.pendulum.Pendulum", **kwargs):
+    def __init__(self, start_date: pendulum.datetime, **kwargs):
         self._start_date = start_date
         super().__init__(**kwargs)
 
@@ -128,7 +128,7 @@ class Surveys(IncrementalSurveymonkeyStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if response_json.get("error"):
-            raise Exception(response_json.get("error"))  # TODO: apply ShouldRetry
+            raise Exception(response_json.get("error"))
         result = response_json.get(self.data_field, [])
         for record in result:
             substream = SurveyDetails(survey_id=record["id"], start_date=self._start_date, authenticator=self.authenticator)
