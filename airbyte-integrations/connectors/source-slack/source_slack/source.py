@@ -163,7 +163,9 @@ class IncrementalMessageStream(SlackStream, ABC):
 
             yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: MutableMapping[str, Any]
+    ) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         if isinstance(latest_record[self.cursor_field], DateTime):
             latest_record[self.cursor_field] = latest_record[self.cursor_field].timestamp()
