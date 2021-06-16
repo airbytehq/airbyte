@@ -27,7 +27,6 @@ package io.airbyte.config.helpers;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -57,7 +56,7 @@ public class S3Logs implements CloudLogs {
   }
 
   @Override
-  public File downloadCloudLog(Configs configs, String logPath) throws IOException{
+  public File downloadCloudLog(Configs configs, String logPath) throws IOException {
     LOGGER.info("Retrieving logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
@@ -66,8 +65,9 @@ public class S3Logs implements CloudLogs {
     var tmpOutputFile = new File("/tmp/" + randomName);
     var os = new FileOutputStream(tmpOutputFile);
 
+    LOGGER.info("Start S3 list request.");
     var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
-    LOGGER.info("Done making S3 list request.");
+    LOGGER.info("Start getting S3 objects.");
     for (var page : S3.listObjectsV2Paginator(listObjReq)) {
       for (var objMetadata : page.contents()) {
         var getObjReq = GetObjectRequest.builder()
@@ -98,24 +98,27 @@ public class S3Logs implements CloudLogs {
     createS3ClientIfNotExist(configs);
 
     var s3Bucket = configs.getS3LogBucket();
+    LOGGER.info("Start making S3 list request.");
     ArrayList<String> ascendingTimestampObjs = getAllObjects(logPath, s3Bucket);
-    var descendingTimestampObjs =  Lists.reverse(ascendingTimestampObjs);
+    var descendingTimestampObjs = Lists.reverse(ascendingTimestampObjs);
 
     var lines = new ArrayList<String>();
     int linesRead = 0;
 
+    LOGGER.info("Start getting S3 objects.");
     while (linesRead <= numLines && !descendingTimestampObjs.isEmpty()) {
       var poppedKey = descendingTimestampObjs.remove(0);
       List<String> currFileLinesReversed = Lists.reverse(getCurrFile(s3Bucket, poppedKey));
       for (var line : currFileLinesReversed) {
         if (linesRead == numLines) {
-          return lines;
+          break;
         }
         lines.add(0, line);
         linesRead++;
       }
     }
 
+    LOGGER.info("Done retrieving S3 logs: {}.", logPath);
     return lines;
   }
 
@@ -148,11 +151,6 @@ public class S3Logs implements CloudLogs {
       }
     }
     return currentFileLines;
-  }
-
-  public static void main(String[] args) throws IOException {
-    var test = new S3Logs().tailCloudLog( new EnvConfigs(), "logging-test/tail", 6);
-    System.out.println(test);
   }
 
 }
