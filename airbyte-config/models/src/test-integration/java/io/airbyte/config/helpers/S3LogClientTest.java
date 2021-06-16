@@ -24,6 +24,7 @@
 
 package io.airbyte.config.helpers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,6 +33,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class S3LogClientTest {
@@ -50,6 +52,15 @@ public class S3LogClientTest {
     var configs = new EnvConfigs();
     var data = new S3Logs().downloadCloudLog(configs, "logging-test");
     System.out.println(new String(Files.readAllBytes(data.toPath())));
+  }
+
+  @Test
+  public void testTail() throws IOException {
+    var configs = new EnvConfigs();
+    var data = new S3Logs().tailCloudLog(configs, "logging-test/tail", 6);
+
+    var expected = List.of("Line 4", "Line 5", "Line 6", "Line 7", "Line 8", "Line 9");
+    assertEquals(data, expected);
   }
 
 }

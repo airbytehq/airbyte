@@ -24,16 +24,22 @@
 
 package io.airbyte.config.helpers;
 
+import io.airbyte.commons.io.IOs;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LogHelpers {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LogHelpers.class);
+
+  private static final int LOG_TAIL_SIZE = 1000000;
+  private static final CloudLogs S3 = new S3Logs();
 
   // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
@@ -58,23 +64,38 @@ public class LogHelpers {
     var logPathBase = getServerLogsRoot(configs);
 
     if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
-      var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
-      return new S3Logs().downloadCloudLog(configs, cloudLogPath);
+      return logPathBase.resolve(LOG_FILENAME).toFile();
     }
 
-    return logPathBase.resolve(LOG_FILENAME).toFile();
+    var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
+    try {
+      return S3.downloadCloudLog(configs, cloudLogPath);
+    } catch (IOException e) {
+      throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
+    }
   }
 
   public static File getSchedulerLogFile(Configs configs) {
     var logPathBase = getSchedulerLogsRoot(configs);
 
     if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
-      var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
-
-      return new S3Logs().downloadCloudLog(configs, cloudLogPath);
+      return logPathBase.resolve(LOG_FILENAME).toFile();
     }
 
-    return logPathBase.resolve(LOG_FILENAME).toFile();
+    var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
+    try {
+      return S3.downloadCloudLog(configs, cloudLogPath);
+    } catch (IOException e) {
+      throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
+    }
+  }
+
+  public static List<String> getJobLogFile(Configs configs, Path logPath) throws IOException {
+    if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
+      return IOs.getTail(LOG_TAIL_SIZE, logPath);
+    }
+    var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    return S3.tailCloudLog(configs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
 }

@@ -26,9 +26,13 @@ package io.airbyte.config.helpers;
 
 import io.airbyte.config.Configs;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public interface CloudLogs {
 
-  File downloadCloudLog(Configs configs, String logPath);
+  File downloadCloudLog(Configs configs, String logPath) throws IOException;
+
+  List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException;
 
 }

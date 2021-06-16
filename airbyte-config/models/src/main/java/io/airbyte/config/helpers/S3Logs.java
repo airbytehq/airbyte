@@ -24,11 +24,18 @@
 
 package io.airbyte.config.helpers;
 
+import com.google.common.collect.Lists;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.regions.Region;
@@ -50,39 +57,102 @@ public class S3Logs implements CloudLogs {
   }
 
   @Override
-  public File downloadCloudLog(Configs configs, String logPath) {
+  public File downloadCloudLog(Configs configs, String logPath) throws IOException{
     LOGGER.info("Retrieving logs from S3 path: {}", logPath);
+    createS3ClientIfNotExist(configs);
 
+    var s3Bucket = configs.getS3LogBucket();
+    var randomName = Strings.addRandomSuffix("logs", "-", 5);
+    var tmpOutputFile = new File("/tmp/" + randomName);
+    var os = new FileOutputStream(tmpOutputFile);
+
+    var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
+    LOGGER.info("Done making S3 list request.");
+    for (var page : S3.listObjectsV2Paginator(listObjReq)) {
+      for (var objMetadata : page.contents()) {
+        var getObjReq = GetObjectRequest.builder()
+            .key(objMetadata.key())
+            .bucket(s3Bucket)
+            .build();
+        var data = S3.getObjectAsBytes(getObjReq).asByteArray();
+        os.write(data);
+      }
+    }
+    os.close();
+
+    LOGGER.info("Done retrieving S3 logs: {}.", logPath);
+    return tmpOutputFile;
+  }
+
+  private void createS3ClientIfNotExist(Configs configs) {
     if (S3 == null) {
       checkValidCredentials(configs);
       var s3Region = configs.getS3LogBucketRegion();
       S3 = S3Client.builder().region(Region.of(s3Region)).build();
     }
+  }
+
+  @Override
+  public List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException {
+    LOGGER.info("Tailing logs from S3 path: {}", logPath);
+    createS3ClientIfNotExist(configs);
 
     var s3Bucket = configs.getS3LogBucket();
-    var randomName = Strings.addRandomSuffix("logs", "-", 5);
-    var tmpOutputFile = new File("/tmp/" + randomName);
-    try {
-      var os = new FileOutputStream(tmpOutputFile);
+    ArrayList<String> ascendingTimestampObjs = getAllObjects(logPath, s3Bucket);
+    var descendingTimestampObjs =  Lists.reverse(ascendingTimestampObjs);
 
-      var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
-      LOGGER.info("Done making S3 list request.");
-      for (var page : S3.listObjectsV2Paginator(listObjReq)) {
-        for (var objMetadata : page.contents()) {
-          var getObjReq = GetObjectRequest.builder()
-              .key(objMetadata.key())
-              .bucket(s3Bucket)
-              .build();
-          var data = S3.getObjectAsBytes(getObjReq).asByteArray();
-          os.write(data);
+    var lines = new ArrayList<String>();
+    int linesRead = 0;
+
+    while (linesRead <= numLines && !descendingTimestampObjs.isEmpty()) {
+      var poppedKey = descendingTimestampObjs.remove(0);
+      List<String> currFileLinesReversed = Lists.reverse(getCurrFile(s3Bucket, poppedKey));
+      for (var line : currFileLinesReversed) {
+        if (linesRead == numLines) {
+          return lines;
         }
+        lines.add(0, line);
+        linesRead++;
       }
-      os.close();
-    } catch (IOException e) {
-      throw new RuntimeException("Error retrieving log file: " + logPath + " from S3", e);
     }
-    LOGGER.info("Done retrieving S3 logs: {}.", logPath);
-    return tmpOutputFile;
+
+    return lines;
+  }
+
+  private ArrayList<String> getAllObjects(String logPath, String s3Bucket) {
+    var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
+    var ascendingTimestampObjs = new ArrayList<String>();
+
+    // get all the objects in reverse order
+    for (var page : S3.listObjectsV2Paginator(listObjReq)) {
+      for (var objMetadata : page.contents()) {
+        ascendingTimestampObjs.add(objMetadata.key());
+      }
+    }
+    return ascendingTimestampObjs;
+  }
+
+  private static ArrayList<String> getCurrFile(String s3Bucket, String poppedKey) throws IOException {
+    var getObjReq = GetObjectRequest.builder()
+        .key(poppedKey)
+        .bucket(s3Bucket)
+        .build();
+
+    var data = S3.getObjectAsBytes(getObjReq).asByteArray();
+    var is = new ByteArrayInputStream(data);
+    var currentFileLines = new ArrayList<String>();
+    try (var reader = new BufferedReader(new InputStreamReader(is))) {
+      String temp;
+      while ((temp = reader.readLine()) != null) {
+        currentFileLines.add(temp);
+      }
+    }
+    return currentFileLines;
+  }
+
+  public static void main(String[] args) throws IOException {
+    var test = new S3Logs().tailCloudLog( new EnvConfigs(), "logging-test/tail", 6);
+    System.out.println(test);
   }
 
 }
