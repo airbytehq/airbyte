@@ -57,7 +57,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     BIGQUERY,
     POSTGRES,
     REDSHIFT,
-    SNOWFLAKE
+    SNOWFLAKE,
+    MYSQL
   }
 
   public DefaultNormalizationRunner(final DestinationType destinationType, final ProcessFactory processFactory) {
