@@ -87,6 +87,11 @@ public class MySqlSourceComprehensiveTest extends SourceComprehensiveTest {
   }
 
   @Override
+  protected String getNameSpace() {
+    return container.getDatabaseName();
+  }
+
+  @Override
   protected void initTests() {
     addDataTypeTestData(
         TestDataHolder.builder()

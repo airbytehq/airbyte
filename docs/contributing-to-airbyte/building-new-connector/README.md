@@ -43,15 +43,14 @@ Run the interactive generator:
 
 ```text
 cd airbyte-integrations/connector-templates/generator
-npm install
-npm run generate
+./generate.sh
 ```
 
 and choose the relevant template. This will generate a new connector in the `airbyte-integrations/connectors/<your-connector>` directory.
 
 Search the generated directory for "TODO"s and follow them to implement your connector.
 
-If you are developing a Python connector, you may find the [building a Python connector tutorial](../../tutorials/tutorials/building-a-python-source.md) helpful.
+If you are developing a Python connector, you may find the [building a Python connector tutorial](../tutorials/building-a-python-source.md) helpful.
 
 ### 2. Integration tests
 

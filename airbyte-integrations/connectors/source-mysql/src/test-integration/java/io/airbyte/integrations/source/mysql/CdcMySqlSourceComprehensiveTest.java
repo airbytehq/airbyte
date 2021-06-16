@@ -90,6 +90,11 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
     return database;
   }
 
+  @Override
+  protected String getNameSpace() {
+    return container.getDatabaseName();
+  }
+
   private void revokeAllPermissions() {
     executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
   }

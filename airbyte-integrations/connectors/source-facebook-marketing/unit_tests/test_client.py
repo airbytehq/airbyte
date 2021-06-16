@@ -31,6 +31,7 @@ from facebook_business import FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.client import Client
 
+FB_API_VERSION = "11.0"
 
 @pytest.fixture(scope="session", name="account_id")
 def account_id_fixture():
@@ -50,13 +51,19 @@ def mock_default_sleep_interval(mocker):
 @pytest.fixture(name="client")
 def client_fixture(some_config, requests_mock, fb_account_response):
     client = Client(**some_config)
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/me/adaccounts", [fb_account_response])
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v{FB_API_VERSION}/me/adaccounts", [fb_account_response])
     return client
 
 
 @pytest.fixture(name="fb_call_rate_response")
 def fb_call_rate_response_fixture():
-    error = {"message": "(#32) Page request limit reached", "type": "OAuthException", "code": 32, "fbtrace_id": "Fz54k3GZrio"}
+    error = {
+        "message": "(#80000) There have been too many calls from this ad-account. Wait a bit and try again. For more info, please refer to https://developers.facebook.com/docs/graph-api/overview/rate-limiting.",
+        "type": "OAuthException",
+        "code": 80000,
+        "error_subcode": 2446079,
+        "fbtrace_id": "Fz54k3GZrio",
+    }
 
     headers = {"x-app-usage": json.dumps({"call_count": 28, "total_time": 25, "total_cputime": 25})}
 
@@ -96,9 +103,9 @@ class TestBackoff:
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", campaign_responses)
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/1/", [{"status_code": 200}])
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/2/", [{"status_code": 200}])
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v{FB_API_VERSION}/act_{account_id}/campaigns", campaign_responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v{FB_API_VERSION}/1/", [{"status_code": 200}])
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v{FB_API_VERSION}/2/", [{"status_code": 200}])
 
         records = list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
 
@@ -143,8 +150,8 @@ class TestBackoff:
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/adcreatives", responses)
-        requests_mock.register_uri("POST", FacebookSession.GRAPH + "/v10.0/", batch_responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v{FB_API_VERSION}/act_{account_id}/adcreatives", responses)
+        requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/v{FB_API_VERSION}/", batch_responses)
 
         records = list(client.read_stream(AirbyteStream(name="adcreatives", json_schema={})))
 
@@ -160,7 +167,7 @@ class TestBackoff:
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v{FB_API_VERSION}/act_{account_id}/campaigns", responses)
 
         with pytest.raises(FacebookRequestError):
             list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
