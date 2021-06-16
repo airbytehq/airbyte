@@ -46,9 +46,9 @@ import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.StandardTapConfig;
-import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
@@ -92,8 +92,8 @@ class DefaultReplicationWorkerTest {
   private NamespacingMapper mapper;
   private AirbyteDestination destination;
   private StandardSyncInput syncInput;
-  private StandardTapConfig sourceConfig;
-  private StandardTargetConfig destinationConfig;
+  private WorkerSourceConfig sourceConfig;
+  private WorkerDestinationConfig destinationConfig;
   private AirbyteMessageTracker sourceMessageTracker;
   private AirbyteMessageTracker destinationMessageTracker;
 

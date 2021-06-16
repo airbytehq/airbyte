@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
@@ -75,7 +75,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public void start(StandardTapConfig input, Path jobRoot) throws Exception {
+  public void start(WorkerSourceConfig input, Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
 
     sourceProcess = integrationLauncher.read(jobRoot,
