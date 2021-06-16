@@ -94,6 +94,7 @@ public class LogHelpers {
     if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
       return IOs.getTail(LOG_TAIL_SIZE, logPath);
     }
+
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
     return S3.tailCloudLog(configs, cloudLogPath, LOG_TAIL_SIZE);
   }

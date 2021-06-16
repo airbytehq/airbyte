@@ -99,7 +99,7 @@ public class S3Logs implements CloudLogs {
 
     var s3Bucket = configs.getS3LogBucket();
     LOGGER.info("Start making S3 list request.");
-    ArrayList<String> ascendingTimestampObjs = getAllObjects(logPath, s3Bucket);
+    ArrayList<String> ascendingTimestampObjs = getAscendingObjectKeys(logPath, s3Bucket);
     var descendingTimestampObjs = Lists.reverse(ascendingTimestampObjs);
 
     var lines = new ArrayList<String>();
@@ -122,7 +122,7 @@ public class S3Logs implements CloudLogs {
     return lines;
   }
 
-  private ArrayList<String> getAllObjects(String logPath, String s3Bucket) {
+  private ArrayList<String> getAscendingObjectKeys(String logPath, String s3Bucket) {
     var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
     var ascendingTimestampObjs = new ArrayList<String>();
 
