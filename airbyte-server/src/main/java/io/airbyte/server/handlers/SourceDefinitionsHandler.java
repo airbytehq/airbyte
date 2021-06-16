@@ -93,11 +93,12 @@ public class SourceDefinitionsHandler {
   }
 
   @VisibleForTesting
-  static SourceDefinitionReadWithJobInfo buildSourceDefinitionReadWithJobInfo(StandardSourceDefinition standardSourceDefinition, SynchronousJobRead jobInfo) {
+  static SourceDefinitionReadWithJobInfo buildSourceDefinitionReadWithJobInfo(StandardSourceDefinition standardSourceDefinition,
+                                                                              SynchronousJobRead jobInfo) {
     try {
       return new SourceDefinitionReadWithJobInfo()
-              .sourceDefinitionRead(buildSourceDefinitionRead(standardSourceDefinition))
-              .jobInfo(jobInfo);
+          .sourceDefinitionRead(buildSourceDefinitionRead(standardSourceDefinition))
+          .jobInfo(jobInfo);
     } catch (NullPointerException e) {
       throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
     }
@@ -133,17 +134,20 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
-  public SourceDefinitionReadWithJobInfo createSourceDefinition(SourceDefinitionCreate sourceDefinitionCreate) throws JsonValidationException, IOException {
+  public SourceDefinitionReadWithJobInfo createSourceDefinition(SourceDefinitionCreate sourceDefinitionCreate)
+      throws JsonValidationException, IOException {
     // Validates that the docker image exists and can generate a compatible spec by running a getSpec
     // job on the provided image and checking that getOutput() worked.
     SynchronousResponse<ConnectorSpecification> response = null;
     try {
-      response = specFetcher.executeWithResponse(DockerUtils.getTaggedImageName(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag()));
+      response = specFetcher.executeWithResponse(
+          DockerUtils.getTaggedImageName(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag()));
       Preconditions.checkNotNull(response, "Get Spec job returned null response");
       Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
       Preconditions.checkNotNull(response.getOutput(), "Get Spec job returned null spec");
     } catch (NullPointerException npe) {
-      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s", sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag(), npe.toString() + " " + npe.getMessage()), npe);
+      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s",
+          sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag(), npe.toString() + " " + npe.getMessage()), npe);
     }
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
@@ -167,12 +171,14 @@ public class SourceDefinitionsHandler {
     // job on the provided image and checking that getOutput() worked.
     SynchronousResponse<ConnectorSpecification> response = null;
     try {
-      response = specFetcher.executeWithResponse(DockerUtils.getTaggedImageName(currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag()));
+      response = specFetcher.executeWithResponse(
+          DockerUtils.getTaggedImageName(currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag()));
       Preconditions.checkNotNull(response, "Get Spec job returned null response");
       Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
       Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
     } catch (NullPointerException e) {
-      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s", currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
+      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s",
+          currentSourceDefinition.getDockerRepository(), currentSourceDefinition.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
     }
 
     final StandardSourceDefinition newSource = new StandardSourceDefinition()

@@ -37,7 +37,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SynchronousResponse;
-import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
@@ -65,9 +64,9 @@ class DestinationDefinitionsHandlerTest {
   private AirbyteGithubStore githubStore;
 
   private static final ConnectorSpecification CONNECTION_SPECIFICATION = new ConnectorSpecification()
-          .withDocumentationUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
-          .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
-          .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+      .withDocumentationUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
+      .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
+      .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -152,7 +151,7 @@ class DestinationDefinitionsHandlerTest {
     final StandardDestinationDefinition destination = generateDestination();
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     when(specFetcher.executeWithResponse(destination.getDockerRepository() + ":" + destination.getDockerImageTag()))
-            .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
+        .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
     when(jobResponse.getOutput()).thenReturn(CONNECTION_SPECIFICATION);
     when(jobResponse.isSuccess()).thenReturn(true);
 
@@ -191,7 +190,7 @@ class DestinationDefinitionsHandlerTest {
     assertNotEquals(newDockerImageTag, currentTag);
 
     when(specFetcher.executeWithResponse(destination.getDockerRepository() + ":" + newDockerImageTag))
-            .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
+        .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
     when(jobResponse.getOutput()).thenReturn(CONNECTION_SPECIFICATION);
     when(jobResponse.isSuccess()).thenReturn(true);
 

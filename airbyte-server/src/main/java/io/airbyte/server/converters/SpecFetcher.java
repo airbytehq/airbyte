@@ -41,6 +41,7 @@ public class SpecFetcher {
   public ConnectorSpecification execute(String dockerImage) throws IOException {
     return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
   }
+
   public SynchronousResponse<ConnectorSpecification> executeWithResponse(String dockerImage) throws IOException {
     return schedulerJobClient.createGetSpecJob(dockerImage);
   }

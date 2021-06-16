@@ -27,16 +27,14 @@ package io.airbyte.server.handlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.*;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.StandardSourceDefinition;
@@ -46,7 +44,6 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.server.errors.KnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -74,11 +71,9 @@ class SourceDefinitionsHandlerTest {
 
   // Mocking the specFetcher means knowing about input images and output connector specifications
   private static final ConnectorSpecification CONNECTION_SPECIFICATION = new ConnectorSpecification()
-          .withDocumentationUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
-          .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
-          .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
-
-
+      .withDocumentationUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
+      .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
+      .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -179,11 +174,12 @@ class SourceDefinitionsHandlerTest {
         .icon(SourceDefinitionsHandler.loadIcon(source.getIcon()));
 
     when(specFetcher.executeWithResponse(source.getDockerRepository() + ":" + source.getDockerImageTag()))
-            .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
+        .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
     when(jobResponse.getOutput()).thenReturn(CONNECTION_SPECIFICATION);
     when(jobResponse.isSuccess()).thenReturn(true);
 
-    // Create makes the definition, validates the docker image as a side effect, and hands back the jobInfo for logs.
+    // Create makes the definition, validates the docker image as a side effect, and hands back the
+    // jobInfo for logs.
     final SourceDefinitionReadWithJobInfo actualReadWithJobInfo = sourceHandler.createSourceDefinition(create);
     final SourceDefinitionRead actualRead = actualReadWithJobInfo.getSourceDefinitionRead();
 
@@ -196,7 +192,7 @@ class SourceDefinitionsHandlerTest {
   void testUpdateSourceDefinition() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId())).thenReturn(source);
     when(specFetcher.executeWithResponse(source.getDockerRepository() + ":" + source.getDockerImageTag()))
-            .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
+        .thenReturn((SynchronousResponse<ConnectorSpecification>) jobResponse);
     when(jobResponse.getOutput()).thenReturn(CONNECTION_SPECIFICATION);
     when(jobResponse.isSuccess()).thenReturn(true);
 
@@ -207,7 +203,8 @@ class SourceDefinitionsHandlerTest {
     final String currentTag = sourceDefinition.getDockerImageTag();
     assertNotEquals(newDockerImageTag, currentTag);
 
-    // This updates the source definition, validates the docker image as a side effect, and returns jobInfo for logs.
+    // This updates the source definition, validates the docker image as a side effect, and returns
+    // jobInfo for logs.
     final SourceDefinitionReadWithJobInfo sourceDefinitionReadWithJobInfo = sourceHandler
         .updateSourceDefinition(new SourceDefinitionUpdate().sourceDefinitionId(source.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
     final SourceDefinitionRead sourceDefinitionRead = sourceDefinitionReadWithJobInfo.getSourceDefinitionRead();

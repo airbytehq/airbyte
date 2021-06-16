@@ -92,11 +92,12 @@ public class DestinationDefinitionsHandler {
   }
 
   @VisibleForTesting
-  static DestinationDefinitionReadWithJobInfo buildDestinationDefinitionReadWithJobInfo(StandardDestinationDefinition standardDestinationDefinition, SynchronousJobRead jobInfo) {
+  static DestinationDefinitionReadWithJobInfo buildDestinationDefinitionReadWithJobInfo(StandardDestinationDefinition standardDestinationDefinition,
+                                                                                        SynchronousJobRead jobInfo) {
     try {
       return new DestinationDefinitionReadWithJobInfo()
-              .destinationDefinitionRead(buildDestinationDefinitionRead(standardDestinationDefinition))
-              .jobInfo(jobInfo);
+          .destinationDefinitionRead(buildDestinationDefinitionRead(standardDestinationDefinition))
+          .jobInfo(jobInfo);
     } catch (NullPointerException e) {
       throw new KnownException(500, "Unable to process retrieved latest destination definitions list", e);
     }
@@ -139,15 +140,18 @@ public class DestinationDefinitionsHandler {
     // job on the provided image and checking that getOutput() worked.
     SynchronousResponse<ConnectorSpecification> response = null;
     try {
-      response = specFetcher.executeWithResponse(DockerUtils.getTaggedImageName(destinationDefinitionCreate.getDockerRepository(), destinationDefinitionCreate.getDockerImageTag()));
+      response = specFetcher.executeWithResponse(
+          DockerUtils.getTaggedImageName(destinationDefinitionCreate.getDockerRepository(), destinationDefinitionCreate.getDockerImageTag()));
       Preconditions.checkNotNull(response, "Get Spec job returned null response");
       Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
       Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
     } catch (NullPointerException e) {
-      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s", destinationDefinitionCreate.getDockerRepository(), destinationDefinitionCreate.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
+      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s",
+          destinationDefinitionCreate.getDockerRepository(), destinationDefinitionCreate.getDockerImageTag(), e.toString() + " " + e.getMessage()),
+          e);
     }
 
-      final UUID id = uuidSupplier.get();
+    final UUID id = uuidSupplier.get();
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
         .withDestinationDefinitionId(id)
         .withDockerRepository(destinationDefinitionCreate.getDockerRepository())
@@ -170,12 +174,14 @@ public class DestinationDefinitionsHandler {
     // job on the provided image and checking that getOutput() worked.
     SynchronousResponse<ConnectorSpecification> response = null;
     try {
-      response = specFetcher.executeWithResponse(DockerUtils.getTaggedImageName(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag()));
+      response = specFetcher.executeWithResponse(
+          DockerUtils.getTaggedImageName(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag()));
       Preconditions.checkNotNull(response, "Get Spec job returned null response");
       Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
       Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
     } catch (NullPointerException e) {
-      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s", currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
+      throw new KnownException(422, String.format("Encountered an issue while validating input docker image from %s:%s - %s",
+          currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag(), e.toString() + " " + e.getMessage()), e);
     }
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
