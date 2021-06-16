@@ -30,6 +30,8 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import java.io.IOException;
+import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 
 public class S3LogClientTest {
@@ -44,10 +46,10 @@ public class S3LogClientTest {
   }
 
   @Test
-  public void testRetrieveAllLogs() {
+  public void testRetrieveAllLogs() throws IOException {
     var configs = new EnvConfigs();
     var data = new S3Logs().downloadCloudLog(configs, "logging-test");
-    System.out.println(new String(data));
+    System.out.println(new String(Files.readAllBytes(data.toPath())));
   }
 
 }
