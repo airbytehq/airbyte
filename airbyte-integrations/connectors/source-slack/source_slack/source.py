@@ -299,7 +299,7 @@ class SourceSlack(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["api_token"])
         default_start_date = pendulum.parse(config["start_date"])
-        threads_lookback_window = {"days": config["lookback_window"]}
+        threads_lookback_window = pendulum.Interval(days=config["lookback_window"])
 
         streams = [
             Channels(authenticator=authenticator),
