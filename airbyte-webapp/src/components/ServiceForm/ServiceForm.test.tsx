@@ -4,8 +4,6 @@ import {
   screen,
   findByText,
   waitFor,
-  findByDisplayValue,
-  findByRole,
 } from "@testing-library/react";
 import { JSONSchema7 } from "json-schema";
 
