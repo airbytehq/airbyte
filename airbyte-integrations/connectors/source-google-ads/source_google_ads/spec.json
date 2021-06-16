@@ -41,6 +41,7 @@
         "type": "string",
         "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25. Any data before this date will not be replicated.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25"]
       },
       "customer_id": {
@@ -52,7 +53,6 @@
         "title": "Conversion Window",
         "type": "integer",
         "description": "Define the historical replication lookback window in days",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "minimum": 0,
         "maximum": 1095,
         "default": 14
