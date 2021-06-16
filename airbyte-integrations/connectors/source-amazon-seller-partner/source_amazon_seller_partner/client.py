@@ -136,7 +136,7 @@ class BaseClient:
             status, document_id = BaseClient._wait_for_report(logger, self._amazon_client, reportId)
 
             # Move to next month when the report is CANCELLED
-            if status == False:
+            if status is False:
                 current_date = self._increase_date_by_month(current_date)
                 continue
 
