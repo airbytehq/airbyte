@@ -23,7 +23,7 @@
 #
 
 
-from typing import Optional, List
+from typing import List, Optional
 
 from sp_api.api import Orders, Reports
 from sp_api.base import Marketplaces
