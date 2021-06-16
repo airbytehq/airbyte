@@ -103,7 +103,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
     // todo (cgardens) - this should not be happening in the worker. this is configuration information
     // that is independent of workflow executions.
-    final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToTargetConfig(syncInput);
+    final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
     long startTime = System.currentTimeMillis();
@@ -112,7 +112,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .stream()
           .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
               s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
-      final WorkerSourceConfig sourceConfig = WorkerUtils.syncToTapConfig(syncInput);
+      final WorkerSourceConfig sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
 
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 

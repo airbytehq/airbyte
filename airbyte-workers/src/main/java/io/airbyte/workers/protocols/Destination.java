@@ -31,7 +31,7 @@ import java.util.Optional;
 
 public interface Destination<T> extends CheckedConsumer<T, Exception>, AutoCloseable {
 
-  void start(WorkerDestinationConfig targetConfig, Path jobRoot) throws Exception;
+  void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception;
 
   @Override
   void accept(T message) throws Exception;

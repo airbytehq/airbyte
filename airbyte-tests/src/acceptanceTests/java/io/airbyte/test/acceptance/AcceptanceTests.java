@@ -382,7 +382,7 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndTargetDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(sourcePsql, false);
   }
 
   @Test
@@ -415,7 +415,7 @@ public class AcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertSourceAndTargetDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(sourcePsql, false);
 
     // add new records and run again.
     final Database source = getDatabase(sourcePsql);
@@ -450,7 +450,7 @@ public class AcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertSourceAndTargetDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(sourcePsql, false);
   }
 
   @Test
@@ -475,7 +475,7 @@ public class AcceptanceTests {
     // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
     // syncs in progress
     sleep(Duration.ofMinutes(2).toMillis());
-    assertSourceAndTargetDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(sourcePsql, false);
   }
 
   @Test
@@ -498,7 +498,7 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndTargetDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(sourcePsql, false);
   }
 
   @Test
@@ -521,7 +521,7 @@ public class AcceptanceTests {
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    assertSourceAndTargetDbInSync(sourcePsql, false);
+    assertSourceAndDestinationDbInSync(sourcePsql, false);
   }
 
   @Test
@@ -547,7 +547,7 @@ public class AcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
 
-    assertSourceAndTargetDbInSync(sourcePsql, true);
+    assertSourceAndDestinationDbInSync(sourcePsql, true);
 
     // add new records and run again.
     final Database source = getDatabase(sourcePsql);
@@ -668,7 +668,7 @@ public class AcceptanceTests {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceIdRequestBody().sourceId(sourceId)).getCatalog();
   }
 
-  private void assertSourceAndTargetDbInSync(PostgreSQLContainer sourceDb, boolean withScdTable) throws Exception {
+  private void assertSourceAndDestinationDbInSync(PostgreSQLContainer sourceDb, boolean withScdTable) throws Exception {
     final Database source = getDatabase(sourceDb);
 
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);

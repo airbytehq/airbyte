@@ -883,14 +883,14 @@ public abstract class DestinationAcceptanceTest {
   private List<AirbyteMessage> runSync(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization)
       throws Exception {
 
-    final WorkerDestinationConfig targetConfig = new WorkerDestinationConfig()
+    final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
         .withCatalog(catalog)
         .withDestinationConnectionConfiguration(config);
 
     final AirbyteDestination destination = getDestination();
 
-    destination.start(targetConfig, jobRoot);
+    destination.start(destinationConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
     destination.notifyEndOfStream();
 
@@ -910,7 +910,8 @@ public abstract class DestinationAcceptanceTest {
         processFactory);
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-    if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog())) {
+    if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, destinationConfig.getDestinationConnectionConfiguration(),
+        destinationConfig.getCatalog())) {
       throw new WorkerException("Normalization Failed.");
     }
     runner.close();

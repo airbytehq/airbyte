@@ -107,8 +107,8 @@ class DefaultReplicationWorkerTest {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     syncInput = syncPair.getValue();
 
-    sourceConfig = WorkerUtils.syncToTapConfig(syncInput);
-    destinationConfig = WorkerUtils.syncToTargetConfig(syncInput);
+    sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
+    destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
 
     source = mock(AirbyteSource.class);
     mapper = mock(NamespacingMapper.class);

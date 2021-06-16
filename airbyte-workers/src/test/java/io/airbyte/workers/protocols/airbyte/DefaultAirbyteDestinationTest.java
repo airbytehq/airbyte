@@ -64,7 +64,8 @@ class DefaultAirbyteDestinationTest {
   private static final String STREAM_NAME = "user_preferences";
   private static final String FIELD_NAME = "favorite_color";
 
-  private static final WorkerDestinationConfig DESTINATION_CONFIG = WorkerUtils.syncToTargetConfig(TestConfigHelpers.createSyncConfig().getValue());
+  private static final WorkerDestinationConfig DESTINATION_CONFIG =
+      WorkerUtils.syncToWorkerDestinationConfig(TestConfigHelpers.createSyncConfig().getValue());
 
   private static final List<AirbyteMessage> MESSAGES = Lists.newArrayList(
       AirbyteMessageUtils.createStateMessage("checkpoint", "1"),

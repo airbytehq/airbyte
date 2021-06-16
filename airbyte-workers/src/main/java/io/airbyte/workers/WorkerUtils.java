@@ -172,7 +172,7 @@ public class WorkerUtils {
    * Translates a StandardSyncInput into a WorkerSourceConfig. WorkerSourceConfig is a subset of
    * StandardSyncInput.
    */
-  public static WorkerSourceConfig syncToTapConfig(StandardSyncInput sync) {
+  public static WorkerSourceConfig syncToWorkerSourceConfig(StandardSyncInput sync) {
     return new WorkerSourceConfig()
         .withSourceConnectionConfiguration(sync.getSourceConfiguration())
         .withCatalog(sync.getCatalog())
@@ -183,7 +183,7 @@ public class WorkerUtils {
    * Translates a StandardSyncInput into a WorkerDestinationConfig. WorkerDestinationConfig is a
    * subset of StandardSyncInput.
    */
-  public static WorkerDestinationConfig syncToTargetConfig(StandardSyncInput sync) {
+  public static WorkerDestinationConfig syncToWorkerDestinationConfig(StandardSyncInput sync) {
     return new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())

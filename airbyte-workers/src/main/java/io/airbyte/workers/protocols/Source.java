@@ -30,7 +30,7 @@ import java.util.Optional;
 
 public interface Source<T> extends AutoCloseable {
 
-  void start(WorkerSourceConfig input, Path jobRoot) throws Exception;
+  void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception;
 
   boolean isFinished();
 
