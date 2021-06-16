@@ -190,12 +190,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getS3AwsKey() {
-    return getEnsureEnv(LogHelpers.S3_AWS_KEY);
+    return getEnsureEnv(LogHelpers.AWS_ACCESS_KEY_ID);
   }
 
   @Override
   public String getS3AwsSecret() {
-    return getEnsureEnv(LogHelpers.S3_AWS_SECRET);
+    return getEnsureEnv(LogHelpers.AWS_SECRET_ACCESS_KEY);
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {
