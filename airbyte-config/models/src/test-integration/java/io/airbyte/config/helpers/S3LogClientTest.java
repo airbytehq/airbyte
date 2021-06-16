@@ -25,6 +25,7 @@
 package io.airbyte.config.helpers;
 
 import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,8 +45,8 @@ public class S3LogClientTest {
 
   @Test
   public void testRetrieveAllLogs() {
-    // mock Configs and return the right bucket
-
+    var configs = new EnvConfigs();
+    new S3Logs().downloadCloudLog(configs, "logs/");
   }
 
 }

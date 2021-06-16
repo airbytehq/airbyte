@@ -45,6 +45,8 @@ public class S3Logs implements CloudLogs {
   private static void checkValidCredentials(Configs configs) {
     configs.getAwsAccessKey();
     configs.getAwsSecretAccessKey();
+    configs.getS3LogBucketRegion();
+    configs.getS3LogBucket();
   }
 
   @Override
