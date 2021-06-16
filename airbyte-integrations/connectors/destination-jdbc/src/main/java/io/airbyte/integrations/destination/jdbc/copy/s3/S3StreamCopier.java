@@ -205,8 +205,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   public static void attemptS3WriteAndDelete(S3Config s3Config, String bucketPath) {
-    var prefix = bucketPath.isEmpty() ? "":
-            bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+    var prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteS3Object(s3Config, outputTableName);
   }
