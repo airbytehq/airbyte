@@ -77,7 +77,7 @@ class Client(BaseClient):
         super().__init__()
 
     def _get_fields_from_stream(self, stream: AirbyteStream) -> List[str]:
-        """Use schemas from schemas folder and from configured catalog"""
+        """Use schemas from schemas folder and not from configured catalog"""
         json_schema = self._schema_loader.get_schema(stream.name)
         return list(json_schema.get("properties", {}).keys())
 
