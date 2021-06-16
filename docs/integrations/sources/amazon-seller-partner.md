@@ -45,6 +45,9 @@ Information about rate limits you may find [here](https://github.com/amzn/sellin
 * AWS USER ACCESS KEY
 * AWS USER SECRET KEY
 * role_arn
+* seller_id
+
+Amazon doesn't return seller_id in the response thus seller_id is added to each row as an identifier. Note: It is not used in querying the data.
 
 ### Setup guide
 
