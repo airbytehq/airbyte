@@ -27,11 +27,11 @@ import json
 import pendulum
 import pytest
 from airbyte_cdk.models import AirbyteStream
-from facebook_business import FacebookSession
+from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.client import Client
 
-FB_API_VERSION = "11.0"
+FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 
 @pytest.fixture(scope="session", name="account_id")
