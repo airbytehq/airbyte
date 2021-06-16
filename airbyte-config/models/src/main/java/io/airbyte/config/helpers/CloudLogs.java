@@ -29,10 +29,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Interface for various Cloud Storage clients supporting Cloud log retrieval.
+ */
 public interface CloudLogs {
 
+  /**
+   * Retrieve all objects at the given path in lexicographical order, and return their contents as one file.
+   */
   File downloadCloudLog(Configs configs, String logPath) throws IOException;
 
+  /**
+   * Retrieve all objects at the given path in lexicographical order, and return their contents as one file.
+   */
   List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException;
 
 }
