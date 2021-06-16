@@ -76,7 +76,7 @@ public class MigrationAcceptanceTest {
   public void testAutomaticMigration()
       throws URISyntaxException, NoSuchFieldException, InvocationTargetException, IllegalAccessException, NoSuchMethodException, ApiException,
       InterruptedException {
-    String targetVersion = "0.25.0-alpha";
+    String targetVersion = System.getenv("MIGRATION_TEST_VERSION");
     firstRun();
     secondRun(targetVersion);
   }

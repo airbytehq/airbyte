@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.yaml.Yamls;
-import io.airbyte.config.init.SeedRepository;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,14 +65,14 @@ class SeedRepositoryTest {
 
   @Test
   void testWrite() throws IOException {
-    new io.airbyte.config.init.SeedRepository().run(CONFIG_ID, input, output);
+    new SeedRepository().run(CONFIG_ID, input, output);
     final JsonNode actual = Jsons.deserialize(IOs.readFile(output, OBJECT.get(CONFIG_ID).asText() + ".json"));
     assertEquals(OBJECT, actual);
   }
 
   @Test
   void testOverwrites() throws IOException {
-    new io.airbyte.config.init.SeedRepository().run(CONFIG_ID, input, output);
+    new SeedRepository().run(CONFIG_ID, input, output);
     final JsonNode actual = Jsons.deserialize(IOs.readFile(output, OBJECT.get(CONFIG_ID).asText() + ".json"));
     assertEquals(OBJECT, actual);
 
@@ -81,7 +80,7 @@ class SeedRepositoryTest {
     ((ObjectNode) clone).put("description", "revolutionary");
     writeSeedList(clone);
 
-    new io.airbyte.config.init.SeedRepository().run(CONFIG_ID, input, output);
+    new SeedRepository().run(CONFIG_ID, input, output);
     final JsonNode actualAfterOverwrite = Jsons.deserialize(IOs.readFile(output, OBJECT.get(CONFIG_ID).asText() + ".json"));
     assertEquals(clone, actualAfterOverwrite);
   }
@@ -92,7 +91,7 @@ class SeedRepositoryTest {
     ((ObjectNode) object).put("name", "howard");
 
     writeSeedList(OBJECT, object);
-    final io.airbyte.config.init.SeedRepository seedRepository = new io.airbyte.config.init.SeedRepository();
+    final SeedRepository seedRepository = new SeedRepository();
     assertThrows(IllegalArgumentException.class, () -> seedRepository.run(CONFIG_ID, input, output));
   }
 
@@ -102,7 +101,7 @@ class SeedRepositoryTest {
     ((ObjectNode) object).put(CONFIG_ID, UUID.randomUUID().toString());
 
     writeSeedList(OBJECT, object);
-    final io.airbyte.config.init.SeedRepository seedRepository = new io.airbyte.config.init.SeedRepository();
+    final SeedRepository seedRepository = new SeedRepository();
     assertThrows(IllegalArgumentException.class, () -> seedRepository.run(CONFIG_ID, input, output));
   }
 

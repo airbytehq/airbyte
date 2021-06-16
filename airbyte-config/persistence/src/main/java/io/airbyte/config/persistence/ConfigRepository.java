@@ -203,8 +203,4 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
   }
 
-  public void deleteOrphanDirectories() throws IOException {
-    persistence.deleteOrphanDirectories();
-  }
-
 }

@@ -24,7 +24,6 @@
 
 package io.airbyte.server.handlers;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
@@ -65,19 +64,10 @@ public class ArchiveHandler {
                         final ConfigRepository configRepository,
                         final JobPersistence persistence,
                         final FileTtlManager fileTtlManager) {
-
-    this(version, configRepository, new ConfigFileArchiver(configRepository), new DatabaseArchiver(persistence), fileTtlManager);
-  }
-
-  public ArchiveHandler(final String version,
-                        final ConfigRepository configRepository,
-                        final ConfigFileArchiver configFileArchiver,
-                        final DatabaseArchiver databaseArchiver,
-                        final FileTtlManager fileTtlManager) {
     this.version = version;
     this.configRepository = configRepository;
-    this.configFileArchiver = configFileArchiver;
-    this.databaseArchiver = databaseArchiver;
+    configFileArchiver = new ConfigFileArchiver(configRepository);
+    databaseArchiver = new DatabaseArchiver(persistence);
     this.fileTtlManager = fileTtlManager;
   }
 
@@ -133,7 +123,6 @@ public class ArchiveHandler {
         checkImport(tempFolder);
         databaseArchiver.importDatabaseFromArchive(tempFolder, version);
         configFileArchiver.importConfigsFromArchive(tempFolder, false);
-        configRepository.deleteOrphanDirectories();
         result = new ImportRead().status(StatusEnum.SUCCEEDED);
       } finally {
         FileUtils.deleteDirectory(tempFolder.toFile());
@@ -166,8 +155,7 @@ public class ArchiveHandler {
     configFileArchiver.importConfigsFromArchive(tempFolder, true);
   }
 
-  @VisibleForTesting
-  public Optional<UUID> getCurrentCustomerId() {
+  private Optional<UUID> getCurrentCustomerId() {
     try {
       return Optional.of(configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true).getCustomerId());
     } catch (Exception e) {
