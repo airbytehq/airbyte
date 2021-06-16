@@ -123,9 +123,6 @@
     "cost_per_outbound_click": {
       "$ref": "ads_action_stats.json"
     },
-    "cost_per_store_visit_action": {
-      "$ref": "ads_action_stats.json"
-    },
     "cost_per_thruplay": {
       "$ref": "ads_action_stats.json"
     },
@@ -257,9 +254,6 @@
     },
     "spend": {
       "type": ["null", "number"]
-    },
-    "store_visit_actions": {
-      "$ref": "ads_action_stats.json"
     },
     "unique_actions": {
       "$ref": "ads_action_stats.json"

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.11
+Fix schemas and drop deprecated fields
+
 ## 0.2.10
 Update version of facebook_bussiness to 11.0
 
