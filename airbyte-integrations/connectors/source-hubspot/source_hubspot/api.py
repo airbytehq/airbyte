@@ -69,8 +69,9 @@ def retry_after_handler(**kwargs):
 
     def sleep_on_ratelimit(_details):
         _, exc, _ = sys.exc_info()
-        if isinstance(exc, HubspotRateLimited) and exc.response.headers.get("Retry-After"):
-            retry_after = int(exc.response.headers["Retry-After"])
+        if isinstance(exc, HubspotRateLimited):
+            # Hubspot API does not always return Retry-After value for 429 HTTP error
+            retry_after = int(exc.response.headers.get("Retry-After", 3))
             logger.info(f"Rate limit reached. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
 
@@ -458,6 +459,48 @@ class ContactListStream(Stream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     limit_field = "count"
+
+
+class DealStageHistoryStream(Stream):
+    """Deal stage history, API v1
+    Deal stage history is exposed by the v1 API, but not the v3 API.
+    The v1 endpoint requires the contacts scope.
+    Docs: https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals
+    """
+
+    url = "/deals/v1/deal/paged"
+    more_key = "hasMore"
+    data_field = "deals"
+    updated_at_field = "timestamp"
+
+    def _transform(self, records: Iterable) -> Iterable:
+        for record in super()._transform(records):
+            dealstage = record.get("properties", {}).get("dealstage", {})
+            updated_at = dealstage.get(self.updated_at_field)
+            if updated_at:
+                yield {"id": record.get("dealId"), "dealstage": dealstage, self.updated_at_field: updated_at}
+
+    def list(self, fields) -> Iterable:
+        params = {"propertiesWithHistory": "dealstage"}
+        yield from self.read(partial(self._api.get, url=self.url), params)
+
+
+class DealStream(CRMObjectStream):
+    """Deals, API v3"""
+
+    def __init__(self, **kwargs):
+        super().__init__(entity="deal", **kwargs)
+        self._stage_history = DealStageHistoryStream(**kwargs)
+
+    def list(self, fields) -> Iterable:
+        history_by_id = {}
+        for record in self._stage_history.list(fields):
+            if all(field in record for field in ("id", "dealstage")):
+                history_by_id[record["id"]] = record["dealstage"]
+        for record in super().list(fields):
+            if record.get("id") and int(record["id"]) in history_by_id:
+                record["dealstage"] = history_by_id[int(record["id"])]
+            yield record
 
 
 class DealPipelineStream(Stream):
