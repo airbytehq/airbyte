@@ -54,6 +54,7 @@ allowed characters, if quotes are needed or not, and the length limitations:
 - [postgres](../../../docs/integrations/destinations/postgres.md)
 - [redshift](../../../docs/integrations/destinations/redshift.md)
 - [snowflake](../../../docs/integrations/destinations/snowflake.md)
+- [mysql](../../../docs/integrations/destinations/mysql.md)
 
 Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
 - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
