@@ -56,11 +56,15 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultConfigPersistence.class);
 
   public DefaultConfigPersistence(final Path storageRoot) {
-    this(storageRoot, new JsonSchemaValidator());
+    this(storageRoot, new JsonSchemaValidator(), CONFIG_DIR);
   }
 
   public DefaultConfigPersistence(final Path storageRoot, final JsonSchemaValidator schemaValidator) {
-    this.storageRoot = storageRoot.resolve(CONFIG_DIR);
+    this(storageRoot, schemaValidator, CONFIG_DIR);
+  }
+
+  public DefaultConfigPersistence(final Path storageRoot, final JsonSchemaValidator schemaValidator, String configDirectory) {
+    this.storageRoot = storageRoot.resolve(configDirectory);
     jsonSchemaValidator = schemaValidator;
   }
 

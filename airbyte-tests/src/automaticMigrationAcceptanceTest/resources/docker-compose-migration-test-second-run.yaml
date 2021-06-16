@@ -26,12 +26,6 @@ services:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     volumes:
       - db:/var/lib/postgresql/data
-  seed:
-    image: airbyte/seed:dev
-    # Pre-populate the volume if it is empty.
-    # See: https://docs.docker.com/storage/volumes/#populate-a-volume-using-a-container
-    volumes:
-      - data:/app/seed
   server:
     image: airbyte/server:dev
     logging: *default-logging

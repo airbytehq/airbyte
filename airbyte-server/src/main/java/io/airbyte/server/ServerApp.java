@@ -52,7 +52,6 @@ import io.airbyte.server.errors.InvalidJsonInputExceptionMapper;
 import io.airbyte.server.errors.KnownExceptionMapper;
 import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
-import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.version_mismatch.VersionMismatchServer;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
@@ -237,11 +236,8 @@ public class ServerApp {
                                             String airbyteVersion,
                                             String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
-    ArchiveHandler importArchiveHandler = new ArchiveHandler(airbyteVersion, configRepository,
-        jobPersistence,
-        new FileTtlManager(10, TimeUnit.MINUTES, 10));
     try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion,
-        configRoot, importArchiveHandler, jobPersistence, airbyteVersion)) {
+        configRoot, jobPersistence, configRepository, airbyteVersion)) {
       runMigration.run();
     } catch (Exception e) {
       LOGGER.error("Automatic Migration failed ", e);

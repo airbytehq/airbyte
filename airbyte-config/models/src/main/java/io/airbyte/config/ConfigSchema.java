@@ -27,45 +27,103 @@ package io.airbyte.config;
 import io.airbyte.commons.json.JsonSchemas;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.function.Function;
 
 public enum ConfigSchema {
 
   // workspace
-  STANDARD_WORKSPACE("StandardWorkspace.yaml"),
+  STANDARD_WORKSPACE("StandardWorkspace.yaml", StandardWorkspace.class, standardWorkspace -> {
+    return standardWorkspace.getWorkspaceId().toString();
+  }),
 
   // source
-  STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml"),
-  SOURCE_CONNECTION("SourceConnection.yaml"),
+  STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml", StandardSourceDefinition.class,
+      standardSourceDefinition -> {
+        return standardSourceDefinition.getSourceDefinitionId().toString();
+      }),
+  SOURCE_CONNECTION("SourceConnection.yaml", SourceConnection.class,
+      sourceConnection -> {
+        return sourceConnection.getSourceId().toString();
+      }),
 
   // destination
-  STANDARD_DESTINATION_DEFINITION("StandardDestinationDefinition.yaml"),
-  DESTINATION_CONNECTION("DestinationConnection.yaml"),
+  STANDARD_DESTINATION_DEFINITION("StandardDestinationDefinition.yaml",
+      StandardDestinationDefinition.class, standardDestinationDefinition -> {
+        return standardDestinationDefinition.getDestinationDefinitionId().toString();
+      }),
+  DESTINATION_CONNECTION("DestinationConnection.yaml", DestinationConnection.class,
+      destinationConnection -> {
+        return destinationConnection.getDestinationId().toString();
+      }),
 
   // sync
-  STANDARD_SYNC("StandardSync.yaml"),
-  STANDARD_SYNC_OPERATION("StandardSyncOperation.yaml"),
-  STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml"),
+  STANDARD_SYNC("StandardSync.yaml", StandardSync.class, standardSync -> {
+    return standardSync.getConnectionId().toString();
+  }),
+  STANDARD_SYNC_OPERATION("StandardSyncOperation.yaml", StandardSyncOperation.class,
+      standardSyncOperation -> {
+        return standardSyncOperation.getOperationId().toString();
+      }),
+  STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml", StandardSyncSummary.class,
+      standardSyncSummary -> {
+        throw new RuntimeException("No Id for StandardSyncSummary exists");
+      }),
 
   // worker
-  STANDARD_SYNC_INPUT("StandardSyncInput.yaml"),
-  NORMALIZATION_INPUT("NormalizationInput.yaml"),
-  OPERATOR_DBT_INPUT("OperatorDbtInput.yaml"),
+  STANDARD_SYNC_INPUT("StandardSyncInput.yaml", StandardSyncInput.class,
+      standardSyncInput -> {
+        throw new RuntimeException("No Id for StandardSyncInput exists");
+      }),
+  NORMALIZATION_INPUT("NormalizationInput.yaml", NormalizationInput.class,
+      normalizationInput -> {
+        throw new RuntimeException("No Id for NormalizationInput exists");
+      }),
+  OPERATOR_DBT_INPUT("OperatorDbtInput.yaml", OperatorDbtInput.class,
+      operatorDbtInput -> {
+        throw new RuntimeException("No Id for OperatorDbtInput exists");
+      }),
 
-  STANDARD_SYNC_OUTPUT("StandardSyncOutput.yaml"),
-  REPLICATION_OUTPUT("ReplicationOutput.yaml"),
+  STANDARD_SYNC_OUTPUT("StandardSyncOutput.yaml", StandardSyncOutput.class,
+      standardWorkspace -> {
+        throw new RuntimeException("No Id for StandardSyncOutput exists");
+      }),
+  REPLICATION_OUTPUT("ReplicationOutput.yaml", ReplicationOutput.class,
+      standardWorkspace -> {
+        throw new RuntimeException("No Id for ReplicationOutput exists");
+      }),
 
-  STATE("State.yaml");
+  STATE("State.yaml", State.class, standardWorkspace -> {
+    throw new RuntimeException("No Id for State exists");
+  });
 
   static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("types", ConfigSchema.class);
 
   private final String schemaFilename;
+  private final Class<?> className;
+  private final Function<?, String> extractId;
 
-  ConfigSchema(final String schemaFilename) {
+  <T> ConfigSchema(final String schemaFilename,
+                   Class<T> className,
+                   Function<T, String> extractId) {
     this.schemaFilename = schemaFilename;
+    this.className = className;
+    this.extractId = extractId;
   }
 
   public File getFile() {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
+  }
+
+  public <T> Class<T> getClassName() {
+    return (Class<T>) className;
+  }
+
+  public <T> String getId(T object) {
+    if (getClassName().isInstance(object)) {
+      return ((Function<T, String>) extractId).apply(object);
+    }
+    throw new RuntimeException(
+        "Object: " + object + " is not instance of class " + getClassName().getName());
   }
 
 }

@@ -26,14 +26,15 @@ package io.airbyte.server;
 
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
 import io.airbyte.migrate.MigrationRunner;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.server.handlers.ArchiveHandler;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -43,28 +44,26 @@ import org.slf4j.LoggerFactory;
 public class RunMigration implements Runnable, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RunMigration.class);
-  private final ArchiveHandler importArchiveHandler;
-  private final JobPersistence jobPersistence;
   private final String targetVersion;
-  private final String initialVersion;
   private boolean isSuccessful;
-  private boolean dbVersionChanged;
   private final ConfigDumpExport configDumpExport;
+  private final ConfigDumpImport configDumpImport;
+  private final Path configRoot;
+  private final String targetConfigDirectory;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
   public RunMigration(String initialVersion,
-                      Path exportConfigRoot,
-                      ArchiveHandler importArchiveHandler,
+                      Path configRoot,
                       JobPersistence jobPersistence,
+                      ConfigRepository configRepository,
                       String targetVersion) {
-    this.initialVersion = initialVersion;
-    this.jobPersistence = jobPersistence;
+    this.configRoot = configRoot;
     this.targetVersion = targetVersion;
-    this.configDumpExport = new ConfigDumpExport(exportConfigRoot, jobPersistence, initialVersion);
-    this.importArchiveHandler = importArchiveHandler;
-
+    this.targetConfigDirectory = "config_" + Instant.now().toString();
+    this.configDumpExport = new ConfigDumpExport(configRoot, jobPersistence, initialVersion);
+    this.configDumpImport = new ConfigDumpImport(configRoot, targetConfigDirectory, initialVersion, targetVersion,
+        jobPersistence, configRepository);
     this.isSuccessful = false;
-    this.dbVersionChanged = false;
   }
 
   @Override
@@ -86,13 +85,8 @@ public class RunMigration implements Runnable, AutoCloseable {
           targetVersion);
       MigrationRunner.run(migrateConfig);
 
-      // Update DB version
-      LOGGER.info("Setting the DB Airbyte version to : " + targetVersion);
-      jobPersistence.setVersion(targetVersion);
-      dbVersionChanged = true;
-
       // Import data
-      ImportRead importRead = importArchiveHandler.importData(output);
+      ImportRead importRead = configDumpImport.importData(output);
       if (importRead.getStatus() == StatusEnum.FAILED) {
         throw new RuntimeException("Automatic migration failed : " + importRead.getReason());
       }
@@ -105,14 +99,26 @@ public class RunMigration implements Runnable, AutoCloseable {
 
   @Override
   public void close() throws IOException {
-    if (!isSuccessful && dbVersionChanged) {
-      LOGGER.warn("Automatic Migration not successful, setting the DB Airbyte version back to : "
-          + initialVersion);
-      jobPersistence.setVersion(initialVersion);
+    if (isSuccessful) {
+      boolean configToDeprecated = configRoot.resolve("config").toFile().renameTo(configRoot.resolve("config_deprecated").toFile());
+      if (configToDeprecated) {
+        LOGGER.info("Renamed config to config_deprecated successfully");
+      }
+      boolean newConfig = configRoot.resolve(targetConfigDirectory).toFile().renameTo(configRoot.resolve("config").toFile());
+      if (newConfig) {
+        LOGGER.info("Renamed " + targetConfigDirectory + " to config successfully");
+      }
+      filesToBeCleanedUp.add(configRoot.resolve("config_deprecated").toFile());
     }
+
     for (File file : filesToBeCleanedUp) {
-      if (!FileUtils.deleteQuietly(file)) {
-        LOGGER.warn("Could not delete file/directory : " + file.toString());
+      if (file.exists()) {
+        LOGGER.info("Deleting " + file.getName());
+        if (file.isDirectory()) {
+          FileUtils.deleteDirectory(file);
+        } else {
+          Files.delete(file.toPath());
+        }
       }
     }
   }
