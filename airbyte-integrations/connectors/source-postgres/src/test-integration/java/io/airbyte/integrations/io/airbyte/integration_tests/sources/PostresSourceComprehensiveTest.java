@@ -220,14 +220,6 @@ public class PostresSourceComprehensiveTest extends SourceComprehensiveTest {
                 "128.1.0.0/16", "2001:4f8:3:ba::/64")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("date")
-            .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            .build());
-
     // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it doesnt suppose to handle BC
     // dates
     addDataTypeTestData(
