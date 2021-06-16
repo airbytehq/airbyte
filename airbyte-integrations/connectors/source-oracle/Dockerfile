@@ -3,7 +3,6 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION source-oracle
-ENV TZ UTC
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
