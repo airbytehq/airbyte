@@ -114,7 +114,6 @@ class ConnectionsHandlerTest {
     verify(configRepository).writeStandardSync(standardSync);
   }
 
-
   @Test
   void testCreateConnectionWithBadDefinitionIds() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(uuidGenerator.get()).thenReturn(standardSync.getConnectionId());
@@ -122,45 +121,47 @@ class ConnectionsHandlerTest {
     UUID destinationDefinitionIdBad = UUID.randomUUID();
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
-            .withName("source-test")
-            .withSourceDefinitionId(UUID.randomUUID());
+        .withName("source-test")
+        .withSourceDefinitionId(UUID.randomUUID());
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
-            .withName("destination-test")
-            .withDestinationDefinitionId(UUID.randomUUID());
+        .withName("destination-test")
+        .withDestinationDefinitionId(UUID.randomUUID());
     when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
     when(configRepository.getSourceDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(sourceDefinition);
     when(configRepository.getDestinationDefinitionFromConnection(standardSync.getConnectionId())).thenReturn(destinationDefinition);
 
-    when(configRepository.getSourceConnection(sourceDefinitionIdBad)).thenThrow(new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION, sourceDefinitionIdBad));
-    when(configRepository.getDestinationConnection(destinationDefinitionIdBad)).thenThrow(new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION, destinationDefinitionIdBad));
+    when(configRepository.getSourceConnection(sourceDefinitionIdBad))
+        .thenThrow(new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION, sourceDefinitionIdBad));
+    when(configRepository.getDestinationConnection(destinationDefinitionIdBad))
+        .thenThrow(new ConfigNotFoundException(ConfigSchema.DESTINATION_CONNECTION, destinationDefinitionIdBad));
 
     final AirbyteCatalog catalog = ConnectionHelpers.generateBasicApiCatalog();
 
     final ConnectionCreate connectionCreateBadSource = new ConnectionCreate()
-            .sourceId(sourceDefinitionIdBad)
-            .destinationId(standardSync.getDestinationId())
-            .operationIds(standardSync.getOperationIds())
-            .name("presto to hudi")
-            .namespaceDefinition(NamespaceDefinitionType.SOURCE)
-            .namespaceFormat(null)
-            .prefix("presto_to_hudi")
-            .status(ConnectionStatus.ACTIVE)
-            .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
-            .syncCatalog(catalog);
+        .sourceId(sourceDefinitionIdBad)
+        .destinationId(standardSync.getDestinationId())
+        .operationIds(standardSync.getOperationIds())
+        .name("presto to hudi")
+        .namespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .namespaceFormat(null)
+        .prefix("presto_to_hudi")
+        .status(ConnectionStatus.ACTIVE)
+        .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
+        .syncCatalog(catalog);
 
     assertThrows(ConfigNotFoundException.class, () -> connectionsHandler.createConnection(connectionCreateBadSource));
 
     final ConnectionCreate connectionCreateBadDestination = new ConnectionCreate()
-            .sourceId(standardSync.getSourceId())
-            .destinationId(destinationDefinitionIdBad)
-            .operationIds(standardSync.getOperationIds())
-            .name("presto to hudi")
-            .namespaceDefinition(NamespaceDefinitionType.SOURCE)
-            .namespaceFormat(null)
-            .prefix("presto_to_hudi")
-            .status(ConnectionStatus.ACTIVE)
-            .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
-            .syncCatalog(catalog);
+        .sourceId(standardSync.getSourceId())
+        .destinationId(destinationDefinitionIdBad)
+        .operationIds(standardSync.getOperationIds())
+        .name("presto to hudi")
+        .namespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .namespaceFormat(null)
+        .prefix("presto_to_hudi")
+        .status(ConnectionStatus.ACTIVE)
+        .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
+        .syncCatalog(catalog);
 
     assertThrows(ConfigNotFoundException.class, () -> connectionsHandler.createConnection(connectionCreateBadDestination));
 
