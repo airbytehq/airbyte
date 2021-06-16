@@ -1,4 +1,4 @@
-# Twilio
+# AWS CloudTrail
 
 ## Overview
 
@@ -10,9 +10,9 @@ This Source Connector is based on a [Boto3 CloudTrail](https://boto3.amazonaws.c
 
 This Source is capable of syncing the following core Streams:
 
-* [Events](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail.html#CloudTrail.Client.lookup_events)
+* [Management Events](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail.html#CloudTrail.Client.lookup_events)
 
-Only Management events supported right now.
+Insight events are not supported right now. Only Management events are available.
 
 ### Data type mapping
 

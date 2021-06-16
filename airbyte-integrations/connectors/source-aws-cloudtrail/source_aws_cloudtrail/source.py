@@ -84,6 +84,43 @@ class AwsCloudtrailStream(Stream, ABC):
     def datetime_to_timestamp(self, date: datetime) -> int:
         return int(datetime.timestamp(date))
 
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+
+        next_page_token = None
+        while not pagination_complete:
+            params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            try:
+                response = self.send_request(**params)
+            except botocore.exceptions.ClientError as err:
+                # returns no records if either the start time occurs after the end time
+                # or the time range is outside the range of possible values.
+                if err.response["Error"]["Code"] == "InvalidTimeRangeException":
+                    return iter(())
+                else:
+                    raise err
+
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
+
+            for record in self.parse_response(response):
+                yield record
+                self.records_left -= 1
+
+                if self.records_left <= 0:
+                    # limit of fetched records is reached
+                    return iter(())
+
+        yield from []
+
 
 class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
     @property
@@ -106,43 +143,6 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
 
         return params
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {}
-        pagination_complete = False
-
-        next_page_token = None
-        while not pagination_complete:
-            params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            try:
-                response = self.send_request(**params)
-            except botocore.exceptions.ClientError as err:
-                # returns no records if either the start time occurs after the end time
-                # or the time range is outside the range of possible values.
-                if err.response["Error"]["Code"] == "InvalidTimeRangeException":
-                    break
-                else:
-                    raise err
-
-            next_page_token = self.next_page_token(response)
-            if not next_page_token:
-                pagination_complete = True
-
-            for record in self.parse_response(response):
-                yield record
-                self.records_left -= 1
-
-                if self.records_left <= 0:
-                    pagination_complete = True
-                    break
-
-        yield from []
-
 
 class ManagementEvents(IncrementalAwsCloudtrailStream):
     primary_key = "EventId"
@@ -158,6 +158,8 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
 
     def parse_response(self, response: dict, **kwargs) -> Iterable[Mapping]:
         for event in response[self.data_field]:
+            # boto3 converts timestamps to datetime object
+            # we need to convert it back to timestamp to persist original API type
             event[self.time_field] = self.datetime_to_timestamp(event[self.time_field])
             yield event
 
