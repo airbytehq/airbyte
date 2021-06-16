@@ -87,7 +87,7 @@ services:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
   webapp:
-    image: airbyte/webapp:dev #${VERSION}
+    image: airbyte/webapp:${VERSION}
     logging: *default-logging
     container_name: airbyte-webapp
     restart: unless-stopped
