@@ -17,7 +17,7 @@ This is an early preview of Kubernetes support. It has been tested on:
 * Google Kubernetes Engine \(GKE\)
 * Amazon Elastic Kubernetes Service \(EKS\)
 
-Please let us know on [Slack](https://slack.airbyte.io) or with a Github Issue if you're having trouble running it on these or other platforms. We'll be glad to help you get it running.
+Please let us know on [Slack](https://slack.airbyte.io) or with a [Github Issue](https://github.com/airbytehq/airbyte/issues/new/choose) if you're having trouble running it on these or other platforms - we'll be glad to help you get it running.
 
 ## Launching
 
@@ -36,6 +36,8 @@ All commands should be run from the root Airbyte source directory.
    * These static assets will make calls to the Airbyte api server, which is why both services needed to be port forwarded.
    * If you redeploy `airbyte-webapp`, you will need to re-run this process.
 6. Go to [http://localhost:8000/](http://localhost:8000/) and use Airbyte!
+
+If you have faced issues on launching Airbyte on Kubernetes, you can check the troubleshooting section below.
 
 ## Current Limitations
 
@@ -144,3 +146,10 @@ kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx ls /tmp/workspace/8
 kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
 ```
 
+## Troubleshooting
+
+**Getting error: json: unknown field "envs" after running `kubectl apply -k kube/overlays/stable`**
+
+This is a version mismatch between `kubectl` and `kustomize` which can happen when you are using a cloud provider running on older versions of `kubectl`. To fix this, update your `kubectl` version.
+The current deployment in this guide was tested using kubectl 1.21.+.
+You can read more about the issue [here](https://github.com/kubernetes-sigs/kustomize/issues/1069).
