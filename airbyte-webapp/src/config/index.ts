@@ -35,7 +35,7 @@ type Config = {
 
 const config: Config = {
   ui: {
-    technicalSupport: "https://docs.airbyte.io/faq/technical-support",
+    technicalSupport: "https://docs.airbyte.io/troubleshooting/on-deploying",
     helpLink: "https://airbyte.io/community",
     slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",
