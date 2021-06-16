@@ -1842,6 +1842,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationSyncMode"
+        supportsDbt:
+          type: boolean
+        supportsNormalization:
+          type: boolean
     # DESTINATION
     DestinationId:
       type: string
@@ -2615,7 +2619,9 @@ components:
         destination:
           $ref: "#/components/schemas/DestinationRead"
         operations:
-          $ref: "#/components/schemas/OperationReadList"
+          type: array
+          items:
+            $ref: "#/components/schemas/OperationRead"
         latestSyncJobCreatedAt:
           description: epoch time of the latest sync job. null if no sync job has taken place.
           type: integer

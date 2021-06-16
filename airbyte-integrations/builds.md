@@ -45,7 +45,6 @@
 
  Klaviyo   [![source-klaviyo](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-klaviyo%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-klaviyo) 
 
- Asana   [![source-asana](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-asana%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-asana) 
 
  Instagram   [![source-instagram](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus-api.airbyte.io%2Ftests%2Fsummary%2Fsource-instagram%2Fbadge.json)](https://status-api.airbyte.io/tests/summary/source-instagram) 
 
