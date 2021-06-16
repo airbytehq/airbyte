@@ -49,7 +49,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.eclipse.jetty.http.HttpStatus;
 
 public class WorkspacesHandler {
 
