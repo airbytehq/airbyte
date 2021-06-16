@@ -48,7 +48,7 @@ def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional
     if start_date > end_date:
         return [{field: start_date.to_date_string()}]
 
-    # applying conversion windoe
+    # applying conversion window
     start_date = start_date.subtract(days=conversion_window)
 
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
@@ -60,12 +60,10 @@ def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional
 
 
 class GoogleAdsStream(Stream, ABC):
-    DEFAULT_CONVERSION_WINDOW_DAYS = 14
-
     def __init__(self, config):
         self.config = config
         self.google_ads_client = GoogleAds(**config)
-        self.conversion_window_days = self.config.get("conversion_window_days", self.DEFAULT_CONVERSION_WINDOW_DAYS)
+        self.conversion_window_days = self.config["conversion_window_days"]
 
     def parse_response(self, response: SearchGoogleAdsResponse) -> Iterable[Mapping]:
         for result in response:
