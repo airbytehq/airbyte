@@ -57,6 +57,9 @@ const config: Config = {
     baseUrl: "https://app.papercups.io",
     enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
   },
+  fullstory: {
+    org: window.FULLSTORY === "disabled" ? "" : "13AXQ4",
+  },
   version: window.AIRBYTE_VERSION,
   apiUrl:
     window.API_URL ||
