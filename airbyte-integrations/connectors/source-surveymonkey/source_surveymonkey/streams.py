@@ -25,7 +25,7 @@
 
 import urllib.parse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
@@ -39,9 +39,7 @@ class SurveymonkeyStream(HttpStream, ABC):
     primary_key = "id"
     data_field = "data"
 
-    def __init__(self, start_date: Union[str, Any], **kwargs):
-        if isinstance(start_date, str):
-            start_date = pendulum.parse(start_date)  # convert to YYYY-MM-DDTHH:MM:SS
+    def __init__(self, start_date: "pendulum.pendulum.Pendulum", **kwargs):
         self._start_date = start_date
         super().__init__(**kwargs)
 
@@ -203,9 +201,12 @@ class SurveyQuestions(SurveymonkeyStream):
         if response_json.get("error"):
             raise Exception(response_json.get("error"))
         data = response_json.get(self.data_field)
-        question_data = [i["questions"] for i in data]
-        merged_questions = sum(question_data, [])  # data is list of list, each inner list = page questions. Need to merge
-        yield from merged_questions
+        for entry in data:
+            page_id = entry["id"]
+            questions = entry["questions"]
+            for question in questions:
+                question["page_id"] = page_id
+                yield question
 
 
 class SurveyResponses(IncrementalSurveymonkeyStream):
