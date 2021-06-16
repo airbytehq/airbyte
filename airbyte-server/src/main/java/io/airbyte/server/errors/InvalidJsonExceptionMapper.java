@@ -25,21 +25,24 @@
 package io.airbyte.server.errors;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.api.model.ExceptionInfo;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import org.apache.logging.log4j.core.util.Throwables;
 
 @Provider
 public class InvalidJsonExceptionMapper implements ExceptionMapper<JsonParseException> {
 
   @Override
   public Response toResponse(JsonParseException e) {
+    ExceptionInfo exceptionInfo = (ExceptionInfo) new ExceptionInfo()
+        .exceptionClassName(e.getClass().getName())
+        .message("Invalid json. " + e.getMessage() + " " + e.getOriginalMessage())
+        .exceptionStack(Throwables.toStringList(e));
+
     return Response.status(422)
-        .entity(
-            Jsons.serialize(
-                ImmutableMap.of("message", "Invalid JSON", "details", e.getOriginalMessage())))
+        .entity(exceptionInfo)
         .type("application/json")
         .build();
   }

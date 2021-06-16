@@ -24,13 +24,14 @@
 
 package io.airbyte.server.errors;
 
-import com.google.common.collect.ImmutableMap;
+import io.airbyte.api.model.InvalidInputException;
 import io.airbyte.commons.json.Jsons;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import org.apache.logging.log4j.core.util.Throwables;
 
 // https://www.baeldung.com/jersey-bean-validation#custom-exception-handler
 // handles exceptions related to the request body not matching the openapi config.
@@ -38,15 +39,14 @@ import javax.ws.rs.ext.Provider;
 public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
   @Override
-  public Response toResponse(ConstraintViolationException exception) {
+  public Response toResponse(ConstraintViolationException e) {
+    InvalidInputException responseException = (InvalidInputException) new InvalidInputException()
+        .exceptionClassName(e.getClass().getName())
+        .message(prepareMessage(e))
+        .exceptionStack(Throwables.toStringList(e));
+
     return Response.status(Response.Status.BAD_REQUEST)
-        .entity(
-            Jsons.serialize(
-                ImmutableMap.of(
-                    "message",
-                    "The received object did not pass validation",
-                    "details",
-                    prepareMessage(exception))))
+        .entity(Jsons.serialize(responseException))
         .type("application/json")
         .build();
   }

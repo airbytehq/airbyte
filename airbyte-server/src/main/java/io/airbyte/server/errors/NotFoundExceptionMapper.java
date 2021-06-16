@@ -24,11 +24,12 @@
 
 package io.airbyte.server.errors;
 
-import com.google.common.collect.ImmutableMap;
+import io.airbyte.api.model.ExceptionInfo;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import org.apache.logging.log4j.core.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,9 +39,14 @@ public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundExceptio
 
   @Override
   public Response toResponse(NotFoundException e) {
-    LOGGER.error("Not found exception", e);
+    ExceptionInfo exceptionInfo = (ExceptionInfo) new ExceptionInfo()
+        .exceptionClassName(e.getClass().getName())
+        .message("Not Found " + e.getMessage())
+        .exceptionStack(Throwables.toStringList(e));
+
+    LOGGER.error("Not found exception", exceptionInfo);
     return Response.status(404)
-        .entity(Jsons.serialize(ImmutableMap.of("message", e.getMessage())))
+        .entity(Jsons.serialize(exceptionInfo))
         .type("application/json")
         .build();
   }

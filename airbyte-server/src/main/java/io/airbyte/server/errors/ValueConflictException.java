@@ -24,32 +24,19 @@
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.ExceptionInfo;
-import io.airbyte.commons.json.Jsons;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-import org.apache.logging.log4j.core.util.Throwables;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class ValueConflictException extends KnownException {
 
-@Provider
-public class KnownExceptionMapper implements ExceptionMapper<KnownException> {
+  public ValueConflictException(String message) {
+    super(message);
+  }
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(KnownExceptionMapper.class);
+  public ValueConflictException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
   @Override
-  public Response toResponse(KnownException e) {
-    ExceptionInfo exceptionInfo = (ExceptionInfo) new ExceptionInfo()
-        .exceptionClassName(e.getClass().getName())
-        .message(e.getMessage())
-        .exceptionStack(Throwables.toStringList(e));
-
-    LOGGER.info("Known exception", exceptionInfo);
-    return Response.status(e.getHttpCode())
-        .entity(Jsons.serialize(exceptionInfo))
-        .type("application/json")
-        .build();
+  public int getHttpCode() {
+    return 409;
   }
 
 }

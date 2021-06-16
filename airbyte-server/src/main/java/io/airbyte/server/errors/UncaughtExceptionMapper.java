@@ -24,11 +24,12 @@
 
 package io.airbyte.server.errors;
 
-import com.google.common.collect.ImmutableMap;
+import io.airbyte.api.model.ExceptionInfo;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import org.apache.logging.log4j.core.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +40,14 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
   @Override
   public Response toResponse(Throwable e) {
-    LOGGER.error("Uncaught exception", e);
+    ExceptionInfo exceptionInfo = (ExceptionInfo) new ExceptionInfo()
+        .exceptionClassName(e.getClass().getName())
+        .message("Internal Server Error: " + e.getMessage())
+        .exceptionStack(Throwables.toStringList(e));
+
+    LOGGER.error("Uncaught exception", exceptionInfo);
     return Response.status(500)
-        .entity(Jsons.serialize(ImmutableMap.of("message", "internal server error")))
+        .entity(Jsons.serialize(exceptionInfo))
         .type("application/json")
         .build();
   }

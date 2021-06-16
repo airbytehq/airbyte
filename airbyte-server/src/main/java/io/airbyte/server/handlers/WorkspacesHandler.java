@@ -43,7 +43,8 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.server.converters.NotificationConverter;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.IdNotFoundException;
+import io.airbyte.server.errors.ValueConflictException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.UUID;
@@ -80,7 +81,7 @@ public class WorkspacesHandler {
   }
 
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate)
-      throws JsonValidationException, IOException, ConfigNotFoundException, KnownException {
+      throws JsonValidationException, IOException, ConfigNotFoundException, ValueConflictException {
 
     final String email = workspaceCreate.getEmail();
     final Boolean anonymousDataCollection = workspaceCreate.getAnonymousDataCollection();
@@ -106,7 +107,7 @@ public class WorkspacesHandler {
 
     try {
       if (configRepository.getWorkspaceBySlug(workspace.getSlug(), false) != null) {
-        throw new KnownException(HttpStatus.CONFLICT_409, "A workspace already exists with the same name");
+        throw new ValueConflictException("A workspace already exists with the same name");
       }
     } catch (ConfigNotFoundException e) {
       // no workspace exists with the slug, lets create ours
@@ -189,7 +190,7 @@ public class WorkspacesHandler {
         return new NotificationRead().status(StatusEnum.SUCCEEDED);
       }
     } catch (IllegalArgumentException e) {
-      throw new KnownException(HttpStatus.NOT_FOUND_404, e.getMessage());
+      throw new IdNotFoundException(e.getMessage());
     } catch (IOException | InterruptedException e) {
       return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
     }
