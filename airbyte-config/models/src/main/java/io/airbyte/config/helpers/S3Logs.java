@@ -68,6 +68,7 @@ public class S3Logs implements CloudLogs {
     LOGGER.info("Start S3 list request.");
     var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
     LOGGER.info("Start getting S3 objects.");
+    // Objects are returned in lexicographical order.
     for (var page : S3.listObjectsV2Paginator(listObjReq)) {
       for (var objMetadata : page.contents()) {
         var getObjReq = GetObjectRequest.builder()
@@ -84,14 +85,6 @@ public class S3Logs implements CloudLogs {
     return tmpOutputFile;
   }
 
-  private void createS3ClientIfNotExist(Configs configs) {
-    if (S3 == null) {
-      checkValidCredentials(configs);
-      var s3Region = configs.getS3LogBucketRegion();
-      S3 = S3Client.builder().region(Region.of(s3Region)).build();
-    }
-  }
-
   @Override
   public List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException {
     LOGGER.info("Tailing logs from S3 path: {}", logPath);
@@ -99,15 +92,15 @@ public class S3Logs implements CloudLogs {
 
     var s3Bucket = configs.getS3LogBucket();
     LOGGER.info("Start making S3 list request.");
-    ArrayList<String> ascendingTimestampObjs = getAscendingObjectKeys(logPath, s3Bucket);
-    var descendingTimestampObjs = Lists.reverse(ascendingTimestampObjs);
+    ArrayList<String> ascendingTimestampKeys = getAscendingObjectKeys(logPath, s3Bucket);
+    var descendingTimestampKeys = Lists.reverse(ascendingTimestampKeys);
 
     var lines = new ArrayList<String>();
     int linesRead = 0;
 
     LOGGER.info("Start getting S3 objects.");
-    while (linesRead <= numLines && !descendingTimestampObjs.isEmpty()) {
-      var poppedKey = descendingTimestampObjs.remove(0);
+    while (linesRead <= numLines && !descendingTimestampKeys.isEmpty()) {
+      var poppedKey = descendingTimestampKeys.remove(0);
       List<String> currFileLinesReversed = Lists.reverse(getCurrFile(s3Bucket, poppedKey));
       for (var line : currFileLinesReversed) {
         if (linesRead == numLines) {
@@ -122,11 +115,19 @@ public class S3Logs implements CloudLogs {
     return lines;
   }
 
+  private void createS3ClientIfNotExist(Configs configs) {
+    if (S3 == null) {
+      checkValidCredentials(configs);
+      var s3Region = configs.getS3LogBucketRegion();
+      S3 = S3Client.builder().region(Region.of(s3Region)).build();
+    }
+  }
+
   private ArrayList<String> getAscendingObjectKeys(String logPath, String s3Bucket) {
     var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
     var ascendingTimestampObjs = new ArrayList<String>();
 
-    // get all the objects in reverse order
+    // Objects are returned in lexicographical order.
     for (var page : S3.listObjectsV2Paginator(listObjReq)) {
       for (var objMetadata : page.contents()) {
         ascendingTimestampObjs.add(objMetadata.key());

@@ -51,9 +51,17 @@ public class S3LogClientTest {
   public void testRetrieveAllLogs() throws IOException {
     var configs = new EnvConfigs();
     var data = new S3Logs().downloadCloudLog(configs, "logging-test");
+    // TODO: Implement test.
     System.out.println(new String(Files.readAllBytes(data.toPath())));
   }
 
+  /**
+   * The test files for this test have been pre-generated and uploaded into the bucket folder.
+   * The folder contains the following files with these contents:
+   * <li>first-file.txt - Line 1, Line 2, Line 3</li>
+   * <li>second-file.txt - Line 4, Line 5, Line 6</li>
+   * <li>third-file.txt - Line 7, Line 8, Line 9</li>
+   */
   @Test
   public void testTail() throws IOException {
     var configs = new EnvConfigs();
