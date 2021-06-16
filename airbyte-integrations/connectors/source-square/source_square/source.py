@@ -130,26 +130,48 @@ class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
 
 
 class Items(IncrementalSquareCatalogObjectsStream):
+    """
+    Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
+    with object_types = ITEM
+    """
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         return {**super(Items, self).request_body_json(**kwargs), "object_types": ["ITEM"]}
 
 
 class Categories(IncrementalSquareCatalogObjectsStream):
+    """
+    Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
+    with object_types = CATEGORY
+    """
+
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         return {**super(Categories, self).request_body_json(**kwargs), "object_types": ["CATEGORY"]}
 
 
 class Discounts(IncrementalSquareCatalogObjectsStream):
+    """
+    Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
+    with object_types = DISCOUNT
+    """
+
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         return {**super(Discounts, self).request_body_json(**kwargs), "object_types": ["DISCOUNT"]}
 
 
 class Taxes(IncrementalSquareCatalogObjectsStream):
+    """
+    Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
+    with object_types = TAX
+    """
+
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         return {**super(Taxes, self).request_body_json(**kwargs), "object_types": ["TAX"]}
 
 
 class Locations(SquareStream):
+    """
+    Docs: https://developer.squareup.com/explorer/square/locations-api/list-locations
+    """
     data_field = "locations"
 
     def path(
