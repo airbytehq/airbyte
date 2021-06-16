@@ -129,10 +129,11 @@ def read_json(input_path: str, apply_function=(lambda x: x)):
 
 
 @pytest.mark.parametrize(
-    "json_path, expected_postgres, expected_bigquery",
+    "json_path, expected_postgres, expected_bigquery, expected_mysql",
     [
         (
             ["parent", "child"],
+            "parent_child",
             "parent_child",
             "parent_child",
         ),
@@ -140,15 +141,17 @@ def read_json(input_path: str, apply_function=(lambda x: x)):
             ["The parent stream has a nested column with a", "short_substream_name"],
             "the_parent_stream_ha___short_substream_name",
             "The_parent_stream_has_a_nested_column_with_a_short_substream_name",
+            "The_parent_stream_has_a_nested_column_with_a_short_substream_name",
         ),
         (
             ["The parent stream has a nested column with a", "substream with a rather long name"],
             "the_parent_stream_ha__th_a_rather_long_name",
             "The_parent_stream_has_a_nested_column_with_a_substream_with_a_rather_long_name",
+            "The_parent_stream_has_a_nested_column_with_a_substream_with_a_rather_long_name",
         ),
     ],
 )
-def test_get_simple_table_name(json_path: List[str], expected_postgres: str, expected_bigquery: str):
+def test_get_simple_table_name(json_path: List[str], expected_postgres: str, expected_bigquery: str, expected_mysql: str):
     """
     Checks how to generate a simple and easy to understand name from a json path
     """
@@ -160,6 +163,10 @@ def test_get_simple_table_name(json_path: List[str], expected_postgres: str, exp
     bigquery_registry = TableNameRegistry(DestinationType.BIGQUERY)
     actual_bigquery_name = bigquery_registry.get_simple_table_name(json_path)
     assert actual_bigquery_name == expected_bigquery
+
+    mysql_registry = TableNameRegistry(DestinationType.MYSQL)
+    actual_mysql_name = mysql_registry.get_simple_table_name(json_path)
+    assert actual_mysql_name == expected_mysql
 
 
 @pytest.mark.parametrize(

@@ -39,6 +39,7 @@ class DestinationType(Enum):
     postgres = "postgres"
     redshift = "redshift"
     snowflake = "snowflake"
+    mysql = "mysql"
 
 
 class TransformConfig:
@@ -82,6 +83,7 @@ class TransformConfig:
             DestinationType.postgres.value: self.transform_postgres,
             DestinationType.redshift.value: self.transform_redshift,
             DestinationType.snowflake.value: self.transform_snowflake,
+            DestinationType.mysql.value: self.transform_mysql,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -162,6 +164,22 @@ class TransformConfig:
             "threads": 32,
             "client_session_keep_alive": False,
             "query_tag": "normalization",
+        }
+        return dbt_config
+
+    @staticmethod
+    def transform_mysql(config: Dict[str, Any]):
+        print("transform_mysql")
+        # https://github.com/dbeatty10/dbt-mysql#configuring-your-profile
+        dbt_config = {
+            # MySQL 8.x - type: mysql
+            # MySQL 5.x - type: mysql5
+            "type": config.get("type", "mysql"),
+            "server": config["host"],
+            "port": config["port"],
+            "schema": config["database"],
+            "username": config["username"],
+            "password": config.get("password", ""),
         }
         return dbt_config
 

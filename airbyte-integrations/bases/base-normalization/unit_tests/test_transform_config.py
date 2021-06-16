@@ -125,6 +125,30 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
+    def test_transform_mysql(self):
+        input = {
+            "type": "mysql5",
+            "host": "airbyte.io",
+            "port": 5432,
+            "database": "my_db",
+            "schema": "public",
+            "username": "a user",
+            "password": "password1234",
+        }
+
+        actual = TransformConfig().transform_mysql(input)
+        expected = {
+            "type": "postgres",
+            "server": "airbyte.io",
+            "port": 5432,
+            "schema": "my_db",
+            "username": "a user",
+            "password": "password1234",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "public"
+
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
         input = {

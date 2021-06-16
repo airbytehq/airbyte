@@ -55,21 +55,25 @@ def before_tests(request):
         ("Hello World", "BigQuery", False),
         ("Hello World", "Snowflake", True),
         ("Hello World", "Redshift", True),
-        # Reserved Word for BigQuery only
+        ("Hello World", "MySQL", True),
+        # Reserved Word for BigQuery and MySQL only
         ("Groups", "Postgres", False),
         ("Groups", "BigQuery", True),
         ("Groups", "Snowflake", False),
         ("Groups", "Redshift", False),
+        ("Groups", "MySQL", True),
         # Doesnt start with alpha or underscore
         ("100x200", "Postgres", True),
         ("100x200", "BigQuery", False),
         ("100x200", "Snowflake", True),
         ("100x200", "Redshift", True),
+        ("100x200", "MySQL", False),
         # Contains non alpha numeric
         ("post.wall", "Postgres", True),
         ("post.wall", "BigQuery", False),
         ("post.wall", "Snowflake", True),
         ("post.wall", "Redshift", True),
+        ("post.wall", "MySQL", True),
     ],
 )
 def test_needs_quote(input_str: str, destination_type: str, expected: bool):
@@ -118,36 +122,43 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ("Identifier Name2", "BigQuery", "Identifier_Name2", "Identifier_Name2"),
         ("Identifier Name3", "Snowflake", "IDENTIFIER_NAME3", "{{ adapter.quote('Identifier Name3') }}"),
         ("Identifier Name4", "Redshift", "identifier_name4", "{{ adapter.quote('identifier name4') }}"),
+        ("Identifier Name5", "MySQL", "identifier_name5", "{{ adapter.quote('identifier name5') }}"),
         # Unicode
         ("a-Unicode_name_文1", "Postgres", "a_unicode_name__1", "{{ adapter.quote('a-Unicode_name_文1') }}"),
         ("a-Unicode_name_文2", "BigQuery", "a_Unicode_name__2", "a_Unicode_name__2"),
         ("a-Unicode_name_文3", "Snowflake", "A_UNICODE_NAME__3", "{{ adapter.quote('a-Unicode_name_文3') }}"),
         ("a-Unicode_name_文4", "Redshift", "a_unicode_name__4", "{{ adapter.quote('a-unicode_name_文4') }}"),
+        ("a-Unicode_name_文5", "MySQL", "a_unicode_name_文5", "a_unicode_name_文5"),
         # Doesnt start with alpha or underscore
         ("100x2001", "Postgres", "100x2001", "{{ adapter.quote('100x2001') }}"),
         ("100x2002", "BigQuery", "_100x2002", "_100x2002"),
         ("100x2003", "Snowflake", "100x2003", "{{ adapter.quote('100x2003') }}"),
         ("100x2004", "Redshift", "100x2004", "{{ adapter.quote('100x2004') }}"),
-        # Reserved Keywords in BQ
+        ("100x2005", "MySQL", "100x2005", "100x2005"),
+        # Reserved Keywords in BQ and MySQL
         ("Groups", "Postgres", "groups", "groups"),
         ("Groups", "BigQuery", "Groups", "{{ adapter.quote('Groups') }}"),
         ("Groups", "Snowflake", "GROUPS", "GROUPS"),
         ("Groups", "Redshift", "groups", "groups"),
+        ("Groups", "MySQL", "{{ adapter.quote('Groups') }}", "{{ adapter.quote('Groups') }}"),
         # Reserved Keywords
         ("DisTincT", "Postgres", "DisTincT", "{{ adapter.quote('DisTincT') }}"),
         ("DisTincT", "BigQuery", "DisTincT", "{{ adapter.quote('DisTincT') }}"),
         ("DisTincT", "Snowflake", "DisTincT", "{{ adapter.quote('DisTincT') }}"),
         ("DisTincT", "Redshift", "distinct", "{{ adapter.quote('distinct') }}"),
+        ("DisTincT", "MySQL", "distinct", "{{ adapter.quote('distinct') }}"),
         # Quoted identifiers
         ("'QuoTed1 IdenTifiER'", "Postgres", "_quoted1_identifier_", "{{ adapter.quote('\\'QuoTed1 IdenTifiER\\'') }}"),
         ("'QuoTed2 IdenTifiER'", "BigQuery", "_QuoTed2_IdenTifiER_", "_QuoTed2_IdenTifiER_"),
         ("'QuoTed3 IdenTifiER'", "Snowflake", "_QUOTED3_IDENTIFIER_", "{{ adapter.quote('\\'QuoTed3 IdenTifiER\\'') }}"),
         ("'QuoTed4 IdenTifiER'", "Redshift", "_quoted4_identifier_", "{{ adapter.quote('\\'quoted4 identifier\\'') }}"),
+        ("'QuoTed5 IdenTifiER'", "MySQL", "_quoted5_identifier_", "_quoted5_identifier_"),
         # Double Quoted identifiers
         ('"QuoTed5 IdenTifiER"', "Postgres", "_quoted5_identifier_", '{{ adapter.quote(\'""QuoTed5 IdenTifiER""\') }}'),
         ('"QuoTed6 IdenTifiER"', "BigQuery", "_QuoTed6_IdenTifiER_", "_QuoTed6_IdenTifiER_"),
         ('"QuoTed7 IdenTifiER"', "Snowflake", "_QUOTED7_IDENTIFIER_", '{{ adapter.quote(\'""QuoTed7 IdenTifiER""\') }}'),
         ('"QuoTed8 IdenTifiER"', "Redshift", "_quoted8_identifier_", '{{ adapter.quote(\'""quoted8 identifier""\') }}'),
+        ('"QuoTed9 IdenTifiER"', "MySQL", "_quoted9_identifier_", "_quoted9_identifier_"),
     ],
 )
 def test_normalize_name(input_str: str, destination_type: str, expected: str, expected_column: str):
@@ -165,11 +176,13 @@ def test_normalize_name(input_str: str, destination_type: str, expected: str, ex
         ("Identifier Name", "BigQuery", "Identifier_Name", "'Identifier_Name'"),
         ("Identifier Name", "Snowflake", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
         ("Identifier Name", "Redshift", "{{ adapter.quote('identifier name') }}", "adapter.quote('identifier name')"),
-        # Reserved Word for BigQuery only
+        ("Identifier Name", "MySQL", "{{ adapter.quote('identifier name') }}", "adapter.quote('identifier name')"),
+        # Reserved Word for BigQuery and MySQL only
         ("Groups", "Postgres", "groups", "'groups'"),
         ("Groups", "BigQuery", "{{ adapter.quote('Groups') }}", "adapter.quote('Groups')"),
         ("Groups", "Snowflake", "GROUPS", "'GROUPS'"),
         ("Groups", "Redshift", "groups", "'groups'"),
+        ("Groups", "MySQL", "{{ adapter.quote('Groups') }}", "adapter.quote('Groups')"),
     ],
 )
 def test_normalize_column_name(input_str: str, destination_type: str, expected: str, expected_in_jinja: str):
