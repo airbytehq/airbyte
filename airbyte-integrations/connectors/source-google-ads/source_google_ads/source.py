@@ -32,7 +32,6 @@ from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v7.services.types.google_ads_service import SearchGoogleAdsResponse
 
 from .google_ads import GoogleAds
-from .utils import Utils
 
 
 def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional[int], field: str) -> Iterable[Mapping[str, any]]:
@@ -73,6 +72,16 @@ class GoogleAdsStream(Stream, ABC):
             record = GoogleAds.parse_single_result(self.get_json_schema(), result)
             yield record
 
+    @staticmethod
+    def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
+        end_date = end_date or pendulum.yesterday()
+        start_date = pendulum.parse(stream_slice.get(cursor_field))
+        if start_date > pendulum.now():
+            return start_date.to_date_string(), start_date.add(days=1).to_date_string()
+
+        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(months=1))
+        return start_date.add(days=1).to_date_string(), end_date.to_date_string()
+
     def read_records(
         self,
         sync_mode,
@@ -80,7 +89,7 @@ class GoogleAdsStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_date, end_date = Utils.get_date_params(stream_slice, self.cursor_field)
+        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
         query = GoogleAds.convert_schema_into_query(self.get_json_schema(), self.name, start_date, end_date)
 
         response = self.google_ads_client.send_request(query)
