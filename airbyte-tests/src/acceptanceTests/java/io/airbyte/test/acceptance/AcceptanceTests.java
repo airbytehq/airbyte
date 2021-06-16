@@ -46,6 +46,7 @@ import io.airbyte.api.client.model.AirbyteCatalog;
 import io.airbyte.api.client.model.AirbyteStream;
 import io.airbyte.api.client.model.AirbyteStreamAndConfiguration;
 import io.airbyte.api.client.model.AirbyteStreamConfiguration;
+import io.airbyte.api.client.model.AttemptInfoRead;
 import io.airbyte.api.client.model.CheckConnectionRead;
 import io.airbyte.api.client.model.ConnectionCreate;
 import io.airbyte.api.client.model.ConnectionIdRequestBody;
@@ -662,6 +663,78 @@ public class AcceptanceTests {
     }
 
     assertTrue(hasRedacted);
+  }
+
+  // verify that when the worker uses backpressure from pipes that no records are lost.
+  @Test
+  @Order(15)
+  public void testBackpressure() throws Exception {
+    final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
+        .name("E2E Test Source")
+        .dockerRepository("airbyte/source-e2e-test")
+        .dockerImageTag("dev")
+        .documentationUrl(URI.create("https://example.com")));
+
+    final DestinationDefinitionRead destinationDefinition = apiClient.getDestinationDefinitionApi()
+        .createDestinationDefinition(new DestinationDefinitionCreate()
+            .name("E2E Test Destination")
+            .dockerRepository("airbyte/destination-e2e-test")
+            .dockerImageTag("dev")
+            .documentationUrl(URI.create("https://example.com")));
+
+    final SourceRead source = createSource(
+        "E2E Test Source -" + UUID.randomUUID(),
+        PersistenceConstants.DEFAULT_WORKSPACE_ID,
+        sourceDefinition.getSourceDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "INFINITE_FEED")
+            .put("max_records", 5000)
+            .build()));
+
+    final DestinationRead destination = createDestination(
+        "E2E Test Destination -" + UUID.randomUUID(),
+        PersistenceConstants.DEFAULT_WORKSPACE_ID,
+        destinationDefinition.getDestinationDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "THROTTLED")
+            .put("millis_per_record", 1)
+            .build()));
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = source.getSourceId();
+    final UUID destinationId = destination.getDestinationId();
+    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+
+    final UUID connectionId =
+        createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null, SyncMode.FULL_REFRESH)
+            .getConnectionId();
+
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    // wait to get out of pending.
+    final JobRead runningJob = waitForJob(apiClient.getJobsApi(), connectionSyncRead1.getJob(), Sets.newHashSet(JobStatus.PENDING));
+    // wait to get out of running.
+    waitForJob(apiClient.getJobsApi(), runningJob, Sets.newHashSet(JobStatus.RUNNING));
+
+    final JobInfoRead jobInfo = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(runningJob.getId()));
+    final AttemptInfoRead attemptInfoRead = jobInfo.getAttempts().get(jobInfo.getAttempts().size() - 1);
+    assertNotNull(attemptInfoRead);
+
+    int expectedMessageNumber = 0;
+    final int max = 10_000;
+    for (String logLine : attemptInfoRead.getLogs().getLogLines()) {
+      if (expectedMessageNumber > max) {
+        break;
+      }
+
+      if (logLine.contains("received record: ") && logLine.contains("\"type\": \"RECORD\"")) {
+        assertTrue(
+            logLine.contains(String.format("\"column1\": \"%s\"", expectedMessageNumber)),
+            String.format("Expected %s but got: %s", expectedMessageNumber, logLine));
+        expectedMessageNumber++;
+      }
+    }
   }
 
   private AirbyteCatalog discoverSourceSchema(UUID sourceId) throws ApiException {
