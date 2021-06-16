@@ -177,11 +177,8 @@ class API:
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
     def get(self, url: str, params=None) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
-        for i in range(10000):
-            response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
-            if response.status_code == 429:
-
-                return self._parse_and_handle_errors(response)
+        response = self._session.get(self.BASE_URL + url, params=self._add_auth(params))
+        return self._parse_and_handle_errors(response)
 
     def post(self, url: str, data: Mapping[str, Any], params=None) -> Union[Mapping[str, Any], List[Mapping[str, Any]]]:
         response = self._session.post(self.BASE_URL + url, params=self._add_auth(params), json=data)
