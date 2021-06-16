@@ -189,4 +189,10 @@ class SourceSquare(AbstractSource):
             "start_date": config["start_date"],
             "include_deleted_objects": config['include_deleted_objects']
         }
-        return [Items(**args), Categories(**args), Discounts(**args), Taxes(**args), Locations(**args)]
+        return [
+            Items(**args),
+            Categories(**args),
+            Discounts(**args),
+            Taxes(**args),
+            Locations(**args)
+        ]
