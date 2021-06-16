@@ -69,9 +69,15 @@ public class RunMigrationTest {
   private final List<File> resourceToBeCleanedUp = new ArrayList<>();
 
   @After
-  public void cleanup() {
+  public void cleanup() throws IOException {
     for (File file : resourceToBeCleanedUp) {
-      FileUtils.deleteQuietly(file);
+      if (file.exists()) {
+        if (file.isDirectory()) {
+          FileUtils.deleteDirectory(file);
+        } else {
+          Files.delete(file.toPath());
+        }
+      }
     }
   }
 
@@ -245,7 +251,8 @@ public class RunMigrationTest {
         exportConfigRoot,
         jobPersistence,
         new ConfigRepository(new DefaultConfigPersistence(exportConfigRoot)),
-        TARGET_VERSION)) {
+        TARGET_VERSION,
+        true)) {
       runMigration.run();
     }
   }

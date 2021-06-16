@@ -25,23 +25,25 @@
 package io.airbyte.test.automaticMigrationAcceptance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.io.Resources;
-import io.airbyte.api.client.DestinationApi;
+import io.airbyte.api.client.ConnectionApi;
+import io.airbyte.api.client.DestinationDefinitionApi;
 import io.airbyte.api.client.HealthApi;
-import io.airbyte.api.client.SourceApi;
+import io.airbyte.api.client.SourceDefinitionApi;
 import io.airbyte.api.client.WorkspaceApi;
 import io.airbyte.api.client.invoker.ApiClient;
 import io.airbyte.api.client.invoker.ApiException;
-import io.airbyte.api.client.model.DestinationRead;
-import io.airbyte.api.client.model.DestinationReadList;
+import io.airbyte.api.client.model.ConnectionRead;
+import io.airbyte.api.client.model.ConnectionStatus;
+import io.airbyte.api.client.model.DestinationDefinitionRead;
 import io.airbyte.api.client.model.HealthCheckRead;
 import io.airbyte.api.client.model.ImportRead;
 import io.airbyte.api.client.model.ImportRead.StatusEnum;
-import io.airbyte.api.client.model.SourceRead;
-import io.airbyte.api.client.model.SourceReadList;
+import io.airbyte.api.client.model.SourceDefinitionRead;
 import io.airbyte.api.client.model.WorkspaceIdRequestBody;
 import io.airbyte.api.client.model.WorkspaceRead;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -51,6 +53,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -181,53 +184,97 @@ public class MigrationAcceptanceTest {
 
   private void assertDataFromApi(ApiClient apiClient) throws ApiException {
     WorkspaceIdRequestBody workspaceIdRequestBody = assertWorkspaceInformation(apiClient);
-    // assertDestinationInformation(apiClient, workspaceIdRequestBody);
-    // assertSourceInformation(apiClient, workspaceIdRequestBody);
-    // new ConnectionApi(apiClient).getConnection()
+    assertSourceDefinitionInformation(apiClient);
+    assertDestinationDefinitionInformation(apiClient);
+    assertConnectionInformation(apiClient, workspaceIdRequestBody);
   }
 
-  private void assertSourceInformation(ApiClient apiClient, WorkspaceIdRequestBody workspaceIdRequestBody)
-      throws ApiException {
-    SourceApi sourceApi = new SourceApi(apiClient);
-    SourceReadList sourceReadList = sourceApi.listSourcesForWorkspace(workspaceIdRequestBody);
-    assertEquals(sourceReadList.getSources().size(), 1);
-    SourceRead sourceRead = sourceReadList.getSources().get(0);
-    assertEquals(sourceRead.getName(), "MySQL localhost");
-    assertEquals(sourceRead.getSourceDefinitionId().toString(), "435bb9a5-7887-4809-aa58-28c27df0d7ad");
-    assertEquals(sourceRead.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
-    assertEquals(sourceRead.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
-    assertEquals(sourceRead.getConnectionConfiguration().get("username").asText(), "root");
-    assertEquals(sourceRead.getConnectionConfiguration().get("password").asText(), "password");
-    assertEquals(sourceRead.getConnectionConfiguration().get("database").asText(), "localhost_test");
-    assertEquals(sourceRead.getConnectionConfiguration().get("port").asInt(), 3306);
-    assertEquals(sourceRead.getConnectionConfiguration().get("host").asText(), "host.docker.internal");
+  private void assertSourceDefinitionInformation(ApiClient apiClient) throws ApiException {
+    SourceDefinitionApi sourceDefinitionApi = new SourceDefinitionApi(apiClient);
+    List<SourceDefinitionRead> sourceDefinitions = sourceDefinitionApi.listSourceDefinitions()
+        .getSourceDefinitions();
+    assertTrue(sourceDefinitions.size() >= 58);
+    boolean foundMysqlSourceDefinition = false;
+    boolean foundPostgresSourceDefinition = false;
+    for (SourceDefinitionRead sourceDefinitionRead : sourceDefinitions) {
+      if (sourceDefinitionRead.getSourceDefinitionId().toString()
+          .equals("435bb9a5-7887-4809-aa58-28c27df0d7ad")) {
+        assertEquals(sourceDefinitionRead.getName(), "MySQL");
+        assertEquals(sourceDefinitionRead.getDockerImageTag(), "0.2.0");
+        foundMysqlSourceDefinition = true;
+      } else if (sourceDefinitionRead.getSourceDefinitionId().toString()
+          .equals("decd338e-5647-4c0b-adf4-da0e75f5a750")) {
+        assertTrue(sourceDefinitionRead.getDockerImageTag().compareTo("0.3.4") >= 0);
+        assertTrue(sourceDefinitionRead.getName().contains("Postgres"));
+        foundPostgresSourceDefinition = true;
+      }
+    }
+
+    assertTrue(foundMysqlSourceDefinition);
+    assertTrue(foundPostgresSourceDefinition);
   }
 
-  private void assertDestinationInformation(ApiClient apiClient, WorkspaceIdRequestBody workspaceIdRequestBody)
+  private void assertDestinationDefinitionInformation(ApiClient apiClient) throws ApiException {
+    DestinationDefinitionApi destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
+    List<DestinationDefinitionRead> destinationDefinitions = destinationDefinitionApi
+        .listDestinationDefinitions().getDestinationDefinitions();
+    assertTrue(destinationDefinitions.size() >= 10);
+    boolean foundPostgresDestinationDefinition = false;
+    boolean foundLocalCSVDestinationDefinition = false;
+    boolean foundSnowflakeDestinationDefintion = false;
+    for (DestinationDefinitionRead destinationDefinitionRead : destinationDefinitions) {
+      switch (destinationDefinitionRead.getDestinationDefinitionId().toString()) {
+        case "25c5221d-dce2-4163-ade9-739ef790f503" -> {
+          assertEquals(destinationDefinitionRead.getName(), "Postgres");
+          assertEquals(destinationDefinitionRead.getDockerImageTag(), "0.2.0");
+          foundPostgresDestinationDefinition = true;
+        }
+        case "8be1cf83-fde1-477f-a4ad-318d23c9f3c6" -> {
+          assertEquals(destinationDefinitionRead.getDockerImageTag(), "0.2.0");
+          assertTrue(destinationDefinitionRead.getName().contains("Local CSV"));
+          foundLocalCSVDestinationDefinition = true;
+        }
+        case "424892c4-daac-4491-b35d-c6688ba547ba" -> {
+          assertTrue(destinationDefinitionRead.getDockerImageTag().compareTo("0.3.9") >= 0);
+          assertTrue(destinationDefinitionRead.getName().contains("Snowflake"));
+          foundSnowflakeDestinationDefintion = true;
+        }
+      }
+    }
+
+    assertTrue(foundPostgresDestinationDefinition);
+    assertTrue(foundLocalCSVDestinationDefinition);
+    assertTrue(foundSnowflakeDestinationDefintion);
+  }
+
+  private void assertConnectionInformation(ApiClient apiClient,
+                                           WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ApiException {
-    DestinationApi destinationApi = new DestinationApi(apiClient);
-    DestinationReadList destinationReadList = destinationApi.listDestinationsForWorkspace(
-        workspaceIdRequestBody);
-    assertEquals(destinationReadList.getDestinations().size(), 2);
-    for (DestinationRead destination : destinationReadList.getDestinations()) {
-      if (destination.getDestinationId().toString().equals("4e00862d-5484-4f50-9860-f3bbb4317397")) {
-        assertEquals(destination.getName(), "Postgres Docker");
-        assertEquals(destination.getDestinationDefinitionId().toString(), "25c5221d-dce2-4163-ade9-739ef790f503");
-        assertEquals(destination.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
-        assertEquals(destination.getConnectionConfiguration().get("username").asText(), "postgres");
-        assertEquals(destination.getConnectionConfiguration().get("password").asText(), "password");
-        assertEquals(destination.getConnectionConfiguration().get("database").asText(), "postgres");
-        assertEquals(destination.getConnectionConfiguration().get("schema").asText(), "public");
-        assertEquals(destination.getConnectionConfiguration().get("port").asInt(), 3000);
-        assertEquals(destination.getConnectionConfiguration().get("host").asText(), "localhost");
-        assertTrue(destination.getConnectionConfiguration().get("basic_normalization").asBoolean());
-      } else if (destination.getDestinationId().toString().equals("5434615d-a3b7-4351-bc6b-a9a695555a30")) {
-        assertEquals(destination.getName(), "CSV");
-        assertEquals(destination.getDestinationDefinitionId().toString(), "8be1cf83-fde1-477f-a4ad-318d23c9f3c6");
-        assertEquals(destination.getWorkspaceId().toString(), "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6");
-        assertEquals(destination.getConnectionConfiguration().get("destination_path").asText(), "csv_data");
+    ConnectionApi connectionApi = new ConnectionApi(apiClient);
+    List<ConnectionRead> connections = connectionApi
+        .listConnectionsForWorkspace(workspaceIdRequestBody).getConnections();
+    assertEquals(connections.size(), 2);
+    for (ConnectionRead connection : connections) {
+      if (connection.getConnectionId().toString()
+          .equals("a294256f-1abe-4837-925f-91602c7207b4")) {
+        assertEquals(connection.getPrefix(), "");
+        assertEquals(connection.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
+        assertEquals(connection.getDestinationId().toString(),
+            "4e00862d-5484-4f50-9860-f3bbb4317397");
+        assertEquals(connection.getName(), "default");
+        assertEquals(connection.getStatus(), ConnectionStatus.ACTIVE);
+        assertNull(connection.getSchedule());
+      } else if (connection.getConnectionId().toString()
+          .equals("49dae3f0-158b-4737-b6e4-0eed77d4b74e")) {
+        assertEquals(connection.getPrefix(), "");
+        assertEquals(connection.getSourceId().toString(), "28ffee2b-372a-4f72-9b95-8ed56a8b99c5");
+        assertEquals(connection.getDestinationId().toString(),
+            "5434615d-a3b7-4351-bc6b-a9a695555a30");
+        assertEquals(connection.getName(), "default");
+        assertEquals(connection.getStatus(), ConnectionStatus.ACTIVE);
+        assertNull(connection.getSchedule());
       } else {
-        fail("Unknown destination found with destination id : " + destination.getDestinationId().toString());
+        fail("Unknown sync " + connection.getConnectionId().toString());
       }
     }
   }

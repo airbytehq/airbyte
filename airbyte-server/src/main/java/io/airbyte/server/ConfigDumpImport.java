@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.Resources;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
@@ -51,6 +52,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -110,7 +112,7 @@ public class ConfigDumpImport {
     }
   }
 
-  public ImportRead importData(File archive) {
+  public ImportRead importData(File archive, boolean isUnitTest) {
 
     final Optional<UUID> previousCustomerIdOptional = getCurrentCustomerId();
     ImportRead result;
@@ -118,7 +120,7 @@ public class ConfigDumpImport {
       final Path sourceRoot = Files.createTempDirectory(Path.of("/tmp"), "airbyte_archive");
       try {
         // 0. copy seeds
-        copySeed();
+        copySeed(isUnitTest);
 
         // 1. Unzip source
         Archives.extractArchive(archive.toPath(), sourceRoot);
@@ -154,7 +156,17 @@ public class ConfigDumpImport {
     return result;
   }
 
-  public void copySeed() throws IOException {
+  public void copySeed(boolean isUnitTest) throws IOException {
+    if (isUnitTest) {
+      try {
+        LOGGER.info("Running via unit test, trying to find latest seed in resources folder");
+        Path path = Path.of(Resources.getResource("config").toURI());
+        FileUtils.copyDirectory(path.toFile(), targetRootWithFolder.toFile());
+      } catch (URISyntaxException e) {
+        throw new RuntimeException(e);
+      }
+      return;
+    }
     Path app = Path.of(System.getProperty("user.dir"));
     FileUtils.copyDirectory(app.resolve("latest_seeds").toFile(), targetRootWithFolder.toFile());
   }
@@ -285,6 +297,7 @@ public class ConfigDumpImport {
     } catch (Exception e) {
       LOGGER.info("Postgres database version upgrade failed, setting DB version back to initial version");
       postgresPersistence.setVersion(initialVersion);
+      throw e;
     }
   }
 

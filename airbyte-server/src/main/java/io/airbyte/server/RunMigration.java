@@ -24,6 +24,7 @@
 
 package io.airbyte.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -50,6 +51,7 @@ public class RunMigration implements Runnable, AutoCloseable {
   private final ConfigDumpImport configDumpImport;
   private final Path configRoot;
   private final String targetConfigDirectory;
+  private final boolean isUnitTest;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
   public RunMigration(String initialVersion,
@@ -57,6 +59,16 @@ public class RunMigration implements Runnable, AutoCloseable {
                       JobPersistence jobPersistence,
                       ConfigRepository configRepository,
                       String targetVersion) {
+    this(initialVersion, configRoot, jobPersistence, configRepository, targetVersion, false);
+  }
+
+  @VisibleForTesting
+  public RunMigration(String initialVersion,
+                      Path configRoot,
+                      JobPersistence jobPersistence,
+                      ConfigRepository configRepository,
+                      String targetVersion,
+                      boolean isUnitTest) {
     this.configRoot = configRoot;
     this.targetVersion = targetVersion;
     this.targetConfigDirectory = "config_" + Instant.now().toString();
@@ -64,6 +76,7 @@ public class RunMigration implements Runnable, AutoCloseable {
     this.configDumpImport = new ConfigDumpImport(configRoot, targetConfigDirectory, initialVersion, targetVersion,
         jobPersistence, configRepository);
     this.isSuccessful = false;
+    this.isUnitTest = isUnitTest;
   }
 
   @Override
@@ -86,7 +99,7 @@ public class RunMigration implements Runnable, AutoCloseable {
       MigrationRunner.run(migrateConfig);
 
       // Import data
-      ImportRead importRead = configDumpImport.importData(output);
+      ImportRead importRead = configDumpImport.importData(output, isUnitTest);
       if (importRead.getStatus() == StatusEnum.FAILED) {
         throw new RuntimeException("Automatic migration failed : " + importRead.getReason());
       }
