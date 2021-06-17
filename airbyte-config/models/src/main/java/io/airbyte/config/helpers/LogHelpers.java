@@ -43,12 +43,15 @@ public class LogHelpers {
 
   // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
-  public static String LOG_FILENAME = "logs.log";
+  public static String JOB_ROOT_MDC_KEY = "job_root";
+  public static String JOB_LOG_FILENAME_MDC_KEY = "job_log_filename";
+
   public static String S3_LOG_BUCKET = "S3_LOG_BUCKET";
   public static String S3_LOG_BUCKET_REGION = "S3_LOG_BUCKET_REGION";
   public static String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
   public static String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
 
+  public static String LOG_FILENAME = "logs.log";
   public static String APP_LOGGING_CLOUD_PREFIX = "app-logging";
   public static String JOB_LOGGING_CLOUD_PREFIX = "job-logging";
 

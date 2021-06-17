@@ -62,7 +62,6 @@ public class Log4j2ConfigTest {
       MDC.put("context", "worker");
       MDC.put("job_root", root.toString());
       MDC.put("job_log_filename", filename);
-      MDC.put("job_id", "1");
       logger.error("random message testWorkerDispatch");
       MDC.clear();
     });
@@ -85,14 +84,12 @@ public class Log4j2ConfigTest {
     executor.submit(() -> {
       MDC.put("job_root", root1.toString());
       MDC.put("job_log_filename", filename);
-      MDC.put("job_id", "1");
       logger.error("random message 1");
     });
 
     executor.submit(() -> {
       MDC.put("job_root", root2.toString());
       MDC.put("job_log_filename", filename);
-      MDC.put("job_id", "2");
       logger.error("random message 2");
     });
 

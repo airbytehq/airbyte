@@ -220,7 +220,6 @@ public class JobSubmitterTest {
 
     assertEquals(
         ImmutableMap.of(
-            "job_id", "1",
             "job_root", workerRun.getJobRoot().toString(),
             "job_log_filename", WorkerConstants.LOG_FILENAME),
         mdcMap.get());

@@ -34,6 +34,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerUtils;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -91,12 +92,13 @@ public class JobSubmitter implements Runnable {
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
           final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
+          LOGGER.info("===== assigning workerRunJobRoot: {}", workerRun.getJobRoot());
+          LOGGER.info("===== assigning logFilePath: {}", logFilePath);
           final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
           assertSameIds(attemptNumber, persistedAttemptId);
 
-          MDC.put("job_id", String.valueOf(job.getId()));
-          MDC.put("job_root", logFilePath.getParent().toString());
-          MDC.put("job_log_filename", logFilePath.getFileName().toString());
+          WorkerUtils.setJobMdc(workerRun.getJobRoot());
+          LOGGER.info("======= MDC context: {}", MDC.getCopyOfContextMap());
         })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
