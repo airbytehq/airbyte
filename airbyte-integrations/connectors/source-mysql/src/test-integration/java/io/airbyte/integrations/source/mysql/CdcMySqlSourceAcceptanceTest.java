@@ -43,13 +43,13 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.Collections;
 import java.util.List;
 import org.jooq.SQLDialect;
-import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.MariaDBContainer;
 
 public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
-  private MySQLContainer<?> container;
+  private MariaDBContainer<?> container;
   private JsonNode config;
 
   @Override
@@ -108,7 +108,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    container = new MySQLContainer<>("mysql:8.0");
+    container = new MariaDBContainer<>("mariadb:10.6.1");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -148,12 +148,12 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     try (Database database = Databases.createDatabase(
         "root",
         "test",
-        String.format("jdbc:mysql://%s:%s/%s",
+        String.format("jdbc:mariadb://%s:%s/%s",
             container.getHost(),
             container.getFirstMappedPort(),
             container.getDatabaseName()),
-        MySqlSource.DRIVER_CLASS,
-        SQLDialect.MYSQL)) {
+        MySqlSource.TEST_DRIVER_CLASS,
+        SQLDialect.MARIADB)) {
       database.query(
           ctx -> ctx
               .execute(query));
