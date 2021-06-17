@@ -10,6 +10,7 @@ import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
 const NamespaceConfigurationLabel = styled(ControlLabels)`
   flex: 3 0 0;
+  max-width: 300px;
   & a {
     color: ${({ theme }) => theme.greyColor40};
   }
@@ -25,7 +26,7 @@ const Row = styled.div`
   margin-bottom: 26px;
 `;
 
-const NamespaceField: React.FC<{}> = ({}) => {
+const NamespaceField: React.FC = () => {
   const formatMessage = useIntl().formatMessage;
 
   const definitions = useMemo(
@@ -48,7 +49,7 @@ const NamespaceField: React.FC<{}> = ({}) => {
   return (
     <Row>
       <Field name="namespaceDefinition">
-        {({ field, form }: FieldProps<string>) => (
+        {({ field, form }: FieldProps<ConnectionNamespaceDefinition>) => (
           <>
             <NamespaceConfigurationLabel
               labelAdditionLength={0}
@@ -74,26 +75,29 @@ const NamespaceField: React.FC<{}> = ({}) => {
                 onChange={({ value }) => form.setFieldValue(field.name, value)}
               />
             </NamespaceConfigurationLabel>
-            {field.value === ConnectionNamespaceDefinition.CustomFormat ? (
-              <NamespaceFormatLabel
-                nextLine
-                label={
-                  <FormattedMessage id="connectionForm.namespaceFormat.title" />
-                }
-                message={
-                  <FormattedMessage id="connectionForm.namespaceFormat.subtitle" />
-                }
-              >
-                <Field
-                  name="namespaceFormat"
-                  component={Input}
-                  placeholder={formatMessage({
-                    id: "connectionForm.namespaceFormat.placeholder",
-                  })}
-                />
-              </NamespaceFormatLabel>
-            ) : (
-              <NamespaceFormatLabel as="div" />
+            {field.value === ConnectionNamespaceDefinition.CustomFormat && (
+              <Field name="namespaceFormat">
+                {({ field, meta }: FieldProps<string>) => (
+                  <NamespaceFormatLabel
+                    nextLine
+                    error={!!meta.error}
+                    label={
+                      <FormattedMessage id="connectionForm.namespaceFormat.title" />
+                    }
+                    message={
+                      <FormattedMessage id="connectionForm.namespaceFormat.subtitle" />
+                    }
+                  >
+                    <Input
+                      {...field}
+                      error={!!meta.error}
+                      placeholder={formatMessage({
+                        id: "connectionForm.namespaceFormat.placeholder",
+                      })}
+                    />
+                  </NamespaceFormatLabel>
+                )}
+              </Field>
             )}
           </>
         )}

@@ -116,7 +116,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       const newOperations = mapFormPropsToOperation(values, operations);
 
       if (newOperations.length > 0) {
-        formValues.withOperations = newOperations;
+        formValues.operations = newOperations;
       }
 
       setSubmitError(null);

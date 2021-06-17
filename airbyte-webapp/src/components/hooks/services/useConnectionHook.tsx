@@ -28,7 +28,7 @@ export type ValuesProps = {
   syncCatalog: SyncSchema;
   namespaceDefinition: ConnectionNamespaceDefinition;
   namespaceFormat?: string;
-  withOperations?: Operation[];
+  operations?: Operation[];
 };
 
 type CreateConnectionProps = {
