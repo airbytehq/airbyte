@@ -54,6 +54,7 @@ public abstract class KnownException extends RuntimeException {
     }
     return exceptionInfo;
   }
+
   public static KnownExceptionInfo infoFromThrowable(Throwable t) {
     return infoFromThrowableWithMessage(t, t.getMessage());
   }

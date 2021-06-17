@@ -25,7 +25,6 @@
 package io.airbyte.server.errors;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import io.airbyte.api.model.KnownExceptionInfo;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
