@@ -99,7 +99,7 @@
   "connectionForm.namespaceDefinition.title": "Namespace Configuration",
   "connectionForm.namespaceDefinition.subtitle": "Define which namespace should be used in the destination. See more on <lnk>Connection docs</lnk>",
   "connectionForm.namespaceFormat.title": "Namespace Custom Format",
-  "connectionForm.namespaceFormat.subtitle": "A format string to use as namespace in the destination",
+  "connectionForm.namespaceFormat.subtitle": "A format string to use as namespace in the destination. Special variables: ${SOURCE_NAMESPACE}",
   "connectionForm.namespaceFormat.placeholder": "My namespace",
   "connectionForm.sourceFormat": "Mirror source structure",
   "connectionForm.destinationFormat": "Destination connector settings",
