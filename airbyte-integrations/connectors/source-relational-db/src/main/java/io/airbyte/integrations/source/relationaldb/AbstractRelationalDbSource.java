@@ -39,7 +39,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.models.JdbcState;
-import io.airbyte.protocol.models.AbstractField;
+import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -132,7 +132,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
 
     final K database = createDatabaseInternal(config);
 
-    final Map<String, TableInfo<AbstractField<T>>> fullyQualifiedTableNameToInfo =
+    final Map<String, TableInfo<CommonField<T>>> fullyQualifiedTableNameToInfo =
         discoverWithoutSystemTables(database)
             .stream()
             .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()), Function
@@ -157,7 +157,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(K database,
                                                                              ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfo<AbstractField<T>>> tableNameToTable,
+                                                                             Map<String, TableInfo<CommonField<T>>> tableNameToTable,
                                                                              StateManager stateManager,
                                                                              Instant emittedAt) {
     return getSelectedIterators(
@@ -171,7 +171,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
 
   public List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(K database,
                                                                              ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfo<AbstractField<T>>> tableNameToTable,
+                                                                             Map<String, TableInfo<CommonField<T>>> tableNameToTable,
                                                                              StateManager stateManager,
                                                                              Instant emittedAt) {
     return getSelectedIterators(
@@ -185,7 +185,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
 
   private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(K database,
                                                                            ConfiguredAirbyteCatalog catalog,
-                                                                           Map<String, TableInfo<AbstractField<T>>> tableNameToTable,
+                                                                           Map<String, TableInfo<CommonField<T>>> tableNameToTable,
                                                                            StateManager stateManager,
                                                                            Instant emittedAt,
                                                                            Predicate<ConfiguredAirbyteStream> selector) {
@@ -199,7 +199,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
           continue;
         }
 
-        final TableInfo<AbstractField<T>> table = tableNameToTable.get(fullyQualifiedTableName);
+        final TableInfo<CommonField<T>> table = tableNameToTable.get(fullyQualifiedTableName);
         final AutoCloseableIterator<AirbyteMessage> tableReadIterator = createReadIterator(
             database,
             airbyteStream,
@@ -215,7 +215,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
 
   private AutoCloseableIterator<AirbyteMessage> createReadIterator(K database,
                                                                    ConfiguredAirbyteStream airbyteStream,
-                                                                   TableInfo<AbstractField<T>> table,
+                                                                   TableInfo<CommonField<T>> table,
                                                                    StateManager stateManager,
                                                                    Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
@@ -224,7 +224,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
     final Set<String> selectedFieldsInCatalog = CatalogHelpers.getTopLevelFieldNames(airbyteStream);
     final List<String> selectedDatabaseFields = table.getFields()
         .stream()
-        .map(AbstractField::getName)
+        .map(CommonField::getName)
         .filter(selectedFieldsInCatalog::contains)
         .collect(Collectors.toList());
 
@@ -273,7 +273,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
   private AutoCloseableIterator<AirbyteMessage> getIncrementalStream(K database,
                                                                      ConfiguredAirbyteStream airbyteStream,
                                                                      List<String> selectedDatabaseFields,
-                                                                     TableInfo<AbstractField<T>> table,
+                                                                     TableInfo<CommonField<T>> table,
                                                                      String cursor,
                                                                      Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
@@ -281,7 +281,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
     final T cursorJdbcType = table.getFields().stream()
         .filter(info -> info.getName().equals(cursorField))
-        .map(AbstractField::getType)
+        .map(CommonField::getType)
         .findFirst()
         .orElseThrow();
 
@@ -304,7 +304,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
                                                                      String streamName,
                                                                      String namespace,
                                                                      List<String> selectedDatabaseFields,
-                                                                     TableInfo<AbstractField<T>> table,
+                                                                     TableInfo<CommonField<T>> table,
                                                                      Instant emittedAt) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(), table.getName());
@@ -313,10 +313,12 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
 
   protected abstract JsonSchemaPrimitive getType(T columnType);
 
-  protected abstract String getFullyQualifiedTableName(String nameSpace, String tableName);
+  protected String getFullyQualifiedTableName(String nameSpace, String tableName) {
+    return nameSpace != null ? nameSpace + "." + tableName : tableName;
+  }
 
   private List<TableInfo<Field>> getTables(final K database) throws Exception {
-    final List<TableInfo<AbstractField<T>>> tableInfos = discoverWithoutSystemTables(database);
+    final List<TableInfo<CommonField<T>>> tableInfos = discoverWithoutSystemTables(database);
     final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(database, tableInfos);
 
     return tableInfos.stream()
@@ -350,14 +352,14 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
    * first, if it doesn't work, we retry one table at a time.
    */
   protected abstract Map<String, List<String>> discoverPrimaryKeys(K database,
-                                                                   List<TableInfo<AbstractField<T>>> tableInfos);
+                                                                   List<TableInfo<CommonField<T>>> tableInfos);
 
-  protected void assertColumnsWithSameNameAreSame(String nameSpace, String tableName, List<AbstractField<T>> columns) {
+  protected void assertColumnsWithSameNameAreSame(String nameSpace, String tableName, List<CommonField<T>> columns) {
     columns.stream()
-        .collect(Collectors.groupingBy(AbstractField<T>::getName))
+        .collect(Collectors.groupingBy(CommonField<T>::getName))
         .values()
         .forEach(columnsWithSameName -> {
-          final AbstractField<T> comparisonColumn = columnsWithSameName.get(0);
+          final CommonField<T> comparisonColumn = columnsWithSameName.get(0);
           columnsWithSameName.forEach(column -> {
             if (!column.equals(comparisonColumn)) {
               throw new RuntimeException(
@@ -368,15 +370,15 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
         });
   }
 
-  protected List<TableInfo<AbstractField<T>>> discoverWithoutSystemTables(final K database) throws Exception {
+  protected List<TableInfo<CommonField<T>>> discoverWithoutSystemTables(final K database) throws Exception {
     Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
-    List<TableInfo<AbstractField<T>>> discoveredTables = discoverInternal(database);
+    List<TableInfo<CommonField<T>>> discoveredTables = discoverInternal(database);
     return (systemNameSpaces == null || systemNameSpaces.isEmpty() ? discoveredTables
         : discoveredTables.stream().filter(table -> !systemNameSpaces.contains(table.getNameSpace())).collect(
             Collectors.toList()));
   }
 
-  protected abstract List<TableInfo<AbstractField<T>>> discoverInternal(final K database)
+  protected abstract List<TableInfo<CommonField<T>>> discoverInternal(final K database)
       throws Exception;
 
   public AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,

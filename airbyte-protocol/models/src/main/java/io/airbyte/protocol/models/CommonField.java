@@ -26,12 +26,12 @@ package io.airbyte.protocol.models;
 
 import java.util.Objects;
 
-public abstract class AbstractField<T> {
+public class CommonField<T> {
 
   private final String name;
   private final T type;
 
-  public AbstractField(String name, T type) {
+  public CommonField(String name, T type) {
     this.name = name;
     this.type = type;
   }
@@ -53,7 +53,7 @@ public abstract class AbstractField<T> {
       return false;
     }
 
-    AbstractField<T> field = (AbstractField<T>) o;
+    CommonField<T> field = (CommonField<T>) o;
     return name.equals(field.name) &&
         type == field.type;
   }

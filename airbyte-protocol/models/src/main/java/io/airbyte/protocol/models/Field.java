@@ -24,7 +24,7 @@
 
 package io.airbyte.protocol.models;
 
-public class Field extends AbstractField<JsonSchemaPrimitive> {
+public class Field extends CommonField<JsonSchemaPrimitive> {
 
   public Field(String name, JsonSchemaPrimitive type) {
     super(name, type);

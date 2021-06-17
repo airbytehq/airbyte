@@ -34,7 +34,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.protocol.models.AbstractField;
+import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -58,7 +58,7 @@ public class ClickHouseSource extends AbstractJdbcSource implements Source {
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
-                                                          List<TableInfo<AbstractField<JDBCType>>> tableInfos) {
+                                                          List<TableInfo<CommonField<JDBCType>>> tableInfos) {
     return tableInfos.stream()
         .collect(Collectors.toMap(
             tableInfo -> JdbcUtils

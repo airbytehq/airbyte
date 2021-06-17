@@ -39,7 +39,7 @@ import io.airbyte.db.jdbc.SqlDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.protocol.models.AbstractField;
+import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -122,7 +122,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   }
 
   @Override
-  public List<TableInfo<AbstractField<JDBCType>>> discoverInternal(final JdbcDatabase database)
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database)
       throws Exception {
     final Set<String> internalSchemas = new HashSet<>(getExcludedInternalNameSpaces());
     return database.bufferedResultSetQuery(
@@ -143,7 +143,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
         .collect(Collectors.groupingBy(t -> ImmutablePair.of(t.get(INTERNAL_SCHEMA_NAME).asText(), t.get(INTERNAL_TABLE_NAME).asText())))
         .values()
         .stream()
-        .map(fields -> TableInfo.<AbstractField<JDBCType>>builder()
+        .map(fields -> TableInfo.<CommonField<JDBCType>>builder()
             .nameSpace(fields.get(0).get(INTERNAL_SCHEMA_NAME).asText())
             .name(fields.get(0).get(INTERNAL_TABLE_NAME).asText())
             .fields(fields.stream()
@@ -159,7 +159,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
                         f.get(INTERNAL_COLUMN_TYPE)));
                     jdbcType = JDBCType.VARCHAR;
                   }
-                  return new AbstractField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType) {};
+                  return new CommonField<JDBCType>(f.get(INTERNAL_COLUMN_NAME).asText(), jdbcType) {};
                 })
                 .collect(Collectors.toList()))
             .build())
@@ -172,13 +172,8 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
   }
 
   @Override
-  protected String getFullyQualifiedTableName(String nameSpace, String tableName) {
-    return JdbcUtils.getFullyQualifiedTableName(nameSpace, tableName);
-  }
-
-  @Override
   protected Map<String, List<String>> discoverPrimaryKeys(JdbcDatabase database,
-                                                          List<TableInfo<AbstractField<JDBCType>>> tableInfos) {
+                                                          List<TableInfo<CommonField<JDBCType>>> tableInfos) {
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(

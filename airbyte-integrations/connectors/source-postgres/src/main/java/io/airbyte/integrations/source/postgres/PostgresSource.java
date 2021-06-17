@@ -46,7 +46,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.protocol.models.AbstractField;
+import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -218,7 +218,7 @@ public class PostgresSource extends AbstractJdbcSource implements Source {
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JdbcDatabase database,
                                                                              ConfiguredAirbyteCatalog catalog,
-                                                                             Map<String, TableInfo<AbstractField<JDBCType>>> tableNameToTable,
+                                                                             Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              StateManager stateManager,
                                                                              Instant emittedAt) {
     /**
