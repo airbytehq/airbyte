@@ -95,7 +95,8 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
       final JsonNode items = Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
           .map(p -> formatData(fields, p))
           .collect(Collectors.toList()));
-      // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of" is)
+      // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
+      // is)
       // Turn all "Array of" into "Array of Record of" instead
       return Jsons.jsonNode(ImmutableMap.of(BigQueryDenormalizedDestination.NESTED_ARRAY_FIELD, items));
     } else {

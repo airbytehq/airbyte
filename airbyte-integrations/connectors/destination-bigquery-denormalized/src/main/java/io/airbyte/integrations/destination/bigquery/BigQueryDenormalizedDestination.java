@@ -120,7 +120,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
               items = fieldDefinition;
             }
             final Builder subField = getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
-            // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of" is)
+            // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of"
+            // is)
             // Turn all "Array of" into "Array of Record of" instead
             return builder.setType(StandardSQLTypeName.STRUCT, subField.setName(NESTED_ARRAY_FIELD).build());
           }
