@@ -3,6 +3,8 @@ import { Field, FieldProps } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
+import config from "config";
+
 import { ControlLabels, DropDown, Input } from "components";
 import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
@@ -58,8 +60,7 @@ const NamespaceField: React.FC<{}> = ({}) => {
                   id="connectionForm.namespaceDefinition.subtitle"
                   values={{
                     lnk: (...lnk: React.ReactNode[]) => (
-                      // TODO: add href url
-                      <a target="_blank" href="/">
+                      <a target="_blank" href={config.ui.namespaceLink}>
                         {lnk}
                       </a>
                     ),

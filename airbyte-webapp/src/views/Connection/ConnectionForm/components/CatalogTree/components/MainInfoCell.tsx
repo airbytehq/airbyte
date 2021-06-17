@@ -68,14 +68,14 @@ const MainInfoCell: React.FC<MainInfoCellProps> = ({
             {(isItemHasChildren || !onExpand) && (
               <Arrow
                 icon={faChevronRight}
-                $isOpen={isItemOpen}
                 onClick={onExpand}
+                $isOpen={isItemOpen}
               />
             )}
           </ArrowContainer>
         )}
         {!hideCheckbox && (
-          <CheckBox checked={isItemChecked} onClick={onCheckBoxClick} />
+          <CheckBox checked={isItemChecked} onChange={onCheckBoxClick} />
         )}
         <ItemLable title={label}>{label}</ItemLable>
       </Content>

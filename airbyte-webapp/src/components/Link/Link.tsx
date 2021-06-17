@@ -7,7 +7,7 @@ import {
 
 export type ILinkProps = {
   bold?: boolean;
-  clear?: boolean;
+  $clear?: boolean;
 };
 
 // TODO: fix typings
@@ -15,7 +15,7 @@ const Link = styled(ReactLink)<ILinkProps /*& ReactLinkProps */>`
   color: ${({ theme }) => theme.primaryColor};
 
   font-weight: ${({ bold }) => (bold ? "bold" : "normal")};
-  text-decoration: ${({ clear }) => (clear ? "none" : "underline")};
+  text-decoration: ${({ $clear }) => ($clear ? "none" : "underline")};
 
   &:hover {
     opacity: 0.8;

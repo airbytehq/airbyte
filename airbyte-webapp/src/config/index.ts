@@ -17,6 +17,8 @@ type Config = {
     slackLink: string;
     docsLink: string;
     configurationArchiveLink: string;
+    namespaceLink: string;
+    normalizationLink: string;
     workspaceId: string;
     tutorialLink: string;
     technicalSupport: string;
@@ -41,6 +43,10 @@ const config: Config = {
     docsLink: "https://docs.airbyte.io",
     configurationArchiveLink:
       "https://docs.airbyte.io/tutorials/upgrading-airbyte",
+    normalizationLink:
+      "https://docs.airbyte.io/understanding-airbyte/namespaces.md",
+    namespaceLink:
+      "https://docs.airbyte.io/understanding-airbyte/connections#airbyte-basic-normalization",
     tutorialLink:
       "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
     workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",

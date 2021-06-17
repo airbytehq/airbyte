@@ -114,13 +114,13 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   };
 
   const linkToSource = () => (
-    <Link clear to={`${Routes.Source}/${source.sourceId}`}>
+    <Link $clear to={`${Routes.Source}/${source.sourceId}`}>
       {source.name}
     </Link>
   );
 
   const linkToDestination = () => (
-    <Link clear to={`${Routes.Destination}/${destination.destinationId}`}>
+    <Link $clear to={`${Routes.Destination}/${destination.destinationId}`}>
       {destination.name}
     </Link>
   );
