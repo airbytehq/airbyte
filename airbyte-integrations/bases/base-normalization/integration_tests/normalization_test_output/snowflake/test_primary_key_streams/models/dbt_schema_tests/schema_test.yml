@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: EXCHANGE_RATE_F0E
+  - name: EXCHANGE_RATE
     tests:
       - dbt_utils.equality:
           description: check_streams_are_equal
@@ -9,7 +9,7 @@ models:
             exchange_rate and dedup_exchange_rate.
             The SCD table of dedup_exchange_rate in append_dedup mode should therefore mirror
             the final table with append or overwrite mode from exchange_rate.
-          compare_model: ref('DEDUP_EXCHANGE_RATE_SCD_81D')
+          compare_model: ref('DEDUP_EXCHANGE_RATE_SCD')
           compare_columns:
             - id
             - currency
@@ -33,7 +33,7 @@ models:
         tests:
           - not_null
 
-  - name: DEDUP_EXCHANGE_RATE_81D
+  - name: DEDUP_EXCHANGE_RATE
     tests:
       - dbt_utils.unique_combination_of_columns:
           description: check_deduplication_by_primary_key
@@ -43,7 +43,7 @@ models:
             - currency
             - NZD
 
-  - name: NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_64A_PARTITION_44F
+  - name: NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION
     columns:
       - name: DATA
         tests:
@@ -52,12 +52,12 @@ models:
       - name: DOUBLE_ARRAY_DATA
         tests:
           - not_null
-  - name: NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_669_DATA_886
+  - name: NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_DATA
     columns:
       - name: CURRENCY
         tests:
           - not_null
-  - name: NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_E78_DOUBLE_ARRAY_DATA_1B9
+  - name: NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_DOUBLE_ARRAY_DATA
     columns:
       - name: ID
         tests:

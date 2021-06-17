@@ -4,7 +4,7 @@
 
 Airbyte supports syncing data in **Incremental Deduped History** mode i.e:
 
-1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source.
+1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. If the sync is running for the first time, it is equivalent to a [Full Refresh](full-refresh-append.md) since all data will be considered as _new_.
 2. **Deduped** means that data in the final table will be unique per primary key \(unlike [Append modes](incremental-append.md)\). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row. In dimensional data warehouse jargon defined by Ralph Kimball, this is referred as a Slowly Changing Dimension \(SCD\) table of type 1.
 3. **History** means that an additional intermediate table is created in which data is being continuously appended to \(with duplicates exactly like [Append modes](incremental-append.md)\). With the use of primary key fields, it is identifying effective `start` and `end` dates of each row of a record. In dimensional data warehouse jargon, this is referred as a Slowly Changing Dimension \(SCD\) table of type 2.
 
@@ -168,5 +168,5 @@ Additionally, this sync mode is only supported for destinations where DBT/normal
 The de-duplicating logic is indeed implemented as DBT models as part of a sequence of transformations applied after the Extract and Load activities (thus, an ELT approach).
 Nevertheless, it is theoretically possible that destinations can handle directly this logic (maybe in the future) before actually writing records to the destination (as in traditional ETL manner), but that's not the way it is implemented at this time.
 
-If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../tutorials/transformation-and-normalization/transformations-with-sql.md)
+If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../operator-guides/transformation-and-normalization/transformations-with-sql.md)
 

@@ -23,13 +23,14 @@
 #
 
 
-from typing import Any, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple
 
 import pendulum as pendulum
-from base_python import BaseClient
 
 # FIXME (Eugene K): register logger as standard python logger
-from base_python.entrypoint import logger
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.sources.deprecated.client import BaseClient
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
@@ -74,6 +75,11 @@ class Client(BaseClient):
             ),
         }
         super().__init__()
+
+    def _get_fields_from_stream(self, stream: AirbyteStream) -> List[str]:
+        """Use schemas from schemas folder and not from configured catalog"""
+        json_schema = self._schema_loader.get_schema(stream.name)
+        return list(json_schema.get("properties", {}).keys())
 
     def _enumerate_methods(self) -> Mapping[str, callable]:
         """Detect available streams and return mapping"""

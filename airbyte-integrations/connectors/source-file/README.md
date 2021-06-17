@@ -12,6 +12,8 @@ For information about how to use this connector within Airbyte, see [the documen
 
 For this connector, you will need Rust, as it is a prerequisite for running `pip install cryptography`. You can do this with the recommended installation pattern noted [here](https://www.rust-lang.org/tools/install) on the Rust website.
 
+#### Minimum Python version required `= 3.7.0`
+
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```
@@ -70,6 +72,16 @@ In order to run integrations tests in this connector, you need:
         {
             "aws_access_key_id": "XXXXXXX",
             "aws_secret_access_key": "XXXXXXX"
+        }
+       ```
+
+1. Testing Azure Blob Storage
+   1. Create a file at `secrets/azblob.json`
+        ```
+        {
+            "storage_account": "XXXXXXX",
+            "shared_key": "XXXXXXX",
+            "sas_token": "XXXXXXX"
         }
        ```
 

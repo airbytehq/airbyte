@@ -50,8 +50,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DestinationHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationHandler.class);
 
   private final ConnectionsHandler connectionsHandler;
   private final SpecFetcher specFetcher;
@@ -146,7 +150,7 @@ public class DestinationHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
     final DestinationConnection updatedDestination = configurationUpdate
-        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getConnectionConfiguration());
+        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getName(), destinationUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpec(updatedDestination.getDestinationDefinitionId());
 

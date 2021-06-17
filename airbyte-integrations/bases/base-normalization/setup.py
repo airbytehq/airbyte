@@ -42,6 +42,6 @@ setuptools.setup(
         ],
     },
     extras_require={
-        "tests": ["airbyte-protocol", "pytest"],
+        "tests": ["airbyte-protocol", "pytest", "mypy", "types-PyYAML"],
     },
 )

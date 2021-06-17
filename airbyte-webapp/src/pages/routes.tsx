@@ -5,6 +5,9 @@ import {
   Route,
   Switch,
 } from "react-router-dom";
+import { useIntl } from "react-intl";
+
+import config from "config";
 
 import SourcesPage from "./SourcesPage";
 import DestinationPage from "./DestinationPage";
@@ -13,16 +16,17 @@ import OnboardingPage from "./OnboardingPage";
 import ConnectionPage from "./ConnectionPage";
 import AdminPage from "./AdminPage";
 import SettingsPage from "./SettingsPage";
-import LoadingPage from "../components/LoadingPage";
-import MainView from "../components/MainView";
-import config from "../config";
-import useSegment from "../components/hooks/useSegment";
-import { AnalyticsService } from "../core/analytics/AnalyticsService";
-import useRouter from "../components/hooks/useRouterHook";
-import SupportChat from "../components/SupportChat";
-import useWorkspace from "../components/hooks/services/useWorkspaceHook";
-import SingletonCard from "../components/SingletonCard";
-import { FormattedMessage } from "react-intl";
+import LoadingPage from "components/LoadingPage";
+import MainView from "components/MainView";
+import SupportChat from "components/SupportChat";
+
+import useSegment from "components/hooks/useSegment";
+import useFullStory from "components/hooks/useFullStory";
+import useRouter from "components/hooks/useRouterHook";
+import useWorkspace from "components/hooks/services/useWorkspaceHook";
+import { AnalyticsService } from "core/analytics/AnalyticsService";
+import { useNotificationService } from "components/hooks/services/Notification/NotificationService";
+import { useApiHealthPoll } from "components/hooks/services/Health";
 
 export enum Routes {
   Preferences = "/preferences",
@@ -149,6 +153,8 @@ const OnboardingsRoutes = () => {
 
 export const Routing: React.FC = () => {
   useSegment(config.segment.token);
+  useFullStory(config.fullstory.org);
+  useApiHealthPoll(config.healthCheckInterval);
 
   const { workspace } = useWorkspace();
 
@@ -157,6 +163,18 @@ export const Routing: React.FC = () => {
       AnalyticsService.identify(workspace.customerId);
     }
   }, [workspace]);
+
+  const { formatMessage } = useIntl();
+  useNotificationService(
+    config.isDemo
+      ? {
+          id: "demo.message",
+          title: formatMessage({ id: "demo.message.title" }),
+          text: formatMessage({ id: "demo.message.body" }),
+          nonClosable: true,
+        }
+      : undefined
+  );
 
   return (
     <Router>
@@ -173,12 +191,6 @@ export const Routing: React.FC = () => {
           customerId={workspace.customerId}
           onClick={() => window.open(config.ui.slackLink, "_blank")}
         />
-        {config.isDemo && (
-          <SingletonCard
-            title={<FormattedMessage id="demo.message.title" />}
-            text={<FormattedMessage id="demo.message.body" />}
-          />
-        )}
       </Suspense>
     </Router>
   );

@@ -33,6 +33,7 @@ import numpy as np
 import pandas as pd
 import smart_open
 from airbyte_protocol import AirbyteStream
+from azure.storage.blob import BlobServiceClient
 from base_python.entrypoint import logger
 from botocore import UNSIGNED
 from botocore.config import Config
@@ -109,6 +110,8 @@ class URLFile:
             return self._open_gcs_url(binary=binary)
         elif storage == "s3://":
             return self._open_aws_url(binary=binary)
+        elif storage == "azure://":
+            return self._open_azblob_url(binary=binary)
         elif storage == "webhdfs://":
             host = self._provider["host"]
             port = self._provider["port"]
@@ -149,6 +152,8 @@ class URLFile:
             return "gs://"
         elif storage_name == "S3":
             return "s3://"
+        elif storage_name == "AZBLOB":
+            return "azure://"
         elif storage_name == "HTTPS":
             return "https://"
         elif storage_name == "SSH" or storage_name == "SCP":
@@ -202,6 +207,24 @@ class URLFile:
                 "resource_kwargs": {"config": config},
             }
             result = smart_open.open(self.full_url, transport_params=params, mode=mode)
+        return result
+
+    def _open_azblob_url(self, binary):
+        mode = "rb" if binary else "r"
+        storage_account = self._provider.get("storage_account")
+        storage_acc_url = f"https://{storage_account}.blob.core.windows.net"
+        sas_token = self._provider.get("sas_token", None)
+        shared_key = self._provider.get("shared_key", None)
+        # if both keys are provided, shared_key is preferred as has permissions on entire storage account
+        credential = shared_key or sas_token
+
+        if credential:
+            client = BlobServiceClient(account_url=storage_acc_url, credential=credential)
+        else:
+            # assuming anonymous public read access given no credential
+            client = BlobServiceClient(account_url=storage_acc_url)
+
+        result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client), mode=mode)
         return result
 
 

@@ -116,34 +116,34 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(super.getCheckOperations(config));
     if (isCdc(config)) {
       checkOperations.add(database -> {
-        List<String> matchingSlots = database.resultSetQuery(connection -> {
+        List<String> log = database.resultSetQuery(connection -> {
           final String sql = "show variables where Variable_name = 'log_bin'";
 
           return connection.createStatement().executeQuery(sql);
         }, resultSet -> resultSet.getString("Value")).collect(toList());
 
-        if (matchingSlots.size() != 1) {
+        if (log.size() != 1) {
           throw new RuntimeException("Could not query the variable log_bin");
         }
 
-        String logBin = matchingSlots.get(0);
+        String logBin = log.get(0);
         if (!logBin.equalsIgnoreCase("ON")) {
           throw new RuntimeException("The variable log_bin should be set to ON, but it is : " + logBin);
         }
       });
 
       checkOperations.add(database -> {
-        List<String> matchingSlots = database.resultSetQuery(connection -> {
+        List<String> format = database.resultSetQuery(connection -> {
           final String sql = "show variables where Variable_name = 'binlog_format'";
 
           return connection.createStatement().executeQuery(sql);
         }, resultSet -> resultSet.getString("Value")).collect(toList());
 
-        if (matchingSlots.size() != 1) {
+        if (format.size() != 1) {
           throw new RuntimeException("Could not query the variable binlog_format");
         }
 
-        String binlogFormat = matchingSlots.get(0);
+        String binlogFormat = format.get(0);
         if (!binlogFormat.equalsIgnoreCase("ROW")) {
           throw new RuntimeException("The variable binlog_format should be set to ROW, but it is : " + binlogFormat);
         }
@@ -151,17 +151,17 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
     }
 
     checkOperations.add(database -> {
-      List<String> matchingSlots = database.resultSetQuery(connection -> {
+      List<String> image = database.resultSetQuery(connection -> {
         final String sql = "show variables where Variable_name = 'binlog_row_image'";
 
         return connection.createStatement().executeQuery(sql);
       }, resultSet -> resultSet.getString("Value")).collect(toList());
 
-      if (matchingSlots.size() != 1) {
+      if (image.size() != 1) {
         throw new RuntimeException("Could not query the variable binlog_row_image");
       }
 
-      String binlogRowImage = matchingSlots.get(0);
+      String binlogRowImage = image.get(0);
       if (!binlogRowImage.equalsIgnoreCase("FULL")) {
         throw new RuntimeException("The variable binlog_row_image should be set to FULL, but it is : " + binlogRowImage);
       }

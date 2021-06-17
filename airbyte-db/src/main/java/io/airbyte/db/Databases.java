@@ -46,6 +46,10 @@ public class Databases {
     return createDatabase(username, password, jdbcConnectionString, "com.microsoft.sqlserver.jdbc.SQLServerDriver", SQLDialect.DEFAULT);
   }
 
+  public static Database createOracleDatabase(String username, String password, String jdbcConnectionString) {
+    return createDatabase(username, password, jdbcConnectionString, "oracle.jdbc.OracleDriver", SQLDialect.DEFAULT);
+  }
+
   public static Database createDatabase(final String username,
                                         final String password,
                                         final String jdbcConnectionString,
@@ -71,7 +75,7 @@ public class Databases {
                                                 final String driverClassName,
                                                 final String connectionProperties) {
     final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.of(connectionProperties));
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
     return new DefaultJdbcDatabase(connectionPool);
   }
@@ -80,10 +84,13 @@ public class Databases {
                                                          final String password,
                                                          final String jdbcConnectionString,
                                                          final String driverClassName,
-                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery) {
-    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
+                                                         final String connectionProperties) {
+    final BasicDataSource connectionPool =
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
-    final JdbcDatabase defaultJdbcDatabase = createJdbcDatabase(username, password, jdbcConnectionString, driverClassName);
+    final JdbcDatabase defaultJdbcDatabase =
+        createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties);
     return new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQuery);
   }
 

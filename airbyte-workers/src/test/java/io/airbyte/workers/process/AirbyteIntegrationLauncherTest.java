@@ -24,9 +24,12 @@
 
 package io.airbyte.workers.process;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,46 +40,55 @@ class AirbyteIntegrationLauncherTest {
   private static final int JOB_ATTEMPT = 0;
   private static final Path JOB_ROOT = Path.of("abc");
   public static final String FAKE_IMAGE = "fake_image";
+  private static final Map<String, String> CONFIG_FILES = ImmutableMap.of(
+      "config", "{}");
+  private static final Map<String, String> CONFIG_CATALOG_FILES = ImmutableMap.of(
+      "config", "{}",
+      "catalog", "{}");
+  private static final Map<String, String> CONFIG_CATALOG_STATE_FILES = ImmutableMap.of(
+      "config", "{}",
+      "catalog", "{}",
+      "state", "{}");
 
-  private ProcessBuilderFactory pbf;
+  private ProcessFactory processFactory;
   private AirbyteIntegrationLauncher launcher;
 
   @BeforeEach
   void setUp() {
-    pbf = Mockito.mock(ProcessBuilderFactory.class);
-    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, pbf);
+    processFactory = Mockito.mock(ProcessFactory.class);
+    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory);
   }
 
   @Test
   void spec() throws WorkerException {
     launcher.spec(JOB_ROOT);
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null, "spec");
+    Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, Collections.emptyMap(), null, "spec");
   }
 
   @Test
   void check() throws WorkerException {
-    launcher.check(JOB_ROOT, "config");
+    launcher.check(JOB_ROOT, "config", "{}");
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null,
+    Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
         "check",
         "--config", "config");
   }
 
   @Test
   void discover() throws WorkerException {
-    launcher.discover(JOB_ROOT, "config");
+    launcher.discover(JOB_ROOT, "config", "{}");
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null,
+    Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
         "discover",
         "--config", "config");
   }
 
   @Test
   void read() throws WorkerException {
-    launcher.read(JOB_ROOT, "config", "catalog", "state");
+    launcher.read(JOB_ROOT, "config", "{}", "catalog", "{}", "state", "{}");
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null,
+    Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
         Lists.newArrayList(
             "read",
             "--config", "config",
@@ -86,9 +98,9 @@ class AirbyteIntegrationLauncherTest {
 
   @Test
   void write() throws WorkerException {
-    launcher.write(JOB_ROOT, "config", "catalog");
+    launcher.write(JOB_ROOT, "config", "{}", "catalog", "{}");
 
-    Mockito.verify(pbf).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, null,
+    Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
         "write",
         "--config", "config",
         "--catalog", "catalog");

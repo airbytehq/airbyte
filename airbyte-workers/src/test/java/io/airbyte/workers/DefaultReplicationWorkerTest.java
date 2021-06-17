@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.ConfigSchema;
@@ -45,9 +46,9 @@ import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.StandardTapConfig;
-import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
@@ -55,6 +56,7 @@ import io.airbyte.workers.protocols.airbyte.AirbyteMessageTracker;
 import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.NamespacingMapper;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -62,6 +64,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,6 +72,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 class DefaultReplicationWorkerTest {
 
@@ -88,21 +92,23 @@ class DefaultReplicationWorkerTest {
   private NamespacingMapper mapper;
   private AirbyteDestination destination;
   private StandardSyncInput syncInput;
-  private StandardTapConfig sourceConfig;
-  private StandardTargetConfig destinationConfig;
+  private WorkerSourceConfig sourceConfig;
+  private WorkerDestinationConfig destinationConfig;
   private AirbyteMessageTracker sourceMessageTracker;
   private AirbyteMessageTracker destinationMessageTracker;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setup() throws Exception {
+    MDC.clear();
+
     jobRoot = Files.createDirectories(Files.createTempDirectory("test").resolve(WORKSPACE_ROOT));
 
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     syncInput = syncPair.getValue();
 
-    sourceConfig = WorkerUtils.syncToTapConfig(syncInput);
-    destinationConfig = WorkerUtils.syncToTargetConfig(syncInput);
+    sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
+    destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
 
     source = mock(AirbyteSource.class);
     mapper = mock(NamespacingMapper.class);
@@ -116,6 +122,11 @@ class DefaultReplicationWorkerTest {
     when(mapper.mapCatalog(destinationConfig.getCatalog())).thenReturn(destinationConfig.getCatalog());
     when(mapper.mapMessage(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
     when(mapper.mapMessage(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
+  }
+
+  @AfterEach
+  void tearDown() {
+    MDC.clear();
   }
 
   @Test
@@ -137,6 +148,32 @@ class DefaultReplicationWorkerTest {
     verify(destination).accept(RECORD_MESSAGE2);
     verify(source).close();
     verify(destination).close();
+  }
+
+  @Test
+  void testLoggingInThreads() throws IOException, WorkerException {
+    // set up the mdc so that actually log to a file, so that we can verify that file logging captures
+    // threads.
+    final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
+    WorkerUtils.setJobMdc(jobRoot, "1");
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        sourceMessageTracker,
+        destinationMessageTracker);
+
+    worker.run(syncInput, jobRoot);
+
+    final Path logPath = jobRoot.resolve(WorkerConstants.LOG_FILENAME);
+    final String logs = IOs.readFile(logPath);
+
+    // make sure we get logs from the threads.
+    assertTrue(logs.contains("Replication thread started."));
+    assertTrue(logs.contains("Destination output thread started."));
   }
 
   @SuppressWarnings({"BusyWait"})

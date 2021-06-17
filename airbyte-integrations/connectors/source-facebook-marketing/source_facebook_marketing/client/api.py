@@ -26,15 +26,19 @@
 import time
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Any, Callable, Iterator, Mapping, MutableMapping, Sequence
+from typing import Any, Callable, Iterable, Iterator, Mapping, MutableMapping, Sequence
 
 import backoff
 import pendulum as pendulum
-from base_python.entrypoint import logger  # FIXME (Eugene K): use standard logger
+
+# FIXME (Eugene K): use standard logger
+from airbyte_cdk.entrypoint import logger
+from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adreportrun import AdReportRun
+from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from .common import JobTimeoutException, deep_merge, retry_pattern
+from .common import JobTimeoutException, batch, deep_merge, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
@@ -176,34 +180,30 @@ class AdCreativeAPI(StreamAPI):
     """
 
     entity_prefix = "adcreative"
-    BATCH_SIZE = 50
+    batch_size = 50
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        # Create the initial batch
-        api_batch = self._api._api.new_batch()
+        # get pending requests for each creative
+        requests = [creative.api_get(fields=fields, pending=True) for creative in self.read(getter=self._get_creatives)]
+        for requests_batch in batch(requests, size=self.batch_size):
+            yield from self.execute_in_batch(requests_batch)
+
+    @backoff_policy
+    def execute_in_batch(self, requests: Iterable[FacebookRequest]) -> Sequence[MutableMapping[str, Any]]:
         records = []
 
-        def success(response):
+        def success(response: FacebookResponse):
             records.append(response.json())
 
-        def failure(response):
+        def failure(response: FacebookResponse):
             raise response.error()
 
-        # This loop syncs minimal AdCreative objects
-        for i, creative in enumerate(self.read(getter=self._get_creatives), start=1):
-            # Execute and create a new batch for every BATCH_SIZE added
-            if i % self.BATCH_SIZE == 0:
-                api_batch.execute()
-                api_batch = self._api._api.new_batch()
-                yield from records
-                records[:] = []
-
-            # Add a call to the batch with the full object
-            creative.api_get(fields=fields, batch=api_batch, success=success, failure=failure)
-
-        # Ensure the final batch is executed
+        api_batch: FacebookAdsApiBatch = self._api._api.new_batch()
+        for request in requests:
+            api_batch.add_request(request, success=success, failure=failure)
         api_batch.execute()
-        yield from records
+
+        return records
 
     @backoff_policy
     def _get_creatives(self, params: Mapping[str, Any]) -> Iterator:
@@ -230,7 +230,7 @@ class AdsAPI(IncrementalStreamAPI):
         return self._api.account.get_ads(params=params, fields=[self.state_pk])
 
     @backoff_policy
-    def _extend_record(self, ad, fields):
+    def _extend_record(self, ad: Ad, fields: Sequence[str]):
         return ad.api_get(fields=fields).export_all_data()
 
 
@@ -265,21 +265,13 @@ class CampaignAPI(IncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Read available campaigns"""
-        pull_ads = "ads" in fields
-        fields = [k for k in fields if k != "ads"]
         for campaign in self.read(getter=self._get_campaigns):
-            yield self._extend_record(campaign, fields=fields, pull_ads=pull_ads)
+            yield self._extend_record(campaign, fields=fields)
 
     @backoff_policy
-    def _extend_record(self, campaign, fields, pull_ads):
+    def _extend_record(self, campaign, fields):
         """Request additional attributes for campaign"""
-        campaign_out = campaign.api_get(fields=fields).export_all_data()
-        if pull_ads:
-            campaign_out["ads"] = {"data": []}
-            ids = [ad["id"] for ad in campaign.get_ads()]
-            for ad_id in ids:
-                campaign_out["ads"]["data"].append({"id": ad_id})
-        return campaign_out
+        return campaign.api_get(fields=fields).export_all_data()
 
     @backoff_policy
     def _get_campaigns(self, params):
@@ -359,11 +351,15 @@ class AdsInsightAPI(IncrementalStreamAPI):
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
             logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete")
+            runtime = pendulum.now() - start_time
 
             if job["async_status"] == "Job Completed":
                 return job
+            elif job["async_status"] == "Job Failed":
+                raise JobTimeoutException(f"AdReportRun {job} failed after {runtime.in_seconds()} seconds.")
+            elif job["async_status"] == "Job Skipped":
+                raise JobTimeoutException(f"AdReportRun {job} skipped after {runtime.in_seconds()} seconds.")
 
-            runtime = pendulum.now() - start_time
             if runtime > self.MAX_WAIT_TO_START and job_progress_pct == 0:
                 raise JobTimeoutException(
                     f"AdReportRun {job} did not start after {runtime.in_seconds()} seconds. This is an intermittent error which may be fixed by retrying the job. Aborting."
