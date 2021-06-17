@@ -26,17 +26,25 @@ package io.airbyte.server.errors;
 
 public class IdNotFoundKnownException extends KnownException {
 
-  public IdNotFoundKnownException(String message) {
+  String id;
+
+  public IdNotFoundKnownException(String message, String id) {
     super(message);
+    this.id = id;
   }
 
-  public IdNotFoundKnownException(String message, Throwable cause) {
+  public IdNotFoundKnownException(String message, String id, Throwable cause) {
     super(message, cause);
+    this.id = id;
   }
 
   @Override
   public int getHttpCode() {
     return 404;
+  }
+
+  public String getId() {
+    return id;
   }
 
 }

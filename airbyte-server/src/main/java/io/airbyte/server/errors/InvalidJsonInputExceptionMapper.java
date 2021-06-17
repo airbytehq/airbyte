@@ -37,13 +37,8 @@ public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMapp
 
   @Override
   public Response toResponse(JsonMappingException e) {
-    KnownExceptionInfo exceptionInfo = (KnownExceptionInfo) new KnownExceptionInfo()
-        .exceptionClassName(e.getClass().getName())
-        .message("Invalid json input. " + e.getMessage() + " " + e.getOriginalMessage())
-        .exceptionStack(Throwables.toStringList(e));
-
     return Response.status(422)
-        .entity(Jsons.serialize(exceptionInfo))
+        .entity(Jsons.serialize(KnownException.infoFromThrowableWithMessage(e, "Invalid json input. " + e.getMessage() + " " + e.getOriginalMessage())))
         .type("application/json")
         .build();
   }

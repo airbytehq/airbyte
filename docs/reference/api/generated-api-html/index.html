@@ -5213,6 +5213,7 @@ font-style: italic;
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
     <li><a href="#InvalidInputKnownExceptionInfo"><code>InvalidInputKnownExceptionInfo</code> - </a></li>
+    <li><a href="#InvalidInputProperty"><code>InvalidInputProperty</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
     <li><a href="#JobIdRequestBody"><code>JobIdRequestBody</code> - </a></li>
     <li><a href="#JobInfoRead"><code>JobInfoRead</code> - </a></li>
@@ -5602,8 +5603,16 @@ font-style: italic;
       <div class="param">message </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">exceptionClassName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">exceptionStack (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
-<div class="param">rootCauseExceptionClassName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">rootCauseExceptionStack (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+<div class="param">validationErrors </div><div class="param-desc"><span class="param-type"><a href="#InvalidInputProperty">array[InvalidInputProperty]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="InvalidInputProperty"><code>InvalidInputProperty</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">propertyPath </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">invalidValue (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

@@ -552,7 +552,7 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     try {
       return call.call();
     } catch (ConfigNotFoundException e) {
-      throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()), e);
+      throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()), e.getConfigId(), e);
     } catch (JsonValidationException e) {
       throw new BadObjectSchemaKnownException(
           String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);

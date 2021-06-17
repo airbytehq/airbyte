@@ -29,20 +29,14 @@ import io.airbyte.api.model.KnownExceptionInfo;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import org.apache.logging.log4j.core.util.Throwables;
 
 @Provider
 public class InvalidJsonExceptionMapper implements ExceptionMapper<JsonParseException> {
 
   @Override
   public Response toResponse(JsonParseException e) {
-    KnownExceptionInfo exceptionInfo = (KnownExceptionInfo) new KnownExceptionInfo()
-        .exceptionClassName(e.getClass().getName())
-        .message("Invalid json. " + e.getMessage() + " " + e.getOriginalMessage())
-        .exceptionStack(Throwables.toStringList(e));
-
     return Response.status(422)
-        .entity(exceptionInfo)
+        .entity(KnownException.infoFromThrowableWithMessage(e, "Invalid json. " + e.getMessage() + " " + e.getOriginalMessage()))
         .type("application/json")
         .build();
   }

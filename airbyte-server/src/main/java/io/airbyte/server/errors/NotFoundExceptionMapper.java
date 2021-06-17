@@ -39,11 +39,7 @@ public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundExceptio
 
   @Override
   public Response toResponse(NotFoundException e) {
-    KnownExceptionInfo exceptionInfo = (KnownExceptionInfo) new KnownExceptionInfo()
-        .exceptionClassName(e.getClass().getName())
-        .message("Not Found " + e.getMessage())
-        .exceptionStack(Throwables.toStringList(e));
-
+    KnownExceptionInfo exceptionInfo = KnownException.infoFromThrowableWithMessage(e, "Not Found: " + e.getMessage());
     LOGGER.error("Not found exception", exceptionInfo);
     return Response.status(404)
         .entity(Jsons.serialize(exceptionInfo))

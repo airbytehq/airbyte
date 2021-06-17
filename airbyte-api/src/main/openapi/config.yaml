@@ -2667,6 +2667,17 @@ components:
             - failed
         reason:
           type: string
+    InvalidInputProperty:
+      type: object
+      required:
+        - propertyPath
+      properties:
+        propertyPath:
+          type: string
+        invalidValue:
+          type: string
+        message:
+          type: string
     KnownExceptionInfo:
       type: object
       required:
@@ -2687,8 +2698,24 @@ components:
           items:
             type: string
     InvalidInputKnownExceptionInfo:
-      allOf:
-        - $ref: "#/components/schemas/KnownExceptionInfo"
+      type: object
+      required:
+        - message
+        - validationErrors
+      properties:
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvalidInputProperty"
+
   responses:
     InvalidInputResponse:
       description: Input failed validation
@@ -2703,4 +2730,4 @@ components:
           schema:
             $ref: "#/components/schemas/KnownExceptionInfo"
 security:
-  - {}
+  - { }
