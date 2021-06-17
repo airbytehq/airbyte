@@ -245,20 +245,20 @@ class Threads(IncrementalMessageStream):
             # found in the state minus 7 days to pick up any new messages in threads.
             # If there is state always use lookback
             try:
-                messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]).subtract(**self.messages_lookback_window)
+                messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
             except TypeError:  # during second read we will have ts as a string date
-                messages_start_date = pendulum.parse(stream_state[self.cursor_field]).subtract(**self.messages_lookback_window)
+                messages_start_date = pendulum.parse(stream_state[self.cursor_field]) - self.messages_lookback_window
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
             messages_start_date = self._default_start_date
+
         messages_stream = ChannelMessages(authenticator=self.authenticator, default_start_date=messages_start_date)
 
         for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
                 message_chunk["channel"] = channel["id"]
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
-
-                    yield {"channel": channel["id"], self.cursor_field: message[self.cursor_field]}
+                    yield {"channel": channel["id"], self.cursor_field: message[self.cursor_field].timestamp()}
 
 
 class JoinChannelsStream(HttpStream):
