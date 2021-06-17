@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.scheduler.app.kube;
+package io.airbyte.workers.process;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HttpHeaders;

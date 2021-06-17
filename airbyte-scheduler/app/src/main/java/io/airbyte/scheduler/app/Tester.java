@@ -25,8 +25,8 @@
 package io.airbyte.scheduler.app;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.scheduler.app.kube.WorkerHeartbeatServer;
 import io.airbyte.workers.process.KubeProcessFactory;
+import io.airbyte.workers.process.WorkerHeartbeatServer;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.nio.file.Path;
