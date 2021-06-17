@@ -2005,7 +2005,7 @@ components:
         - $ref: "#/components/schemas/ConnectionCreate"
         - type: object
           properties:
-            withOperations:
+            operations:
               type: array
               items:
                 $ref: "#/components/schemas/OperationCreate"

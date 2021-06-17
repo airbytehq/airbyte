@@ -19,6 +19,8 @@ const useSyncActions = (): {
       syncCatalog: connection.syncCatalog,
       prefix: connection.prefix,
       schedule: connection.schedule || null,
+      namespaceDefinition: connection.namespaceDefinition,
+      namespaceFormat: connection.namespaceFormat,
       operations: connection.operations,
       status:
         connection.status === Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE,

@@ -65,7 +65,7 @@ const ConditionSection: React.FC<{
               text: dataItem,
               value: dataItem,
             }))}
-            onSelect={(selectedItem) =>
+            onChange={(selectedItem) =>
               setUiWidgetsInfo(formField.path, {
                 selectedItem: selectedItem.value,
               })

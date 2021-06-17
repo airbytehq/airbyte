@@ -80,7 +80,7 @@ function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>(
               <SmallButton
                 onClick={onDone}
                 type="button"
-                data-test-id="done-button"
+                data-testid="done-button"
               >
                 <FormattedMessage id="form.done" />
               </SmallButton>

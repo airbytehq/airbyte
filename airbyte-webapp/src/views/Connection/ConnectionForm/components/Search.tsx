@@ -49,7 +49,7 @@ const Search: React.FC<SearchProps> = ({
 
   return (
     <Content>
-      <CheckBox onClick={onCheckAll} checked={hasSelectedItem} />
+      <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
       <SearchContent>
         <SearchIcon icon={faSearch} />
         <SearchInput

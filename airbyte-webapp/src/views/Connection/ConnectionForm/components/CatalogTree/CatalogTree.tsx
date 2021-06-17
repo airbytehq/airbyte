@@ -40,7 +40,10 @@ const CatalogTree: React.FC<IProps> = ({
   return (
     <>
       {streams.map((streamNode) => (
-        <Field name={`schema.streams[${streamNode.id}].config`}>
+        <Field
+          key={`schema.streams[${streamNode.id}].config`}
+          name={`schema.streams[${streamNode.id}].config`}
+        >
           {({ form }: FastFieldProps) => (
             <CatalogSection
               key={`schema.streams[${streamNode.id}].config`}

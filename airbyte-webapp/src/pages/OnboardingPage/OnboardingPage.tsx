@@ -245,7 +245,7 @@ const OnboardingPage: React.FC = () => {
         {renderStep()}
         <TutorialLink
           as="a"
-          clear
+          $clear
           target="_blank"
           href={config.ui.tutorialLink}
         >

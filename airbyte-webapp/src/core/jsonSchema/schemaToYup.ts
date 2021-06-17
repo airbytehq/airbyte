@@ -23,13 +23,12 @@ export const buildYupFormForJsonSchema = (
   parentSchema?: JSONSchema7,
   propertyKey?: string,
   propertyPath: string | undefined = propertyKey
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): yup.Schema<any> => {
+): yup.AnySchema => {
   let schema:
     | yup.NumberSchema
     | yup.StringSchema
-    | yup.ObjectSchema
-    | yup.ArraySchema<unknown>
+    | yup.AnyObjectSchema
+    | yup.ArraySchema<yup.AnySchema>
     | yup.BooleanSchema
     | null = null;
 
@@ -125,11 +124,11 @@ export const buildYupFormForJsonSchema = (
     jsonSchema.default !== undefined && jsonSchema.default !== null;
 
   if (schema && hasDefault) {
-    schema = schema.default(jsonSchema.default);
+    schema = (schema.default as any)(jsonSchema.default);
   }
 
   if (schema && jsonSchema.enum) {
-    schema = schema.oneOf(jsonSchema.enum as any);
+    schema = (schema.oneOf as any)(jsonSchema.enum as any);
   }
 
   const isRequired =
