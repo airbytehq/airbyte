@@ -31,6 +31,7 @@ import requests
 import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests.exceptions import HTTPError
 
 cache_file = tempfile.NamedTemporaryFile()
 
@@ -62,9 +63,28 @@ class GithubStream(HttpStream, ABC):
             self._page += 1
             return {"page": self._page}
 
-    # def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-    #     with vcr.use_cassette("wut.json", record_mode="new_episodes", serializer="json"):
-    #         yield from super().read_records(**kwargs)
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except HTTPError as e:
+            error_msg = str(e)
+
+            # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
+            # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
+            # We added this try/except code because for private repositories `Teams` stream is not available and we get
+            # "404 Client Error: Not Found for url: https://api.github.com/orgs/sherifnada/teams?per_page=100" error.
+            if "/teams?" in error_msg:
+                error_msg = f"Syncing Team stream isn't available for repository {self.repository}"
+
+            self.logger.warn(error_msg)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
