@@ -24,12 +24,10 @@
 
 package io.airbyte.workers.process;
 
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
@@ -42,7 +40,6 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.api.model.batch.Job;
 import io.fabric8.kubernetes.api.model.batch.JobBuilder;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,10 +53,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -68,7 +63,6 @@ import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 /**
  * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The
@@ -96,11 +90,10 @@ import org.slf4j.MDC;
  * See the constructor for more information.
  */
 
-// todo: revert change to make this a job-based process
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
-public class KubeJobProcess extends Process {
+public class KubePodProcess extends Process {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(KubeJobProcess.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   private static final String INIT_CONTAINER_NAME = "init";
 
@@ -237,8 +230,6 @@ public class KubeJobProcess extends Process {
 
         LOGGER.info("Uploading file: " + file.getKey());
 
-        System.out.println("podName = " + podName);
-
         client.pods().inNamespace(namespace).withName(podName).inContainer(INIT_CONTAINER_NAME)
             .file(CONFIG_DIR + "/" + file.getKey())
             .upload(tmpFile);
@@ -267,7 +258,7 @@ public class KubeJobProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
-  public KubeJobProcess(KubernetesClient client,
+  public KubePodProcess(KubernetesClient client,
                         Consumer<Integer> portReleaser,
                         String podName,
                         String namespace,
@@ -329,7 +320,6 @@ public class KubeJobProcess extends Process {
     Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
     Container main = getMain(image, usesStdin, entrypoint, List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount), args);
 
-    final String remoteStdinCommand = wrapWithHappyFileCloser("socat -d -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE, TERMINATION_FILE_MAIN);
     Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage("alpine/socat:1.7.4.1-r1")
@@ -338,7 +328,6 @@ public class KubeJobProcess extends Process {
         .build();
 
     var localIp = InetAddress.getLocalHost().getHostAddress();
-    String relayStdoutCommand = wrapWithHappyFileCloser(String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDOUT_PIPE_FILE, localIp, stdoutLocalPort), TERMINATION_FILE_MAIN); // todo remove
     Container relayStdout = new ContainerBuilder()
         .withName("relay-stdout")
         .withImage("alpine/socat:1.7.4.1-r1")
@@ -346,7 +335,6 @@ public class KubeJobProcess extends Process {
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
-    String relayStderrCommand = wrapWithHappyFileCloser(String.format("cat %s | socat -d -d -d - TCP:%s:%s", STDERR_PIPE_FILE, localIp, stderrLocalPort), TERMINATION_FILE_MAIN); // todo remove
     Container relayStderr = new ContainerBuilder()
         .withName("relay-stderr")
         .withImage("alpine/socat:1.7.4.1-r1")
@@ -370,34 +358,22 @@ public class KubeJobProcess extends Process {
 
     List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer) : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
-    final Job job = new JobBuilder()
-            .withApiVersion("batch/v1")
+    final Pod pod = new PodBuilder()
+            .withApiVersion("v1")
             .withNewMetadata()
-            .withName("job-" + podName) // todo: figure out how naming works here
+            .withName(podName)
             .endMetadata()
-            .withNewSpec()
-//            .withCompletions(3) // one for each non-check container? failure still should be caught for check container
-            // todo: add ttlSecondsAfterFinished for cleaning up old jobs
-            .withNewTemplate()
             .withNewSpec()
             .withRestartPolicy("Never")
             .withInitContainers(init)
             .withContainers(containers)
             .withVolumes(pipeVolume, configVolume, terminationVolume)
             .endSpec()
-            .endTemplate()
-            .endSpec()
             .build();
 
     LOGGER.info("Creating pod...");
-    final Job jobDefinition = client.batch().jobs().inNamespace(namespace).createOrReplace(job);
+    this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
 
-    // todo: does this need to wait?
-    final PodList podList = client.pods().inNamespace(namespace).withLabel("job-name", jobDefinition.getMetadata().getName()).list();
-
-    this.podDefinition = podList.getItems().get(0);
-
-    // todo: get podDefinition
     waitForInitPodToRun(client, podDefinition);
 
     LOGGER.info("Copying files...");

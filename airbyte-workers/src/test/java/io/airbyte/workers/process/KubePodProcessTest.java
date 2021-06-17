@@ -45,7 +45,7 @@ import org.testcontainers.shaded.com.google.common.io.Resources;
 
 // Disabled until we start minikube on the node.
 @Disabled
-public class KubeJobProcessTest {
+public class KubePodProcessTest {
 
   private static final KubernetesClient K8s = new DefaultKubernetesClient();
 
@@ -72,19 +72,19 @@ public class KubeJobProcessTest {
     @Test
     @DisplayName("Should error if image does not have the right env var set.")
     public void testGetCommandFromImageNoCommand() {
-      assertThrows(RuntimeException.class, () -> KubeJobProcess.getCommandFromImage(K8s, TEST_IMAGE_NO_VAR_NAME, "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(K8s, TEST_IMAGE_NO_VAR_NAME, "default"));
     }
 
     @Test
     @DisplayName("Should error if image does not exists.")
     public void testGetCommandFromImageMissingImage() {
-      assertThrows(RuntimeException.class, () -> KubeJobProcess.getCommandFromImage(K8s, "bad_missing_image", "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getCommandFromImage(K8s, "bad_missing_image", "default"));
     }
 
     @Test
     @DisplayName("Should retrieve the right command if image has the right env var set.")
     public void testGetCommandFromImageCommandPresent() throws IOException, InterruptedException {
-      var command = KubeJobProcess.getCommandFromImage(K8s, TEST_IMAGE_WITH_VAR_NAME, "default");
+      var command = KubePodProcess.getCommandFromImage(K8s, TEST_IMAGE_WITH_VAR_NAME, "default");
       assertEquals(ENTRYPOINT, command);
     }
 
@@ -96,7 +96,7 @@ public class KubeJobProcessTest {
     @Test
     @DisplayName("Should error when the given pod does not exists.")
     public void testGetPodIpNoPod() {
-      assertThrows(RuntimeException.class, () -> KubeJobProcess.getPodIP(K8s, "pod-does-not-exist", "default"));
+      assertThrows(RuntimeException.class, () -> KubePodProcess.getPodIP(K8s, "pod-does-not-exist", "default"));
     }
 
     @Test
@@ -125,7 +125,7 @@ public class KubeJobProcessTest {
       Pod pod = K8s.pods().inNamespace(namespace).createOrReplace(podDef);
       K8s.resource(pod).waitUntilReady(20, TimeUnit.SECONDS);
 
-      var ip = KubeJobProcess.getPodIP(K8s, podName, namespace);
+      var ip = KubePodProcess.getPodIP(K8s, podName, namespace);
       var exp = K8s.pods().inNamespace(namespace).withName(podName).get().getStatus().getPodIP();
       assertEquals(exp, ip);
       K8s.resource(podDef).inNamespace(namespace).delete();
