@@ -5,88 +5,96 @@
     "id": {
       "type": "integer"
     },
-    "id_default_group": {
+    "id_customer": {
       "type": "string"
     },
-    "id_lang": {
+    "date_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "description": {
       "type": "string"
     },
-    "newsletter_date_add": {
+    "quantity": {
       "type": "string"
     },
-    "ip_registration_newsletter": {
+    "quantity_per_user": {
       "type": "string"
     },
-    "last_passwd_gen": {
+    "priority": {
       "type": "string"
     },
-    "secure_key": {
+    "partial_use": {
       "type": "string"
     },
-    "deleted": {
+    "code": {
       "type": "string"
     },
-    "passwd": {
+    "minimum_amount": {
       "type": "string"
     },
-    "lastname": {
+    "minimum_amount_tax": {
       "type": "string"
     },
-    "firstname": {
+    "minimum_amount_currency": {
       "type": "string"
     },
-    "email": {
+    "minimum_amount_shipping": {
       "type": "string"
     },
-    "id_gender": {
+    "country_restriction": {
       "type": "string"
     },
-    "birthday": {
+    "carrier_restriction": {
       "type": "string"
     },
-    "newsletter": {
+    "group_restriction": {
       "type": "string"
     },
-    "optin": {
+    "cart_rule_restriction": {
       "type": "string"
     },
-    "website": {
+    "product_restriction": {
       "type": "string"
     },
-    "company": {
+    "shop_restriction": {
       "type": "string"
     },
-    "siret": {
+    "free_shipping": {
       "type": "string"
     },
-    "ape": {
+    "reduction_percent": {
       "type": "string"
     },
-    "outstanding_allow_amount": {
+    "reduction_amount": {
       "type": "string"
     },
-    "show_public_prices": {
+    "reduction_tax": {
       "type": "string"
     },
-    "id_risk": {
+    "reduction_currency": {
       "type": "string"
     },
-    "max_payment_days": {
+    "reduction_product": {
+      "type": "string"
+    },
+    "reduction_exclude_special": {
+      "type": "string"
+    },
+    "gift_product": {
+      "type": "string"
+    },
+    "gift_product_attribute": {
+      "type": "string"
+    },
+    "highlight": {
       "type": "string"
     },
     "active": {
-      "type": "string"
-    },
-    "note": {
-      "type": "string"
-    },
-    "is_guest": {
-      "type": "string"
-    },
-    "id_shop": {
-      "type": "string"
-    },
-    "id_shop_group": {
       "type": "string"
     },
     "date_add": {
@@ -97,30 +105,8 @@
       "type": "string",
       "format": "date-time"
     },
-    "reset_password_token": {
+    "name": {
       "type": "string"
-    },
-    "reset_password_validity": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "associations": {
-      "type": "object",
-      "properties": {
-        "groups": {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                }
-              }
-            }
-          ]
-        }
-      }
     }
   }
 }

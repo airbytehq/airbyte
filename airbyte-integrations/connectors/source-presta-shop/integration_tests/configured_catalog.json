@@ -1,24 +1,84 @@
-// TODO: Construct a configured catalog that can be used for testing. Each stream's `json_schema` field should match the corresponding json schema file.
 {
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "addresses",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "signup_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
+    "id": {
+      "type": "integer"
+    },
+    "id_customer": {
+      "type": ["null", "string"]
+    },
+    "id_manufacturer": {
+      "type": ["null", "string"]
+    },
+    "id_supplier": {
+      "type": ["null", "string"]
+    },
+    "id_warehouse": {
+      "type": ["null", "string"]
+    },
+    "id_country": {
+      "type": "string"
+    },
+    "id_state": {
+      "type": ["null", "string"]
+    },
+    "alias": {
+      "type": "string"
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "lastname": {
+      "type": "string"
+    },
+    "firstname": {
+      "type": "string"
+    },
+    "vat_number": {
+      "type": ["null", "string"]
+    },
+    "address1": {
+      "type": "string"
+    },
+    "address2": {
+      "type": ["null", "string"]
+    },
+    "postcode": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": "string"
+    },
+    "other": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "phone_mobile": {
+      "type": ["null", "string"]
+    },
+    "dni": {
+      "type": ["null", "string"]
+    },
+    "deleted": {
+      "type": "string"
+    },
+    "date_add": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_upd": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
         },
         "supported_sync_modes": ["full_refresh"]
       },
@@ -27,30 +87,203 @@
     },
     {
       "stream": {
-        "name": "employees",
+        "name": "carriers",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "years_of_service": {
-              "type": ["null", "integer"]
-            },
-            "start_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
+    "id": {
+      "type": "integer"
+    },
+    "deleted": {
+      "type": "string"
+    },
+    "is_module": {
+      "type": "string"
+    },
+    "id_tax_rules_group": {
+      "type": "string"
+    },
+    "id_reference": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "active": {
+      "type": "string"
+    },
+    "is_free": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "shipping_handling": {
+      "type": "string"
+    },
+    "shipping_external": {
+      "type": "string"
+    },
+    "range_behavior": {
+      "type": "string"
+    },
+    "shipping_method": {
+      "type": "string"
+    },
+    "max_width": {
+      "type": "string"
+    },
+    "max_height": {
+      "type": "string"
+    },
+    "max_depth": {
+      "type": "string"
+    },
+    "max_weight": {
+      "type": "string"
+    },
+    "grade": {
+      "type": "string"
+    },
+    "external_module_name": {
+      "type": "string"
+    },
+    "need_range": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string"
+    },
+    "delay": {
+      "type": "string"
+    }
+  }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "cart_rules",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "id_customer": {
+      "type": "string"
+    },
+    "date_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "description": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "string"
+    },
+    "quantity_per_user": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "string"
+    },
+    "partial_use": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "minimum_amount": {
+      "type": "string"
+    },
+    "minimum_amount_tax": {
+      "type": "string"
+    },
+    "minimum_amount_currency": {
+      "type": "string"
+    },
+    "minimum_amount_shipping": {
+      "type": "string"
+    },
+    "country_restriction": {
+      "type": "string"
+    },
+    "carrier_restriction": {
+      "type": "string"
+    },
+    "group_restriction": {
+      "type": "string"
+    },
+    "cart_rule_restriction": {
+      "type": "string"
+    },
+    "product_restriction": {
+      "type": "string"
+    },
+    "shop_restriction": {
+      "type": "string"
+    },
+    "free_shipping": {
+      "type": "string"
+    },
+    "reduction_percent": {
+      "type": "string"
+    },
+    "reduction_amount": {
+      "type": "string"
+    },
+    "reduction_tax": {
+      "type": "string"
+    },
+    "reduction_currency": {
+      "type": "string"
+    },
+    "reduction_product": {
+      "type": "string"
+    },
+    "reduction_exclude_special": {
+      "type": "string"
+    },
+    "gift_product": {
+      "type": "string"
+    },
+    "gift_product_attribute": {
+      "type": "string"
+    },
+    "highlight": {
+      "type": "string"
+    },
+    "active": {
+      "type": "string"
+    },
+    "date_add": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_upd": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "name": {
+      "type": "string"
+    }
+  }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

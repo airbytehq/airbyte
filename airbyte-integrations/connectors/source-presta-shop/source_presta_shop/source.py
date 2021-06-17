@@ -30,6 +30,8 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .streams import (
     Addresses,
+    Carriers,
+    CartRules
 )
 
 
@@ -47,5 +49,7 @@ class SourcePrestaShop(AbstractSource):
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "url": config["url"]}
         return [
-            Addresses(**args),
+            # Addresses(**args),
+            # Carriers(**args),
+            CartRules(**args),
         ]

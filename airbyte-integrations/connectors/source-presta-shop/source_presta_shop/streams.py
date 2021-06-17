@@ -73,3 +73,33 @@ class Addresses(PrestaShopStream):
     def path(self, **kwargs) -> str:
         return "addresses"
 
+
+class Carriers(PrestaShopStream):
+    """
+    The Carriers that perform deliveries
+    https://devdocs.prestashop.com/1.7/webservice/resources/carriers/
+    """
+
+    def path(self, **kwargs) -> str:
+        return "carriers"
+
+
+class CartRules(PrestaShopStream):
+    """
+    Cart rules management (discount, promotions, …)
+    https://devdocs.prestashop.com/1.7/webservice/resources/cart_rules/
+    """
+
+    def path(self, **kwargs) -> str:
+        return "cart_rules"
+
+
+class Carts(PrestaShopStream):
+    """
+    Customer’s carts
+    https://devdocs.prestashop.com/1.7/webservice/resources/carts/
+    """
+
+    def path(self, **kwargs) -> str:
+        return "carts"
+

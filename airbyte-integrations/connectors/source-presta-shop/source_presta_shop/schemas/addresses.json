@@ -3,25 +3,25 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "integer"]
-    },
-    "id_customer": {
-      "type": ["null", "integer"]
-    },
-    "id_manufacturer": {
-      "type": ["null", "integer"]
-    },
-    "id_supplier": {
-      "type": ["null", "integer"]
-    },
-    "id_warehouse": {
-      "type": ["null", "integer"]
-    },
-    "id_country": {
       "type": "integer"
     },
+    "id_customer": {
+      "type": ["null", "string"]
+    },
+    "id_manufacturer": {
+      "type": ["null", "string"]
+    },
+    "id_supplier": {
+      "type": ["null", "string"]
+    },
+    "id_warehouse": {
+      "type": ["null", "string"]
+    },
+    "id_country": {
+      "type": "string"
+    },
     "id_state": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "alias": {
       "type": "string"
@@ -63,14 +63,14 @@
       "type": ["null", "string"]
     },
     "deleted": {
-      "type": ["null", "boolean"]
+      "type": "string"
     },
     "date_add": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "date_upd": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     }
   }
