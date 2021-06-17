@@ -34,7 +34,7 @@ import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.IncrementalUtils;
-import io.airbyte.db.jdbc.SqlDatabase;
+import io.airbyte.db.SqlDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
@@ -329,7 +329,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
-    final T cursorJdbcType = table.getFields().stream()
+    final T cursorType = table.getFields().stream()
         .filter(info -> info.getName().equals(cursorField))
         .map(CommonField::getType)
         .findFirst()
@@ -344,7 +344,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
         table.getNameSpace(),
         table.getName(),
         cursorField,
-        cursorJdbcType,
+        cursorType,
         cursor);
 
     return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli());

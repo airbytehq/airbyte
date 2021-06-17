@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handles the state machine for the state of jdbc source implementations.
+ * Handles the state machine for the state of source implementations.
  */
 public class StateManager {
 

@@ -56,7 +56,7 @@ public class CdcStateManager {
 
   @Override
   public String toString() {
-    return "JdbcCdcStateManager{" +
+    return "CdcStateManager{" +
         "initialState=" + initialState +
         ", currentState=" + currentState +
         '}';

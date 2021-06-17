@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db.jdbc;
+package io.airbyte.db;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.sql.SQLException;
