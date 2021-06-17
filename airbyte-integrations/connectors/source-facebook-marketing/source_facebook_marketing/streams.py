@@ -25,7 +25,7 @@
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Sequence
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Sequence, Optional
 
 import backoff
 import pendulum as pendulum
@@ -263,22 +263,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_destination",
     ]
 
-    # Some automatic fields (primary-keys) cannot be used as 'fields' query params.
-    INVALID_INSIGHT_FIELDS = [
-        "impression_device",
-        "publisher_platform",
-        "platform_position",
-        "age",
-        "gender",
-        "country",
-        "placement",
-        "region",
-        "dma",
-    ]
-
     MAX_WAIT_TO_START = pendulum.Interval(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.Interval(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.Interval(minutes=5)
+    MAX_ASYNC_JOBS = 30
+    INSIGHTS_RETENTION_PERIOD = pendulum.Interval(days=37 * 30)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
@@ -289,8 +278,8 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def __init__(self, buffer_days, days_per_job, **kwargs):
         super().__init__(**kwargs)
-        self._buffer_days = buffer_days
-        self._sync_interval = pendulum.Interval(days=days_per_job)
+        self.lookback_window = pendulum.Interval(days=buffer_days)
+        self._days_per_job = days_per_job
 
     def read_records(
             self,
@@ -299,15 +288,31 @@ class AdsInsights(FBMarketingIncrementalStream):
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        """Waits for current job to finish (slice) and yield its result
+        """
+        result = self.wait_for_job(stream_slice['job'])
+        for obj in result.get_result():
+            yield obj.export_all_data()
+
+    def stream_slices(self, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """ Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time
+        """
         jobs = []
-        for params in self._date_params():
+        date_ranges = self._date_ranges(stream_state=stream_state)
+
+        # accumulate MAX_ASYNC_JOBS jobs in the buffer to schedule them all before trying to wait
+        for params in date_ranges[:self.MAX_ASYNC_JOBS]:
             deep_merge(params, self.request_params(stream_state=stream_state))
             jobs.append(self._get_insights(params))
 
+        # now emit every job scheduled, this will result in waiting during read_records call for each slice
         for job in jobs:
-            result = self.wait_for_job(job)
-            for obj in result.get_result():
-                yield obj.export_all_data()
+            yield {'job': job}
+
+        # emit the rest of period
+        for params in date_ranges[self.MAX_ASYNC_JOBS:]:
+            deep_merge(params, self.request_params(stream_state=stream_state))
+            yield {'job': self._get_insights(params)}
 
     @backoff_policy
     def wait_for_job(self, job) -> AdReportRun:
@@ -355,12 +360,16 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         return params
 
+    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Works differently for insights, so remove it"""
+        return {}
+
     @cached_property
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
         FIXME: cache
-        we add fields from breakdowns
+        we add fields from breakdowns to the stream schema
         """
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         schema["properties"].update(self._schema_for_breakdowns())
@@ -402,18 +411,25 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         return [schemas[breakdown] for breakdown in self.breakdowns]
 
-    def _date_params(self) -> Iterator[dict]:
-        # Facebook freezes insight data 28 days after it was generated, which means that all data
-        # from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-        buffered_start_date = self._state - pendulum.Interval(days=self._buffer_days)
-        end_date = pendulum.now()
-        while buffered_start_date <= end_date:
-            buffered_end_date = buffered_start_date + self._sync_interval
-            yield {
-                "time_range": {"since": buffered_start_date.to_date_string(), "until": buffered_end_date.to_date_string()},
-            }
+    def _date_ranges(self, stream_state: Mapping[str, Any]) -> Iterator[dict]:
+        """Iterate over period between start_date/state and now
 
-            buffered_start_date = buffered_end_date
+        Notes: Facebook freezes insight data 28 days after it was generated, which means that all data
+            from the past 28 days may have changed since we last emitted it, so we retrieve it again.
+        """
+        state_value = stream_state.get(self.cursor_field)
+        if state_value:
+            start_date = state_value - self.lookback_window
+        else:
+            start_date = self._start_date
+        end_date = pendulum.now()
+        start_date = max(end_date - self.INSIGHTS_RETENTION_PERIOD, start_date)
+
+        for since in pendulum.period(start_date, end_date).range('days', self._days_per_job):
+            until = min(since.add(days=self._days_per_job - 1), end_date)  # -1 because time_range is inclusive
+            yield {
+                "time_range": {"since": since.to_date_string(), "until": until.to_date_string()},
+            }
 
     @backoff_policy
     def _get_insights(self, params) -> AdReportRun:
