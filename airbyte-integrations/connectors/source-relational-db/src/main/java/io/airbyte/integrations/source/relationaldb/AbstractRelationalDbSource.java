@@ -38,7 +38,7 @@ import io.airbyte.db.jdbc.SqlDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.relationaldb.models.JdbcState;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -76,7 +76,73 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRelationalDbSource.class);
 
+  /**
+   * Map a database implementation-specific configuration to json object that adheres to the database
+   * config spec. See resources/spec.json.
+   *
+   * @param config database implementation-specific configuration.
+   * @return database spec config
+   */
+  public abstract JsonNode toDatabaseConfig(JsonNode config);
+
+  /**
+   * Creates a database instance using the database spec config.
+   *
+   * @param config database spec config
+   * @return database instance
+   * @throws Exception might throw an error during connection to database
+   */
+  protected abstract K createDatabase(JsonNode config) throws Exception;
+
+  /**
+   * Configures a list of operations that can be used to check the connection to the source.
+   *
+   * @return list of consumers that run queries for the check command.
+   */
+  public abstract List<CheckedConsumer<K, Exception>> getCheckOperations(JsonNode config) throws Exception;
+
+  /**
+   * Map source types and Airbyte types
+   *
+   * @param columnType source data type
+   * @return airbyte data type
+   */
+  protected abstract JsonSchemaPrimitive getType(T columnType);
+
+  /**
+   * Get list of system namespaces(schemas) in order to exclude them from the discover result list.
+   *
+   * @return
+   */
   public abstract Set<String> getExcludedInternalNameSpaces();
+
+  /**
+   * Discover all available tables in the source database.
+   *
+   * @param database source database
+   * @return list of the source tables
+   * @throws Exception access to the database might lead to an exceptions.
+   */
+  protected abstract List<TableInfo<CommonField<T>>> discoverInternal(final K database)
+      throws Exception;
+
+  /**
+   * Discover Primary keys for each table and @return a map of namespace.table name to their
+   * associated list of primary key fields.
+   *
+   * @param database source database
+   * @param tableInfos list of tables
+   * @return map of namespace.table and primary key fields.
+   */
+  protected abstract Map<String, List<String>> discoverPrimaryKeys(K database,
+                                                                   List<TableInfo<CommonField<T>>> tableInfos);
+
+  /**
+   * Returns quote symbol of the database
+   *
+   * @return quote symbol
+   */
+  protected abstract String getQuoteString();
 
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
@@ -94,22 +160,6 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
     }
   }
 
-  /**
-   * Map a database implementation-specific configuration to json object that adheres to the
-   * AbstractJdbcSource config spec. See resources/spec.json.
-   *
-   * @param config database implementation-specific configuration.
-   * @return jdbc spec.
-   */
-  public abstract JsonNode toDatabaseConfig(JsonNode config);
-
-  /**
-   * Configures a list of operations that can be used to check the connection to the source.
-   *
-   * @return list of consumers that run queries for the check command.
-   */
-  public abstract List<CheckedConsumer<K, Exception>> getCheckOperations(JsonNode config) throws Exception;
-
   @Override
   public AirbyteCatalog discover(JsonNode config) throws Exception {
     try (final K database = createDatabaseInternal(config)) {
@@ -126,7 +176,7 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
     final StateManager stateManager = new StateManager(
-        state == null ? StateManager.emptyState() : Jsons.object(state, JdbcState.class),
+        state == null ? StateManager.emptyState() : Jsons.object(state, DbState.class),
         catalog);
     final Instant emittedAt = Instant.now();
 
@@ -183,12 +233,12 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
         configuredStream -> configuredStream.getSyncMode().equals(SyncMode.FULL_REFRESH));
   }
 
-  private List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(K database,
-                                                                           ConfiguredAirbyteCatalog catalog,
-                                                                           Map<String, TableInfo<CommonField<T>>> tableNameToTable,
-                                                                           StateManager stateManager,
-                                                                           Instant emittedAt,
-                                                                           Predicate<ConfiguredAirbyteStream> selector) {
+  protected List<AutoCloseableIterator<AirbyteMessage>> getSelectedIterators(K database,
+                                                                             ConfiguredAirbyteCatalog catalog,
+                                                                             Map<String, TableInfo<CommonField<T>>> tableNameToTable,
+                                                                             StateManager stateManager,
+                                                                             Instant emittedAt,
+                                                                             Predicate<ConfiguredAirbyteStream> selector) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       if (selector.test(airbyteStream)) {
@@ -213,11 +263,11 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
     return iteratorList;
   }
 
-  private AutoCloseableIterator<AirbyteMessage> createReadIterator(K database,
-                                                                   ConfiguredAirbyteStream airbyteStream,
-                                                                   TableInfo<CommonField<T>> table,
-                                                                   StateManager stateManager,
-                                                                   Instant emittedAt) {
+  protected AutoCloseableIterator<AirbyteMessage> createReadIterator(K database,
+                                                                     ConfiguredAirbyteStream airbyteStream,
+                                                                     TableInfo<CommonField<T>> table,
+                                                                     StateManager stateManager,
+                                                                     Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
@@ -270,12 +320,12 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
     });
   }
 
-  private AutoCloseableIterator<AirbyteMessage> getIncrementalStream(K database,
-                                                                     ConfiguredAirbyteStream airbyteStream,
-                                                                     List<String> selectedDatabaseFields,
-                                                                     TableInfo<CommonField<T>> table,
-                                                                     String cursor,
-                                                                     Instant emittedAt) {
+  protected AutoCloseableIterator<AirbyteMessage> getIncrementalStream(K database,
+                                                                       ConfiguredAirbyteStream airbyteStream,
+                                                                       List<String> selectedDatabaseFields,
+                                                                       TableInfo<CommonField<T>> table,
+                                                                       String cursor,
+                                                                       Instant emittedAt) {
     final String streamName = airbyteStream.getStream().getName();
     final String namespace = airbyteStream.getStream().getNamespace();
     final String cursorField = IncrementalUtils.getCursorField(airbyteStream);
@@ -300,24 +350,22 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
     return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli());
   }
 
-  private AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(K database,
-                                                                     String streamName,
-                                                                     String namespace,
-                                                                     List<String> selectedDatabaseFields,
-                                                                     TableInfo<CommonField<T>> table,
-                                                                     Instant emittedAt) {
+  protected AutoCloseableIterator<AirbyteMessage> getFullRefreshStream(K database,
+                                                                       String streamName,
+                                                                       String namespace,
+                                                                       List<String> selectedDatabaseFields,
+                                                                       TableInfo<CommonField<T>> table,
+                                                                       Instant emittedAt) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(), table.getName());
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
-  protected abstract JsonSchemaPrimitive getType(T columnType);
-
   protected String getFullyQualifiedTableName(String nameSpace, String tableName) {
     return nameSpace != null ? nameSpace + "." + tableName : tableName;
   }
 
-  private List<TableInfo<Field>> getTables(final K database) throws Exception {
+  protected List<TableInfo<Field>> getTables(final K database) throws Exception {
     final List<TableInfo<CommonField<T>>> tableInfos = discoverWithoutSystemTables(database);
     final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(database, tableInfos);
 
@@ -341,18 +389,6 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
         })
         .collect(Collectors.toList());
   }
-
-  /**
-   * Discover Primary keys for each table and @return a map of schema.table name to their associated
-   * list of primary key fields.
-   *
-   * When invoking the conn.getMetaData().getPrimaryKeys() function without a table name, it may fail
-   * on some databases (for example MySql) but works on others (for instance Postgres). To avoid
-   * making repeated queries to the DB, we try to get all primary keys without specifying a table
-   * first, if it doesn't work, we retry one table at a time.
-   */
-  protected abstract Map<String, List<String>> discoverPrimaryKeys(K database,
-                                                                   List<TableInfo<CommonField<T>>> tableInfos);
 
   protected void assertColumnsWithSameNameAreSame(String nameSpace, String tableName, List<CommonField<T>> columns) {
     columns.stream()
@@ -378,8 +414,22 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
             Collectors.toList()));
   }
 
-  protected abstract List<TableInfo<CommonField<T>>> discoverInternal(final K database)
-      throws Exception;
+  protected String getIdentifierWithQuoting(String identifier) {
+    return getQuoteString() + identifier + getQuoteString();
+  }
+
+  protected String enquoteIdentifierList(List<String> identifiers) {
+    final StringJoiner joiner = new StringJoiner(",");
+    for (String identifier : identifiers) {
+      joiner.add(getIdentifierWithQuoting(identifier));
+    }
+    return joiner.toString();
+  }
+
+  protected String getFullTableName(String nameSpace, String tableName) {
+    return (nameSpace == null || nameSpace.isEmpty() ? getIdentifierWithQuoting(tableName)
+        : getIdentifierWithQuoting(nameSpace) + "." + getIdentifierWithQuoting(tableName));
+  }
 
   public AutoCloseableIterator<AirbyteMessage> getMessageIterator(AutoCloseableIterator<JsonNode> recordIterator,
                                                                   String streamName,
@@ -392,25 +442,6 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
             .withNamespace(namespace)
             .withEmittedAt(emittedAt)
             .withData(r)));
-  }
-
-  protected abstract String getQuoteString();
-
-  private String getIdentifierWithQuoting(String identifier) {
-    return getQuoteString() + identifier + getQuoteString();
-  }
-
-  private String enquoteIdentifierList(List<String> identifiers) {
-    final StringJoiner joiner = new StringJoiner(",");
-    for (String identifier : identifiers) {
-      joiner.add(getIdentifierWithQuoting(identifier));
-    }
-    return joiner.toString();
-  }
-
-  private String getFullTableName(String nameSpace, String tableName) {
-    return (nameSpace == null || nameSpace.isEmpty() ? getIdentifierWithQuoting(tableName)
-        : getIdentifierWithQuoting(nameSpace) + "." + getIdentifierWithQuoting(tableName));
   }
 
   protected AutoCloseableIterator<JsonNode> queryTable(K database, String sqlQuery) {
@@ -448,7 +479,5 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
     database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
     return database;
   }
-
-  protected abstract K createDatabase(JsonNode config) throws Exception;
 
 }

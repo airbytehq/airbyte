@@ -43,8 +43,8 @@ import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.relationaldb.models.JdbcState;
-import io.airbyte.integrations.source.relationaldb.models.JdbcStreamState;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
+import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -551,8 +551,8 @@ public abstract class JdbcSourceAcceptanceTest {
       airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
-    final JdbcState state = new JdbcState()
-        .withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
+    final DbState state = new DbState()
+        .withStreams(Lists.newArrayList(new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
     final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
         .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
@@ -591,9 +591,9 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new JdbcState()
+            .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
-                .withStreams(Lists.newArrayList(new JdbcStreamState()
+                .withStreams(Lists.newArrayList(new DbStreamState()
                     .withStreamName(streamName)
                     .withStreamNamespace(namespace)
                     .withCursorField(ImmutableList.of(COL_ID))
@@ -638,8 +638,8 @@ public abstract class JdbcSourceAcceptanceTest {
       airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
     });
 
-    final JdbcState state = new JdbcState()
-        .withStreams(Lists.newArrayList(new JdbcStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
+    final DbState state = new DbState()
+        .withStreams(Lists.newArrayList(new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
     final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
         .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
@@ -665,15 +665,15 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessagesFirstSync.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new JdbcState()
+            .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(
-                    new JdbcStreamState()
+                    new DbStreamState()
                         .withStreamName(streamName)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
                         .withCursor("3"),
-                    new JdbcStreamState()
+                    new DbStreamState()
                         .withStreamName(streamName2)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))))))));
@@ -682,15 +682,15 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessagesFirstSync.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new JdbcState()
+            .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(
-                    new JdbcStreamState()
+                    new DbStreamState()
                         .withStreamName(streamName)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
                         .withCursor("3"),
-                    new JdbcStreamState()
+                    new DbStreamState()
                         .withStreamName(streamName2)
                         .withStreamNamespace(namespace)
                         .withCursorField(ImmutableList.of(COL_ID))
@@ -738,8 +738,8 @@ public abstract class JdbcSourceAcceptanceTest {
     airbyteStream.setCursorField(Lists.newArrayList(cursorField));
     airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
 
-    final JdbcState state = new JdbcState()
-        .withStreams(Lists.newArrayList(new JdbcStreamState()
+    final DbState state = new DbState()
+        .withStreams(Lists.newArrayList(new DbStreamState()
             .withStreamName(airbyteStream.getStream().getName())
             .withStreamNamespace(airbyteStream.getStream().getNamespace())
             .withCursorField(ImmutableList.of(initialCursorField))
@@ -757,9 +757,9 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new JdbcState()
+            .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
-                .withStreams(Lists.newArrayList(new JdbcStreamState()
+                .withStreams(Lists.newArrayList(new DbStreamState()
                     .withStreamName(airbyteStream.getStream().getName())
                     .withStreamNamespace(airbyteStream.getStream().getNamespace())
                     .withCursorField(ImmutableList.of(cursorField))
