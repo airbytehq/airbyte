@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -38,7 +39,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.RandomStringUtils;
 
 public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -85,7 +85,12 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected boolean implementsBasicNormalization() {
+  protected boolean supportsNormalization() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsDBT() {
     return true;
   }
 
@@ -130,7 +135,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    final String schemaName = ("integration_test_" + RandomStringUtils.randomAlphanumeric(5));
+    final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
 
     baseConfig = getStaticConfig();

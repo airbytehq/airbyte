@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 type IProps = {
   error?: boolean;
+  nextLine?: boolean;
   success?: boolean;
   message?: string | React.ReactNode;
   additionLength?: number;
@@ -49,7 +50,7 @@ const Label: React.FC<IProps> = (props) => (
     {props.children}
     {props.message && (
       <span>
-        {props.children && " - "}
+        {props.children ? props.nextLine ? <br /> : " - " : null}
         <MessageText error={props.error}>{props.message}</MessageText>
       </span>
     )}

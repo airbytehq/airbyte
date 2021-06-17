@@ -43,6 +43,7 @@ import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -55,7 +56,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +94,12 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected boolean implementsBasicNormalization() {
+  protected boolean supportsNormalization() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsDBT() {
     return true;
   }
 
@@ -190,7 +195,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
     final String datasetLocation = "US";
 
-    final String datasetId = "airbyte_tests_" + RandomStringUtils.randomAlphanumeric(8);
+    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)

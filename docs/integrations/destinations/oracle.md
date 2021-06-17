@@ -40,9 +40,9 @@ Make sure your Oracle database can be accessed by Airbyte. If your database is w
 
 You need an Oracle user with permissions to create tables and write rows, and to create other users with the same permissions in order to support namespaces. We highly recommend creating an Airbyte-specific user for this purpose.
 
-### Setup the Postgres destination in Airbyte
+### Setup the Oracle destination in Airbyte
 
-You should now have all the requirements needed to configure Oracle as a destination in the UI. You'll need the following information to configure the Postgres destination:
+You should now have all the requirements needed to configure Oracle as a destination in the UI. You'll need the following information to configure the Oracle destination:
 
 * **Host**
 * **Port**

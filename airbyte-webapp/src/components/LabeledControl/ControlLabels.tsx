@@ -7,7 +7,9 @@ export type ControlLabelsProps = {
   className?: string;
   error?: boolean;
   success?: boolean;
+  nextLine?: boolean;
   message?: React.ReactNode;
+  errorMessage?: React.ReactNode;
   labelAdditionLength?: number;
   label?: React.ReactNode;
 };
@@ -24,6 +26,7 @@ const ControlLabels: React.FC<ControlLabelsProps> = (props) => (
       success={props.success}
       message={props.message}
       additionLength={props.labelAdditionLength}
+      nextLine={props.nextLine}
     >
       {props.label}
     </Label>

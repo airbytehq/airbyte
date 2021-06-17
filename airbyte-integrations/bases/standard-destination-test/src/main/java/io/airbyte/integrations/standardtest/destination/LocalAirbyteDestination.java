@@ -24,7 +24,7 @@
 
 package io.airbyte.integrations.standardtest.destination;
 
-import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -45,9 +45,10 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void start(StandardTargetConfig targetConfig, Path jobRoot) throws Exception {
+  public void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception {
     consumer =
-        dest.getConsumer(targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog(), Destination::defaultOutputRecordCollector);
+        dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(), destinationConfig.getCatalog(),
+            Destination::defaultOutputRecordCollector);
     consumer.start();
   }
 

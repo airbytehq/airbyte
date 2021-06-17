@@ -25,7 +25,7 @@
 package io.airbyte.workers.protocols.airbyte;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -46,7 +46,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public void start(StandardTapConfig input, Path jobRoot) throws Exception {
+  public void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception {
     // no op.
   }
 
