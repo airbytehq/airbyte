@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="TRACE">
-<!--<Configuration status="INFO">-->
+<!--<Configuration status="TRACE">-->
+<Configuration status="INFO">
     <Properties>
         <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
         <Property name="default-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %m%n</Property>

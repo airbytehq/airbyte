@@ -89,6 +89,31 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: TEMPORAL_HOST
+            - name: S3_LOG_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_LOG_BUCKET
+            - name: S3_LOG_BUCKET_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_LOG_BUCKET_REGION
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: GCP_STORAGE_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: GCP_STORAGE_BUCKET
           ports:
             - containerPort: 8001
           volumeMounts:
