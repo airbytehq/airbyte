@@ -87,12 +87,17 @@ class SourceSfMarketingcloudSinger(SingerSource):
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
 
+    # def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
+    #     """
+    #     Return the string commands to invoke the tap with the --discover flag and the right configuration options
+    #     """
+    #     # TODO update the command below if needed. Otherwise you're good to go
+    #     return f"{self.TAP_CMD} -c {config_path} --discover"
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
         """
         Return the string commands to invoke the tap with the --discover flag and the right configuration options
         """
-        # TODO update the command below if needed. Otherwise you're good to go
-        return f"{self.TAP_CMD} -c {config_path} --discover"
+        return f"tap-exacttarget --config {config_path} --discover"
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         """
