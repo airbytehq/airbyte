@@ -131,7 +131,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     Path importInto = storageRoot.resolve(importDirectory);
     Files.createDirectories(importInto);
 
-    //pre populate new folder with data
+    // pre populate new folder with data
     prePopulate.accept(importInto);
 
     // write everything
