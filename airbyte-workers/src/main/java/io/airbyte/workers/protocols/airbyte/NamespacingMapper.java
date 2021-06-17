@@ -66,7 +66,12 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
         if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
           stream.withNamespace(null);
         } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
-          stream.withNamespace(formatNamespace(stream.getName(), stream.getNamespace(), namespaceFormat));
+          final String namespace = formatNamespace(stream.getNamespace(), namespaceFormat);
+          if (namespace == null) {
+            LOGGER.error("Namespace Format cannot be blank for Stream {}. Falling back to default namespace from destination settings",
+                stream.getName());
+          }
+          stream.withNamespace(namespace);
         }
       }
       stream.withName(transformStreamName(stream.getName(), streamPrefix));
@@ -83,7 +88,7 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
         if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
           message.getRecord().withNamespace(null);
         } else if (namespaceDefinition.equals(NamespaceDefinitionType.CUSTOMFORMAT)) {
-          message.getRecord().withNamespace(formatNamespace(message.getRecord().getStream(), message.getRecord().getNamespace(), namespaceFormat));
+          message.getRecord().withNamespace(formatNamespace(message.getRecord().getNamespace(), namespaceFormat));
         }
       }
       message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), streamPrefix));
@@ -92,14 +97,13 @@ public class NamespacingMapper implements Mapper<AirbyteMessage> {
     return inputMessage;
   }
 
-  private static String formatNamespace(String streamName, final String sourceNamespace, final String namespaceFormat) {
+  private static String formatNamespace(final String sourceNamespace, final String namespaceFormat) {
     String result = "";
     if (Strings.isNotBlank(namespaceFormat)) {
       final String regex = Pattern.quote("${SOURCE_NAMESPACE}");
-      result = namespaceFormat.replaceAll(regex, Strings.isNotEmpty(sourceNamespace) ? sourceNamespace : "");
+      result = namespaceFormat.replaceAll(regex, Strings.isNotBlank(sourceNamespace) ? sourceNamespace : "");
     }
     if (Strings.isBlank(result)) {
-      LOGGER.error("Namespace Format cannot be blank for Stream {}. Falling back to default namespace from destination settings", streamName);
       result = null;
     }
     return result;
