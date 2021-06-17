@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public class LogHelpers {
 
@@ -45,6 +46,7 @@ public class LogHelpers {
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
   public static String JOB_ROOT_MDC_KEY = "job_root";
   public static String JOB_LOG_FILENAME_MDC_KEY = "job_log_filename";
+  public static String JOB_LOG_PATH_MDC_KEY = "job_log_path";
 
   public static String S3_LOG_BUCKET = "S3_LOG_BUCKET";
   public static String S3_LOG_BUCKET_REGION = "S3_LOG_BUCKET_REGION";
@@ -102,4 +104,7 @@ public class LogHelpers {
     return S3.tailCloudLog(configs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
+  public static void setJobMdc(Path path) {
+    MDC.put(LogHelpers.JOB_LOG_PATH_MDC_KEY, path.resolve(LogHelpers.LOG_FILENAME).toString());
+  }
 }

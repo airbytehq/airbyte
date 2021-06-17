@@ -20,13 +20,13 @@
         </Console>
 
         <Routing name="LogSplit">
-            <Routes pattern="$${ctx:job_root}">
+            <Routes pattern="$${ctx:job_log_path}">
                 <!-- Don't split logs if job_root isn't defined -->
-                <Route key="$${ctx:job_root}">
+                <Route key="$${ctx:job_log_path}">
                     <Null name="/dev/null"/>
                 </Route>
                 <Route>
-                    <File name="${ctx:job_root}-local" fileName="${ctx:job_root}/${ctx:job_log_filename}">
+                    <File name="${ctx:job_log_path}-local" fileName="${ctx:job_log_path}">
                         <PatternLayout pattern="${default-worker-file-pattern}"/>
                     </File>
                 </Route>
@@ -34,18 +34,18 @@
             <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
         </Routing>
         <Routing name="LogSplitCloud">
-            <Routes pattern="$${ctx:job_root}">
+            <Routes pattern="$${ctx:job_log_path}">
                 <!-- Don't split logs if job_root isn't defined -->
-                <Route key="$${ctx:job_root}">
+                <Route key="$${ctx:job_log_path}">
                     <Null name="/dev/null"/>
                 </Route>
                 <Route>
-                    <Log4j2Appender name="${ctx:job_root}-cloud"
+                    <Log4j2Appender name="${ctx:job_log_path}-cloud"
                       verbose="true"
                       stagingBufferAge="1"
-                      s3Bucket="${s3-bucket}" s3Path="job-logging${ctx:job_root}/${ctx:job_log_filename}" s3Region="${s3-region}"
+                      s3Bucket="${s3-bucket}" s3Path="job-logging${ctx:job_log_path}" s3Region="${s3-region}"
                       s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}"
-                      gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:job_root}/${ctx:job_log_filename}">
+                      gcpStorageBucket="${gcp-storage-bucket}" gcpStorageBlobNamePrefix="job-logging${ctx:job_log_path}">
                         <PatternLayout>
                             <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
                         </PatternLayout>

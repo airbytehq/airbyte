@@ -185,13 +185,12 @@ public class WorkerUtils {
 
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
   // once we are fully on temporal.
-
   public static Path getJobRoot(Path workspaceRoot, JobRunConfig jobRunConfig) {
     return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
   }
 
   public static Path getLogPath(Path jobRoot) {
-    return jobRoot.resolve(WorkerConstants.LOG_FILENAME);
+    return jobRoot.resolve(LogHelpers.LOG_FILENAME);
   }
 
   public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
@@ -202,11 +201,6 @@ public class WorkerUtils {
     return workspaceRoot
         .resolve(String.valueOf(jobId))
         .resolve(String.valueOf(attemptId));
-  }
-
-  public static void setJobMdc(Path jobRoot) {
-    MDC.put(LogHelpers.JOB_ROOT_MDC_KEY, jobRoot.toString());
-    MDC.put(LogHelpers.JOB_LOG_FILENAME_MDC_KEY, WorkerConstants.LOG_FILENAME);
   }
 
 }

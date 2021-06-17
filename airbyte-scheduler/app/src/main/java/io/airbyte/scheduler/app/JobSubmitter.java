@@ -27,6 +27,7 @@ package io.airbyte.scheduler.app;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
@@ -91,13 +92,13 @@ public class JobSubmitter implements Runnable {
     final int attemptNumber = job.getAttempts().size();
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
-          final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
+          final Path logFilePath = workerRun.getJobRoot().resolve(LogHelpers.LOG_FILENAME);
           LOGGER.info("===== assigning workerRunJobRoot: {}", workerRun.getJobRoot());
           LOGGER.info("===== assigning logFilePath: {}", logFilePath);
           final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
           assertSameIds(attemptNumber, persistedAttemptId);
 
-          WorkerUtils.setJobMdc(workerRun.getJobRoot());
+          LogHelpers.setJobMdc(workerRun.getJobRoot());
           LOGGER.info("======= MDC context: {}", MDC.getCopyOfContextMap());
         })
         .setOnSuccess(output -> {
