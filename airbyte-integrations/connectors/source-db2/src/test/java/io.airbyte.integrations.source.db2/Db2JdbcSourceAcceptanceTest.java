@@ -118,7 +118,6 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @AfterAll
   static void cleanUp() {
     db.close();
-    db.stop();
   }
 
   @Override

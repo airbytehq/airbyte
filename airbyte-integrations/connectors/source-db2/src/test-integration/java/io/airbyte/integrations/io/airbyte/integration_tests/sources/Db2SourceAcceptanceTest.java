@@ -152,7 +152,6 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
     db.close();
-    db.stop();
   }
 
 }
