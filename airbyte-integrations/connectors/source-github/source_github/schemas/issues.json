@@ -28,7 +28,8 @@
     },
     "html_url": {
       "type": ["null", "string"]
-    },"number": {
+    },
+    "number": {
       "type": ["null", "integer"]
     },
     "state": {

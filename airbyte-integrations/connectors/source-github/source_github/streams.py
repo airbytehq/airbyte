@@ -142,7 +142,7 @@ class Assignees(GithubStream):
 
 
 class Reviews(GithubStream):
-    object_fields = ("user", )
+    object_fields = ("user",)
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -185,7 +185,11 @@ class Releases(GithubStream):
 
 
 class Events(GithubStream):
-    object_fields = ("actor", "repo", "org",)
+    object_fields = (
+        "actor",
+        "repo",
+        "org",
+    )
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -203,8 +207,17 @@ class Comments(GithubStream):
 
 
 class PullRequests(GithubStream):
-    object_fields = ("user", "milestone", "assignee",)
-    list_fields = ("labels", "assignees", "requested_reviewers", "requested_teams",)
+    object_fields = (
+        "user",
+        "milestone",
+        "assignee",
+    )
+    list_fields = (
+        "labels",
+        "assignees",
+        "requested_reviewers",
+        "requested_teams",
+    )
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
@@ -267,7 +280,10 @@ class IssueMilestones(GithubStream):
 
 class Commits(GithubStream):
     primary_key = "sha"
-    object_fields = ("author", "committer",)
+    object_fields = (
+        "author",
+        "committer",
+    )
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -334,8 +350,15 @@ class IssueLabels(GithubStream):
 
 
 class Issues(GithubStream):
-    object_fields = ("user", "assignee", "milestone", )
-    list_fields = ("labels", "assignees",)
+    object_fields = (
+        "user",
+        "assignee",
+        "milestone",
+    )
+    list_fields = (
+        "labels",
+        "assignees",
+    )
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -351,7 +374,10 @@ class Issues(GithubStream):
 
 
 class IssueEvents(GithubStream):
-    object_fields = ("actor", "issue",)
+    object_fields = (
+        "actor",
+        "issue",
+    )
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
