@@ -405,14 +405,6 @@ public class KubePodProcess extends Process {
     }
   }
 
-  private static String wrapWithHappyFileCloser(String command, String file) {
-    return "(" + command + ") &\nCHILD_PID=$!\n(while true; do if [[ -f " + file + "]]; then kill $CHILD_PID; fi; sleep 1; done) &\nwait $CHILD_PID\nif [[ -f " + file + " ]]; then exit 0; fi";
-  }
-
-  private static String wrapWithSadFileCloser(String command, String file) {
-    return "(" + command + ") &\nCHILD_PID=$!\n(while true; do if [[ -f " + file + "]]; then exit 0; fi; sleep 1; done) &\nwait $CHILD_PID\nexit 1";
-  }
-
   private void setupStdOutAndStdErrListeners() {
     executorService.submit(() -> {
       try {
