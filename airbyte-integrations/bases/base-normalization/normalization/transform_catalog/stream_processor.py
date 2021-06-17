@@ -510,6 +510,7 @@ from {{ from_table }}
 {{ sql_table_comment }}
         """
         )
+
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),

@@ -99,6 +99,7 @@ services:
       - API_URL=${API_URL:-}
       - IS_DEMO=${IS_DEMO:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
+      - FULLSTORY=${FULLSTORY:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
   airbyte-temporal:

@@ -265,21 +265,13 @@ class CampaignAPI(IncrementalStreamAPI):
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         """Read available campaigns"""
-        pull_ads = "ads" in fields
-        fields = [k for k in fields if k != "ads"]
         for campaign in self.read(getter=self._get_campaigns):
-            yield self._extend_record(campaign, fields=fields, pull_ads=pull_ads)
+            yield self._extend_record(campaign, fields=fields)
 
     @backoff_policy
-    def _extend_record(self, campaign, fields, pull_ads):
+    def _extend_record(self, campaign, fields):
         """Request additional attributes for campaign"""
-        campaign_out = campaign.api_get(fields=fields).export_all_data()
-        if pull_ads:
-            campaign_out["ads"] = {"data": []}
-            ids = [ad["id"] for ad in campaign.get_ads()]
-            for ad_id in ids:
-                campaign_out["ads"]["data"].append({"id": ad_id})
-        return campaign_out
+        return campaign.api_get(fields=fields).export_all_data()
 
     @backoff_policy
     def _get_campaigns(self, params):
