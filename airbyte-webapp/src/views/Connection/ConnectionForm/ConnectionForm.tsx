@@ -2,21 +2,18 @@ import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
-
-import { SyncSchema } from "core/domain/catalog";
-import { Source } from "core/resources/Source";
-import { Destination } from "core/resources/Destination";
 import ResetDataModal from "components/ResetDataModal";
 import { ModalTypes } from "components/ResetDataModal/types";
 import { equal } from "utils/objects";
 
 import { ControlLabels, DropDown, DropDownRow, Input, Label } from "components";
+import FrequencyConfig from "config/FrequencyConfig.json";
 
-import CreateControls from "./components/CreateControls";
-import Connector from "./components/Connector";
-import SchemaField from "./components/SyncCatalogField";
-import EditControls from "./components/EditControls";
 import { useDestinationDefinitionSpecificationLoadAsync } from "components/hooks/services/useDestinationHook";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { TransformationField } from "./components/TransformationField";
+import { NormalizationField } from "./components/NormalizationField";
+import { NamespaceField } from "./components/NamespaceField";
 import {
   ConnectionFormValues,
   connectionValidationSchema,
@@ -26,11 +23,12 @@ import {
   useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
-import NormalizationField from "./components/NormalizationField";
 import SectionTitle from "./components/SectionTitle";
-import { TransformationField } from "./components/TransformationField";
-import { Operation } from "core/domain/connection/operation";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import CreateControls from "./components/CreateControls";
+import Connector from "./components/Connector";
+import SchemaField from "./components/SyncCatalogField";
+import EditControls from "./components/EditControls";
+import { Connection, ScheduleProperties } from "core/resources/Connection";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -66,12 +64,10 @@ type ConnectionFormProps = {
   sourceIcon?: string;
   destinationIcon?: string;
 
-  syncCatalog: SyncSchema;
-  source: Source;
-  destination: Destination;
-  prefixValue?: string;
-  frequencyValue?: string;
-  operations?: Operation[];
+  connection:
+    | Connection
+    | (Partial<Connection> &
+        Pick<Connection, "syncCatalog" | "source" | "destination">);
 };
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
@@ -82,20 +78,15 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   destinationIcon,
   className,
   onDropDownSelect,
-  frequencyValue,
-  prefixValue,
   isEditMode,
   successMessage,
   additionBottomControls,
   editSchemeMode,
   additionalSchemaControl,
-  source,
-  destination,
-  operations,
-  syncCatalog,
+  connection,
 }) => {
   const destDefinition = useDestinationDefinitionSpecificationLoadAsync(
-    destination.destinationDefinitionId
+    connection.destination.destinationDefinitionId
   );
 
   const [modalIsOpen, setResetModalIsOpen] = useState(false);
@@ -103,17 +94,15 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const formatMessage = useIntl().formatMessage;
 
+  const { source, destination, operations } = connection;
   const supportsNormalization = destDefinition.supportsNormalization;
   const supportsTransformations = destDefinition.supportsDbt;
 
-  const initialValues = useInitialValues({
-    operations,
-    frequencyValue,
-    prefixValue,
-    isEditMode,
+  const initialValues = useInitialValues(
+    connection,
     destDefinition,
-    syncCatalog,
-  });
+    isEditMode
+  );
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues) => {
@@ -122,12 +111,12 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         {
           context: { isRequest: true },
         }
-      );
+      ) as any;
 
       const newOperations = mapFormPropsToOperation(values, operations);
 
       if (newOperations.length > 0) {
-        formValues.withOperations = newOperations;
+        formValues.operations = newOperations;
       }
 
       setSubmitError(null);
@@ -181,8 +170,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             >
               <Connector name={destination.name} icon={destinationIcon} />
             </ConnectorLabel>
-            <Field name="frequency">
-              {({ field, meta }: FieldProps<string>) => (
+            <Field name="schedule">
+              {({ field, meta }: FieldProps<ScheduleProperties>) => (
                 <ConnectorLabel
                   error={!!meta.error && meta.touched}
                   label={formatMessage({
@@ -191,19 +180,24 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 >
                   <DropDown
                     {...field}
+                    value={
+                      FrequencyConfig.find((f) => equal(f.config, field.value))
+                        ?.value
+                    }
                     error={!!meta.error && meta.touched}
                     data={frequencies}
                     onChange={(item) => {
                       if (onDropDownSelect) {
                         onDropDownSelect(item);
                       }
-                      setFieldValue(field.name, item.value);
+                      setFieldValue(field.name, item.config);
                     }}
                   />
                 </ConnectorLabel>
               )}
             </Field>
           </ControlLabelsWithMargin>
+          <NamespaceField />
           <Field name="prefix">
             {({ field }: FieldProps<string>) => (
               <ControlLabelsWithMargin
