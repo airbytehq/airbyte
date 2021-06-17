@@ -22,21 +22,16 @@
 # SOFTWARE.
 #
 
-import logging
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Callable
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-
 from dateutil.parser import isoparse
-
-# TODO remove
-logging.basicConfig(level=logging.DEBUG)
 
 
 class PaypalTransactionStream(HttpStream, ABC):
@@ -46,22 +41,18 @@ class PaypalTransactionStream(HttpStream, ABC):
     page_size = "500"  # API limit
 
     # Date limits are needed to prevent API error: Data for the given start date is not available
-    start_date_limits: Mapping[str, Mapping] = {
-        "min_date": {"days": 3 * 364},  # API limit - 3 years
-        "max_date": {"hours": 12}
-    }
+    start_date_limits: Mapping[str, Mapping] = {"min_date": {"days": 3 * 364}, "max_date": {"hours": 12}}  # API limit - 3 years
 
-    stream_slice_period: Mapping[str, int] = {
-        "days": 1
-    }
+    stream_slice_period: Mapping[str, int] = {"days": 1}
 
-    def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
+    def __init__(self, start_date: datetime, end_date: datetime, env: str = "Production", **kwargs):
         super().__init__(**kwargs)
 
         self._validate_input_dates(start_date=start_date, end_date=end_date)
 
         self.start_date = start_date
         self.end_date = end_date
+        self.env = env
 
     def _validate_input_dates(self, start_date, end_date):
 
@@ -89,10 +80,10 @@ class PaypalTransactionStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
 
-        if self.sandbox:
-            url_base = "https://api-m.sandbox.paypal.com/v1/reporting/"
-        else:
+        if self.env == "Production":
             url_base = "https://api-m.paypal.com/v1/reporting/"
+        else:
+            url_base = "https://api-m.sandbox.paypal.com/v1/reporting/"
 
         return url_base
 
@@ -100,24 +91,10 @@ class PaypalTransactionStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
 
-        return {'Content-Type': 'application/json'}
-
-    def parse_response__(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
-        json_response = response.json()
-        if self.data_field is not None:
-            yield from json_response.get(self.data_field, [])
-        else:
-            yield json_response
+        return {"Content-Type": "application/json"}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
+
         json_response = response.json()
         if self.data_field is not None:
             data = json_response.get(self.data_field, [])
@@ -274,7 +251,6 @@ class Balances(PaypalTransactionStream):
 
         return {
             "as_of_time": stream_slice["start_date"],
-            # "currency_code": "USD"
         }
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -313,7 +289,6 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
 
 
 class SourcePaypalTransaction(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -332,8 +307,13 @@ class SourcePaypalTransaction(AbstractSource):
         else:
             end_date = datetime.now().replace(microsecond=0).astimezone()
 
+        if config["environment"] == "Production":
+            url_auth = "https://api-m.paypal.com/v1/oauth2/token"
+        else:
+            url_auth = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
+
         authenticator = PayPalOauth2Authenticator(
-            token_refresh_endpoint="https://api-m.sandbox.paypal.com/v1/oauth2/token",
+            token_refresh_endpoint=url_auth,
             client_id=config["client_id"],
             client_secret=config["secret"],
             refresh_token="",
@@ -345,7 +325,7 @@ class SourcePaypalTransaction(AbstractSource):
 
         # Try to initiate a stream and validate input date params
         try:
-            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date)
+            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date, env=config["environment"])
         except Exception as e:
             return False, e
 
@@ -372,6 +352,6 @@ class SourcePaypalTransaction(AbstractSource):
             end_date = datetime.now().replace(microsecond=0).astimezone()
 
         return [
-            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date),
-            Balances(authenticator=authenticator, start_date=start_date, end_date=end_date)
+            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date, env=config["environment"]),
+            Balances(authenticator=authenticator, start_date=start_date, end_date=end_date, env=config["environment"]),
         ]
