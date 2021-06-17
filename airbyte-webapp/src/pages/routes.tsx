@@ -21,6 +21,7 @@ import MainView from "components/MainView";
 import SupportChat from "components/SupportChat";
 
 import useSegment from "components/hooks/useSegment";
+import useFullStory from "components/hooks/useFullStory";
 import useRouter from "components/hooks/useRouterHook";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
@@ -152,6 +153,7 @@ const OnboardingsRoutes = () => {
 
 export const Routing: React.FC = () => {
   useSegment(config.segment.token);
+  useFullStory(config.fullstory.org);
   useApiHealthPoll(config.healthCheckInterval);
 
   const { workspace } = useWorkspace();
