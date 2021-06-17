@@ -251,7 +251,7 @@ const useInitialValues = (
       prefix: connection.prefix || "",
       namespaceDefinition:
         connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
-      namespaceFormat: connection.namespaceFormat ?? "",
+      namespaceFormat: connection.namespaceFormat ?? "${SOURCE_NAMESPACE}",
     };
 
     const { operations = [] } = connection;
