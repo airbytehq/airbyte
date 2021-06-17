@@ -93,8 +93,8 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.server.errors.BadObjectSchemaException;
-import io.airbyte.server.errors.IdNotFoundException;
+import io.airbyte.server.errors.BadObjectSchemaKnownException;
+import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -552,9 +552,9 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     try {
       return call.call();
     } catch (ConfigNotFoundException e) {
-      throw new IdNotFoundException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()), e);
+      throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()), e);
     } catch (JsonValidationException e) {
-      throw new BadObjectSchemaException(
+      throw new BadObjectSchemaKnownException(
           String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);
     } catch (IOException e) {
       throw new RuntimeException(e);

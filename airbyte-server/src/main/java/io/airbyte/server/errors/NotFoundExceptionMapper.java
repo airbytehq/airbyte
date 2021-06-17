@@ -24,7 +24,7 @@
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.ExceptionInfo;
+import io.airbyte.api.model.KnownExceptionInfo;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -39,7 +39,7 @@ public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundExceptio
 
   @Override
   public Response toResponse(NotFoundException e) {
-    ExceptionInfo exceptionInfo = (ExceptionInfo) new ExceptionInfo()
+    KnownExceptionInfo exceptionInfo = (KnownExceptionInfo) new KnownExceptionInfo()
         .exceptionClassName(e.getClass().getName())
         .message("Not Found " + e.getMessage())
         .exceptionStack(Throwables.toStringList(e));

@@ -24,7 +24,7 @@
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.InvalidInputExceptionInfo;
+import io.airbyte.api.model.InvalidInputKnownExceptionInfo;
 import io.airbyte.commons.json.Jsons;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -40,7 +40,7 @@ public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintVi
 
   @Override
   public Response toResponse(ConstraintViolationException e) {
-    InvalidInputExceptionInfo exceptionInfo = (InvalidInputExceptionInfo) new InvalidInputExceptionInfo()
+    InvalidInputKnownExceptionInfo exceptionInfo = (InvalidInputKnownExceptionInfo) new InvalidInputKnownExceptionInfo()
         .exceptionClassName(e.getClass().getName())
         .message(prepareMessage(e))
         .exceptionStack(Throwables.toStringList(e));

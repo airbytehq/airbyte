@@ -25,7 +25,7 @@
 package io.airbyte.server.errors;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import io.airbyte.api.model.ExceptionInfo;
+import io.airbyte.api.model.KnownExceptionInfo;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -37,7 +37,7 @@ public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMapp
 
   @Override
   public Response toResponse(JsonMappingException e) {
-    ExceptionInfo exceptionInfo = (ExceptionInfo) new ExceptionInfo()
+    KnownExceptionInfo exceptionInfo = (KnownExceptionInfo) new KnownExceptionInfo()
         .exceptionClassName(e.getClass().getName())
         .message("Invalid json input. " + e.getMessage() + " " + e.getOriginalMessage())
         .exceptionStack(Throwables.toStringList(e));

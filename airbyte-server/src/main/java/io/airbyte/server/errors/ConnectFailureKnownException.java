@@ -24,19 +24,19 @@
 
 package io.airbyte.server.errors;
 
-public class InternalServerException extends KnownException {
+public class ConnectFailureKnownException extends KnownException {
 
-  public InternalServerException(String message) {
+  public ConnectFailureKnownException(String message) {
     super(message);
   }
 
-  public InternalServerException(String message, Throwable cause) {
+  public ConnectFailureKnownException(String message, Throwable cause) {
     super(message, cause);
   }
 
   @Override
   public int getHttpCode() {
-    return 500;
+    return 400;
   }
 
 }

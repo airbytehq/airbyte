@@ -2667,7 +2667,7 @@ components:
             - failed
         reason:
           type: string
-    ExceptionInfo:
+    KnownExceptionInfo:
       type: object
       required:
         - message
@@ -2686,21 +2686,21 @@ components:
           type: array
           items:
             type: string
-    InvalidInputExceptionInfo:
+    InvalidInputKnownExceptionInfo:
       allOf:
-        - $ref: "#/components/schemas/ExceptionInfo"
+        - $ref: "#/components/schemas/KnownExceptionInfo"
   responses:
     InvalidInputResponse:
       description: Input failed validation
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/InvalidInputExceptionInfo"
+            $ref: "#/components/schemas/InvalidInputKnownExceptionInfo"
     ExceptionResponse:
       description: Exception occurred; see message for details.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ExceptionInfo"
+            $ref: "#/components/schemas/KnownExceptionInfo"
 security:
   - {}

@@ -24,19 +24,19 @@
 
 package io.airbyte.server.errors;
 
-public class BadObjectSchemaException extends KnownException {
+public class IdNotFoundKnownException extends KnownException {
 
-  public BadObjectSchemaException(String message) {
+  public IdNotFoundKnownException(String message) {
     super(message);
   }
 
-  public BadObjectSchemaException(String message, Throwable cause) {
+  public IdNotFoundKnownException(String message, Throwable cause) {
     super(message, cause);
   }
 
   @Override
   public int getHttpCode() {
-    return 422;
+    return 404;
   }
 
 }

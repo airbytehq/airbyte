@@ -24,13 +24,13 @@
 
 package io.airbyte.server.errors;
 
-public class ValueConflictException extends KnownException {
+public class ValueConflictKnownException extends KnownException {
 
-  public ValueConflictException(String message) {
+  public ValueConflictKnownException(String message) {
     super(message);
   }
 
-  public ValueConflictException(String message, Throwable cause) {
+  public ValueConflictKnownException(String message, Throwable cause) {
     super(message, cause);
   }
 

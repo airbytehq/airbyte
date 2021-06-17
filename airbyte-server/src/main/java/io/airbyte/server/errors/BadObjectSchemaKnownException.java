@@ -24,19 +24,19 @@
 
 package io.airbyte.server.errors;
 
-public class ConnectException extends KnownException {
+public class BadObjectSchemaKnownException extends KnownException {
 
-  public ConnectException(String message) {
+  public BadObjectSchemaKnownException(String message) {
     super(message);
   }
 
-  public ConnectException(String message, Throwable cause) {
+  public BadObjectSchemaKnownException(String message, Throwable cause) {
     super(message, cause);
   }
 
   @Override
   public int getHttpCode() {
-    return 400;
+    return 422;
   }
 
 }

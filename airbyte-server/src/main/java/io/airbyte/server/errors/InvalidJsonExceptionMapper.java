@@ -25,7 +25,7 @@
 package io.airbyte.server.errors;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import io.airbyte.api.model.ExceptionInfo;
+import io.airbyte.api.model.KnownExceptionInfo;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -36,7 +36,7 @@ public class InvalidJsonExceptionMapper implements ExceptionMapper<JsonParseExce
 
   @Override
   public Response toResponse(JsonParseException e) {
-    ExceptionInfo exceptionInfo = (ExceptionInfo) new ExceptionInfo()
+    KnownExceptionInfo exceptionInfo = (KnownExceptionInfo) new KnownExceptionInfo()
         .exceptionClassName(e.getClass().getName())
         .message("Invalid json. " + e.getMessage() + " " + e.getOriginalMessage())
         .exceptionStack(Throwables.toStringList(e));
