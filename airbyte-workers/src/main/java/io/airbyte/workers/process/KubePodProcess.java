@@ -33,14 +33,12 @@ import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
-import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
-import io.fabric8.kubernetes.api.model.batch.Job;
-import io.fabric8.kubernetes.api.model.batch.JobBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -58,8 +56,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-
-import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +81,10 @@ import org.slf4j.LoggerFactory;
  * specified stdin socket.</li>
  * <li>6) The child process is able to access configuration data via the shared volume. It's inputs
  * and outputs - stdin, stdout and stderr - are forwarded the parent process via the sidecars.</li>
- *
+ * <li>7) The main process has its entrypoint wrapped to perform IO redirection and better error
+ * handling.</li>
+ * <li>8) A heartbeat sidecar checks if the worker that launched the pod is still alive. If not, the
+ * pod will fail.</li>
  *
  * See the constructor for more information.
  */
@@ -198,18 +197,21 @@ public class KubePodProcess extends Process {
         .build();
   }
 
-  private static Container getMain(String image, boolean usesStdin, String entrypoint, List<VolumeMount> mainVolumeMounts, String[] args) throws IOException {
+  private static Container getMain(String image, boolean usesStdin, String entrypoint, List<VolumeMount> mainVolumeMounts, String[] args)
+      throws IOException {
     var argsStr = String.join(" ", args);
     var entrypointWithArgs = entrypoint + " " + argsStr;
-    var optionalStdin = usesStdin ? String.format("cat %s | ", STDIN_PIPE_FILE): "";
+    var optionalStdin = usesStdin ? String.format("cat %s | ", STDIN_PIPE_FILE) : "";
 
+    // communicates its completion to the heartbeat check via a file and closes itself if the heartbeat
+    // fails
     var mainCommand = MoreResources.readResource("entrypoints/main.sh")
-            .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
-            .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
-            .replaceAll("OPTIONAL_STDIN", optionalStdin)
-            .replaceAll("ENTRYPOINT", entrypointWithArgs)
-            .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
-            .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
+        .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
+        .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
+        .replaceAll("OPTIONAL_STDIN", optionalStdin)
+        .replaceAll("ENTRYPOINT", entrypointWithArgs)
+        .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
+        .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
     return new ContainerBuilder()
         .withName("main")
@@ -265,7 +267,7 @@ public class KubePodProcess extends Process {
                         String image,
                         int stdoutLocalPort,
                         int stderrLocalPort,
-                        int heartbeatPort,
+                        String kubeHeartbeatUrl,
                         boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypointOverride,
@@ -306,16 +308,16 @@ public class KubePodProcess extends Process {
         .withMountPath(CONFIG_DIR)
         .build();
 
-      Volume terminationVolume = new VolumeBuilder()
-              .withName("airbyte-termination")
-              .withNewEmptyDir()
-              .endEmptyDir()
-              .build();
+    Volume terminationVolume = new VolumeBuilder()
+        .withName("airbyte-termination")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build();
 
-      VolumeMount terminationVolumeMount = new VolumeMountBuilder()
-              .withName("airbyte-termination")
-              .withMountPath(TERMINATION_DIR)
-              .build();
+    VolumeMount terminationVolumeMount = new VolumeMountBuilder()
+        .withName("airbyte-termination")
+        .withMountPath(TERMINATION_DIR)
+        .build();
 
     Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
     Container main = getMain(image, usesStdin, entrypoint, List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount), args);
@@ -342,34 +344,36 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
-    final String heartbeatUrl = localIp + ":" + heartbeatPort;
+    // communicates via a file if it isn't able to reach the heartbeating server and succeeds if the
+    // main container completes
     final String heartbeatCommand = MoreResources.readResource("entrypoints/check.sh")
         .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
         .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
-        .replaceAll("HEARTBEAT_URL", heartbeatUrl);
+        .replaceAll("HEARTBEAT_URL", kubeHeartbeatUrl);
 
     Container callHeartbeatServer = new ContainerBuilder()
-            .withName("call-heartbeat-server")
-            .withImage("curlimages/curl:7.77.0")
-            .withCommand("sh")
-            .withArgs("-c", heartbeatCommand)
-            .withVolumeMounts(terminationVolumeMount)
-            .build();
+        .withName("call-heartbeat-server")
+        .withImage("curlimages/curl:7.77.0")
+        .withCommand("sh")
+        .withArgs("-c", heartbeatCommand)
+        .withVolumeMounts(terminationVolumeMount)
+        .build();
 
-    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer) : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
+    List<Container> containers = usesStdin ? List.of(main, remoteStdin, relayStdout, relayStderr, callHeartbeatServer)
+        : List.of(main, relayStdout, relayStderr, callHeartbeatServer);
 
     final Pod pod = new PodBuilder()
-            .withApiVersion("v1")
-            .withNewMetadata()
-            .withName(podName)
-            .endMetadata()
-            .withNewSpec()
-            .withRestartPolicy("Never")
-            .withInitContainers(init)
-            .withContainers(containers)
-            .withVolumes(pipeVolume, configVolume, terminationVolume)
-            .endSpec()
-            .build();
+        .withApiVersion("v1")
+        .withNewMetadata()
+        .withName(podName)
+        .endMetadata()
+        .withNewSpec()
+        .withRestartPolicy("Never")
+        .withInitContainers(init)
+        .withContainers(containers)
+        .withVolumes(pipeVolume, configVolume, terminationVolume)
+        .endSpec()
+        .build();
 
     LOGGER.info("Creating pod...");
     this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
@@ -382,7 +386,7 @@ public class KubePodProcess extends Process {
     // We always copy the empty success file to ensure our waiting step can detect the init container in
     // RUNNING. Otherwise, the container can complete and exit before we are able to detect it.
     filesWithSuccess.put(SUCCESS_FILE_NAME, "");
-    copyFilesToKubeConfigVolume(client, podDefinition.getMetadata().getName(), namespace, filesWithSuccess);
+    copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
 
     LOGGER.info("Waiting until pod is ready...");
     client.resource(podDefinition).waitUntilCondition(p -> {
@@ -392,7 +396,7 @@ public class KubePodProcess extends Process {
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
-    var podIp = getPodIP(client, podDefinition.getMetadata().getName(), namespace);
+    var podIp = getPodIP(client, podName, namespace);
     LOGGER.info("Pod IP: {}", podIp);
 
     if (usesStdin) {

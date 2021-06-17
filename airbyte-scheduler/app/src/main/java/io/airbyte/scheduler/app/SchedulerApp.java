@@ -54,6 +54,8 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -165,11 +167,13 @@ public class SchedulerApp {
     }
   }
 
-  private static ProcessFactory getProcessBuilderFactory(Configs configs) {
+  private static ProcessFactory getProcessBuilderFactory(Configs configs) throws UnknownHostException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final KubernetesClient kubeClient = new DefaultKubernetesClient();
       final BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(configs.getTemporalWorkerPorts());
-      return new KubeProcessFactory("default", kubeClient, KUBE_HEARTBEAT_PORT, workerPorts);
+      final String localIp = InetAddress.getLocalHost().getHostAddress();
+      final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
+      return new KubeProcessFactory("default", kubeClient, kubeHeartbeatUrl, workerPorts);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
@@ -214,14 +218,14 @@ public class SchedulerApp {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       Map<String, String> mdc = MDC.getCopyOfContextMap();
       Executors.newSingleThreadExecutor().submit(
-              () -> {
-                MDC.setContextMap(mdc);
-                try {
-                  new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
-                } catch (Exception e) {
-                  throw new RuntimeException(e);
-                }
-              });
+          () -> {
+            MDC.setContextMap(mdc);
+            try {
+              new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          });
     }
 
     TrackingClientSingleton.initialize(

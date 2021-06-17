@@ -42,14 +42,20 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private final String namespace;
   private final KubernetesClient kubeClient;
-  private final int heartbeatPort;
+  private final String kubeHeartbeatUrl;
   private final BlockingQueue<Integer> workerPorts;
-  private final Set<Integer> claimedPorts = new HashSet<>();
 
-  public KubeProcessFactory(String namespace, KubernetesClient kubeClient, int heartbeatPort, BlockingQueue<Integer> workerPorts) {
+  /**
+   * @param namespace kubernetes namespace where spawned pods will live
+   * @param kubeClient kubernetes client
+   * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
+   *        itself
+   * @param workerPorts a set of ports that can be used for IO socket servers
+   */
+  public KubeProcessFactory(String namespace, KubernetesClient kubeClient, String kubeHeartbeatUrl, BlockingQueue<Integer> workerPorts) {
     this.namespace = namespace;
     this.kubeClient = kubeClient;
-    this.heartbeatPort = heartbeatPort;
+    this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.workerPorts = workerPorts;
   }
 
@@ -69,11 +75,9 @@ public class KubeProcessFactory implements ProcessFactory {
       final String podName = "airbyte-worker-" + jobId + "-" + attempt + "-" + suffix;
 
       final int stdoutLocalPort = workerPorts.take();
-      claimedPorts.add(stdoutLocalPort);
       LOGGER.info("stdoutLocalPort = " + stdoutLocalPort);
 
       final int stderrLocalPort = workerPorts.take();
-      claimedPorts.add(stderrLocalPort);
       LOGGER.info("stderrLocalPort = " + stderrLocalPort);
 
       final Consumer<Integer> portReleaser = port -> {
@@ -93,7 +97,7 @@ public class KubeProcessFactory implements ProcessFactory {
           imageName,
           stdoutLocalPort,
           stderrLocalPort,
-          heartbeatPort,
+          kubeHeartbeatUrl,
           usesStdin,
           files,
           entrypoint,
