@@ -89,7 +89,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-bigquery-struct:dev";
+    return "airbyte/destination-bigquery-denormalized:dev";
   }
 
   @Override
