@@ -37,8 +37,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -76,7 +76,7 @@ class DefaultAirbyteSourceTest {
       NAMESPACE,
       Field.of(FIELD_NAME, JsonSchemaPrimitive.STRING));
 
-  private static final StandardTapConfig SOURCE_CONFIG = new StandardTapConfig()
+  private static final WorkerSourceConfig SOURCE_CONFIG = new WorkerSourceConfig()
       .withState(new State().withState(STATE))
       .withSourceConnectionConfiguration(CONFIG)
       .withCatalog(CATALOG);

@@ -35,6 +35,7 @@ import io.airbyte.migrate.MigrationUtils;
 import io.airbyte.migrate.ResourceId;
 import io.airbyte.migrate.ResourceType;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -89,11 +90,13 @@ public class MigrationV0_26_0 extends BaseMigration implements Migration {
     inputData.getOrDefault(DESTINATION_CONNECTION_RESOURCE_ID, Stream.empty())
         .forEach(destinationConnection -> {
           JsonNode configuration = destinationConnection.get("configuration");
-          boolean basicNormalization = ((ObjectNode) configuration).remove("basic_normalization")
-              .asBoolean();
-          ((ObjectNode) destinationConnection).set("configuration", configuration);
-          if (basicNormalization) {
-            destinationIds.add(destinationConnection.get("destinationId").asText());
+          if (configuration.get("basic_normalization") != null) {
+            boolean basicNormalization = ((ObjectNode) configuration).remove("basic_normalization")
+                .asBoolean();
+            ((ObjectNode) destinationConnection).set("configuration", configuration);
+            if (basicNormalization) {
+              destinationIds.add(destinationConnection.get("destinationId").asText());
+            }
           }
 
           final Consumer<JsonNode> destinationConnectionConsumer = outputData
@@ -123,11 +126,14 @@ public class MigrationV0_26_0 extends BaseMigration implements Migration {
               .put("tombstone", false);
           JsonNode standardSyncOperationAsJson = Jsons.jsonNode(standardSyncOperation);
           outputData.get(STANDARD_SYNC_OPERATION_RESOURCE_ID).accept(standardSyncOperationAsJson);
-
-          List<String> operationIds = Jsons
-              .object(jsonNode.get("operationIds"), new TypeReference<List<String>>() {});
-          operationIds.add(operationId);
-          ((ObjectNode) jsonNode).set("operationIds", Jsons.jsonNode(operationIds));
+          if (jsonNode.get("operationIds") == null) {
+            ((ObjectNode) jsonNode).put("operationIds", Jsons.jsonNode(Collections.singletonList(operationId)));
+          } else {
+            List<String> operationIds = Jsons
+                .object(jsonNode.get("operationIds"), new TypeReference<List<String>>() {});
+            operationIds.add(operationId);
+            ((ObjectNode) jsonNode).set("operationIds", Jsons.jsonNode(operationIds));
+          }
         }
         final Consumer<JsonNode> outputConsumer = outputData.get(inputEntry.getKey());
         outputConsumer.accept(jsonNode);

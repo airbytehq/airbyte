@@ -22,19 +22,15 @@
 # SOFTWARE.
 #
 
-import pendulum
-from source_google_ads.utils import Utils
+
+import pytest
+
+pytest_plugins = ("source_acceptance_test.plugin",)
 
 
-def test_get_date_params():
-    stream_slice = {"date": "2020-01-01"}
-    cursor_field = "date"
-
-    response = Utils.get_date_params(stream_slice, cursor_field, pendulum.parse("2020-02-15"))
-    assert response == ("2020-01-02", "2020-02-01")
-
-    stream_slice = {"date": "2029-01-01"}
-    cursor_field = "date"
-
-    response = Utils.get_date_params(stream_slice, cursor_field)
-    assert response == ("2029-01-01", "2029-01-02")
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """This fixture is a placeholder for external resources that acceptance test might require."""
+    # TODO: setup test dependencies
+    yield
+    # TODO: clean up test dependencies
