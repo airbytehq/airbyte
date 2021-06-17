@@ -64,7 +64,7 @@ class SourceTwilio(AbstractSource):
                     config["auth_token"],
                 ),
             )
-            accounts_gen = Accounts(authenticator=auth, start_date=config["start_date"]).read_records(sync_mode=SyncMode.full_refresh)
+            accounts_gen = Accounts(authenticator=auth).read_records(sync_mode=SyncMode.full_refresh)
             next(accounts_gen)
             return True, None
         except Exception as error:
@@ -80,29 +80,31 @@ class SourceTwilio(AbstractSource):
                 config["auth_token"],
             ),
         )
+        full_refresh_stream_kwargs = {"authenticator": auth}
+        incremental_stream_kwargs = {"authenticator": auth, "start_date": config["start_date"]}
 
         streams = [
-            Accounts(authenticator=auth, start_date=config["start_date"]),
-            Addresses(authenticator=auth, start_date=config["start_date"]),
-            DependentPhoneNumbers(authenticator=auth, start_date=config["start_date"]),
-            Applications(authenticator=auth, start_date=config["start_date"]),
-            AvailablePhoneNumberCountries(authenticator=auth),
-            AvailablePhoneNumbersLocal(authenticator=auth),
-            AvailablePhoneNumbersMobile(authenticator=auth),
-            AvailablePhoneNumbersTollFree(authenticator=auth),
-            IncomingPhoneNumbers(authenticator=auth, start_date=config["start_date"]),
-            Keys(authenticator=auth, start_date=config["start_date"]),
-            Calls(authenticator=auth, start_date=config["start_date"]),
-            Conferences(authenticator=auth, start_date=config["start_date"]),
-            ConferenceParticipants(authenticator=auth),
-            OutgoingCallerIds(authenticator=auth, start_date=config["start_date"]),
-            Recordings(authenticator=auth, start_date=config["start_date"]),
-            Transcriptions(authenticator=auth, start_date=config["start_date"]),
-            Queues(authenticator=auth, start_date=config["start_date"]),
-            Messages(authenticator=auth, start_date=config["start_date"]),
-            MessageMedia(authenticator=auth, start_date=config["start_date"]),
-            UsageRecords(authenticator=auth, start_date=config["start_date"]),
-            UsageTriggers(authenticator=auth, start_date=config["start_date"]),
-            Alerts(authenticator=auth),
+            Accounts(**full_refresh_stream_kwargs),
+            Addresses(**full_refresh_stream_kwargs),
+            DependentPhoneNumbers(**full_refresh_stream_kwargs),
+            Applications(**full_refresh_stream_kwargs),
+            AvailablePhoneNumberCountries(**full_refresh_stream_kwargs),
+            AvailablePhoneNumbersLocal(**full_refresh_stream_kwargs),
+            AvailablePhoneNumbersMobile(**full_refresh_stream_kwargs),
+            AvailablePhoneNumbersTollFree(**full_refresh_stream_kwargs),
+            IncomingPhoneNumbers(**full_refresh_stream_kwargs),
+            Keys(**full_refresh_stream_kwargs),
+            Calls(**incremental_stream_kwargs),
+            Conferences(**incremental_stream_kwargs),
+            ConferenceParticipants(**full_refresh_stream_kwargs),
+            OutgoingCallerIds(**full_refresh_stream_kwargs),
+            Recordings(**incremental_stream_kwargs),
+            Transcriptions(**full_refresh_stream_kwargs),
+            Queues(**full_refresh_stream_kwargs),
+            Messages(**incremental_stream_kwargs),
+            MessageMedia(**incremental_stream_kwargs),
+            UsageRecords(**incremental_stream_kwargs),
+            UsageTriggers(**full_refresh_stream_kwargs),
+            Alerts(**incremental_stream_kwargs),
         ]
         return streams
