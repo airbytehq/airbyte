@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/postgres",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": true,
@@ -23,8 +23,8 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
-        "default": 5432,
-        "examples": ["5432"],
+        "default": 1433,
+        "examples": ["1433"],
         "order": 1
       },
       "database": {
