@@ -54,16 +54,15 @@ from .streams import (
 class SourceGithub(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            repositories = config["repository"].split(" ")
-            for repository in repositories:
-                url = f"https://api.github.com/repos/{repository}/collaborators"
-                response = requests.get(url, headers={"Authorization": f"token {config['access_token']}"})
+            repository = config["repository"]
+            url = f"https://api.github.com/repos/{repository}/collaborators"
+            response = requests.get(url, headers={"Authorization": f"token {config['access_token']}"})
 
-                if response.status_code != 200:
-                    raise Exception(
-                        f'Unable to connect with the provided credentials for "{repository}" repository. '
-                        f"Status code = {response.status_code}"
-                    )
+            if response.status_code != 200:
+                raise Exception(
+                    f'Unable to connect with the provided credentials for "{repository}" repository. '
+                    f"Status code = {response.status_code}"
+                )
         except Exception as e:
             return False, e
 
