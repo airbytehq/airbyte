@@ -17,7 +17,12 @@
       "credentials": {
         "type": "object",
         "title": "Google Credentials",
-        "required": ["developer_token", "client_id", "client_secret", "refresh_token"],
+        "required": [
+          "developer_token",
+          "client_id",
+          "client_secret",
+          "refresh_token"
+        ],
         "properties": {
           "developer_token": {
             "type": "string",

@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-from source_google_ads.source import AdGroupAdReport, chunk_date_range
+from source_google_ads.source import AdGroupAdReport, GoogleAds, chunk_date_range
 
 
 def test_chunk_date_range():
@@ -36,7 +36,8 @@ def test_chunk_date_range():
 
 # this requires the config because instantiating a stream creates a google client. TODO refactor so client can be mocked.
 def test_get_updated_state(config):
-    client = AdGroupAdReport(**config)
+    google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+    client = AdGroupAdReport(start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"])
     current_state_stream = {}
     latest_record = {"segments.date": "2020-01-01"}
 

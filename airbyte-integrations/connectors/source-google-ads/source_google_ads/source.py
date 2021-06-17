@@ -61,9 +61,9 @@ def chunk_date_range(start_date: str, conversion_window: int, field: str, end_da
 
 
 class GoogleAdsStream(Stream, ABC):
-    def __init__(self, credentials: Mapping[str, Any], customer_id: str, conversion_window_days: int):
+    def __init__(self, api: GoogleAds, conversion_window_days: int):
         self.conversion_window_days = conversion_window_days
-        self.google_ads_client = GoogleAds(credentials=credentials, customer_id=customer_id)
+        self.google_ads_client = api
 
     def parse_response(self, response: SearchGoogleAdsResponse) -> Iterable[Mapping]:
         for result in response:
@@ -132,14 +132,12 @@ class SourceGoogleAds(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             logger.info("Checking the config")
-            check_config = dict(credentials=config["credentials"], customer_id=config["customer_id"])
-            GoogleAds(**check_config)
+            GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        stream_config = dict(
-            credentials=config["credentials"], customer_id=config["customer_id"], conversion_window_days=config["conversion_window_days"]
-        )
+        google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+        stream_config = dict(api=google_api, conversion_window_days=config["conversion_window_days"])
         return [AdGroupAdReport(start_date=config["start_date"], **stream_config)]
