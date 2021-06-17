@@ -2697,7 +2697,7 @@ components:
           type: array
           items:
             type: string
-    InvalidInputKnownExceptionInfo:
+    InvalidInputExceptionInfo:
       type: object
       required:
         - message
@@ -2722,7 +2722,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/InvalidInputKnownExceptionInfo"
+            $ref: "#/components/schemas/InvalidInputExceptionInfo"
     ExceptionResponse:
       description: Exception occurred; see message for details.
       content:

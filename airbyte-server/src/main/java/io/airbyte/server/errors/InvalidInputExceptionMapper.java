@@ -24,7 +24,7 @@
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.InvalidInputKnownExceptionInfo;
+import io.airbyte.api.model.InvalidInputExceptionInfo;
 import io.airbyte.api.model.InvalidInputProperty;
 import io.airbyte.commons.json.Jsons;
 import java.util.ArrayList;
@@ -41,8 +41,8 @@ import org.apache.logging.log4j.core.util.Throwables;
 @Provider
 public class InvalidInputExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
 
-  public static InvalidInputKnownExceptionInfo infoFromConstraints(ConstraintViolationException cve) {
-    InvalidInputKnownExceptionInfo exceptionInfo = new InvalidInputKnownExceptionInfo()
+  public static InvalidInputExceptionInfo infoFromConstraints(ConstraintViolationException cve) {
+    InvalidInputExceptionInfo exceptionInfo = new InvalidInputExceptionInfo()
         .exceptionClassName(cve.getClass().getName())
         .message("Some properties contained invalid input.")
         .exceptionStack(Throwables.toStringList(cve));
