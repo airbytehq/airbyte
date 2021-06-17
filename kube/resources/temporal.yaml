@@ -106,5 +106,5 @@ spec:
           configMap:
             name: airbyte-temporal-dynamicconfig
             items:
-            - key: development.yaml
-              path: development.yaml
+              - key: development.yaml
+                path: development.yaml
