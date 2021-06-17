@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-// if org is undefined calls to segment will be a no-op.
+// if org is undefined calls to fullstory will be a no-op.
 const useFullStory = (org?: string): void => {
   useEffect(() => {
     if (org) {
@@ -33,11 +33,11 @@ const useFullStory = (org?: string): void => {
       `;
       script.async = true;
 
-      if (typeof window !== "undefined" && !window._fs_namespace) {
+      if (typeof window !== "undefined" && !("_fs_namespace" in window)) {
         document.body.appendChild(script);
       }
     }
-  }, [token]);
+  }, [org]);
 };
 
 export default useFullStory;

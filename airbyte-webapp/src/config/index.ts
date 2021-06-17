@@ -4,6 +4,7 @@ declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
     PAPERCUPS_STORYTIME?: string;
+    FULLSTORY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
@@ -26,6 +27,9 @@ type Config = {
     accountId: string;
     baseUrl: string;
     enableStorytime: boolean;
+  };
+  fullstory: {
+    org: string;
   };
   apiUrl: string;
   healthCheckInterval: number;
