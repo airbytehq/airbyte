@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "id_customer": {
+      "type": ["null", "integer"]
+    },
+    "id_manufacturer": {
+      "type": ["null", "integer"]
+    },
+    "id_supplier": {
+      "type": ["null", "integer"]
+    },
+    "id_warehouse": {
+      "type": ["null", "integer"]
+    },
+    "id_country": {
+      "type": "integer"
+    },
+    "id_state": {
+      "type": ["null", "integer"]
+    },
+    "alias": {
+      "type": "string"
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "lastname": {
+      "type": "string"
+    },
+    "firstname": {
+      "type": "string"
+    },
+    "vat_number": {
+      "type": ["null", "string"]
+    },
+    "address1": {
+      "type": "string"
+    },
+    "address2": {
+      "type": ["null", "string"]
+    },
+    "postcode": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": "string"
+    },
+    "other": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "phone_mobile": {
+      "type": ["null", "string"]
+    },
+    "dni": {
+      "type": ["null", "string"]
+    },
+    "deleted": {
+      "type": ["null", "boolean"]
+    },
+    "date_add": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_upd": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
