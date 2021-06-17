@@ -342,7 +342,7 @@ public class KubePodProcess extends Process {
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
         .build();
 
-    final String heartbeatUrl = "host.docker.internal:" + heartbeatPort; // todo: switch back to: localIp + ":" + heartbeatPort;
+    final String heartbeatUrl = localIp + ":" + heartbeatPort;
     final String heartbeatCommand = MoreResources.readResource("entrypoints/check.sh")
         .replaceAll("TERMINATION_FILE_CHECK", TERMINATION_FILE_CHECK)
         .replaceAll("TERMINATION_FILE_MAIN", TERMINATION_FILE_MAIN)
