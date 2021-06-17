@@ -44,6 +44,15 @@ from source_facebook_marketing.streams import (
 )
 
 
+class InsightStreamsConfig(BaseModel):
+    name: str
+    breakdowns: List[str]
+    level: str
+    action_breakdowns: List[str]
+    time_increment: int
+    action_attribution_windows: List[str]
+
+
 class ConnectorConfig(BaseModel):
     class Config:
         title = "Source Facebook Marketing"
@@ -76,6 +85,8 @@ class ConnectorConfig(BaseModel):
         minimum=1,
         maximum=30,
     )
+
+    insights: List[InsightStreamsConfig]
 
 
 class SourceFacebookMarketing(AbstractSource):

@@ -31,6 +31,9 @@ import backoff
 import pendulum as pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from cached_property import cached_property
 from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
@@ -42,6 +45,8 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 
 
 class FBMarketingStream(Stream, ABC):
+    """Base stream class"""
+
     primary_key = "id"
 
     page_size = 100
@@ -56,10 +61,14 @@ class FBMarketingStream(Stream, ABC):
 
     @property
     def fields(self) -> List[str]:
+        """List of fields that we want to query, for now just all properties from stream's schema
+        FIXME: implement cache
+        """
         return list(self.get_json_schema().get("properties", {}).keys())
 
     @backoff_policy
     def execute_in_batch(self, requests: Iterable[FacebookRequest]) -> Sequence[MutableMapping[str, Any]]:
+        """Execute list of requests in batches"""
         records = []
 
         def success(response: FacebookResponse):
@@ -84,19 +93,26 @@ class FBMarketingStream(Stream, ABC):
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for record in self.request_records(params=self.request_params(stream_state=stream_state)):
+        """Main read method used by CDK"""
+        for record in self._read_records(params=self.request_params(stream_state=stream_state)):
             yield from self._extend_record(record, fields=self.fields)
 
     @abstractmethod
-    def request_records(self, params: Mapping[str, Any]):
+    def query_records(self, params: Mapping[str, Any]):
         """Implement this method to return stream entities"""
 
     @backoff_policy
+    def _read_records(self, params: Mapping[str, Any]):
+        """Wrapper around query_records to backoff errors"""
+        yield from self.query_records(params=params)
+
+    @backoff_policy
     def _extend_record(self, obj: Any, **kwargs):
-        """Request additional attributes for object"""
+        """Wrapper around api_get to backoff errors"""
         return obj.api_get(**kwargs).export_all_data()
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        """Parameters that should be passed to query_records method"""
         params = {
             "limit": self.page_size
         }
@@ -107,6 +123,7 @@ class FBMarketingStream(Stream, ABC):
         return params
 
     def _filter_all_statuses(self) -> MutableMapping[str, Any]:
+        """Filter that covers all possible statuses thus including deleted/archived records"""
         filt_values = [
             "active",
             "archived",
@@ -139,6 +156,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         self._start_date = pendulum.instance(start_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """Update stream state from latest record"""
         record_value = latest_record[self.cursor_field]
         state_value = current_stream_state.get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
@@ -149,6 +167,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         }
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        """Include state filter"""
         params = super().request_params(**kwargs)
         deep_merge(params, self._state_filter(stream_state=stream_state))
         return params
@@ -184,15 +203,13 @@ class AdCreatives(FBMarketingStream):
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """ Read records using batch API
-        """
-        creatives = self._get_creatives(params=self.request_params(stream_state=stream_state))
-        requests = [self._extend_record(creative, fields=self.fields, pending=True) for creative in creatives]
+        """ Read records using batch API"""
+        records = self._read_records(params=self.request_params(stream_state=stream_state))
+        requests = [self._extend_record(record, fields=self.fields, pending=True) for record in records]
         for requests_batch in batch(requests, size=self.batch_size):
             yield from self.execute_in_batch(requests_batch)
 
-    @backoff_policy
-    def _get_creatives(self, params: Mapping[str, Any]) -> Iterator:
+    def query_records(self, params: Mapping[str, Any]) -> Iterator:
         return self._api.account.get_ad_creatives(params=params)
 
 
@@ -202,18 +219,7 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
     enable_deleted = True
 
-    def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        for record in self._get_ads(params=self.request_params(stream_state=stream_state)):
-            yield from self._extend_record(record, fields=self.fields)
-
-    @backoff_policy
-    def _get_ads(self, params: Mapping[str, Any]) -> Iterator:
+    def query_records(self, params: Mapping[str, Any]):
         return self._api.account.get_ads(params=params)
 
 
@@ -223,18 +229,7 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
     enable_deleted = True
 
-    def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        for record in self._get_ad_sets(params=self.request_params(stream_state=stream_state)):
-            yield from self._extend_record(record, fields=self.fields)
-
-    @backoff_policy
-    def _get_ad_sets(self, params):
+    def query_records(self, params: Mapping[str, Any]):
         return self._api.account.get_ad_sets(params=params)
 
 
@@ -244,22 +239,13 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
     enable_deleted = True
 
-    def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        for record in self._get_campaigns(params=self.request_params(stream_state=stream_state)):
-            yield from self._extend_record(record, fields=self.fields)
-
-    @backoff_policy
-    def _get_campaigns(self, params):
+    def query_records(self, params: Mapping[str, Any]):
         return self._api.account.get_campaigns(params=params)
 
 
 class AdsInsights(FBMarketingIncrementalStream):
+    """ doc: https://developers.facebook.com/docs/marketing-api/insights """
+
     primary_key = None
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
@@ -305,7 +291,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         super().__init__(**kwargs)
         self._buffer_days = buffer_days
         self._sync_interval = pendulum.Interval(days=days_per_job)
-        self._state = self._start_date
 
     def read_records(
             self,
@@ -370,9 +355,52 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         return params
 
-    @property
-    def fields(self) -> List[str]:
-        return list(set(super().fields) - set(self.INVALID_INSIGHT_FIELDS))
+    @cached_property
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        :return: A dict of the JSON schema representing this stream.
+        FIXME: cache
+        we add fields from breakdowns
+        """
+        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        schema["properties"].update(self._schema_for_breakdowns())
+        return schema
+
+    def _schema_for_breakdowns(self):
+        schemas = {
+            "age": {
+                "type": ["null", "integer", "string"]
+            },
+            "gender": {
+                "type": ["null", "string"]
+            },
+            "country": {
+                "type": ["null", "string"]
+            },
+            "dma": {
+                "type": ["null", "string"]
+            },
+            "region": {
+                "type": ["null", "string"]
+            },
+            "impression_device": {
+                "type": ["null", "string"]
+            },
+            "placement": {
+                "type": ["null", "string"]
+            },
+            "platform_position": {
+                "type": ["null", "string"]
+            },
+            "publisher_platform": {
+                "type": ["null", "string"]
+            },
+        }
+        breakdowns = self.breakdowns[:]
+        if "platform_position" in breakdowns:
+            breakdowns.append("placement")
+
+        return [schemas[breakdown] for breakdown in self.breakdowns]
 
     def _date_params(self) -> Iterator[dict]:
         # Facebook freezes insight data 28 days after it was generated, which means that all data
