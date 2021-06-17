@@ -51,6 +51,7 @@ import io.airbyte.server.converters.DatabaseArchiver;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -92,6 +93,7 @@ public class RunMigrationTest {
 
       Path configRoot = Files.createTempDirectory("dummy_data");
       FileUtils.copyDirectory(dummyDataSource.toFile(), configRoot.toFile());
+      resourceToBeCleanedUp.add(configRoot.toFile());
       JobPersistence jobPersistence = getJobPersistence(stubAirbyteDB.getDatabase(), file,
           INITIAL_VERSION);
       assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
@@ -245,14 +247,14 @@ public class RunMigrationTest {
   }
 
   private void runMigration(JobPersistence jobPersistence, Path exportConfigRoot)
-      throws IOException {
+      throws IOException, URISyntaxException {
     try (RunMigration runMigration = new RunMigration(
         INITIAL_VERSION,
         exportConfigRoot,
         jobPersistence,
         new ConfigRepository(new DefaultConfigPersistence(exportConfigRoot)),
         TARGET_VERSION,
-        true)) {
+        Path.of(Resources.getResource("config").toURI()))) {
       runMigration.run();
     }
   }

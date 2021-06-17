@@ -27,7 +27,11 @@ package io.airbyte.config.persistence;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public interface ConfigPersistence {
 
@@ -36,5 +40,8 @@ public interface ConfigPersistence {
   <T> List<T> listConfigs(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException;
 
   <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException;
+
+  <T> void atomicConfigImport(Map<ConfigSchema, Stream<T>> configs, boolean dryRun, Consumer<Path> prePopulate)
+      throws IOException;
 
 }

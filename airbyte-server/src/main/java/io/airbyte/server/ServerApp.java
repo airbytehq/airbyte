@@ -237,7 +237,7 @@ public class ServerApp {
                                             String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
     try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion,
-        configRoot, jobPersistence, configRepository, airbyteVersion)) {
+        configRoot, jobPersistence, configRepository, airbyteVersion, Path.of(System.getProperty("user.dir")).resolve("latest_seeds"))) {
       runMigration.run();
     } catch (Exception e) {
       LOGGER.error("Automatic Migration failed ", e);

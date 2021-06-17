@@ -35,9 +35,13 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class ConfigRepository {
 
@@ -201,6 +205,10 @@ public class ConfigRepository {
 
   public List<StandardSyncOperation> listStandardSyncOperations() throws IOException, JsonValidationException {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
+  }
+
+  public <T> void atomicImportOfConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun, Consumer<Path> prePopulate) throws IOException {
+    persistence.atomicConfigImport(configs, dryRun, prePopulate);
   }
 
 }

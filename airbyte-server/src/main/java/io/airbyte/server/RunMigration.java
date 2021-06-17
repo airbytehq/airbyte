@@ -24,7 +24,6 @@
 
 package io.airbyte.server;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -35,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -46,37 +44,19 @@ public class RunMigration implements Runnable, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RunMigration.class);
   private final String targetVersion;
-  private boolean isSuccessful;
   private final ConfigDumpExport configDumpExport;
   private final ConfigDumpImport configDumpImport;
-  private final Path configRoot;
-  private final String targetConfigDirectory;
-  private final boolean isUnitTest;
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
   public RunMigration(String initialVersion,
                       Path configRoot,
                       JobPersistence jobPersistence,
                       ConfigRepository configRepository,
-                      String targetVersion) {
-    this(initialVersion, configRoot, jobPersistence, configRepository, targetVersion, false);
-  }
-
-  @VisibleForTesting
-  public RunMigration(String initialVersion,
-                      Path configRoot,
-                      JobPersistence jobPersistence,
-                      ConfigRepository configRepository,
                       String targetVersion,
-                      boolean isUnitTest) {
-    this.configRoot = configRoot;
+                      Path latestSeeds) {
     this.targetVersion = targetVersion;
-    this.targetConfigDirectory = "config_" + Instant.now().toString();
     this.configDumpExport = new ConfigDumpExport(configRoot, jobPersistence, initialVersion);
-    this.configDumpImport = new ConfigDumpImport(configRoot, targetConfigDirectory, initialVersion, targetVersion,
-        jobPersistence, configRepository);
-    this.isSuccessful = false;
-    this.isUnitTest = isUnitTest;
+    this.configDumpImport = new ConfigDumpImport(initialVersion, targetVersion, latestSeeds, jobPersistence, configRepository);
   }
 
   @Override
@@ -99,12 +79,11 @@ public class RunMigration implements Runnable, AutoCloseable {
       MigrationRunner.run(migrateConfig);
 
       // Import data
-      ImportRead importRead = configDumpImport.importData(output, isUnitTest);
+      ImportRead importRead = configDumpImport.importData(output);
       if (importRead.getStatus() == StatusEnum.FAILED) {
         throw new RuntimeException("Automatic migration failed : " + importRead.getReason());
       }
 
-      isSuccessful = true;
     } catch (IOException e) {
       throw new RuntimeException("Automatic migration failed", e);
     }
@@ -112,18 +91,6 @@ public class RunMigration implements Runnable, AutoCloseable {
 
   @Override
   public void close() throws IOException {
-    if (isSuccessful) {
-      boolean configToDeprecated = configRoot.resolve("config").toFile().renameTo(configRoot.resolve("config_deprecated").toFile());
-      if (configToDeprecated) {
-        LOGGER.info("Renamed config to config_deprecated successfully");
-      }
-      boolean newConfig = configRoot.resolve(targetConfigDirectory).toFile().renameTo(configRoot.resolve("config").toFile());
-      if (newConfig) {
-        LOGGER.info("Renamed " + targetConfigDirectory + " to config successfully");
-      }
-      filesToBeCleanedUp.add(configRoot.resolve("config_deprecated").toFile());
-    }
-
     for (File file : filesToBeCleanedUp) {
       if (file.exists()) {
         LOGGER.info("Deleting " + file.getName());
