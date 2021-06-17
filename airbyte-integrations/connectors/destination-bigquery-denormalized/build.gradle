@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryStructDestination'
+    mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedDestination'
 }
 
 dependencies {
@@ -19,7 +19,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery-struct')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery-denormalized')
 
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)

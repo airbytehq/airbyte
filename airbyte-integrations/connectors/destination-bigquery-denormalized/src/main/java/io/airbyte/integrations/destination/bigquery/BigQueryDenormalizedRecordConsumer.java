@@ -50,13 +50,13 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryStructRecordConsumer extends BigQueryRecordConsumer {
+public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStructRecordConsumer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedRecordConsumer.class);
 
   private final StandardNameTransformer namingResolver;
 
-  public BigQueryStructRecordConsumer(BigQuery bigquery,
+  public BigQueryDenormalizedRecordConsumer(BigQuery bigquery,
                                       Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                       ConfiguredAirbyteCatalog catalog,
                                       Consumer<AirbyteMessage> outputRecordCollector,
@@ -100,7 +100,7 @@ public class BigQueryStructRecordConsumer extends BigQueryRecordConsumer {
           .map(p -> formatData(fields, p, true))
           .collect(Collectors.toList()));
       if (fromArrayField) {
-        return Jsons.jsonNode(ImmutableMap.of(BigQueryStructDestination.NESTED_ARRAY_FIELD, items));
+        return Jsons.jsonNode(ImmutableMap.of(BigQueryDenormalizedDestination.NESTED_ARRAY_FIELD, items));
       } else {
         return items;
       }

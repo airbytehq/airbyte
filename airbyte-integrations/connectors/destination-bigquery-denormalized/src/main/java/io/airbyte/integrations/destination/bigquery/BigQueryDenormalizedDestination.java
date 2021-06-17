@@ -52,9 +52,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryStructDestination extends BigQueryDestination {
+public class BigQueryDenormalizedDestination extends BigQueryDestination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStructDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestination.class);
 
   protected static final String PROPERTIES_FIELD = "properties";
   protected static final String NESTED_ARRAY_FIELD = "value";
@@ -72,7 +72,7 @@ public class BigQueryStructDestination extends BigQueryDestination {
                                                      Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                                      ConfiguredAirbyteCatalog catalog,
                                                      Consumer<AirbyteMessage> outputRecordCollector) {
-    return new BigQueryStructRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver());
+    return new BigQueryDenormalizedRecordConsumer(bigquery, writeConfigs, catalog, outputRecordCollector, getNamingResolver());
   }
 
   @Override
@@ -176,10 +176,10 @@ public class BigQueryStructDestination extends BigQueryDestination {
   }
 
   public static void main(String[] args) throws Exception {
-    final Destination destination = new BigQueryStructDestination();
-    LOGGER.info("starting destination: {}", BigQueryStructDestination.class);
+    final Destination destination = new BigQueryDenormalizedDestination();
+    LOGGER.info("starting destination: {}", BigQueryDenormalizedDestination.class);
     new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", BigQueryStructDestination.class);
+    LOGGER.info("completed destination: {}", BigQueryDenormalizedDestination.class);
   }
 
 }

@@ -1,3 +1,7 @@
+# BigQuery vs BigQuery Denormalized
+
+This is the same destination as BigQuery but tables are created de-normalized (one big table) without the use of `_airbyte_raw_*` tables containing the JSON blob data.
+
 # BigQuery Test Configuration
 
 In order to test the BigQuery destination, you need a service account key file.
