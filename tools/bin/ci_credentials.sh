@@ -42,6 +42,7 @@ write_standard_creds source-file "$AZURE_STORAGE_INTEGRATION_TEST_CREDS" "azblob
 write_standard_creds source-freshdesk "$FRESHDESK_TEST_CREDS"
 write_standard_creds source-facebook-marketing "$FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS"
 write_standard_creds source-gitlab-singer "$GITLAB_INTEGRATION_TEST_CREDS"
+write_standard_creds source-github "$GH_INTEGRATION_TEST_CREDS"
 write_standard_creds source-github-singer "$GH_INTEGRATION_TEST_CREDS"
 write_standard_creds source-google-ads "$GOOGLE_ADS_TEST_CREDS"
 write_standard_creds source-google-adwords-singer "$ADWORDS_INTEGRATION_TEST_CREDS"
