@@ -27,15 +27,15 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.v7.services.types.google_ads_service import SearchGoogleAdsResponse
 
 from .google_ads import GoogleAds
-from .utils import Utils
 
 
-def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional[int], field: str) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(start_date: str, conversion_window: int, field: str, end_date: str = None) -> Iterable[Mapping[str, any]]:
     """
     Passing optional parameter end_date for testing
     Returns a list of the beginning and ending timetsamps of each month between the start date and now.
@@ -49,7 +49,7 @@ def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional
     if start_date > end_date:
         return [{field: start_date.to_date_string()}]
 
-    # applying conversion windoe
+    # applying conversion window
     start_date = start_date.subtract(days=conversion_window)
 
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
@@ -61,17 +61,24 @@ def chunk_date_range(start_date: str, end_date: str, conversion_window: Optional
 
 
 class GoogleAdsStream(Stream, ABC):
-    DEFAULT_CONVERSION_WINDOW_DAYS = 14
-
-    def __init__(self, config):
-        self.config = config
-        self.google_ads_client = GoogleAds(**config)
-        self.conversion_window_days = self.config.get("conversion_window_days", self.DEFAULT_CONVERSION_WINDOW_DAYS)
+    def __init__(self, api: GoogleAds, conversion_window_days: int):
+        self.conversion_window_days = conversion_window_days
+        self.google_ads_client = api
 
     def parse_response(self, response: SearchGoogleAdsResponse) -> Iterable[Mapping]:
         for result in response:
-            record = GoogleAds.parse_single_result(self.get_json_schema(), result)
+            record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
             yield record
+
+    @staticmethod
+    def get_date_params(stream_slice: Mapping[str, Any], cursor_field: str, end_date: pendulum.datetime = None):
+        end_date = end_date or pendulum.yesterday()
+        start_date = pendulum.parse(stream_slice.get(cursor_field))
+        if start_date > pendulum.now():
+            return start_date.to_date_string(), start_date.add(days=1).to_date_string()
+
+        end_date = min(end_date, pendulum.parse(stream_slice.get(cursor_field)).add(months=1))
+        return start_date.add(days=1).to_date_string(), end_date.to_date_string()
 
     def read_records(
         self,
@@ -80,7 +87,7 @@ class GoogleAdsStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        start_date, end_date = Utils.get_date_params(stream_slice, self.cursor_field)
+        start_date, end_date = self.get_date_params(stream_slice, self.cursor_field)
         query = GoogleAds.convert_schema_into_query(self.get_json_schema(), self.name, start_date, end_date)
 
         response = self.google_ads_client.send_request(query)
@@ -88,13 +95,15 @@ class GoogleAdsStream(Stream, ABC):
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, ABC):
-    state_checkpoint_interval = None
+    def __init__(self, start_date: str, **kwargs):
+        self._start_date = start_date
+        super().__init__(**kwargs)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
-        start_date = stream_state.get(self.cursor_field) or self.config.get("start_date")
+        start_date = stream_state.get(self.cursor_field) or self._start_date
 
-        return chunk_date_range(start_date, None, self.conversion_window_days, self.cursor_field)
+        return chunk_date_range(start_date=start_date, conversion_window=self.conversion_window_days, field=self.cursor_field)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
@@ -120,13 +129,15 @@ class AdGroupAdReport(IncrementalGoogleAdsStream):
 
 # Source
 class SourceGoogleAds(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             logger.info("Checking the config")
-            GoogleAds(**config)
+            GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
             return True, None
-        except Exception as e:
-            return False, e
+        except Exception as error:
+            return False, f"Unable to connect to Google Ads API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [AdGroupAdReport(config)]
+        google_api = GoogleAds(credentials=config["credentials"], customer_id=config["customer_id"])
+        stream_config = dict(api=google_api, conversion_window_days=config["conversion_window_days"])
+        return [AdGroupAdReport(start_date=config["start_date"], **stream_config)]

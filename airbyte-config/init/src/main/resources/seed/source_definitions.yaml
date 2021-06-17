@@ -20,11 +20,16 @@
   dockerImageTag: 0.2.4
   documentationUrl: https://hub.docker.com/r/airbyte/source-file
   icon: file.svg
+- sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
+  name: Google Ads
+  dockerRepository: airbyte/source-google-ads
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-google-ads
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
-  name: Google Adwords
+  name: Google Adwords (Deprecated)
   dockerRepository: airbyte/source-google-adwords-singer
   dockerImageTag: 0.2.3
-  documentationUrl: https://hub.docker.com/r/airbyte/source-google-adwords
+  documentationUrl: https://hub.docker.com/r/airbyte/source-google-adwords-singer
   icon: google-adwords.svg
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   name: GitHub
