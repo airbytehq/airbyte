@@ -57,10 +57,10 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   private final StandardNameTransformer namingResolver;
 
   public BigQueryDenormalizedRecordConsumer(BigQuery bigquery,
-                                      Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                      ConfiguredAirbyteCatalog catalog,
-                                      Consumer<AirbyteMessage> outputRecordCollector,
-                                      StandardNameTransformer namingResolver) {
+                                            Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector,
+                                            StandardNameTransformer namingResolver) {
     super(bigquery, writeConfigs, catalog, outputRecordCollector);
     this.namingResolver = namingResolver;
   }
@@ -79,10 +79,6 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   }
 
   protected JsonNode formatData(FieldList fields, JsonNode root) {
-    return formatData(fields, root, false);
-  }
-
-  protected JsonNode formatData(FieldList fields, JsonNode root, Boolean fromArrayField) {
     if (root.isObject()) {
       final List<String> fieldNames = fields.stream().map(Field::getName).collect(Collectors.toList());
       return Jsons.jsonNode(Jsons.keys(root).stream()
@@ -97,13 +93,11 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
               key -> formatData(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
     } else if (root.isArray()) {
       final JsonNode items = Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
-          .map(p -> formatData(fields, p, true))
+          .map(p -> formatData(fields, p))
           .collect(Collectors.toList()));
-      if (fromArrayField) {
-        return Jsons.jsonNode(ImmutableMap.of(BigQueryDenormalizedDestination.NESTED_ARRAY_FIELD, items));
-      } else {
-        return items;
-      }
+      // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of" is)
+      // Turn all "Array of" into "Array of Record of" instead
+      return Jsons.jsonNode(ImmutableMap.of(BigQueryDenormalizedDestination.NESTED_ARRAY_FIELD, items));
     } else {
       return root;
     }

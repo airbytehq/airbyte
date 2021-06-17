@@ -94,10 +94,6 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   private static Builder getField(BigQuerySQLNameTransformer namingResolver, String key, JsonNode fieldDefinition) {
-    return getField(namingResolver, key, fieldDefinition, false);
-  }
-
-  private static Builder getField(BigQuerySQLNameTransformer namingResolver, String key, JsonNode fieldDefinition, Boolean fromArrayField) {
     final String fieldName = namingResolver.getIdentifier(key);
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, fieldDefinition.get(TYPE_FIELD));
@@ -123,13 +119,10 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
             } else {
               items = fieldDefinition;
             }
-            final Builder subField = getField(namingResolver, fieldName, items, true).setMode(Mode.REPEATED);
-            if (fromArrayField) {
-              // Array of Array is not permitted by BQ but Array of Struct of Array is
-              return builder.setType(StandardSQLTypeName.STRUCT, subField.setName(NESTED_ARRAY_FIELD).build());
-            } else {
-              return subField;
-            }
+            final Builder subField = getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
+            // "Array of Array of" (nested arrays) are not permitted by BigQuery ("Array of Record of Array of" is)
+            // Turn all "Array of" into "Array of Record of" instead
+            return builder.setType(StandardSQLTypeName.STRUCT, subField.setName(NESTED_ARRAY_FIELD).build());
           }
           case OBJECT -> {
             final JsonNode properties;
