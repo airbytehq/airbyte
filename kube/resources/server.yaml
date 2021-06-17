@@ -24,16 +24,6 @@ spec:
       labels:
         airbyte: server
     spec:
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: airbyte
-                    operator: In
-                    values:
-                      - scheduler
-              topologyKey: kubernetes.io/hostname
       containers:
         - name: airbyte-server-container
           image: airbyte/server
