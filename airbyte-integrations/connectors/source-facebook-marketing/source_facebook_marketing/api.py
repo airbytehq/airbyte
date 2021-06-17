@@ -29,6 +29,7 @@ from airbyte_cdk.entrypoint import logger
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
+from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
 from pendulum import Interval
 from source_facebook_marketing.common import FacebookAPIException
@@ -96,15 +97,14 @@ class API:
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
-    def account(self):
+    def account(self) -> AdAccount:
         return self._find_account(self._account_id)
 
     @staticmethod
-    def _find_account(account_id: str):
+    def _find_account(account_id: str) -> AdAccount:
         try:
             accounts = fb_user.User(fbid="me").get_ad_accounts()
             for account in accounts:
-                print(account)
                 if account["account_id"] == account_id:
                     return account
         except FacebookRequestError as exc:
