@@ -24,13 +24,13 @@
 
 package io.airbyte.workers.protocols;
 
-import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import java.nio.file.Path;
 import java.util.Optional;
 
 public interface Source<T> extends AutoCloseable {
 
-  void start(StandardTapConfig input, Path jobRoot) throws Exception;
+  void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception;
 
   boolean isFinished();
 
