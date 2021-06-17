@@ -24,7 +24,6 @@
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.KnownExceptionInfo;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -38,10 +37,12 @@ public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundExceptio
 
   @Override
   public Response toResponse(NotFoundException e) {
-    KnownExceptionInfo exceptionInfo = KnownException.infoFromThrowableWithMessage(e, "Not Found: " + e.getMessage());
-    LOGGER.error("Not found exception", exceptionInfo);
+    // Would like to send the id along but we don't have access to the http request anymore to fetch it
+    // from. Come back to this.
+    IdNotFoundKnownException idnf = new IdNotFoundKnownException("Object not found. " + e.getMessage(), e);
+    LOGGER.error("Not found exception", idnf.getNotFoundKnownExceptionInfo());
     return Response.status(404)
-        .entity(Jsons.serialize(exceptionInfo))
+        .entity(Jsons.serialize(idnf.getNotFoundKnownExceptionInfo()))
         .type("application/json")
         .build();
   }
