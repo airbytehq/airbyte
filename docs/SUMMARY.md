@@ -42,6 +42,7 @@
     * [Freshdesk](integrations/sources/freshdesk.md)
     * [GitHub](integrations/sources/github.md)
     * [GitLab](integrations/sources/gitlab.md)
+    * [Google Ads](integrations/sources/google-ads.md)
     * [Google Adwords](integrations/sources/google-adwords.md)
     * [Google Analytics](integrations/sources/googleanalytics.md)
     * [Google Directory](integrations/sources/google-directory.md)
