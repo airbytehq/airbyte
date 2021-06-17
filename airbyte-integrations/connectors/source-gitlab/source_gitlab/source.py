@@ -25,7 +25,7 @@
 
 from typing import Any, List, Mapping, Tuple
 
-import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -35,6 +35,7 @@ from .streams import (
     Commits,
     EpicIssues,
     Epics,
+    GitlabStream,
     Groups,
     Issues,
     Jobs,
@@ -53,31 +54,37 @@ from .streams import (
 
 
 class SourceGitlab(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        if not config["projects"] and not config["groups"]:
+    def _generate_main_streams(self, config: Mapping[str, Any]) -> Tuple[GitlabStream, GitlabStream]:
+        gids = list(filter(None, config["groups"].split(" ")))
+        pids = list(filter(None, config["projects"].split(" ")))
+
+        if not pids and not gids:
             raise Exception("Either groups or projects need to be provided for connect to Gitlab API")
 
+        auth = GitlabAuthenticator(token=config["private_token"])
+        auth_params = dict(authenticator=auth, api_url=config["api_url"])
+        groups = Groups(group_ids=gids, **auth_params)
+        if gids:
+            projects = Projects(project_ids=pids, parent_stream=groups, **auth_params)
+        else:
+            projects = Projects(project_ids=pids, **auth_params)
+
+        return groups, projects
+
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            response = requests.get(f"https://{config['api_url']}/api/v4/projects", params={"private_token": config["private_token"]})
-            response.raise_for_status()
+            groups, projects = self._generate_main_streams(config)
+            for stream in projects.stream_slices(sync_mode=SyncMode.full_refresh):
+                list(projects.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream))
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = GitlabAuthenticator(token=config["private_token"])
-
-        gids = list(filter(None, config["groups"].split(" ")))
-        pids = list(filter(None, config["projects"].split(" ")))
-
         auth_params = dict(authenticator=auth, api_url=config["api_url"])
 
-        groups = Groups(group_ids=gids, **auth_params)
-        if pids:
-            projects = Projects(project_ids=pids, parent_stream=groups, **auth_params)
-        else:
-            projects = Projects(parent_stream=groups, **auth_params)
-
+        groups, projects = self._generate_main_streams(config)
         pipelines = Pipelines(parent_stream=projects, start_date=config["start_date"], **auth_params)
         merge_requests = MergeRequests(parent_stream=projects, start_date=config["start_date"], **auth_params)
 

@@ -66,7 +66,7 @@ class GitlabStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.api_url}//api/v4/"
+        return f"https://{self.api_url}/api/v4/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_data = response.json()
@@ -109,6 +109,7 @@ class GitlabStream(HttpStream, ABC):
 
 class GitlabChildStream(GitlabStream):
     path_list = ["id"]
+    flatten_parent_id = False
 
     def __init__(self, parent_stream: GitlabStream, parent_similar: bool = False, repository_part: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -118,7 +119,7 @@ class GitlabChildStream(GitlabStream):
 
     @property
     def path_template(self) -> str:
-        template = [self.parent_stream.name] + ["{" + p + "}" for p in self.path_list]
+        template = [self.parent_stream.name] + ["{" + path_key + "}" for path_key in self.path_list]
         if self.repo_url:
             template.append("repository")
         template.append(casing.camel_to_snake(self.__class__.__name__))
@@ -133,10 +134,16 @@ class GitlabChildStream(GitlabStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                yield {k: record[k] for k in self.path_list}
+                yield {path_key: record[path_key] for path_key in self.path_list}
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
-        return self.path_template.format(**{k: stream_slice[k] for k in self.path_list})
+        return self.path_template.format(**{path_key: stream_slice[path_key] for path_key in self.path_list})
+
+    def transform(self, record: Dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        if self.flatten_parent_id:
+            record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
+        return record
 
 
 class IncrementalGitlabChildStream(GitlabChildStream):
@@ -207,13 +214,17 @@ class Projects(GitlabStream):
         return f"projects/{stream_slice['id']}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        group_project_ids = set()
-        for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                group_project_ids.update({i["path_with_namespace"] for i in record["projects"]})
-            for pid in group_project_ids:
-                if not self.project_ids or self.project_ids and pid in self.project_ids:
-                    yield {"id": pid.replace("/", "%2F")}
+        if self.parent_stream:
+            group_project_ids = set()
+            for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
+                    group_project_ids.update({i["path_with_namespace"] for i in record["projects"]})
+                for pid in group_project_ids:
+                    if not self.project_ids or self.project_ids and pid in self.project_ids:
+                        yield {"id": pid.replace("/", "%2F")}
+        else:
+            for pid in self.project_ids:
+                yield {"id": pid.replace("/", "%2F")}
 
 
 class Milestones(GitlabChildStream):
@@ -221,35 +232,24 @@ class Milestones(GitlabChildStream):
 
 
 class Members(GitlabChildStream):
-    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
-        record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
-        return record
+    flatten_parent_id = True
 
 
 class Labels(GitlabChildStream):
-    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
-        record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
-        return record
+    flatten_parent_id = True
 
 
 class Branches(GitlabChildStream):
     primary_key = "name"
     flatten_id_keys = ["commit"]
-
-    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
-        super().transform(record, stream_slice, **kwargs)
-        record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
-        return record
+    flatten_parent_id = True
 
 
 class Commits(IncrementalGitlabChildStream):
     cursor_field = "created_at"
     filter_field = "since"
+    flatten_parent_id = True
     stream_base_params = {"with_stats": True}
-
-    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
-        record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
-        return record
 
 
 class Issues(IncrementalGitlabChildStream):
