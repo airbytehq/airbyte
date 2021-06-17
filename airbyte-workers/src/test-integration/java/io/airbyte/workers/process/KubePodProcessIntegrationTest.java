@@ -52,7 +52,7 @@ import org.junit.jupiter.api.Test;
 // requires kube running locally to run. If using Minikube it requires MINIKUBE=true
 public class KubePodProcessIntegrationTest {
 
-  private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("MINIKUBE")).orElse("false"));
+  private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static final List<Integer> OPEN_PORTS = new ArrayList<>(getOpenPorts(5));
   private static final List<Integer> OPEN_WORKER_PORTS = OPEN_PORTS.subList(1, OPEN_PORTS.size() - 1);
   private static final int HEARTBEAT_PORT = OPEN_PORTS.get(0);
