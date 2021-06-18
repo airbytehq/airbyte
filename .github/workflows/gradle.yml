@@ -356,7 +356,7 @@ jobs:
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan --rerun-tasks
 
       - name: Run Logging Tests
-        run: ./tools/bin/logging_test.sh
+        run: ./tools/bin/cloud_storage_logging_test.sh
         env:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
 

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--<Configuration status="TRACE">-->
 <Configuration status="INFO">
     <Properties>
         <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
@@ -17,6 +16,7 @@
             <PatternLayout pattern="${default-pattern}"/>
         </Console>
 
+<!--  Log if there is something      -->
         <Routing name="LogSplit">
             <Routes pattern="$${ctx:job_log_path}">
                 <!-- Don't split logs if job_root isn't defined -->
