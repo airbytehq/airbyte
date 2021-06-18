@@ -37,7 +37,11 @@ import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.dsl.internal.core.v1.PodOperationsImpl;
+import io.fabric8.kubernetes.client.dsl.internal.uploadable.PodUpload;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,9 +60,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+
+import io.fabric8.kubernetes.client.utils.OptionalDependencyWrapper;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.fabric8.kubernetes.client.utils.OptionalDependencyWrapper.wrapRunWithOptionalDependency;
 
 /**
  * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The
@@ -232,11 +240,19 @@ public class KubePodProcess extends Process {
 
         LOGGER.info("Uploading file: " + file.getKey());
 
-        client.pods().inNamespace(namespace).withName(podName).inContainer(INIT_CONTAINER_NAME)
-            .file(CONFIG_DIR + "/" + file.getKey())
-            .upload(tmpFile);
+        PodOperationsImpl poi = (PodOperationsImpl) client.pods().inNamespace(namespace).withName(podName).inContainer(INIT_CONTAINER_NAME)
+            .file(CONFIG_DIR + "/" + file.getKey());
 
-      } finally {
+        PodUpload.upload(poi.getContext().getClient(), poi.getContext(), poi, tmpFile);
+
+      } catch (KubernetesClientException | IOException | InterruptedException e) {
+        if(e.getMessage().contains("Success")) {
+          // no-op since fabric8 is broken. see TODO
+        } else {
+          throw new RuntimeException(e);
+        }
+      }
+      finally {
         if (tmpFile != null) {
           tmpFile.toFile().delete();
         }
@@ -396,7 +412,7 @@ public class KubePodProcess extends Process {
     // This doesn't manage things like pods that are blocked from running for some cluster reason or if
     // the init
     // container got stuck somehow.
-    client.resource(podDefinition).waitUntilCondition(p -> {
+    client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podName).waitUntilCondition(p -> {
       boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || isTerminal(p);
     }, 10, TimeUnit.DAYS);
@@ -502,8 +518,15 @@ public class KubePodProcess extends Process {
    */
   private void close() {
     Exceptions.swallow(this.stdin::close);
-    Exceptions.swallow(this.stdout::close);
-    Exceptions.swallow(this.stderr::close);
+
+    if(this.stdout != null) {
+      Exceptions.swallow(this.stdout::close);
+    }
+
+    if(this.stderr != null) {
+      Exceptions.swallow(this.stderr::close);
+    }
+
     Exceptions.swallow(this.stdoutServerSocket::close);
     Exceptions.swallow(this.stderrServerSocket::close);
     Exceptions.swallow(this.executorService::shutdownNow);
