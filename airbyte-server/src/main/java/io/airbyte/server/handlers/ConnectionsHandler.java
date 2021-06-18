@@ -109,6 +109,10 @@ public class ConnectionsHandler {
       standardSync.withManual(true);
     }
 
+    // Validate source and destination
+    configRepository.getSourceConnection(connectionCreate.getSourceId());
+    configRepository.getDestinationConnection(connectionCreate.getDestinationId());
+
     configRepository.writeStandardSync(standardSync);
 
     trackNewConnection(standardSync);
