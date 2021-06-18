@@ -28,8 +28,8 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .auth import GitlabAuthenticator
 from .streams import (
     Branches,
     Commits,
@@ -61,7 +61,7 @@ class SourceGitlab(AbstractSource):
         if not pids and not gids:
             raise Exception("Either groups or projects need to be provided for connect to Gitlab API")
 
-        auth = GitlabAuthenticator(token=config["private_token"])
+        auth = TokenAuthenticator(token=config["private_token"])
         auth_params = dict(authenticator=auth, api_url=config["api_url"])
         groups = Groups(group_ids=gids, **auth_params)
         if gids:
@@ -81,7 +81,7 @@ class SourceGitlab(AbstractSource):
             return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = GitlabAuthenticator(token=config["private_token"])
+        auth = TokenAuthenticator(token=config["private_token"])
         auth_params = dict(authenticator=auth, api_url=config["api_url"])
 
         groups, projects = self._generate_main_streams(config)

@@ -96,12 +96,8 @@ class GitlabStream(HttpStream, ABC):
         return record
 
     def _flatten_id(self, record: Dict[str, Any], target: str):
-        if record.get(target):
-            record[target + "_id"] = record.pop(target, {}).pop("id", None)
-        elif target in record:
-            record[target + "_id"] = record.pop(target)
-        else:
-            record[target + "_id"] = None
+        target_value = record.pop(target, None)
+        record[target + "_id"] = target_value.get("id") if target_value else None
 
     def _flatten_list(self, record: Dict[str, Any], target: str):
         record[target] = [target_data.get("id") for target_data in record.get(target, [])]
