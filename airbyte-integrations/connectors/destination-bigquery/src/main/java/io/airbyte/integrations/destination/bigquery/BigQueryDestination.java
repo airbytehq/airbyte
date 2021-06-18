@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static java.util.Objects.isNull;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
@@ -68,8 +70,6 @@ import java.util.function.Consumer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.Objects.isNull;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
 
