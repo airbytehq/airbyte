@@ -1,5 +1,5 @@
 FROM ubuntu:20.04
-
+ 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y && \
@@ -10,5 +10,9 @@ RUN apt-get update -y && \
         git \
         docker \
         python3 \
+        default-jre \
+        nodejs \
+        postgresql \
+        jq \
+        cmake \
     && apt-get clean
-
