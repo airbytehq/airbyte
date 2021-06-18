@@ -138,3 +138,18 @@ Example for SFTP:
 
 Please see \(or add\) more at `airbyte-integrations/connectors/source-file/integration_tests/integration_source_test.py` for further usages examples.
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.2.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
+| 0.2.3   | 2021-06-01 | [3771](https://github.com/airbytehq/airbyte/pull/3771) | Add Azure Storage Blob Files option |
+| 0.2.2   | 2021-04-16 | [2883](https://github.com/airbytehq/airbyte/pull/2883) | Fix CSV discovery memory consumption |
+| 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.10  | 2021-02-18 | [2118](https://github.com/airbytehq/airbyte/pull/2118) | Support JSONL format |
+| 0.1.9   | 2021-02-02 | [1768](https://github.com/airbytehq/airbyte/pull/1768) | Add test cases for all formats |
+| 0.1.8   | 2021-01-27 | [1738](https://github.com/airbytehq/airbyte/pull/1738) | Adopt connector best practices |
+| 0.1.7   | 2020-12-16 | [1331](https://github.com/airbytehq/airbyte/pull/1331) | Refactor Python base connector |
+| 0.1.6   | 2020-12-08 | [1249](https://github.com/airbytehq/airbyte/pull/1249) | Handle NaN values |
+| 0.1.5   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
