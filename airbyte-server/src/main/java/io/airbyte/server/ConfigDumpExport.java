@@ -29,6 +29,7 @@ import io.airbyte.commons.io.Archives;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.yaml.Yamls;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -61,13 +62,12 @@ public class ConfigDumpExport {
   private static final String CONFIG_FOLDER_NAME = "airbyte_config";
   private static final String DB_FOLDER_NAME = "airbyte_db";
   private static final String VERSION_FILE_NAME = "VERSION";
-
-  private final ConfigDumpUtil configDumpUtil;
+  private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final String version;
 
-  public ConfigDumpExport(Path storageRoot, JobPersistence jobPersistence, String version) {
-    this.configDumpUtil = new ConfigDumpUtil(storageRoot);
+  public ConfigDumpExport(ConfigRepository configRepository, JobPersistence jobPersistence, String version) {
+    this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.version = version;
   }
@@ -119,21 +119,19 @@ public class ConfigDumpExport {
         .resolve(String.format("%s.yaml", tableName.toUpperCase()));
   }
 
-  public void dumpConfigs(Path parentFolder) throws IOException {
-    List<String> directories = configDumpUtil.listDirectories();
-    for (String directory : directories) {
-      List<JsonNode> configList = configDumpUtil.listConfig(directory);
-
-      writeConfigsToArchive(parentFolder, directory, configList);
+  private void dumpConfigs(Path parentFolder) throws IOException {
+    for (Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dump().entrySet()) {
+      writeConfigsToArchive(parentFolder, configEntry.getKey(), configEntry.getValue());
     }
   }
 
   private void writeConfigsToArchive(final Path storageRoot,
                                      final String schemaType,
-                                     final List<JsonNode> configList)
+                                     final Stream<JsonNode> configs)
       throws IOException {
     final Path configPath = buildConfigPath(storageRoot, schemaType);
     Files.createDirectories(configPath.getParent());
+    final List<JsonNode> configList = configs.collect(Collectors.toList());
     if (!configList.isEmpty()) {
       final List<JsonNode> sortedConfigs = configList.stream()
           .sorted(Comparator.comparing(JsonNode::toString)).collect(

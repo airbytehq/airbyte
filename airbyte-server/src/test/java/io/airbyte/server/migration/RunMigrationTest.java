@@ -250,7 +250,6 @@ public class RunMigrationTest {
       throws IOException, URISyntaxException {
     try (RunMigration runMigration = new RunMigration(
         INITIAL_VERSION,
-        exportConfigRoot,
         jobPersistence,
         new ConfigRepository(new DefaultConfigPersistence(exportConfigRoot)),
         TARGET_VERSION,

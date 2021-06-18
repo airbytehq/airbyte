@@ -49,13 +49,12 @@ public class RunMigration implements Runnable, AutoCloseable {
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
   public RunMigration(String initialVersion,
-                      Path configRoot,
                       JobPersistence jobPersistence,
                       ConfigRepository configRepository,
                       String targetVersion,
                       Path latestSeeds) {
     this.targetVersion = targetVersion;
-    this.configDumpExport = new ConfigDumpExport(configRoot, jobPersistence, initialVersion);
+    this.configDumpExport = new ConfigDumpExport(configRepository, jobPersistence, initialVersion);
     this.configDumpImport = new ConfigDumpImport(initialVersion, targetVersion, latestSeeds, jobPersistence, configRepository);
   }
 

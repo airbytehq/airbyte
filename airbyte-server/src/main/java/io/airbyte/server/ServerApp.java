@@ -215,7 +215,7 @@ public class ServerApp {
     if (airbyteDatabaseVersion.isPresent() && !AirbyteVersion
         .isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
         && !isDatabaseVersionAheadOfAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
-      runAutomaticMigration(configRoot, configRepository, jobPersistence, airbyteVersion,
+      runAutomaticMigration(configRepository, jobPersistence, airbyteVersion,
           airbyteDatabaseVersion.get());
       // After migration, upgrade the DB version
       airbyteDatabaseVersion = jobPersistence.getVersion();
@@ -230,14 +230,15 @@ public class ServerApp {
     }
   }
 
-  private static void runAutomaticMigration(Path configRoot,
-                                            ConfigRepository configRepository,
+  private static void runAutomaticMigration(ConfigRepository configRepository,
                                             JobPersistence jobPersistence,
                                             String airbyteVersion,
                                             String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
+    final Path latestSeedsPath = Path.of(System.getProperty("user.dir")).resolve("latest_seeds");
+    LOGGER.info("Last seeds dir: {}", latestSeedsPath);
     try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion,
-        configRoot, jobPersistence, configRepository, airbyteVersion, Path.of(System.getProperty("user.dir")).resolve("latest_seeds"))) {
+        jobPersistence, configRepository, airbyteVersion, latestSeedsPath)) {
       runMigration.run();
     } catch (Exception e) {
       LOGGER.error("Automatic Migration failed ", e);

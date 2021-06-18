@@ -24,6 +24,7 @@
 
 package io.airbyte.config.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
@@ -209,6 +210,10 @@ public class ConfigRepository {
 
   public <T> void atomicImportOfConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun, Consumer<Path> prePopulate) throws IOException {
     persistence.atomicConfigImport(configs, dryRun, prePopulate);
+  }
+
+  public Map<String, Stream<JsonNode>> dump() throws IOException {
+    return persistence.dump();
   }
 
 }
