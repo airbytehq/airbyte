@@ -1,4 +1,4 @@
-# People Operations Manager
+# Technical Recruiter
 
 ## **About Airbyte**
 
@@ -10,27 +10,32 @@ We raised a total of $31.2M by some of the world's [top investors](./#our-invest
 
 ## **Description**
 
-As our people operations manager, you will have the opportunity to work directly with the co-founders, who are serial entrepreneurs. You will have three main focus areas: 
-1. Owning all people-ops related initiatives (including the [handbook](https://handbook.airbyte.io))
-2. Owning all workspace management / remote culture related initiatives
-3. Assisting on recruiting efforts
+As our first recruiter, you will have the opportunity to work directly with the co-founders, who are serial entrepreneurs. 
 
-As the first hire in the people function, we will expect you to be hands-on and take full ownership of those initiatives. One of the key focuses for the company is D&I, and the founders will want to work on those topics with you. 
+You will be creating and at the center of Airbyte’s recruitment process, team growth, and talent strategy. You will be responsible for creative searches for our highest value positions, and identifying key talent. In this role, you will use your previous sourcing experience and deep knowledge of the technology landscape to find, educate, and recruit exceptional talent.
+
+You recognize that the best talent isn’t always looking for a new job and that the recruiting process invites ingenuity, passion, and empathy. 
 
 ## **Responsibilities**
 
-* Lead efforts on people ops (onboarding, offboarding, payroll, device management, benefits, immigration/relocation, handbook, benefits, state registrations, etc.)
-* Lead efforts on culture initiatives (weekly team calls, anniversaries, milestones, celebrations, etc.)
-* Setting up recruiting interviews with the team, possibly doing the first culture-add interview, managing Asana as our ATS
-* Creating content for employer branding around the initiatives we do internally
-* Be an ambassador of our culture in the team!
+* Manage full-cycle recruiting process, sourcing and building relationships with candidates, creating positive interview experiences, and managing the offer process.
+* Bring technical and technology sourcing experience from an in-house recruiting team or a recruiting agency.
+* Develop creative recruiting strategies and proactively build a robust pipeline of diverse A+ technical talent through research, social media, cold calls, referral generation, events, and sourcing campaigns to accomplish hiring goals.
+* Engage our community by leveraging sourcing tools, user groups, employee referrals, networking, meetups, and other resources as the world opens up.
+* Ramp up quickly on the culture, tech stack, development processes, and current projects for the engineering teams that you are recruiting for.
+* Provide a unique and impactful recruiting experience while developing strong relationships with both candidates and hiring managers.
+* Bring experience with different ATS and recruiting platforms (we use Lever but may switch).
+* Be an ambassador of our culture with candidates!
 
 ## **Requirements**
 
-* 3+ years of experience in people ops.
-* Experience working in remote teams.
-* Self-directed and work with minimal supervision.
-* Outstanding written and verbal communications skills with the ability to explain and translate complex technology concepts into simple and intuitive communications.
+* Experience in a high-volume, fast-paced and data driven environment, preferably in a startup
+* Experience scaling a high performance team quickly, including end-to-end process managmenet
+* Exceptional attention to detail, critical thinking abilities and strong organizational skills. Your to-do lists are second to none, and you never drop the ball.
+* Outstanding communication skills, both verbal and written
+* Familiarity with Applicant Tracking Systems (ATS)
+* Strong project management and collaboration skills with a proven ability to balance shifting priorities and meet challenging deadlines
+* You are a resourceful and creative team player, and are excited about making a meaningful impact on a rapidly growing team.
 * Be passionate about people!
 * You share our [values](https://handbook.airbyte.io/company/culture-and-values).
 
