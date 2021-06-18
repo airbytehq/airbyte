@@ -26,8 +26,8 @@ package io.airbyte.workers;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.config.StandardTapConfig;
-import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
@@ -38,7 +38,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class WorkerUtils {
 
@@ -162,22 +161,22 @@ public class WorkerUtils {
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of
+   * Translates a StandardSyncInput into a WorkerSourceConfig. WorkerSourceConfig is a subset of
    * StandardSyncInput.
    */
-  public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
-    return new StandardTapConfig()
+  public static WorkerSourceConfig syncToWorkerSourceConfig(StandardSyncInput sync) {
+    return new WorkerSourceConfig()
         .withSourceConnectionConfiguration(sync.getSourceConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of
-   * StandardSyncInput.
+   * Translates a StandardSyncInput into a WorkerDestinationConfig. WorkerDestinationConfig is a
+   * subset of StandardSyncInput.
    */
-  public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
-    return new StandardTargetConfig()
+  public static WorkerDestinationConfig syncToWorkerDestinationConfig(StandardSyncInput sync) {
+    return new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());

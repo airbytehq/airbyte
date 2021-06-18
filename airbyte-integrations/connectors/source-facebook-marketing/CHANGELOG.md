@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.2.8
+## 0.2.11
+Fix schemas and drop deprecated fields
+
+## 0.2.10
+Update version of facebook_bussiness to 11.0
+
+## 0.2.9
 Add 80000 as a rate-limiting error code (#3996) 
 
 ## 0.2.7

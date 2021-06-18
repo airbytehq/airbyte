@@ -4,11 +4,31 @@ description: Be sure to not miss out on new features and improvements!
 
 # Platform
 
-This is the changelog for Airbyte core. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
+This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
-If you're interested in our progress on the Airbyte platform, please read below!
+## [06-16-2021](https://github.com/airbytehq/airbyte/releases/tag/v0.26.0-alpha)
 
-## [05-28-2021 - 0.24.3](https://github.com/airbytehq/airbyte/releases/tag/v0.24.2-alpha)
+* Custom dbt transformations! 
+* Migrate basic normalization settings to the sync operations.
+
+## [06-09-2021 - 0.24.8 / 0.25.0](https://github.com/airbytehq/airbyte/releases/tag/v0.24.8-alpha)
+
+* Bugfix: Handle TINYINT(1) and BOOLEAN correctly and fix target file comparison for MySQL CDC.
+* Bugfix: Updating the source/destination name in the UI now works as intended.
+
+## [06-04-2021 - 0.24.7](https://github.com/airbytehq/airbyte/releases/tag/v0.24.7-alpha)
+
+* Bugfix: Ensure that logs from threads created by replication workers are added to the log file.
+
+## [06-03-2021 - 0.24.5](https://github.com/airbytehq/airbyte/releases/tag/v0.24.5-alpha)
+
+* Remove hash from table names when it's not necessary for normalization outputs.
+
+## [06-03-2021 - 0.24.4](https://github.com/airbytehq/airbyte/releases/tag/v0.24.4-alpha)
+
+* PythonCDK: change minimum Python version to 3.7.0
+
+## [05-28-2021 - 0.24.3](https://github.com/airbytehq/airbyte/releases/tag/v0.24.3-alpha)
 
 * Minor fixes to documentation
 * Reliability updates in preparation for custom transformations  

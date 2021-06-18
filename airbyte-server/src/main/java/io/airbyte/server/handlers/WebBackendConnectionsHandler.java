@@ -154,7 +154,7 @@ public class WebBackendConnectionsHandler {
         .schedule(connectionRead.getSchedule())
         .source(source)
         .destination(destination)
-        .operations(operations);
+        .operations(operations.getOperations());
   }
 
   private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
@@ -270,7 +270,7 @@ public class WebBackendConnectionsHandler {
   private List<UUID> createOperations(WebBackendConnectionCreate webBackendConnectionCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<UUID> operationIds = new ArrayList<>();
-    for (var operationCreate : webBackendConnectionCreate.getWithOperations()) {
+    for (var operationCreate : webBackendConnectionCreate.getOperations()) {
       operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
     }
     return operationIds;
