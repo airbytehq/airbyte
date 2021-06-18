@@ -16,12 +16,13 @@ tests:
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/no_empty_streams_catalog.json"
-      state_path: "integration_tests/abnormal_state.json"
+      future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
         calls: ["end_time"]
         conferences: ["date_updated"]
         recordings: ["date_created"]
         messages: ["date_sent"]
+        message_media: ["date_created"]
         usage_records: ["end_date"]
         alerts: ["date_updated"]
   full_refresh:

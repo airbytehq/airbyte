@@ -104,6 +104,15 @@ class IncrementalTwilioStream(TwilioStream, ABC):
             params.update({self.incremental_filter_field: pendulum.parse(start_date).strftime(self.time_filter_template)})
         return params
 
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs):
+        stream_state = stream_state or {}
+        # Return an empty generator if start_date is in future to avoid Twilio exceptions
+        start_date = stream_state.get(self.cursor_field) or self._start_date
+        if start_date and pendulum.parse(start_date) > pendulum.now():
+            yield from []
+        else:
+            yield from super().read_records(stream_state=stream_state, **kwargs)
+
 
 class TwilioNestedStream(TwilioStream):
     url_base = "https://api.twilio.com"
@@ -231,7 +240,8 @@ class Conferences(TwilioNestedStream, IncrementalTwilioStream):
     """https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "DateUpdated>="
+    incremental_filter_field = "DateUpdated>"
+    time_filter_template = "%Y-%m-%d"
 
 
 class ConferenceParticipants(TwilioNestedStream):
@@ -282,12 +292,12 @@ class MessageMedia(TwilioNestedStream, IncrementalTwilioStream):
     data_field = "media_list"
     subresource_uri_key = "media"
     media_exist_validation = {"num_media": "0"}
-    incremental_filter_field = "StartTime>="
+    incremental_filter_field = "DateCreated>"
+    cursor_field = "date_created"
 
 
 class UsageNestedStream(TwilioNestedStream):
     url_base = "https://api.twilio.com/2010-04-01/"
-    time_filter_template = "%Y-%m-%d"
 
     @property
     @abstractmethod
@@ -313,8 +323,9 @@ class UsageRecords(UsageNestedStream, IncrementalTwilioStream):
     """https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources"""
 
     parent_stream = Accounts
-    incremental_filter_field = "EndDate"
-    cursor_field = "end_date"
+    incremental_filter_field = "StartDate"
+    time_filter_template = "%Y-%m-%d"
+    cursor_field = "start_date"
     path_name = "Records"
 
 

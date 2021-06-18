@@ -11,8 +11,11 @@
   "messages": {
     "date_sent": "2220-10-01T00:00:00Z"
   },
+  "message_media": {
+    "date_created": "2220-10-01T00:00:00Z"
+  },
   "usage_records": {
-    "end_date": "2220-10-01T00:00:00Z"
+    "start_date": "2220-10-01"
   },
   "alerts": {
     "date_updated": "2220-10-01T00:00:00Z"
