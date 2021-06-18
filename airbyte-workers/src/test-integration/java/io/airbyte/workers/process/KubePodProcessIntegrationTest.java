@@ -34,7 +34,7 @@ import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
@@ -75,6 +75,7 @@ public class KubePodProcessIntegrationTest {
     processFactory = new KubeProcessFactory("default", kubeClient, heartbeatUrl, workerPorts);
 
     server = new WorkerHeartbeatServer(heartbeatPort);
+    server.startBackground();
   }
 
   @AfterEach
@@ -176,7 +177,7 @@ public class KubePodProcessIntegrationTest {
 
   private static String getHost() {
     try {
-      return (IS_MINIKUBE ? InetAddress.getLocalHost().getHostAddress() : "host.docker.internal");
+      return (IS_MINIKUBE ? Inet4Address.getLocalHost().getHostAddress() : "host.docker.internal");
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
     }

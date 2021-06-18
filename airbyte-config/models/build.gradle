@@ -1,7 +1,6 @@
 import org.jsonschema2pojo.SourceType
 
 plugins {
-    id 'airbyte-docker'
     id 'airbyte-integration-test-java'
     id "com.github.eirnym.js2p" version "1.0"
 }
