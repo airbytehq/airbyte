@@ -25,7 +25,6 @@
 
 from typing import Any, List, Mapping, Tuple
 
-import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
