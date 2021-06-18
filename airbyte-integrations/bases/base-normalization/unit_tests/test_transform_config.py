@@ -142,6 +142,7 @@ class TestTransformConfig:
             "server": "airbyte.io",
             "port": 5432,
             "schema": "my_db",
+            "database": "my_db",
             "username": "a user",
             "password": "password1234",
         }

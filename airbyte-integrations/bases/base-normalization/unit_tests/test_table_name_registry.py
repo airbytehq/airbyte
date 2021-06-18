@@ -113,9 +113,6 @@ def test_resolve_names(destination_type: DestinationType, catalog_file: str):
     else:
         expected_names = read_json(f"resources/{catalog_file}_expected_names.json", apply_function)
 
-    print(f"actual: {tables_registry.to_dict(apply_function)}")
-    print(f"expect: {expected_names}")
-
     assert tables_registry.to_dict(apply_function) == expected_names
 
 
