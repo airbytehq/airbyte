@@ -27,6 +27,7 @@ from typing import Any, List, Mapping, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -54,19 +55,13 @@ from .streams import (
 class SourceGithub(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            repository = config["repository"]
-            url = f"https://api.github.com/repos/{repository}/collaborators"
-            response = requests.get(url, headers={"Authorization": f"token {config['access_token']}"})
-
-            if response.status_code != 200:
-                raise Exception(
-                    f'Unable to connect with the provided credentials for "{repository}" repository. '
-                    f"Status code = {response.status_code}"
-                )
+            authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
+            args = {"authenticator": authenticator, "repository": config["repository"]}
+            collaborators_stream = Collaborators(**args)
+            next(collaborators_stream.read_records(sync_mode=SyncMode.full_refresh))
+            return True, None
         except Exception as e:
             return False, e
-
-        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")

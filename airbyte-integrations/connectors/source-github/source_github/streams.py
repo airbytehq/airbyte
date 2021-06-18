@@ -54,7 +54,6 @@ class GithubStream(HttpStream, ABC):
 
     def __init__(self, repository: str, **kwargs):
         super().__init__(**kwargs)
-        self.owner, self.repo = repository.split("/")
         self.repository = repository
         self._page = 1
 
@@ -334,6 +333,7 @@ class Teams(GithubStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
+        self.owner, _ = self.repository.split("/")
         return f"orgs/{self.owner}/teams"
 
 
