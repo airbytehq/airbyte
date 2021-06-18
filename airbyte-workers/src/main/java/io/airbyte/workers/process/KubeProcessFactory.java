@@ -27,9 +27,7 @@ package io.airbyte.workers.process;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -42,13 +40,21 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private final String namespace;
   private final KubernetesClient kubeClient;
-  private final BlockingQueue<Integer> ports;
-  private final Set<Integer> claimedPorts = new HashSet<>();
+  private final String kubeHeartbeatUrl;
+  private final BlockingQueue<Integer> workerPorts;
 
-  public KubeProcessFactory(String namespace, KubernetesClient kubeClient, BlockingQueue<Integer> ports) {
+  /**
+   * @param namespace kubernetes namespace where spawned pods will live
+   * @param kubeClient kubernetes client
+   * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
+   *        itself
+   * @param workerPorts a set of ports that can be used for IO socket servers
+   */
+  public KubeProcessFactory(String namespace, KubernetesClient kubeClient, String kubeHeartbeatUrl, BlockingQueue<Integer> workerPorts) {
     this.namespace = namespace;
     this.kubeClient = kubeClient;
-    this.ports = ports;
+    this.kubeHeartbeatUrl = kubeHeartbeatUrl;
+    this.workerPorts = workerPorts;
   }
 
   @Override
@@ -66,17 +72,15 @@ public class KubeProcessFactory implements ProcessFactory {
       final String suffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
       final String podName = "airbyte-worker-" + jobId + "-" + attempt + "-" + suffix;
 
-      final int stdoutLocalPort = ports.take();
-      claimedPorts.add(stdoutLocalPort);
+      final int stdoutLocalPort = workerPorts.take();
       LOGGER.info("stdoutLocalPort = " + stdoutLocalPort);
 
-      final int stderrLocalPort = ports.take();
-      claimedPorts.add(stderrLocalPort);
+      final int stderrLocalPort = workerPorts.take();
       LOGGER.info("stderrLocalPort = " + stderrLocalPort);
 
       final Consumer<Integer> portReleaser = port -> {
-        if (!ports.contains(port)) {
-          ports.add(port);
+        if (!workerPorts.contains(port)) {
+          workerPorts.add(port);
           LOGGER.info("Port consumer releasing: " + port);
         } else {
           LOGGER.info("Port consumer skipping releasing: " + port);
@@ -91,6 +95,7 @@ public class KubeProcessFactory implements ProcessFactory {
           imageName,
           stdoutLocalPort,
           stderrLocalPort,
+          kubeHeartbeatUrl,
           usesStdin,
           files,
           entrypoint,
