@@ -10,7 +10,7 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
-## 6/17/2021
+## 6/18/2021
 
 1 new source:
 * [**Snowflake**](https://docs.airbyte.io/integrations/sources/snowflake)
@@ -20,6 +20,7 @@ New features:
 **Google Ads** source: now uses the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)!
 **S3** destination: supports Parquet output!
 **S3** destination: supports Minio S3!
+**BigQuery** destination: credentials are now optional.
 
 Bugfixes:
 

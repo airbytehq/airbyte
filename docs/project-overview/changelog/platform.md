@@ -9,6 +9,7 @@ This is the changelog for Airbyte Platform. For our connector changelog, please 
 ## [06-16-2021](https://github.com/airbytehq/airbyte/releases/tag/v0.26.0-alpha)
 
 * Custom dbt transformations! 
+* You can now configure your destination namespace at the table level when setting up a connection!  
 * Migrate basic normalization settings to the sync operations.
 
 ## [06-09-2021 - 0.24.8 / 0.25.0](https://github.com/airbytehq/airbyte/releases/tag/v0.24.8-alpha)
