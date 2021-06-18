@@ -16,7 +16,7 @@ metadata:
   name: airbyte-temporal-dynamicconfig
 data:
   "development.yaml": |
-    # remember to update the docker-compose version of this file
+    # when modifying, remember to update the docker-compose version of this file in temporal/dynamicconfig/development.yaml
     frontend.enableClientVersionCheck:
       - value: true
         constraints: {}
