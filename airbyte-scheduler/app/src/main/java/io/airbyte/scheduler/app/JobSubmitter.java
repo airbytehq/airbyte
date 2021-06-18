@@ -90,14 +90,12 @@ public class JobSubmitter implements Runnable {
     final int attemptNumber = job.getAttempts().size();
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
+          // TODO(Issue-4204): This should save the fully qualified job path.
           final Path logFilePath = workerRun.getJobRoot().resolve(LogHelpers.LOG_FILENAME);
-          LOGGER.info("===== assigning workerRunJobRoot: {}", workerRun.getJobRoot());
-          LOGGER.info("===== assigning logFilePath: {}", logFilePath);
           final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
           assertSameIds(attemptNumber, persistedAttemptId);
 
           LogHelpers.setJobMdc(workerRun.getJobRoot());
-          LOGGER.info("======= MDC context: {}", MDC.getCopyOfContextMap());
         })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {
