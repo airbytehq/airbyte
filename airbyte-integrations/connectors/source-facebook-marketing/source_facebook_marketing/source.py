@@ -29,7 +29,7 @@ from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
-from source_facebook_marketing.source import API
+from source_facebook_marketing.api import API
 from source_facebook_marketing.streams import (
     AdCreatives,
     Ads,
@@ -118,7 +118,7 @@ class SourceFacebookMarketing(AbstractSource):
         """
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
         api = API(account_id=config.account_id, access_token=config.access_token)
-        sync_args = dict(
+        insights_args = dict(
             api=api,
             start_date=config.start_date,
             buffer_days=config.insights_lookback_window,
@@ -126,16 +126,16 @@ class SourceFacebookMarketing(AbstractSource):
         )
 
         return [
-            Campaigns(api=api, include_deleted=config.include_deleted),
-            AdSets(api=api, include_deleted=config.include_deleted),
-            Ads(api=api, include_deleted=config.include_deleted),
+            Campaigns(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
+            AdSets(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
+            Ads(api=api, start_date=config.start_date, include_deleted=config.include_deleted),
             AdCreatives(api=api),
-            AdsInsights(**sync_args),
-            AdsInsightsAgeAndGender(**sync_args),
-            AdsInsightsCountry(**sync_args),
-            AdsInsightsRegion(**sync_args),
-            AdsInsightsDma(**sync_args),
-            AdsInsightsPlatformAndDevice(**sync_args),
+            AdsInsights(**insights_args),
+            AdsInsightsAgeAndGender(**insights_args),
+            AdsInsightsCountry(**insights_args),
+            AdsInsightsRegion(**insights_args),
+            AdsInsightsDma(**insights_args),
+            AdsInsightsPlatformAndDevice(**insights_args),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
