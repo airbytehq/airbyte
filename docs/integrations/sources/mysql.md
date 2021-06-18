@@ -127,7 +127,7 @@ For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/r
 * Enable gtid_mode : Boolean that specifies whether GTID mode of the MySQL server is enabled or not. Enable it via `mysql> gtid_mode=ON`
 * Enable enforce_gtid_consistency : Boolean that specifies whether the server enforces GTID consistency by allowing the execution of statements that can be logged in a transactionally safe manner. Required when using GTIDs. Enable it via `mysql> enforce_gtid_consistency=ON`
 
-####Note 
+#### Note 
 
 When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. 
 Airbyte doesn't acquire any table locks (for tables defined with MyISAM engine, the tables would still be locked) while creating the snapshot to allow writes by other database clients. 
