@@ -50,7 +50,7 @@ public class Jsons {
   private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
 
   private static ObjectMapper initMapper() {
-    final ObjectMapper result = new ObjectMapper();
+    final ObjectMapper result = new ObjectMapper().findAndRegisterModules();
     result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     return result;
   }

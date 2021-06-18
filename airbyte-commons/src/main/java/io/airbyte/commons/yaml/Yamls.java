@@ -45,7 +45,7 @@ public class Yamls {
 
   public static final YAMLFactory YAML_FACTORY = new YAMLFactory();
   // Object Mapper is thread-safe
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(YAML_FACTORY);
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(YAML_FACTORY).findAndRegisterModules();
 
   public static <T> String serialize(T object) {
     try {
