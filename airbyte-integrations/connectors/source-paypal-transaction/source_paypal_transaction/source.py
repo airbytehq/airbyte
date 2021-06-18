@@ -34,25 +34,45 @@ from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from dateutil.parser import isoparse
 
 
-class PaypalTransactionStream(HttpStream, ABC):
+def get_endpoint(is_sandbox: bool = False) -> str:
+    if is_sandbox:
+        endpoint = "https://api-m.sandbox.paypal.com"
+    else:
+        endpoint = "https://api-m.paypal.com"
+    return endpoint
 
-    sandbox = True
+
+def get_end_date(config: Mapping[str, Any]) -> datetime:
+    end_date = None
+    now = datetime.now().replace(microsecond=0).astimezone()
+    if "end_date" in config and config["end_date"]:
+        end_date = isoparse(config["end_date"])
+
+    # If date is in future then set it to now:
+    if not end_date or end_date > now:
+        end_date = now
+
+    return end_date
+
+
+class PaypalTransactionStream(HttpStream, ABC):
 
     page_size = "500"  # API limit
 
     # Date limits are needed to prevent API error: Data for the given start date is not available
-    start_date_limits: Mapping[str, Mapping] = {"min_date": {"days": 3 * 364}, "max_date": {"hours": 12}}  # API limit - 3 years
+    # API limit: 3 years < start_date < 12 hrs before now
+    start_date_limits: Mapping[str, Mapping] = {"min_date": {"days": 3 * 364}, "max_date": {"hours": 12}}
 
     stream_slice_period: Mapping[str, int] = {"days": 1}
 
-    def __init__(self, start_date: datetime, end_date: datetime, env: str = "Production", **kwargs):
+    def __init__(self, start_date: datetime, end_date: datetime, is_sandbox: bool = False, **kwargs):
         super().__init__(**kwargs)
 
         self._validate_input_dates(start_date=start_date, end_date=end_date)
 
         self.start_date = start_date
         self.end_date = end_date
-        self.env = env
+        self.is_sandbox = is_sandbox
 
     def _validate_input_dates(self, start_date, end_date):
 
@@ -80,12 +100,7 @@ class PaypalTransactionStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
 
-        if self.env == "Production":
-            url_base = "https://api-m.paypal.com/v1/reporting/"
-        else:
-            url_base = "https://api-m.sandbox.paypal.com/v1/reporting/"
-
-        return url_base
+        return f"{get_endpoint(self.is_sandbox)}/v1/reporting/"
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -257,6 +272,20 @@ class Balances(PaypalTransactionStream):
 
         return None
 
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+
+        slices = super().stream_slices(sync_mode, cursor_field, stream_state)
+
+        # Add one more slice to extract balance at the time of 'end_date'
+        last_slice = slices[-1]
+        if last_slice["start_date"] != last_slice["end_date"]:
+            start_date = end_date = last_slice["end_date"]
+            slices.append({"start_date": start_date, "end_date": end_date})
+
+        return slices
+
 
 class PayPalOauth2Authenticator(Oauth2Authenticator):
     """
@@ -266,6 +295,15 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
       -u "CLIENT_ID:SECRET" \
       -d "grant_type=client_credentials"
     """
+
+    def __init__(self, config):
+
+        super().__init__(
+            token_refresh_endpoint=f"{get_endpoint(config['is_sandbox'])}/v1/oauth2/token",
+            client_id=config["client_id"],
+            client_secret=config["secret"],
+            refresh_token="",
+        )
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         """ Override to define additional parameters """
@@ -301,23 +339,9 @@ class SourcePaypalTransaction(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         start_date = isoparse(config["start_date"])
-        end_date_str = config["end_date"]
-        if end_date_str:
-            end_date = isoparse(end_date_str)
-        else:
-            end_date = datetime.now().replace(microsecond=0).astimezone()
+        end_date = get_end_date(config)
 
-        if config["environment"] == "Production":
-            url_auth = "https://api-m.paypal.com/v1/oauth2/token"
-        else:
-            url_auth = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
-
-        authenticator = PayPalOauth2Authenticator(
-            token_refresh_endpoint=url_auth,
-            client_id=config["client_id"],
-            client_secret=config["secret"],
-            refresh_token="",
-        )
+        authenticator = PayPalOauth2Authenticator(config)
         # Try to get API TOKEN
         token = authenticator.get_access_token()
         if not token:
@@ -325,7 +349,7 @@ class SourcePaypalTransaction(AbstractSource):
 
         # Try to initiate a stream and validate input date params
         try:
-            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date, env=config["environment"])
+            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date, is_sandbox=config["is_sandbox"])
         except Exception as e:
             return False, e
 
@@ -337,21 +361,13 @@ class SourcePaypalTransaction(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        authenticator = PayPalOauth2Authenticator(
-            token_refresh_endpoint="https://api-m.sandbox.paypal.com/v1/oauth2/token",
-            client_id=config["client_id"],
-            client_secret=config["secret"],
-            refresh_token="",
-        )
+
+        authenticator = PayPalOauth2Authenticator(config)
 
         start_date = isoparse(config["start_date"])
-        end_date_str = config["end_date"]
-        if end_date_str:
-            end_date = isoparse(end_date_str)
-        else:
-            end_date = datetime.now().replace(microsecond=0).astimezone()
+        end_date = get_end_date(config)
 
         return [
-            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date, env=config["environment"]),
-            Balances(authenticator=authenticator, start_date=start_date, end_date=end_date, env=config["environment"]),
+            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date, is_sandbox=config["is_sandbox"]),
+            Balances(authenticator=authenticator, start_date=start_date, end_date=end_date, is_sandbox=config["is_sandbox"]),
         ]
