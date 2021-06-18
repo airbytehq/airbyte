@@ -93,7 +93,16 @@
     {
       "stream": {
         "name": "calls",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "end_time": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["end_time"]
@@ -105,7 +114,16 @@
     {
       "stream": {
         "name": "conferences",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "date_updated": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
@@ -135,7 +153,16 @@
     {
       "stream": {
         "name": "recordings",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "date_created": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_created"]
@@ -165,7 +192,16 @@
     {
       "stream": {
         "name": "messages",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "date_sent": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_sent"]
@@ -177,11 +213,23 @@
     {
       "stream": {
         "name": "message_media",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "json_schema": {
+          "properties": {
+            "date_created": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date_created"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["date_created"],
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -216,7 +264,16 @@
     {
       "stream": {
         "name": "alerts",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "date_updated": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
