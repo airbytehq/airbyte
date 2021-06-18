@@ -343,15 +343,21 @@ jobs:
           sudo apt-get install socat
 
       - name: Manual Minikube Linking and Starting for EC2
+        env:
+          USER: root
+          HOME: /home/runner
         run: |
           ln -s $(which minikube) /usr/local/bin/kubectl
-          minikube start
+          minikube start --memory=6000
           kubectl get pods
 
       - name: Build Core Docker Images and Run Tests
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan --rerun-tasks
 
       - name: Run Kubernetes End-to-End Acceptance Tests
+        env:
+          USER: root
+          HOME: /home/runner
         run: |
           IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
   # In case of self-hosted EC2 errors, remove this block.
