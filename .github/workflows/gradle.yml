@@ -327,6 +327,10 @@ jobs:
         run: |
           mkdir -p /home/runner
 
+      - name: Install socat (required for port forwarding)
+        run: |
+          sudo apt-get install socat
+
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@v2.4.1
         with:
@@ -337,10 +341,6 @@ jobs:
           USER: root
           HOME: /home/runner
           CHANGE_MINIKUBE_NONE_USER: true
-
-      - name: Install socat (required for port forwarding)
-        run: |
-          sudo apt-get install socat
 
       - name: Manual Minikube Linking and Starting for EC2
         env:
