@@ -345,7 +345,17 @@ jobs:
           kubectl get pods
 
       - name: Install socat (required for port forwarding)
-        run: sudo apt-get install socat
+        run: |
+          i="0"
+          while [ $i -lt 15 ]
+          do
+          if [ $(fuser /var/lib/dpkg/lock) ]; then
+            i="0"
+          fi
+          sleep 1
+          i=$[$i+1]
+          done
+          sudo apt-get install socat
 
       - name: Build Core Docker Images and Run Tests
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan --rerun-tasks
