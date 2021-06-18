@@ -238,15 +238,7 @@ public class KubePodProcess extends Process {
         client.pods().inNamespace(namespace).withName(podName).inContainer(INIT_CONTAINER_NAME)
             .file(CONFIG_DIR + "/" + file.getKey())
             .upload(tmpFile);
-
-      } catch (KubernetesClientException e) {
-        // The FabricIO client has a bug where it interprets successful responses as errors. See https://github.com/fabric8io/kubernetes-client/issues/2217.
-        if (!e.getMessage().contains("Success")) {
-          LOGGER.info("====== UPLOAD ERROR: ",e);
-          LOGGER.info("====== UPLOAD FAILED");
-          throw e;
-        }
-        LOGGER.info("====== UPLOAD ACTUALLY SUCCESS");
+        
       } finally {
         if (tmpFile != null) {
           tmpFile.toFile().delete();
@@ -582,11 +574,6 @@ public class KubePodProcess extends Process {
   @Override
   public int exitValue() {
     return getReturnCode(podDefinition);
-  }
-
-  public static void main(String[] args) {
-    var files = Map.of("FILE_1", "line 1", "FILE_2", "line 2", "FILE_3", "line 3");
-    copyFilesToKubeConfigVolume(new DefaultKubernetesClient(), "airbyte-server-c55c589c4-9zj2q", "default", files);
   }
 
 }

@@ -10,11 +10,11 @@ images:
   - name: airbyte/db
     newTag: dev
   - name: airbyte/scheduler
-    newTag: multi-node-test-7
+    newTag: dev
   - name: airbyte/server
-    newTag: multi-node-test-1
+    newTag: dev
   - name: airbyte/webapp
-    newTag: 0.24.8-alpha
+    newTag: dev
   - name: temporalio/auto-setup
     newTag: 1.7.0
 
