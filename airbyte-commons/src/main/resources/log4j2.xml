@@ -16,7 +16,6 @@
             <PatternLayout pattern="${default-pattern}"/>
         </Console>
 
-<!--  Log if there is something      -->
         <Routing name="LogSplit">
             <Routes pattern="$${ctx:job_log_path}">
                 <!-- Don't split logs if job_root isn't defined -->
@@ -31,6 +30,12 @@
             </Routes>
             <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
         </Routing>
+
+        <!--
+            Separate routers are created for each cloud logger as
+            1) a Route only accepts 1 appender
+            2) Routes don't support routing log output to more than Route
+        -->
         <Routing name="LogSplitCloud">
             <Routes pattern="$${ctx:job_log_path}">
                 <!-- Don't split logs if job_root isn't defined -->
