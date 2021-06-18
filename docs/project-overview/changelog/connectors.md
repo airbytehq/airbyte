@@ -16,13 +16,11 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 * [**Snowflake**](https://docs.airbyte.io/integrations/sources/snowflake)
 
 New features:
-**Postgres** source: now has comprehensive data type tests.
-**Google Ads** source: now uses the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)!
-**S3** destination: supports Parquet output!
-**S3** destination: supports Minio S3!
-**BigQuery** destination: credentials are now optional.
-
-Bugfixes:
+* **Postgres** source: now has comprehensive data type tests.
+* **Google Ads** source: now uses the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)!
+* **S3** destination: supports Parquet output!
+* **S3** destination: supports Minio S3!
+* **BigQuery** destination: credentials are now optional.
 
 ## 6/10/2021
 1 new destination:
