@@ -16,3 +16,7 @@ RUN apt-get update -y && \
         jq \
         cmake \
     && apt-get clean
+
+RUN git clone https://github.com/airbytehq/airbyte.git
+
+RUN cd airbyte
