@@ -220,8 +220,7 @@ public class JobSubmitterTest {
 
     assertEquals(
         ImmutableMap.of(
-            "job_root", workerRun.getJobRoot().toString(),
-            "job_log_filename", LogHelpers.LOG_FILENAME),
+            "job_log_path", workerRun.getJobRoot() + "/" + LogHelpers.LOG_FILENAME),
         mdcMap.get());
 
     assertTrue(MDC.getCopyOfContextMap().isEmpty());
