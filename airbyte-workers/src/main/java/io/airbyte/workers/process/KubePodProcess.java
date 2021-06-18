@@ -189,7 +189,7 @@ public class KubePodProcess extends Process {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
 
-    initEntrypointStr = initEntrypointStr + String.format(" && (until [ -f %s ]; do sleep 5; done;) && sleep 1", SUCCESS_FILE_NAME);
+    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 5; done;", SUCCESS_FILE_NAME);
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
@@ -238,7 +238,7 @@ public class KubePodProcess extends Process {
         client.pods().inNamespace(namespace).withName(podName).inContainer(INIT_CONTAINER_NAME)
             .file(CONFIG_DIR + "/" + file.getKey())
             .upload(tmpFile);
-        
+
       } finally {
         if (tmpFile != null) {
           tmpFile.toFile().delete();
@@ -391,16 +391,6 @@ public class KubePodProcess extends Process {
     filesWithSuccess.put(SUCCESS_FILE_NAME, "");
     copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
 
-    while (this.stdout == null || this.stderr == null) {
-      try {
-        LOGGER.info("Waiting for stdout/stderr listeners. Stdout: {}, Stderr: {}", this.stdout, this.stderr);
-        Thread.sleep(2000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-    LOGGER.info("Created stdout/stderr listeners");
-
     LOGGER.info("Waiting until pod is ready...");
     // If a pod gets into a non-terminal error state it should be automatically killed by our
     // heartbeating mechanism.
@@ -409,14 +399,10 @@ public class KubePodProcess extends Process {
     // This doesn't manage things like pods that are blocked from running for some cluster reason or if
     // the init
     // container got stuck somehow.
-//    try {
       client.resource(podDefinition).waitUntilCondition(p -> {
         boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
         return isReady || isTerminal(p);
       }, 10, TimeUnit.DAYS);
-//    } catch (Exception e) {
-//      LOGGER.info("======== ERROR QUERY: ", e);
-//    }
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");

@@ -44,8 +44,6 @@ public class LogHelpers {
 
   // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
-  public static String JOB_ROOT_MDC_KEY = "job_root";
-  public static String JOB_LOG_FILENAME_MDC_KEY = "job_log_filename";
   public static String JOB_LOG_PATH_MDC_KEY = "job_log_path";
 
   public static String S3_LOG_BUCKET = "S3_LOG_BUCKET";
