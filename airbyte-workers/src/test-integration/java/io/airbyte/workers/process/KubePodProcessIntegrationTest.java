@@ -163,8 +163,7 @@ public class KubePodProcessIntegrationTest {
         "file0", "fixed str",
         "file1", getRandomFile(1),
         "file2", getRandomFile(100),
-        "file3", getRandomFile(1000),
-        "file3", getRandomFile(10000));
+        "file3", getRandomFile(1000));
 
     return processFactory.create(
         "some-id",
