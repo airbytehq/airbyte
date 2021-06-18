@@ -332,7 +332,7 @@ jobs:
         with:
           minikube version: 'v1.21.0-beta.0'
           kubernetes version: 'v1.20.7'
-        # In case of elf-hosted EC2 errors, remove this env block.
+        # In case of self-hosted EC2 errors, remove this env block.
         env:
           USER: root
           HOME: /home/runner
