@@ -71,38 +71,16 @@
       "additionalProperties": false
     },
     "subresource_uris": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": ["null", "object"],
-            "additionalProperties": false,
-            "properties": {
-              "subresource": {
-                "type": ["null", "string"]
-              },
-              "uri": {
-                "type": ["null", "string"]
-              }
-            }
-          }
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "transcriptions": {
+          "type": ["null", "string"]
         },
-        {
-          "type": "null"
-        },
-        {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "transcriptions": {
-              "type": ["null", "string"]
-            },
-            "add_on_results": {
-              "type": ["null", "string"]
-            }
-          }
+        "add_on_results": {
+          "type": ["null", "string"]
         }
-      ]
+      }
     }
   },
   "type": "object",

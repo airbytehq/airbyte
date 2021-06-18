@@ -13,32 +13,10 @@
       "type": ["null", "string"]
     },
     "latitude": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "number",
-          "multipleOf": 1e-6
-        },
-        {
-          "type": "string"
-        }
-      ]
+      "type": ["null", "string"]
     },
     "longitude": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "number",
-          "multipleOf": 1e-6
-        },
-        {
-          "type": "string"
-        }
-      ]
+      "type": ["null", "string"]
     },
     "locality": {
       "type": ["null", "string"]

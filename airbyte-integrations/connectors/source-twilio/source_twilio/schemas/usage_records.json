@@ -4,72 +4,40 @@
       "type": ["null", "string"]
     },
     "count": {
-      "anyOf": [
-        {
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        },
-        {
-          "type": "string"
-        }
-      ]
+      "type": ["null", "string", "integer"]
     },
     "price_unit": {
       "type": ["null", "string"]
     },
     "subresource_uris": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": ["null", "object"],
-            "additionalProperties": false,
-            "properties": {
-              "subresource": {
-                "type": ["null", "string"]
-              },
-              "uri": {
-                "type": ["null", "string"]
-              }
-            }
-          }
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "yesterday": {
+          "type": ["null", "string"]
         },
-        {
-          "type": "null"
+        "all_time": {
+          "type": ["null", "string"]
         },
-        {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "yesterday": {
-              "type": ["null", "string"]
-            },
-            "all_time": {
-              "type": ["null", "string"]
-            },
-            "today": {
-              "type": ["null", "string"]
-            },
-            "yearly": {
-              "type": ["null", "string"]
-            },
-            "this_month": {
-              "type": ["null", "string"]
-            },
-            "monthly": {
-              "type": ["null", "string"]
-            },
-            "daily": {
-              "type": ["null", "string"]
-            },
-            "last_month": {
-              "type": ["null", "string"]
-            }
-          }
+        "today": {
+          "type": ["null", "string"]
+        },
+        "yearly": {
+          "type": ["null", "string"]
+        },
+        "this_month": {
+          "type": ["null", "string"]
+        },
+        "monthly": {
+          "type": ["null", "string"]
+        },
+        "daily": {
+          "type": ["null", "string"]
+        },
+        "last_month": {
+          "type": ["null", "string"]
         }
-      ]
+      }
     },
     "description": {
       "type": ["null", "string"]
@@ -86,15 +54,7 @@
       "type": ["null", "string"]
     },
     "price": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "number",
-          "multipleOf": 1e-6
-        }
-      ]
+      "type": ["null", "number", "string"]
     },
     "uri": {
       "type": ["null", "string"]
@@ -103,18 +63,7 @@
       "type": ["null", "string"]
     },
     "usage": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "number",
-          "multipleOf": 1e-8
-        },
-        {
-          "type": "string"
-        }
-      ]
+      "type": ["null", "number", "string"]
     },
     "start_date": {
       "format": "date-time",

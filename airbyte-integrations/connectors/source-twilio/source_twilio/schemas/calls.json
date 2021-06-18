@@ -84,38 +84,16 @@
       "type": ["null", "string"]
     },
     "subresource_uris": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": ["null", "object"],
-            "additionalProperties": false,
-            "properties": {
-              "subresource": {
-                "type": ["null", "string"]
-              },
-              "uri": {
-                "type": ["null", "string"]
-              }
-            }
-          }
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "recordings": {
+          "type": ["null", "string"]
         },
-        {
-          "type": "null"
-        },
-        {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "recordings": {
-              "type": ["null", "string"]
-            },
-            "notifications": {
-              "type": ["null", "string"]
-            }
-          }
+        "notifications": {
+          "type": ["null", "string"]
         }
-      ]
+      }
     }
   },
   "type": "object",

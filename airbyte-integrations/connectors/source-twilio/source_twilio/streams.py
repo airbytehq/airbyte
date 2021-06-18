@@ -60,10 +60,7 @@ class TwilioStream(HttpStream, ABC):
         yield from records
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            next_page_token: Mapping[str, Any] = None,
-            **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         params["PageSize"] = self.page_size
@@ -233,7 +230,7 @@ class Keys(TwilioNestedStream):
 
 
 class Calls(TwilioNestedStream, IncrementalTwilioStream):
-    """https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources"""
+    """https://www.twilio.com/docs/voice/api/call-resource#create-a-call-resource"""
 
     parent_stream = Accounts
     incremental_filter_field = "EndTime>"
@@ -318,7 +315,7 @@ class UsageNestedStream(TwilioNestedStream):
         stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
         for stream_slice in stream_slices:
             for item in stream_instance.read_records(
-                    sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
+                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
             ):
                 yield {"account_sid": item["sid"]}
 
