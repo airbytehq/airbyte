@@ -190,7 +190,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
   return (
     <StyledDropdownList
       {...props}
-      data-test-id={props.name}
+      data-testid={props.name}
       error={props.error}
       withBorder={props.withBorder}
       containerClassName={className}

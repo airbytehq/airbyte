@@ -16,35 +16,48 @@
     "additionalProperties": false,
     "properties": {
       "start_date": {
+        "title": "Start Date",
         "type": "string",
         "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
-        "examples": ["2017-01-25T00:00:00Z"]
+        "examples": ["2017-01-25"]
       },
       "refresh_token": {
+        "title": "Refresh Token",
         "type": "string",
         "description": "The refresh token used obtained via authorization (can be passed to the client instead)"
       },
       "lwa_app_id": {
+        "title": "LWA APP ID",
         "type": "string",
         "description": "Your login with amazon app id"
       },
       "lwa_client_secret": {
+        "title": "LWA Client Secret",
         "type": "string",
         "description": "Your login with amazon client secret"
       },
       "aws_access_key": {
+        "title": "AWS Access Key",
         "type": "string",
         "description": "AWS USER ACCESS KEY"
       },
       "aws_secret_key": {
+        "title": "AWS Secret Key",
         "type": "string",
         "description": "AWS USER SECRET KEY"
       },
       "role_arn": {
+        "title": "Role ARN",
         "type": "string",
         "description": "The role’s arn (needs permission to “Assume Role” STS)"
       },
+      "seller_id": {
+        "title": "Seller ID",
+        "type": "string",
+        "description": "Amazon doesn't return seller_id in the response thus seller_id is added to each row as an identifier. Note: It is not used in querying the data."
+      },
       "marketplace": {
+        "title": "Marketplace",
         "type": "string",
         "description": "The marketplace from which you'd like to pull data.",
         "enum": [

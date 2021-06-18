@@ -59,6 +59,11 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
     return "airbyte/destination-mssql:dev";
   }
 
+  @Override
+  protected boolean supportsDBT() {
+    return true;
+  }
+
   private JsonNode getConfig(MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
@@ -97,11 +102,6 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
         .stream()
         .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean implementsBasicNormalization() {
-    return false;
   }
 
   @Override

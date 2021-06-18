@@ -36,7 +36,7 @@ const GroupControls: React.FC<GroupControlsProps> = ({
   name,
 }) => {
   return (
-    <FormGroup data-test-id={name}>
+    <FormGroup data-testid={name}>
       <GroupTitle>{title}</GroupTitle>
       {description && <Label message={<TextWithHTML text={description} />} />}
       {children}

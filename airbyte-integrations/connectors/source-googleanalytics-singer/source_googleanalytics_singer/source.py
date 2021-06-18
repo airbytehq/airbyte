@@ -29,6 +29,7 @@ import pkgutil
 from pathlib import Path
 from typing import List
 
+from airbyte_protocol import ConfiguredAirbyteCatalog
 from base_singer import AirbyteLogger, BaseSingerSource
 from jsonschema.validators import Draft4Validator
 from tap_google_analytics import GAClient
@@ -42,6 +43,7 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
     tap_cmd = "tap-google-analytics"
     tap_name = "Google Analytics API"
     api_error = Exception
+    reports_to_read = None
 
     # can be overridden to change an input config
     def configure(self, raw_config: json, temp_dir: str) -> json:
@@ -59,19 +61,28 @@ class GoogleAnalyticsSingerSource(BaseSingerSource):
                 error_messages.append(error.message)
             raise Exception("An error occurred during custom_reports data validation: " + "; ".join(error_messages))
 
+    def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
+        catalog = ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        if not self.reports_to_read:
+            self.reports_to_read = [i.stream.name for i in catalog.streams]
+        return catalog_path
+
     def _get_reports_file_path(self, temp_dir: str, custom_reports_data: List[dict]) -> str:
         report_definition = (
             json.loads(pkgutil.get_data("tap_google_analytics", "defaults/default_report_definition.json")) + custom_reports_data
         )
+        if self.reports_to_read:
+            report_definition = [i for i in report_definition if i["name"] in self.reports_to_read]
+
         custom_reports = os.path.join(temp_dir, "custom_reports.json")
         with open(custom_reports, "w") as file:
             file.write(json.dumps(report_definition))
+
         return custom_reports
 
     def _check_custom_reports(self, config: dict = None, config_path: str = None):
         if config_path:
             config = self.read_config(config_path)
-
         custom_reports = config.pop("custom_reports")
         if custom_reports.strip() and json.loads(custom_reports):
             custom_reports_data = json.loads(custom_reports)
