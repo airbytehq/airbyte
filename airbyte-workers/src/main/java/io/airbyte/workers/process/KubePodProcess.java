@@ -389,9 +389,16 @@ public class KubePodProcess extends Process {
     copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
 
     LOGGER.info("Waiting until pod is ready...");
+    // If a pod gets into a non-terminal error state it should be automatically killed by our
+    // heartbeating mechanism.
+    // This also handles the case where a very short pod already completes before this check completes
+    // the first time.
+    // This doesn't manage things like pods that are blocked from running for some cluster reason or if
+    // the init
+    // container got stuck somehow.
     client.resource(podDefinition).waitUntilCondition(p -> {
       boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
-      return isReady || isTerminal(p); // todo: fixes too fast completion, but what do we do for failure/error?
+      return isReady || isTerminal(p);
     }, 10, TimeUnit.DAYS);
 
     // allow writing stdin to pod
