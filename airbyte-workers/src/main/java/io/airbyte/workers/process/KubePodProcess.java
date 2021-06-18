@@ -37,7 +37,6 @@ import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import io.kubernetes.client.Copy;
 import io.kubernetes.client.openapi.ApiClient;
@@ -243,7 +242,7 @@ public class KubePodProcess extends Process {
         Copy copy = new Copy(officialClient);
         copy.copyFileToPod(namespace, podName, INIT_CONTAINER_NAME, contents, containerPath);
 
-      } catch (KubernetesClientException | IOException | ApiException e) {
+      } catch (IOException | ApiException e) {
         throw new RuntimeException(e);
       }
     }
