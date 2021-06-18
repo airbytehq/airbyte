@@ -32,7 +32,14 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
-    install_requires=["airbyte-protocol", "pyyaml", "jinja2", "dbt-mysql"],
+    install_requires=[
+        "airbyte-protocol",
+        "pyyaml",
+        "jinja2",
+        # TODO: change to dbt-mysql after this PR is merged:
+        # https://github.com/dbeatty10/dbt-mysql/pull/57
+        "dbt-mysql @ git+https://github.com/airbytehq/dbt-mysql-1@patch-1#egg=dbt-mysql",
+    ],
     package_data={"": ["*.yml"]},
     setup_requires=["pytest-runner"],
     entry_points={
