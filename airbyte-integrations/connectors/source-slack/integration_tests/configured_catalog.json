@@ -1,4 +1,5 @@
 {
+  "comment": "deleted threads from configured catalog due to the timeout error in incremental stream",
   "streams": [
     {
       "stream": {
