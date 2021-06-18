@@ -24,7 +24,6 @@
 
 package io.airbyte.workers.process;
 
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -39,15 +38,19 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
+import io.kubernetes.client.Copy;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -110,7 +113,7 @@ public class KubePodProcess extends Process {
   private static final int KILLED_EXIT_CODE = 143;
   private static final int STDIN_REMOTE_PORT = 9001;
 
-  private final KubernetesClient client;
+  private final KubernetesClient fabricClient;
   private final Pod podDefinition;
   // Necessary since it is not possible to retrieve the pod's actual exit code upon termination. This
   // is because the Kube API server does not keep
@@ -222,24 +225,25 @@ public class KubePodProcess extends Process {
         .build();
   }
 
-  private static void copyFilesToKubeConfigVolume(KubernetesClient client, String podName, String namespace, Map<String, String> files) {
+  private static void copyFilesToKubeConfigVolume(ApiClient officialClient, String podName, String namespace, Map<String, String> files) {
     List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
+    // copy this file last to indicate that the copy has completed
+    fileEntries.add(new AbstractMap.SimpleEntry<>(SUCCESS_FILE_NAME, ""));
+
     for (Map.Entry<String, String> file : fileEntries) {
-      Path tmpFile = null;
       try {
-        tmpFile = Path.of(IOs.writeFileToRandomTmpDir(file.getKey(), file.getValue()));
-
         LOGGER.info("Uploading file: " + file.getKey());
+        var contents = file.getValue().getBytes(StandardCharsets.UTF_8);
+        var containerPath = Path.of(CONFIG_DIR + "/" + file.getKey());
 
-        client.pods().inNamespace(namespace).withName(podName).inContainer(INIT_CONTAINER_NAME)
-            .file(CONFIG_DIR + "/" + file.getKey())
-            .upload(tmpFile);
+        // fabric8 kube client upload doesn't work on gke:
+        // https://github.com/fabric8io/kubernetes-client/issues/2217
+        Copy copy = new Copy(officialClient);
+        copy.copyFileToPod(namespace, podName, INIT_CONTAINER_NAME, contents, containerPath);
 
-      } finally {
-        if (tmpFile != null) {
-          tmpFile.toFile().delete();
-        }
+      } catch (IOException | ApiException e) {
+        throw new RuntimeException(e);
       }
     }
   }
@@ -260,7 +264,8 @@ public class KubePodProcess extends Process {
     LOGGER.info("Init container ready..");
   }
 
-  public KubePodProcess(KubernetesClient client,
+  public KubePodProcess(ApiClient officialClient,
+                        KubernetesClient fabricClient,
                         Consumer<Integer> portReleaser,
                         String podName,
                         String namespace,
@@ -273,7 +278,7 @@ public class KubePodProcess extends Process {
                         final String entrypointOverride,
                         final String... args)
       throws IOException, InterruptedException {
-    this.client = client;
+    this.fabricClient = fabricClient;
     this.portReleaser = portReleaser;
     this.stdoutLocalPort = stdoutLocalPort;
     this.stderrLocalPort = stderrLocalPort;
@@ -283,7 +288,7 @@ public class KubePodProcess extends Process {
     executorService = Executors.newFixedThreadPool(2);
     setupStdOutAndStdErrListeners();
 
-    String entrypoint = entrypointOverride == null ? getCommandFromImage(client, image, namespace) : entrypointOverride;
+    String entrypoint = entrypointOverride == null ? getCommandFromImage(fabricClient, image, namespace) : entrypointOverride;
     LOGGER.info("Found entrypoint: {}", entrypoint);
 
     Volume pipeVolume = new VolumeBuilder()
@@ -376,17 +381,12 @@ public class KubePodProcess extends Process {
         .build();
 
     LOGGER.info("Creating pod...");
-    this.podDefinition = client.pods().inNamespace(namespace).createOrReplace(pod);
+    this.podDefinition = fabricClient.pods().inNamespace(namespace).createOrReplace(pod);
 
-    waitForInitPodToRun(client, podDefinition);
+    waitForInitPodToRun(fabricClient, podDefinition);
 
     LOGGER.info("Copying files...");
-    Map<String, String> filesWithSuccess = new HashMap<>(files);
-
-    // We always copy the empty success file to ensure our waiting step can detect the init container in
-    // RUNNING. Otherwise, the container can complete and exit before we are able to detect it.
-    filesWithSuccess.put(SUCCESS_FILE_NAME, "");
-    copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
+    copyFilesToKubeConfigVolume(officialClient, podName, namespace, files);
 
     LOGGER.info("Waiting until pod is ready...");
     // If a pod gets into a non-terminal error state it should be automatically killed by our
@@ -396,14 +396,14 @@ public class KubePodProcess extends Process {
     // This doesn't manage things like pods that are blocked from running for some cluster reason or if
     // the init
     // container got stuck somehow.
-    client.resource(podDefinition).waitUntilCondition(p -> {
+    fabricClient.resource(podDefinition).waitUntilCondition(p -> {
       boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
       return isReady || isTerminal(p);
     }, 10, TimeUnit.DAYS);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
-    var podIp = getPodIP(client, podName, namespace);
+    var podIp = getPodIP(fabricClient, podName, namespace);
     LOGGER.info("Pod IP: {}", podIp);
 
     if (usesStdin) {
@@ -460,8 +460,9 @@ public class KubePodProcess extends Process {
   @Override
   public int waitFor() throws InterruptedException {
     try {
-      Pod refreshedPod = client.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
-      client.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
+      Pod refreshedPod =
+          fabricClient.pods().inNamespace(podDefinition.getMetadata().getNamespace()).withName(podDefinition.getMetadata().getName()).get();
+      fabricClient.resource(refreshedPod).waitUntilCondition(this::isTerminal, 10, TimeUnit.DAYS);
       wasKilled.set(true);
       return exitValue();
     } finally {
@@ -489,7 +490,7 @@ public class KubePodProcess extends Process {
   public void destroy() {
     LOGGER.info("Destroying Kube process: {}", podDefinition.getMetadata().getName());
     try {
-      client.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
+      fabricClient.resource(podDefinition).withPropagationPolicy(DeletionPropagation.FOREGROUND).delete();
       wasKilled.set(true);
     } finally {
       close();
@@ -524,7 +525,7 @@ public class KubePodProcess extends Process {
 
   private int getReturnCode(Pod pod) {
     var name = pod.getMetadata().getName();
-    Pod refreshedPod = client.pods().inNamespace(pod.getMetadata().getNamespace()).withName(name).get();
+    Pod refreshedPod = fabricClient.pods().inNamespace(pod.getMetadata().getNamespace()).withName(name).get();
     if (refreshedPod == null) {
       if (wasKilled.get()) {
         LOGGER.info("Unable to find pod {} to retrieve exit value. Defaulting to  value {}. This is expected if the job was cancelled.", name,
