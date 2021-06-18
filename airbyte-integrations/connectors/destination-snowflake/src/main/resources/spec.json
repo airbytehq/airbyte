@@ -203,14 +203,6 @@
             }
           }
         ]
-      },
-      "basic_normalization": {
-        "type": "boolean",
-        "default": true,
-        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
-        "title": "Basic Normalization",
-        "examples": [true, false],
-        "order": 8
       }
     }
   }
