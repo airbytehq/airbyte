@@ -163,13 +163,7 @@ class IncrementalMessageStream(SlackStream, ABC):
 
             yield record
 
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: MutableMapping[str, Any]
-    ) -> Mapping[str, Any]:
-        current_stream_state = current_stream_state or {}
-        if isinstance(latest_record[self.cursor_field], DateTime):
-            latest_record[self.cursor_field] = latest_record[self.cursor_field].timestamp()
-
+    def _cast_cursor_field(self, current_stream_state: MutableMapping[str, Any]):
         if isinstance(current_stream_state.get(self.cursor_field, 0), str):
             try:
                 current_stream_state[self.cursor_field] = float(current_stream_state[self.cursor_field])
@@ -179,8 +173,14 @@ class IncrementalMessageStream(SlackStream, ABC):
         elif isinstance(current_stream_state.get(self.cursor_field, 0), DateTime):
             current_stream_state[self.cursor_field] = current_stream_state[self.cursor_field].timestamp()
 
+        return current_stream_state
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = current_stream_state or {}
+        current_stream_state = self._cast_cursor_field(current_stream_state)
+
         current_stream_state[self.cursor_field] = max(
-            float(latest_record[self.cursor_field]), float(current_stream_state.get(self.cursor_field, 0))
+            float(latest_record[self.cursor_field].timestamp()), float(current_stream_state.get(self.cursor_field, 0))
         )
         current_stream_state[self.cursor_field] = pendulum.from_timestamp(current_stream_state[self.cursor_field])
 
@@ -258,7 +258,7 @@ class Threads(IncrementalMessageStream):
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
                 message_chunk["channel"] = channel["id"]
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
-                    yield {"channel": channel["id"], self.cursor_field: message[self.cursor_field].timestamp()}
+                    yield {"channel": channel["id"], self.cursor_field: message[self.cursor_field]}
 
 
 class JoinChannelsStream(HttpStream):

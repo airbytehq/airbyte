@@ -1,6 +1,6 @@
 {
   "streams": [
-{
+    {
       "stream": {
         "name": "channel_messages",
         "json_schema": {
