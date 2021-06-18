@@ -55,7 +55,7 @@
 {%- endmacro %}
 
 {% macro mysql__json_extract(json_column, json_path_list) -%}
-    jsonb_extract_path({{ json_column }}, {{ format_json_path(json_path_list) }})
+    json_extract({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract(json_column, json_path_list) -%}
@@ -115,7 +115,7 @@
 {%- endmacro %}
 
 {% macro mysql__json_extract_array(json_column, json_path_list) -%}
-    jsonb_extract_path({{ json_column }}, {{ format_json_path(json_path_list) }})
+    json_extract({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list) -%}
