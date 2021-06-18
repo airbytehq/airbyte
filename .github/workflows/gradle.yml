@@ -7,7 +7,7 @@ on:
 
 jobs:
   ## Gradle Build
-  # In case of self-hosted EC2 errors, remove the `start-build-runner` block.
+  # In case of self-hosted EC2 errors, remove this block.
   start-build-runner:
     name: Start Build EC2 Runner
     runs-on: ubuntu-latest
@@ -148,7 +148,7 @@ jobs:
           SLACK_USERNAME: Buildbot
           SLACK_TITLE: "Build Success"
           SLACK_FOOTER: ""
-  # In case of self-hosted EC2 errors, remove the `stop-build-runner` block.
+  # In case of self-hosted EC2 errors, remove this block.
   stop-build-runner:
     name: Stop Build EC2 Runner
     needs:
@@ -170,6 +170,32 @@ jobs:
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
           label: ${{ needs.start-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-build-runner.outputs.ec2-instance-id }}
+
+  ## Frontend Test
+  frontend-test:
+    runs-on: ubuntu-latest
+    name: Run Frontend Test
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14'
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14.7'
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Build Core Docker Images and Run Tests
+        run: CORE_ONLY=true ./gradlew --no-daemon build --scan
+
+      - name: Run End-to-End Frontend Tests
+        run: ./tools/bin/e2e_test.sh
 
   ## Acceptance Test
   # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
@@ -201,7 +227,7 @@ jobs:
     needs: start-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
 #    runs-on: ubuntu-latest
-    name: Run Acceptance Tests
+    name: Acceptance Tests (Docker Compose)
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -227,7 +253,7 @@ jobs:
       - name: Run Docker End-to-End Acceptance Tests
         run: |
           ./tools/bin/acceptance_test.sh
-  # In case of self-hosted EC2 errors, remove the `stop-build-runner` block.
+  # In case of self-hosted EC2 errors, remove this block.
   stop-acceptance-test-runner:
     name: Stop Acceptance Test EC2 Runner
     needs:
@@ -250,10 +276,37 @@ jobs:
           label: ${{ needs.start-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-acceptance-test-runner.outputs.ec2-instance-id }}
 
-  ## Frontend Test
-  frontend-test:
+  ## Kube Acceptance Tests
+  # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
+  start-kube-acceptance-test-runner:
+    name: Start Kube Acceptance Test EC2 Runner
     runs-on: ubuntu-latest
-    name: Run Frontend Test
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2.1.0
+        with:
+          mode: start
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          ec2-image-id: ami-04bd6e81239f4f3fb
+          ec2-instance-type: c5.2xlarge
+          subnet-id: subnet-0469a9e68a379c1d3
+          security-group-id: sg-0793f3c9413f21970
+  kube-acceptance-test:
+    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
+    needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
+#    runs-on: ubuntu-latest
+    name: Acceptance Tests (Kube)
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -270,42 +323,63 @@ jobs:
         with:
           python-version: '3.7'
 
-      - name: Build Core Docker Images and Run Tests
-        run: CORE_ONLY=true ./gradlew --no-daemon build --scan
+      - name: Fix EC-2 Runner
+        run: |
+          mkdir -p /home/runner
 
-      - name: Run End-to-End Frontend Tests
-        run: ./tools/bin/e2e_test.sh
-  test_kube:
-    runs-on: ubuntu-latest
-    name: Run Acceptance Tests (Kube)
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '14'
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '14.7'
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.7'
+      - name: Install socat (required for port forwarding)
+        run: |
+          sudo apt-get update
+          sudo apt-get install socat
 
       - name: Setup Minikube
         uses: manusa/actions-setup-minikube@v2.4.1
         with:
           minikube version: 'v1.21.0-beta.0'
           kubernetes version: 'v1.20.7'
+        # In case of self-hosted EC2 errors, remove this env block.
+        env:
+          USER: root
+          HOME: /home/runner
+          CHANGE_MINIKUBE_NONE_USER: true
 
-      - name: Install socat (required for port forwarding)
-        run: sudo apt-get install socat
+      - name: Manual Minikube Linking and Starting for EC2
+        env:
+          USER: root
+          HOME: /home/runner
+        run: |
+          ln -s $(which minikube) /usr/local/bin/kubectl
+          minikube start --memory=6000
+          kubectl get pods
 
       - name: Build Core Docker Images and Run Tests
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan --rerun-tasks
 
       - name: Run Kubernetes End-to-End Acceptance Tests
+        env:
+          USER: root
+          HOME: /home/runner
         run: |
           IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-kube-acceptance-test-runner:
+    name: Stop Kube Acceptance Test EC2 Runner
+    needs:
+      - start-kube-acceptance-test-runner # required to get output from the start-runner job
+      - kube-acceptance-test # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2.1.0
+        with:
+          mode: stop
+          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
+          label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}

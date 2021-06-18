@@ -101,7 +101,7 @@ public class KubeProcessFactory implements ProcessFactory {
           entrypoint,
           args);
     } catch (Exception e) {
-      throw new WorkerException(e.getMessage());
+      throw new WorkerException(e.getMessage(), e);
     }
   }
 

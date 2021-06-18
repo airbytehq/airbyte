@@ -19,7 +19,8 @@ sleep 120s
 
 server_logs () { echo "server logs:" && kubectl logs deployment.apps/airbyte-server; }
 scheduler_logs () { echo "scheduler logs:" && kubectl logs deployment.apps/airbyte-scheduler; }
-print_all_logs () { server_logs; scheduler_logs; }
+describe_pods () { echo "describe pods:" && kubectl describe pods; }
+print_all_logs () { server_logs; scheduler_logs; describe_pods; }
 
 trap "echo 'kube logs:' && print_all_logs" EXIT
 

@@ -34,7 +34,7 @@ import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
@@ -53,20 +53,28 @@ import org.junit.jupiter.api.Test;
 public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
-  private static final List<Integer> OPEN_PORTS = new ArrayList<>(getOpenPorts(5));
-  private static final List<Integer> OPEN_WORKER_PORTS = OPEN_PORTS.subList(1, OPEN_PORTS.size() - 1);
-  private static final int HEARTBEAT_PORT = OPEN_PORTS.get(0);
-  private static final String HEARTBEAT_URL = getHost() + ":" + HEARTBEAT_PORT;
-
-  private final KubernetesClient kubeClient = new DefaultKubernetesClient();
-  private final BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(OPEN_WORKER_PORTS);
-  private final KubeProcessFactory processFactory = new KubeProcessFactory("default", kubeClient, HEARTBEAT_URL, workerPorts);
+  private List<Integer> openPorts;
+  private List<Integer> openWorkerPorts;
+  private int heartbeatPort;
+  private String heartbeatUrl;
+  private KubernetesClient kubeClient;
+  private BlockingQueue<Integer> workerPorts;
+  private KubeProcessFactory processFactory;
 
   private static WorkerHeartbeatServer server;
 
   @BeforeEach
   public void setup() throws Exception {
-    server = new WorkerHeartbeatServer(HEARTBEAT_PORT);
+    openPorts = new ArrayList<>(getOpenPorts(5));
+    openWorkerPorts = openPorts.subList(1, openPorts.size() - 1);
+    heartbeatPort = openPorts.get(0);
+    heartbeatUrl = getHost() + ":" + heartbeatPort;
+
+    kubeClient = new DefaultKubernetesClient();
+    workerPorts = new LinkedBlockingDeque<>(openWorkerPorts);
+    processFactory = new KubeProcessFactory("default", kubeClient, heartbeatUrl, workerPorts);
+
+    server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
   }
 
@@ -169,7 +177,7 @@ public class KubePodProcessIntegrationTest {
 
   private static String getHost() {
     try {
-      return (IS_MINIKUBE ? InetAddress.getLocalHost().getHostAddress() : "host.docker.internal");
+      return (IS_MINIKUBE ? Inet4Address.getLocalHost().getHostAddress() : "host.docker.internal");
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
     }
