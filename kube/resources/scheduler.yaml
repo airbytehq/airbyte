@@ -106,11 +106,6 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: AWS_SECRET_ACCESS_KEY
-            - name: GCP_STORAGE_BUCKET
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: GCP_STORAGE_BUCKET
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool
