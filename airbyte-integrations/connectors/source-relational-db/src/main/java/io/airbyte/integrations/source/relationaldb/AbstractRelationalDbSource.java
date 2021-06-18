@@ -465,6 +465,19 @@ public abstract class AbstractRelationalDbSource<T extends SQLType, K extends Sq
         getFullTableName(schemaName, tableName)));
   }
 
+  /**
+   * Read incremental data from a table. Incremental read should returns only records where cursor
+   * column value is bigger than cursor.
+   *
+   * @param database source database
+   * @param columnNames interested column names
+   * @param schemaName table namespace
+   * @param tableName target table
+   * @param cursorField cursor field name
+   * @param cursorFieldType cursor field type
+   * @param cursor cursor value
+   * @return iterator with read data
+   */
   public abstract AutoCloseableIterator<JsonNode> queryTableIncremental(K database,
                                                                         List<String> columnNames,
                                                                         String schemaName,

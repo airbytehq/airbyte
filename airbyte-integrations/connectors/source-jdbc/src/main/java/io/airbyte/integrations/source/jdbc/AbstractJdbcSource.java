@@ -168,7 +168,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
 
   @Override
   protected JsonSchemaPrimitive getType(JDBCType columnType) {
-    return JdbcUtils.getType(columnType);
+    return JdbcSourceUtils.getType(columnType);
   }
 
   @Override
@@ -181,7 +181,7 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
-            final String streamName = JdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
+            final String streamName = JdbcSourceUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
             final String primaryKey = r.getString(JDBC_COLUMN_COLUMN_NAME);
             return new SimpleImmutableEntry<>(streamName, primaryKey);
           }));
@@ -194,9 +194,11 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
     // Get primary keys one table at a time
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
+            tableInfo -> JdbcSourceUtils
+                .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
-              final String streamName = JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
+              final String streamName = JdbcSourceUtils
+                  .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
                     conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
@@ -229,12 +231,13 @@ public abstract class AbstractJdbcSource extends AbstractRelationalDbSource<JDBC
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-                  JdbcUtils.enquoteIdentifierList(connection, columnNames),
-                  JdbcUtils.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  JdbcUtils.enquoteIdentifier(connection, cursorField));
+                  JdbcSourceUtils.enquoteIdentifierList(connection, columnNames),
+                  JdbcSourceUtils
+                      .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
+                  JdbcSourceUtils.enquoteIdentifier(connection, cursorField));
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              JdbcUtils.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              JdbcSourceUtils.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
