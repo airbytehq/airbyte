@@ -138,3 +138,8 @@ Example for SFTP:
 
 Please see \(or add\) more at `airbyte-integrations/connectors/source-file/integration_tests/integration_source_test.py` for further usages examples.
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.5   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
