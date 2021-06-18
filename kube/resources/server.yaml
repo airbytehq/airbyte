@@ -74,6 +74,11 @@ spec:
               value: airbyte-db-svc:5432
             - name: WAIT_HOSTS_TIMEOUT
               value: "45"
+            - name: WORKER_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_ENVIRONMENT
             - name: WORKSPACE_ROOT
               valueFrom:
                 configMapKeyRef:

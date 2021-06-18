@@ -37,8 +37,10 @@ import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -59,6 +61,7 @@ import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The
@@ -186,7 +189,7 @@ public class KubePodProcess extends Process {
       initEntrypointStr = String.format("mkfifo %s && ", STDIN_PIPE_FILE) + initEntrypointStr;
     }
 
-    initEntrypointStr = initEntrypointStr + String.format(" && until [ -f %s ]; do sleep 5; done;", SUCCESS_FILE_NAME);
+    initEntrypointStr = initEntrypointStr + String.format(" && (until [ -f %s ]; do sleep 5; done;) && sleep 1", SUCCESS_FILE_NAME);
 
     return new ContainerBuilder()
         .withName(INIT_CONTAINER_NAME)
@@ -236,6 +239,14 @@ public class KubePodProcess extends Process {
             .file(CONFIG_DIR + "/" + file.getKey())
             .upload(tmpFile);
 
+      } catch (KubernetesClientException e) {
+        // The FabricIO client has a bug where it interprets successful responses as errors. See https://github.com/fabric8io/kubernetes-client/issues/2217.
+        if (!e.getMessage().contains("Success")) {
+          LOGGER.info("====== UPLOAD ERROR: ",e);
+          LOGGER.info("====== UPLOAD FAILED");
+          throw e;
+        }
+        LOGGER.info("====== UPLOAD ACTUALLY SUCCESS");
       } finally {
         if (tmpFile != null) {
           tmpFile.toFile().delete();
@@ -388,6 +399,16 @@ public class KubePodProcess extends Process {
     filesWithSuccess.put(SUCCESS_FILE_NAME, "");
     copyFilesToKubeConfigVolume(client, podName, namespace, filesWithSuccess);
 
+    while (this.stdout == null || this.stderr == null) {
+      try {
+        LOGGER.info("Waiting for stdout/stderr listeners. Stdout: {}, Stderr: {}", this.stdout, this.stderr);
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    LOGGER.info("Created stdout/stderr listeners");
+
     LOGGER.info("Waiting until pod is ready...");
     // If a pod gets into a non-terminal error state it should be automatically killed by our
     // heartbeating mechanism.
@@ -396,10 +417,14 @@ public class KubePodProcess extends Process {
     // This doesn't manage things like pods that are blocked from running for some cluster reason or if
     // the init
     // container got stuck somehow.
-    client.resource(podDefinition).waitUntilCondition(p -> {
-      boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
-      return isReady || isTerminal(p);
-    }, 10, TimeUnit.DAYS);
+//    try {
+      client.resource(podDefinition).waitUntilCondition(p -> {
+        boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
+        return isReady || isTerminal(p);
+      }, 10, TimeUnit.DAYS);
+//    } catch (Exception e) {
+//      LOGGER.info("======== ERROR QUERY: ", e);
+//    }
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");
@@ -417,7 +442,9 @@ public class KubePodProcess extends Process {
   }
 
   private void setupStdOutAndStdErrListeners() {
+    var context = MDC.getCopyOfContextMap();
     executorService.submit(() -> {
+      MDC.setContextMap(context);
       try {
         LOGGER.info("Creating stdout socket server...");
         var socket = stdoutServerSocket.accept(); // blocks until connected
@@ -428,6 +455,7 @@ public class KubePodProcess extends Process {
       }
     });
     executorService.submit(() -> {
+      MDC.setContextMap(context);
       try {
         LOGGER.info("Creating stderr socket server...");
         var socket = stderrServerSocket.accept(); // blocks until connected
@@ -554,6 +582,11 @@ public class KubePodProcess extends Process {
   @Override
   public int exitValue() {
     return getReturnCode(podDefinition);
+  }
+
+  public static void main(String[] args) {
+    var files = Map.of("FILE_1", "line 1", "FILE_2", "line 2", "FILE_3", "line 3");
+    copyFilesToKubeConfigVolume(new DefaultKubernetesClient(), "airbyte-server-c55c589c4-9zj2q", "default", files);
   }
 
 }
