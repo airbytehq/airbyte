@@ -105,4 +105,5 @@ public class LogHelpers {
   public static void setJobMdc(Path path) {
     MDC.put(LogHelpers.JOB_LOG_PATH_MDC_KEY, path.resolve(LogHelpers.LOG_FILENAME).toString());
   }
+
 }

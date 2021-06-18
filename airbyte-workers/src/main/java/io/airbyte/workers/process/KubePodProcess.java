@@ -37,10 +37,8 @@ import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -399,10 +397,10 @@ public class KubePodProcess extends Process {
     // This doesn't manage things like pods that are blocked from running for some cluster reason or if
     // the init
     // container got stuck somehow.
-      client.resource(podDefinition).waitUntilCondition(p -> {
-        boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
-        return isReady || isTerminal(p);
-      }, 10, TimeUnit.DAYS);
+    client.resource(podDefinition).waitUntilCondition(p -> {
+      boolean isReady = Objects.nonNull(p) && Readiness.getInstance().isReady(p);
+      return isReady || isTerminal(p);
+    }, 10, TimeUnit.DAYS);
 
     // allow writing stdin to pod
     LOGGER.info("Reading pod IP...");

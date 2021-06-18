@@ -44,7 +44,6 @@ import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.WorkerConstants;
 import io.temporal.client.WorkflowClient;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -24,6 +24,7 @@
 
 package io.airbyte.config.helpers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.config.Configs;
@@ -57,6 +58,11 @@ public class S3Logs implements CloudLogs {
 
   @Override
   public File downloadCloudLog(Configs configs, String logPath) throws IOException {
+    return getFile(configs, logPath, 1000);
+  }
+
+  @VisibleForTesting
+  File getFile(Configs configs, String logPath, int maxKeysPerPage) throws IOException {
     LOGGER.info("Retrieving logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
@@ -66,7 +72,8 @@ public class S3Logs implements CloudLogs {
     var os = new FileOutputStream(tmpOutputFile);
 
     LOGGER.info("Start S3 list request.");
-    var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket).prefix(logPath).build();
+    var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket)
+        .prefix(logPath).maxKeys(maxKeysPerPage).build();
     LOGGER.info("Start getting S3 objects.");
     // Objects are returned in lexicographical order.
     for (var page : S3.listObjectsV2Paginator(listObjReq)) {

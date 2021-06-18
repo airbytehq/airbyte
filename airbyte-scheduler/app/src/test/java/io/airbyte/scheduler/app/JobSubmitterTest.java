@@ -53,7 +53,6 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.OutputAndStatus;
-import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

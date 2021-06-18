@@ -34,8 +34,6 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerUtils;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
