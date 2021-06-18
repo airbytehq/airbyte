@@ -53,38 +53,16 @@
       "type": ["null", "string"]
     },
     "subresource_uris": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": ["null", "object"],
-            "additionalProperties": false,
-            "properties": {
-              "subresource": {
-                "type": ["null", "string"]
-              },
-              "uri": {
-                "type": ["null", "string"]
-              }
-            }
-          }
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "feedback": {
+          "type": ["null", "string"]
         },
-        {
-          "type": "null"
-        },
-        {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "feedback": {
-              "type": ["null", "string"]
-            },
-            "media": {
-              "type": ["null", "string"]
-            }
-          }
+        "media": {
+          "type": ["null", "string"]
         }
-      ]
+      }
     },
     "to": {
       "type": ["null", "string"]
