@@ -27,9 +27,11 @@ import json
 import pendulum
 import pytest
 from airbyte_cdk.models import AirbyteStream
-from facebook_business import FacebookSession
+from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.client import Client
+
+FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 
 @pytest.fixture(scope="session", name="account_id")
@@ -50,7 +52,7 @@ def mock_default_sleep_interval(mocker):
 @pytest.fixture(name="client")
 def client_fixture(some_config, requests_mock, fb_account_response):
     client = Client(**some_config)
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/me/adaccounts", [fb_account_response])
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
     return client
 
 
@@ -102,9 +104,9 @@ class TestBackoff:
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", campaign_responses)
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/1/", [{"status_code": 200}])
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + "/v10.0/2/", [{"status_code": 200}])
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", campaign_responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/1/", [{"status_code": 200}])
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/2/", [{"status_code": 200}])
 
         records = list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
 
@@ -149,8 +151,8 @@ class TestBackoff:
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/adcreatives", responses)
-        requests_mock.register_uri("POST", FacebookSession.GRAPH + "/v10.0/", batch_responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/adcreatives", responses)
+        requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/{FB_API_VERSION}/", batch_responses)
 
         records = list(client.read_stream(AirbyteStream(name="adcreatives", json_schema={})))
 
@@ -166,7 +168,7 @@ class TestBackoff:
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/v10.0/act_{account_id}/campaigns", responses)
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", responses)
 
         with pytest.raises(FacebookRequestError):
             list(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))

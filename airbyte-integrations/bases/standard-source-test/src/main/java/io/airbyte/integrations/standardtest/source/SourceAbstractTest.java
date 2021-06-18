@@ -29,8 +29,8 @@ import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardTapConfig;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -139,7 +139,7 @@ public abstract class SourceAbstractTest {
 
   // todo (cgardens) - assume no state since we are all full refresh right now.
   protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
-    final StandardTapConfig sourceConfig = new StandardTapConfig()
+    final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(getConfig())
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(catalog);

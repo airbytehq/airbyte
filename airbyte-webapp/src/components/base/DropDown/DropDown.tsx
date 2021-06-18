@@ -188,7 +188,7 @@ const DropDown: React.FC<DropdownProps> = (props) => {
 
   return (
     <StyledDropdownList
-      data-test-id={props.name}
+      data-testid={props.name}
       error={props.error}
       withBorder={props.withBorder}
       containerClassName={className}
@@ -219,9 +219,8 @@ const DropDown: React.FC<DropdownProps> = (props) => {
       itemComponent={({ item }) => (
         <ListItem {...item} item={item} fullText={props.fullText} />
       )}
-      onChange={props.onSelect}
-      // @ts-ignore wrong typing
-      searchIcon=""
+      onChange={props.onChange}
+      onSelect={props.onSelect}
     />
   );
 };

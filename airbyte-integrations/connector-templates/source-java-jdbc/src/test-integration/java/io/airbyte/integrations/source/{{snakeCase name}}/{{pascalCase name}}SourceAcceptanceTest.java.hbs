@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.Collections;
@@ -39,7 +40,7 @@ public class {{pascalCase name}}SourceAcceptanceTest extends SourceAcceptanceTes
   private JsonNode config;
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setupEnvironment(TestDestinationEnv testEnv) {
     // TODO create new container. Ex: "new OracleContainer("epiclabs/docker-oracle-xe-11g");"
     // TODO make container started. Ex: "container.start();"
     // TODO init JsonNode config
