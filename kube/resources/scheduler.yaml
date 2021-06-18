@@ -87,8 +87,8 @@ spec:
                   name: airbyte-env
                   key: TEMPORAL_WORKER_PORTS
           ports:
-            - containerPort: 9000
-            - containerPort: 9001
+            - containerPort: 9000 # for heartbeat server
+            - containerPort: 9001 # start temporal worker port pool
             - containerPort: 9002
             - containerPort: 9003
             - containerPort: 9004
@@ -117,6 +117,7 @@ spec:
             - containerPort: 9027
             - containerPort: 9028
             - containerPort: 9029
+            - containerPort: 9030 # end temporal worker port pool
           volumeMounts:
             - name: airbyte-volume-configs
               mountPath: /configs
