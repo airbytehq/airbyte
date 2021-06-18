@@ -10,6 +10,55 @@ spec:
   selector:
     airbyte: temporal
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airbyte-temporal-dynamicconfig
+data:
+  "development.yaml": |
+    # when modifying, remember to update the docker-compose version of this file in temporal/dynamicconfig/development.yaml
+    frontend.enableClientVersionCheck:
+      - value: true
+        constraints: {}
+    history.persistenceMaxQPS:
+      - value: 3000
+        constraints: {}
+    frontend.persistenceMaxQPS:
+      - value: 3000
+        constraints: {}
+    frontend.historyMgrNumConns:
+      - value: 30
+        constraints: {}
+    frontend.throttledLogRPS:
+      - value: 20
+        constraints: {}
+    history.historyMgrNumConns:
+      - value: 50
+        constraints: {}
+    system.advancedVisibilityWritingMode:
+      - value: "off"
+        constraints: {}
+    history.defaultActivityRetryPolicy:
+      - value:
+          InitialIntervalInSeconds: 1
+          MaximumIntervalCoefficient: 100.0
+          BackoffCoefficient: 2.0
+          MaximumAttempts: 0
+    history.defaultWorkflowRetryPolicy:
+      - value:
+          InitialIntervalInSeconds: 1
+          MaximumIntervalCoefficient: 100.0
+          BackoffCoefficient: 2.0
+          MaximumAttempts: 0
+    # Limit for responses. This mostly impacts discovery jobs since they have the largest responses.
+    limit.blobSize.error:
+      - value: 15728640 # 15MB
+        constraints: {}
+    limit.blobSize.warn:
+      - value: 10485760 # 10MB
+        constraints: {}
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,14 +99,12 @@ spec:
           ports:
             - containerPort: 7233
           volumeMounts:
-            - name: airbyte-volume-configs
-              mountPath: /configs
-            - name: airbyte-volume-workspace
-              mountPath: /workspace
+            - name: airbyte-temporal-dynamicconfig
+              mountPath: "/etc/temporal/config/dynamicconfig/"
       volumes:
-        - name: airbyte-volume-workspace
-          persistentVolumeClaim:
-            claimName: airbyte-volume-workspace
-        - name: airbyte-volume-configs
-          persistentVolumeClaim:
-            claimName: airbyte-volume-configs
+        - name: airbyte-temporal-dynamicconfig
+          configMap:
+            name: airbyte-temporal-dynamicconfig
+            items:
+              - key: development.yaml
+                path: development.yaml
