@@ -26,6 +26,7 @@ package io.airbyte.workers.temporal;
 
 import static java.util.stream.Collectors.toSet;
 
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
@@ -91,7 +92,7 @@ public class TemporalPool implements Runnable {
 
     while (!temporalStatus) {
       LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
-      wait(2);
+      Exceptions.toRuntime(() -> Thread.sleep(2000));
 
       try {
         temporalStatus = getNamespaces(temporalService).contains("default");
@@ -102,17 +103,9 @@ public class TemporalPool implements Runnable {
     }
 
     // sometimes it takes a few additional seconds for workflow queue listening to be available
-    wait(5);
+    Exceptions.toRuntime(() -> Thread.sleep(5000));
 
     LOGGER.info("Found temporal default namespace!");
-  }
-
-  private static void wait(int seconds) {
-    try {
-      Thread.sleep(seconds * 1000);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   protected static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
