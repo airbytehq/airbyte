@@ -36,42 +36,7 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
-    {
-      "stream": {
-        "name": "available_phone_number_countries",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "available_phone_numbers_local",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "available_phone_numbers_mobile",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "available_phone_numbers_toll_free",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
+
     {
       "stream": {
         "name": "incoming_phone_numbers",
@@ -93,7 +58,16 @@
     {
       "stream": {
         "name": "calls",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "end_time": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["end_time"]
@@ -105,7 +79,16 @@
     {
       "stream": {
         "name": "conferences",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "date_updated": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
@@ -135,7 +118,16 @@
     {
       "stream": {
         "name": "recordings",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "date_created": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_created"]
@@ -165,7 +157,16 @@
     {
       "stream": {
         "name": "messages",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "date_sent": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_sent"]
@@ -177,19 +178,10 @@
     {
       "stream": {
         "name": "message_media",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "usage_records",
         "json_schema": {
           "properties": {
-            "start_date": {
-              "format": "date",
+            "date_created": {
+              "format": "date-time",
               "type": ["null", "string"]
             }
           },
@@ -198,10 +190,10 @@
         },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["start_date"]
+        "default_cursor_field": ["date_created"]
       },
-      "cursor_field": ["start_date"],
       "sync_mode": "incremental",
+      "cursor_field": ["date_created"],
       "destination_sync_mode": "append"
     },
     {
@@ -216,7 +208,16 @@
     {
       "stream": {
         "name": "alerts",
-        "json_schema": {},
+        "json_schema": {
+          "properties": {
+            "date_updated": {
+              "format": "date-time",
+              "type": ["null", "string"]
+            }
+          },
+          "type": "object",
+          "additionalProperties": false
+        },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
         "default_cursor_field": ["date_updated"]
