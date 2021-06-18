@@ -98,13 +98,8 @@ class FBMarketingStream(Stream, ABC):
             yield from self._extend_record(record, fields=self.fields)
 
     @abstractmethod
-    def query_records(self, params: Mapping[str, Any]):
-        """Implement this method to return stream entities"""
-
-    @backoff_policy
-    def _read_records(self, params: Mapping[str, Any]):
-        """Wrapper around query_records to backoff errors"""
-        yield from self.query_records(params=params)
+    def _read_records(self, params: Mapping[str, Any]) -> Iterable:
+        """Wrapper around query to backoff errors"""
 
     @backoff_policy
     def _extend_record(self, obj: Any, **kwargs):
@@ -205,11 +200,12 @@ class AdCreatives(FBMarketingStream):
     ) -> Iterable[Mapping[str, Any]]:
         """ Read records using batch API"""
         records = self._read_records(params=self.request_params(stream_state=stream_state))
-        requests = [self._extend_record(record, fields=self.fields, pending=True) for record in records]
+        requests = [record.api_get(fields=self.fields, pending=True) for record in records]
         for requests_batch in batch(requests, size=self.batch_size):
             yield from self.execute_in_batch(requests_batch)
 
-    def query_records(self, params: Mapping[str, Any]) -> Iterator:
+    @backoff_policy
+    def _read_records(self, params: Mapping[str, Any]) -> Iterator:
         return self._api.account.get_ad_creatives(params=params)
 
 
@@ -219,7 +215,8 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
     enable_deleted = True
 
-    def query_records(self, params: Mapping[str, Any]):
+    @backoff_policy
+    def _read_records(self, params: Mapping[str, Any]):
         return self._api.account.get_ads(params=params)
 
 
@@ -229,7 +226,8 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
     enable_deleted = True
 
-    def query_records(self, params: Mapping[str, Any]):
+    @backoff_policy
+    def _read_records(self, params: Mapping[str, Any]):
         return self._api.account.get_ad_sets(params=params)
 
 
@@ -239,7 +237,8 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
     enable_deleted = True
 
-    def query_records(self, params: Mapping[str, Any]):
+    @backoff_policy
+    def _read_records(self, params: Mapping[str, Any]):
         return self._api.account.get_campaigns(params=params)
 
 

@@ -112,9 +112,11 @@ class TestBackoff:
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/2/", [{"status_code": 200}])
 
         stream = Campaigns(api=api, start_date=datetime.now(), include_deleted=False)
-        records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
-
-        assert records
+        try:
+            records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            assert records
+        except FacebookRequestError:
+            pytest.fail("Call rate error has not being handled")
 
     def test_batch_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
@@ -146,10 +148,12 @@ class TestBackoff:
                     {
                         "body": json.dumps({"name": "creative 1"}),
                         "code": 200,
+                        "headers": {}
                     },
                     {
                         "body": json.dumps({"name": "creative 2"}),
                         "code": 200,
+                        "headers": {}
                     },
                 ]
             },
