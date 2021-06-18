@@ -40,7 +40,7 @@ from facebook_business.exceptions import FacebookRequestError
 from .api import MediaAPI, MediaInsightsAPI, StoriesAPI, StoriesInsightsAPI, UserInsightsAPI, UserLifetimeInsightsAPI, UsersAPI
 from .common import InstagramAPIException, retry_pattern
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=4, factor=5)
 
 
 class Client(BaseClient):

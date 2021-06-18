@@ -44,6 +44,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         if (
             exc.http_status() == status_codes.TOO_MANY_REQUESTS
             or (exc.http_status() == status_codes.FORBIDDEN and exc.api_error_message() == "(#4) Application request limit reached")
+            or exc.http_status()
+            == status_codes.BAD_REQUEST  # Issue 4028, Sometimes an error about the Rate Limit is returned with a 400 HTTP code
             or exc.api_transient_error()
         ):
             return True

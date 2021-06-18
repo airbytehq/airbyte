@@ -330,28 +330,21 @@ class MediaInsightsAPI(MediaAPI):
             ig_account = account["instagram_business_account"]
             media = self._get_media(ig_account, {"limit": self.result_return_limit}, ["media_type"])
             for ig_media in media:
-                try:
-                    yield {
-                        **{
-                            "id": ig_media.get("id"),
-                            "page_id": account["page_id"],
-                            "business_account_id": ig_account.get("id"),
-                        },
-                        **{record.get("name"): record.get("values")[0]["value"] for record in self._get_insights(ig_media)},
-                    }
-                except FacebookRequestError as error:
-                    # An error might occur if the media was posted before the most recent time that
-                    # the user's account was converted to a business account from a personal account
-                    if error.api_error_subcode() == 2108006:
-                        logger.error(f"Insights error for business_account_id {ig_account.get('id')}: {error.body()}")
-
-                        # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
-                        # then no reason to make inquiries for each Media further, since they were published even earlier.
-                        break
-                    raise error
+                account_id = ig_account.get("id")
+                media_insights, status = self._get_insights(ig_media, account_id)
+                if not status:
+                    break
+                yield {
+                    **{
+                        "id": ig_media.get("id"),
+                        "page_id": account["page_id"],
+                        "business_account_id": account_id,
+                    },
+                    **{record.get("name"): record.get("values")[0]["value"] for record in media_insights},
+                }
 
     @backoff_policy
-    def _get_insights(self, item) -> Iterator[Any]:
+    def _get_insights(self, item, account_id) -> Iterator[Any]:
         """
         This is necessary because the functions that call this endpoint return
         a generator, whose calls need decorated with a backoff.
@@ -363,7 +356,18 @@ class MediaInsightsAPI(MediaAPI):
         else:
             metrics = self.MEDIA_METRICS
 
-        return item.get_insights(params={"metric": metrics})
+        try:
+            return item.get_insights(params={"metric": metrics}), True
+        except FacebookRequestError as error:
+            # An error might occur if the media was posted before the most recent time that
+            # the user's account was converted to a business account from a personal account
+            if error.api_error_subcode() == 2108006:
+                logger.error(f"Insights error for business_account_id {account_id}: {error.body()}")
+
+                # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
+                # then no reason to make inquiries for each Media further, since they were published even earlier.
+                return None, False
+            raise error
 
 
 class StoriesInsightsAPI(StoriesAPI):
