@@ -378,7 +378,7 @@ jobs:
       - name: Stop EC2 runner
         uses: machulav/ec2-github-runner@v2.1.0
         with:
-          mode: stopt
+          mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
           label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
