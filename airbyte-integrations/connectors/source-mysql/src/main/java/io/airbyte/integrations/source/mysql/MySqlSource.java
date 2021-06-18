@@ -233,7 +233,7 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       final AirbyteFileOffsetBackingStore offsetManager = initializeState(stateManager);
       AirbyteSchemaHistoryStorage schemaHistoryManager = initializeDBHistory(stateManager);
       FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
-      final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
+      final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(10000);
       final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(config, catalog, offsetManager, schemaHistoryManager);
       publisher.start(queue);
 
