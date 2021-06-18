@@ -33,6 +33,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.util.Config;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
@@ -45,6 +47,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +60,8 @@ public class KubePodProcessIntegrationTest {
   private List<Integer> openWorkerPorts;
   private int heartbeatPort;
   private String heartbeatUrl;
-  private KubernetesClient kubeClient;
+  private ApiClient officialClient;
+  private KubernetesClient fabricClient;
   private BlockingQueue<Integer> workerPorts;
   private KubeProcessFactory processFactory;
 
@@ -70,9 +74,10 @@ public class KubePodProcessIntegrationTest {
     heartbeatPort = openPorts.get(0);
     heartbeatUrl = getHost() + ":" + heartbeatPort;
 
-    kubeClient = new DefaultKubernetesClient();
+    officialClient = Config.defaultClient();
+    fabricClient = new DefaultKubernetesClient();
     workerPorts = new LinkedBlockingDeque<>(openWorkerPorts);
-    processFactory = new KubeProcessFactory("default", kubeClient, heartbeatUrl, workerPorts);
+    processFactory = new KubeProcessFactory("default", officialClient, fabricClient, heartbeatUrl, workerPorts);
 
     server = new WorkerHeartbeatServer(heartbeatPort);
     server.startBackground();
@@ -143,14 +148,30 @@ public class KubePodProcessIntegrationTest {
     assertNotEquals(0, process.exitValue());
   }
 
+  private static String getRandomFile(int lines) {
+    var sb = new StringBuilder();
+    for (int i = 0; i < lines; i++) {
+      sb.append(RandomStringUtils.randomAlphabetic(100));
+      sb.append("\n");
+    }
+    return sb.toString();
+  }
+
   private Process getProcess(String entrypoint) throws WorkerException {
+    // these files aren't used for anything, it's just to check for exceptions when uploading
+    var files = ImmutableMap.of(
+        "file0", "fixed str",
+        "file1", getRandomFile(1),
+        "file2", getRandomFile(100),
+        "file3", getRandomFile(1000));
+
     return processFactory.create(
         "some-id",
         0,
         Path.of("/tmp/job-root"),
         "busybox:latest",
         false,
-        ImmutableMap.of(),
+        files,
         entrypoint);
   }
 
