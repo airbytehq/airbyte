@@ -19,3 +19,11 @@
 {% macro snowflake__type_json() %}
     variant
 {% endmacro %}
+
+{%- macro mysql__type_json() -%}
+    json
+{%- endmacro -%}
+
+{%- macro mysql__type_string() -%}
+    char
+{%- endmacro -%}

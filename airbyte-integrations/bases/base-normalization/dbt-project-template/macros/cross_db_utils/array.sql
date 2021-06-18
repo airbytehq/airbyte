@@ -28,6 +28,18 @@
     ) as _airbyte_nested_data
 {%- endmacro %}
 
+{% macro mysql__cross_join_unnest(stream_name, array_col) -%}
+    cross join json_table(
+        {{ array_col }}
+        '$[*]'
+        COLUMNS(
+            "{{ array_col }}_col"
+            json
+            path '$'
+        )
+    ) as airbyte_nested_data
+{%- endmacro %}
+
 {% macro redshift__cross_join_unnest(stream_name, array_col) -%}
     left join joined on _airbyte_{{ stream_name }}_hashid = joined._airbyte_hashid
 {%- endmacro %}
