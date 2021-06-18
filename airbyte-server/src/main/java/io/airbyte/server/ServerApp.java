@@ -33,6 +33,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DefaultConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
@@ -186,7 +187,8 @@ public class ServerApp {
     LOGGER.info("configRoot = " + configRoot);
 
     LOGGER.info("Creating config repository...");
-    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot));
+    final DefaultConfigPersistence configPersistence = new DefaultConfigPersistence(configRoot);
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence);
 
     // hack: upon installation we need to assign a random customerId so that when
     // tracking we can associate all action with the correct anonymous id.
@@ -215,8 +217,7 @@ public class ServerApp {
     if (airbyteDatabaseVersion.isPresent() && !AirbyteVersion
         .isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
         && !isDatabaseVersionAheadOfAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
-      runAutomaticMigration(configRoot, configRepository, jobPersistence, airbyteVersion,
-          airbyteDatabaseVersion.get());
+      runAutomaticMigration(configPersistence, configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
       // After migration, upgrade the DB version
       airbyteDatabaseVersion = jobPersistence.getVersion();
     }
@@ -230,14 +231,20 @@ public class ServerApp {
     }
   }
 
-  private static void runAutomaticMigration(Path configRoot,
+  private static void runAutomaticMigration(ConfigPersistence configPersistence,
                                             ConfigRepository configRepository,
                                             JobPersistence jobPersistence,
                                             String airbyteVersion,
                                             String airbyteDatabaseVersion) {
     LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
-    try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion,
-        configRoot, jobPersistence, configRepository, airbyteVersion, Path.of(System.getProperty("user.dir")).resolve("latest_seeds"))) {
+    final Path lastSeedsPath = Path.of(System.getProperty("user.dir")).resolve("latest_seeds");
+    LOGGER.info("Last seeds dir: {}", lastSeedsPath);
+    try (RunMigration runMigration = new RunMigration(
+        airbyteDatabaseVersion,
+        jobPersistence,
+        configPersistence,
+        configRepository,
+        airbyteVersion, lastSeedsPath)) {
       runMigration.run();
     } catch (Exception e) {
       LOGGER.error("Automatic Migration failed ", e);

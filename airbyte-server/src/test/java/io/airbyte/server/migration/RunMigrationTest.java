@@ -94,8 +94,7 @@ public class RunMigrationTest {
       Path configRoot = Files.createTempDirectory("dummy_data");
       FileUtils.copyDirectory(dummyDataSource.toFile(), configRoot.toFile());
       resourceToBeCleanedUp.add(configRoot.toFile());
-      JobPersistence jobPersistence = getJobPersistence(stubAirbyteDB.getDatabase(), file,
-          INITIAL_VERSION);
+      JobPersistence jobPersistence = getJobPersistence(stubAirbyteDB.getDatabase(), file, INITIAL_VERSION);
       assertDatabaseVersion(jobPersistence, INITIAL_VERSION);
 
       runMigration(jobPersistence, configRoot);
@@ -248,11 +247,12 @@ public class RunMigrationTest {
 
   private void runMigration(JobPersistence jobPersistence, Path exportConfigRoot)
       throws IOException, URISyntaxException {
+    final DefaultConfigPersistence configPersistence = new DefaultConfigPersistence(exportConfigRoot);
     try (RunMigration runMigration = new RunMigration(
         INITIAL_VERSION,
-        exportConfigRoot,
         jobPersistence,
-        new ConfigRepository(new DefaultConfigPersistence(exportConfigRoot)),
+        configPersistence,
+        new ConfigRepository(configPersistence),
         TARGET_VERSION,
         Path.of(Resources.getResource("config").toURI()))) {
       runMigration.run();

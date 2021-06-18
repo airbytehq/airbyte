@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
+import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.migrate.MigrateConfig;
 import io.airbyte.migrate.MigrationRunner;
@@ -49,13 +50,13 @@ public class RunMigration implements Runnable, AutoCloseable {
   private final List<File> filesToBeCleanedUp = new ArrayList<>();
 
   public RunMigration(String initialVersion,
-                      Path configRoot,
                       JobPersistence jobPersistence,
+                      ConfigPersistence configPersistence,
                       ConfigRepository configRepository,
                       String targetVersion,
                       Path latestSeeds) {
     this.targetVersion = targetVersion;
-    this.configDumpExport = new ConfigDumpExport(configRoot, jobPersistence, initialVersion);
+    this.configDumpExport = new ConfigDumpExport(configPersistence, jobPersistence, initialVersion);
     this.configDumpImport = new ConfigDumpImport(initialVersion, targetVersion, latestSeeds, jobPersistence, configRepository);
   }
 

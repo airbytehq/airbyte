@@ -24,6 +24,7 @@
 
 package io.airbyte.config.persistence;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -43,5 +44,8 @@ public interface ConfigPersistence {
 
   <T> void atomicConfigImport(Map<ConfigSchema, Stream<T>> configs, boolean dryRun, Consumer<Path> prePopulate)
       throws IOException;
+
+  // todo (cgardens) the key should be ConfigSchema not String.
+  Map<String, Stream<JsonNode>> dump() throws IOException;
 
 }

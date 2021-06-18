@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -153,17 +154,72 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   }
 
-  private <T> T getConfigInternal(ConfigSchema configType, String configId, Class<T> clazz)
-      throws ConfigNotFoundException, JsonValidationException, IOException {
+  // todo (cgardens) - refactor this to use the same codepath as listConfig (needs the iface to be
+  // switched ConfigSchema first).
+  @Override
+  public Map<String, Stream<JsonNode>> dump() throws IOException {
+    final Map<String, Stream<JsonNode>> configs = new HashMap<>();
+
+    final List<String> directories = listDirectories();
+    for (String directory : directories) {
+      final List<JsonNode> configList = listConfig(directory);
+      configs.put(directory, configList.stream());
+    }
+    return configs;
+  }
+
+  public List<String> listDirectories() throws IOException {
+    try (Stream<Path> files = Files.list(storageRootWithConfigDirectory)) {
+      return files.map(c -> c.getFileName().toString()).collect(Collectors.toList());
+    }
+  }
+
+  public List<JsonNode> listConfig(String configType) throws IOException {
+    final Path configTypePath = storageRootWithConfigDirectory.resolve(configType);
+    if (!Files.exists(configTypePath)) {
+      return Collections.emptyList();
+    }
+    try (Stream<Path> files = Files.list(configTypePath)) {
+      final List<String> ids = files
+          .filter(p -> !p.endsWith(".json"))
+          .map(p -> p.getFileName().toString().replace(".json", ""))
+          .collect(Collectors.toList());
+
+      final List<JsonNode> configs = Lists.newArrayList();
+      for (String id : ids) {
+        try {
+          final Path configPath = storageRootWithConfigDirectory.resolve(configType).resolve(String.format("%s.json", id));
+          if (!Files.exists(configPath)) {
+            throw new RuntimeException("Config NotFound");
+          }
+
+          final JsonNode config = Jsons.deserialize(Files.readString(configPath), JsonNode.class);
+          configs.add(config);
+        } catch (RuntimeException e) {
+          throw new IOException(e);
+        }
+      }
+
+      return configs;
+    }
+  }
+
+  private <T> Optional<T> getConfigInternalWithoutValidation(ConfigSchema configType, String configId, Class<T> clazz) throws IOException {
     // validate file with schema
     final Path configPath = buildConfigPath(configType, configId, Optional.empty());
     if (!Files.exists(configPath)) {
-      throw new ConfigNotFoundException(configType, configId);
+      return Optional.empty();
+    } else {
+      return Optional.of(Jsons.deserialize(Files.readString(configPath), clazz));
     }
+  }
 
-    final T config = Jsons.deserialize(Files.readString(configPath), clazz);
+  private <T> T getConfigInternal(ConfigSchema configType, String configId, Class<T> clazz)
+      throws ConfigNotFoundException, JsonValidationException, IOException {
+    final T config = getConfigInternalWithoutValidation(configType, configId, clazz)
+        .orElseThrow(() -> new ConfigNotFoundException(configType, configId));
+
     validateJson(config, configType);
-
     return config;
   }
 
