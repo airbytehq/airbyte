@@ -27,6 +27,7 @@ package io.airbyte.integrations.destination.s3;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
+import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,9 @@ public class S3FormatConfigs {
       }
       case PARQUET -> {
         return new S3ParquetFormatConfig(formatConfig);
+      }
+      case JSONL -> {
+        return new S3JsonlFormatConfig();
       }
       default -> {
         throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));

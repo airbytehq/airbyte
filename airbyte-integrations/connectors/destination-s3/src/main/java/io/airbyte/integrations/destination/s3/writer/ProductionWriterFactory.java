@@ -28,6 +28,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
+import io.airbyte.integrations.destination.s3.jsonl.S3JsonlWriter;
 import io.airbyte.integrations.destination.s3.parquet.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.parquet.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
@@ -64,6 +65,9 @@ public class ProductionWriterFactory implements S3WriterFactory {
       }
 
       return new S3ParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+    }
+    if (format == S3Format.JSONL) {
+      return new S3JsonlWriter(config, s3Client, configuredStream, uploadTimestamp);
     }
 
     throw new RuntimeException("Unexpected S3 destination format: " + format);

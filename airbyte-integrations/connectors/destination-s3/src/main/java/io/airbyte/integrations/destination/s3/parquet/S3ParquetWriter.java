@@ -117,7 +117,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
     inputData = nameUpdater.getJsonWithStandardizedFieldNames(inputData);
 
     ObjectNode jsonRecord = MAPPER.createObjectNode();
-    jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
+    jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
     jsonRecord.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     jsonRecord.setAll((ObjectNode) inputData);
 
