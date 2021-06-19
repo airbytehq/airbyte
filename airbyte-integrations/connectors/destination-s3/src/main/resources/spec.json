@@ -65,7 +65,9 @@
           "eu-west-2",
           "eu-west-3",
           "sa-east-1",
-          "me-south-1"
+          "me-south-1",
+          "us-gov-east-1",
+          "us-gov-west-1"
         ]
       },
       "access_key_id": {
@@ -102,6 +104,17 @@
                 "description": "Whether the input json data should be flattened in the output CSV. Please refer to docs for details.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
+              }
+            }
+          },
+          {
+            "title": "JSON Lines: newline-delimited JSON",
+            "required": ["format_type"],
+            "properties": {
+              "format_type": {
+                "type": "string",
+                "enum": ["JSONL"],
+                "default": "JSONL"
               }
             }
           },
