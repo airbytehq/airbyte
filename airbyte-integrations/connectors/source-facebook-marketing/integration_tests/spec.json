@@ -37,6 +37,14 @@
         "minimum": 0,
         "maximum": 28,
         "type": "integer"
+      },
+      "insights_days_per_job": {
+        "title": "Insights Days Per Job",
+        "description": "Number of days to sync in one job. The more data you have - the smaller you want this parameter to be.",
+        "default": 7,
+        "minimum": 1,
+        "maximum": 30,
+        "type": "integer"
       }
     },
     "required": ["account_id", "access_token", "start_date"]
