@@ -80,17 +80,18 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
       URI uri = new URI(String.format("s3a://%s/%s", object.getBucketName(), object.getKey()));
       var path = new org.apache.hadoop.fs.Path(uri);
       Configuration hadoopConfig = S3ParquetWriter.getHadoopConfig(config);
-      ParquetReader<GenericData.Record> parquetReader = ParquetReader.<GenericData.Record>builder(new AvroReadSupport<>(), path)
-          .withConf(hadoopConfig)
-          .build();
 
-      ObjectReader jsonReader = MAPPER.reader();
-      GenericData.Record record;
-      while ((record = parquetReader.read()) != null) {
-        byte[] jsonBytes = converter.convertToJson(record);
-        JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
-        jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
-        jsonRecords.add(pruneAirbyteJson(jsonRecord));
+      try (ParquetReader<GenericData.Record> parquetReader = ParquetReader.<GenericData.Record>builder(new AvroReadSupport<>(), path)
+          .withConf(hadoopConfig)
+          .build()) {
+        ObjectReader jsonReader = MAPPER.reader();
+        GenericData.Record record;
+        while ((record = parquetReader.read()) != null) {
+          byte[] jsonBytes = converter.convertToJson(record);
+          JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
+          jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
+          jsonRecords.add(pruneAirbyteJson(jsonRecord));
+        }
       }
     }
 
