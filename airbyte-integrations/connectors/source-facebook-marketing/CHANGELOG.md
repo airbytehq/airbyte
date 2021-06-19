@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.12
+Refactor connector to use CDK.
+- Improve error handling
+- Improve async job performance (insights)
+- Add new configuration parameter `insights_days_per_job`
+- Rename stream `adsets` to `ad_sets`
+- Refactor schema logic for insights, allowing to configure any possible insight stream
+
 ## 0.2.11
 Fix schemas and drop deprecated fields
 
