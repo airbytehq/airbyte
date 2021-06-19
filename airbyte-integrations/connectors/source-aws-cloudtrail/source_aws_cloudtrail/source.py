@@ -65,6 +65,8 @@ class AwsCloudtrailStream(Stream, ABC):
         self.aws_key_id = aws_key_id
         self.start_date = self.datetime_to_timestamp(datetime.strptime(start_date, self.start_date_format))
         self.client = Client(aws_key_id, aws_secret_key, aws_region_name)
+        # records_limit: is an option to limit maximum amount of records read by connector
+        # use it for testing and development porpuses only
         self.records_left = kwargs.get("records_limit", math.inf)
 
     def next_page_token(self, response: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
@@ -132,7 +134,8 @@ class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
     state_checkpoint_interval = None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        record_time = latest_record[self.time_field]
+        # Increment record time to avoid data dupication in the next syncs
+        record_time = latest_record[self.time_field] + 1
         return {self.cursor_field: max(record_time, current_stream_state.get(self.cursor_field, 0))}
 
     def request_params(self, stream_state=None, **kwargs):

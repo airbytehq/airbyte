@@ -32,11 +32,6 @@
         "examples": ["2021-01-01"],
         "default": "1970-01-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-      },
-      "records_limit": {
-        "type": "integer",
-        "minimum": 1,
-        "description": "Use this option to limit amount of fetched records per each stream. Limit is disabled if option is empty. Be aware of using this parameter with incremental sync, as it may lead to data loss."
       }
     }
   }
