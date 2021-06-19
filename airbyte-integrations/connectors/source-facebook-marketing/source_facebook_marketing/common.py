@@ -23,7 +23,7 @@
 #
 
 import sys
-from typing import Sequence, Iterable, Any
+from typing import Any, Iterable, Sequence
 
 import backoff
 import pendulum

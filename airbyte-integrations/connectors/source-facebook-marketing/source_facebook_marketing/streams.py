@@ -25,7 +25,7 @@
 import time
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Sequence, Optional
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
 import backoff
 import pendulum
@@ -85,11 +85,11 @@ class FBMarketingStream(Stream, ABC):
         return records
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
         for record in self._read_records(params=self.request_params(stream_state=stream_state)):
@@ -97,8 +97,8 @@ class FBMarketingStream(Stream, ABC):
 
     def _read_records(self, params: Mapping[str, Any]) -> Iterable:
         """Wrapper around query to backoff errors.
-         We have default implementation because we still can override read_records so this method is not mandatory.
-         """
+        We have default implementation because we still can override read_records so this method is not mandatory.
+        """
         return []
 
     @backoff_policy
@@ -108,9 +108,7 @@ class FBMarketingStream(Stream, ABC):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         """Parameters that should be passed to query_records method"""
-        params = {
-            "limit": self.page_size
-        }
+        params = {"limit": self.page_size}
 
         if self._include_deleted:
             params.update(self._filter_all_statuses())
@@ -201,13 +199,13 @@ class AdCreatives(FBMarketingStream):
     batch_size = 50
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """ Read records using batch API"""
+        """Read records using batch API"""
         records = self._read_records(params=self.request_params(stream_state=stream_state))
         requests = [record.api_get(fields=self.fields, pending=True) for record in records]
         for requests_batch in batch(requests, size=self.batch_size):
@@ -219,7 +217,7 @@ class AdCreatives(FBMarketingStream):
 
 
 class Ads(FBMarketingIncrementalStream):
-    """ doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup """
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup"""
 
     entity_prefix = "ad"
     enable_deleted = True
@@ -230,7 +228,7 @@ class Ads(FBMarketingIncrementalStream):
 
 
 class AdSets(FBMarketingIncrementalStream):
-    """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign """
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign"""
 
     entity_prefix = "adset"
     enable_deleted = True
@@ -241,7 +239,7 @@ class AdSets(FBMarketingIncrementalStream):
 
 
 class Campaigns(FBMarketingIncrementalStream):
-    """ doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group """
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group"""
 
     entity_prefix = "campaign"
     enable_deleted = True
@@ -252,7 +250,7 @@ class Campaigns(FBMarketingIncrementalStream):
 
 
 class AdsInsights(FBMarketingIncrementalStream):
-    """ doc: https://developers.facebook.com/docs/marketing-api/insights """
+    """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     primary_key = None
 
@@ -290,19 +288,19 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._days_per_job = days_per_job
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        result = self.wait_for_job(stream_slice['job'])
+        result = self.wait_for_job(stream_slice["job"])
         for obj in result.get_result():
             yield obj.export_all_data()
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """ Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
+        """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
         This solution for Async was chosen because:
         1. we should commit state after each successful job
         2. we should run as many job as possible before checking for result
@@ -313,18 +311,18 @@ class AdsInsights(FBMarketingIncrementalStream):
         date_ranges = list(self._date_ranges(stream_state=stream_state))
 
         # accumulate MAX_ASYNC_JOBS jobs in the buffer to schedule them all before trying to wait
-        for params in date_ranges[:self.MAX_ASYNC_JOBS]:
+        for params in date_ranges[: self.MAX_ASYNC_JOBS]:
             params = deep_merge(params, self.request_params(stream_state=stream_state))
             jobs.append(self._get_insights(params))
 
         # now emit every job scheduled, this will result in waiting during read_records call for each slice
         for job in jobs:
-            yield {'job': job}
+            yield {"job": job}
 
         # emit the rest of the interval
-        for params in date_ranges[self.MAX_ASYNC_JOBS:]:
+        for params in date_ranges[self.MAX_ASYNC_JOBS :]:
             params = deep_merge(params, self.request_params(stream_state=stream_state))
-            yield {'job': self._get_insights(params)}
+            yield {"job": self._get_insights(params)}
 
     @backoff_policy
     def wait_for_job(self, job) -> AdReportRun:
@@ -361,14 +359,17 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        params = deep_merge(params, {
-            "level": self.level,
-            "action_breakdowns": self.action_breakdowns,
-            "breakdowns": self.breakdowns,
-            "fields": self.fields,
-            "time_increment": self.time_increment,
-            "action_attribution_windows": self.action_attribution_windows,
-        })
+        params = deep_merge(
+            params,
+            {
+                "level": self.level,
+                "action_breakdowns": self.action_breakdowns,
+                "breakdowns": self.breakdowns,
+                "fields": self.fields,
+                "time_increment": self.time_increment,
+                "action_attribution_windows": self.action_attribution_windows,
+            },
+        )
 
         return params
 
@@ -393,33 +394,15 @@ class AdsInsights(FBMarketingIncrementalStream):
     def _schema_for_breakdowns(self) -> Mapping[str, Any]:
         """Breakdown fields and their type"""
         schemas = {
-            "age": {
-                "type": ["null", "integer", "string"]
-            },
-            "gender": {
-                "type": ["null", "string"]
-            },
-            "country": {
-                "type": ["null", "string"]
-            },
-            "dma": {
-                "type": ["null", "string"]
-            },
-            "region": {
-                "type": ["null", "string"]
-            },
-            "impression_device": {
-                "type": ["null", "string"]
-            },
-            "placement": {
-                "type": ["null", "string"]
-            },
-            "platform_position": {
-                "type": ["null", "string"]
-            },
-            "publisher_platform": {
-                "type": ["null", "string"]
-            },
+            "age": {"type": ["null", "integer", "string"]},
+            "gender": {"type": ["null", "string"]},
+            "country": {"type": ["null", "string"]},
+            "dma": {"type": ["null", "string"]},
+            "region": {"type": ["null", "string"]},
+            "impression_device": {"type": ["null", "string"]},
+            "placement": {"type": ["null", "string"]},
+            "platform_position": {"type": ["null", "string"]},
+            "publisher_platform": {"type": ["null", "string"]},
         }
         breakdowns = self.breakdowns[:]
         if "platform_position" in breakdowns:
@@ -441,7 +424,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         end_date = pendulum.now()
         start_date = max(end_date - self.INSIGHTS_RETENTION_PERIOD, start_date)
 
-        for since in pendulum.period(start_date, end_date).range('days', self._days_per_job):
+        for since in pendulum.period(start_date, end_date).range("days", self._days_per_job):
             until = min(since.add(days=self._days_per_job - 1), end_date)  # -1 because time_range is inclusive
             yield {
                 "time_range": {"since": since.to_date_string(), "until": until.to_date_string()},

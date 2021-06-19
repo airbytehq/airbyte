@@ -31,7 +31,7 @@ from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import Campaigns, AdCreatives
+from source_facebook_marketing.streams import AdCreatives, Campaigns
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -53,7 +53,7 @@ def mock_default_sleep_interval(mocker):
 
 @pytest.fixture(name="api")
 def api_fixture(some_config, requests_mock, fb_account_response):
-    api = API(account_id=some_config['account_id'], access_token=some_config['access_token'])
+    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"])
 
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
     return api
@@ -145,16 +145,8 @@ class TestBackoff:
             fb_call_rate_response,
             {
                 "json": [
-                    {
-                        "body": json.dumps({"name": "creative 1"}),
-                        "code": 200,
-                        "headers": {}
-                    },
-                    {
-                        "body": json.dumps({"name": "creative 2"}),
-                        "code": 200,
-                        "headers": {}
-                    },
+                    {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
+                    {"body": json.dumps({"name": "creative 2"}), "code": 200, "headers": {}},
                 ]
             },
         ]

@@ -93,6 +93,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
 class API:
     """Simple wrapper around Facebook API"""
+
     def __init__(self, account_id: str, access_token: str):
         self._account_id = account_id
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance

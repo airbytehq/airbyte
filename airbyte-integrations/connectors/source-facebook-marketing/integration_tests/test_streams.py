@@ -56,11 +56,9 @@ def configured_catalog_fixture():
 
 
 class TestFacebookMarketingSource:
-    @pytest.mark.parametrize("stream_name, deleted_id", [
-        ("ads", "23846756820320398"),
-        ("campaigns", "23846541919710398"),
-        ("ad_sets", "23846541706990398")]
-     )
+    @pytest.mark.parametrize(
+        "stream_name, deleted_id", [("ads", "23846756820320398"), ("campaigns", "23846541919710398"), ("ad_sets", "23846541706990398")]
+    )
     def test_streams_with_include_deleted(self, stream_name, deleted_id, config_with_include_deleted, configured_catalog):
         catalog = self.slice_catalog(configured_catalog, {stream_name})
         records, states = self._read_records(config_with_include_deleted, catalog)
