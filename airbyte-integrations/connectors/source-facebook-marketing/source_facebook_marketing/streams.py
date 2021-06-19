@@ -95,11 +95,13 @@ class FBMarketingStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
         for record in self._read_records(params=self.request_params(stream_state=stream_state)):
-            yield from self._extend_record(record, fields=self.fields)
+            yield self._extend_record(record, fields=self.fields)
 
-    @abstractmethod
     def _read_records(self, params: Mapping[str, Any]) -> Iterable:
-        """Wrapper around query to backoff errors"""
+        """Wrapper around query to backoff errors.
+         We have default implementation because we still can override read_records so this method is not mandatory.
+         """
+        return []
 
     @backoff_policy
     def _extend_record(self, obj: Any, **kwargs):
@@ -206,6 +208,7 @@ class AdCreatives(FBMarketingStream):
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]) -> Iterator:
+        print("params", params)
         return self._api.account.get_ad_creatives(params=params)
 
 
@@ -217,7 +220,7 @@ class Ads(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
-        return self._api.account.get_ads(params=params)
+        return self._api.account.get_ads(params=params, fields=[self.cursor_field])
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -228,6 +231,7 @@ class AdSets(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
+        print("params", params)
         return self._api.account.get_ad_sets(params=params)
 
 
@@ -239,6 +243,7 @@ class Campaigns(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
+        print("params", params)
         return self._api.account.get_campaigns(params=params)
 
 
