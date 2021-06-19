@@ -22,19 +22,32 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.config.helpers;
 
-public class WorkerConstants {
+import io.airbyte.config.Configs;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
-  public static final String SOURCE_CONFIG_JSON_FILENAME = "source_config.json";
-  public static final String DESTINATION_CONFIG_JSON_FILENAME = "destination_config.json";
+/**
+ * Interface for various Cloud Storage clients supporting Cloud log retrieval.
+ *
+ * The underlying assumption 1) each file at the path is part of the entire log file represented by
+ * that path 2) log files names start with timestamps, making it possible extract the time the file
+ * was written from it's name.
+ */
+public interface CloudLogs {
 
-  public static final String SOURCE_CATALOG_JSON_FILENAME = "source_catalog.json";
-  public static final String DESTINATION_CATALOG_JSON_FILENAME = "destination_catalog.json";
-  public static final String INPUT_STATE_JSON_FILENAME = "input_state.json";
+  /**
+   * Retrieve all objects at the given path in lexicographical order, and return their contents as one
+   * file.
+   */
+  File downloadCloudLog(Configs configs, String logPath) throws IOException;
 
-  public static final String BASIC_NORMALIZATION_KEY = "basic_normalization";
-
-  public static final String RESET_JOB_SOURCE_DOCKER_IMAGE_STUB = "airbyte_empty";
+  /**
+   * Assume all the lexicographically ordered objects at the given path form one giant log file,
+   * return the last numLines lines.
+   */
+  List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException;
 
 }

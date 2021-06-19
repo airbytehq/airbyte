@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
@@ -57,7 +58,7 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3ParquetWriter.class);
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
   private static final ObjectWriter WRITER = MAPPER.writer();
 
   private final Schema schema;

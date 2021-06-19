@@ -3,26 +3,60 @@
     <Properties>
         <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
         <Property name="default-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %m%n</Property>
+
+        <Property name="s3-bucket">$${env:S3_LOG_BUCKET}</Property>
+        <Property name="s3-region">$${env:S3_LOG_BUCKET_REGION}</Property>
+        <Property name="s3-aws-key">$${env:AWS_ACCESS_KEY_ID}</Property>
+        <Property name="s3-aws-secret">$${env:AWS_SECRET_ACCESS_KEY}</Property>
+
     </Properties>
 
     <Appenders>
         <Console name="Default" target="SYSTEM_OUT">
             <PatternLayout pattern="${default-pattern}"/>
         </Console>
+
         <Routing name="LogSplit">
-            <Routes pattern="$${ctx:job_root}">
+            <Routes pattern="$${ctx:job_log_path}">
                 <!-- Don't split logs if job_root isn't defined -->
-                <Route key="$${ctx:job_root}">
+                <Route key="$${ctx:job_log_path}">
                     <Null name="/dev/null"/>
                 </Route>
                 <Route>
-                    <File name="${ctx:job_root}" fileName="${ctx:job_root}/${ctx:job_log_filename}">
+                    <File name="${ctx:job_log_path}-local" fileName="${ctx:job_log_path}">
                         <PatternLayout pattern="${default-worker-file-pattern}"/>
                     </File>
                 </Route>
             </Routes>
             <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
         </Routing>
+
+        <!--
+            Separate routers are created for each cloud logger as
+            1) a Route only accepts 1 appender
+            2) Routes don't support routing log output to more than Route
+        -->
+        <Routing name="LogSplitCloud">
+            <Routes pattern="$${ctx:job_log_path}">
+                <!-- Don't split logs if job_root isn't defined -->
+                <Route key="$${ctx:job_log_path}">
+                    <Null name="/dev/null"/>
+                </Route>
+                <Route>
+                    <Log4j2Appender name="${ctx:job_log_path}-cloud"
+                      verbose="true"
+                      stagingBufferAge="1"
+                      s3Bucket="${s3-bucket}" s3Path="job-logging${ctx:job_log_path}" s3Region="${s3-region}"
+                      s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}">
+                        <PatternLayout>
+                            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
+                        </PatternLayout>
+                    </Log4j2Appender>
+                </Route>
+            </Routes>
+            <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
+        </Routing>
+
         <Routing name="AppLogSplit">
             <Routes pattern="$${ctx:workspace_app_root}">
                 <!-- Don't split logs if workspace_app_log_root isn't defined -->
@@ -31,7 +65,7 @@
                 </Route>
                 <Route>
                     <RollingFile
-                            name="${ctx:workspace_app_root}"
+                            name="${ctx:workspace_app_root}-local"
                             fileName="${ctx:workspace_app_root}/logs.log"
                             filePattern="${ctx:workspace_app_root}/logs.%i.log.gz"
                             ignoreExceptions="false">
@@ -47,13 +81,34 @@
             </Routes>
             <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
         </Routing>
+        <Routing name="AppLogSplitCloud">
+            <Routes pattern="$${ctx:workspace_app_root}">
+                <!-- Don't split logs if workspace_app_log_root isn't defined -->
+                <Route key="$${ctx:workspace_app_root}">
+                    <Null name="/dev/null"/>
+                </Route>
+                <Route>
+                    <Log4j2Appender name="app-logging/${ctx:workspace_app_root}-cloud/"
+                      stagingBufferAge="1"
+                      s3Bucket="${s3-bucket}" s3Path="app-logging${ctx:workspace_app_root}" s3Region="${s3-region}"
+                      s3AwsKey="${s3-aws-key}" s3AwsSecret="${s3-aws-secret}">
+                        <PatternLayout>
+                            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %m%n</Pattern>
+                        </PatternLayout>
+                    </Log4j2Appender>
+                </Route>
+            </Routes>
+            <IdlePurgePolicy timeToLive="15" timeUnit="minutes"/>
+        </Routing>
     </Appenders>
 
     <Loggers>
         <Root level="INFO">
             <AppenderRef ref="Default"/>
             <AppenderRef ref="LogSplit"/>
+            <AppenderRef ref="LogSplitCloud"/>
             <AppenderRef ref="AppLogSplit"/>
+            <AppenderRef ref="AppLogSplitCloud"/>
         </Root>
 
         <Logger name="org.eclipse.jetty" level="INFO" />

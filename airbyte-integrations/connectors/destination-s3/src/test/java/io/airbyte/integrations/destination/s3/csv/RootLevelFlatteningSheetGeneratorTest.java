@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 class RootLevelFlatteningSheetGeneratorTest {
 
-  private final static ObjectMapper MAPPER = new ObjectMapper();
+  private final static ObjectMapper MAPPER = MoreMappers.initMapper();
   private final static ObjectNode SCHEMA = MAPPER.createObjectNode();
   static {
     List<String> fields = Lists.newArrayList("C", "B", "A", "c", "b", "a");

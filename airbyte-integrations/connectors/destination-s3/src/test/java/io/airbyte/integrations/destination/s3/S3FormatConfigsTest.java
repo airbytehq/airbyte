@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +38,7 @@ import org.junit.jupiter.api.Test;
 @DisplayName("S3FormatConfigs")
 public class S3FormatConfigsTest {
 
-  private static final ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = MoreMappers.initMapper();
 
   @Test
   @DisplayName("When CSV format is specified, it returns CSV format config")

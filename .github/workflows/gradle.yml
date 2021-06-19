@@ -355,10 +355,16 @@ jobs:
       - name: Build Core Docker Images and Run Tests
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan --rerun-tasks
 
+      - name: Run Logging Tests
+        run: ./tools/bin/cloud_storage_logging_test.sh
+        env:
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+
       - name: Run Kubernetes End-to-End Acceptance Tests
         env:
           USER: root
           HOME: /home/runner
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
         run: |
           IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
   # In case of self-hosted EC2 errors, remove this block.

@@ -28,11 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -41,7 +38,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class WorkerUtils {
 
@@ -137,10 +133,6 @@ public class WorkerUtils {
     }
   }
 
-  public static void closeProcess(Process process) {
-    closeProcess(process, 1, TimeUnit.MINUTES);
-  }
-
   public static void closeProcess(Process process, int duration, TimeUnit timeUnit) {
     if (process == null) {
       return;
@@ -192,16 +184,12 @@ public class WorkerUtils {
 
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
   // once we are fully on temporal.
-  public static Path getJobRoot(Path workspaceRoot, IntegrationLauncherConfig launcherConfig) {
-    return getJobRoot(workspaceRoot, launcherConfig.getJobId(), Math.toIntExact(launcherConfig.getAttemptId()));
-  }
-
   public static Path getJobRoot(Path workspaceRoot, JobRunConfig jobRunConfig) {
     return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
   }
 
   public static Path getLogPath(Path jobRoot) {
-    return jobRoot.resolve(WorkerConstants.LOG_FILENAME);
+    return jobRoot.resolve(LogHelpers.LOG_FILENAME);
   }
 
   public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
@@ -212,18 +200,6 @@ public class WorkerUtils {
     return workspaceRoot
         .resolve(String.valueOf(jobId))
         .resolve(String.valueOf(attemptId));
-  }
-
-  public static void setJobMdc(Path jobRoot, String jobId) {
-    MDC.put("job_id", jobId);
-    MDC.put("job_root", jobRoot.toString());
-    MDC.put("job_log_filename", WorkerConstants.LOG_FILENAME);
-  }
-
-  // todo (cgardens) can we get this down to just passing the process factory and image and not job id
-  // and attempt
-  public static IntegrationLauncher getIntegrationLauncher(IntegrationLauncherConfig config, ProcessFactory processFactory) {
-    return new AirbyteIntegrationLauncher(config.getJobId(), Math.toIntExact(config.getAttemptId()), config.getDockerImage(), processFactory);
   }
 
 }

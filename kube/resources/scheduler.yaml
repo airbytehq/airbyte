@@ -86,6 +86,26 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: TEMPORAL_WORKER_PORTS
+            - name: S3_LOG_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_LOG_BUCKET
+            - name: S3_LOG_BUCKET_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_LOG_BUCKET_REGION
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AWS_SECRET_ACCESS_KEY
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

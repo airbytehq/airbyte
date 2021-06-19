@@ -22,19 +22,29 @@
  * SOFTWARE.
  */
 
-package io.airbyte.workers;
+package io.airbyte.commons.jackson;
 
-public class WorkerConstants {
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-  public static final String SOURCE_CONFIG_JSON_FILENAME = "source_config.json";
-  public static final String DESTINATION_CONFIG_JSON_FILENAME = "destination_config.json";
+/**
+ * The {@link JavaTimeModule} allows mappers to accommodate different varieties of serialised date
+ * time strings.
+ *
+ * All jackson mapper creation should use the following methods for instantiation.
+ */
+public class MoreMappers {
 
-  public static final String SOURCE_CATALOG_JSON_FILENAME = "source_catalog.json";
-  public static final String DESTINATION_CATALOG_JSON_FILENAME = "destination_catalog.json";
-  public static final String INPUT_STATE_JSON_FILENAME = "input_state.json";
+  public static ObjectMapper initMapper() {
+    final ObjectMapper result = new ObjectMapper().registerModule(new JavaTimeModule());
+    result.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    return result;
+  }
 
-  public static final String BASIC_NORMALIZATION_KEY = "basic_normalization";
-
-  public static final String RESET_JOB_SOURCE_DOCKER_IMAGE_STUB = "airbyte_empty";
+  public static ObjectMapper initYamlMapper(YAMLFactory factory) {
+    return new ObjectMapper(factory).registerModule(new JavaTimeModule());
+  }
 
 }

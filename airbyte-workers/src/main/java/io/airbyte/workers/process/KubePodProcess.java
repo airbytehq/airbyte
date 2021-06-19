@@ -62,6 +62,7 @@ import java.util.function.Consumer;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The
@@ -417,7 +418,9 @@ public class KubePodProcess extends Process {
   }
 
   private void setupStdOutAndStdErrListeners() {
+    var context = MDC.getCopyOfContextMap();
     executorService.submit(() -> {
+      MDC.setContextMap(context);
       try {
         LOGGER.info("Creating stdout socket server...");
         var socket = stdoutServerSocket.accept(); // blocks until connected
@@ -428,6 +431,7 @@ public class KubePodProcess extends Process {
       }
     });
     executorService.submit(() -> {
+      MDC.setContextMap(context);
       try {
         LOGGER.info("Creating stderr socket server...");
         var socket = stderrServerSocket.accept(); // blocks until connected

@@ -74,6 +74,11 @@ spec:
               value: airbyte-db-svc:5432
             - name: WAIT_HOSTS_TIMEOUT
               value: "45"
+            - name: WORKER_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_ENVIRONMENT
             - name: WORKSPACE_ROOT
               valueFrom:
                 configMapKeyRef:
@@ -89,6 +94,26 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: TEMPORAL_HOST
+            - name: S3_LOG_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_LOG_BUCKET
+            - name: S3_LOG_BUCKET_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_LOG_BUCKET_REGION
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AWS_SECRET_ACCESS_KEY
           ports:
             - containerPort: 8001
           volumeMounts:

@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -65,7 +66,7 @@ import org.slf4j.LoggerFactory;
 public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(S3DestinationAcceptanceTest.class);
-  protected static final ObjectMapper MAPPER = new ObjectMapper();
+  protected static final ObjectMapper MAPPER = MoreMappers.initMapper();
 
   protected final String secretFilePath = "secrets/config.json";
   protected final S3Format outputFormat;

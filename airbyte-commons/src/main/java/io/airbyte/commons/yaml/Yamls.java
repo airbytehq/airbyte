@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -43,9 +44,8 @@ import java.util.Iterator;
 
 public class Yamls {
 
-  public static final YAMLFactory YAML_FACTORY = new YAMLFactory();
-  // Object Mapper is thread-safe
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(YAML_FACTORY);
+  private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
+  private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initYamlMapper(YAML_FACTORY);
 
   public static <T> String serialize(T object) {
     try {

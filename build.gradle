@@ -184,31 +184,44 @@ subprojects {
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.10.4"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
+
         // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
         implementation 'com.fasterxml.jackson.core:jackson-databind'
         implementation 'com.fasterxml.jackson.core:jackson-annotations'
         implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+        implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
-        implementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
+        implementation 'com.google.guava:guava:30.1.1-jre'
 
-        implementation group: 'commons-io', name: 'commons-io', version: '2.7'
+        implementation 'commons-io:commons-io:2.7'
 
-        implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+        implementation 'org.apache.commons:commons-compress:1.20'
+        implementation 'org.apache.commons:commons-lang3:3.11'
+
+        implementation 'org.slf4j:slf4j-api:1.7.30'
 
         // SLF4J as a facade over Log4j2 required dependencies
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
-        implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.0'
+        implementation 'org.apache.logging.log4j:log4j-api:2.11.0'
+        implementation 'org.apache.logging.log4j:log4j-core:2.11.0'
+        implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.11.0'
 
         // Bridges from other logging implementations to SLF4J
-        implementation group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.30' // JUL bridge
-        implementation group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30' //JCL bridge
-        implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.30' // log4j1.2 bridge
+        implementation 'org.slf4j:jul-to-slf4j:1.7.30' // JUL bridge
+        implementation 'org.slf4j:jcl-over-slf4j:1.7.30' //JCL bridge
+        implementation 'org.slf4j:log4j-over-slf4j:1.7.30' // log4j1.2 bridge
+
+        // Dependencies for logging to cloud storage, as well as the various clients used to do so.
+        implementation 'com.therealvan:appender-log4j2:3.1.0'
+        implementation 'com.amazonaws:aws-java-sdk-s3:1.12.6'
+        implementation 'com.google.cloud:google-cloud-storage:1.115.0'
+
+        implementation 'software.amazon.awssdk:s3:2.16.84'
+
 
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
-        testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.9.0'
+        testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
     }
 }
 
