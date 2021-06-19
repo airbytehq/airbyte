@@ -40,7 +40,7 @@ public class LogHelpers {
   private static final Logger LOGGER = LoggerFactory.getLogger(LogHelpers.class);
 
   private static final int LOG_TAIL_SIZE = 1000000;
-  private static final CloudLogs S3 = new S3Logs();
+  private static final CloudLogs s3 = new S3Logs();
 
   // Any changes to the following values must also be propagated to the log4j2.xml in main/resources.
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
@@ -72,7 +72,7 @@ public class LogHelpers {
 
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
-      return S3.downloadCloudLog(configs, cloudLogPath);
+      return s3.downloadCloudLog(configs, cloudLogPath);
     } catch (IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
     }
@@ -87,7 +87,7 @@ public class LogHelpers {
 
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
-      return S3.downloadCloudLog(configs, cloudLogPath);
+      return s3.downloadCloudLog(configs, cloudLogPath);
     } catch (IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
     }
@@ -99,7 +99,7 @@ public class LogHelpers {
     }
 
     var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
-    return S3.tailCloudLog(configs, cloudLogPath, LOG_TAIL_SIZE);
+    return s3.tailCloudLog(configs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
   public static void setJobMdc(Path path) {
