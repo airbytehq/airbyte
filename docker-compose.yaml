@@ -57,6 +57,10 @@ services:
       - AIRBYTE_VERSION=${VERSION}
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - S3_LOG_BUCKET=${S3_LOG_BUCKET}
+      - S3_LOG_BUCKET_REGION=${S3_LOG_BUCKET_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
@@ -81,11 +85,16 @@ services:
       - AIRBYTE_VERSION=${VERSION}
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - S3_LOG_BUCKET=${S3_LOG_BUCKET}
+      - S3_LOG_BUCKET_REGION=${S3_LOG_BUCKET_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     ports:
       - 8001:8001
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
+      - ${LOCAL_ROOT}:${LOCAL_ROOT}
   webapp:
     image: airbyte/webapp:${VERSION}
     logging: *default-logging
