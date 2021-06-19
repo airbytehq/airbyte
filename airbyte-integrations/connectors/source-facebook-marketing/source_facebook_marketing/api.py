@@ -85,23 +85,28 @@ class MyFacebookAdsApi(FacebookAdsApi):
         url_override=None,
         api_version=None,
     ):
+        """Makes an API call, delegate actual work to parent class and handles call rates"""
         response = super().call(method, path, params, headers, files, url_override, api_version)
         self.handle_call_rate_limit(response, params)
         return response
 
 
 class API:
+    """Simple wrapper around Facebook API"""
     def __init__(self, account_id: str, access_token: str):
         self._account_id = account_id
+        # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
     def account(self) -> AdAccount:
+        """Find current account"""
         return self._find_account(self._account_id)
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:
+        """Actual implementation of find account"""
         try:
             accounts = fb_user.User(fbid="me").get_ad_accounts()
             for account in accounts:

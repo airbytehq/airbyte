@@ -23,7 +23,7 @@
 #
 
 import sys
-from typing import Sequence
+from typing import Sequence, Iterable, Any
 
 import backoff
 import pendulum
@@ -45,7 +45,8 @@ class JobTimeoutException(Exception):
     """Scheduled job timed out"""
 
 
-def batch(iterable: Sequence, size: int = 1):
+def batch(iterable: Sequence, size: int = 1) -> Iterable:
+    """Split sequence in chunks"""
     total_size = len(iterable)
     for ndx in range(0, total_size, size):
         yield iterable[ndx : min(ndx + size, total_size)]
@@ -73,7 +74,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     )
 
 
-def deep_merge(a, b):
+def deep_merge(a: Any, b: Any) -> Any:
     """Merge two values, with `b` taking precedence over `a`."""
     if isinstance(a, dict) and isinstance(b, dict):
         # set of all keys in both dictionaries
@@ -83,6 +84,6 @@ def deep_merge(a, b):
     elif isinstance(a, list) and isinstance(b, list):
         return [*a, *b]
     elif isinstance(a, set) and isinstance(b, set):
-        return a.union(b)
+        return a | b
     else:
         return a if b is None else b

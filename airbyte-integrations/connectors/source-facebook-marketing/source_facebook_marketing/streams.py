@@ -59,11 +59,9 @@ class FBMarketingStream(Stream, ABC):
         self._api = api
         self._include_deleted = include_deleted if self.enable_deleted else False
 
-    @property
+    @cached_property
     def fields(self) -> List[str]:
-        """List of fields that we want to query, for now just all properties from stream's schema
-        FIXME: implement cache
-        """
+        """List of fields that we want to query, for now just all properties from stream's schema"""
         return list(self.get_json_schema().get("properties", {}).keys())
 
     @backoff_policy
@@ -169,9 +167,8 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         """Include state filter"""
         params = super().request_params(**kwargs)
-        print("MERGE", params, self._state_filter(stream_state=stream_state))
-        params = deep_merge(params, self._state_filter(stream_state=stream_state))
-        print("AFTER MERGE", params)
+        if stream_state:
+            params = deep_merge(params, self._state_filter(stream_state=stream_state))
         return params
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -218,7 +215,6 @@ class AdCreatives(FBMarketingStream):
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]) -> Iterator:
-        print("params", params)
         return self._api.account.get_ad_creatives(params=params)
 
 
@@ -230,7 +226,6 @@ class Ads(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
-        print("PARAMS", params)
         return self._api.account.get_ads(params=params, fields=[self.cursor_field])
 
 
@@ -242,7 +237,6 @@ class AdSets(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
-        print("params", params)
         return self._api.account.get_ad_sets(params=params)
 
 
@@ -254,7 +248,6 @@ class Campaigns(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
-        print("params", params)
         return self._api.account.get_campaigns(params=params)
 
 
@@ -303,17 +296,21 @@ class AdsInsights(FBMarketingIncrementalStream):
             stream_slice: Mapping[str, Any] = None,
             stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """Waits for current job to finish (slice) and yield its result
-        """
+        """Waits for current job to finish (slice) and yield its result"""
         result = self.wait_for_job(stream_slice['job'])
         for obj in result.get_result():
             yield obj.export_all_data()
 
-    def stream_slices(self, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """ Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """ Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
+        This solution for Async was chosen because:
+        1. we should commit state after each successful job
+        2. we should run as many job as possible before checking for result
+        3. we shouldn't proceed to consumption of the next job before previous succeed
         """
+        stream_state = stream_state or {}
         jobs = []
-        date_ranges = self._date_ranges(stream_state=stream_state)
+        date_ranges = list(self._date_ranges(stream_state=stream_state))
 
         # accumulate MAX_ASYNC_JOBS jobs in the buffer to schedule them all before trying to wait
         for params in date_ranges[:self.MAX_ASYNC_JOBS]:
@@ -324,7 +321,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         for job in jobs:
             yield {'job': job}
 
-        # emit the rest of period
+        # emit the rest of the interval
         for params in date_ranges[self.MAX_ASYNC_JOBS:]:
             params = deep_merge(params, self.request_params(stream_state=stream_state))
             yield {'job': self._get_insights(params)}
@@ -380,16 +377,21 @@ class AdsInsights(FBMarketingIncrementalStream):
         return {}
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
+        """Add fields from breakdowns to the stream schema
         :return: A dict of the JSON schema representing this stream.
-        FIXME: cache
-        we add fields from breakdowns to the stream schema
         """
         schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         schema["properties"].update(self._schema_for_breakdowns())
         return schema
 
+    @cached_property
+    def fields(self) -> List[str]:
+        """List of fields that we want to query, for now just all properties from stream's schema"""
+        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        return list(schema.get("properties", {}).keys())
+
     def _schema_for_breakdowns(self) -> Mapping[str, Any]:
+        """Breakdown fields and their type"""
         schemas = {
             "age": {
                 "type": ["null", "integer", "string"]

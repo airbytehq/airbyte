@@ -44,15 +44,6 @@ from source_facebook_marketing.streams import (
 )
 
 
-class InsightStreamsConfig(BaseModel):
-    name: str
-    breakdowns: List[str]
-    level: str
-    action_breakdowns: List[str]
-    time_increment: int
-    action_attribution_windows: List[str]
-
-
 class ConnectorConfig(BaseModel):
     class Config:
         title = "Source Facebook Marketing"
@@ -86,8 +77,6 @@ class ConnectorConfig(BaseModel):
         maximum=30,
     )
 
-    insights: List[InsightStreamsConfig]
-
 
 class SourceFacebookMarketing(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -106,7 +95,6 @@ class SourceFacebookMarketing(AbstractSource):
             logger.info(f"Select account {api.account}")
             ok = True
         except Exception as exc:
-            logger.error(str(exc))  # we might need some extra details, so log original exception here
             error_msg = repr(exc)
 
         return ok, error_msg
