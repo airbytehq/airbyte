@@ -37,6 +37,11 @@ class Client(BaseClient):
     API_VERSION = "3.1"
 
     def __init__(self, domain: str, client_id: str, client_secret: str, run_look_ids: list=[]):
+        """
+        Note that we dynamically generate schemas for the stream__run_looks
+        function because the fields returned depend on the user's look(s)
+        (entered during configuration). See get_run_look_json_schema().
+        """
         self.BASE_URL = f"https://{domain}/api/{self.API_VERSION}"
         self._client_id = client_id
         self._client_secret = client_secret
@@ -113,8 +118,8 @@ class Client(BaseClient):
             resp = self._request(f"{self.BASE_URL}/looks/{look_id}?fields=model(id),title")
             if resp == []:
                 return [], f"Unable to find look {look_id}. Verify that you have entered a valid look ID and that you have permission to run it."
-            else:
-                looks.append((resp[0]["model"]["id"], look_id, resp[0]["title"]))
+            
+            looks.append((resp[0]["model"]["id"], look_id, resp[0]["title"]))
 
         return looks, None
 
@@ -137,19 +142,31 @@ class Client(BaseClient):
                 return [response_data]
         return []
 
+    def _get_run_look_json_schema(self):
+        """
+        Generates a JSON Schema for the run_look endpoint based on the Look IDs
+        entered in configuration
+        """
+        json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "additionalProperties": True,
+            "type": "object",
+            "properties": {
+                self._get_run_look_key(look_id, look_name): {
+                    "title": look_name,
+                    "properties": {
+                        field: self._get_look_field_schema(model, field) for field in self._get_look_fields(look_id)
+                    },
+                    "type": ["null", "object"],
+                    "additionalProperties": False
+                }
+                for (model, look_id, look_name) in self._run_looks
+            }
+        }
+        return json_schema
+
     def _get_run_look_key(self, look_id, look_name):
         return f"{look_id} - {look_name}"
-
-    def _get_explore_fields(self, model, explore):
-        """
-        For a given LookML model and explore, looks up its dimensions/measures
-        and their types for run_look endpoint JSON Schema generation
-        """
-        if (model, explore) not in self._run_look_explore_fields:
-            self._run_look_explore_fields[(model, explore)] =  self._request(f"{self.BASE_URL}/lookml_models/{model}/explores/{explore}?fields=fields(dimensions(name,type),measures(name,type))")[0]['fields']
-        
-        return self._run_look_explore_fields[(model, explore)]
-
 
     def _get_look_field_schema(self, model, field):
         """
@@ -177,43 +194,28 @@ class Client(BaseClient):
                 "type": ["null", "string"],
                 "format": "date-time"
             }
-        else:
-            return {
-                "type": ["null", field_type]
-            }
         
-        
-    def _get_run_look_json_schema(self):
-        """
-        Generates a JSON Schema for the run_look endpoint based on the Look IDs
-        entered in configuration
-        """
-        json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "additionalProperties": True,
-            "type": "object",
-            "properties": {
-                self._get_run_look_key(look_id, look_name): {
-                    "title": look_name,
-                    "properties": {
-                        field: self._get_look_field_schema(model, field) for field in self._get_look_fields(look_id)
-                    },
-                    "type": ["null", "object"],
-                    "additionalProperties": False
-                }
-                for (model, look_id, look_name) in self._run_looks
-            }
+        return {
+            "type": ["null", field_type]
         }
-        return json_schema
 
+    def _get_explore_fields(self, model, explore):
+        """
+        For a given LookML model and explore, looks up its dimensions/measures
+        and their types for run_look endpoint JSON Schema generation
+        """
+        if (model, explore) not in self._run_look_explore_fields:
+            self._run_look_explore_fields[(model, explore)] =  self._request(f"{self.BASE_URL}/lookml_models/{model}/explores/{explore}?fields=fields(dimensions(name,type),measures(name,type))")[0]['fields']
+        
+        return self._run_look_explore_fields[(model, explore)]
+
+    def _get_look_fields(self, look_id) -> List[str]:
+        return self._request(f"{self.BASE_URL}/looks/{look_id}?fields=query(fields)")[0]["query"]["fields"]
 
     def _get_dashboard_ids(self) -> List[int]:
         if not self._dashboard_ids:
             self._dashboard_ids = [obj["id"] for obj in self._request(f"{self.BASE_URL}/dashboards") if isinstance(obj["id"], int)]
         return self._dashboard_ids
-
-    def _get_look_fields(self, look_id) -> List[str]:
-        return self._request(f"{self.BASE_URL}/looks/{look_id}?fields=query(fields)")[0]["query"]["fields"]
 
     def _get_project_ids(self) -> List[int]:
         if not self._project_ids:

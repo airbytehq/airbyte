@@ -4787,5 +4787,6 @@
         "destination_sync_mode": "overwrite",
         "source_defined_cursor": false
       }
+    }
   ]
 }
