@@ -47,72 +47,12 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
-      - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
-        run: ./tools/bin/ci_credentials.sh
-        env:
-          AMPLITUDE_INTEGRATION_TEST_CREDS: ${{ secrets.AMPLITUDE_INTEGRATION_TEST_CREDS }}
-          ADWORDS_INTEGRATION_TEST_CREDS: ${{ secrets.ADWORDS_INTEGRATION_TEST_CREDS }}
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
-          AZURE_STORAGE_INTEGRATION_TEST_CREDS: ${{ secrets.AZURE_STORAGE_INTEGRATION_TEST_CREDS }}
-          BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
-          BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
-          DRIFT_INTEGRATION_TEST_CREDS: ${{ secrets.DRIFT_INTEGRATION_TEST_CREDS }}
-          EXCHANGE_RATES_TEST_CREDS: ${{ secrets.EXCHANGE_RATES_TEST_CREDS }}
-          FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS }}
-          FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_API_TEST_INTEGRATION_CREDS }}
-          FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
-          GITLAB_INTEGRATION_TEST_CREDS: ${{ secrets.GITLAB_INTEGRATION_TEST_CREDS }}
-          GH_INTEGRATION_TEST_CREDS: ${{ secrets.GH_INTEGRATION_TEST_CREDS }}
-          GOOGLE_ADS_TEST_CREDS: ${{ secrets.GOOGLE_ADS_TEST_CREDS }}
-          GOOGLE_ANALYTICS_TEST_CREDS: ${{ secrets.GOOGLE_ANALYTICS_TEST_CREDS }}
-          GOOGLE_ANALYTICS_TEST_TRACKING_ID: ${{ secrets.GOOGLE_ANALYTICS_TEST_TRACKING_ID }}
-          GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
-          GOOGLE_DIRECTORY_TEST_CREDS: ${{ secrets.GOOGLE_DIRECTORY_TEST_CREDS }}
-          GOOGLE_SEARCH_CONSOLE_TEST_CREDS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_TEST_CREDS }}
-          GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS: ${{ secrets.GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS }}
-          GREENHOUSE_TEST_CREDS: ${{ secrets.GREENHOUSE_TEST_CREDS }}
-          GSHEETS_INTEGRATION_TESTS_CREDS: ${{ secrets.GSHEETS_INTEGRATION_TESTS_CREDS }}
-          HARVEST_INTEGRATION_TESTS_CREDS: ${{ secrets.HARVEST_INTEGRATION_TESTS_CREDS }}
-          HUBSPOT_INTEGRATION_TESTS_CREDS: ${{ secrets.HUBSPOT_INTEGRATION_TESTS_CREDS }}
-          INSTAGRAM_INTEGRATION_TESTS_CREDS: ${{ secrets.INSTAGRAM_INTEGRATION_TESTS_CREDS }}
-          INTERCOM_INTEGRATION_TEST_CREDS: ${{ secrets.INTERCOM_INTEGRATION_TEST_CREDS }}
-          ITERABLE_INTEGRATION_TEST_CREDS: ${{ secrets.ITERABLE_INTEGRATION_TEST_CREDS }}
-          JIRA_INTEGRATION_TEST_CREDS: ${{ secrets.JIRA_INTEGRATION_TEST_CREDS }}
-          KLAVIYO_TEST_CREDS: ${{ secrets.KLAVIYO_TEST_CREDS }}
-          LOOKER_INTEGRATION_TEST_CREDS: ${{ secrets.LOOKER_INTEGRATION_TEST_CREDS }}
-          MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
-          MICROSOFT_TEAMS_TEST_CREDS: ${{ secrets.MICROSOFT_TEAMS_TEST_CREDS }}
-          MIXPANEL_INTEGRATION_TEST_CREDS: ${{ secrets.MIXPANEL_INTEGRATION_TEST_CREDS }}
-          MSSQL_RDS_TEST_CREDS: ${{ secrets.MSSQL_RDS_TEST_CREDS }}
-          POSTHOG_TEST_CREDS: ${{ secrets.POSTHOG_TEST_CREDS }}
-          RECHARGE_INTEGRATION_TEST_CREDS: ${{ secrets.RECHARGE_INTEGRATION_TEST_CREDS }}
-          QUICKBOOKS_TEST_CREDS: ${{ secrets.QUICKBOOKS_TEST_CREDS }}
-          SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
-          SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
-          SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
-          SLACK_TEST_CREDS: ${{ secrets.SLACK_TEST_CREDS }}
-          SOURCE_ASANA_TEST_CREDS: ${{ secrets.SOURCE_ASANA_TEST_CREDS }}
-          SOURCE_OKTA_TEST_CREDS: ${{ secrets.SOURCE_OKTA_TEST_CREDS }}
-          SOURCE_SLACK_TEST_CREDS: ${{ secrets.SOURCE_SLACK_TEST_CREDS }}
-          SMARTSHEETS_TEST_CREDS: ${{ secrets.SMARTSHEETS_TEST_CREDS }}
-          SNOWFLAKE_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_INTEGRATION_TEST_CREDS }}
-          SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS }}
-          SNOWFLAKE_GCS_COPY_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_GCS_COPY_INTEGRATION_TEST_CREDS }}
-          SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG: ${{ secrets.SOURCE_MARKETO_SINGER_INTEGRATION_TEST_CONFIG }}
-          SOURCE_RECURLY_INTEGRATION_TEST_CREDS: ${{ secrets.SOURCE_RECURLY_INTEGRATION_TEST_CREDS }}
-          STRIPE_INTEGRATION_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_TEST_CREDS }}
-          STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS }}
-          TEMPO_INTEGRATION_TEST_CREDS: ${{ secrets.TEMPO_INTEGRATION_TEST_CREDS }}
-          TWILIO_TEST_CREDS: ${{ secrets.TWILIO_TEST_CREDS }}
-          ZENDESK_CHAT_INTEGRATION_TEST_CREDS: ${{ secrets.ZENDESK_CHAT_INTEGRATION_TEST_CREDS }}
-          ZENDESK_SECRETS_CREDS: ${{ secrets.ZENDESK_SECRETS_CREDS }}
-          ZENDESK_TALK_TEST_CREDS: ${{ secrets.ZENDESK_TALK_TEST_CREDS }}
-          ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
-          PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
-          DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - run: |
-          docker login -u airbytebot -p ${DOCKER_PASSWORD}
           ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }}
         name: publish ${{ github.event.inputs.connector }}
         id: publish
@@ -134,13 +74,3 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Slack Notification - Failure
-        if: failure()
-        uses: rtCamp/action-slack-notify@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: 'Failed to publish connector ${{ github.event.inputs.connector }} from branch ${{ github.ref	 }}'
-          SLACK_FOOTER: ""
