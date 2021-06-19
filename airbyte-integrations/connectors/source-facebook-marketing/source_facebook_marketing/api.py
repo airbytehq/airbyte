@@ -25,13 +25,13 @@
 import json
 from time import sleep
 
+import pendulum
 from airbyte_cdk.entrypoint import logger
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
-from pendulum import Interval
 from source_facebook_marketing.common import FacebookAPIException
 
 
@@ -39,18 +39,18 @@ class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
     call_rate_threshold = 90  # maximum percentage of call limit utilization
-    pause_interval = Interval(minutes=1)  # default pause interval if reached or close to call rate limit
+    pause_interval = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
 
     @staticmethod
     def parse_call_rate_header(headers):
         call_count = 0
-        pause_interval = Interval()
+        pause_interval = pendulum.duration()
 
         usage_header = headers.get("x-business-use-case-usage") or headers.get("x-app-usage") or headers.get("x-ad-account-usage")
         if usage_header:
             usage_header = json.loads(usage_header)
             call_count = usage_header.get("call_count") or usage_header.get("acc_id_util_pct") or 0
-            pause_interval = Interval(minutes=usage_header.get("estimated_time_to_regain_access", 0))
+            pause_interval = pendulum.duration(minutes=usage_header.get("estimated_time_to_regain_access", 0))
 
         return call_count, pause_interval
 

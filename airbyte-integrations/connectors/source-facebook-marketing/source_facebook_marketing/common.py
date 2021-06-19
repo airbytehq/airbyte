@@ -34,7 +34,7 @@ from facebook_business.exceptions import FacebookRequestError
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
 FACEBOOK_RATE_LIMIT_ERROR_CODES = (4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008)
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
-DEFAULT_SLEEP_INTERVAL = pendulum.Interval(minutes=1)
+DEFAULT_SLEEP_INTERVAL = pendulum.Duration(minutes=1)
 
 
 class FacebookAPIException(Exception):
@@ -82,5 +82,7 @@ def deep_merge(a, b):
         return {key: deep_merge(a.get(key), b.get(key)) for key in keys}
     elif isinstance(a, list) and isinstance(b, list):
         return [*a, *b]
+    elif isinstance(a, set) and isinstance(b, set):
+        return a.union(b)
     else:
         return a if b is None else b

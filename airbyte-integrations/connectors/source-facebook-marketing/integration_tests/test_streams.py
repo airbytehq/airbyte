@@ -36,7 +36,7 @@ from source_facebook_marketing.source import SourceFacebookMarketing
 def state_fixture() -> MutableMapping[str, MutableMapping[str, Any]]:
     return {
         "ads": {"updated_time": "2021-02-19T10:42:40-0800"},
-        "adsets": {"updated_time": "2021-02-19T10:42:40-0800"},
+        "ad_sets": {"updated_time": "2021-02-19T10:42:40-0800"},
         "campaigns": {"updated_time": "2021-02-19T10:42:40-0800"},
     }
 
@@ -44,9 +44,8 @@ def state_fixture() -> MutableMapping[str, MutableMapping[str, Any]]:
 @pytest.fixture(scope="session", name="state_with_include_deleted")
 def state_with_include_deleted_fixture(state):
     result_state = copy.deepcopy(state)
-    result_state["ads"]["include_deleted"] = True
-    result_state["adsets"]["include_deleted"] = True
-    result_state["campaigns"]["include_deleted"] = True
+    for state in result_state.values():
+        state["include_deleted"] = True
 
     return result_state
 
@@ -60,7 +59,8 @@ class TestFacebookMarketingSource:
     @pytest.mark.parametrize("stream_name, deleted_id", [
         ("ads", "23846756820320398"),
         ("campaigns", "23846541919710398"),
-        ("ad_sets", "23846541706990398")])
+        ("ad_sets", "23846541706990398")]
+     )
     def test_streams_with_include_deleted(self, stream_name, deleted_id, config_with_include_deleted, configured_catalog):
         catalog = self.slice_catalog(configured_catalog, {stream_name})
         records, states = self._read_records(config_with_include_deleted, catalog)

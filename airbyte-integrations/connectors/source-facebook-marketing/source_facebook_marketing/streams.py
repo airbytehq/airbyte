@@ -23,12 +23,12 @@
 #
 
 import time
-from abc import ABC, abstractmethod
+from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Sequence, Optional
 
 import backoff
-import pendulum as pendulum
+import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import package_name_from_class
@@ -154,9 +154,12 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
+        potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)
         record_value = latest_record[self.cursor_field]
         state_value = current_stream_state.get(self.cursor_field) or record_value
         max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
+        if potentially_new_records_in_the_past:
+            max_cursor = record_value
 
         return {
             self.cursor_field: str(max_cursor),
@@ -166,13 +169,20 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         """Include state filter"""
         params = super().request_params(**kwargs)
-        deep_merge(params, self._state_filter(stream_state=stream_state))
+        print("MERGE", params, self._state_filter(stream_state=stream_state))
+        params = deep_merge(params, self._state_filter(stream_state=stream_state))
+        print("AFTER MERGE", params)
         return params
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
         state_value = stream_state.get(self.cursor_field)
-        filter_value = pendulum.parse(state_value) if stream_state else self._start_date
+        filter_value = self._start_date if not state_value else pendulum.parse(state_value)
+
+        potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
+        if potentially_new_records_in_the_past:
+            self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            filter_value = self._start_date
 
         return {
             "filtering": [
@@ -220,6 +230,7 @@ class Ads(FBMarketingIncrementalStream):
 
     @backoff_policy
     def _read_records(self, params: Mapping[str, Any]):
+        print("PARAMS", params)
         return self._api.account.get_ads(params=params, fields=[self.cursor_field])
 
 
@@ -267,22 +278,22 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_destination",
     ]
 
-    MAX_WAIT_TO_START = pendulum.Interval(minutes=5)
-    MAX_WAIT_TO_FINISH = pendulum.Interval(minutes=30)
-    MAX_ASYNC_SLEEP = pendulum.Interval(minutes=5)
+    MAX_WAIT_TO_START = pendulum.duration(minutes=5)
+    MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
+    MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
     MAX_ASYNC_JOBS = 30
-    INSIGHTS_RETENTION_PERIOD = pendulum.Interval(days=37 * 30)
+    INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
 
-    breakdowns = None
+    breakdowns = []
 
     def __init__(self, buffer_days, days_per_job, **kwargs):
         super().__init__(**kwargs)
-        self.lookback_window = pendulum.Interval(days=buffer_days)
+        self.lookback_window = pendulum.Duration(days=buffer_days)
         self._days_per_job = days_per_job
 
     def read_records(
@@ -306,7 +317,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         # accumulate MAX_ASYNC_JOBS jobs in the buffer to schedule them all before trying to wait
         for params in date_ranges[:self.MAX_ASYNC_JOBS]:
-            deep_merge(params, self.request_params(stream_state=stream_state))
+            params = deep_merge(params, self.request_params(stream_state=stream_state))
             jobs.append(self._get_insights(params))
 
         # now emit every job scheduled, this will result in waiting during read_records call for each slice
@@ -315,7 +326,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         # emit the rest of period
         for params in date_ranges[self.MAX_ASYNC_JOBS:]:
-            deep_merge(params, self.request_params(stream_state=stream_state))
+            params = deep_merge(params, self.request_params(stream_state=stream_state))
             yield {'job': self._get_insights(params)}
 
     @backoff_policy
@@ -353,7 +364,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        deep_merge(params, {
+        params = deep_merge(params, {
             "level": self.level,
             "action_breakdowns": self.action_breakdowns,
             "breakdowns": self.breakdowns,
@@ -368,7 +379,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Works differently for insights, so remove it"""
         return {}
 
-    @cached_property
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
@@ -379,7 +389,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         schema["properties"].update(self._schema_for_breakdowns())
         return schema
 
-    def _schema_for_breakdowns(self):
+    def _schema_for_breakdowns(self) -> Mapping[str, Any]:
         schemas = {
             "age": {
                 "type": ["null", "integer", "string"]
@@ -413,7 +423,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         if "platform_position" in breakdowns:
             breakdowns.append("placement")
 
-        return [schemas[breakdown] for breakdown in self.breakdowns]
+        return {breakdown: schemas[breakdown] for breakdown in self.breakdowns}
 
     def _date_ranges(self, stream_state: Mapping[str, Any]) -> Iterator[dict]:
         """Iterate over period between start_date/state and now
