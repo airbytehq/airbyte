@@ -28,12 +28,13 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.commons.jackson.MoreMappers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class SnowflakeDestinationTest {
 
-  private static final ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = MoreMappers.initMapper();
 
   @Test
   @DisplayName("When given S3 credentials should use COPY")

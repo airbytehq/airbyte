@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Charsets;
-import io.airbyte.commons.mapper.MoreMappers;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.stream.MoreStreams;
 import java.io.IOException;
 import java.util.Collections;

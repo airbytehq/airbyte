@@ -22,13 +22,18 @@
  * SOFTWARE.
  */
 
-package io.airbyte.commons.mapper;
+package io.airbyte.commons.jackson;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+/**
+ * The {@link JavaTimeModule} allows mappers to accommodate different varieties of serialised date time strings.
+ *
+ * All jackson mapper creation should use the following methods for instantiation.
+ */
 public class MoreMappers {
 
   public static ObjectMapper initMapper() {
