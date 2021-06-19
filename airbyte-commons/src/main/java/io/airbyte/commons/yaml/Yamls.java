@@ -31,9 +31,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.lang.CloseableConsumer;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.mapper.MoreMappers;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import java.io.IOException;
@@ -43,9 +45,8 @@ import java.util.Iterator;
 
 public class Yamls {
 
-  public static final YAMLFactory YAML_FACTORY = new YAMLFactory();
-  // Object Mapper is thread-safe
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper(YAML_FACTORY).findAndRegisterModules();
+  private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
+  private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initYamlMapper(YAML_FACTORY);
 
   public static <T> String serialize(T object) {
     try {
