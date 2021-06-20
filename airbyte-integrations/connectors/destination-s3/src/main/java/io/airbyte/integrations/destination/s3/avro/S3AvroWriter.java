@@ -50,9 +50,11 @@ public class S3AvroWriter extends BaseS3Writer implements S3Writer {
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 
     S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
+    // The DataFileWriter always uses binary encoding.
+    // If json encoding is needed in the future, use the GenericDatumWriter directly.
     this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
-        .create(schema, outputStream)
-        .setCodec(formatConfig.getCodecFactory());
+        .setCodec(formatConfig.getCodecFactory())
+        .create(schema, outputStream);
   }
 
   @Override
