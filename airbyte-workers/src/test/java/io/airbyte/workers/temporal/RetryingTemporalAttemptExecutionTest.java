@@ -43,8 +43,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +63,7 @@ class RetryingTemporalAttemptExecutionTest {
 
   private CheckedSupplier<Worker<String, String>, Exception> execution;
   private Supplier<String> inputSupplier;
-  private BiConsumer<Path, String> mdcSetter;
+  private Consumer<Path> mdcSetter;
   private Predicate<String> shouldAttemptAgain;
   private BiFunction<String, String, String> nextInput;
 
@@ -77,7 +77,7 @@ class RetryingTemporalAttemptExecutionTest {
 
     execution = mock(CheckedSupplier.class);
     inputSupplier = mock(Supplier.class);
-    mdcSetter = mock(BiConsumer.class);
+    mdcSetter = mock(Consumer.class);
     shouldAttemptAgain = mock(Predicate.class);
     nextInput = mock(BiFunction.class);
     final CheckedConsumer<Path, IOException> jobRootDirCreator = Files::createDirectories;
@@ -119,7 +119,7 @@ class RetryingTemporalAttemptExecutionTest {
 
     verify(execution).get();
     verify(worker).run(eq(INPUT), any());
-    verify(mdcSetter, atLeast(2)).accept(jobRoot, JOB_ID);
+    verify(mdcSetter, atLeast(2)).accept(jobRoot);
   }
 
   @SuppressWarnings("unchecked")
@@ -143,7 +143,7 @@ class RetryingTemporalAttemptExecutionTest {
     verify(execution, times(2)).get();
     verify(worker).run(eq(INPUT), any());
     verify(worker).run(eq(INPUT + "I"), any());
-    verify(mdcSetter, atLeast(2)).accept(jobRoot, JOB_ID);
+    verify(mdcSetter, atLeast(2)).accept(jobRoot);
   }
 
   @SuppressWarnings("unchecked")
@@ -170,7 +170,7 @@ class RetryingTemporalAttemptExecutionTest {
     verify(worker).run(eq(INPUT), any());
     verify(worker).run(eq(INPUT + "I"), any());
     verify(worker).run(eq(INPUT + "II"), any());
-    verify(mdcSetter, atLeast(2)).accept(jobRoot, JOB_ID);
+    verify(mdcSetter, atLeast(2)).accept(jobRoot);
   }
 
   @Test
@@ -181,7 +181,7 @@ class RetryingTemporalAttemptExecutionTest {
     assertEquals(IOException.class, CheckedExceptionWrapper.unwrap(actualException).getClass());
 
     verify(execution).get();
-    verify(mdcSetter).accept(jobRoot, JOB_ID);
+    verify(mdcSetter).accept(jobRoot);
   }
 
   @Test
@@ -191,7 +191,7 @@ class RetryingTemporalAttemptExecutionTest {
     assertThrows(IllegalArgumentException.class, () -> attemptExecution.get());
 
     verify(execution).get();
-    verify(mdcSetter).accept(jobRoot, JOB_ID);
+    verify(mdcSetter).accept(jobRoot);
   }
 
 }
