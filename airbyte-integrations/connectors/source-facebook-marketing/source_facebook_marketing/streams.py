@@ -418,7 +418,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         state_value = stream_state.get(self.cursor_field)
         if state_value:
-            start_date = state_value - self.lookback_window
+            start_date = pendulum.parse(state_value) - self.lookback_window
         else:
             start_date = self._start_date
         end_date = pendulum.now()
