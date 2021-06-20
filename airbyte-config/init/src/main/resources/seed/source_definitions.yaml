@@ -335,4 +335,3 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-us-census
   icon: united-states-flag.svg
-  
