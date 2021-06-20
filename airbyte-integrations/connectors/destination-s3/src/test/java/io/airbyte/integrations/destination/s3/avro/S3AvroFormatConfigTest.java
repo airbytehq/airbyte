@@ -26,9 +26,15 @@ class S3AvroFormatConfigTest {
 
   @Test
   public void testParseCodecConfigDeflate() {
-    JsonNode deflateConfig = Jsons.deserialize("{ \"codec\": \"deflate\", \"compression_level\": 5 }");
-    CodecFactory codecFactory = S3AvroFormatConfig.parseCodecConfig(deflateConfig);
-    assertEquals("deflate-5", codecFactory.toString());
+    // default compression level 0
+    CodecFactory codecFactory1 = S3AvroFormatConfig.parseCodecConfig(
+        Jsons.deserialize("{ \"codec\": \"deflate\" }"));
+    assertEquals("deflate-0", codecFactory1.toString());
+
+    // compression level 5
+    CodecFactory codecFactory2 = S3AvroFormatConfig.parseCodecConfig(
+        Jsons.deserialize("{ \"codec\": \"deflate\", \"compression_level\": 5 }"));
+    assertEquals("deflate-5", codecFactory2.toString());
   }
 
   @Test
@@ -40,17 +46,30 @@ class S3AvroFormatConfigTest {
 
   @Test
   public void testParseCodecConfigXz() {
-    JsonNode xzConfig = Jsons.deserialize("{ \"codec\": \"xz\", \"compression_level\": 7 }");
-    CodecFactory codecFactory = S3AvroFormatConfig.parseCodecConfig(xzConfig);
-    assertEquals("xz-7", codecFactory.toString());
+    // default compression level 6
+    CodecFactory codecFactory1 = S3AvroFormatConfig.parseCodecConfig(
+        Jsons.deserialize("{ \"codec\": \"xz\" }"));
+    assertEquals("xz-6", codecFactory1.toString());
+
+    // compression level 7
+    CodecFactory codecFactory2 = S3AvroFormatConfig.parseCodecConfig(
+        Jsons.deserialize("{ \"codec\": \"xz\", \"compression_level\": 7 }"));
+    assertEquals("xz-7", codecFactory2.toString());
   }
 
   @Test
   public void testParseCodecConfigZstandard() {
-    JsonNode zstandardConfig = Jsons.deserialize("{ \"codec\": \"zstandard\", \"compression_level\": 20, \"include_checksum\": true }");
-    CodecFactory codecFactory = S3AvroFormatConfig.parseCodecConfig(zstandardConfig);
+    // default compression level 3
+    CodecFactory codecFactory1 = S3AvroFormatConfig.parseCodecConfig(
+        Jsons.deserialize("{ \"codec\": \"zstandard\" }"));
     // There is no way to verify the checksum; all relevant methods are private or protected...
-    assertEquals("zstandard[20]", codecFactory.toString());
+    assertEquals("zstandard[3]", codecFactory1.toString());
+
+    // compression level 20
+    CodecFactory codecFactory2 = S3AvroFormatConfig.parseCodecConfig(
+        Jsons.deserialize("{ \"codec\": \"zstandard\", \"compression_level\": 20, \"include_checksum\": true }"));
+    // There is no way to verify the checksum; all relevant methods are private or protected...
+    assertEquals("zstandard[20]", codecFactory2.toString());
   }
 
   @Test
