@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.destination.s3;
 
 import com.amazonaws.services.s3.model.S3Object;
@@ -9,14 +33,11 @@ import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
-import org.apache.avro.io.DatumReader;
-import org.apache.avro.io.DecoderFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest {
@@ -48,8 +69,7 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
       S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
       DataFileReader<Record> dataFileReader = new DataFileReader<>(
           new SeekableByteArrayInput(object.getObjectContent().readAllBytes()),
-          new GenericDatumReader<>()
-      );
+          new GenericDatumReader<>());
 
       ObjectReader jsonReader = MAPPER.reader();
       while (dataFileReader.hasNext()) {

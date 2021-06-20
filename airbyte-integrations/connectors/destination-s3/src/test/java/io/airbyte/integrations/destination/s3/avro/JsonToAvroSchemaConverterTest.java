@@ -31,8 +31,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.destination.s3.avro.JsonSchemaType;
-import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import java.util.Collections;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;

@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
