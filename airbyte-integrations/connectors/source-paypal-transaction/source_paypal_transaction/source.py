@@ -24,6 +24,7 @@
 
 from abc import ABC
 from datetime import datetime, timedelta
+from pprint import pprint
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -60,41 +61,68 @@ class PaypalTransactionStream(HttpStream, ABC):
     page_size = "500"  # API limit
 
     # Date limits are needed to prevent API error: Data for the given start date is not available
-    # API limit: 3 years < start_date < 12 hrs before now
-    start_date_limits: Mapping[str, Mapping] = {"min_date": {"days": 3 * 364}, "max_date": {"hours": 12}}
+    # API limit: (now() - start_date_min) < start_date < (now() - start_date_max)
+    start_date_min: Mapping[str, int] = {"days": 3 * 364}  # API limit - 3 years
+    start_date_max: Mapping[str, int] = {"hours": 0}
 
-    stream_slice_period: Mapping[str, int] = {"days": 1}
+    stream_slice_period: Mapping[str, int] = {"days": 1}  # max period is 31 days (API limit)
 
-    def __init__(self, start_date: datetime, end_date: datetime, is_sandbox: bool = False, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        is_sandbox: bool = False,
+        config: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ):
 
-        self._validate_input_dates(start_date=start_date, end_date=end_date)
+        # Initiate data from config
+        if config:
+            start_date = isoparse(config["start_date"])
+            end_date_str = config.get("end_date")
+            end_date = isoparse(end_date_str) if end_date_str else None
+            is_sandbox = config["is_sandbox"]
 
+        self.is_sandbox = is_sandbox
         self.start_date = start_date
-        self.end_date = end_date
+        self._end_date = end_date
         self.is_sandbox = is_sandbox
 
-    def _validate_input_dates(self, start_date, end_date):
+        self._validate_input_dates()
+
+        super().__init__(**kwargs)
+
+    @property
+    def end_date(self):
+        """Return initiated end_date or now()"""
+        now = datetime.now().replace(microsecond=0).astimezone()
+        if not self._end_date or self._end_date > now:
+            # If no end_date or end_date is in future then return now:
+            return now
+        else:
+            return self._end_date
+
+    def _validate_input_dates(self):
 
         # Validate input dates
-        if start_date > end_date:
-            raise Exception(f"start_date {start_date} is greater than end_date {end_date}")
+        if self.start_date > self.end_date:
+            raise Exception(f"start_date {self.start_date.isoformat()} is greater than end_date {self.end_date.isoformat()}")
 
         current_date = datetime.now().replace(microsecond=0).astimezone()
-        current_date_delta = current_date - start_date
+        current_date_delta = current_date - self.start_date
 
         # Check for minimal possible start_date
-        if current_date_delta > timedelta(**self.start_date_limits.get("min_date")):
+        if current_date_delta > timedelta(**self.start_date_min):
             raise Exception(
-                f"Start_date {start_date.isoformat()} is too old. "
-                f"Min date limit is {self.start_date_limits.get('min_date')} before now:{current_date.isoformat()}."
+                f"Start_date {self.start_date.isoformat()} is too old. "
+                f"Min date limit is {self.start_date_min} before now:{current_date.isoformat()}."
             )
 
         # Check for maximum possible start_date
-        if current_date_delta < timedelta(**self.start_date_limits.get("max_date")):
+        if current_date_delta < timedelta(**self.start_date_max):
             raise Exception(
-                f"Start_date {start_date.isoformat()} is too close to now. "
-                f"Max date limit is {self.start_date_limits.get('max_date')} before now:{current_date.isoformat()}."
+                f"Start_date {self.start_date.isoformat()} is too close to now. "
+                f"Max date limit is {self.start_date_max} before now:{current_date.isoformat()}."
             )
 
     @property
@@ -119,7 +147,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         for record in data:
             # In order to support direct datetime string comparison (which is performed in incremental acceptance tests)
             # convert any date format to python iso format string for date based cursors
-            self.update_field(record, self.cursor_field, lambda x: isoparse(x).isoformat())
+            self.update_field(record, self.cursor_field, lambda date: isoparse(date).isoformat())
             yield record
 
     @staticmethod
@@ -155,35 +183,6 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         return data
 
-    def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
-        """
-        Returns a list of each day (by default) between the start date and end date.
-        The return value is a list of dicts {'start_date': date_string, 'end_date': date_string}.
-        """
-        dates = []
-
-        # start date should not be less than 12 hrs before current time, otherwise API throws an error:
-        #   'message': 'Data for the given start date is not available.'
-        start_date_limit_max = self.end_date - timedelta(**self.start_date_limits.get("max_date")) - timedelta(**self.stream_slice_period)
-        while start_date < start_date_limit_max:
-            end_date = start_date + timedelta(**self.stream_slice_period)
-            dates.append({"start_date": start_date.isoformat(), "end_date": end_date.isoformat()})
-            start_date = end_date
-
-        dates.append({"start_date": start_date.isoformat(), "end_date": self.end_date.isoformat()})
-
-        return dates
-
-    def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, any]]]:
-
-        start_date = self.start_date
-        if stream_state and "date" in stream_state:
-            start_date = isoparse(stream_state["date"])
-
-        return self._chunk_date_range(start_date)
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
 
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
@@ -212,6 +211,8 @@ class Transactions(PaypalTransactionStream):
     primary_key = ["transaction_info", "transaction_id"]
     cursor_field = ["transaction_info", "transaction_initiation_date"]
 
+    start_date_max = {"hours": 36}  # this limit is found experimentally
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -223,10 +224,10 @@ class Transactions(PaypalTransactionStream):
         decoded_response = response.json()
         total_pages = decoded_response.get("total_pages")
         page_number = decoded_response.get("page")
-        if page_number >= total_pages:
-            return None
-        else:
+        if page_number < total_pages:
             return {"page": page_number + 1}
+        else:
+            return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -243,6 +244,42 @@ class Transactions(PaypalTransactionStream):
             "page_size": self.page_size,
             "page": page_number,
         }
+
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+        """
+        Returns a list of slices for each day (by default) between the start date and end date.
+        The return value is a list of dicts {'start_date': date_string, 'end_date': date_string}.
+        """
+        if stream_state and stream_state.get("date"):
+            start_date = isoparse(stream_state.get("date"))
+        else:
+            start_date = self.start_date
+
+        # choose first slice period (for the most recent time)
+        first_slice_period = max(timedelta(**self.start_date_max), timedelta(**self.stream_slice_period))
+        end_date = self.end_date
+
+        start_date_slice = end_date - first_slice_period
+        end_date_slice = end_date
+
+        # Do not run any requests if start_date is less than 36 hrs before current time, otherwise API throws an error:
+        #   'message': 'Data for the given start date is not available.'
+        if start_date > start_date_slice or \
+           start_date > end_date:
+            return []
+
+        dates = []
+        while start_date < start_date_slice:
+            dates.append({"start_date": start_date_slice.isoformat(), "end_date": end_date_slice.isoformat()})
+            end_date_slice = start_date_slice
+            start_date_slice = start_date_slice - timedelta(**self.stream_slice_period)
+
+        # add last (the oldest) slice period
+        dates.append({"start_date": start_date.isoformat(), "end_date": end_date_slice.isoformat()})
+        pprint(dates)
+        return dates[::-1]  # inverse stream slices to start read requests from the oldest slices
 
 
 class Balances(PaypalTransactionStream):
@@ -275,20 +312,33 @@ class Balances(PaypalTransactionStream):
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
+        """
+        Returns a list of slices for each day (by default) between the start_date and end_date (containing the last)
+        The return value is a list of dicts {'start_date': date_string}.
+        """
+        if stream_state and stream_state.get("date"):
+            if isoparse(stream_state.get("date")) == self._end_date:
+                # Do not run any incremental requests if _end_date has been reached already
+                return []
+            # For incremental sync don't extract balance at stream_state, because
+            # it has been already extracted in previous scan. Start from next slice period instead:
+            start_date_slice = isoparse(stream_state.get("date")) + timedelta(**self.stream_slice_period)
+        else:
+            start_date_slice = self.start_date
 
-        slices = super().stream_slices(sync_mode, cursor_field, stream_state)
+        dates = []
+        while start_date_slice < self.end_date:
+            dates.append({"start_date": start_date_slice.isoformat()})
+            start_date_slice = start_date_slice + timedelta(**self.stream_slice_period)
 
-        # Add one more slice to extract balance at the time of 'end_date'
-        last_slice = slices[-1]
-        if last_slice["start_date"] != last_slice["end_date"]:
-            start_date = end_date = last_slice["end_date"]
-            slices.append({"start_date": start_date, "end_date": end_date})
-
-        return slices
+        # Add last (the newest) slice with the current time of the sync
+        dates.append({"start_date": self.end_date.isoformat()})
+        pprint(dates)
+        return dates
 
 
 class PayPalOauth2Authenticator(Oauth2Authenticator):
-    """
+    """Request example for API token extraction:
     curl -v POST https://api-m.sandbox.paypal.com/v1/oauth2/token \
       -H "Accept: application/json" \
       -H "Accept-Language: en_US" \
@@ -306,9 +356,7 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
         )
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
-        """ Override to define additional parameters """
-        payload: MutableMapping[str, Any] = {"grant_type": "client_credentials"}
-        return payload
+        return {"grant_type": "client_credentials"}
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
@@ -329,19 +377,12 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
 class SourcePaypalTransaction(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        start_date = isoparse(config["start_date"])
-        end_date = get_end_date(config)
-
         authenticator = PayPalOauth2Authenticator(config)
+
         # Try to get API TOKEN
         token = authenticator.get_access_token()
         if not token:
@@ -349,25 +390,19 @@ class SourcePaypalTransaction(AbstractSource):
 
         # Try to initiate a stream and validate input date params
         try:
-            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date, is_sandbox=config["is_sandbox"])
+            Transactions(authenticator=authenticator, config=config)
         except Exception as e:
             return False, e
 
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """58
-        TODO: Replace the streams below with your own streams.
-
+        """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-
         authenticator = PayPalOauth2Authenticator(config)
 
-        start_date = isoparse(config["start_date"])
-        end_date = get_end_date(config)
-
         return [
-            Transactions(authenticator=authenticator, start_date=start_date, end_date=end_date, is_sandbox=config["is_sandbox"]),
-            Balances(authenticator=authenticator, start_date=start_date, end_date=end_date, is_sandbox=config["is_sandbox"]),
+            Transactions(authenticator=authenticator, config=config),
+            Balances(authenticator=authenticator, config=config),
         ]
