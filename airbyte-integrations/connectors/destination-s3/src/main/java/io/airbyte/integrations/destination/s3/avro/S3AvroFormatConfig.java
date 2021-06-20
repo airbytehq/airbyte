@@ -13,39 +13,6 @@ public class S3AvroFormatConfig implements S3FormatConfig {
     this.codecFactory = parseCodecConfig(formatConfig.get("compression_codec"));
   }
 
-  public CodecFactory getCodecFactory() {
-    return codecFactory;
-  }
-
-  @Override
-  public S3Format getFormat() {
-    return S3Format.AVRO;
-  }
-
-  public enum CompressionCodec {
-    NULL("no compression"),
-    DEFLATE("deflate"),
-    BZIP2("bzip2"),
-    XZ("xz"),
-    ZSTANDARD("zstandard"),
-    SNAPPY("snappy");
-
-    private final String configValue;
-
-    CompressionCodec(String configValue) {
-      this.configValue = configValue;
-    }
-
-    public static CompressionCodec fromConfigValue(String configValue) {
-      for (CompressionCodec codec : values()) {
-        if (configValue.equalsIgnoreCase(codec.configValue)) {
-          return codec;
-        }
-      }
-      throw new IllegalArgumentException("Unknown codec config value: " + configValue);
-    }
-  }
-
   public static CodecFactory parseCodecConfig(JsonNode compressionCodecConfig) {
     if (compressionCodecConfig == null || compressionCodecConfig.isNull()) {
       return CodecFactory.nullCodec();
@@ -73,7 +40,7 @@ public class S3AvroFormatConfig implements S3FormatConfig {
         return CodecFactory.xzCodec(compressionLevel);
       }
       case ZSTANDARD -> {
-        int compressionLevel = getCompressionLevel(compressionCodecConfig, 3, -5,22);
+        int compressionLevel = getCompressionLevel(compressionCodecConfig, 3, -5, 22);
         boolean includeChecksum = getIncludeChecksum(compressionCodecConfig, false);
         return CodecFactory.zstandardCodec(compressionLevel, includeChecksum);
       }
@@ -105,6 +72,39 @@ public class S3AvroFormatConfig implements S3FormatConfig {
       return defaultValue;
     }
     return checksumConfig.asBoolean();
+  }
+
+  public CodecFactory getCodecFactory() {
+    return codecFactory;
+  }
+
+  @Override
+  public S3Format getFormat() {
+    return S3Format.AVRO;
+  }
+
+  public enum CompressionCodec {
+    NULL("no compression"),
+    DEFLATE("deflate"),
+    BZIP2("bzip2"),
+    XZ("xz"),
+    ZSTANDARD("zstandard"),
+    SNAPPY("snappy");
+
+    private final String configValue;
+
+    CompressionCodec(String configValue) {
+      this.configValue = configValue;
+    }
+
+    public static CompressionCodec fromConfigValue(String configValue) {
+      for (CompressionCodec codec : values()) {
+        if (configValue.equalsIgnoreCase(codec.configValue)) {
+          return codec;
+        }
+      }
+      throw new IllegalArgumentException("Unknown codec config value: " + configValue);
+    }
   }
 
 }
