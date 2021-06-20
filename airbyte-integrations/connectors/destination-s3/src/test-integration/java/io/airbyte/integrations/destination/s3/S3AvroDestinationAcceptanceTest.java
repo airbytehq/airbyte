@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.avro.file.DataFileReader;
@@ -58,26 +57,24 @@ public class S3AvroDestinationAcceptanceTest extends S3DestinationAcceptanceTest
 
   @Override
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv, String streamName, String namespace, JsonNode streamSchema) throws Exception {
-    JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-    schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
-    JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+    JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
     List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     List<JsonNode> jsonRecords = new LinkedList<>();
 
     for (S3ObjectSummary objectSummary : objectSummaries) {
       S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
-      DataFileReader<Record> dataFileReader = new DataFileReader<>(
+      try (DataFileReader<Record> dataFileReader = new DataFileReader<>(
           new SeekableByteArrayInput(object.getObjectContent().readAllBytes()),
-          new GenericDatumReader<>());
-
-      ObjectReader jsonReader = MAPPER.reader();
-      while (dataFileReader.hasNext()) {
-        GenericData.Record record = dataFileReader.next();
-        byte[] jsonBytes = converter.convertToJson(record);
-        JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
-        jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
-        jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));
+          new GenericDatumReader<>())) {
+        ObjectReader jsonReader = MAPPER.reader();
+        while (dataFileReader.hasNext()) {
+          GenericData.Record record = dataFileReader.next();
+          byte[] jsonBytes = converter.convertToJson(record);
+          JsonNode jsonRecord = jsonReader.readTree(jsonBytes);
+          jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord);
+          jsonRecords.add(AvroRecordHelper.pruneAirbyteJson(jsonRecord));
+        }
       }
     }
 

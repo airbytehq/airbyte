@@ -28,8 +28,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 
 public class AvroRecordHelper {
+
+  public static JsonFieldNameUpdater getFieldNameUpdater(String streamName, String namespace, JsonNode streamSchema) {
+    JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
+    schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
+    return new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+  }
 
   /**
    * Convert an Airbyte JsonNode from Avro / Parquet Record to a plain one.

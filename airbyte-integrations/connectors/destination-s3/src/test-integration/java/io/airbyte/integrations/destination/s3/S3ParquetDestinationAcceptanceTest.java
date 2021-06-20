@@ -30,7 +30,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
 import java.io.IOException;
 import java.net.URI;
@@ -65,9 +64,7 @@ public class S3ParquetDestinationAcceptanceTest extends S3DestinationAcceptanceT
                                            String namespace,
                                            JsonNode streamSchema)
       throws IOException, URISyntaxException {
-    JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
-    schemaConverter.getAvroSchema(streamSchema, streamName, namespace, true);
-    JsonFieldNameUpdater nameUpdater = new JsonFieldNameUpdater(schemaConverter.getStandardizedNames());
+    JsonFieldNameUpdater nameUpdater = AvroRecordHelper.getFieldNameUpdater(streamName, namespace, streamSchema);
 
     List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
     List<JsonNode> jsonRecords = new LinkedList<>();
