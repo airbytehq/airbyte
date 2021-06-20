@@ -125,7 +125,7 @@
                       },
                       "compression_level": {
                         "title": "Deflate level",
-                        "description": "0: no compression fastest, 9: best compression, slowest.",
+                        "description": "0: no compression & fastest, 9: best compression & slowest.",
                         "type": "integer",
                         "default": 0,
                         "minimum": 0,
