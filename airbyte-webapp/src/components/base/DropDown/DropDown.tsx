@@ -194,17 +194,19 @@ const DropDown: React.FC<DropdownProps> = ({
 }) => {
   const formatMessage = useIntl().formatMessage;
 
-  const containerClassName = [className, withButton ? "withButton" : null]
+  const containerClassName = [
+    className,
+    props.containerClassName,
+    withButton ? "withButton" : null,
+  ]
     .filter(Boolean)
     .join(" ");
 
   return (
     <StyledDropdownList
       data-testid={name}
-      {...props}
       $error={error}
       $withBorder={withBorder}
-      containerClassName={containerClassName}
       filter={hasFilter ? "contains" : false}
       placeholder={withButton ? textButton : props.placeholder || "..."}
       messages={{
@@ -223,14 +225,13 @@ const DropDown: React.FC<DropdownProps> = ({
       itemComponent={({ item }) => (
         <ListItem {...item} item={item} fullText={fullText} />
       )}
+      textField="text"
+      valueField="value"
+      groupComponent={GroupHeader}
+      {...props}
+      containerClassName={containerClassName}
     />
   );
-};
-
-DropDown.defaultProps = {
-  textField: "text",
-  valueField: "value",
-  groupComponent: GroupHeader,
 };
 
 export default DropDown;

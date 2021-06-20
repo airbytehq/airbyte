@@ -3,7 +3,6 @@ import { useIntl } from "react-intl";
 import { useField } from "formik";
 import styled from "styled-components";
 import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
-// @ts-ignore
 import List from "react-widgets/lib/List";
 
 import { FormBaseItem } from "core/form/types";
@@ -23,6 +22,15 @@ const BottomElement = styled.div`
   min-height: 34px;
   border-top: 1px solid ${(props) => props.theme.greyColor20};
 `;
+
+const ConnectorList = React.forwardRef(
+  ({ bottomBlock, ...listProps }: any, ref) => (
+    <>
+      <List ref={ref} {...listProps} />
+      <BottomElement>{bottomBlock}</BottomElement>
+    </>
+  )
+);
 
 const ConnectorServiceTypeControl: React.FC<{
   property: FormBaseItem;
@@ -81,13 +89,6 @@ const ConnectorServiceTypeControl: React.FC<{
     [setValue, onChangeServiceType]
   );
 
-  const CustomList = React.forwardRef((listProps: any, ref) => (
-    <>
-      <List ref={ref} {...listProps} />
-      <BottomElement>{bottomBlock}</BottomElement>
-    </>
-  ));
-
   return (
     <>
       <DropdownLabels
@@ -97,7 +98,8 @@ const ConnectorServiceTypeControl: React.FC<{
       >
         <DropDown
           {...field}
-          listComponent={CustomList}
+          listComponent={ConnectorList}
+          listProps={{ bottomBlock }}
           error={!!fieldMeta.error && fieldMeta.touched}
           disabled={isEditMode && !allowChangeConnector}
           hasFilter
