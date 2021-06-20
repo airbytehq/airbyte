@@ -26,6 +26,7 @@ package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
@@ -42,14 +43,17 @@ public class S3FormatConfigs {
     S3Format formatType = S3Format.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     switch (formatType) {
+      case AVRO -> {
+        return new S3AvroFormatConfig(formatConfig);
+      }
       case CSV -> {
         return new S3CsvFormatConfig(formatConfig);
       }
-      case PARQUET -> {
-        return new S3ParquetFormatConfig(formatConfig);
-      }
       case JSONL -> {
         return new S3JsonlFormatConfig();
+      }
+      case PARQUET -> {
+        return new S3ParquetFormatConfig(formatConfig);
       }
       default -> {
         throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));

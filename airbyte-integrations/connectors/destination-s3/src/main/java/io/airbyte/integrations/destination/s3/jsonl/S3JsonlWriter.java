@@ -62,19 +62,17 @@ public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public void close(boolean hasFailed) {
+  protected void closeWhenSucceed() {
     printWriter.close();
     outputStream.close();
+    uploadManager.complete();
+  }
 
-    if (hasFailed) {
-      LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
-      uploadManager.abort();
-      LOGGER.warn("Upload of stream '{}' aborted.", stream.getName());
-    } else {
-      LOGGER.info("Uploading remaining data for stream '{}'.", stream.getName());
-      uploadManager.complete();
-      LOGGER.info("Upload completed for stream '{}'.", stream.getName());
-    }
+  @Override
+  protected void closeWhenFail() {
+    printWriter.close();
+    outputStream.close();
+    uploadManager.abort();
   }
 
 }
