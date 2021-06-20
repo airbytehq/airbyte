@@ -4,6 +4,7 @@ declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
     PAPERCUPS_STORYTIME?: string;
+    FULLSTORY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
     IS_DEMO?: string;
@@ -27,6 +28,9 @@ type Config = {
     baseUrl: string;
     enableStorytime: boolean;
   };
+  fullstory: {
+    org: string;
+  };
   apiUrl: string;
   healthCheckInterval: number;
   isDemo: boolean;
@@ -35,7 +39,7 @@ type Config = {
 
 const config: Config = {
   ui: {
-    technicalSupport: "https://docs.airbyte.io/faq/technical-support",
+    technicalSupport: "https://docs.airbyte.io/troubleshooting/on-deploying",
     helpLink: "https://airbyte.io/community",
     slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",
@@ -56,6 +60,9 @@ const config: Config = {
     accountId: "74560291-451e-4ceb-a802-56706ece528b",
     baseUrl: "https://app.papercups.io",
     enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
+  },
+  fullstory: {
+    org: window.FULLSTORY === "disabled" ? "" : "13AXQ4",
   },
   version: window.AIRBYTE_VERSION,
   apiUrl:

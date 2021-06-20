@@ -88,8 +88,7 @@ def test_destination_failure_over_limits(integration_type: str, column_count: in
 
 
 def test_empty_streams(setup_test_path):
-    with pytest.raises(EOFError):
-        run_test(DestinationType.POSTGRES, 0)
+    run_test(DestinationType.POSTGRES, 0)
 
 
 def test_stream_with_1_airbyte_column(setup_test_path):
