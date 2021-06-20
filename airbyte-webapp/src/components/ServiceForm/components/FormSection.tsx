@@ -10,7 +10,7 @@ import {
 } from "core/form/types";
 import { PropertySection } from "./PropertySection";
 import { useServiceForm } from "../serviceFormContext";
-import GroupControls from "./Property/GroupControls";
+import GroupControls from "components/GroupControls";
 import { naturalComparator } from "utils/objects";
 
 function OrderComparator(a: FormBlock, b: FormBlock): number {
@@ -65,7 +65,7 @@ const ConditionSection: React.FC<{
               text: dataItem,
               value: dataItem,
             }))}
-            onSelect={(selectedItem) =>
+            onChange={(selectedItem) =>
               setUiWidgetsInfo(formField.path, {
                 selectedItem: selectedItem.value,
               })
@@ -113,7 +113,7 @@ const ArraySection: React.FC<{
           name={path}
           render={(arrayHelpers) => (
             <ArrayOfObjectsEditor
-              isEditMode={!!flow}
+              editableItemIndex={flow?.id}
               onStartEdit={(index) =>
                 addUnfinishedFlow(path, {
                   id: index,

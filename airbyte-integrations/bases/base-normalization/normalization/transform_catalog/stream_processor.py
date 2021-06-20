@@ -205,7 +205,7 @@ class StreamProcessor(object):
         """
         # Check properties
         if not self.properties:
-            print(f"  Ignoring substream '{self.stream_name}' from {self.current_json_path()} because properties list is empty")
+            print(f"  Ignoring stream '{self.stream_name}' from {self.current_json_path()} because properties list is empty")
             return []
 
         column_names = self.extract_column_names()
@@ -510,6 +510,7 @@ from {{ from_table }}
 {{ sql_table_comment }}
         """
         )
+
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),

@@ -187,7 +187,7 @@ font-style: italic;
 <ul>
 <li>All endpoints are http POST methods.</li>
 <li>All endpoints accept data via <code>application/json</code> request bodies. The API does not accept any data via query params.</li>
-<li>The naming convention for endpoints is: localhost:8001/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. <code>localhost:8001/v1/connections/create</code>.</li>
+<li>The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. <code>localhost:8000/v1/connections/create</code>.</li>
 <li>For all <code>update</code> method, the whole object must be passed in, even the fields that did not change.</li>
 </ul>
 <p>Change Management:</p>
@@ -1924,12 +1924,14 @@ font-style: italic;
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "documentationUrl" : "documentationUrl",
+  "supportsNormalization" : true,
   "connectionSpecification" : {
     "user" : {
       "type" : "string"
     }
   },
   "supportedDestinationSyncModes" : [ null, null ],
+  "supportsDbt" : true,
   "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "jobInfo" : {
     "createdAt" : 0,
@@ -4036,37 +4038,35 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
-  "operations" : {
-    "operations" : [ {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
+  "operations" : [ {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "gitRepoBranch" : "gitRepoBranch",
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
       }
-    }, {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
+    }
+  }, {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "gitRepoBranch" : "gitRepoBranch",
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
       }
-    } ]
-  },
+    }
+  } ],
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -4187,37 +4187,35 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
-  "operations" : {
-    "operations" : [ {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
+  "operations" : [ {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "gitRepoBranch" : "gitRepoBranch",
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
       }
-    }, {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
+    }
+  }, {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "gitRepoBranch" : "gitRepoBranch",
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
       }
-    } ]
-  },
+    }
+  } ],
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -4342,37 +4340,35 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
-    "operations" : {
-      "operations" : [ {
-        "name" : "name",
-        "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-        "operatorConfiguration" : {
-          "normalization" : {
-            "option" : "basic"
-          },
-          "dbt" : {
-            "gitRepoBranch" : "gitRepoBranch",
-            "dockerImage" : "dockerImage",
-            "dbtArguments" : "dbtArguments",
-            "gitRepoUrl" : "gitRepoUrl"
-          }
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
         }
-      }, {
-        "name" : "name",
-        "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-        "operatorConfiguration" : {
-          "normalization" : {
-            "option" : "basic"
-          },
-          "dbt" : {
-            "gitRepoBranch" : "gitRepoBranch",
-            "dockerImage" : "dockerImage",
-            "dbtArguments" : "dbtArguments",
-            "gitRepoUrl" : "gitRepoUrl"
-          }
+      }
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
         }
-      } ]
-    },
+      }
+    } ],
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -4440,37 +4436,35 @@ font-style: italic;
       "units" : 0,
       "timeUnit" : "minutes"
     },
-    "operations" : {
-      "operations" : [ {
-        "name" : "name",
-        "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-        "operatorConfiguration" : {
-          "normalization" : {
-            "option" : "basic"
-          },
-          "dbt" : {
-            "gitRepoBranch" : "gitRepoBranch",
-            "dockerImage" : "dockerImage",
-            "dbtArguments" : "dbtArguments",
-            "gitRepoUrl" : "gitRepoUrl"
-          }
+    "operations" : [ {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
         }
-      }, {
-        "name" : "name",
-        "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-        "operatorConfiguration" : {
-          "normalization" : {
-            "option" : "basic"
-          },
-          "dbt" : {
-            "gitRepoBranch" : "gitRepoBranch",
-            "dockerImage" : "dockerImage",
-            "dbtArguments" : "dbtArguments",
-            "gitRepoUrl" : "gitRepoUrl"
-          }
+      }
+    }, {
+      "name" : "name",
+      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+      "operatorConfiguration" : {
+        "normalization" : {
+          "option" : "basic"
+        },
+        "dbt" : {
+          "gitRepoBranch" : "gitRepoBranch",
+          "dockerImage" : "dockerImage",
+          "dbtArguments" : "dbtArguments",
+          "gitRepoUrl" : "gitRepoUrl"
         }
-      } ]
-    },
+      }
+    } ],
     "name" : "name",
     "syncCatalog" : {
       "streams" : [ {
@@ -4719,37 +4713,35 @@ font-style: italic;
     "units" : 0,
     "timeUnit" : "minutes"
   },
-  "operations" : {
-    "operations" : [ {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
+  "operations" : [ {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "gitRepoBranch" : "gitRepoBranch",
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
       }
-    }, {
-      "name" : "name",
-      "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "operatorConfiguration" : {
-        "normalization" : {
-          "option" : "basic"
-        },
-        "dbt" : {
-          "gitRepoBranch" : "gitRepoBranch",
-          "dockerImage" : "dockerImage",
-          "dbtArguments" : "dbtArguments",
-          "gitRepoUrl" : "gitRepoUrl"
-        }
+    }
+  }, {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "gitRepoBranch" : "gitRepoBranch",
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
       }
-    } ]
-  },
+    }
+  } ],
   "name" : "name",
   "syncCatalog" : {
     "streams" : [ {
@@ -5489,6 +5481,8 @@ font-style: italic;
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">supportedDestinationSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">array[DestinationSyncMode]</a></span>  </div>
+<div class="param">supportsDbt (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">supportsNormalization (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5945,14 +5939,14 @@ font-style: italic;
 <div class="param">syncCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#AirbyteCatalog">AirbyteCatalog</a></span>  </div>
 <div class="param">schedule (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionSchedule">ConnectionSchedule</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
-<div class="param">withOperations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
+<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="WebBackendConnectionCreate_allOf"><code>WebBackendConnectionCreate_allOf</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">withOperations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
+      <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationCreate">array[OperationCreate]</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5972,7 +5966,7 @@ font-style: italic;
 <div class="param">operationIds (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
 <div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">SourceRead</a></span>  </div>
 <div class="param">destination </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">DestinationRead</a></span>  </div>
-<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationReadList">OperationReadList</a></span>  </div>
+<div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#OperationRead">array[OperationRead]</a></span>  </div>
 <div class="param">latestSyncJobCreatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> epoch time of the latest sync job. null if no sync job has taken place. format: int64</div>
 <div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
 <div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>

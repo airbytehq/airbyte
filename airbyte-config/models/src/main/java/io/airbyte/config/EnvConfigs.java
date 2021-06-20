@@ -25,9 +25,13 @@
 package io.airbyte.config;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.config.helpers.LogHelpers;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +57,7 @@ public class EnvConfigs implements Configs {
   private static final String MAXIMUM_WORKSPACE_RETENTION_DAYS = "MAXIMUM_WORKSPACE_RETENTION_DAYS";
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
+  private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
 
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
@@ -164,6 +169,33 @@ public class EnvConfigs implements Configs {
   @Override
   public String getTemporalHost() {
     return getEnvOrDefault(TEMPORAL_HOST, "airbyte-temporal:7233");
+  }
+
+  @Override
+  public Set<Integer> getTemporalWorkerPorts() {
+    return Arrays.stream(getEnvOrDefault(TEMPORAL_WORKER_PORTS, "").split(","))
+        .map(Integer::valueOf)
+        .collect(Collectors.toSet());
+  }
+
+  @Override
+  public String getS3LogBucket() {
+    return getEnsureEnv(LogHelpers.S3_LOG_BUCKET);
+  }
+
+  @Override
+  public String getS3LogBucketRegion() {
+    return getEnsureEnv(LogHelpers.S3_LOG_BUCKET_REGION);
+  }
+
+  @Override
+  public String getAwsAccessKey() {
+    return getEnsureEnv(LogHelpers.AWS_ACCESS_KEY_ID);
+  }
+
+  @Override
+  public String getAwsSecretAccessKey() {
+    return getEnsureEnv(LogHelpers.AWS_SECRET_ACCESS_KEY);
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {

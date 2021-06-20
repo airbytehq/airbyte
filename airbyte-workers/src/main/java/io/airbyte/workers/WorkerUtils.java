@@ -26,13 +26,10 @@ package io.airbyte.workers;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.config.StandardTapConfig;
-import io.airbyte.config.StandardTargetConfig;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.IntegrationLauncher;
-import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.HeartbeatMonitor;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -41,7 +38,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 public class WorkerUtils {
 
@@ -113,7 +109,7 @@ public class WorkerUtils {
       try {
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
-        LOGGER.error("Exception during grace period for process to finish", e);
+        LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
       }
     }
 
@@ -135,10 +131,6 @@ public class WorkerUtils {
     if (process.isAlive()) {
       LOGGER.error("Couldn't kill the process. You might have a zombie ({})", process.info().commandLine());
     }
-  }
-
-  public static void closeProcess(Process process) {
-    closeProcess(process, 1, TimeUnit.MINUTES);
   }
 
   public static void closeProcess(Process process, int duration, TimeUnit timeUnit) {
@@ -169,22 +161,22 @@ public class WorkerUtils {
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTapConfig. StandardTapConfig is a subset of
+   * Translates a StandardSyncInput into a WorkerSourceConfig. WorkerSourceConfig is a subset of
    * StandardSyncInput.
    */
-  public static StandardTapConfig syncToTapConfig(StandardSyncInput sync) {
-    return new StandardTapConfig()
+  public static WorkerSourceConfig syncToWorkerSourceConfig(StandardSyncInput sync) {
+    return new WorkerSourceConfig()
         .withSourceConnectionConfiguration(sync.getSourceConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
   }
 
   /**
-   * Translates a StandardSyncInput into a StandardTargetConfig. StandardTargetConfig is a subset of
-   * StandardSyncInput.
+   * Translates a StandardSyncInput into a WorkerDestinationConfig. WorkerDestinationConfig is a
+   * subset of StandardSyncInput.
    */
-  public static StandardTargetConfig syncToTargetConfig(StandardSyncInput sync) {
-    return new StandardTargetConfig()
+  public static WorkerDestinationConfig syncToWorkerDestinationConfig(StandardSyncInput sync) {
+    return new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
@@ -192,16 +184,12 @@ public class WorkerUtils {
 
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,
   // once we are fully on temporal.
-  public static Path getJobRoot(Path workspaceRoot, IntegrationLauncherConfig launcherConfig) {
-    return getJobRoot(workspaceRoot, launcherConfig.getJobId(), Math.toIntExact(launcherConfig.getAttemptId()));
-  }
-
   public static Path getJobRoot(Path workspaceRoot, JobRunConfig jobRunConfig) {
     return getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
   }
 
   public static Path getLogPath(Path jobRoot) {
-    return jobRoot.resolve(WorkerConstants.LOG_FILENAME);
+    return jobRoot.resolve(LogHelpers.LOG_FILENAME);
   }
 
   public static Path getJobRoot(Path workspaceRoot, String jobId, long attemptId) {
@@ -212,18 +200,6 @@ public class WorkerUtils {
     return workspaceRoot
         .resolve(String.valueOf(jobId))
         .resolve(String.valueOf(attemptId));
-  }
-
-  public static void setJobMdc(Path jobRoot, String jobId) {
-    MDC.put("job_id", jobId);
-    MDC.put("job_root", jobRoot.toString());
-    MDC.put("job_log_filename", WorkerConstants.LOG_FILENAME);
-  }
-
-  // todo (cgardens) can we get this down to just passing the process factory and image and not job id
-  // and attempt
-  public static IntegrationLauncher getIntegrationLauncher(IntegrationLauncherConfig config, ProcessFactory processFactory) {
-    return new AirbyteIntegrationLauncher(config.getJobId(), Math.toIntExact(config.getAttemptId()), config.getDockerImage(), processFactory);
   }
 
 }

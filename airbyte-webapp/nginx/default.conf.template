@@ -18,6 +18,7 @@ server {
                 '</head><script language="javascript"\>
                 window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
                 window.PAPERCUPS_STORYTIME = "$PAPERCUPS_STORYTIME";
+                window.FULLSTORY = "$FULLSTORY";
                 window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
                 window.API_URL = "$API_URL";
                 window.IS_DEMO = "$IS_DEMO";
@@ -35,6 +36,7 @@ server {
     }
 
     location /api/ {
+        client_max_body_size 200M;
         proxy_pass http://api-server/api/;
     }
 }

@@ -29,9 +29,9 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
 import java.io.IOException;
@@ -42,7 +42,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +63,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final Path jobRoot;
   private final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier;
   private final Supplier<INPUT> inputSupplier;
-  private final String jobId;
-  private final BiConsumer<Path, String> mdcSetter;
+  private final Consumer<Path> mdcSetter;
   private final CheckedConsumer<Path, IOException> jobRootDirCreator;
   private final CancellationHandler cancellationHandler;
   private final Supplier<String> workflowIdProvider;
@@ -78,7 +78,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         jobRunConfig,
         workerSupplier,
         inputSupplier,
-        WorkerUtils::setJobMdc,
+        LogHelpers::setJobMdc,
         Files::createDirectories,
         cancellationHandler,
         () -> Activity.getExecutionContext().getInfo().getWorkflowId());
@@ -89,14 +89,13 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            JobRunConfig jobRunConfig,
                            CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                            Supplier<INPUT> inputSupplier,
-                           BiConsumer<Path, String> mdcSetter,
+                           Consumer<Path> mdcSetter,
                            CheckedConsumer<Path, IOException> jobRootDirCreator,
                            CancellationHandler cancellationHandler,
                            Supplier<String> workflowIdProvider) {
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
     this.inputSupplier = inputSupplier;
-    this.jobId = jobRunConfig.getJobId();
     this.mdcSetter = mdcSetter;
     this.jobRootDirCreator = jobRootDirCreator;
     this.cancellationHandler = cancellationHandler;
@@ -106,7 +105,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   @Override
   public OUTPUT get() {
     try {
-      mdcSetter.accept(jobRoot, jobId);
+      mdcSetter.accept(jobRoot);
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", new EnvConfigs().getAirbyteVersionOrWarning());
       jobRootDirCreator.accept(jobRoot);
@@ -141,7 +140,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
   private Thread getWorkerThread(Worker<INPUT, OUTPUT> worker, CompletableFuture<OUTPUT> outputFuture) {
     return new Thread(() -> {
-      mdcSetter.accept(jobRoot, jobId);
+      mdcSetter.accept(jobRoot);
 
       try {
         final OUTPUT output = worker.run(inputSupplier.get(), jobRoot);
@@ -153,24 +152,46 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     });
   }
 
+  /**
+   * Cancel is implementation in a slightly convoluted manner due to Temporal's semantics. Cancel
+   * requests are routed to the Temporal Scheduler via the cancelJob function in
+   * SchedulerHandler.java. This manifests as a {@link io.temporal.client.ActivityCompletionException}
+   * when the {@link CancellationHandler} heartbeats to the Temporal Scheduler.
+   *
+   * The callback defined in this function is executed after the above exception is caught, and
+   * defines the clean up operations executed as part of cancel.
+   *
+   * See {@link CancellationHandler} for more info.
+   */
   private Runnable getCancellationChecker(Worker<INPUT, OUTPUT> worker, Thread workerThread, CompletableFuture<OUTPUT> outputFuture) {
+    var cancelled = new AtomicBoolean(false);
     return () -> {
       try {
-        mdcSetter.accept(jobRoot, jobId);
+        mdcSetter.accept(jobRoot);
 
         final Runnable onCancellationCallback = () -> {
+          if (cancelled.get()) {
+            // Since this is a separate thread, race condition between the executor service shutting down and
+            // this thread's next invocation can happen. This
+            // check guarantees cancel operations are only executed once.
+            return;
+          }
+
           LOGGER.info("Running sync worker cancellation...");
+          cancelled.set(true);
           worker.cancel();
 
           LOGGER.info("Interrupting worker thread...");
           workerThread.interrupt();
 
           LOGGER.info("Cancelling completable future...");
+          // This throws a CancellationException as part of the cancelling and is the exception seen in logs
+          // when cancelling the job.
           outputFuture.cancel(false);
         };
 
         cancellationHandler.checkAndHandleCancellation(onCancellationCallback);
-      } catch (WorkerException e) {
+      } catch (Exception e) {
         LOGGER.error("Cancellation checker exception", e);
       }
     };

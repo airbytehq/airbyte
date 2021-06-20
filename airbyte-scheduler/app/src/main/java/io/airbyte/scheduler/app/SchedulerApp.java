@@ -46,18 +46,26 @@ import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.process.WorkerHeartbeatServer;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalPool;
 import io.airbyte.workers.temporal.TemporalUtils;
+import io.fabric8.kubernetes.client.DefaultKubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.util.Config;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +88,7 @@ public class SchedulerApp {
   private static final Duration SCHEDULING_DELAY = Duration.ofSeconds(5);
   private static final Duration CLEANING_DELAY = Duration.ofHours(2);
   private static final ThreadFactory THREAD_FACTORY = new ThreadFactoryBuilder().setNameFormat("worker-%d").build();
+  private static final int KUBE_HEARTBEAT_PORT = 9000;
 
   private final Path workspaceRoot;
   private final ProcessFactory processFactory;
@@ -159,9 +168,14 @@ public class SchedulerApp {
     }
   }
 
-  private static ProcessFactory getProcessBuilderFactory(Configs configs) {
+  private static ProcessFactory getProcessBuilderFactory(Configs configs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      return new KubeProcessFactory(configs.getWorkspaceRoot());
+      final ApiClient officialClient = Config.defaultClient();
+      final KubernetesClient fabricClient = new DefaultKubernetesClient();
+      final BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(configs.getTemporalWorkerPorts());
+      final String localIp = InetAddress.getLocalHost().getHostAddress();
+      final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
+      return new KubeProcessFactory("default", officialClient, fabricClient, kubeHeartbeatUrl, workerPorts);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
@@ -187,7 +201,7 @@ public class SchedulerApp {
     LOGGER.info("temporalHost = " + temporalHost);
 
     LOGGER.info("Creating DB connection pool...");
-    final Database database = Databases.createPostgresDatabase(
+    final Database database = Databases.createPostgresDatabaseWithRetry(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl());
@@ -202,6 +216,19 @@ public class SchedulerApp {
         workspaceRoot,
         jobPersistence);
     final JobNotifier jobNotifier = new JobNotifier(configs.getWebappUrl(), configRepository);
+
+    if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
+      Map<String, String> mdc = MDC.getCopyOfContextMap();
+      Executors.newSingleThreadExecutor().submit(
+          () -> {
+            MDC.setContextMap(mdc);
+            try {
+              new WorkerHeartbeatServer(KUBE_HEARTBEAT_PORT).start();
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          });
+    }
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),

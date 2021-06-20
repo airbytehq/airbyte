@@ -6,7 +6,7 @@ The Shopify source supports both Full Refresh and Incremental syncs. You can cho
 
 This source can sync data for the [Shopify API](https://help.shopify.com/en/api/reference).
 
-This Source Connector is based on a [Singer Tap](https://github.com/singer-io/tap-shopify).
+This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/contributing-to-airbyte/python).
 
 ### Output schema
 
@@ -52,3 +52,11 @@ Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-ap
 5. The password under the `Admin API` section is what you'll use as the `api_password` for the integration.
 6. You're ready to set up Shopify in Airbyte!
 
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.5   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.1.4   | 2021-06-08 | [3926](https://github.com/airbytehq/airbyte/pull/3926) | New attributes to Orders schema |
+| 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787) | Add Native Shopify Source Connector |
