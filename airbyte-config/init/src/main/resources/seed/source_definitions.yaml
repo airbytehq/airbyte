@@ -305,4 +305,10 @@
   dockerRepository: airbyte/source-recharge
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-recharge
+- sourceDefinitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
+  name: US Census
+  dockerRepository: airbyte/source-us-census
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-us-census
+  icon: united-states-flag.svg
 # SOURCE DEFINITION BY CODE GENERATOR
