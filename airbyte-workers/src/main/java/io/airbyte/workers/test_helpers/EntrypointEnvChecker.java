@@ -52,14 +52,14 @@ public class EntrypointEnvChecker {
         imageName,
         false,
         Collections.emptyMap(),
-        "echo \"AIRBYTE_ENTRYPOINT=$AIRBYTE_ENTRYPOINT\"");
+        "printenv");
 
-    BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+    BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
     String outputLine = null;
 
     String line = null;
-    while (((line = stdInput.readLine()) != null) && outputLine == null) {
+    while (((line = stdout.readLine()) != null) && outputLine == null) {
       if (line.contains("AIRBYTE_ENTRYPOINT")) {
         outputLine = line;
       }
