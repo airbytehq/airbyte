@@ -113,7 +113,7 @@ Therefore, Airbyte BigQuery destination will convert any invalid characters into
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
 | 0.3.4 | 2021-06-07 | [#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option |
-Added option to choose dataset location
+| 0.3.6 | 2021-06-18 | [#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional. |
 
 ### destination-bigquery-denormalized
 
