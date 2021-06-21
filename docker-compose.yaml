@@ -120,10 +120,10 @@ services:
       - 7233:7233
     environment:
       - DB=postgresql
-      - DB_PORT=5432
+      - DB_PORT=${DATABASE_PORT}
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PWD=${DATABASE_PASSWORD}
-      - POSTGRES_SEEDS=db
+      - POSTGRES_SEEDS=${DATABASE_HOST}
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
     volumes:
       - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
