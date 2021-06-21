@@ -165,8 +165,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         """Include state filter"""
         params = super().request_params(**kwargs)
-        if stream_state:
-            params = deep_merge(params, self._state_filter(stream_state=stream_state))
+        params = deep_merge(params, self._state_filter(stream_state=stream_state or {}))
         return params
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -296,8 +295,14 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         result = self.wait_for_job(stream_slice["job"])
+        # because we query `lookback_window` days before actual cursor we might get records older then cursor
+        stream_state = stream_state or {}
+        state_value = stream_state.get(self.cursor_field)
+        min_cursor = self._start_date if not state_value else pendulum.parse(state_value)
+
         for obj in result.get_result():
-            yield obj.export_all_data()
+            if pendulum.parse(obj[self.cursor_field]) >= min_cursor:
+                yield obj.export_all_data()
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
