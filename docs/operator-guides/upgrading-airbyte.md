@@ -87,6 +87,33 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
 
 This step will throw an exception if the data you are trying to upload does not match the version of Airbyte that is running.
 
+## Upgrading \(K8s\)
+
+This process is similar to the Docker upgrade process with several changes to account for the Kubernetes resources.
+
+1. Follow **Step 3** in the [Docker upgrade process](#Upgrading-\(Docker\)) to export your current configurations as an archive.
+
+2. Follow **Step 4**. in the [Docker upgrade process](#Upgrading-\(Docker\)) process to run the migration on your archive.
+
+3. Turn off Airbyte fully and **\(see warning\)** delete the existing Airbyte Kubernetes volumes.
+
+   _WARNING: Make sure you have already exported your data \(step 1\). This command is going to delete your data in Kubernetes, you may lose your airbyte configurations!_
+
+   This is where all airbyte configurations are saved. Those configuration files need to be upgraded and restored with the proper version in the following steps.
+
+   ```bash
+   # Careful, this is deleting data!
+   kubectl delete -k kube/overlays/stable
+   ```
+4. Follow **Step 6** in the [Docker upgrade process](#Upgrading-\(Docker\)) to check out the most recent version of Airbyte. Although it is possible to
+   migrate by changing the `.env` file in the kube overlay directory, this is not recommended as it does not capture any changes to the Kubernetes manifests.
+
+5. Bring Airbyte back up.
+   ```bash
+   kubectl apply -k kube/overlays/stable
+   ```
+6. Follow **Step 8** in the [Docker upgrade process](#Upgrading-\(Docker\)) to upload your migrated Archive and restore your configuration and data.
+
 ## API Instruction
 
 If you prefer to import and export your data via API instead the UI, follow these instructions:
@@ -108,7 +135,3 @@ Here is an example of what this request might look like assuming that the migrat
 ```bash
 curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deployment/import --data-binary @/tmp/airbyte_archive_migrated.tar.gz
 ```
-
-## Upgrading \(K8s\)
-
-_coming soon_

@@ -107,6 +107,7 @@
 * [Contributing to Airbyte](contributing-to-airbyte/README.md)
   * [Code of Conduct](contributing-to-airbyte/code-of-conduct.md)
   * [Developing Locally](contributing-to-airbyte/developing-locally.md)
+  * [Developing on Kubernetes](contributing-to-airbyte/developing-on-kubernetes.md)
   * [Connector Development Kit \(Python\)](contributing-to-airbyte/python/README.md)
     * [Concepts](contributing-to-airbyte/python/concepts/README.md)
       * [Basic Concepts](contributing-to-airbyte/python/concepts/basic-concepts.md)
