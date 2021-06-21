@@ -8,7 +8,7 @@
   * [Set up a Connection](quickstart/set-up-a-connection.md)
   * [Resetting Your Data](quickstart/reset.md)
 * [Operator Guides](operator-guides/README.md)
-  * [Configuring Airbyte database](operator-guides/configuring-airbyte-db.md)
+  * [Configuring the Airbyte Database](operator-guides/configuring-airbyte-db.md)
   * [Browsing Output Logs](operator-guides/browsing-output-logs.md)
   * [Using the Airflow Airbyte Operator](operator-guides/using-the-airflow-airbyte-operator.md)
   * [Windows - Browsing Local File Output](operator-guides/locating-files-local-destination.md)
