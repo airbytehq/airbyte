@@ -1,8 +1,8 @@
 # Configuring the Airbyte Internal Database
 
 Airbyte uses different objects to store internal state and metadata. This data is stored and manipulated by the various Airbyte components, but you have the ability to manage the deployment of this database in the following two ways:
-- Using the default Postgres database that Airbyte spins-up as part of the Docker service described the `docker-compose.yml` file: `airbyte/db`.
-- Through a dedicated custom Postgres instance.
+- Using the default Postgres database that Airbyte spins-up as part of the Docker service described in the `docker-compose.yml` file: `airbyte/db`.
+- Through a dedicated custom Postgres instance (the `airbyte/db` is in this case unused, and can therefore be removed or de-activated from the `docker-compose.yml` file).
 
 The various entities persisted in this internal database can be categorized as:
 
@@ -16,7 +16,7 @@ If you need to interact with it, for example, to make back-ups or perform some c
 
 ## Connecting to an External Postgres database
 
-If we want to use a Postgres instance that is not automatically started by Airbyte, we can run the following command:
+Let's walk through what is required to use a Postgres instance that is not managed by Airbyte. First, for the sake of the tutorial, we will run a new instance of Postgres in its own docker container with the command below. If you already have Postgres running elsewhere, you can skip this step and use the credentials for that in future steps.
 ```bash
 docker run --rm --name airbyte-postgres -e POSTGRES_PASSWORD=password -p 3000:5432 -d postgres
 ```
@@ -58,7 +58,7 @@ Now, when you run `docker-compose up`, the Airbyte server and scheduler should c
 
 When updating Airbyte as described in [the upgrade process docs](upgrading-airbyte.md), scripts are also published in order to handle necessary migrations. These are introduced whenever we make changes to the data model.
 
-Those scripts assume that they are being applied on top of an empty database, but with tables already created with the correct schema. They will re-populate and import whatever was saved in the upgraded archive back into the database.
+Those migration scripts work primarily with an archive file to be updated. Once the archive is ready, the scripts assume that they are being applied on top of an empty database afterward, but with tables already created with the correct schema. They will re-populate and re-import whatever was saved in the upgraded archive back into the database.
 
 Thus, if you deploy Airbyte using an external database, you might need to flush and perform updates to the table schemas by deleting them and re-initializing them as described previously (using the latest `schema.sql` script). This step is implicitly done on the default Docker Postgres database when running `docker-compose down -v` or when deleting Docker volumes).
 
