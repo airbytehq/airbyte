@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
@@ -164,17 +163,12 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void atomicConfigImport(Map<ConfigSchema, Stream<T>> configs,
-                                     boolean dryRun,
-                                     Consumer<Path> prePopulate)
+  public <T> void atomicConfigImport(Map<ConfigSchema, Stream<T>> configs, boolean dryRun)
       throws IOException {
     // create a new folder
     String importDirectory = CONFIG_DIR + UUID.randomUUID().toString();
     Path rootOverride = storageRoot.resolve(importDirectory);
     Files.createDirectories(rootOverride);
-
-    // pre populate new folder with data
-    prePopulate.accept(rootOverride);
 
     // write everything
     for (Map.Entry<ConfigSchema, Stream<T>> config : configs.entrySet()) {

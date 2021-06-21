@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -152,14 +153,6 @@ public class ConfigDumpImport {
     return result;
   }
 
-  public void copySeed(Path targetPath) {
-    try {
-      FileUtils.copyDirectory(latestSeed.toFile(), targetPath.toFile());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   private void checkImport(Path tempFolder) throws IOException, JsonValidationException {
     final Path versionFile = tempFolder.resolve(VERSION_FILE_NAME);
     final String importVersion = Files.readString(versionFile, Charset.defaultCharset())
@@ -191,15 +184,51 @@ public class ConfigDumpImport {
     List<String> directories = listDirectories(sourceRoot);
     Collections.sort(directories);
     LinkedHashMap<ConfigSchema, Stream<T>> data = new LinkedHashMap<>();
+    Map<ConfigSchema, Map<String, T>> latestSeeds = latestSeeds();
     for (String directory : directories) {
       ConfigSchema configSchema = ConfigSchema.valueOf(directory.replace(".yaml", ""));
       Stream<T> configs = readConfigsFromArchive(sourceRoot, configSchema);
-      configs = streamWithAdditionalOperation(sourceDefinitionsToMigrate, destinationDefinitionsToMigrate,
-          sourceProcessed,
-          destinationProcessed, configSchema, configs);
+      configs = streamWithAdditionalOperation(sourceDefinitionsToMigrate, destinationDefinitionsToMigrate, sourceProcessed, destinationProcessed,
+          configSchema, configs, latestSeeds);
       data.put(configSchema, configs);
     }
-    configRepository.atomicImportOfConfigs(data, dryRun, dryRun ? path -> {} : (this::copySeed));
+    configRepository.atomicImportOfConfigs(data, dryRun);
+  }
+
+  private <T> Map<ConfigSchema, Map<String, T>> latestSeeds() throws IOException {
+    List<ConfigSchema> configSchemas = Files.list(latestSeed).map(c -> ConfigSchema.valueOf(c.getFileName().toString())).collect(Collectors.toList());
+    Map<ConfigSchema, Map<String, T>> allData = new HashMap<>();
+    for (ConfigSchema configSchema : configSchemas) {
+      Map<String, T> stringJsonNodeMap = readLatestSeed(configSchema);
+      allData.put(configSchema, stringJsonNodeMap);
+    }
+    return allData;
+  }
+
+  private <T> Map<String, T> readLatestSeed(ConfigSchema configSchema) throws IOException {
+    try (Stream<Path> files = Files.list(latestSeed.resolve(configSchema.toString()))) {
+      final List<String> ids = files
+          .filter(p -> !p.endsWith(".json"))
+          .map(p -> p.getFileName().toString().replace(".json", ""))
+          .collect(Collectors.toList());
+
+      final Map<String, T> configData = new HashMap<>();
+      for (String id : ids) {
+        try {
+          final Path configPath = latestSeed.resolve(configSchema.toString()).resolve(String.format("%s.json", id));
+          if (!Files.exists(configPath)) {
+            throw new RuntimeException("Config NotFound");
+          }
+
+          T config = Jsons.deserialize(Files.readString(configPath), configSchema.getClassName());
+          configData.put(id, config);
+        } catch (RuntimeException e) {
+          throw new IOException(e);
+        }
+      }
+
+      return configData;
+    }
   }
 
   private <T> Stream<T> streamWithAdditionalOperation(List<String> sourceDefinitionsToMigrate,
@@ -207,7 +236,8 @@ public class ConfigDumpImport {
                                                       boolean[] sourceProcessed,
                                                       boolean[] destinationProcessed,
                                                       ConfigSchema configSchema,
-                                                      Stream<T> configs) {
+                                                      Stream<T> configs,
+                                                      Map<ConfigSchema, Map<String, T>> latestSeeds) {
     if (configSchema == ConfigSchema.SOURCE_CONNECTION) {
       sourceProcessed[0] = true;
       configs = configs.peek(config -> sourceDefinitionsToMigrate.add(((SourceConnection) config).getSourceDefinitionId().toString()));
@@ -215,17 +245,29 @@ public class ConfigDumpImport {
       destinationProcessed[0] = true;
       configs = configs.peek(config -> destinationDefinitionsToMigrate.add(((DestinationConnection) config).getDestinationDefinitionId().toString()));
     } else if (configSchema == ConfigSchema.STANDARD_SOURCE_DEFINITION) {
-      if (!sourceProcessed[0]) {
-        throw new RuntimeException("Trying to process source definition without processing sources");
-      }
-      configs = configs.filter(sourceDefinition -> sourceDefinitionsToMigrate.contains(configSchema.getId(sourceDefinition)));
+      configs = getDefinitionStream(sourceDefinitionsToMigrate, sourceProcessed[0], configSchema, configs, latestSeeds);
     } else if (configSchema == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      if (!destinationProcessed[0]) {
-        throw new RuntimeException("Trying to process destination definition without processing destinations");
-      }
-      configs = configs.filter(destinationDefinition -> destinationDefinitionsToMigrate.contains(configSchema.getId(destinationDefinition)));
+      configs = getDefinitionStream(destinationDefinitionsToMigrate, destinationProcessed[0], configSchema, configs, latestSeeds);
     }
     return configs;
+  }
+
+  private <T> Stream<T> getDefinitionStream(List<String> definitionsToMigrate,
+                                            boolean definitionsPopulated,
+                                            ConfigSchema configSchema,
+                                            Stream<T> configs,
+                                            Map<ConfigSchema, Map<String, T>> latestSeeds) {
+    if (!definitionsPopulated) {
+      throw new RuntimeException("Trying to process " + configSchema + " without populating the definitions to migrate");
+    }
+    return configs.map(definition -> {
+      String id = configSchema.getId(definition);
+      if (definitionsToMigrate.contains(id)) {
+        return definition;
+      } else {
+        return latestSeeds.get(configSchema).get(id);
+      }
+    }).filter(definition -> !Objects.isNull(definition));
   }
 
   private <T> Stream<T> readConfigsFromArchive(final Path storageRoot, final ConfigSchema schemaType)
