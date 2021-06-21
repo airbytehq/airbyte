@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2021 Airbyte
+# Copyright (c) 2020 Airbyte
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,6 @@ class PaypalTransactionStream(HttpStream, ABC):
             end_date = isoparse(end_date_str) if end_date_str else None
             is_sandbox = config["is_sandbox"]
 
-        self.is_sandbox = is_sandbox
         self.start_date = start_date
         self._end_date = end_date
         self.is_sandbox = is_sandbox
@@ -253,8 +252,15 @@ class Transactions(PaypalTransactionStream):
 
         # Do not run any requests if start_date is less than 36 hrs before current time, otherwise API throws an error:
         #   'message': 'Data for the given start date is not available.'
-        if start_date > start_date_slice or start_date > end_date:
+        if start_date > start_date_slice:
+            # Options 1 - sync just should be stopped since start_date is invalid and will cause API error,
+            #             but incremental test fails with message: "The sync should produce at least one STATE message"
             return []
+            # Option 2 - just re-sync the latest possible period, it fixes test failure mentioned above but
+            #            it leaves new state message with unexpected date
+            #            it duplicates the most recent records
+            #            later it could cause a lack of data between the last scan and previous unexpected date
+            # start_date = start_date_slice
 
         dates = []
         while start_date < start_date_slice:
