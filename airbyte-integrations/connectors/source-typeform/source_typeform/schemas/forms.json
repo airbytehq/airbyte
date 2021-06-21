@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "last_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "self": {
+      "type": ["null", "object"],
+      "properties": {
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "theme": {
+      "type": ["null", "object"],
+      "properties": {
+        "href": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "_links": {
+      "type": ["null", "object"],
+      "properties": {
+        "display": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}
