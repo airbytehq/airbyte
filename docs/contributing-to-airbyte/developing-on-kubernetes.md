@@ -6,7 +6,6 @@ Make sure to read [our docs for developing locally](./developing-locally.md) fir
 
 ![Airbyte on Kubernetes](../.gitbook/assets/contributing-to-airbyte-k8s-architecture.png)
 
-
 ## Iteration Cycle (Locally)
 
 If you're developing locally using Minikube/Docker Desktop/Kind, you can iterate with the following series of commands:
