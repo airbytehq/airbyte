@@ -52,10 +52,11 @@ import io.airbyte.workers.temporal.TemporalPool;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.util.Config;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -167,13 +168,14 @@ public class SchedulerApp {
     }
   }
 
-  private static ProcessFactory getProcessBuilderFactory(Configs configs) throws UnknownHostException {
+  private static ProcessFactory getProcessBuilderFactory(Configs configs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
-      final KubernetesClient kubeClient = new DefaultKubernetesClient();
+      final ApiClient officialClient = Config.defaultClient();
+      final KubernetesClient fabricClient = new DefaultKubernetesClient();
       final BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(configs.getTemporalWorkerPorts());
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
-      return new KubeProcessFactory("default", kubeClient, kubeHeartbeatUrl, workerPorts);
+      return new KubeProcessFactory("default", officialClient, fabricClient, kubeHeartbeatUrl, workerPorts);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),
