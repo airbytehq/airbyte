@@ -23,7 +23,7 @@ const ButtonContainer = styled.div`
   justify-content: space-between;
 `;
 
-const BottomBlock: React.FC<IProps> = ({
+const CreateControls: React.FC<IProps> = ({
   isSubmitting,
   formType,
   hasSuccess,
@@ -56,4 +56,4 @@ const BottomBlock: React.FC<IProps> = ({
   );
 };
 
-export default BottomBlock;
+export default CreateControls;
