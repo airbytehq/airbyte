@@ -4,7 +4,7 @@ Make sure to read [our docs for developing locally](./developing-locally.md) fir
 
 ## Architecture
 
-TODO
+![Airbyte on Kubernetes](../.gitbook/assets/contributing-to-airbyte-k8s-architecture.png)
 
 ## Iteration Cycle (Locally)
 
