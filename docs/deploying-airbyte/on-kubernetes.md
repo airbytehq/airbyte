@@ -138,39 +138,37 @@ We do not currently offer Helm charts. If you are interested in this functionali
 ## Operator Guide
 
 ### View API Server Logs
-`kubectl logs deployments/airbyte-server`
+`kubectl logs deployments/airbyte-server` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI. 
 
 ### View Scheduler or Job Logs
-`kubectl logs deployments/airbyte-scheduler`
+`kubectl logs deployments/airbyte-scheduler` to view real-time logs. Logs can also be downloaded as a text file via the Admin tab in the UI.
 
 ### Connector Container Logs
 Although all logs can be accessed by viewing the scheduler logs, connector container logs may be easier to understand when isolated by accessing from
 the Airbyte UI or the [Airbyte API](../api-documentation.md) for a specific job attempt. Connector pods launched by Airbyte will not relay logs directly
 to Kubernetes logging. You must access these logs through Airbyte.
 
-### Resizing Volumes
+### Upgrading Airbyte Kube
+See [Upgrading K8s](../operator-guides/upgrading-airbyte.md).
 
+### Resizing Volumes
 To resize a volume, change the `.spec.resources.requests.storage` value. After re-applying, the mount should be extended if that operation is supported
 for your type of mount. For a production instance, it's useful to track the usage of volumes to ensure they don't run out of space.
 
 ### Copy Files To/From Volumes
-
 See the documentation for [`kubectl cp`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#cp).
 
 ### Listing Files
-
 ```bash
 kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx ls /tmp/workspace/8
 ```
 
 ### Reading Files
-
 ```bash
 kubectl exec -it airbyte-scheduler-6b5747df5c-bj4fx cat /tmp/workspace/8/0/logs.log
 ```
 
 ## Troubleshooting
-
 If you run into any problems operating Airbyte on Kubernetes, please reach out on the `#issues` channel on our [Slack](https://slack.airbyte.io/) or
 [create an issue on GitHub](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fbug&template=bug-report.md&title=).
 
