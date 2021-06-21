@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2020 Airbyte
+# Copyright (c) 2021 Airbyte
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,6 @@
 
 from abc import ABC
 from datetime import datetime, timedelta
-from pprint import pprint
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -41,19 +40,6 @@ def get_endpoint(is_sandbox: bool = False) -> str:
     else:
         endpoint = "https://api-m.paypal.com"
     return endpoint
-
-
-def get_end_date(config: Mapping[str, Any]) -> datetime:
-    end_date = None
-    now = datetime.now().replace(microsecond=0).astimezone()
-    if "end_date" in config and config["end_date"]:
-        end_date = isoparse(config["end_date"])
-
-    # If date is in future then set it to now:
-    if not end_date or end_date > now:
-        end_date = now
-
-    return end_date
 
 
 class PaypalTransactionStream(HttpStream, ABC):
@@ -266,8 +252,7 @@ class Transactions(PaypalTransactionStream):
 
         # Do not run any requests if start_date is less than 36 hrs before current time, otherwise API throws an error:
         #   'message': 'Data for the given start date is not available.'
-        if start_date > start_date_slice or \
-           start_date > end_date:
+        if start_date > start_date_slice or start_date > end_date:
             return []
 
         dates = []
@@ -278,7 +263,7 @@ class Transactions(PaypalTransactionStream):
 
         # add last (the oldest) slice period
         dates.append({"start_date": start_date.isoformat(), "end_date": end_date_slice.isoformat()})
-        pprint(dates)
+
         return dates[::-1]  # inverse stream slices to start read requests from the oldest slices
 
 
@@ -333,7 +318,7 @@ class Balances(PaypalTransactionStream):
 
         # Add last (the newest) slice with the current time of the sync
         dates.append({"start_date": self.end_date.isoformat()})
-        pprint(dates)
+
         return dates
 
 
