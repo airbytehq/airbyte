@@ -35,6 +35,8 @@ import io.airbyte.commons.io.Archives;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -56,7 +58,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
@@ -124,6 +128,38 @@ public class RunMigrationTest {
     assertWorkspace(configRepository);
     assertSources(configRepository);
     assertDestinations(configRepository);
+    assertSourceDefinitions(configRepository);
+    assertDestinationDefinitions(configRepository);
+  }
+
+  private void assertSourceDefinitions(ConfigRepository configRepository) throws JsonValidationException, IOException {
+    Map<String, StandardSourceDefinition> sourceDefinitions =
+        configRepository.listStandardSources().stream().collect(Collectors.toMap(c -> c.getSourceDefinitionId().toString(), c -> c));
+    assertTrue(sourceDefinitions.size() >= 59);
+    StandardSourceDefinition mysqlDefinition = sourceDefinitions.get("435bb9a5-7887-4809-aa58-28c27df0d7ad");
+    assertEquals("0.2.0", mysqlDefinition.getDockerImageTag());
+    assertEquals("MySQL", mysqlDefinition.getName());
+
+    StandardSourceDefinition postgresDefinition = sourceDefinitions.get("decd338e-5647-4c0b-adf4-da0e75f5a750");
+    assertTrue(postgresDefinition.getDockerImageTag().compareTo("0.3.4") >= 0);
+    assertTrue(postgresDefinition.getName().contains("Postgres"));
+  }
+
+  private void assertDestinationDefinitions(ConfigRepository configRepository) throws JsonValidationException, IOException {
+    Map<String, StandardDestinationDefinition> sourceDefinitions = configRepository.listStandardDestinationDefinitions().stream()
+        .collect(Collectors.toMap(c -> c.getDestinationDefinitionId().toString(), c -> c));
+    assertTrue(sourceDefinitions.size() >= 11);
+    StandardDestinationDefinition postgresDefinition = sourceDefinitions.get("25c5221d-dce2-4163-ade9-739ef790f503");
+    assertEquals("0.2.0", postgresDefinition.getDockerImageTag());
+    assertEquals(postgresDefinition.getName(), "Postgres");
+
+    StandardDestinationDefinition localCsvDefinition = sourceDefinitions.get("8be1cf83-fde1-477f-a4ad-318d23c9f3c6");
+    assertTrue(localCsvDefinition.getName().contains("Local CSV"));
+    assertEquals("0.2.0", localCsvDefinition.getDockerImageTag());
+
+    StandardDestinationDefinition snowflakeDefinition = sourceDefinitions.get("424892c4-daac-4491-b35d-c6688ba547ba");
+    assertTrue(snowflakeDefinition.getDockerImageTag().compareTo("0.3.9") >= 0);
+    assertTrue(snowflakeDefinition.getName().contains("Snowflake"));
   }
 
   private void assertStandardSyncs(ConfigRepository configRepository,

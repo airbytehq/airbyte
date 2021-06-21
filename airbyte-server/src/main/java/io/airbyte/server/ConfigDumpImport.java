@@ -26,6 +26,7 @@ package io.airbyte.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Streams;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.api.model.ImportRead;
 import io.airbyte.api.model.ImportRead.StatusEnum;
@@ -56,7 +57,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -199,8 +200,8 @@ public class ConfigDumpImport {
     List<ConfigSchema> configSchemas = Files.list(latestSeed).map(c -> ConfigSchema.valueOf(c.getFileName().toString())).collect(Collectors.toList());
     Map<ConfigSchema, Map<String, T>> allData = new HashMap<>();
     for (ConfigSchema configSchema : configSchemas) {
-      Map<String, T> stringJsonNodeMap = readLatestSeed(configSchema);
-      allData.put(configSchema, stringJsonNodeMap);
+      Map<String, T> data = readLatestSeed(configSchema);
+      allData.put(configSchema, data);
     }
     return allData;
   }
@@ -260,14 +261,10 @@ public class ConfigDumpImport {
     if (!definitionsPopulated) {
       throw new RuntimeException("Trying to process " + configSchema + " without populating the definitions to migrate");
     }
-    return configs.map(definition -> {
-      String id = configSchema.getId(definition);
-      if (definitionsToMigrate.contains(id)) {
-        return definition;
-      } else {
-        return latestSeeds.get(configSchema).get(id);
-      }
-    }).filter(definition -> !Objects.isNull(definition));
+
+    return Streams.concat(configs.filter(c -> definitionsToMigrate.contains(configSchema.getId(c))),
+        latestSeeds.get(configSchema).entrySet().stream().filter(c -> !definitionsToMigrate.contains(c.getKey()))
+            .map(Entry::getValue));
   }
 
   private <T> Stream<T> readConfigsFromArchive(final Path storageRoot, final ConfigSchema schemaType)
