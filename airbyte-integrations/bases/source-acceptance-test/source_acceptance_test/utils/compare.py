@@ -24,7 +24,7 @@
 
 
 import json
-from typing import List,  Mapping, Optional
+from typing import List, Mapping, Optional
 
 import icdiff
 import py
@@ -77,4 +77,3 @@ def serialize(value) -> str:
     if isinstance(value, List):
         return sorted([serialize(v) for v in value])
     return str(value)
-

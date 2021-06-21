@@ -117,7 +117,9 @@ class ConnectorRunner:
             )
         except ContainerError as err:
             # beautify error from container
-            patched_error = ContainerError(container=err.container, exit_status=err.exit_status, command=err.command, image=err.image, stderr=err.stderr.decode())
+            patched_error = ContainerError(
+                container=err.container, exit_status=err.exit_status, command=err.command, image=err.image, stderr=err.stderr.decode()
+            )
             raise patched_error from None  # get rid of any previous exception stack
 
         with open(str(self.output_folder / "raw"), "wb+") as f:
