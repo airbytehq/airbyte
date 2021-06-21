@@ -2,7 +2,7 @@
 
 ## Overview
 
-Airbyte allows scaling sync workloads horizontally using Kubernetes.
+Airbyte allows scaling sync workloads horizontally using Kubernetes. The core components (api server, scheduler, etc) run as deployments while the scheduler launches connector-related pods on different nodes.
 
 ## Getting Started
 
