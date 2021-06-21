@@ -18,7 +18,6 @@ import { FormBaseItem } from "core/form/types";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import { isSourceDefinition } from "core/domain/connector/source";
-import RequestConnectorBlock from "./components/RequestConnectorBlock";
 
 type ServiceFormProps = {
   formType: "source" | "destination";
@@ -88,17 +87,14 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
             availableServices={props.availableServices}
             allowChangeConnector={props.allowChangeConnector}
             isEditMode={props.isEditMode}
-            bottomBlock={
-              <RequestConnectorBlock
-                onClick={() => setIsOpenRequestModal(true)}
-              />
-            }
+            onOpenRequestConnectorModal={() => setIsOpenRequestModal(true)}
           />
         ),
       },
     }),
     [
       formType,
+      setIsOpenRequestModal,
       props.allowChangeConnector,
       props.availableServices,
       props.documentationUrl,
@@ -176,15 +172,15 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
               )}
               formFields={formFields}
             />
+            {isOpenRequestModal && (
+              <RequestConnectorModal
+                connectorType={formType}
+                onClose={() => setIsOpenRequestModal(false)}
+              />
+            )}
           </ServiceFormContextProvider>
         )}
       </Formik>
-      {isOpenRequestModal ? (
-        <RequestConnectorModal
-          connectorType={formType}
-          onClose={() => setIsOpenRequestModal(false)}
-        />
-      ) : null}
     </>
   );
 };

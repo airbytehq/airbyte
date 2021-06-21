@@ -1,46 +1,62 @@
 import React, { useCallback, useMemo } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useField } from "formik";
 import styled from "styled-components";
-import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
+
 import List from "react-widgets/lib/List";
 
+import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
+
 import { FormBaseItem } from "core/form/types";
-import Instruction from "./Instruction";
 import { SourceDefinition } from "core/resources/SourceDefinition";
 import { DestinationDefinition } from "core/resources/DestinationDefinition";
 import { isSourceDefinition } from "core/domain/connector/source";
 
-const DropdownLabels = styled(ControlLabels)`
-  max-width: 202px;
-`;
+import Instruction from "./Instruction";
 
 const BottomElement = styled.div`
-  background: ${(props) => props.theme.greyColor0};
+  background: ${(props) => props.theme.greyColro0};
   padding: 6px 16px 8px;
   width: 100%;
   min-height: 34px;
   border-top: 1px solid ${(props) => props.theme.greyColor20};
 `;
 
+const Block = styled.div`
+  cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
+
+  &:hover {
+    color: ${({ theme }) => theme.primaryColor};
+  }
+`;
+
 const ConnectorList = React.forwardRef(
-  ({ bottomBlock, ...listProps }: any, ref) => (
+  ({ onClick, ...listProps }: { onClick: () => void }, ref) => (
     <>
       <List ref={ref} {...listProps} />
-      <BottomElement>{bottomBlock}</BottomElement>
+      <BottomElement>
+        <Block onClick={onClick}>
+          <FormattedMessage id="connector.requestConnectorBlock" />
+        </Block>
+      </BottomElement>
     </>
   )
 );
 
+const DropdownLabels = styled(ControlLabels)`
+  max-width: 202px;
+`;
+
 const ConnectorServiceTypeControl: React.FC<{
   property: FormBaseItem;
-  bottomBlock?: React.ReactNode;
   formType: "source" | "destination";
   availableServices: (SourceDefinition | DestinationDefinition)[];
   isEditMode?: boolean;
   documentationUrl?: string;
   allowChangeConnector?: boolean;
   onChangeServiceType?: (id: string) => void;
+  onOpenRequestConnectorModal: () => void;
 }> = ({
   property,
   formType,
@@ -49,7 +65,7 @@ const ConnectorServiceTypeControl: React.FC<{
   onChangeServiceType,
   availableServices,
   documentationUrl,
-  bottomBlock,
+  onOpenRequestConnectorModal,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
@@ -99,7 +115,7 @@ const ConnectorServiceTypeControl: React.FC<{
         <DropDown
           {...field}
           listComponent={ConnectorList}
-          listProps={{ bottomBlock }}
+          listProps={{ onClick: onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
           disabled={isEditMode && !allowChangeConnector}
           hasFilter
