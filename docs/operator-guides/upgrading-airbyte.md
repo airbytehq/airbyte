@@ -44,7 +44,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.26.0-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.26.1-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```
@@ -68,6 +68,8 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    # Delete the existing Airbyte docker volumes where all airbyte configurations are saved. 
    docker volume rm $(docker volume ls -q | grep airbyte)
    ```
+
+   5.b. (Skip if you are using default database `airbyte-db`) If you [deployed an external database](configuring-airbyte-db.md) to be used by Airbyte, you might need to drop all tables from the database and re-initialize them from scratch using the latest updated [schema script](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/schema.sql) (replace "airbyte" and "docker" with the appropriate values). If no changes were made to the SQL tables since the last Airbyte version you were using, you can safely skip this step.
 
 6. Upgrade the docker instance to new version.
 
@@ -110,4 +112,3 @@ curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deploym
 ## Upgrading \(K8s\)
 
 _coming soon_
-
