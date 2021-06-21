@@ -41,8 +41,10 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -55,6 +57,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedRecordConsumer.class);
 
   private final StandardNameTransformer namingResolver;
+  private final Set<String> invalidKeys;
 
   public BigQueryDenormalizedRecordConsumer(BigQuery bigquery,
                                             Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
@@ -63,6 +66,7 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
                                             StandardNameTransformer namingResolver) {
     super(bigquery, writeConfigs, catalog, outputRecordCollector);
     this.namingResolver = namingResolver;
+    invalidKeys = new HashSet<>();
   }
 
   @Override
@@ -84,8 +88,9 @@ public class BigQueryDenormalizedRecordConsumer extends BigQueryRecordConsumer {
       return Jsons.jsonNode(Jsons.keys(root).stream()
           .filter(key -> {
             final boolean validKey = fieldNames.contains(namingResolver.getIdentifier(key));
-            if (!validKey) {
+            if (!validKey && !invalidKeys.contains(key)) {
               LOGGER.warn("Ignoring field {} as it is not defined in catalog", key);
+              invalidKeys.add(key);
             }
             return validKey;
           })
