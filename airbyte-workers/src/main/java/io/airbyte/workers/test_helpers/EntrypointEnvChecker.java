@@ -68,7 +68,7 @@ public class EntrypointEnvChecker {
     process.waitFor();
 
     if (outputLine != null) {
-      String[] splits = outputLine.split("=", 1);
+      String[] splits = outputLine.split("=", 2);
       if (splits.length != 2) {
         throw new RuntimeException("String could not be split into multiple segments: " + outputLine);
       } else {
