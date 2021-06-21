@@ -15,7 +15,7 @@
       "repository": {
         "type": "string",
         "examples": ["airbytehq/airbyte"],
-        "description": "Space-delimited list of repositories. e.g. airbytehq/airbyte singer-io/tap-github"
+        "description": "GitHub repository. e.g. 'airbytehq/airbyte' or 'singer-io/tap-github'"
       }
     }
   }

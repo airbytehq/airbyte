@@ -57,22 +57,18 @@ class GithubStream(HttpStream, ABC):
         self.repository = repository
         self._page = 1
 
+    def path(self, **kwargs) -> str:
+        return f"repos/{self.repository}/{self.name}"
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if response.json():
+        response_data = response.json()
+        if response_data and len(response_data) == self.page_size:
             self._page += 1
             return {"page": self._page}
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         try:
-            yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
+            yield from super().read_records(**kwargs)
         except HTTPError as e:
             error_msg = str(e)
 
@@ -96,9 +92,7 @@ class GithubStream(HttpStream, ABC):
 
         return params
 
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
         # Without sending `User-Agent` header we will be getting `403 Client Error: Forbidden for url` error.
         return {
             "User-Agent": "PostmanRuntime/7.28.0",
@@ -119,23 +113,10 @@ class GithubStream(HttpStream, ABC):
               "user": {
                 "login": "keu",
                 "id": 1619536,
-                ...
+                ... <other fields>
               },
               "body": "lgtm, just  small comment",
-              "state": "CHANGES_REQUESTED",
-              "html_url": "https://github.com/airbytehq/airbyte/pull/3734#pullrequestreview-671782869",
-              "pull_request_url": "https://api.github.com/repos/airbytehq/airbyte/pulls/3734",
-              "author_association": "MEMBER",
-              "_links": {
-                "html": {
-                  "href": "https://github.com/airbytehq/airbyte/pull/3734#pullrequestreview-671782869"
-                },
-                "pull_request": {
-                  "href": "https://api.github.com/repos/airbytehq/airbyte/pulls/3734"
-                }
-              },
-              "submitted_at": "2021-05-30T01:14:37Z",
-              "commit_id": "be921b0a5a1c5b17539c92420aa231f58c055169"
+              ... <other fields>
             }
 
             `user` subelement contains almost all possible fields fo user and it's not optimal to store such data in
@@ -154,10 +135,7 @@ class GithubStream(HttpStream, ABC):
 
 
 class Assignees(GithubStream):
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{self.repository}/assignees"
+    pass
 
 
 class Reviews(GithubStream):
@@ -178,19 +156,11 @@ class Reviews(GithubStream):
 
 
 class Collaborators(GithubStream):
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{self.repository}/collaborators"
+    pass
 
 
 class Releases(GithubStream):
     object_fields = ("author",)
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{self.repository}/releases"
 
     def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         record = super().transform(record=record)
@@ -210,18 +180,11 @@ class Events(GithubStream):
         "org",
     )
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{self.repository}/events"
-
 
 class Comments(GithubStream):
     object_fields = ("user",)
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/issues/comments"
 
 
@@ -242,15 +205,11 @@ class PullRequests(GithubStream):
         with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
             yield from super().read_records(**kwargs)
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/pulls"
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
         params["state"] = "all"
         return params
 
@@ -275,24 +234,18 @@ class PullRequests(GithubStream):
 class CommitComments(GithubStream):
     object_fields = ("user",)
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/comments"
 
 
 class IssueMilestones(GithubStream):
     object_fields = ("creator",)
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/milestones"
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
         params["state"] = "all"
         return params
 
@@ -304,25 +257,13 @@ class Commits(GithubStream):
         "committer",
     )
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{self.repository}/commits"
-
 
 class Stargazers(GithubStream):
     primary_key = "user_id"
     object_fields = ("user",)
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{self.repository}/stargazers"
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        headers = super().request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        headers = super().request_headers(**kwargs)
         # We need to send below header if we want to get `starred_at` field. See docs (Alternative response with
         # star creation timestamps) - https://docs.github.com/en/rest/reference/activity#list-stargazers.
         headers["Accept"] = "application/vnd.github.v3.star+json"
@@ -330,32 +271,21 @@ class Stargazers(GithubStream):
 
 
 class Teams(GithubStream):
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        self.owner, _ = self.repository.split("/")
-        return f"orgs/{self.owner}/teams"
+    def path(self, **kwargs) -> str:
+        owner, _ = self.repository.split("/")
+        return f"orgs/{owner}/teams"
 
 
 class Projects(GithubStream):
     object_fields = ("creator",)
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{self.repository}/projects"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
         params["state"] = "all"
         return params
 
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        headers = super().request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        headers = super().request_headers(**kwargs)
         # Projects stream requires sending following `Accept` header. If we won't sent it
         # we'll get `415 Client Error: Unsupported Media Type` error.
         headers["Accept"] = "application/vnd.github.inertia-preview+json"
@@ -363,9 +293,7 @@ class Projects(GithubStream):
 
 
 class IssueLabels(GithubStream):
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/labels"
 
 
@@ -380,15 +308,8 @@ class Issues(GithubStream):
         "assignees",
     )
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"repos/{self.repository}/issues"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
         params["state"] = "all"
         return params
 
@@ -399,7 +320,5 @@ class IssueEvents(GithubStream):
         "issue",
     )
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/issues/events"
