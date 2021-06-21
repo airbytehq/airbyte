@@ -18,13 +18,16 @@ kubectl port-forward svc/airbyte-webapp-svc 8000:80 # port forward the api/ui
 
 ## Iteration Cycle \(on GKE\)
 
-The process is similar to developing on a local cluster, except you will need to build the local version and push it to your own container registry with names such as `your-registry/scheduler`. Then you will need to configure an overlay to override the name of images and apply your overlay with `kubectl apply -k <path to your overlay`.
+The process is similar to developing on a local cluster, except you will need to build the local version and push it to your own container
+registry with names such as `your-registry/scheduler`. Then you will need to configure an overlay to override the name of images and apply
+your overlay with `kubectl apply -k <path to your overlay>`.
 
 We are [working to improve this process](https://github.com/airbytehq/airbyte/issues/4225).
 
 ## Completely resetting a local cluster
 
-If you are in a dev environment on a local cluster only running Airbyte and want to start completely from scratch, you can use the following command to destroy everything on the cluster:
+If you are in a dev environment on a local cluster only running Airbyte and want to start completely from scratch, you can use the following command
+to destroy everything on the cluster:
 
 ```bash
 # BE CAREFUL, THIS COMMAND DELETES ALL RESOURCES, EVEN NON-AIRBYTE ONES!
