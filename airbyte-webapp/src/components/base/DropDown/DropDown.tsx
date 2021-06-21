@@ -1,31 +1,31 @@
 import React from "react";
 import { DropdownList } from "react-widgets";
+import { useIntl } from "react-intl";
 import styled from "styled-components";
 
 import "react-widgets/dist/css/react-widgets.css";
-import { useIntl } from "react-intl";
+
 import ListItem, { IDataItem } from "./components/ListItem";
 import ValueInput from "./components/ValueInput";
 import WithButtonItem from "./components/WithButtonItem";
 import GroupHeader from "./components/GroupHeader";
 
 type DropdownProps = {
-  disabled?: boolean;
+  className?: string;
   hasFilter?: boolean;
   fullText?: boolean;
   filterPlaceholder?: string;
-  withButton?: boolean;
   withBorder?: boolean;
   error?: boolean;
-  textButton?: string;
-  className?: string;
   name?: string;
+
+  withButton?: boolean;
+  textButton?: string;
 } & DropdownList.DropdownListProps;
 
 const StyledDropdownList = styled(DropdownList)<{
-  disabled?: boolean;
-  withBorder?: boolean;
-  error?: boolean;
+  $withBorder?: boolean;
+  $error?: boolean;
 }>`
   text-align: left;
 
@@ -44,21 +44,21 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 
   & > .rw-widget-container {
-    height: ${({ withBorder }) => (withBorder ? 31 : 36)}px;
+    height: ${({ $withBorder }) => ($withBorder ? 31 : 36)}px;
     box-shadow: none;
     border: 1px solid
-      ${({ theme, withBorder, error }) =>
-        error
+      ${({ theme, $withBorder, $error }) =>
+        $error
           ? theme.dangerColor
-          : withBorder
+          : $withBorder
           ? theme.greyColor30
           : theme.greyColor0};
     background: ${({ theme }) => theme.greyColor0};
     border-radius: 4px;
 
     &:hover {
-      border-color: ${({ theme, error }) =>
-        error ? theme.dangerColor : theme.greyColor20};
+      border-color: ${({ theme, $error }) =>
+        $error ? theme.dangerColor : theme.greyColor20};
       background: ${({ theme }) => theme.greyColor20};
     }
   }
@@ -125,6 +125,7 @@ const StyledDropdownList = styled(DropdownList)<{
 
   & > .rw-popup-container {
     min-width: 260px;
+    z-index: 9;
 
     & .rw-select {
       display: none;
@@ -179,48 +180,56 @@ const StyledDropdownList = styled(DropdownList)<{
   }
 `;
 
-const DropDown: React.FC<DropdownProps> = (props) => {
+const DropDown: React.FC<DropdownProps> = ({
+  hasFilter,
+  fullText,
+  filterPlaceholder,
+  withButton,
+  withBorder,
+  error,
+  textButton,
+  className,
+  name,
+  ...props
+}) => {
   const formatMessage = useIntl().formatMessage;
 
-  const className = `${props.className} ${
-    props.withButton ? "withButton" : ""
-  }`;
+  const containerClassName = [
+    className,
+    props.containerClassName,
+    withButton ? "withButton" : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <StyledDropdownList
-      data-testid={props.name}
-      error={props.error}
-      withBorder={props.withBorder}
-      containerClassName={className}
-      filter={props.hasFilter ? "contains" : false}
-      placeholder={
-        props.withButton ? props.textButton : props.placeholder || "..."
-      }
-      data={props.data}
+      data-testid={name}
+      $error={error}
+      $withBorder={withBorder}
+      filter={hasFilter ? "contains" : false}
+      placeholder={withButton ? textButton : props.placeholder || "..."}
       messages={{
-        filterPlaceholder: props.filterPlaceholder || "",
+        filterPlaceholder: filterPlaceholder || "",
         emptyFilter: formatMessage({
           id: "form.noResult",
         }),
       }}
-      textField="text"
-      valueField="value"
-      value={props.value}
-      groupBy={props.groupBy}
-      groupComponent={GroupHeader}
-      disabled={props.disabled}
       valueComponent={({ item }: { item: IDataItem }) =>
-        props.withButton ? (
-          <WithButtonItem text={props.textButton} />
+        withButton ? (
+          <WithButtonItem text={textButton} />
         ) : (
           <ValueInput item={item} />
         )
       }
       itemComponent={({ item }) => (
-        <ListItem {...item} item={item} fullText={props.fullText} />
+        <ListItem {...item} item={item} fullText={fullText} />
       )}
-      onChange={props.onChange}
-      onSelect={props.onSelect}
+      textField="text"
+      valueField="value"
+      groupComponent={GroupHeader}
+      {...props}
+      containerClassName={containerClassName}
     />
   );
 };
