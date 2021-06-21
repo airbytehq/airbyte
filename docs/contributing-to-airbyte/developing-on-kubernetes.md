@@ -26,7 +26,7 @@ We are [working to improve this process](https://github.com/airbytehq/airbyte/is
 
 ## Completely resetting a local cluster
 
-If you are in a dev environment on a local cluster only running Airbyte and want to start completely from scratch, you can use the following command
+In most cases, running `kubectl delete -k kube/overlays/dev` is sufficient to remove the core Airbyte-related components. However, if you are in a dev environment on a local cluster only running Airbyte and want to start **completely from scratch** (removing all PVCs, pods, completed pods, etc.), you can use the following command
 to destroy everything on the cluster:
 
 ```bash
