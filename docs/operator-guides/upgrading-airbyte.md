@@ -69,6 +69,8 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    docker volume rm $(docker volume ls -q | grep airbyte)
    ```
 
+   5.b. (Skip if you are using default database `airbyte-db`) If you [deployed an external database](configuring-airbyte-db.md) to be used by Airbyte, you might need to drop all tables from the database and re-initialize them from scratch using the latest updated [schema script](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/schema.sql) (replace "airbyte" and "docker" with the appropriate values). If no changes were made to the SQL tables since the last Airbyte version you were using, you can safely skip this step.
+
 6. Upgrade the docker instance to new version.
 
    i. If you are running Airbyte from a cloned version of the Airbyte repo and want to use the current most recent stable version, just `git pull`.
@@ -110,4 +112,3 @@ curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deploym
 ## Upgrading \(K8s\)
 
 _coming soon_
-
