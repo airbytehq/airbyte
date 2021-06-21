@@ -6,6 +6,7 @@ type Context = {
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
+  isRequestConnectorModalOpen: boolean;
   widgetsInfo: WidgetConfigMap;
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   unfinishedFlows: Record<string, { startValue: string; id: number | string }>;
@@ -16,6 +17,7 @@ type Context = {
 
 const context: Context = {
   formType: "source",
+  isRequestConnectorModalOpen: false,
   widgetsInfo: {},
   setUiWidgetsInfo: (_path: string, _value: Record<string, unknown>) => ({}),
   unfinishedFlows: {},
@@ -44,6 +46,7 @@ const ServiceFormContextProvider: React.FC<{
       isLoadingSchema: props.isLoadingSchema,
       isEditMode: props.isEditMode,
       unfinishedFlows: unfinishedFlows,
+      isRequestConnectorModalOpen: false,
       addUnfinishedFlow: (path, info) =>
         setUiWidgetsInfo("_common.unfinishedFlows", {
           ...unfinishedFlows,
