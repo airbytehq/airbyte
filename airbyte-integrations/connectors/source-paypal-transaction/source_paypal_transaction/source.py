@@ -198,6 +198,7 @@ class Transactions(PaypalTransactionStream):
     cursor_field = ["transaction_info", "transaction_initiation_date"]
 
     start_date_max = {"hours": 36}  # this limit is found experimentally
+    records_per_request = 10000  # API limit
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
