@@ -167,7 +167,7 @@ public class KubePodProcess extends Process {
           "Missing AIRBYTE_ENTRYPOINT from command fetcher logs. This should not happen. Check the echo command has not been changed.");
     }
 
-    var envVal = logs.split("=")[1].strip();
+    var envVal = logs.split("=", 2)[1].strip();
     if (envVal.isEmpty()) {
       throw new RuntimeException("No AIRBYTE_ENTRYPOINT environment variable found. Connectors must have this set in order to run on Kubernetes.");
     }
