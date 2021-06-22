@@ -53,3 +53,9 @@ GRANT ROLE 'AIRBYTE_ROLE' TO USER 'AIRBYTE_USER'
 ```
 
 Your database user should now be ready for use with Airbyte.
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.0   | 2021-06-22 | [4197](https://github.com/airbytehq/airbyte/pull/4197) | New Source: IBM DB2 |
