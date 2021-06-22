@@ -97,16 +97,18 @@ class SquareCatalogObjectsStream(SquareStream):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
+
         json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
 
         if not json_payload:
             json_payload = dict()
 
-        json_payload.update({
-            "include_deleted_objects": self.include_deleted_objects,
-            "include_related_objects": False,
-            "limit": self.items_per_page_limit,
-        })
+        if self.path() == "catalog/search":
+            json_payload.update({
+                "include_deleted_objects": self.include_deleted_objects,
+                "include_related_objects": False,
+                "limit": self.items_per_page_limit,
+            })
 
         return json_payload
 
@@ -137,49 +139,54 @@ class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
 
 
 class Items(IncrementalSquareCatalogObjectsStream):
-    """
-    Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
-    with object_types = ITEM
-    """
+    """ Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
+    with object_types = ITEM """
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         return {**super(Items, self).request_body_json(**kwargs), "object_types": ["ITEM"]}
 
 
 class Categories(IncrementalSquareCatalogObjectsStream):
-    """
-    Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
-    with object_types = CATEGORY
-    """
+    """ Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
+    with object_types = CATEGORY """
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         return {**super(Categories, self).request_body_json(**kwargs), "object_types": ["CATEGORY"]}
 
 
 class Discounts(IncrementalSquareCatalogObjectsStream):
-    """
-    Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
-    with object_types = DISCOUNT
-    """
+    """ Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
+    with object_types = DISCOUNT """
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         return {**super(Discounts, self).request_body_json(**kwargs), "object_types": ["DISCOUNT"]}
 
 
 class Taxes(IncrementalSquareCatalogObjectsStream):
-    """
-    Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
-    with object_types = TAX
-    """
+    """ Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
+    with object_types = TAX """
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         return {**super(Taxes, self).request_body_json(**kwargs), "object_types": ["TAX"]}
 
 
+class Refunds(IncrementalSquareCatalogObjectsStream):
+    """ Docs: https://developer.squareup.com/reference/square_2021-06-16/refunds-api/list-payment-refunds
+    with object_types = TAX """
+
+    state_checkpoint_interval = 100
+    data_field = "refunds"
+    http_method = "GET"
+
+    def path(self, **kwargs) -> str:
+        return "refunds"
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        return {"sort_order": "ASC"}
+
+
 class Locations(SquareStream):
-    """
-    Docs: https://developer.squareup.com/explorer/square/locations-api/list-locations
-    """
+    """ Docs: https://developer.squareup.com/explorer/square/locations-api/list-locations """
 
     data_field = "locations"
 
@@ -191,9 +198,7 @@ class Locations(SquareStream):
 
 
 class TeamMembers(SquareStream):
-    """
-    Docs: https://developer.squareup.com/explorer/square/team-api/search-team-members
-    """
+    """ Docs: https://developer.squareup.com/explorer/square/team-api/search-team-members """
 
     data_field = "team_members"
     http_method = "POST"
@@ -203,6 +208,18 @@ class TeamMembers(SquareStream):
             next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "team-members/search"
+
+
+class TeamMemberWages(SquareStream):
+    """ Docs: https://developer.squareup.com/reference/square_2021-06-16/labor-api/list-team-member-wages """
+
+    data_field = "team_member_wages"
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "labor/team-member-wages"
 
 
 class SourceSquare(AbstractSource):
@@ -237,4 +254,5 @@ class SourceSquare(AbstractSource):
             "start_date": config["start_date"],
             "include_deleted_objects": config["include_deleted_objects"],
         }
-        return [Items(**args), Categories(**args), Discounts(**args), Taxes(**args), Locations(**args), TeamMembers(**args)]
+        return [Items(**args), Categories(**args), Discounts(**args), Taxes(**args), Locations(**args),
+                TeamMembers(**args), TeamMemberWages(**args), Refunds(**args)]

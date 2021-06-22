@@ -601,6 +601,135 @@
       "sync_mode": "full_refresh",
       "cursor_field": ["id"],
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "team_member_wages",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "team_member_wages": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "team_member_id": {
+                    "type": ["null", "string"]
+                  },
+                  "title": {
+                    "type": ["null", "string"]
+                  },
+                  "hourly_rate": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "amount": {
+                        "type": ["null", "integer"]
+                      },
+                      "currency": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["id"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["id"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "refunds",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "refunds": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "status": {
+                    "type": ["null", "string"]
+                  },
+                  "amount_money": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "amount": {
+                        "type": ["null", "integer"]
+                      },
+                      "currency": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "required": ["amount", "currency"]
+                  },
+                  "payment_id": {
+                    "type": ["null", "string"]
+                  },
+                  "order_id": {
+                    "type": ["null", "string"]
+                  },
+                  "created_at": {
+                    "type": ["null", "string"]
+                  },
+                  "updated_at": {
+                    "type": ["null", "string"]
+                  },
+                  "location_id": {
+                    "type": ["null", "string"]
+                  },
+                  "reason": {
+                    "type": ["null", "string"]
+                  },
+                  "processing_fee": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "effective_at": {
+                          "type": ["null", "string"]
+                        },
+                        "type": {
+                          "type": ["null", "string"]
+                        },
+                        "amount_money": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "amount": {
+                              "type": ["null", "integer"]
+                            },
+                            "currency": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "append"
     }
   ]
 }
