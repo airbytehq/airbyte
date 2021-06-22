@@ -23,13 +23,10 @@
 #
 
 
-import json
-from functools import partial
-
 import pytest
 from airbyte_cdk.models import Type
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.utils import ConnectorRunner, full_refresh_only_catalog
+from source_acceptance_test.utils import ConnectorRunner, full_refresh_only_catalog, serialize
 
 
 @pytest.mark.timeout(20 * 60)
@@ -41,7 +38,6 @@ class TestFullRefresh(BaseTest):
 
         output = docker_runner.call_read(connector_config, configured_catalog)
         records_2 = [message.record.data for message in output if message.type == Type.RECORD]
-        serialize = partial(json.dumps, sort_keys=True)
 
         assert not (
             set(map(serialize, records_1)) - set(map(serialize, records_2))
