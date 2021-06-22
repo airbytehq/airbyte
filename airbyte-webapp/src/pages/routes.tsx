@@ -153,7 +153,7 @@ const OnboardingsRoutes = () => {
 
 export const Routing: React.FC = () => {
   useSegment(config.segment.token);
-  useFullStory(config.fullstory.org);
+  useFullStory(config.fullstory);
   useApiHealthPoll(config.healthCheckInterval);
 
   const { workspace } = useWorkspace();
