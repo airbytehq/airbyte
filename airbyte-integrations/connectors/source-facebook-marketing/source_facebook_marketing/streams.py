@@ -302,8 +302,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         min_cursor = self._start_date if not state_value else pendulum.parse(state_value)
 
         for obj in result.get_result():
-            if pendulum.parse(obj[self.cursor_field]) >= min_cursor:
-                yield obj.export_all_data()
+            record = obj.export_all_data()
+            if pendulum.parse(record[self.cursor_field]) >= min_cursor:
+                yield record
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
@@ -316,6 +317,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         running_jobs = deque()
         date_ranges = list(self._date_ranges(stream_state=stream_state))
         for params in date_ranges:
+            params = deep_merge(params, self.request_params(stream_state=stream_state))
             job = self._create_insights_job(params)
             running_jobs.append(job)
             if len(running_jobs) >= self.MAX_ASYNC_JOBS:
@@ -332,7 +334,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         while True:
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
-            self.logger.info(f"ReportRunId {job['report_run_id']} is {job_progress_pct}% complete")
+            job_id = job['report_run_id']
+            self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete")
             runtime = pendulum.now() - start_time
 
             if job["async_status"] == "Job Completed":
@@ -352,7 +355,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                     f"AdReportRun {job} did not finish after {runtime.in_seconds()} seconds."
                     f" This is an intermittent error which may be fixed by retrying the job. Aborting."
                 )
-            self.logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job} to complete")
+            self.logger.info(f"Sleeping {sleep_seconds} seconds while waiting for AdReportRun: {job_id} to complete")
             time.sleep(sleep_seconds)
             if sleep_seconds < self.MAX_ASYNC_SLEEP.in_seconds():
                 sleep_seconds *= factor
@@ -433,7 +436,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     @backoff_policy
     def _create_insights_job(self, params) -> AdReportRun:
         job = self._api.account.get_insights(params=params, is_async=True)
-        self.logger.info(f"Created AdReportRun: {job} to sync insights with breakdown {self.breakdowns}")
+        job_id = job["report_run_id"]
+        time_range = params["time_range"]
+        self.logger.info(f"Created AdReportRun: {job_id} to sync insights {time_range} with breakdown {self.breakdowns}")
         return job
 
 
