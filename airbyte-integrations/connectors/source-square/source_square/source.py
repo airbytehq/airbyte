@@ -57,12 +57,14 @@ class SquareStream(HttpStream, ABC):
             return {"cursor": next_page_cursor}
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"Square-Version": self.api_version, "Content-Type": "application/json"}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return next_page_token if next_page_token else {}
 
@@ -78,17 +80,20 @@ class SquareCatalogObjectsStream(SquareStream):
     items_per_page_limit = 1000
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "catalog/search"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
     def request_body_json(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
         json_payload = {
             "include_deleted_objects": self.include_deleted_objects,
@@ -107,7 +112,8 @@ class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
 
     cursor_field = "updated_at"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+    Mapping[str, Any]:
 
         if current_stream_state is not None and self.cursor_field in current_stream_state:
             return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
@@ -115,7 +121,8 @@ class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
             return {self.cursor_field: self.start_date}
 
     def request_body_json(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
         json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
 
@@ -173,7 +180,8 @@ class Locations(SquareStream):
     data_field = "locations"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "locations"
 
@@ -195,6 +203,9 @@ class SourceSquare(AbstractSource):
             session.raise_for_status()
             return True, None
         except requests.exceptions.RequestException as e:
+            if e.response.status_code == 401:
+                return False, "Unauthorized. Check your credentials"
+
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
