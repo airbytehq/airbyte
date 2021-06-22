@@ -28,6 +28,45 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
 public class MySQLNameTransformer extends ExtendedNameTransformer {
 
+  public static final int MAX_MYSQL_NAME_LENGTH = 64;
+  // DBT appends a suffix to table names
+  public static final int DBT_RESERVED_SUFFIX_LENGTH = 12;
+  // 4 charachters for 1 underscore and 3 suffix (e.g. _ab1)
+  // 4 charachters for 1 underscore and 3 schema hash
+  public static final int TRUNCATION_RESERVED_LENGTH = 8;
+  public static final int TRUNCATION_MAX_NAME_LENGTH = MAX_MYSQL_NAME_LENGTH - DBT_RESERVED_SUFFIX_LENGTH - TRUNCATION_RESERVED_LENGTH;
+
+  @Override
+  public String getIdentifier(String name) {
+    String identifier = super.getIdentifier(name);
+    return truncateName(identifier, TRUNCATION_MAX_NAME_LENGTH);
+  }
+
+  @Override
+  public String getTmpTableName(String streamName) {
+    String tmpTableName = super.getTmpTableName(streamName);
+    return truncateName(tmpTableName, TRUNCATION_MAX_NAME_LENGTH);
+  }
+
+  @Override
+  public String getRawTableName(String streamName) {
+    String rawTableName = super.getRawTableName(streamName);
+    return truncateName(rawTableName, TRUNCATION_MAX_NAME_LENGTH);
+  }
+
+  static String truncateName(String name, int maxLength) {
+    if (name.length() <= maxLength) {
+      return name;
+    }
+
+    System.out.printf("Name needs truncation: %s (%d)\n", name, name.length());
+    int allowedLength = maxLength - 2;
+    String prefix = name.substring(0, allowedLength / 2);
+    String suffix = name.substring(name.length() - allowedLength / 2);
+    System.out.printf("Truncated name: %s (%d)\n", prefix + "__" + suffix, (prefix + "__" + suffix).length());
+    return prefix + "__" + suffix;
+  }
+
   @Override
   protected String applyDefaultCase(String input) {
     return input.toLowerCase();
