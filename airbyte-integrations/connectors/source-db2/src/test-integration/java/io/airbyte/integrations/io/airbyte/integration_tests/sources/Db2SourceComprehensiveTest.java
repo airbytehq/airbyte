@@ -135,8 +135,9 @@ public class Db2SourceComprehensiveTest extends SourceComprehensiveTest {
             .createTablePatternSql(CREATE_TABLE_SQL)
             .sourceType("DECIMAL")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "DECIMAL(1,1)")
-            .addExpectedValues(null, "1")
+            .fullSourceDataType("DECIMAL(31, 0)")
+            .addInsertValues("null", "1", "DECIMAL((-1 + 10E+29), 31, 0)", "DECIMAL((1 - 10E+29), 31, 0)")
+            .addExpectedValues(null, "1", "1.0E30", "-1.0E30")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -163,8 +164,18 @@ public class Db2SourceComprehensiveTest extends SourceComprehensiveTest {
             .createTablePatternSql(CREATE_TABLE_SQL)
             .sourceType("DECFLOAT")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "0")
-            .addExpectedValues(null, "0")
+            .fullSourceDataType("DECFLOAT(16)")
+            .addInsertValues("null", "0", "DECFLOAT(10E+307, 16)", "DECFLOAT(10E-307, 16)") // "SNaN", "NaN", "Infinity" - fail with an exception in Db2 Driver
+            .addExpectedValues(null, "0", "1E+308", "1E-306")
+            .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .sourceType("DECFLOAT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .fullSourceDataType("DECFLOAT(34)")
+            .addInsertValues("null", "0", "DECFLOAT(10E+307, 34)", "DECFLOAT(10E-307, 34)") // "SNaN", "NaN", "Infinity" - fail with an exception in Db2 Driver
+            .addExpectedValues(null, "0", "1E+308", "1E-306")
             .build());
 
     // Boolean values
