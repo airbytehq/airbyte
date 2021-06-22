@@ -40,6 +40,7 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -65,6 +66,7 @@ public class JobTracker {
   public static final String MESSAGE_NAME = "Connector Jobs";
   public static final String CONFIG = "config";
   public static final String CATALOG = "catalog";
+  public static final String OPERATION = "operation.";
   public static final String SET = "set";
 
   private final ConfigRepository configRepository;
@@ -125,12 +127,12 @@ public class JobTracker {
       final UUID sourceDefinitionId = configRepository.getSourceDefinitionFromConnection(connectionId).getSourceDefinitionId();
       final UUID destinationDefinitionId = configRepository.getDestinationDefinitionFromConnection(connectionId).getDestinationDefinitionId();
 
-      final ImmutableMap<String, Object> jobMetadata = generateJobMetadata(String.valueOf(jobId), configType, job.getAttemptsCount());
-      final ImmutableMap<String, Object> jobAttemptMetadata = generateJobAttemptMetadata(job.getId(), jobState);
-      final ImmutableMap<String, Object> sourceDefMetadata = generateSourceDefinitionMetadata(sourceDefinitionId);
-      final ImmutableMap<String, Object> destinationDefMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
-      final ImmutableMap<String, Object> syncMetadata = generateSyncMetadata(connectionId);
-      final ImmutableMap<String, Object> stateMetadata = generateStateMetadata(jobState);
+      final Map<String, Object> jobMetadata = generateJobMetadata(String.valueOf(jobId), configType, job.getAttemptsCount());
+      final Map<String, Object> jobAttemptMetadata = generateJobAttemptMetadata(job.getId(), jobState);
+      final Map<String, Object> sourceDefMetadata = generateSourceDefinitionMetadata(sourceDefinitionId);
+      final Map<String, Object> destinationDefMetadata = generateDestinationDefinitionMetadata(destinationDefinitionId);
+      final Map<String, Object> syncMetadata = generateSyncMetadata(connectionId);
+      final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
       final Map<String, Object> syncConfigMetadata = generateSyncConfigMetadata(job.getConfig());
 
       track(MoreMaps.merge(
@@ -196,9 +198,17 @@ public class JobTracker {
     return output;
   }
 
-  private ImmutableMap<String, Object> generateSyncMetadata(UUID connectionId) throws ConfigNotFoundException, IOException, JsonValidationException {
+  private Map<String, Object> generateSyncMetadata(UUID connectionId) throws ConfigNotFoundException, IOException, JsonValidationException {
+    final Map<String, Object> operationUsage = new HashMap<>();
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-    return TrackingMetadata.generateSyncMetadata(standardSync);
+    for (UUID operationId : standardSync.getOperationIds()) {
+      StandardSyncOperation operation = configRepository.getStandardSyncOperation(operationId);
+      if (operation != null) {
+        final Integer usageCount = (Integer) operationUsage.getOrDefault(OPERATION + operation.getOperatorType(), 0);
+        operationUsage.put(OPERATION + operation.getOperatorType(), usageCount + 1);
+      }
+    }
+    return MoreMaps.merge(TrackingMetadata.generateSyncMetadata(standardSync), operationUsage);
   }
 
   private static ImmutableMap<String, Object> generateStateMetadata(JobState jobState) {
