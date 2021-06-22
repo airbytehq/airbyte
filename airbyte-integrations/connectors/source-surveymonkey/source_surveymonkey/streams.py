@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 
-
+import tempfile
 import urllib.parse
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -32,6 +32,8 @@ import requests
 import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+
+cache_file = tempfile.NamedTemporaryFile()
 
 
 class SurveymonkeyStream(HttpStream, ABC):
@@ -66,14 +68,14 @@ class SurveymonkeyStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
-    def read_records(  # TODO remove this (caching) in final commit
+    def read_records(
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        with vcr.use_cassette("pretty_name.yaml", record_mode="new_episodes"):
+        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
             yield from super().read_records(
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
