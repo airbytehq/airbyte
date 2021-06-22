@@ -137,7 +137,7 @@ def chunk_date_range(start_date: DateTime, interval=1) -> Iterable[Mapping[str, 
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date <= now:
         end = start_date.add(days=interval)
-        intervals.append({"oldest": str(start_date.timestamp()), "latest": str(end.timestamp())})
+        intervals.append({"oldest": start_date.timestamp(), "latest": end.timestamp()})
         start_date = start_date.add(days=1)
 
     return intervals
@@ -158,31 +158,16 @@ class IncrementalMessageStream(SlackStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
-            if self.cursor_field in record:
-                record[self.cursor_field] = pendulum.from_timestamp(float(record[self.cursor_field]))
+            # if self.cursor_field in record:
+            #     record[self.cursor_field] = float(record[self.cursor_field])
 
             yield record
 
-    def _cast_cursor_field(self, current_stream_state: MutableMapping[str, Any]):
-        if isinstance(current_stream_state.get(self.cursor_field, 0), str):
-            try:
-                current_stream_state[self.cursor_field] = float(current_stream_state[self.cursor_field])
-            except ValueError:
-                current_stream_state[self.cursor_field] = pendulum.parse(current_stream_state[self.cursor_field]).timestamp()
-
-        elif isinstance(current_stream_state.get(self.cursor_field, 0), DateTime):
-            current_stream_state[self.cursor_field] = current_stream_state[self.cursor_field].timestamp()
-
-        return current_stream_state
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
-        current_stream_state = self._cast_cursor_field(current_stream_state)
-
         current_stream_state[self.cursor_field] = max(
-            float(latest_record[self.cursor_field].timestamp()), float(current_stream_state.get(self.cursor_field, 0))
+            float(latest_record[self.cursor_field]), float(current_stream_state.get(self.cursor_field, 0))
         )
-        current_stream_state[self.cursor_field] = pendulum.from_timestamp(current_stream_state[self.cursor_field])
 
         return current_stream_state
 
@@ -193,11 +178,7 @@ class ChannelMessages(IncrementalMessageStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
-        try:
-            start_date = pendulum.from_timestamp(stream_state.get(self.cursor_field, self._default_start_date.timestamp()))
-        except TypeError:  # during second read we will have ts as a string date
-            start_date = pendulum.parse(stream_state[self.cursor_field])
-
+        start_date = stream_state.get(self.cursor_field, self._default_start_date)
         return chunk_date_range(start_date)
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -244,17 +225,13 @@ class Threads(IncrementalMessageStream):
             # Since new messages can be posted to threads continuously after the parent message has been posted, we get messages from the latest date
             # found in the state minus 7 days to pick up any new messages in threads.
             # If there is state always use lookback
-            try:
-                messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
-            except TypeError:  # during second read we will have ts as a string date
-                messages_start_date = pendulum.parse(stream_state[self.cursor_field]) - self.messages_lookback_window
+            messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
             messages_start_date = self._default_start_date
 
         messages_stream = ChannelMessages(authenticator=self.authenticator, default_start_date=messages_start_date)
-
-        for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
+        for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date}):
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
                 message_chunk["channel"] = channel["id"]
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
