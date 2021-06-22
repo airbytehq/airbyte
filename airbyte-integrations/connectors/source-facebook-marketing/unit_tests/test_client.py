@@ -34,7 +34,6 @@ from source_facebook_marketing.client import Client
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 
-
 @pytest.fixture(scope="session", name="account_id")
 def account_id_fixture():
     return "unknown_account"

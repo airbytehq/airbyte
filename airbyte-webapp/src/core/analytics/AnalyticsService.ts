@@ -18,6 +18,7 @@ export class AnalyticsService {
       user_id: config.ui.workspaceId,
       ...properties,
       airbyte_version: config.version,
+      environment: config.version === "dev" ? "dev" : "prod",
     });
 
   static identify = (

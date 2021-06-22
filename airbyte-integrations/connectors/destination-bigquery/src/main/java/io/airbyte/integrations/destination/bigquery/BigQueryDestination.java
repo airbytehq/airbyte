@@ -24,6 +24,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static java.util.Objects.isNull;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
@@ -130,22 +132,30 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   private BigQuery getBigQuery(JsonNode config) {
     final String projectId = config.get(CONFIG_PROJECT_ID).asText();
-    // handle the credentials json being passed as a json object or a json object already serialized as
-    // a string.
-    final String credentialsString =
-        config.get(CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(CONFIG_CREDS)) : config.get(CONFIG_CREDS).asText();
-    try {
-      final ServiceAccountCredentials credentials = ServiceAccountCredentials
-          .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
-      return BigQueryOptions.newBuilder()
+    try {
+      BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
+      ServiceAccountCredentials credentials = null;
+      if (isUsingJsonCredentials(config)) {
+        // handle the credentials json being passed as a json object or a json object already serialized as
+        // a string.
+        final String credentialsString =
+            config.get(CONFIG_CREDS).isObject() ? Jsons.serialize(config.get(CONFIG_CREDS)) : config.get(CONFIG_CREDS).asText();
+        credentials = ServiceAccountCredentials
+            .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
+      }
+      return bigQueryBuilder
           .setProjectId(projectId)
-          .setCredentials(credentials)
+          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
           .build()
           .getService();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static boolean isUsingJsonCredentials(JsonNode config) {
+    return config.has(CONFIG_CREDS) && !config.get(CONFIG_CREDS).asText().isEmpty();
   }
 
   /**
