@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.StringJoiner;
 import javax.xml.bind.DatatypeConverter;
 
-public class JdbcSourceUtils {
+public class SourceJdbcUtils {
 
   public static void setStatementField(PreparedStatement preparedStatement,
                                        int parameterIndex,

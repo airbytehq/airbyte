@@ -36,7 +36,6 @@ dependencies {
     testFixturesImplementation project(':airbyte-protocol:models')
     testFixturesImplementation project(':airbyte-db')
     testFixturesImplementation project(':airbyte-integrations:bases:base-java')
-//    testFixturesImplementation project(':airbyte-integrations:connectors:source-jdbc')
 
     // todo (cgardens) - the java-test-fixtures plugin doesn't by default extend from test.
     //  we cannot make it depend on the dependencies of source-jdbc:test, because source-jdbc:test

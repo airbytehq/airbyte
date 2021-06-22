@@ -42,7 +42,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.JdbcSourceUtils;
+import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -302,16 +302,16 @@ public abstract class JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("CREATE TABLE %s(id VARCHAR(200), name VARCHAR(200))",
-              JdbcSourceUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
-              JdbcSourceUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
-              JdbcSourceUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
-              JdbcSourceUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              SourceJdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
     final AirbyteCatalog actual = source.discover(config);
@@ -840,26 +840,26 @@ public abstract class JdbcSourceAcceptanceTest {
       connection.createStatement()
           .execute(
               createTableQuery(getFullyQualifiedTableName(
-                  JdbcSourceUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
-                  "id INTEGER, " + JdbcSourceUtils
+                  SourceJdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+                  "id INTEGER, " + SourceJdbcUtils
                       .enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)
                       + " VARCHAR(200)",
                   ""));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (1,'picard')",
               getFullyQualifiedTableName(
-                  JdbcSourceUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
-              JdbcSourceUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+                  SourceJdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+              SourceJdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (2, 'crusher')",
               getFullyQualifiedTableName(
-                  JdbcSourceUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
-              JdbcSourceUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+                  SourceJdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+              SourceJdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (3, 'vash')",
               getFullyQualifiedTableName(
-                  JdbcSourceUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
-              JdbcSourceUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+                  SourceJdbcUtils.enquoteIdentifier(connection, tableNameWithSpaces)),
+              SourceJdbcUtils.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
     });
 
     return CatalogHelpers.createConfiguredAirbyteStream(
@@ -870,7 +870,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   public String getFullyQualifiedTableName(String tableName) {
-    return JdbcSourceUtils.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
+    return SourceJdbcUtils.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
   }
 
   public void createSchemas() throws SQLException {
