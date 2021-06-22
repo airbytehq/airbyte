@@ -23,6 +23,8 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from datetime import datetime, timedelta
+import logging
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -39,26 +41,21 @@ class DatascopeStream(HttpStream, ABC):
     # TODO: Fill in the url base. Required.
     url_base = "https://mydatascope.com/api/external/"
 
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        yield response_json
 
-
-class Forms(DatascopeStream):
+class DatascopeIncrementalStream(DatascopeStream, ABC):
 
     primary_key = "form_answer_id"
-    def __init__(self, token: str, form_id: str, **kwargs):
+    cursor_field = "updated_at"
+
+    def __init__(self, token: str, form_id: str, start_date: str, **kwargs):
         super().__init__()
         self.token = token
         self.form_id = form_id
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "answers"
+        self.start_date = start_date
 
     def request_params(
             self,
@@ -67,8 +64,8 @@ class Forms(DatascopeStream):
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # The api requires that we include the base currency as a query param so we do that in this method
-        return {'token': self.token, 'form_id': self.form_id}
-    
+        return {'token': self.token, 'form_id': self.form_id, 'start': stream_slice['updated_at'], 'date_modified': True, 'order_date': True}
+
     def parse_response(
             self,
             response: requests.Response,
@@ -76,10 +73,47 @@ class Forms(DatascopeStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        response_json = response.json() 
-        yield response_json
+        return response.json()
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
+        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
+        if current_stream_state is not None and 'updated_at' in current_stream_state:
+            current_parsed_date = datetime.strptime(current_stream_state['updated_at'], '%Y-%m-%dT%H:%M:%S%z')
+            # latest_record_date = datetime.strptime(current_stream_state['updated_at'], '%Y-%m-%dT%H:%M:%S%z')
+            last_date = latest_record['updated_at'].split('.')[0] + '+0000'
+            latest_record_date = datetime.strptime(last_date, '%Y-%m-%dT%H:%M:%S%z')
+            return {'updated_at': max(current_parsed_date, latest_record_date).strftime('%Y-%m-%dT%H:%M:%S%z')}
+        else:
+            return {'updated_at': self.start_date.strftime('%Y-%m-%dT%H:%M:%S%z')}
+
+    def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
+        """
+        Returns a list of each day between the start date and now.
+        The return value is a list of dicts {'date': date_string}.
+        """
+        dates = []
+        while start_date < datetime.now(start_date.tzinfo):
+            dates.append({'updated_at': start_date.strftime('%Y-%m-%dT%H:%M:%S%z')})
+            start_date += timedelta(days=7)
+        return dates
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[
+        Optional[Mapping[str, any]]]:
+        start_date = datetime.strptime(stream_state['updated_at'], '%Y-%m-%dT%H:%M:%S%z') if stream_state and 'updated_at' in stream_state else self.start_date
+        return self._chunk_date_range(start_date)
 
 
+
+
+class Forms(DatascopeIncrementalStream):
+    primary_key = "form_answer_id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "answers"
 
 # Source
 class SourceDatascope(AbstractSource):
@@ -87,6 +121,6 @@ class SourceDatascope(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        args = {"token": config['api_key'], "form_id": config["form_name"]}
         auth = NoAuth()
-        return [Forms(authenticator=auth, token=config['api_key'], form_id=config['form_name'])]
+        start_date = datetime.strptime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') 
+        return [Forms(authenticator=auth, token=config['api_key'], form_id=config['form_name'], start_date=start_date)]

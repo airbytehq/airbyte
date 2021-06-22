@@ -58,6 +58,9 @@
 					"question_name": {
 						"type": ["null", "string"]
 					},
+					"question_value": {
+						"type": ["null", "string"]
+					},
 					"name": {
 						"type": ["null", "string"]
 					},
