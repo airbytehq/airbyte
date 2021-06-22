@@ -1,5 +1,7 @@
+import isEqual from "lodash.isequal";
+
 export function equal(o1?: unknown, o2?: unknown): boolean {
-  return JSON.stringify(o1) === JSON.stringify(o2);
+  return isEqual(o1, o2);
 }
 
 export function naturalComparator(a: string, b: string): number {

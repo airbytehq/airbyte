@@ -1,4 +1,4 @@
-import * as yup from "yup";
+import { AnySchema } from "yup";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
@@ -80,7 +80,7 @@ const useBuildUiWidgets = (
 const useConstructValidationSchema = (
   uiWidgetsInfo: WidgetConfigMap,
   jsonSchema: JSONSchema7
-): yup.Schema<ServiceFormValues> =>
+): AnySchema =>
   useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [
     uiWidgetsInfo,
     jsonSchema,

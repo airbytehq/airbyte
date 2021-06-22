@@ -23,7 +23,6 @@
 #
 
 
-import json
 from collections import Counter, defaultdict
 from typing import Any, List, Mapping, MutableMapping
 
@@ -32,7 +31,7 @@ from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, T
 from docker.errors import ContainerError
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner
+from source_acceptance_test.utils import ConnectorRunner, serialize
 
 
 @pytest.mark.timeout(10)
@@ -152,8 +151,8 @@ class TestBasicRead(BaseTest):
                     r2 = TestBasicRead.remove_extra_fields(r2, r1)
                 assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
         else:
-            expected = set(map(TestBasicRead.serialize_record_for_comparison, expected))
-            actual = set(map(TestBasicRead.serialize_record_for_comparison, actual))
+            expected = set(map(serialize, expected))
+            actual = set(map(serialize, actual))
             missing_expected = set(expected) - set(actual)
 
             assert not missing_expected, f"Stream {stream_name}: All expected records must be produced"
@@ -170,7 +169,3 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
-
-    @staticmethod
-    def serialize_record_for_comparison(record: Mapping) -> str:
-        return json.dumps(record, sort_keys=True)
