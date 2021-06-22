@@ -29,6 +29,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
     "cached_property~=1.5",
     "facebook_business~=11.0",
+    "pendulum",
 ]
 
 TEST_REQUIREMENTS = [

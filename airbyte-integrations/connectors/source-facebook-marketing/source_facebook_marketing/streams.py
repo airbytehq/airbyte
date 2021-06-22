@@ -284,7 +284,7 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def __init__(self, buffer_days, days_per_job, **kwargs):
         super().__init__(**kwargs)
-        self.lookback_window = pendulum.Duration(days=buffer_days)
+        self.lookback_window = pendulum.duration(days=buffer_days)
         self._days_per_job = days_per_job
 
     def read_records(
