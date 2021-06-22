@@ -17,11 +17,11 @@ The linked Facebook docs go into detail about the fields present on those stream
 
 In addition, this source is capable of syncing ad insights as a stream. Ad insights can also be segmented by the following categories, where each segment is synced as a separate Airbyte stream:
 
-* Country - _coming soon_
-* DMA \(Designated Market Area\) - _coming soon_
-* Gender & Age - _coming soon_
-* Platform & Device - _coming soon_
-* Region - _coming soon_
+* Country
+* DMA \(Designated Market Area\)
+* Gender & Age
+* Platform & Device
+* Region
 
 The segmented streams contain entries of campaign/adset/ad combinations for each day broken down by the chosen segment.
 
@@ -101,6 +101,7 @@ With the Ad Account ID and API access token, you should be ready to start pullin
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.2.12  | 2021-06-20 | [3743](https://github.com/airbytehq/airbyte/pull/3743) | Refactor connector to use CDK:<br>- Improve error handling.<br>- Improve async job performance (insights).<br>- Add new configuration parameter `insights_days_per_job`.<br>- Rename stream `adsets` to `ad_sets`.<br>- Refactor schema logic for insights, allowing to configure any possible insight stream.|
 | 0.2.10  | 2021-06-16 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Update version of facebook_bussiness to 11.0|
 | 0.2.9   | 2021-06-10 | [3996](https://github.com/airbytehq/airbyte/pull/3996) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | 0.2.8   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add 80000 as a rate-limiting error code|
