@@ -17,14 +17,14 @@
 We will _not_ merge sources that cannot pass these tests unless the author can provide a very good reason™.
 
 ## What tests do the standard tests include?
-Check out each function in [TestSource](src/main/java/io/airbyte/integrations/standardtest/source/TestSource.java). Each function annotated with `@Test` is a single test. Each of these functions is proceeded by comments that document what they are testing.
+Check out each function in [SourceAcceptanceTest](src/main/java/io/airbyte/integrations/standardtest/source/SourceAcceptanceTest.java). Each function annotated with `@Test` is a single test. Each of these functions is proceeded by comments that document what they are testing.
 
 ## How to run them from your integration?
 * If writing a source in Python, check out this [readme](../base-python-test/readme.md)
 
 ## What do I need to provide as input to these tests?
 * The name of the image of your integration (with the `:dev` tag at the end).
-* A handful of json inputs, e.g. a valid configuration file and a catalog that will be used to try to run the `read` operation on your integration. These are fully documented in [TestSource](src/main/java/io/airbyte/integrations/standardtest/source/TestSource.java). Each method that is marked as `abstract` are methods that the user needs to implement to provide the necessary information. Each of these methods are preceded by comments explaining what they need to return.
+* A handful of json inputs, e.g. a valid configuration file and a catalog that will be used to try to run the `read` operation on your integration. These are fully documented in [SourceAcceptanceTest](src/main/java/io/airbyte/integrations/standardtest/source/SourceAcceptanceTest.java). Each method that is marked as `abstract` are methods that the user needs to implement to provide the necessary information. Each of these methods are preceded by comments explaining what they need to return.
 * Optionally you can run before and after methods before each test.
 
 ## Do I have to write java to use these tests?

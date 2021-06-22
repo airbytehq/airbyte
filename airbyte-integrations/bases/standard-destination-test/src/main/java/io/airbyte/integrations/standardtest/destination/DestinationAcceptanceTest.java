@@ -68,6 +68,7 @@ import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
+import io.airbyte.workers.test_helpers.EntrypointEnvChecker;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -843,6 +844,24 @@ public abstract class DestinationAcceptanceTest {
     final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
+  }
+
+  /**
+   * In order to launch a source on Kubernetes in a pod, we need to be able to wrap the entrypoint.
+   * The source connector must specify its entrypoint in the AIRBYTE_ENTRYPOINT variable. This test
+   * ensures that the entrypoint environment variable is set.
+   */
+  @Test
+  public void testEntrypointEnvVar() throws Exception {
+    final String entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
+        processFactory,
+        JOB_ID,
+        JOB_ATTEMPT,
+        jobRoot,
+        getImageName());
+
+    assertNotNull(entrypoint);
+    assertFalse(entrypoint.isBlank());
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {

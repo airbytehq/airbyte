@@ -24,6 +24,9 @@
 
 package io.airbyte.integrations.standardtest.source;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -44,6 +47,7 @@ import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteSource;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteSource;
+import io.airbyte.workers.test_helpers.EntrypointEnvChecker;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -131,6 +135,18 @@ public abstract class SourceAbstractTest {
   protected AirbyteCatalog runDiscover() throws Exception {
     return new DefaultDiscoverCatalogWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
+  }
+
+  protected void checkEntrypointEnvVariable() throws Exception {
+    final String entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
+        processFactory,
+        String.valueOf(JOB_ID),
+        JOB_ATTEMPT,
+        jobRoot,
+        getImageName());
+
+    assertNotNull(entrypoint);
+    assertFalse(entrypoint.isBlank());
   }
 
   protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
