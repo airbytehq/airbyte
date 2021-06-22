@@ -48,7 +48,7 @@ const config: Config = {
     configurationArchiveLink:
       "https://docs.airbyte.io/tutorials/upgrading-airbyte",
     normalizationLink:
-      "https://docs.airbyte.io/understanding-airbyte/namespaces.md",
+      "https://docs.airbyte.io/understanding-airbyte/namespaces",
     namespaceLink:
       "https://docs.airbyte.io/understanding-airbyte/connections#airbyte-basic-normalization",
     tutorialLink:
