@@ -6,6 +6,10 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
+## [06-21-2021](https://github.com/airbytehq/airbyte/releases/tag/v0.26.2-alpha)
+
+* First-Class Kubernetes support!
+
 ## [06-16-2021](https://github.com/airbytehq/airbyte/releases/tag/v0.26.0-alpha)
 
 * Custom dbt transformations! 
