@@ -283,7 +283,9 @@ class TicketsAPI(IncrementalStreamAPI):
     # Since the TicketsAPI Stream list has a 300 page pagination limit, after 300 pages, update the parameters with
     # query using 'updated_since' = last_record, if there is more data remaining.
     @staticmethod
-    def get_tickets(result_return_limit: int, getter: Callable, params: Mapping[str, Any] = None, ticket_paginate_limit: int = 300) -> Iterator:
+    def get_tickets(
+        result_return_limit: int, getter: Callable, params: Mapping[str, Any] = None, ticket_paginate_limit: int = 300
+    ) -> Iterator:
         """Read using getter"""
         params = params or {}
         # the maximum page allowed to pull during pagination.
@@ -299,7 +301,7 @@ class TicketsAPI(IncrementalStreamAPI):
             yield from batch
 
             if len(batch) < result_return_limit:
-               return iter(())
+                return iter(())
 
             # get last_record from latest batch, pos. 0, because of DESC order of records
             last_record = batch[0]["updated_at"]
@@ -307,7 +309,7 @@ class TicketsAPI(IncrementalStreamAPI):
             # checkpoint & switch the pagination
             if page == ticket_paginate_limit:
                 page = 0  # reset page counter
-                last_record = pendulum.parse(last_record).add(seconds=1) # TODO: about 1 sec addings
+                last_record = pendulum.parse(last_record).add(seconds=1)
                 # updating request parameters with last_record state
                 params["order_by"] = "updated_at"
                 params["updated_since"] = last_record
