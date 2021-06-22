@@ -41,6 +41,7 @@ from slack_sdk import WebClient
 class SlackStream(HttpStream, ABC):
     url_base = "https://slack.com/api/"
     primary_key = None
+    page_size = 100
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # Slack uses a cursor-based pagination strategy.
@@ -48,7 +49,7 @@ class SlackStream(HttpStream, ABC):
         json_response = response.json()
         next_cursor = json_response.get("response_metadata", {}).get("next_cursor")
         if next_cursor:
-            return {"cursor": json_response.get("response_metadata", {}).get("next_cursor")}
+            return {"cursor": next_cursor}
 
     def request_params(
         self,
@@ -56,7 +57,7 @@ class SlackStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {"limit": 100}
+        params = {"limit": self.page_size}
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -67,10 +68,9 @@ class SlackStream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
+    ) -> Iterable[MutableMapping]:
         json_response = response.json()
-        for record in json_response.get(self.data_field, []):
-            yield record
+        yield from json_response.get(self.data_field, [])
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         # This method is called if we run into the rate limit. Slack puts the retry time in the `Retry-After` response header so we
@@ -127,18 +127,18 @@ class Users(SlackStream):
 
 
 # Incremental Streams
-def chunk_date_range(start_date: DateTime, interval=1) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -> Iterable[Mapping[str, any]]:
     """
-    Returns a list of the beginning and ending timetsamps of each day between the start date and now.
+    Returns a list of the beginning and ending timestamps of each day between the start date and now.
     The return value is a list of dicts {'oldest': float, 'latest': float} which can be used directly with the Slack API
     """
     intervals = []
     now = pendulum.now()
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date <= now:
-        end = start_date.add(days=interval)
-        intervals.append({"oldest": start_date.timestamp(), "latest": end.timestamp()})
-        start_date = start_date.add(days=1)
+        end_date = start_date + interval
+        intervals.append({"oldest": start_date.timestamp(), "latest": end_date.timestamp()})
+        start_date = end_date
 
     return intervals
 
@@ -148,7 +148,7 @@ class IncrementalMessageStream(SlackStream, ABC):
     cursor_field = "ts"
 
     def __init__(self, default_start_date: DateTime, **kwargs):
-        self._default_start_date = default_start_date
+        self._start_ts = default_start_date.timestamp()
         super().__init__(**kwargs)
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -158,15 +158,13 @@ class IncrementalMessageStream(SlackStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
-            # if self.cursor_field in record:
-            #     record[self.cursor_field] = float(record[self.cursor_field])
-
+            record[self.cursor_field] = float(record[self.cursor_field])
             yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         current_stream_state[self.cursor_field] = max(
-            float(latest_record[self.cursor_field]), float(current_stream_state.get(self.cursor_field, 0))
+            latest_record[self.cursor_field], current_stream_state.get(self.cursor_field, self._start_ts)
         )
 
         return current_stream_state
@@ -178,8 +176,8 @@ class ChannelMessages(IncrementalMessageStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
-        start_date = stream_state.get(self.cursor_field, self._default_start_date)
-        return chunk_date_range(start_date)
+        start_date = stream_state.get(self.cursor_field, self._start_ts)
+        return chunk_date_range(pendulum.from_timestamp(start_date))
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # Channel is provided when reading threads
@@ -228,10 +226,10 @@ class Threads(IncrementalMessageStream):
             messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
-            messages_start_date = self._default_start_date
+            messages_start_date = pendulum.from_timestamp(self._start_ts)
 
         messages_stream = ChannelMessages(authenticator=self.authenticator, default_start_date=messages_start_date)
-        for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date}):
+        for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
                 message_chunk["channel"] = channel["id"]
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
