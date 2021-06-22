@@ -42,7 +42,12 @@ public class SpecFetcher {
     return getSpecFromJob(schedulerJobClient.createGetSpecJob(dockerImage));
   }
 
+  public SynchronousResponse<ConnectorSpecification> executeWithResponse(String dockerImage) throws IOException {
+    return schedulerJobClient.createGetSpecJob(dockerImage);
+  }
+
   private static ConnectorSpecification getSpecFromJob(SynchronousResponse<ConnectorSpecification> response) {
+    Preconditions.checkNotNull(response, "Get Spec job failed due to response is null");
     Preconditions.checkState(response.isSuccess(), "Get Spec job failed.");
     Preconditions.checkNotNull(response.getOutput(), "Get Spec job return null spec");
 

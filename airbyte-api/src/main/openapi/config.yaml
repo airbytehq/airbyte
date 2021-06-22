@@ -205,7 +205,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SourceDefinitionRead"
+                $ref: "#/components/schemas/SourceDefinitionReadWithJobInfo"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/source_definitions/update:
@@ -225,7 +225,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SourceDefinitionRead"
+                $ref: "#/components/schemas/SourceDefinitionReadWithJobInfo"
         "404":
           description: SourceDefinition not found
         "422":
@@ -499,7 +499,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
+                $ref: "#/components/schemas/DestinationDefinitionReadWithJobInfo"
         "422":
           $ref: "#/components/responses/InvalidInput"
   /v1/destination_definitions/update:
@@ -520,7 +520,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
+                $ref: "#/components/schemas/DestinationDefinitionReadWithJobInfo"
         "404":
           description: DestinationDefinition not found
         "422":
@@ -1591,6 +1591,16 @@ components:
           $ref: "#/components/schemas/SourceDefinitionId"
         dockerImageTag:
           type: string
+    SourceDefinitionReadWithJobInfo:
+      type: object
+      required:
+        - sourceDefinitionRead
+        - jobInfo
+      properties:
+        sourceDefinitionRead:
+          $ref: "#/components/schemas/SourceDefinitionRead"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"
     SourceDefinitionRead:
       type: object
       required:
@@ -1789,6 +1799,16 @@ components:
           $ref: "#/components/schemas/DestinationDefinitionId"
         dockerImageTag:
           type: string
+    DestinationDefinitionReadWithJobInfo:
+      type: object
+      required:
+        - destinationDefinitionRead
+        - jobInfo
+      properties:
+        destinationDefinitionRead:
+          $ref: "#/components/schemas/DestinationDefinitionRead"
+        jobInfo:
+          $ref: "#/components/schemas/SynchronousJobRead"      
     DestinationDefinitionRead:
       type: object
       required:
