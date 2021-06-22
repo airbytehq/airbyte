@@ -24,6 +24,7 @@
 
 import time
 from abc import ABC
+from collections import deque
 from datetime import datetime
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Sequence
 
@@ -271,7 +272,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     MAX_WAIT_TO_START = pendulum.duration(minutes=5)
     MAX_WAIT_TO_FINISH = pendulum.duration(minutes=30)
     MAX_ASYNC_SLEEP = pendulum.duration(minutes=5)
-    MAX_ASYNC_JOBS = 30
+    MAX_ASYNC_JOBS = 3
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(days=37 * 30)
 
     action_breakdowns = ALL_ACTION_BREAKDOWNS
@@ -312,22 +313,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         3. we shouldn't proceed to consumption of the next job before previous succeed
         """
         stream_state = stream_state or {}
-        jobs = []
+        running_jobs = deque()
         date_ranges = list(self._date_ranges(stream_state=stream_state))
+        for params in date_ranges:
+            job = self._create_insights_job(params)
+            running_jobs.append(job)
+            if len(running_jobs) >= self.MAX_ASYNC_JOBS:
+                yield {"job": running_jobs.popleft()}
 
-        # accumulate MAX_ASYNC_JOBS jobs in the buffer to schedule them all before trying to wait
-        for params in date_ranges[: self.MAX_ASYNC_JOBS]:
-            params = deep_merge(params, self.request_params(stream_state=stream_state))
-            jobs.append(self._create_insights_job(params))
-
-        # now emit every job scheduled, this will result in waiting during read_records call for each slice
-        for job in jobs:
-            yield {"job": job}
-
-        # emit the rest of the interval
-        for params in date_ranges[self.MAX_ASYNC_JOBS :]:
-            params = deep_merge(params, self.request_params(stream_state=stream_state))
-            yield {"job": self._create_insights_job(params)}
+        while running_jobs:
+            yield {"job": running_jobs.popleft()}
 
     @backoff_policy
     def wait_for_job(self, job) -> AdReportRun:
