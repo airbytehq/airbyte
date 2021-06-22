@@ -32,4 +32,5 @@ If the source does not support incremental sync, this test is skipped. Otherwise
 
 ## testEntrypointEnvVar
 
-In order to launch a source on Kubernetes in a pod, we need to be able to wrap the entrypoint at runtime. The environment variable `AIRBYTE_ENTRYPOINT` must be set to the entrypoint of the `Dockerfile` so we can access the entrypoint at runtime. This test asserts that the environment variable is set.
+In order to launch a source on Kubernetes in a pod, we need to be able to wrap the entrypoint. The source connector must specify its entrypoint in the AIRBYTE_ENTRYPOINT variable. This test ensures that the entrypoint environment variable is set.
+
