@@ -318,7 +318,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         # accumulate MAX_ASYNC_JOBS jobs in the buffer to schedule them all before trying to wait
         for params in date_ranges[: self.MAX_ASYNC_JOBS]:
             params = deep_merge(params, self.request_params(stream_state=stream_state))
-            jobs.append(self._get_insights(params))
+            jobs.append(self._create_insights_job(params))
 
         # now emit every job scheduled, this will result in waiting during read_records call for each slice
         for job in jobs:
@@ -327,7 +327,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         # emit the rest of the interval
         for params in date_ranges[self.MAX_ASYNC_JOBS :]:
             params = deep_merge(params, self.request_params(stream_state=stream_state))
-            yield {"job": self._get_insights(params)}
+            yield {"job": self._create_insights_job(params)}
 
     @backoff_policy
     def wait_for_job(self, job) -> AdReportRun:
@@ -436,7 +436,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             }
 
     @backoff_policy
-    def _get_insights(self, params) -> AdReportRun:
+    def _create_insights_job(self, params) -> AdReportRun:
         job = self._api.account.get_insights(params=params, is_async=True)
         self.logger.info(f"Created AdReportRun: {job} to sync insights with breakdown {self.breakdowns}")
         return job
