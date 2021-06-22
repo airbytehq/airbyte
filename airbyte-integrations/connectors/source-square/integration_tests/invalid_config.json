@@ -1,3 +1,6 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_key": "API_KEY",
+  "is_sandbox": true,
+  "start_date": "START_DATE",
+  "include_deleted_objects": false
 }

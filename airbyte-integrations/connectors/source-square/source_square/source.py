@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2021 Airbyte
+# Copyright (c) 2020 Airbyte
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,7 @@ class SquareStream(HttpStream, ABC):
 class SquareCatalogObjectsStream(SquareStream):
     data_field = "objects"
     http_method = "POST"
-    limit = 1000
+    items_per_page_limit = 1000
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -90,7 +90,11 @@ class SquareCatalogObjectsStream(SquareStream):
     def request_body_json(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
-        json_payload = {"include_deleted_objects": self.include_deleted_objects, "include_related_objects": False, "limit": self.limit}
+        json_payload = {
+            "include_deleted_objects": self.include_deleted_objects,
+            "include_related_objects": False,
+            "limit": self.items_per_page_limit,
+        }
 
         if next_page_token:
             json_payload.update({"cursor": next_page_token["cursor"]})
@@ -99,7 +103,7 @@ class SquareCatalogObjectsStream(SquareStream):
 
 
 class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
-    state_checkpoint_interval = SquareCatalogObjectsStream.limit
+    state_checkpoint_interval = SquareCatalogObjectsStream.items_per_page_limit
 
     cursor_field = "updated_at"
 
@@ -175,7 +179,7 @@ class Locations(SquareStream):
 
 
 class SourceSquare(AbstractSource):
-    api_version = "2021-05-13"  # Latest Stable Release
+    api_version = "2021-06-16"  # Latest Stable Release
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
 
