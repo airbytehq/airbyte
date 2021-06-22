@@ -89,6 +89,11 @@ public class DebeziumRecordPublisher implements AutoCloseable {
             boolean inserted = false;
             while (!inserted) {
               inserted = queue.offer(e);
+              try {
+                Thread.sleep(10);
+              } catch (InterruptedException interruptedException) {
+                throw new RuntimeException(interruptedException);
+              }
             }
           }
         })
