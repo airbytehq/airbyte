@@ -24,39 +24,47 @@
 
 package io.airbyte.server.errors;
 
-import io.airbyte.api.model.KnownExceptionInfo;
+import io.airbyte.api.model.NotFoundKnownExceptionInfo;
 import org.apache.logging.log4j.core.util.Throwables;
 
-public abstract class KnownException extends RuntimeException {
+public class IdNotFoundKnownException extends KnownException {
 
-  public KnownException(String message) {
+  String id;
+
+  public IdNotFoundKnownException(String message, String id) {
     super(message);
+    this.id = id;
   }
 
-  public KnownException(String message, Throwable cause) {
+  public IdNotFoundKnownException(String message, String id, Throwable cause) {
+    super(message, cause);
+    this.id = id;
+  }
+
+  public IdNotFoundKnownException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  abstract public int getHttpCode();
-
-  public KnownExceptionInfo getKnownExceptionInfo() {
-    return KnownException.infoFromThrowable(this);
+  @Override
+  public int getHttpCode() {
+    return 404;
   }
 
-  public static KnownExceptionInfo infoFromThrowableWithMessage(Throwable t, String message) {
-    KnownExceptionInfo exceptionInfo = new KnownExceptionInfo()
-        .exceptionClassName(t.getClass().getName())
-        .message(message)
-        .exceptionStack(Throwables.toStringList(t));
-    if (t.getCause() != null) {
-      exceptionInfo.rootCauseExceptionClassName(t.getClass().getClass().getName());
-      exceptionInfo.rootCauseExceptionStack(Throwables.toStringList(t.getCause()));
+  public String getId() {
+    return id;
+  }
+
+  public NotFoundKnownExceptionInfo getNotFoundKnownExceptionInfo() {
+    NotFoundKnownExceptionInfo exceptionInfo = new NotFoundKnownExceptionInfo()
+        .exceptionClassName(this.getClass().getName())
+        .message(this.getMessage())
+        .exceptionStack(Throwables.toStringList(this));
+    if (this.getCause() != null) {
+      exceptionInfo.rootCauseExceptionClassName(this.getClass().getClass().getName());
+      exceptionInfo.rootCauseExceptionStack(Throwables.toStringList(this.getCause()));
     }
+    exceptionInfo.id(this.getId());
     return exceptionInfo;
-  }
-
-  public static KnownExceptionInfo infoFromThrowable(Throwable t) {
-    return infoFromThrowableWithMessage(t, t.getMessage());
   }
 
 }

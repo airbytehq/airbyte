@@ -76,7 +76,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkspaceRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/ExceptionOccurred"
   /v1/workspaces/delete:
     post:
       tags:
@@ -93,9 +93,9 @@ paths:
         "204":
           description: The resource was deleted successfully.
         "404":
-          description: Source not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/workspaces/get:
     post:
       tags:
@@ -116,9 +116,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkspaceRead"
         "404":
-          description: Workspace not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/workspaces/get_by_slug:
     post:
       tags:
@@ -139,9 +139,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkspaceRead"
         "404":
-          description: Workspace not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/workspaces/update:
     post:
       tags:
@@ -162,9 +162,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/WorkspaceRead"
         "404":
-          description: Workspace not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/notifications/try:
     post:
       tags:
@@ -185,9 +185,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/NotificationRead"
         "404":
-          description: Notification Client not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/create:
     post:
       tags:
@@ -207,7 +207,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/update:
     post:
       tags:
@@ -227,9 +227,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionRead"
         "404":
-          description: SourceDefinition not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definitions/list:
     post:
       tags:
@@ -277,9 +277,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionRead"
         "404":
-          description: SourceDefinition not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_definition_specifications/get:
     post:
       tags:
@@ -300,9 +300,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionSpecificationRead"
         "404":
-          description: SourceDefinition not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/create:
     post:
       tags:
@@ -323,7 +323,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/update:
     post:
       tags:
@@ -344,9 +344,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceRead"
         "404":
-          description: Source not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/list:
     post:
       tags:
@@ -368,9 +368,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceReadList"
         "404":
-          description: Workspace not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/get:
     post:
       tags:
@@ -391,9 +391,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceRead"
         "404":
-          description: Source not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/delete:
     post:
       tags:
@@ -410,9 +410,9 @@ paths:
         "204":
           description: The resource was deleted successfully.
         "404":
-          description: Source not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/check_connection:
     post:
       tags:
@@ -433,9 +433,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "404":
-          description: Source not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/check_connection_for_update:
     post:
       tags:
@@ -456,9 +456,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "404":
-          description: Source not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/discover_schema:
     post:
       tags:
@@ -479,9 +479,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceDiscoverSchemaRead"
         "404":
-          description: Source not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/create:
     post:
       tags:
@@ -501,7 +501,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -522,9 +522,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionRead"
         "404":
-          description: DestinationDefinition not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/list:
     post:
       tags:
@@ -572,9 +572,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionRead"
         "404":
-          description: DestinationDefinition not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definition_specifications/get:
     post:
       tags:
@@ -595,9 +595,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionSpecificationRead"
         "404":
-          description: DestinationDefinition not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   # DESTINATIONS
   /v1/destinations/create:
     post:
@@ -619,7 +619,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/DestinationRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destinations/update:
     post:
       tags:
@@ -640,7 +640,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/DestinationRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destinations/list:
     post:
       tags:
@@ -661,9 +661,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/DestinationReadList"
         "404":
-          description: Workspace not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destinations/get:
     post:
       tags:
@@ -684,9 +684,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/DestinationRead"
         "404":
-          description: Destination  not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destinations/check_connection:
     post:
       tags:
@@ -707,9 +707,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "404":
-          description: Destination  not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destinations/check_connection_for_update:
     post:
       tags:
@@ -730,9 +730,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "404":
-          description: Destination  not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destinations/delete:
     post:
       tags:
@@ -749,9 +749,9 @@ paths:
         "204":
           description: The resource was deleted successfully.
         "404":
-          description: Destination  not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/create:
     post:
       tags:
@@ -772,7 +772,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ConnectionRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/update:
     post:
       tags:
@@ -793,7 +793,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ConnectionRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/list:
     post:
       tags:
@@ -815,9 +815,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ConnectionReadList"
         "404":
-          description: Workspace not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/get:
     post:
       tags:
@@ -838,9 +838,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ConnectionRead"
         "404":
-          description: Connection not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/state/get:
     post:
       tags:
@@ -861,9 +861,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ConnectionState"
         "404":
-          description: Connection not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/delete:
     post:
       tags:
@@ -880,9 +880,9 @@ paths:
         "204":
           description: The resource was deleted successfully.
         "404":
-          description: Connection not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/sync:
     post:
       tags:
@@ -903,9 +903,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/JobInfoRead"
         "404":
-          description: Connection not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/reset:
     post:
       tags:
@@ -926,9 +926,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/JobInfoRead"
         "404":
-          description: Connection not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/operations/check:
     post:
       tags:
@@ -949,7 +949,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/CheckOperationRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/operations/create:
     post:
       tags:
@@ -970,7 +970,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/OperationRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/operations/update:
     post:
       tags:
@@ -991,7 +991,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/OperationRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/operations/list:
     post:
       tags:
@@ -1013,9 +1013,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/OperationReadList"
         "404":
-          description: Connection not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/operations/get:
     post:
       tags:
@@ -1036,9 +1036,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/OperationRead"
         "404":
-          description: Operation not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/operations/delete:
     post:
       tags:
@@ -1055,9 +1055,9 @@ paths:
         "204":
           description: The resource was deleted successfully.
         "404":
-          description: Operation not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/scheduler/sources/check_connection:
     post:
       tags:
@@ -1078,7 +1078,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/scheduler/sources/discover_schema:
     post:
       tags:
@@ -1099,7 +1099,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceDiscoverSchemaRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/scheduler/destinations/check_connection:
     post:
       tags:
@@ -1120,7 +1120,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -1141,9 +1141,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
         "404":
-          description: Workspace not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/get:
     post:
       tags:
@@ -1164,9 +1164,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "404":
-          description: Connection not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/create:
     post:
       tags:
@@ -1187,7 +1187,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/connections/update:
     post:
       tags:
@@ -1208,7 +1208,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/sources/recreate:
     post:
       tags:
@@ -1229,7 +1229,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourceRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/destinations/recreate:
     post:
       tags:
@@ -1250,7 +1250,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/DestinationRead"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/list:
     post:
       tags:
@@ -1271,9 +1271,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/JobReadList"
         "404":
-          description: Connection not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/get:
     post:
       tags:
@@ -1294,9 +1294,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/JobInfoRead"
         "404":
-          description: Job not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/jobs/cancel:
     post:
       tags:
@@ -1317,9 +1317,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/JobInfoRead"
         "404":
-          description: Job not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/health:
     get:
       tags:
@@ -1354,9 +1354,9 @@ paths:
                 type: string
                 format: binary
         "404":
-          description: Logs not found
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
-          $ref: "#/components/responses/InvalidInput"
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/openapi:
     get:
       tags:
@@ -2667,8 +2667,94 @@ components:
             - failed
         reason:
           type: string
+    InvalidInputProperty:
+      type: object
+      required:
+        - propertyPath
+      properties:
+        propertyPath:
+          type: string
+        invalidValue:
+          type: string
+        message:
+          type: string
+    NotFoundKnownExceptionInfo:
+      type: object
+      required:
+        - message
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+        rootCauseExceptionClassName:
+          type: string
+        rootCauseExceptionStack:
+          type: array
+          items:
+            type: string
+    KnownExceptionInfo:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+        rootCauseExceptionClassName:
+          type: string
+        rootCauseExceptionStack:
+          type: array
+          items:
+            type: string
+    InvalidInputExceptionInfo:
+      type: object
+      required:
+        - message
+        - validationErrors
+      properties:
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvalidInputProperty"
+
   responses:
-    InvalidInput:
-      description: Invalid Input
+    NotFoundResponse:
+      description: Object with given id was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotFoundKnownExceptionInfo"
+    InvalidInputResponse:
+      description: Input failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InvalidInputExceptionInfo"
+    ExceptionResponse:
+      description: Exception occurred; see message for details.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/KnownExceptionInfo"
 security:
-  - {}
+  - { }
