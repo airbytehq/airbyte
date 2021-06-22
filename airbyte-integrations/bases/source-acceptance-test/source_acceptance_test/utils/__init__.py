@@ -1,5 +1,5 @@
 from .common import SecretDict, filter_output, full_refresh_only_catalog, incremental_only_catalog, load_config
-from .compare import diff_dicts
+from .compare import diff_dicts, serialize
 from .connector_runner import ConnectorRunner
 from .json_schema_helper import JsonSchemaHelper
 
@@ -12,4 +12,5 @@ __all__ = [
     "SecretDict",
     "ConnectorRunner",
     "diff_dicts",
+    "serialize",
 ]
