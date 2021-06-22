@@ -279,14 +279,17 @@ class TicketsAPI(IncrementalStreamAPI):
         params = {"include": "description"}
         yield from self.read(partial(self._api_get, url="tickets"), params=params)
 
-    # This block extends TicketsAPI Stream to overcome '300 page' server error.
-    # Since the TicketsAPI Stream list has a 300 page pagination limit, after 300 pages, update the parameters with
-    # query using 'updated_since' = last_record, if there is more data remaining.
     @staticmethod
     def get_tickets(
         result_return_limit: int, getter: Callable, params: Mapping[str, Any] = None, ticket_paginate_limit: int = 300
     ) -> Iterator:
-        """Read using getter"""
+        """
+        Read using getter
+
+        This block extends TicketsAPI Stream to overcome '300 page' server error.
+        Since the TicketsAPI Stream list has a 300 page pagination limit, after 300 pages, update the parameters with
+        query using 'updated_since' = last_record, if there is more data remaining.
+        """
         params = params or {}
         # the maximum page allowed to pull during pagination.
         # ticket_paginate_limit 300
@@ -309,6 +312,11 @@ class TicketsAPI(IncrementalStreamAPI):
             # checkpoint & switch the pagination
             if page == ticket_paginate_limit:
                 page = 0  # reset page counter
+                # Adding +1 second to last_record value, to avoid record duplication,
+                # this potentialy could lead to skipping some records during the fetch,
+                # in cases where multiple records are created at the same datetime, at the level of seconds
+                # this behaviour is tested in test_300_page.py unit_test (test1)
+                # to avoid such ocations, please comment or remove the `.add(seconds=1)' part.
                 last_record = pendulum.parse(last_record).add(seconds=1)
                 # updating request parameters with last_record state
                 params["order_by"] = "updated_at"

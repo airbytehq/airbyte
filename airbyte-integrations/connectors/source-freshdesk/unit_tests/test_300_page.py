@@ -52,19 +52,20 @@ class Test300PageLimit:
 
         return output
 
-    """
-    TEST 1 - not all records are retrieved
-
-    During test1 the tickets_stream changes the state of parameters on page: 2,
-    by updating the params:
-    params["order_by"] = "updated_at"
-    params["updated_since"] = last_record
-    and continues to fetch records from the source, using new cycle, and so on.
-    NOTE:
-    The record {"id": 7} is not shown in the output result, because of the same "updated_at" with {"id": 6}
-    """
-
     def test_not_all_records(self):
+        """
+        TEST 1 - not all records are retrieved
+
+        During test1 the tickets_stream changes the state of parameters on page: 2,
+        by updating the params:
+        `params["order_by"] = "updated_at"`
+        `params["updated_since"] = last_record`
+        continues to fetch records from the source, using new cycle, and so on.
+
+        NOTE:
+        The record {"id": 7} is not shown in the output result, because of the same "updated_at" with {"id": 6}
+        """
+
         # INT value of page number where the switch state should be triggered.
         # in this test case values from: 1 - 4, assuming we want to switch state on this page.
         ticket_paginate_limit = 2
@@ -79,19 +80,19 @@ class Test300PageLimit:
         # We're expecting 6 records to return from the tickets_stream
         assert self.tickets[:-1] == test1
 
-    """
-    TEST 2 - fetched all the records
-    During test1 the tickets_stream changes the state of parameters on page: 2,
-    by updating the params:
-    params["order_by"] = "updated_at"
-    params["updated_since"] = last_record
-    and continues to fetch records from the source, using new cycle, and so on.
-    NOTE:
-    The test returns all the record in way way it sohuld be, the difference is in the last {"id": 7},
-    that has +1 second
-    """
-
     def test_all_records(self):
+
+        """
+        TEST 2 - fetched all the records
+        During test1 the tickets_stream changes the state of parameters on page: 2,
+        by updating the params:
+            params["order_by"] = "updated_at"
+            params["updated_since"] = last_record
+        continues to fetch records from the source, using new cycle, and so on.
+
+        NOTE:
+        The test returns all the records, the difference is in the last record {"id": 7}, it has +1 second
+        """
 
         self.tickets = [
             {"id": 1, "updated_at": "2018-01-02T00:00:00Z"},
