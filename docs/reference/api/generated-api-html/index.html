@@ -429,8 +429,8 @@ font-style: italic;
     Successful operation
         <a href="#ConnectionRead">ConnectionRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="deleteConnection"/>
@@ -462,17 +462,23 @@ font-style: italic;
     <!--Todo: process Response Object and its headers, schema, examples -->
 
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">204</h4>
     The resource was deleted successfully.
         <a href="#"></a>
     <h4 class="field-label">404</h4>
-    Connection not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getConnection"/>
@@ -569,11 +575,11 @@ font-style: italic;
     Successful operation
         <a href="#ConnectionRead">ConnectionRead</a>
     <h4 class="field-label">404</h4>
-    Connection not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getState"/>
@@ -627,11 +633,11 @@ font-style: italic;
     Successful operation
         <a href="#ConnectionState">ConnectionState</a>
     <h4 class="field-label">404</h4>
-    Connection not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="listConnectionsForWorkspace"/>
@@ -775,11 +781,11 @@ font-style: italic;
     Successful operation
         <a href="#ConnectionReadList">ConnectionReadList</a>
     <h4 class="field-label">404</h4>
-    Workspace not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="resetConnection"/>
@@ -863,11 +869,11 @@ font-style: italic;
     Successful operation
         <a href="#JobInfoRead">JobInfoRead</a>
     <h4 class="field-label">404</h4>
-    Connection not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="syncConnection"/>
@@ -951,11 +957,11 @@ font-style: italic;
     Successful operation
         <a href="#JobInfoRead">JobInfoRead</a>
     <h4 class="field-label">404</h4>
-    Connection not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="updateConnection"/>
@@ -1052,8 +1058,8 @@ font-style: italic;
     Successful operation
         <a href="#ConnectionRead">ConnectionRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Deployment">Deployment</a></h1>
@@ -1208,11 +1214,11 @@ font-style: italic;
     Successful operation
         <a href="#CheckConnectionRead">CheckConnectionRead</a>
     <h4 class="field-label">404</h4>
-    Destination  not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="checkConnectionToDestinationForUpdate"/>
@@ -1277,11 +1283,11 @@ font-style: italic;
     Successful operation
         <a href="#CheckConnectionRead">CheckConnectionRead</a>
     <h4 class="field-label">404</h4>
-    Destination  not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="createDestination"/>
@@ -1342,8 +1348,8 @@ font-style: italic;
     Successful operation
         <a href="#DestinationRead">DestinationRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="deleteDestination"/>
@@ -1375,17 +1381,23 @@ font-style: italic;
     <!--Todo: process Response Object and its headers, schema, examples -->
 
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">204</h4>
     The resource was deleted successfully.
         <a href="#"></a>
     <h4 class="field-label">404</h4>
-    Destination  not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getDestination"/>
@@ -1446,11 +1458,11 @@ font-style: italic;
     Successful operation
         <a href="#DestinationRead">DestinationRead</a>
     <h4 class="field-label">404</h4>
-    Destination  not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="listDestinationsForWorkspace"/>
@@ -1522,11 +1534,11 @@ font-style: italic;
     Successful operation
         <a href="#DestinationReadList">DestinationReadList</a>
     <h4 class="field-label">404</h4>
-    Workspace not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="updateDestination"/>
@@ -1587,8 +1599,8 @@ font-style: italic;
     Successful operation
         <a href="#DestinationRead">DestinationRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="DestinationDefinition">DestinationDefinition</a></h1>
@@ -1648,8 +1660,8 @@ font-style: italic;
     Successful operation
         <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getDestinationDefinition"/>
@@ -1708,11 +1720,11 @@ font-style: italic;
     Successful operation
         <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
     <h4 class="field-label">404</h4>
-    DestinationDefinition not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="listDestinationDefinitions"/>
@@ -1879,11 +1891,11 @@ font-style: italic;
     Successful operation
         <a href="#DestinationDefinitionRead">DestinationDefinitionRead</a>
     <h4 class="field-label">404</h4>
-    DestinationDefinition not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></h1>
@@ -1957,11 +1969,11 @@ font-style: italic;
     Successful operation
         <a href="#DestinationDefinitionSpecificationRead">DestinationDefinitionSpecificationRead</a>
     <h4 class="field-label">404</h4>
-    DestinationDefinition not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Health">Health</a></h1>
@@ -2087,11 +2099,11 @@ font-style: italic;
     Successful operation
         <a href="#JobInfoRead">JobInfoRead</a>
     <h4 class="field-label">404</h4>
-    Job not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getJobInfo"/>
@@ -2175,11 +2187,11 @@ font-style: italic;
     Successful operation
         <a href="#JobInfoRead">JobInfoRead</a>
     <h4 class="field-label">404</h4>
-    Job not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="listJobsFor"/>
@@ -2277,11 +2289,11 @@ font-style: italic;
     Successful operation
         <a href="#JobReadList">JobReadList</a>
     <h4 class="field-label">404</h4>
-    Connection not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Logs">Logs</a></h1>
@@ -2324,6 +2336,7 @@ font-style: italic;
     the media type will be conveyed by the <span class="header">Content-Type</span> response header.
     <ul>
       <li><code>text/plain</code></li>
+      <li><code>application/json</code></li>
     </ul>
 
     <h3 class="field-label">Responses</h3>
@@ -2331,11 +2344,11 @@ font-style: italic;
     Returns the log file
         <a href="#File">File</a>
     <h4 class="field-label">404</h4>
-    Logs not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Notifications">Notifications</a></h1>
@@ -2391,11 +2404,11 @@ font-style: italic;
     Successful operation
         <a href="#NotificationRead">NotificationRead</a>
     <h4 class="field-label">404</h4>
-    Notification Client not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Openapi">Openapi</a></h1>
@@ -2487,8 +2500,8 @@ font-style: italic;
     Successful operation
         <a href="#CheckOperationRead">CheckOperationRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="createOperation"/>
@@ -2554,8 +2567,8 @@ font-style: italic;
     Successful operation
         <a href="#OperationRead">OperationRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="deleteOperation"/>
@@ -2587,17 +2600,23 @@ font-style: italic;
     <!--Todo: process Response Object and its headers, schema, examples -->
 
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">204</h4>
     The resource was deleted successfully.
         <a href="#"></a>
     <h4 class="field-label">404</h4>
-    Operation not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getOperation"/>
@@ -2663,11 +2682,11 @@ font-style: italic;
     Successful operation
         <a href="#OperationRead">OperationRead</a>
     <h4 class="field-label">404</h4>
-    Operation not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="listOperationsForConnection"/>
@@ -2749,11 +2768,11 @@ font-style: italic;
     Successful operation
         <a href="#OperationReadList">OperationReadList</a>
     <h4 class="field-label">404</h4>
-    Connection not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="updateOperation"/>
@@ -2819,8 +2838,8 @@ font-style: italic;
     Successful operation
         <a href="#OperationRead">OperationRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Scheduler">Scheduler</a></h1>
@@ -2886,8 +2905,8 @@ font-style: italic;
     Successful operation
         <a href="#CheckConnectionRead">CheckConnectionRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="executeSourceCheckConnection"/>
@@ -2952,8 +2971,8 @@ font-style: italic;
     Successful operation
         <a href="#CheckConnectionRead">CheckConnectionRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="executeSourceDiscoverSchema"/>
@@ -3049,8 +3068,8 @@ font-style: italic;
     Successful operation
         <a href="#SourceDiscoverSchemaRead">SourceDiscoverSchemaRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Source">Source</a></h1>
@@ -3116,11 +3135,11 @@ font-style: italic;
     Successful operation
         <a href="#CheckConnectionRead">CheckConnectionRead</a>
     <h4 class="field-label">404</h4>
-    Source not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="checkConnectionToSourceForUpdate"/>
@@ -3185,11 +3204,11 @@ font-style: italic;
     Successful operation
         <a href="#CheckConnectionRead">CheckConnectionRead</a>
     <h4 class="field-label">404</h4>
-    Source not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="createSource"/>
@@ -3250,8 +3269,8 @@ font-style: italic;
     Successful operation
         <a href="#SourceRead">SourceRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="deleteSource"/>
@@ -3283,17 +3302,23 @@ font-style: italic;
     <!--Todo: process Response Object and its headers, schema, examples -->
 
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">204</h4>
     The resource was deleted successfully.
         <a href="#"></a>
     <h4 class="field-label">404</h4>
-    Source not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="discoverSchemaForSource"/>
@@ -3389,11 +3414,11 @@ font-style: italic;
     Successful operation
         <a href="#SourceDiscoverSchemaRead">SourceDiscoverSchemaRead</a>
     <h4 class="field-label">404</h4>
-    Source not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getSource"/>
@@ -3454,11 +3479,11 @@ font-style: italic;
     Successful operation
         <a href="#SourceRead">SourceRead</a>
     <h4 class="field-label">404</h4>
-    Source not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="listSourcesForWorkspace"/>
@@ -3530,11 +3555,11 @@ font-style: italic;
     Successful operation
         <a href="#SourceReadList">SourceReadList</a>
     <h4 class="field-label">404</h4>
-    Workspace not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="updateSource"/>
@@ -3595,11 +3620,11 @@ font-style: italic;
     Successful operation
         <a href="#SourceRead">SourceRead</a>
     <h4 class="field-label">404</h4>
-    Source not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="SourceDefinition">SourceDefinition</a></h1>
@@ -3659,8 +3684,8 @@ font-style: italic;
     Successful operation
         <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getSourceDefinition"/>
@@ -3719,11 +3744,11 @@ font-style: italic;
     Successful operation
         <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
     <h4 class="field-label">404</h4>
-    SourceDefinition not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="listLatestSourceDefinitions"/>
@@ -3890,11 +3915,11 @@ font-style: italic;
     Successful operation
         <a href="#SourceDefinitionRead">SourceDefinitionRead</a>
     <h4 class="field-label">404</h4>
-    SourceDefinition not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="SourceDefinitionSpecification">SourceDefinitionSpecification</a></h1>
@@ -3965,11 +3990,11 @@ font-style: italic;
     Successful operation
         <a href="#SourceDefinitionSpecificationRead">SourceDefinitionSpecificationRead</a>
     <h4 class="field-label">404</h4>
-    SourceDefinition not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="WebBackend">WebBackend</a></h1>
@@ -4118,8 +4143,8 @@ font-style: italic;
     Successful operation
         <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="webBackendGetConnection"/>
@@ -4267,11 +4292,11 @@ font-style: italic;
     Successful operation
         <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
     <h4 class="field-label">404</h4>
-    Connection not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="webBackendListConnectionsForWorkspace"/>
@@ -4517,11 +4542,11 @@ font-style: italic;
     Successful operation
         <a href="#WebBackendConnectionReadList">WebBackendConnectionReadList</a>
     <h4 class="field-label">404</h4>
-    Workspace not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="webBackendRecreateDestination"/>
@@ -4582,8 +4607,8 @@ font-style: italic;
     Successful operation
         <a href="#DestinationRead">DestinationRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="webBackendRecreateSource"/>
@@ -4644,8 +4669,8 @@ font-style: italic;
     Successful operation
         <a href="#SourceRead">SourceRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="webBackendUpdateConnection"/>
@@ -4793,8 +4818,8 @@ font-style: italic;
     Successful operation
         <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Workspace">Workspace</a></h1>
@@ -4867,7 +4892,7 @@ font-style: italic;
     Successful operation
         <a href="#WorkspaceRead">WorkspaceRead</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
+    
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -4900,17 +4925,23 @@ font-style: italic;
     <!--Todo: process Response Object and its headers, schema, examples -->
 
 
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
 
     <h3 class="field-label">Responses</h3>
     <h4 class="field-label">204</h4>
     The resource was deleted successfully.
         <a href="#"></a>
     <h4 class="field-label">404</h4>
-    Source not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getWorkspace"/>
@@ -4982,11 +5013,11 @@ font-style: italic;
     Successful operation
         <a href="#WorkspaceRead">WorkspaceRead</a>
     <h4 class="field-label">404</h4>
-    Workspace not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="getWorkspaceBySlug"/>
@@ -5058,11 +5089,11 @@ font-style: italic;
     Successful operation
         <a href="#WorkspaceRead">WorkspaceRead</a>
     <h4 class="field-label">404</h4>
-    Workspace not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="updateWorkspace"/>
@@ -5134,11 +5165,11 @@ font-style: italic;
     Successful operation
         <a href="#WorkspaceRead">WorkspaceRead</a>
     <h4 class="field-label">404</h4>
-    Workspace not found
-        <a href="#"></a>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
     <h4 class="field-label">422</h4>
-    Invalid Input
-        <a href="#"></a>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
 
@@ -5181,6 +5212,8 @@ font-style: italic;
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#HealthCheckRead"><code>HealthCheckRead</code> - </a></li>
     <li><a href="#ImportRead"><code>ImportRead</code> - </a></li>
+    <li><a href="#InvalidInputExceptionInfo"><code>InvalidInputExceptionInfo</code> - </a></li>
+    <li><a href="#InvalidInputProperty"><code>InvalidInputProperty</code> - </a></li>
     <li><a href="#JobConfigType"><code>JobConfigType</code> - </a></li>
     <li><a href="#JobIdRequestBody"><code>JobIdRequestBody</code> - </a></li>
     <li><a href="#JobInfoRead"><code>JobInfoRead</code> - </a></li>
@@ -5189,10 +5222,12 @@ font-style: italic;
     <li><a href="#JobReadList"><code>JobReadList</code> - </a></li>
     <li><a href="#JobStatus"><code>JobStatus</code> - </a></li>
     <li><a href="#JobWithAttemptsRead"><code>JobWithAttemptsRead</code> - </a></li>
+    <li><a href="#KnownExceptionInfo"><code>KnownExceptionInfo</code> - </a></li>
     <li><a href="#LogRead"><code>LogRead</code> - </a></li>
     <li><a href="#LogType"><code>LogType</code> - </a></li>
     <li><a href="#LogsRequestBody"><code>LogsRequestBody</code> - </a></li>
     <li><a href="#NamespaceDefinitionType"><code>NamespaceDefinitionType</code> - </a></li>
+    <li><a href="#NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a></li>
     <li><a href="#Notification"><code>Notification</code> - </a></li>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
@@ -5563,6 +5598,25 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="InvalidInputExceptionInfo"><code>InvalidInputExceptionInfo</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">exceptionClassName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">exceptionStack (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+<div class="param">validationErrors </div><div class="param-desc"><span class="param-type"><a href="#InvalidInputProperty">array[InvalidInputProperty]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="InvalidInputProperty"><code>InvalidInputProperty</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">propertyPath </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">invalidValue (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="JobConfigType"><code>JobConfigType</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -5625,6 +5679,17 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="KnownExceptionInfo"><code>KnownExceptionInfo</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">message </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">exceptionClassName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">exceptionStack (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+<div class="param">rootCauseExceptionClassName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">rootCauseExceptionStack (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="LogRead"><code>LogRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -5649,6 +5714,18 @@ font-style: italic;
     <div class='model-description'>Method used for computing final namespace in destination</div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="NotFoundKnownExceptionInfo"><code>NotFoundKnownExceptionInfo</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">message </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">exceptionClassName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">exceptionStack (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+<div class="param">rootCauseExceptionClassName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">rootCauseExceptionStack (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="Notification"><code>Notification</code> - </a> <a class="up" href="#__Models">Up</a></h3>

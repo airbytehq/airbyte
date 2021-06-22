@@ -32,7 +32,7 @@ import io.airbyte.api.model.DestinationIdRequestBody;
 import io.airbyte.api.model.DestinationRead;
 import io.airbyte.api.model.DestinationRecreate;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.ConnectFailureKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -79,7 +79,7 @@ public class WebBackendDestinationHandler {
     }
 
     destinationHandler.deleteDestination(destinationIdRequestBody);
-    throw new KnownException(400, "Unable to connect to destination");
+    throw new ConnectFailureKnownException("Unable to connect to destination");
   }
 
 }
