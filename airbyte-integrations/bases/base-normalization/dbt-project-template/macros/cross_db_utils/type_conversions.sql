@@ -38,3 +38,8 @@
 {% macro redshift__cast_to_boolean(field) -%}
     cast(decode({{ field }}, 'true', '1', 'false', '0')::integer as boolean)
 {%- endmacro %}
+
+{# cast_to_bigint -------------------------------------------------     #}
+{% macro mysql__type_bigint() %}
+    signed
+{% endmacro %}
