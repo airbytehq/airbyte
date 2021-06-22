@@ -22,6 +22,7 @@
 # SOFTWARE.
 #
 
+import time
 from abc import ABC
 from datetime import datetime, timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -52,6 +53,8 @@ class PaypalTransactionStream(HttpStream, ABC):
     start_date_max: Mapping[str, int] = {"hours": 0}
 
     stream_slice_period: Mapping[str, int] = {"days": 1}  # max period is 31 days (API limit)
+
+    requests_per_minute: int = 30  # API limit is 50 reqs/min from 1 IP to all endpoints
 
     def __init__(
         self,
@@ -134,6 +137,9 @@ class PaypalTransactionStream(HttpStream, ABC):
             # convert any date format to python iso format string for date based cursors
             self.update_field(record, self.cursor_field, lambda date: isoparse(date).isoformat())
             yield record
+
+        # sleep for 1-2 secs to not reach rate limit: 50 requests per minute
+        time.sleep(60 / self.requests_per_minute)
 
     @staticmethod
     def update_field(record: Mapping[str, Any], field_path: List[str], update: Callable[[Any], None]):
