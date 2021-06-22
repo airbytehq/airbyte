@@ -20,7 +20,7 @@
               "type": ["null", "string"]
             },
             "statement_key": {
-              "type": ["null", "integer"]
+              "type": ["null", "string"]
             },
             "created_at": {
               "type": ["null", "string"],
