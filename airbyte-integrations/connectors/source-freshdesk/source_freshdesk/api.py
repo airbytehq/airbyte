@@ -282,23 +282,24 @@ class TicketsAPI(IncrementalStreamAPI):
     # This block extends TicketsAPI Stream to overcome '300 page' server error.
     # Since the TicketsAPI Stream list has a 300 page pagination limit, after 300 pages, update the parameters with
     # query using 'updated_since' = last_record, if there is more data remaining.
-    def get_tickets(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+    @staticmethod
+    def get_tickets(result_return_limit: int, getter: Callable, params: Mapping[str, Any] = None, ticket_paginate_limit: int = 300) -> Iterator:
         """Read using getter"""
         params = params or {}
         # the maximum page allowed to pull during pagination.
-        ticket_paginate_limit = 300
+        # ticket_paginate_limit 300
         # Start page
         page = 1
         # Initial request parameters
-        params = {**params, "per_page": self.result_return_limit}
+        params = {**params, "per_page": result_return_limit}
 
         while True:
             params["page"] = page
             batch = list(getter(params=params))
             yield from batch
 
-            if len(batch) < self.result_return_limit:
-                return iter(())
+            if len(batch) < result_return_limit:
+               return iter(())
 
             # get last_record from latest batch, pos. 0, because of DESC order of records
             last_record = batch[0]["updated_at"]
@@ -306,7 +307,7 @@ class TicketsAPI(IncrementalStreamAPI):
             # checkpoint & switch the pagination
             if page == ticket_paginate_limit:
                 page = 0  # reset page counter
-                last_record = pendulum.parse(last_record).add(seconds=1)
+                last_record = pendulum.parse(last_record).add(seconds=1) # TODO: about 1 sec addings
                 # updating request parameters with last_record state
                 params["order_by"] = "updated_at"
                 params["updated_since"] = last_record
@@ -319,7 +320,7 @@ class TicketsAPI(IncrementalStreamAPI):
         params = params or {}
         params = {**params, **self._state_params()}
         latest_cursor = None
-        for record in self.get_tickets(getter, params):
+        for record in self.get_tickets(self.result_return_limit, getter, params):
             cursor = pendulum.parse(record[self.state_pk])
             # filter out records older then state
             if self._state and self._state >= cursor:
