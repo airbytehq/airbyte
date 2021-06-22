@@ -38,7 +38,7 @@ public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundExceptio
   @Override
   public Response toResponse(NotFoundException e) {
     // Would like to send the id along but we don't have access to the http request anymore to fetch it
-    // from. Come back to this.
+    // from. TODO: Come back to this with issue #4189
     IdNotFoundKnownException idnf = new IdNotFoundKnownException("Object not found. " + e.getMessage(), e);
     LOGGER.error("Not found exception", idnf.getNotFoundKnownExceptionInfo());
     return Response.status(404)
