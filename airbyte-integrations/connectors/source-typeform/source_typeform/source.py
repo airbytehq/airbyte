@@ -49,7 +49,7 @@ class TypeformStream(HttpStream, ABC):
 
 class Forms(TypeformStream):
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    primary_key = "id"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -70,15 +70,10 @@ class IncrementalTypeformStream(TypeformStream, ABC):
 
 
 class Responses(IncrementalTypeformStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
+    cursor_field = "submitted_at"
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
+    primary_key = "response_id"
 
     def path(self, **kwargs) -> str:
         return "responses"
