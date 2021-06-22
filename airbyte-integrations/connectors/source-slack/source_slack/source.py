@@ -34,7 +34,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from pendulum import DateTime
+from pendulum import DateTime, Period
 from slack_sdk import WebClient
 
 
@@ -127,25 +127,23 @@ class Users(SlackStream):
 
 
 # Incremental Streams
-def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -> Iterable[Mapping[str, any]]:
+def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -> Iterable[Period]:
     """
-    Returns a list of the beginning and ending timestamps of each day between the start date and now.
-    The return value is a list of dicts {'oldest': float, 'latest': float} which can be used directly with the Slack API
+    Yields a list of the beginning and ending timestamps of each day between the start date and now.
+    The return value is a pendulum.period
     """
-    intervals = []
     now = pendulum.now()
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     while start_date <= now:
         end_date = start_date + interval
-        intervals.append({"oldest": start_date.timestamp(), "latest": end_date.timestamp()})
+        yield pendulum.period(start_date, end_date)
         start_date = end_date
-
-    return intervals
 
 
 class IncrementalMessageStream(SlackStream, ABC):
     data_field = "messages"
     cursor_field = "ts"
+    primary_key = "id"
 
     def __init__(self, default_start_date: DateTime, **kwargs):
         self._start_ts = default_start_date.timestamp()
@@ -158,6 +156,7 @@ class IncrementalMessageStream(SlackStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
+            record[self.primary_key] = record[self.cursor_field]
             record[self.cursor_field] = float(record[self.cursor_field])
             yield record
 
@@ -176,8 +175,9 @@ class ChannelMessages(IncrementalMessageStream):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
-        start_date = stream_state.get(self.cursor_field, self._start_ts)
-        return chunk_date_range(pendulum.from_timestamp(start_date))
+        start_date = pendulum.from_timestamp(stream_state.get(self.cursor_field, self._start_ts))
+        for period in chunk_date_range(start_date):
+            yield {"oldest": period.start.timestamp(), "latest": period.end.timestamp()}
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # Channel is provided when reading threads
@@ -227,13 +227,13 @@ class Threads(IncrementalMessageStream):
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages from the default start date
             messages_start_date = pendulum.from_timestamp(self._start_ts)
-
         messages_stream = ChannelMessages(authenticator=self.authenticator, default_start_date=messages_start_date)
         for message_chunk in messages_stream.stream_slices(stream_state={self.cursor_field: messages_start_date.timestamp()}):
+            self.logger.info(f"Syncing replies {message_chunk}")
             for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
                 message_chunk["channel"] = channel["id"]
                 for message in messages_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=message_chunk):
-                    yield {"channel": channel["id"], self.cursor_field: message[self.cursor_field]}
+                    yield {"channel": channel["id"], self.cursor_field: message[self.primary_key]}
 
 
 class JoinChannelsStream(HttpStream):
