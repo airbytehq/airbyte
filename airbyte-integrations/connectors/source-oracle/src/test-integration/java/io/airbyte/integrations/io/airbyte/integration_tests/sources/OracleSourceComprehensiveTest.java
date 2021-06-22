@@ -33,6 +33,12 @@ import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.OracleContainer;
@@ -195,6 +201,8 @@ public class OracleSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("to_date('-4700/01/01','syyyy/mm/dd')", "to_date('9999/12/31 23:59:59','yyyy/mm/dd hh24:mi:ss')", "null")
             .addExpectedValues("4700-01-01T00:00:00Z", "9999-12-31T23:59:59Z", null)
+            // @TODO stream fails when gets Zero date value
+            // .addInsertValues("'2021/01/00'", "'2021/00/00'", "'0000/00/00'")
             .build());
 
     addDataTypeTestData(
@@ -213,6 +221,26 @@ public class OracleSourceComprehensiveTest extends SourceComprehensiveTest {
             .addInsertValues("to_timestamp_tz('21-FEB-2009 18:00:00 EST', 'DD-MON-YYYY HH24:MI:SS TZR')",
                 "to_timestamp_tz('21-FEB-2009 18:00:00 -5:00', 'DD-MON-YYYY HH24:MI:SS TZH:TZM')")
             .addExpectedValues("2009-02-21 18:00:00.0 EST", "2009-02-21 18:00:00.0 -5:00")
+            .build());
+
+    DateFormat utcFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+    utcFormat.setTimeZone(TimeZone.getTimeZone(Calendar.getInstance().getTimeZone().getID()));
+    Date date = null;
+    try {
+      date = utcFormat.parse("21-Feb-2009 18:00:00");
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    DateFormat currentTFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    currentTFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+    String utc = currentTFormat.format(date);
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("TIMESTAMP")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .fullSourceDataType("TIMESTAMP WITH LOCAL TIME ZONE")
+            .addInsertValues("to_timestamp_tz('21-FEB-2009 18:00:00', 'DD-MON-YYYY HH24:MI:SS')")
+            .addExpectedValues(utc + ".0 UTC")
             .build());
 
     addDataTypeTestData(
@@ -247,6 +275,31 @@ public class OracleSourceComprehensiveTest extends SourceComprehensiveTest {
             .fullSourceDataType("RAW(200)")
             .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
             .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("LONG")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .fullSourceDataType("LONG RAW")
+            // @TODO stream fails when reading data back
+            // .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("XMLTYPE")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("xmltype('<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<list_configuration>\n" +
+                "<config>1</config>\n" +
+                "<config>2</config>\n" +
+                "</list_configuration>')")
+            .addExpectedValues("<?xml version = '1.0' encoding = 'UTF-8'?>" +
+                "<list_configuration>\n" +
+                "   <config>1</config>\n" +
+                "   <config>2</config>\n" +
+                "</list_configuration>")
             .build());
   }
 
