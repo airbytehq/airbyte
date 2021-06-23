@@ -33,13 +33,15 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class MailChimpStream(HttpStream, ABC):
-    url_base = "https://us2.api.mailchimp.com/3.0/"
+    url_base = ""
     primary_key = "id"
     page_size = 100
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.current_offset = 0
+        dc = kwargs['authenticator'].datacenter
+        MailChimpStream.url_base = f"https://{dc}.api.mailchimp.com/3.0/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
