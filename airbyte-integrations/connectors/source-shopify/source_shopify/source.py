@@ -40,7 +40,7 @@ class ShopifyStream(HttpStream, ABC):
     # Latest Stable Release
     api_version = "2021-04"
     # Page size
-    limit = 1
+    limit = 250
     # Define primary key to all streams as primary key, sort key
     primary_key = "id"
 
@@ -69,7 +69,7 @@ class ShopifyStream(HttpStream, ABC):
         if next_page_token:
             params = {"limit": self.limit, **next_page_token}
         else:
-            params = {"limit": self.limit, "order": f"{self.primary_key} asc", "created_at": self.start_date}
+            params = {"limit": self.limit, "order": f"{self.primary_key} asc", "updated_at": self.start_date}
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -126,7 +126,7 @@ class Orders(IncrementalShopifyStream):
             params = {
                 "limit": self.limit,
                 "order": f"{self.primary_key} asc",
-                "created_at": self.start_date,
+                "created_at_min": self.start_date,
                 "status": "any",
                 # Add state parameter "since_id" for incremental refresh
                 "since_id": stream_state.get(self.cursor_field),
@@ -155,7 +155,7 @@ class AbandonedCheckouts(IncrementalShopifyStream):
             params = {
                 "limit": self.limit,
                 "order": f"{self.primary_key} asc",
-                "created_at": self.start_date,
+                "created_at_min": self.start_date,
                 "status": "any",
                 # Add state parameter "since_id" for incremental refresh
                 "since_id": stream_state.get(self.cursor_field),
