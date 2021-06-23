@@ -56,10 +56,10 @@ class ShopifyStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # Getting next page link
-        next_page = response.links.get('next', None)
+        next_page = response.links.get("next", None)
         if next_page:
             # Get the 'page_info' token
-            next_page = next_page.get('url').split("page_info=")[1]
+            next_page = next_page.get("url").split("page_info=")[1]
             return {"page_info": next_page}
 
     def request_params(
@@ -122,13 +122,13 @@ class Orders(IncrementalShopifyStream):
     def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = {
-            "limit": self.limit, 
-            "order": f"{self.primary_key} asc", 
-            "created_at": self.start_date, 
+            "limit": self.limit,
+            "order": f"{self.primary_key} asc",
+            "created_at": self.start_date,
             "status": "any",
             # Add state parameter "since_id" for incremental refresh
-            "since_id": stream_state.get(self.cursor_field)
-            }
+            "since_id": stream_state.get(self.cursor_field),
+        }
         if next_page_token:
             # Pop starting parameters
             params.pop("created_at", None)
@@ -157,13 +157,13 @@ class AbandonedCheckouts(IncrementalShopifyStream):
         stream_state = stream_state or {}
         # Initial Parameters
         params = {
-            "limit": self.limit, 
-            "order": f"{self.primary_key} asc", 
-            "created_at": self.start_date, 
-            "status": "any", 
+            "limit": self.limit,
+            "order": f"{self.primary_key} asc",
+            "created_at": self.start_date,
+            "status": "any",
             # Add state parameter "since_id" for incremental refresh
-            "since_id": stream_state.get(self.cursor_field)
-            }
+            "since_id": stream_state.get(self.cursor_field),
+        }
         if next_page_token:
             # Remove initial parameters, if we have more than 1 page of data
             params.pop("created_at", None)
