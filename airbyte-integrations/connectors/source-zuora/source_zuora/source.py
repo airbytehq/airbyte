@@ -29,6 +29,7 @@ import time
 from itertools import chain
 from math import ceil
 import requests
+import pendulum
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -36,77 +37,81 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
+class ZuoraAuthenticator(HttpAuthenticator):
 
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
+    """
+    Zuora Authenticator, based on generateToken()
+    """
 
-The approach here is not authoritative, and devs are free to use their own judgement.
+    def __init__(self, client_id: str, client_secret: str, is_sandbox: bool = True):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.is_sandbox = is_sandbox
 
-There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
-"""
+    # Define Endpoint from is_sandbox arg
+    @property
+    def endpoint(self) -> str:
+        if self.is_sandbox == True:
+            return "https://rest.apisandbox.zuora.com"
+        else: 
+            return "https://rest.zuora.com"
+
+    def generateToken(self):
+        endpoint = f"{self.endpoint}/oauth/token"
+        header = {"Content-Type": "application/x-www-form-urlencoded"}
+        data = {"client_id": f"{self.client_id}", 
+                "client_secret" : f"{self.client_secret}",
+                "grant_type": "client_credentials"}
+        try:
+            session = requests.post(endpoint, headers=header, data=data)
+            session.raise_for_status()
+            token = session.json().get("access_token")
+            session.close()
+            self.token = token
+            return {"status": session.status_code, "token": self.token}
+        except requests.exceptions.HTTPError as e:
+            return {"status": e}
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {"Authorization": f"Bearer {self.token}", "Content-Type":"application/json", "X-Zuora-WSDL-Version": "107"}
 
 
 # Basic full refresh stream
 class ZuoraStream(HttpStream, ABC):
-    """
-    TODO remove this comment
+    
+    def __init__(self, auth_header: dict, start_date: str, client_id: str, client_secret: str, is_sandbox: bool, **kwargs):
+        super().__init__(**kwargs)
+        self.auth_header = auth_header
+        self.start_date = start_date
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.is_sandbox = is_sandbox
 
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
+    # Define URL_BASE
+    @property
+    def url_base(self) -> str:
+        if self.is_sandbox == True:
+            return "https://rest.apisandbox.zuora.com"
+        else: 
+            return "https://rest.zuora.com"
 
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
 
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
+    
 
-    then you should have three classes:
-    `class ZuoraStream(HttpStream, ABC)` which is the current class
-    `class Customers(ZuoraStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(ZuoraStream)` contains behavior to pull data for employees using v1/employees
 
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalZuoraStream((ZuoraStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
 
-    See the reference docs for the full list of configurable options.
-    """
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+
+
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
-        return None
+        pass
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {}
+        pass
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -116,22 +121,20 @@ class ZuoraStream(HttpStream, ABC):
         yield {}
 
 
-class Customers(ZuoraStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
+class Account(ZuoraStream):
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    obj = "Account"
+    primary_key = "id"
+
+    def get_data(self, obj: str):
+        return print(self.submit_data_query_job(zuora_object=obj, start_date=self.start_date))
+
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
+        return "account"
+
 
 
 # Basic incremental stream
@@ -204,46 +207,6 @@ class Employees(IncrementalZuoraStream):
         raise NotImplementedError("Implement stream slices or delete this method!")
 
 
-
-class ZuoraAuthenticator(HttpAuthenticator):
-
-    """
-    Making Authenticator to be able to accept Header-Based authentication.
-    """
-
-    def __init__(self, client_id: str, client_secret: str, is_sandbox: bool = True):
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.is_sandbox = is_sandbox
-
-    # Define Endpoint from is_sandbox arg
-    @property
-    def endpoint(self) -> str:
-        if self.is_sandbox == True:
-            return "https://rest.apisandbox.zuora.com"
-        else: 
-            return "https://rest.zuora.com"
-
-    def generateToken(self):
-        endpoint = f"{self.endpoint}/oauth/token"
-        header = {"Content-Type": "application/x-www-form-urlencoded"}
-        data = {"client_id": f"{self.client_id}", 
-                "client_secret" : f"{self.client_secret}",
-                "grant_type": "client_credentials"}
-        try:
-            session = requests.post(endpoint, headers=header, data=data)
-            session.raise_for_status()
-            token = session.json().get("access_token")
-            session.close()
-            self.token = token
-            return {"status": session.status_code, "token": self.token}
-        except requests.exceptions.HTTPError as e:
-            return e
-
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {"Authorization": f"Bearer {self.token}", "Content-Type":"application/json", "X-Zuora-WSDL-Version": "107"}
-
-
 # Basic Connections Check
 class SourceZuora(AbstractSource):
     
@@ -252,11 +215,16 @@ class SourceZuora(AbstractSource):
         """
         Testing connection availability for the connector.
         """
-        auth = ZuoraAuthenticator(client_id = config["client_id"], client_secret = config["client_secret"]).generateToken()
+        client_id = config["client_id"]
+        client_secret = config["client_secret"]
+        is_sandbox = config["is_sandbox"]
+
+        auth = ZuoraAuthenticator(client_id=client_id, client_secret=client_secret, is_sandbox=is_sandbox).generateToken()
+
         if auth["status"] == 200:
             return True, None
         else:
-            return False, auth
+            return False, auth["status"]
         
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -265,9 +233,18 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
-        auth = ZuoraAuthenticator(config["client_id"], config["client_secret"]).generateToken()
+        inst = ZuoraAuthenticator(client_id=config["client_id"], client_secret=config["client_secret"], is_sandbox=config["is_sandbox"])
+        auth = inst.generateToken()
+        auth_header = inst.get_auth_header()
 
-        args = {"authenticator": auth['token'], "start_date": config["start_date"], "client_id": config["client_id"], "api_password": config["api_password"]}
+        args = {
+            "authenticator": auth['token'],
+            "auth_header": auth_header,
+            "start_date": config["start_date"],
+            "client_id": config["client_id"],
+            "client_secret": config["client_secret"],
+            "is_sandbox": config["is_sandbox"]
+        }
         return [
             Account(**args)
         ]

@@ -26,7 +26,8 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
     "pydantic==1.6.2",
-    "PyYAML==5.4"
+    "PyYAML==5.4",
+    "pendulum"
 
 ]
 

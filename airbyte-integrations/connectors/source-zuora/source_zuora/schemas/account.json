@@ -1,16 +1,329 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": [
+      "null",
+      "object"
+  ],
   "properties": {
-    "id": {
-      "type": ["null", "string"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "signup_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    }
+      "taxexempteffectivedate": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "invoicetemplateid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "totaldebitmemobalance": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "updateddate": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "name": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "createdbyid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "taxexemptissuingjurisdiction": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "currency": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "taxexemptcertificateid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "crmid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "defaultpaymentmethodid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "status": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "creditmemotemplateid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "debitmemotemplateid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "communicationprofileid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "invoicedeliveryprefsemail": {
+          "type": [
+              "null",
+              "boolean"
+          ]
+      },
+      "bcdsettingoption": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "createddate": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "unappliedcreditmemoamount": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "taxcompanycode": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "id": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "balance": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "soldtoid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "unappliedbalance": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "invoicedeliveryprefsprint": {
+          "type": [
+              "null",
+              [
+                  "null",
+                  "boolean"
+              ]
+          ]
+      },
+      "sequencesetid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "additionalemailaddresses": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "mrr": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "taxexemptexpirationdate": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "incollections__c": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "totalinvoicebalance": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "taxexemptentityusecode": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "batch": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "paymentgateway": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "billcycleday": {
+          "type": [
+              "null",
+              "integer"
+          ]
+      },
+      "billtoid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "notes": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "vatid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "parentid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "purchaseordernumber": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "updatedbyid": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "creditbalance": {
+          "type": [
+              "null",
+              "number"
+          ]
+      },
+      "autopay": {
+          "type": [
+                  "null",
+                  "boolean"
+          ]
+      },
+      "customerservicerepname": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "paymentterm": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "entity__c": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "lastinvoicedate": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "accountnumber": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "taxexemptstatus": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "taxexemptcertificatetype": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "salesrepname": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "taxexemptdescription": {
+          "type": [
+              "null",
+              "string"
+          ]
+      },
+      "allowinvoiceedit": {
+          "type": [
+                  "null",
+                  "boolean"
+          ]
+      }
   }
 }
