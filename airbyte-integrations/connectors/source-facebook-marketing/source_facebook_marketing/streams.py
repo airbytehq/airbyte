@@ -334,7 +334,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         while True:
             job = job.api_get()
             job_progress_pct = job["async_percent_completion"]
-            job_id = job['report_run_id']
+            job_id = job["report_run_id"]
             self.logger.info(f"ReportRunId {job_id} is {job_progress_pct}% complete")
             runtime = pendulum.now() - start_time
 

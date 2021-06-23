@@ -2757,4 +2757,4 @@ components:
           schema:
             $ref: "#/components/schemas/KnownExceptionInfo"
 security:
-  - { }
+  - {}
