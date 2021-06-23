@@ -233,7 +233,12 @@ public class MySqlSource extends AbstractJdbcSource implements Source {
       final AirbyteFileOffsetBackingStore offsetManager = initializeState(stateManager);
       AirbyteSchemaHistoryStorage schemaHistoryManager = initializeDBHistory(stateManager);
       FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
-      final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
+      /**
+       * We use 10000 as capacity cause the default queue size and batch size of debezium is :
+       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE} is 2048
+       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192
+       */
+      final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(10000);
       final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(config, catalog, offsetManager, schemaHistoryManager);
       publisher.start(queue);
 
