@@ -79,10 +79,10 @@
         },
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"]
+        "default_cursor_field": ["created_at"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["updated_at"],
+      "cursor_field": ["created_at"],
       "destination_sync_mode": "append"
     }
   ]
