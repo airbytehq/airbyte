@@ -126,6 +126,7 @@ public class KubePodProcess extends Process {
   private final OutputStream stdin;
   private InputStream stdout;
   private InputStream stderr;
+  private Integer returnCode = null;
 
   private final Consumer<Integer> portReleaser;
   private final ServerSocket stdoutServerSocket;
@@ -528,6 +529,10 @@ public class KubePodProcess extends Process {
   }
 
   private int getReturnCode(Pod pod) {
+    if (returnCode != null) {
+      return returnCode;
+    }
+
     var name = pod.getMetadata().getName();
     Pod refreshedPod = fabricClient.pods().inNamespace(pod.getMetadata().getNamespace()).withName(name).get();
     if (refreshedPod == null) {
@@ -540,11 +545,12 @@ public class KubePodProcess extends Process {
       // properly 2) this method is incorrectly called.
       throw new RuntimeException("Cannot find pod while trying to retrieve exit code. This probably means the Pod was not correctly created.");
     }
+
     if (!isTerminal(refreshedPod)) {
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
 
-    return refreshedPod.getStatus().getContainerStatuses()
+    returnCode = refreshedPod.getStatus().getContainerStatuses()
         .stream()
         .filter(containerStatus -> containerStatus.getState() != null && containerStatus.getState().getTerminated() != null)
         .map(containerStatus -> {
@@ -554,6 +560,8 @@ public class KubePodProcess extends Process {
         })
         .reduce(Integer::sum)
         .orElseThrow();
+
+    return returnCode;
   }
 
   @Override
