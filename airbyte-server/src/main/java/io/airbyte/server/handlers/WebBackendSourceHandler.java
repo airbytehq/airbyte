@@ -32,7 +32,7 @@ import io.airbyte.api.model.SourceIdRequestBody;
 import io.airbyte.api.model.SourceRead;
 import io.airbyte.api.model.SourceRecreate;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.ConnectFailureKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -76,7 +76,7 @@ public class WebBackendSourceHandler {
     }
 
     sourceHandler.deleteSource(sourceIdRequestBody);
-    throw new KnownException(400, "Unable to connect to source");
+    throw new ConnectFailureKnownException("Unable to connect to source");
   }
 
 }
