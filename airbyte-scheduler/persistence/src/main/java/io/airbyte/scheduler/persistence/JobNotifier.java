@@ -24,6 +24,11 @@
 
 package io.airbyte.scheduler.persistence;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.analytics.TrackingClient;
+import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.Notification;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -33,6 +38,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.notification.NotificationClient;
 import io.airbyte.scheduler.models.Job;
+import io.airbyte.scheduler.persistence.job_tracker.TrackingMetadata;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.Duration;
@@ -48,16 +54,24 @@ public class JobNotifier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JobNotifier.class);
 
+  public static final String FAILURE_NOTIFICATION = "Failure Notification";
+
   private final String connectionPageUrl;
   private final ConfigRepository configRepository;
+  private final TrackingClient trackingClient;
 
   public JobNotifier(String webappUrl, ConfigRepository configRepository) {
+    this(webappUrl, configRepository, TrackingClientSingleton.get());
+  }
+
+  public JobNotifier(String webappUrl, ConfigRepository configRepository, TrackingClient trackingClient) {
     if (webappUrl.endsWith("/")) {
       this.connectionPageUrl = String.format("%sconnections/", webappUrl);
     } else {
       this.connectionPageUrl = String.format("%s/connections/", webappUrl);
     }
     this.configRepository = configRepository;
+    this.trackingClient = trackingClient;
   }
 
   public void failJob(final String reason, final Job job) {
@@ -79,12 +93,18 @@ public class JobNotifier {
       final String destinationConnector = String.format("%s version %s", destinationDefinition.getName(), destinationDefinition.getDockerImageTag());
       final String jobDescription =
           String.format("sync started on %s, running for%s, as the %s.", formatter.format(jobStartedDate), durationString, reason);
-      final String logUrl = connectionPageUrl + connectionId.toString();
+      final String logUrl = connectionPageUrl + connectionId;
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(PersistenceConstants.DEFAULT_WORKSPACE_ID, true);
-
+      final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
+      final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
+      final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
       for (Notification notification : workspace.getNotifications()) {
         final NotificationClient notificationClient = getNotificationClient(notification);
         try {
+          final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
+          notificationMetadata.put("connection_id", connectionId);
+          notificationMetadata.put("notification_type", notification.getNotificationType());
+          trackingClient.track(FAILURE_NOTIFICATION, MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
           if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
             LOGGER.warn("Failed to successfully notify: {}", notification);
           }

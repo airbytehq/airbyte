@@ -39,6 +39,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -105,6 +106,9 @@ class JobTrackerTest {
       .put(JobTracker.CONFIG + ".destination.key", false)
       .put(JobTracker.CATALOG + ".sync_mode.full_refresh", JobTracker.SET)
       .put(JobTracker.CATALOG + ".destination_sync_mode.append", JobTracker.SET)
+      .put("namespace_definition", NamespaceDefinitionType.SOURCE)
+      .put("table_prefix", false)
+      .put("operation_count", 0)
       .build();
 
   private ConfigRepository configRepository;
@@ -205,7 +209,7 @@ class JobTrackerTest {
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobMock(configType, jobId);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withManual(true));
+    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
         metadata,
         ImmutableMap.of("frequency", "manual"),
@@ -214,7 +218,8 @@ class JobTrackerTest {
 
     // test when frequency is scheduled.
     when(configRepository.getStandardSync(CONNECTION_ID))
-        .thenReturn(new StandardSync().withManual(false).withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
+        .thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(false)
+            .withSchedule(new Schedule().withUnits(1L).withTimeUnit(TimeUnit.MINUTES)));
     final Map<String, Object> scheduledMetadata = MoreMaps.merge(
         metadata,
         ImmutableMap.of("frequency", "1 min"),
@@ -260,7 +265,7 @@ class JobTrackerTest {
     final ImmutableMap<String, Object> metadata = getJobMetadata(configType, jobId);
     final Job job = getJobWithAttemptsMock(configType, jobId);
     // test when frequency is manual.
-    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withManual(true));
+    when(configRepository.getStandardSync(CONNECTION_ID)).thenReturn(new StandardSync().withConnectionId(CONNECTION_ID).withManual(true));
     final Map<String, Object> manualMetadata = MoreMaps.merge(
         ATTEMPT_METADATA,
         metadata,
@@ -354,6 +359,9 @@ class JobTrackerTest {
         .put("connector_destination", DESTINATION_DEF_NAME)
         .put("connector_destination_definition_id", UUID2)
         .put("connector_destination_version", CONNECTOR_VERSION)
+        .put("namespace_definition", NamespaceDefinitionType.SOURCE)
+        .put("table_prefix", false)
+        .put("operation_count", 0)
         .build();
   }
 

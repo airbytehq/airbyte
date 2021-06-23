@@ -31,6 +31,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.analytics.TrackingClient;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.Notification;
@@ -67,11 +70,14 @@ class JobNotifierTest {
   private ConfigRepository configRepository;
   private JobNotifier jobNotifier;
   private NotificationClient notificationClient;
+  private TrackingClient trackingClient;
 
   @BeforeEach
   void setup() {
     configRepository = mock(ConfigRepository.class);
-    jobNotifier = spy(new JobNotifier(WEBAPP_URL, configRepository));
+    trackingClient = mock(TrackingClient.class);
+
+    jobNotifier = spy(new JobNotifier(WEBAPP_URL, configRepository, trackingClient));
     notificationClient = mock(NotificationClient.class);
     when(jobNotifier.getNotificationClient(getSlackNotification())).thenReturn(notificationClient);
   }
@@ -104,6 +110,17 @@ class JobNotifierTest {
         String.format("sync started on %s, running for 1 day 10 hours 17 minutes 36 seconds, as the JobNotifierTest was running.",
             formatter.format(Instant.ofEpochSecond(job.getStartedAtInSecond().get()))),
         "http://localhost:8000/connections/" + job.getScope());
+
+    final Builder<String, Object> metadata = ImmutableMap.builder();
+    metadata.put("connection_id", UUID.fromString(job.getScope()));
+    metadata.put("connector_source_definition_id", sourceDefinition.getSourceDefinitionId());
+    metadata.put("connector_source", "source-test");
+    metadata.put("connector_source_version", TEST_DOCKER_TAG);
+    metadata.put("connector_destination_definition_id", destinationDefinition.getDestinationDefinitionId());
+    metadata.put("connector_destination", "destination-test");
+    metadata.put("connector_destination_version", TEST_DOCKER_TAG);
+    metadata.put("notification_type", NotificationType.SLACK);
+    verify(trackingClient).track(JobNotifier.FAILURE_NOTIFICATION, metadata.build());
   }
 
   private static StandardWorkspace getWorkspace() {
