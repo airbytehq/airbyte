@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "cart_rules",
+        "name": "stores",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -10,93 +10,34 @@
     "id": {
       "type": "integer"
     },
-    "id_customer": {
+    "id_country": {
       "type": "string"
     },
-    "date_from": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "date_to": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "description": {
+    "id_state": {
       "type": "string"
     },
-    "quantity": {
+    "hours": {
       "type": "string"
     },
-    "quantity_per_user": {
+    "postcode": {
       "type": "string"
     },
-    "priority": {
+    "city": {
       "type": "string"
     },
-    "partial_use": {
+    "latitude": {
       "type": "string"
     },
-    "code": {
+    "longitude": {
       "type": "string"
     },
-    "minimum_amount": {
+    "phone": {
       "type": "string"
     },
-    "minimum_amount_tax": {
+    "fax": {
       "type": "string"
     },
-    "minimum_amount_currency": {
-      "type": "string"
-    },
-    "minimum_amount_shipping": {
-      "type": "string"
-    },
-    "country_restriction": {
-      "type": "string"
-    },
-    "carrier_restriction": {
-      "type": "string"
-    },
-    "group_restriction": {
-      "type": "string"
-    },
-    "cart_rule_restriction": {
-      "type": "string"
-    },
-    "product_restriction": {
-      "type": "string"
-    },
-    "shop_restriction": {
-      "type": "string"
-    },
-    "free_shipping": {
-      "type": "string"
-    },
-    "reduction_percent": {
-      "type": "string"
-    },
-    "reduction_amount": {
-      "type": "string"
-    },
-    "reduction_tax": {
-      "type": "string"
-    },
-    "reduction_currency": {
-      "type": "string"
-    },
-    "reduction_product": {
-      "type": "string"
-    },
-    "reduction_exclude_special": {
-      "type": "string"
-    },
-    "gift_product": {
-      "type": "string"
-    },
-    "gift_product_attribute": {
-      "type": "string"
-    },
-    "highlight": {
+    "email": {
       "type": "string"
     },
     "active": {
@@ -111,6 +52,274 @@
       "format": "date-time"
     },
     "name": {
+      "type": "string"
+    },
+    "address1": {
+      "type": "string"
+    },
+    "address2": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "suppliers",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "link_rewrite": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "active": {
+      "type": "string"
+    },
+    "date_add": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_upd": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "description": {
+      "type": "string"
+    },
+    "meta_title": {
+      "type": "string"
+    },
+    "meta_description": {
+      "type": "string"
+    },
+    "meta_keywords": {
+      "type": "string"
+    }
+  }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "tags",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "id_lang": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    }
+  }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "tax_rule_groups",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "active": {
+      "type": "string"
+    },
+    "deleted": {
+      "type": "string"
+    },
+    "date_add": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_upd": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "tax_rules",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "id_tax_rules_group": {
+      "type": "string"
+    },
+    "id_state": {
+      "type": "string"
+    },
+    "id_country": {
+      "type": "string"
+    },
+    "zipcode_from": {
+      "type": "string"
+    },
+    "zipcode_to": {
+      "type": "string"
+    },
+    "id_tax": {
+      "type": "string"
+    },
+    "behavior": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "taxes",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "rate": {
+      "type": "string"
+    },
+    "active": {
+      "type": "string"
+    },
+    "deleted": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    }
+  }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "translated_configurations",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "value": {
+      "type": "string"
+    },
+    "date_add": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_upd": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "type": "string"
+    },
+    "id_shop_group": {
+      "type": "string"
+    },
+    "id_shop": {
+      "type": "string"
+    }
+  }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "weight_ranges",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "id_carrier": {
+      "type": "string"
+    },
+    "delimiter1": {
+      "type": "string"
+    },
+    "delimiter2": {
+      "type": "string"
+    }
+  }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "zones",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "active": {
       "type": "string"
     }
   }
