@@ -34,10 +34,11 @@
       "nested_stream_with_complex_columns_resulting_into_long_names_partition": "nested_stream_with_co___long_names_partition"
     },
     {
-      "nested_stream_with_complex_columns_resulting_into_long_names": "nested_stream_with_co__lting_into_long_names"
+      "'nested_stream_with_complex_columns_resulting_into_long_names'": "'nested_stream_with_co__lting_into_long_names'"
     },
     {
-      "non_nested_stream_without_namespace_resulting_into_long_names": "non_nested_stream_wit__lting_into_long_names"
-    }
+      "'non_nested_stream_without_namespace_resulting_into_long_names'": "'non_nested_stream_wit__lting_into_long_names'"
+    },
+    { "#quote: true in mysql": "quote: true" }
   ]
 }
