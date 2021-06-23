@@ -106,6 +106,11 @@ public abstract class JdbcSourceAcceptanceTest {
   public static Number ID_VALUE_4 = 4;
   public static Number ID_VALUE_5 = 5;
 
+  public static String DROP_SCHEMA_QUERY = "DROP SCHEMA IF EXISTS %s CASCADE";
+  public static String COLUMN_CLAUSE_WITH_PK = "id INTEGER, name VARCHAR(200), updated_at DATE";
+  public static String COLUMN_CLAUSE_WITHOUT_PK = "id INTEGER, name VARCHAR(200), updated_at DATE";
+  public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE";
+
   public JsonNode config;
   public JdbcDatabase database;
   public AbstractJdbcSource source;
@@ -191,7 +196,7 @@ public abstract class JdbcSourceAcceptanceTest {
     database.execute(connection -> {
 
       connection.createStatement().execute(
-          createTableQuery(getFullyQualifiedTableName(TABLE_NAME), "id INTEGER, name VARCHAR(200), updated_at DATE",
+          createTableQuery(getFullyQualifiedTableName(TABLE_NAME), COLUMN_CLAUSE_WITH_PK,
               primaryKeyClause(Collections.singletonList("id"))));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
@@ -204,7 +209,8 @@ public abstract class JdbcSourceAcceptanceTest {
               getFullyQualifiedTableName(TABLE_NAME)));
 
       connection.createStatement().execute(
-          createTableQuery(getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK), "id INTEGER, name VARCHAR(200), updated_at DATE", ""));
+          createTableQuery(getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK),
+              COLUMN_CLAUSE_WITHOUT_PK, ""));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
               getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
@@ -217,7 +223,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
       connection.createStatement().execute(
           createTableQuery(getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK),
-              "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE",
+              COLUMN_CLAUSE_WITH_COMPOSITE_PK,
               primaryKeyClause(ImmutableList.of("first_name", "last_name"))));
       connection.createStatement().execute(
           String.format(
@@ -882,7 +888,7 @@ public abstract class JdbcSourceAcceptanceTest {
     if (supportsSchemas()) {
       for (String schemaName : TEST_SCHEMAS) {
         final String dropSchemaQuery = String
-            .format("DROP SCHEMA IF EXISTS %s CASCADE", schemaName);
+            .format(DROP_SCHEMA_QUERY, schemaName);
         database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
       }
     }
