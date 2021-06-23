@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.parquet;
+package io.airbyte.integrations.destination.s3.avro;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
