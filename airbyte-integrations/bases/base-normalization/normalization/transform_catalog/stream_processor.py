@@ -511,9 +511,9 @@ from {{ from_table }}
         """
         )
 
-        # cdc_active_row_pattern = ""
-        # if "_ab_cdc_deleted_at" in column_names.keys():
-        #     cdc_active_row_pattern = "or _ab_cdc_deleted_at"
+        cdc_active_row_pattern = ""
+        if "_ab_cdc_deleted_at" in column_names.keys():
+            cdc_active_row_pattern = "or _ab_cdc_deleted_at"
 
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
@@ -523,7 +523,7 @@ from {{ from_table }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
-            # cdc_active_row=cdc_active_row_pattern
+            cdc_active_row=cdc_active_row_pattern
         )
         return sql
 
