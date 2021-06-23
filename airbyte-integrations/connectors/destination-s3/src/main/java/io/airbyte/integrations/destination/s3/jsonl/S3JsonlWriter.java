@@ -22,11 +22,17 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.csv;
+package io.airbyte.integrations.destination.s3.jsonl;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.jackson.MoreMappers;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
@@ -34,38 +40,31 @@ import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.UUID;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class S3CsvWriter extends BaseS3Writer implements S3Writer {
+public class S3JsonlWriter extends BaseS3Writer implements S3Writer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3CsvWriter.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(S3JsonlWriter.class);
 
-  private final CsvSheetGenerator csvSheetGenerator;
+  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
+  private static final ObjectWriter WRITER = MAPPER.writer();
+
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
-  private final CSVPrinter csvPrinter;
+  private final PrintWriter printWriter;
 
-  public S3CsvWriter(S3DestinationConfig config,
-                     AmazonS3 s3Client,
-                     ConfiguredAirbyteStream configuredStream,
-                     Timestamp uploadTimestamp)
-      throws IOException {
+  public S3JsonlWriter(S3DestinationConfig config,
+                       AmazonS3 s3Client,
+                       ConfiguredAirbyteStream configuredStream,
+                       Timestamp uploadTimestamp) {
     super(config, s3Client, configuredStream);
 
-    S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
-    this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
-        formatConfig);
-
-    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
+    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.JSONL);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
@@ -74,26 +73,28 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
-    this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-        CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+    this.printWriter = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
-    csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
+  public void write(UUID id, AirbyteRecordMessage recordMessage) {
+    ObjectNode json = MAPPER.createObjectNode();
+    json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
+    json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
+    json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
+    printWriter.println(Jsons.serialize(json));
   }
 
   @Override
-  protected void closeWhenSucceed() throws IOException {
-    csvPrinter.close();
+  protected void closeWhenSucceed() {
+    printWriter.close();
     outputStream.close();
     uploadManager.complete();
   }
 
   @Override
-  protected void closeWhenFail() throws IOException {
-    csvPrinter.close();
+  protected void closeWhenFail() {
+    printWriter.close();
     outputStream.close();
     uploadManager.abort();
   }

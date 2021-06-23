@@ -22,18 +22,16 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.csv;
+package io.airbyte.integrations.destination.s3.jsonl;
 
-public class S3CsvConstants {
+import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.S3FormatConfig;
 
-  // These parameters are used by {@link StreamTransferManager}.
-  // See this doc about how they affect memory usage:
-  // https://alexmojaki.github.io/s3-stream-upload/javadoc/apidocs/alex/mojaki/s3upload/StreamTransferManager.html
-  // Total memory = (numUploadThreads + queueCapacity) * partSize + numStreams * (partSize + 6MB)
-  // = 31 MB at current configurations
-  public static final int DEFAULT_UPLOAD_THREADS = 2;
-  public static final int DEFAULT_QUEUE_CAPACITY = 2;
-  public static final int DEFAULT_PART_SIZE_MB = 5;
-  public static final int DEFAULT_NUM_STREAMS = 1;
+public class S3JsonlFormatConfig implements S3FormatConfig {
+
+  @Override
+  public S3Format getFormat() {
+    return S3Format.JSONL;
+  }
 
 }

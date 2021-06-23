@@ -25,14 +25,10 @@
 package io.airbyte.integrations.destination.s3.parquet;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.jackson.MoreMappers;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
+import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -53,18 +49,13 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3ParquetWriter.class);
-  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
-  private static final ObjectWriter WRITER = MAPPER.writer();
 
-  private final Schema schema;
-  private final JsonFieldNameUpdater nameUpdater;
   private final ParquetWriter<Record> parquetWriter;
-  private final JsonAvroConverter converter = new JsonAvroConverter();
+  private final AvroRecordFactory avroRecordFactory;
 
   public S3ParquetWriter(S3DestinationConfig config,
                          AmazonS3 s3Client,
@@ -74,8 +65,6 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
                          JsonFieldNameUpdater nameUpdater)
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
-    this.schema = schema;
-    this.nameUpdater = nameUpdater;
 
     String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
     String objectKey = String.join("/", outputPrefix, outputFilename);
@@ -98,6 +87,7 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
         .withDictionaryPageSize(formatConfig.getDictionaryPageSize())
         .withDictionaryEncoding(formatConfig.isDictionaryEncoding())
         .build();
+    this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
   }
 
   public static Configuration getHadoopConfig(S3DestinationConfig config) {
@@ -113,29 +103,17 @@ public class S3ParquetWriter extends BaseS3Writer implements S3Writer {
 
   @Override
   public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
-    JsonNode inputData = recordMessage.getData();
-    inputData = nameUpdater.getJsonWithStandardizedFieldNames(inputData);
-
-    ObjectNode jsonRecord = MAPPER.createObjectNode();
-    jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
-    jsonRecord.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    jsonRecord.setAll((ObjectNode) inputData);
-
-    GenericData.Record avroRecord = converter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema);
-    parquetWriter.write(avroRecord);
+    parquetWriter.write(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 
   @Override
-  public void close(boolean hasFailed) throws IOException {
-    if (hasFailed) {
-      LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
-      parquetWriter.close();
-      LOGGER.warn("Upload of stream '{}' aborted.", stream.getName());
-    } else {
-      LOGGER.info("Uploading remaining data for stream '{}'.", stream.getName());
-      parquetWriter.close();
-      LOGGER.info("Upload completed for stream '{}'.", stream.getName());
-    }
+  protected void closeWhenSucceed() throws IOException {
+    parquetWriter.close();
+  }
+
+  @Override
+  protected void closeWhenFail() throws IOException {
+    parquetWriter.close();
   }
 
 }

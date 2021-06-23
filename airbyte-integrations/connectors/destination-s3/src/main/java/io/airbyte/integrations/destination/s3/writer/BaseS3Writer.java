@@ -36,6 +36,7 @@ import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
  * The base implementation takes care of the following:
  * <li>Create shared instance variables.</li>
  * <li>Create the bucket and prepare the bucket path.</li>
+ * <li>Log and close the write.</li>
  */
 public abstract class BaseS3Writer implements S3Writer {
 
@@ -101,6 +103,36 @@ public abstract class BaseS3Writer implements S3Writer {
             stream.getName());
       }
     }
+  }
+
+  /**
+   * Log and close the write.
+   */
+  @Override
+  public void close(boolean hasFailed) throws IOException {
+    if (hasFailed) {
+      LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
+      closeWhenFail();
+      LOGGER.warn("Upload of stream '{}' aborted.", stream.getName());
+    } else {
+      LOGGER.info("Uploading remaining data for stream '{}'.", stream.getName());
+      closeWhenSucceed();
+      LOGGER.info("Upload completed for stream '{}'.", stream.getName());
+    }
+  }
+
+  /**
+   * Operations that will run when the write succeeds.
+   */
+  protected void closeWhenSucceed() throws IOException {
+    // Do nothing by default
+  }
+
+  /**
+   * Operations that will run when the write fails.
+   */
+  protected void closeWhenFail() throws IOException {
+    // Do nothing by default
   }
 
   // Filename: <upload-date>_<upload-millis>_0.<format-extension>

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.csv;
+package io.airbyte.integrations.destination.s3.avro;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
@@ -35,65 +35,68 @@ import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.UUID;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
+import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileWriter;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericData.Record;
+import org.apache.avro.generic.GenericDatumWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class S3CsvWriter extends BaseS3Writer implements S3Writer {
+public class S3AvroWriter extends BaseS3Writer implements S3Writer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3CsvWriter.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(S3AvroWriter.class);
 
-  private final CsvSheetGenerator csvSheetGenerator;
+  private final AvroRecordFactory avroRecordFactory;
   private final StreamTransferManager uploadManager;
   private final MultiPartOutputStream outputStream;
-  private final CSVPrinter csvPrinter;
+  private final DataFileWriter<GenericData.Record> dataFileWriter;
 
-  public S3CsvWriter(S3DestinationConfig config,
-                     AmazonS3 s3Client,
-                     ConfiguredAirbyteStream configuredStream,
-                     Timestamp uploadTimestamp)
+  public S3AvroWriter(S3DestinationConfig config,
+                      AmazonS3 s3Client,
+                      ConfiguredAirbyteStream configuredStream,
+                      Timestamp uploadTimestamp,
+                      Schema schema,
+                      JsonFieldNameUpdater nameUpdater)
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    S3CsvFormatConfig formatConfig = (S3CsvFormatConfig) config.getFormatConfig();
-    this.csvSheetGenerator = CsvSheetGenerator.Factory.create(configuredStream.getStream().getJsonSchema(),
-        formatConfig);
-
-    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.CSV);
+    String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
+    this.avroRecordFactory = new AvroRecordFactory(schema, nameUpdater);
     this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
-    this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
-        CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL)
-            .withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0])));
+
+    S3AvroFormatConfig formatConfig = (S3AvroFormatConfig) config.getFormatConfig();
+    // The DataFileWriter always uses binary encoding.
+    // If json encoding is needed in the future, use the GenericDatumWriter directly.
+    this.dataFileWriter = new DataFileWriter<>(new GenericDatumWriter<Record>())
+        .setCodec(formatConfig.getCodecFactory())
+        .create(schema, outputStream);
   }
 
   @Override
   public void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException {
-    csvPrinter.printRecord(csvSheetGenerator.getDataRow(id, recordMessage));
+    dataFileWriter.append(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 
   @Override
   protected void closeWhenSucceed() throws IOException {
-    csvPrinter.close();
+    dataFileWriter.close();
     outputStream.close();
     uploadManager.complete();
   }
 
   @Override
   protected void closeWhenFail() throws IOException {
-    csvPrinter.close();
+    dataFileWriter.close();
     outputStream.close();
     uploadManager.abort();
   }

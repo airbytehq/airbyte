@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.parquet;
+package io.airbyte.integrations.destination.s3.avro;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * ones.
  * <p/>
  * For limitations of this converter, see the README of this connector:
- * https://docs.airbyte.io/integrations/destinations/s3#parquet
+ * https://docs.airbyte.io/integrations/destinations/s3#avro
  */
 public class JsonToAvroSchemaConverter {
 
@@ -102,8 +102,8 @@ public class JsonToAvroSchemaConverter {
           stdName);
       builder = builder.doc(
           String.format("%s%s%s",
-              S3ParquetConstants.DOC_KEY_ORIGINAL_NAME,
-              S3ParquetConstants.DOC_KEY_VALUE_DELIMITER,
+              S3AvroConstants.DOC_KEY_ORIGINAL_NAME,
+              S3AvroConstants.DOC_KEY_VALUE_DELIMITER,
               name));
     }
     if (namespace != null) {
@@ -130,8 +130,8 @@ public class JsonToAvroSchemaConverter {
         LOGGER.warn("Field name contains illegal character(s) and is standardized: {} -> {}",
             fieldName, stdFieldName);
         fieldBuilder = fieldBuilder.doc(String.format("%s%s%s",
-            S3ParquetConstants.DOC_KEY_ORIGINAL_NAME,
-            S3ParquetConstants.DOC_KEY_VALUE_DELIMITER,
+            S3AvroConstants.DOC_KEY_ORIGINAL_NAME,
+            S3AvroConstants.DOC_KEY_VALUE_DELIMITER,
             fieldName));
       }
       assembler = fieldBuilder.type(getNullableFieldTypes(fieldName, fieldDefinition))
@@ -202,7 +202,7 @@ public class JsonToAvroSchemaConverter {
     if (nonNullFieldTypes.isEmpty()) {
       return Schema.create(Schema.Type.NULL);
     } else {
-      // Mark every field as nullable to prevent missing value exceptions from Parquet.
+      // Mark every field as nullable to prevent missing value exceptions from Avro / Parquet.
       nonNullFieldTypes.add(0, Schema.create(Schema.Type.NULL));
       return Schema.createUnion(nonNullFieldTypes);
     }

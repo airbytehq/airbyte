@@ -122,6 +122,11 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
 
   protected abstract JsonNode getFormatConfig();
 
+  /**
+   * This method does the following:
+   * <li>Construct the S3 destination config.</li>
+   * <li>Construct the S3 client.</li>
+   */
   @Override
   protected void setup(TestDestinationEnv testEnv) {
     JsonNode baseConfigJson = getBaseConfigJson();
@@ -161,6 +166,9 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
     }
   }
 
+  /**
+   * Remove all the S3 output from the tests.
+   */
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
     List<KeyVersion> keysToDelete = new LinkedList<>();
