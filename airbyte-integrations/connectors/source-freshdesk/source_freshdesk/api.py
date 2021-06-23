@@ -306,11 +306,10 @@ class TicketsAPI(IncrementalStreamAPI):
             if len(batch) < result_return_limit:
                 return iter(())
 
-            # get last_record from latest batch, pos. 0, because of DESC order of records
-            last_record = batch[0]["updated_at"]
-
             # checkpoint & switch the pagination
             if page == ticket_paginate_limit:
+                # get last_record from latest batch, pos. 0, because of DESC order of records
+                last_record = batch[0]["updated_at"]
                 page = 0  # reset page counter
                 # Adding +1 second to last_record value, to avoid record duplication,
                 # this potentialy could lead to skipping some records during the fetch,
