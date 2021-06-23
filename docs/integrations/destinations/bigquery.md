@@ -10,9 +10,13 @@ description: >-
 
 The Airbyte BigQuery destination allows you to sync data to BigQuery. BigQuery is a serverless, highly scalable, and cost-effective data warehouse offered by Google Cloud Provider.
 
+There are two flavors of connectors for this destination:
+1. `destination-bigquery`: This is producing the standard Airbyte outputs using a `_airbyte_raw_*` tables storing the JSON blob data first. Afterward, these are transformed and normalized into separate tables, potentially "exploding" nested streams into their own tables if [basic normalization](../../understanding-airbyte/basic-normalization.md) is configured. 
+2. `destination-bigquery-denormalized`: Instead of splitting the final data into multiple tables, this destination leverages BigQuery capabilities with [Structured and Repeated fields](https://cloud.google.com/bigquery/docs/nested-repeated) to produce a single "big" table per stream. This does not write the `_airbyte_raw_*` tables in the destination and normalization from this connector is not supported at this time.
+
 ### Sync overview
 
-#### Output schema
+#### Output schema of `destination-bigquery`
 
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
 
@@ -101,3 +105,18 @@ When you create a dataset in BigQuery, the dataset name must be unique for each 
 * Dataset names cannot contain spaces or special characters such as -, &, @, or %.
 
 Therefore, Airbyte BigQuery destination will convert any invalid characters into '\_' characters when writing data.
+
+## CHANGELOG
+
+### destination-bigquery
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.3.6 | 2021-06-18 | [#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional. |
+| 0.3.4 | 2021-06-07 | [#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option |
+
+### destination-bigquery-denormalized
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.0 | 2021-06-21 | [#4176](https://github.com/airbytehq/airbyte/pull/4176) | Destination using Typed Struct and Repeated fields |

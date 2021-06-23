@@ -47,7 +47,7 @@ const config: Config = {
     slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",
     configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
-    normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces.md`,
+    normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
     namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
     tutorialLink:
       "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",

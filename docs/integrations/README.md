@@ -33,6 +33,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Greenhouse](./sources/greenhouse.md)| Beta |
 |[HTTP Request](./sources/http-request.md)| Alpha |
 |[Hubspot](./sources/hubspot.md)| Certified |
+|[IBM Db2](./sources/db2.md)| Beta |
 |[Instagram](./sources/instagram.md)| Certified |
 |[Intercom](./sources/intercom.md)| Beta |
 |[Iterable](./sources/iterable.md)| Beta |
