@@ -189,7 +189,7 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  protected boolean normalizationFromSpec() throws WorkerException {
+  protected boolean normalizationFromSpec() throws Exception {
     final ConnectorSpecification spec = runSpec();
     assertNotNull(spec);
     if (spec.getSupportsNormalization() != null) {
@@ -417,7 +417,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  public void specNormalizationValueShouldBeCorrect() throws WorkerException {
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
     assertEquals(normalizationFromSpec(), supportsNormalization());
   }
 
@@ -878,7 +878,10 @@ public abstract class DestinationAcceptanceTest {
     return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
   }
 
-  private void runSyncAndVerifyStateOutput(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization)
+  protected void runSyncAndVerifyStateOutput(JsonNode config,
+                                             List<AirbyteMessage> messages,
+                                             ConfiguredAirbyteCatalog catalog,
+                                             boolean runNormalization)
       throws Exception {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog, runNormalization);
     final AirbyteMessage expectedStateMessage = MoreLists.reversed(messages)
@@ -937,7 +940,8 @@ public abstract class DestinationAcceptanceTest {
     return destinationOutput;
   }
 
-  private void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema) throws Exception {
+  protected void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema)
+      throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
@@ -953,7 +957,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   // ignores emitted at.
-  private void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual, boolean pruneAirbyteInternalFields) {
+  protected void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual, boolean pruneAirbyteInternalFields) {
     final List<JsonNode> expectedProcessed = expected.stream()
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
@@ -1002,7 +1006,7 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  private List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {
+  protected List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
 
     for (final AirbyteStream stream : catalog.getStreams()) {

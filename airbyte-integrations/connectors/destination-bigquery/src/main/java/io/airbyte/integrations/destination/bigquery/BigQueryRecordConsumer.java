@@ -32,6 +32,7 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.CreateDisposition;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryParameterValue;
+import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
@@ -60,14 +61,14 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
 
   private final BigQuery bigquery;
-  private final Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs;
+  private final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs;
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
 
   private AirbyteMessage lastStateMessage = null;
 
   public BigQueryRecordConsumer(BigQuery bigquery,
-                                Map<AirbyteStreamNameNamespacePair, WriteConfig> writeConfigs,
+                                Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                 ConfiguredAirbyteCatalog catalog,
                                 Consumer<AirbyteMessage> outputRecordCollector) {
     this.bigquery = bigquery;
@@ -95,19 +96,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
                 Jsons.serialize(catalog), Jsons.serialize(recordMessage)));
       }
-
-      // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
-      // use BQ helpers to string-format correctly.
-      long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
-      final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
-
-      final JsonNode data = Jsons.jsonNode(ImmutableMap.of(
-          JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-          JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(recordMessage.getData()),
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
       try {
-        writeConfigs.get(pair).getWriter()
-            .write(ByteBuffer.wrap((Jsons.serialize(data) + "\n").getBytes(Charsets.UTF_8)));
+        final BigQueryWriteConfig writer = writeConfigs.get(pair);
+        writer.getWriter().write(ByteBuffer.wrap((Jsons.serialize(formatRecord(writer.getSchema(), recordMessage)) + "\n").getBytes(Charsets.UTF_8)));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -116,26 +107,39 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
+  protected JsonNode formatRecord(Schema schema, AirbyteRecordMessage recordMessage) {
+    // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
+    // use BQ helpers to string-format correctly.
+    long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
+    final String formattedEmittedAt = QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
+
+    return Jsons.jsonNode(ImmutableMap.of(
+        JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
+        JavaBaseConstants.COLUMN_NAME_DATA, Jsons.serialize(recordMessage.getData()),
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt));
+  }
+
   @Override
   public void close(boolean hasFailed) {
     try {
-      writeConfigs.values().parallelStream().forEach(writeConfig -> Exceptions.toRuntime(() -> writeConfig.getWriter().close()));
-      writeConfigs.values().forEach(writeConfig -> Exceptions.toRuntime(() -> {
-        if (writeConfig.getWriter().getJob() != null) {
-          writeConfig.getWriter().getJob().waitFor();
+      writeConfigs.values().parallelStream().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> bigQueryWriteConfig.getWriter().close()));
+      writeConfigs.values().forEach(bigQueryWriteConfig -> Exceptions.toRuntime(() -> {
+        if (bigQueryWriteConfig.getWriter().getJob() != null) {
+          bigQueryWriteConfig.getWriter().getJob().waitFor();
         }
       }));
       if (!hasFailed) {
         LOGGER.info("executing on success close procedure.");
         writeConfigs.values()
             .forEach(
-                writeConfig -> copyTable(bigquery, writeConfig.getTmpTable(), writeConfig.getTable(), writeConfig.getSyncMode()));
+                bigQueryWriteConfig -> copyTable(bigquery, bigQueryWriteConfig.getTmpTable(), bigQueryWriteConfig.getTable(),
+                    bigQueryWriteConfig.getSyncMode()));
         // BQ is still all or nothing if a failure happens in the destination.
         outputRecordCollector.accept(lastStateMessage);
       }
     } finally {
       // clean up tmp tables;
-      writeConfigs.values().forEach(writeConfig -> bigquery.delete(writeConfig.getTmpTable()));
+      writeConfigs.values().forEach(bigQueryWriteConfig -> bigquery.delete(bigQueryWriteConfig.getTmpTable()));
     }
   }
 

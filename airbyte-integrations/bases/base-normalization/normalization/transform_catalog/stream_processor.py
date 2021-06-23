@@ -389,9 +389,9 @@ from {{ from_table }}
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
             return column_name
         elif is_array(definition["type"]):
-            return self.cast_property_type_as_array(property_name, column_name)
+            return column_name
         elif is_object(definition["type"]):
-            sql_type = self.cast_property_type_as_object(property_name, column_name)
+            sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
         elif is_boolean(definition["type"]):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
@@ -406,18 +406,6 @@ from {{ from_table }}
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
         return f"cast({column_name} as {sql_type}) as {column_name}"
-
-    def cast_property_type_as_array(self, property_name: str, column_name: str) -> str:
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
-            # TODO build a struct/record type from properties JSON schema
-            pass
-        return column_name
-
-    def cast_property_type_as_object(self, property_name: str, column_name: str) -> str:
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
-            # TODO build a struct/record type from properties JSON schema
-            pass
-        return jinja_call("type_json()")
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
