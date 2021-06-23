@@ -55,20 +55,21 @@ class ShopifyStream(HttpStream, ABC):
         return f"https://{self.shop}.myshopify.com/admin/api/{self.api_version}/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        decoded_response = response.json()
-        if len(decoded_response.get(self.data_field)) < self.limit:
-            return None
-        else:
-            self.since_id = decoded_response.get(self.data_field)[-1]["id"]
-            return {"since_id": self.since_id}
+        # Getting next page link
+        next_page = response.links.get('next', None)
+        if next_page:
+            # Get the 'page_info' token
+            next_page = next_page.get('url').split("page_info=")[1]
+            return {"page_info": next_page}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit, "order": f"{self.primary_key} asc", "created_at_min": self.start_date}
+        params = {"limit": self.limit, "order": f"{self.primary_key} asc", "created_at": self.start_date}
         if next_page_token:
-            params.pop("created_at_min", None)
+            params.pop("created_at", None)
             params.pop("order", None)
+            params.pop("status", None)
             params.update(**next_page_token)
         return params
 
@@ -116,7 +117,27 @@ class Orders(IncrementalShopifyStream):
     data_field = "orders"
 
     def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json?status=any"
+        return f"{self.data_field}.json"
+
+    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        params = {
+            "limit": self.limit, 
+            "order": f"{self.primary_key} asc", 
+            "created_at": self.start_date, 
+            "status": "any",
+            # Add state parameter "since_id" for incremental refresh
+            "since_id": stream_state.get(self.cursor_field)
+            }
+        if next_page_token:
+            # Pop starting parameters
+            params.pop("created_at", None)
+            params.pop("order", None)
+            params.pop("status", None)
+            params.pop("since_id", None)
+            # Populating Next Page parameter
+            params.update(**next_page_token)
+        return params
 
 
 class Products(IncrementalShopifyStream):
@@ -130,7 +151,28 @@ class AbandonedCheckouts(IncrementalShopifyStream):
     data_field = "checkouts"
 
     def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json?status=any"
+        return f"{self.data_field}.json"
+
+    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        # Initial Parameters
+        params = {
+            "limit": self.limit, 
+            "order": f"{self.primary_key} asc", 
+            "created_at": self.start_date, 
+            "status": "any", 
+            # Add state parameter "since_id" for incremental refresh
+            "since_id": stream_state.get(self.cursor_field)
+            }
+        if next_page_token:
+            # Remove initial parameters, if we have more than 1 page of data
+            params.pop("created_at", None)
+            params.pop("order", None)
+            params.pop("status", None)
+            params.pop("since_id", None)
+            # Populating Next Page parameter
+            params.update(**next_page_token)
+        return params
 
 
 class Metafields(IncrementalShopifyStream):
