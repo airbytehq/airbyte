@@ -24,8 +24,8 @@
 
 package io.airbyte.integrations.destination;
 
+import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.text.Names;
-import java.time.Instant;
 
 public class StandardNameTransformer implements NamingConventionTransformer {
 
@@ -41,7 +41,7 @@ public class StandardNameTransformer implements NamingConventionTransformer {
 
   @Override
   public String getTmpTableName(String streamName) {
-    return convertStreamName("_airbyte_" + Instant.now().toEpochMilli() + "_" + getRawTableName(streamName));
+    return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + streamName);
   }
 
   protected String convertStreamName(String input) {
