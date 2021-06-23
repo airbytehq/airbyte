@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.io.airbyte.integration_tests.sources;
+package io.airbyte.integrations.source.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -36,6 +36,7 @@ import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -229,7 +230,8 @@ public class OracleSourceComprehensiveTest extends SourceComprehensiveTest {
     try {
       date = utcFormat.parse("21-Feb-2009 18:00:00");
     } catch (ParseException e) {
-      e.printStackTrace();
+      LOGGER.error("Unparseable date");
+      date = Date.from(Instant.parse("2009-02-21T18:00:00.00Z"));
     }
     DateFormat currentTFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     currentTFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
