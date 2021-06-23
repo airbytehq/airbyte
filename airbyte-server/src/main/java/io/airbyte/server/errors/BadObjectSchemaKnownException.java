@@ -24,22 +24,19 @@
 
 package io.airbyte.server.errors;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import io.airbyte.commons.json.Jsons;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+public class BadObjectSchemaKnownException extends KnownException {
 
-@Provider
-public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMappingException> {
+  public BadObjectSchemaKnownException(String message) {
+    super(message);
+  }
+
+  public BadObjectSchemaKnownException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
   @Override
-  public Response toResponse(JsonMappingException e) {
-    return Response.status(422)
-        .entity(
-            Jsons.serialize(KnownException.infoFromThrowableWithMessage(e, "Invalid json input. " + e.getMessage() + " " + e.getOriginalMessage())))
-        .type("application/json")
-        .build();
+  public int getHttpCode() {
+    return 422;
   }
 
 }
