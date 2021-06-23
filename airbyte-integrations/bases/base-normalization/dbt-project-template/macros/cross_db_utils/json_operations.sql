@@ -25,7 +25,7 @@
 {%- endmacro %}
 
 {% macro mysql__format_json_path(json_path_list) -%}
-  -- '$."x"."y"."z"'
+  {# -- '$."x"."y"."z"' #}
   {{ "'$.\"" ~ json_path_list|join(".") ~ "\"'" }}
 {%- endmacro %}
 
