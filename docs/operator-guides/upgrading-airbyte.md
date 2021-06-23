@@ -73,9 +73,9 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
 
 6. Upgrade the docker instance to new version.
 
-   i. If you are running Airbyte from a cloned version of the Airbyte repo and want to use the current most recent stable version, just `git pull`.
+   i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
 
-   ii. If you are running Airbyte from a `.env`, edit the `VERSION` field in that file to be the desired version \(make sure your docker-compose.yaml is mirroring the [latest version](https://github.com/airbytehq/airbyte/tree/4f03fc460350cbf1e8613853ab13fa6db14c0d06/docker-compose.yaml) if you encounter any problems\).
+   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}` to pull the latest versions and overwrite both files.
 
 7. Bring Airbyte back online.
 
