@@ -214,8 +214,8 @@
               },
               "flattening": {
                 "type": "string",
-                "title": "Flattening",
-                "description": "Whether the input json data should be flattened in the output CSV. Please refer to docs for details.",
+                "title": "Normalization (Flattening)",
+                "description": "Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
               }
