@@ -22,40 +22,21 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.bigquery;
+package io.airbyte.integrations.source.db2;
 
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
-import com.google.cloud.bigquery.TableDataWriteChannel;
-import com.google.cloud.bigquery.TableId;
+import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-class WriteConfig {
+public class Db2JdbcStreamingQueryConfiguration implements
+    JdbcStreamingQueryConfiguration {
 
-  private final TableId table;
-  private final TableId tmpTable;
-  private final TableDataWriteChannel writer;
-  private final WriteDisposition syncMode;
-
-  WriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer, WriteDisposition syncMode) {
-    this.table = table;
-    this.tmpTable = tmpTable;
-    this.writer = writer;
-    this.syncMode = syncMode;
-  }
-
-  public TableId getTable() {
-    return table;
-  }
-
-  public TableId getTmpTable() {
-    return tmpTable;
-  }
-
-  public TableDataWriteChannel getWriter() {
-    return writer;
-  }
-
-  public WriteDisposition getSyncMode() {
-    return syncMode;
+  @Override
+  public void accept(Connection connection, PreparedStatement preparedStatement)
+      throws SQLException {
+    connection.setAutoCommit(false);
+    preparedStatement.setFetchSize(1000);
   }
 
 }
