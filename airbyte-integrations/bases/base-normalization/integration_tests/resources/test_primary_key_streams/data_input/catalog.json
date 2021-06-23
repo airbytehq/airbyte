@@ -220,8 +220,8 @@
       },
       "sync_mode": "incremental",
       "cursor_field": [],
-      "destination_sync_mode": "overwrite",
-       "primary_key": [["id"]]
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
     }
   ]
 }
