@@ -183,8 +183,9 @@ public class ConfigDumpImport {
     final boolean[] sourceProcessed = {false};
     final boolean[] destinationProcessed = {false};
     List<String> directories = listDirectories(sourceRoot);
-    //We sort the directories cause we want to process SOURCE_CONNECTION before STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION before STANDARD_DESTINATION_DEFINITION
-    //so that we can identify which definitions should not be upgraded to the latest version
+    // We sort the directories cause we want to process SOURCE_CONNECTION before
+    // STANDARD_SOURCE_DEFINITION and DESTINATION_CONNECTION before STANDARD_DESTINATION_DEFINITION
+    // so that we can identify which definitions should not be upgraded to the latest version
     Collections.sort(directories);
     Map<ConfigSchema, Stream<T>> data = new LinkedHashMap<>();
     Map<ConfigSchema, Map<String, T>> latestSeeds = latestSeeds();
@@ -256,8 +257,9 @@ public class ConfigDumpImport {
   }
 
   /**
-   * This method combines latest definitions, with existing definition. If a connector is being used by user, it will continue to be at the same version,
-   * otherwise it will be migrated to the latest version
+   * This method combines latest definitions, with existing definition. If a connector is being used
+   * by user, it will continue to be at the same version, otherwise it will be migrated to the latest
+   * version
    */
   private <T> Stream<T> getDefinitionStream(List<String> definitionsToMigrate,
                                             boolean definitionsPopulated,
