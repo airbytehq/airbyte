@@ -24,7 +24,8 @@
 
 
 import math
-from abc import ABC
+import time
+from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -81,10 +82,33 @@ class AwsCloudtrailStream(Stream, ABC):
             params["StartTime"] = self.start_date
         if next_page_token:
             params["NextToken"] = next_page_token
+
+        if not stream_slice:
+            return params
+
+        # override time ranges using slice
+        if stream_slice.get("StartTime"):
+            params["StartTime"] = stream_slice["StartTime"]
+        if stream_slice.get("EndTime"):
+            params["EndTime"] = stream_slice["EndTime"]
+
         return params
 
     def datetime_to_timestamp(self, date: datetime) -> int:
         return int(datetime.timestamp(date))
+
+    @abstractmethod
+    def send_request(self, **kwargs) -> Mapping[str, Any]:
+        """
+        This method should be overridden by subclasses to send proper request with appropriate parameters to CloudTrail
+        """
+        pass
+
+    def is_read_limit_reached(self) -> bool:
+        if self.records_left <= 0:
+            # limit of fetched records is reached
+            return True
+        return False
 
     def read_records(
         self,
@@ -95,19 +119,14 @@ class AwsCloudtrailStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         pagination_complete = False
-
         next_page_token = None
+
+        if self.is_read_limit_reached():
+            return iter(())
+
         while not pagination_complete:
             params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            try:
-                response = self.send_request(**params)
-            except botocore.exceptions.ClientError as err:
-                # returns no records if either the start time occurs after the end time
-                # or the time range is outside the range of possible values.
-                if err.response["Error"]["Code"] == "InvalidTimeRangeException":
-                    return iter(())
-                else:
-                    raise err
+            response = self.send_request(**params)
 
             next_page_token = self.next_page_token(response)
             if not next_page_token:
@@ -117,35 +136,21 @@ class AwsCloudtrailStream(Stream, ABC):
                 yield record
                 self.records_left -= 1
 
-                if self.records_left <= 0:
-                    # limit of fetched records is reached
+                if self.is_read_limit_reached():
                     return iter(())
 
         yield from []
 
 
 class IncrementalAwsCloudtrailStream(AwsCloudtrailStream, ABC):
-    @property
-    def limit(self):
-        return super().limit
 
     # API does not support read in ascending order
     # save state only once after full read
     state_checkpoint_interval = None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        # Increment record time to avoid data dupication in the next syncs
-        record_time = latest_record[self.time_field] + 1
+        record_time = latest_record[self.time_field]
         return {self.cursor_field: max(record_time, current_stream_state.get(self.cursor_field, 0))}
-
-    def request_params(self, stream_state=None, **kwargs):
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        cursor_data = stream_state.get(self.cursor_field)
-        # ignores state if start_date option is higher than cursor
-        if cursor_data and cursor_data > self.start_date:
-            params["StartTime"] = cursor_data
-
-        return params
 
 
 class ManagementEvents(IncrementalAwsCloudtrailStream):
@@ -157,7 +162,11 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
 
     data_field = "Events"
 
-    def send_request(self, **kwargs):
+    day_in_seconds = 24 * 60 * 60
+
+    data_lifetime = 90  # in days
+
+    def send_request(self, **kwargs) -> Mapping[str, Any]:
         return self.client.session.lookup_events(**kwargs)
 
     def parse_response(self, response: dict, **kwargs) -> Iterable[Mapping]:
@@ -166,6 +175,45 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
             # we need to convert it back to timestamp to persist original API type
             event[self.time_field] = self.datetime_to_timestamp(event[self.time_field])
             yield event
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Slices whole time range to more granular slices (24h slices). Latest time slice goes first to avoid data loss
+        """
+        cursor_data = stream_state.get(self.cursor_field) if stream_state else None
+        # ignores state if start_date option is higher than cursor
+        if cursor_data and cursor_data > self.start_date:
+            start_time = self.normalize_start_time(cursor_data)
+        else:
+            start_time = self.normalize_start_time(self.start_date)
+
+        end_time = time.time()
+        last_start_time = start_time
+
+        slices = []
+        while last_start_time < end_time:
+            slices.append(
+                {
+                    "StartTime": last_start_time,
+                    # decrement second as API include records with specified StartTime and EndTime
+                    "EndTime": last_start_time + self.day_in_seconds - 1,
+                }
+            )
+            last_start_time += self.day_in_seconds
+
+        return slices
+
+    def normalize_start_time(self, start_time: int) -> int:
+        """
+        API stores data for last 90 days. Adjust starting time to avoid redundant API requests
+        """
+        current_time = time.time()
+        if current_time - start_time > self.data_lifetime * self.day_in_seconds:
+            return current_time - self.data_lifetime * self.day_in_seconds
+
+        return start_time
 
 
 class SourceAwsCloudtrail(AbstractSource):
