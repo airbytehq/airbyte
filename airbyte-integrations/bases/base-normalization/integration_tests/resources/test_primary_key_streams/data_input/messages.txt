@@ -19,4 +19,4 @@
 
 {"type": "RECORD", "record": {"stream": "dedup_cdc_excluded", "emitted_at": 1602638599000, "data": { "id": 1.0, "val": "Mazda", "_ab_cdc_lsn": 2602638599000 }}}
 {"type": "RECORD", "record": {"stream": "dedup_cdc_excluded", "emitted_at": 1602638599100, "data": { "id": 2.0, "val": "Toyota", "_ab_cdc_lsn": 2602638599020 }}}
-{"type": "RECORD", "record": {"stream": "dedup_cdc_excluded", "emitted_at": 1602638599100, "data": { "id": 1.0, "val": "", "_ab_cdc_lsn": 2602638599030 }}}
+{"type": "RECORD", "record": {"stream": "dedup_cdc_excluded", "emitted_at": 1602638599100, "data": { "id": 1.0, "_ab_cdc_lsn": 2602638599030, "_ab_cdc_deleted_at": 2602638599029 }}}
