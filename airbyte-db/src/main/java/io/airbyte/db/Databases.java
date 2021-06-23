@@ -25,6 +25,7 @@
 package io.airbyte.db;
 
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
@@ -143,6 +144,10 @@ public class Databases {
     connectionPool.setUrl(jdbcConnectionString);
     connectionProperties.ifPresent(connectionPool::setConnectionProperties);
     return connectionPool;
+  }
+
+  public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds, final String databaseId) {
+    return new BigQueryDatabase(projectId, jsonCreds, databaseId);
   }
 
 }

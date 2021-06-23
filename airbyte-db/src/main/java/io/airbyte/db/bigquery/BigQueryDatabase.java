@@ -56,8 +56,8 @@ public class BigQueryDatabase extends SqlDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDatabase.class);
 
-  private BigQuery bigQuery;
-  private String databaseId;
+  private final BigQuery bigQuery;
+  private final String databaseId;
 
   public BigQueryDatabase(String projectId, String jsonCreds, String databaseId) {
     this.databaseId = databaseId;
