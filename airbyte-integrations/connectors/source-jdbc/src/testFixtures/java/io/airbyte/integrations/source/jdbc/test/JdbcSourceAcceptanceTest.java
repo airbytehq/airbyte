@@ -279,7 +279,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
   }
 
-  private AirbyteCatalog filterOutOtherSchemas(AirbyteCatalog catalog) {
+  protected AirbyteCatalog filterOutOtherSchemas(AirbyteCatalog catalog) {
     if (supportsSchemas()) {
       final AirbyteCatalog filteredCatalog = Jsons.clone(catalog);
       filteredCatalog.setStreams(filteredCatalog.getStreams()
@@ -772,7 +772,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   // get catalog and perform a defensive copy.
-  private ConfiguredAirbyteCatalog getConfiguredCatalogWithOneStream(final String defaultNamespace) {
+  protected ConfiguredAirbyteCatalog getConfiguredCatalogWithOneStream(final String defaultNamespace) {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers.toDefaultConfiguredCatalog(getCatalog(defaultNamespace));
     // Filter to only keep the main stream name as configured stream
     catalog.withStreams(
@@ -833,7 +833,7 @@ public abstract class JdbcSourceAcceptanceTest {
                         COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
   }
 
-  private ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
+  protected ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
     final String tableNameWithSpaces = TABLE_NAME_WITH_SPACES + "2";
     final String streamName2 = tableNameWithSpaces;
 
@@ -912,7 +912,7 @@ public abstract class JdbcSourceAcceptanceTest {
     }
   }
 
-  private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
+  protected static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
     for (AirbyteMessage actualMessage : messages) {
       if (actualMessage.getRecord() != null) {
         actualMessage.getRecord().setEmittedAt(null);

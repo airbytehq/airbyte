@@ -54,13 +54,13 @@ public class CockroachDBContainerHelper {
   }
 
   public static JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(
-      CockroachContainer psqlDb) {
+                                                                          CockroachContainer psqlDb) {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     return createDatabaseAndGetPostgresConfig(psqlDb, dbName);
   }
 
   public static JsonNode createDatabaseAndGetPostgresConfig(CockroachContainer psqlDb,
-      String dbName) {
+                                                            String dbName) {
     final String initScriptName = "init_" + dbName.concat(".sql");
     final String tmpFilePath = IOs
         .writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
