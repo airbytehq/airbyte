@@ -22,10 +22,8 @@
 # SOFTWARE.
 #
 
-import json
 import sys
-from time import sleep
-from typing import Sequence
+from typing import Any, Iterable, Sequence
 
 import backoff
 import pendulum
@@ -36,7 +34,7 @@ from facebook_business.exceptions import FacebookRequestError
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
 FACEBOOK_RATE_LIMIT_ERROR_CODES = (4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008)
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
-DEFAULT_SLEEP_INTERVAL = pendulum.Interval(minutes=1)
+DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
 
 
 class FacebookAPIException(Exception):
@@ -47,31 +45,11 @@ class JobTimeoutException(Exception):
     """Scheduled job timed out"""
 
 
-def batch(iterable: Sequence, size: int = 1):
+def batch(iterable: Sequence, size: int = 1) -> Iterable:
+    """Split sequence in chunks"""
     total_size = len(iterable)
     for ndx in range(0, total_size, size):
         yield iterable[ndx : min(ndx + size, total_size)]
-
-
-def handle_call_rate_response(exc: FacebookRequestError) -> bool:
-    pause_time = DEFAULT_SLEEP_INTERVAL
-    platform_header = exc.http_headers().get("x-app-usage") or exc.http_headers().get("x-ad-account-usage")
-    if platform_header:
-        platform_header = json.loads(platform_header)
-        call_count = platform_header.get("call_count") or platform_header.get("acc_id_util_pct")
-        if call_count and call_count > 99:
-            logger.info(f"Reached platform call limit: {exc}")
-
-    buc_header = exc.http_headers().get("x-business-use-case-usage")
-    buc_header = json.loads(buc_header) if buc_header else {}
-    for business_object_id, stats in buc_header.items():
-        if stats.get("call_count", 0) > 99:
-            logger.info(f"Reached call limit on {stats['type']}: {exc}")
-            pause_time = max(pause_time, stats["estimated_time_to_regain_access"])
-    logger.info(f"Sleeping for {pause_time.total_seconds()} seconds")
-    sleep(pause_time.total_seconds())
-
-    return True
 
 
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
@@ -82,9 +60,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
-            if exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
-                return handle_call_rate_response(exc)
-            return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE
+            call_rate_limit_error = exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES
+            return exc.api_transient_error() or exc.api_error_subcode() == FACEBOOK_UNKNOWN_ERROR_CODE or call_rate_limit_error
         return True
 
     return backoff.on_exception(
@@ -97,7 +74,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
     )
 
 
-def deep_merge(a, b):
+def deep_merge(a: Any, b: Any) -> Any:
     """Merge two values, with `b` taking precedence over `a`."""
     if isinstance(a, dict) and isinstance(b, dict):
         # set of all keys in both dictionaries
@@ -106,5 +83,7 @@ def deep_merge(a, b):
         return {key: deep_merge(a.get(key), b.get(key)) for key in keys}
     elif isinstance(a, list) and isinstance(b, list):
         return [*a, *b]
+    elif isinstance(a, set) and isinstance(b, set):
+        return a | b
     else:
         return a if b is None else b

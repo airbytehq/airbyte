@@ -323,6 +323,23 @@
   "settings.yourWebhook": "Your Webhook URL",
   "settings.test": "Test",
 
+  "connector.requestConnectorBlock": "+ Request a new connector",
+  "connector.requestConnector": "Request a new connector",
+  "connector.request": "Request",
+  "connector.requested": "Requested",
+  "connector.type": "Connector type*",
+  "connector.type.placeholder": "Select a type",
+  "connector.name": "Connector name*",
+  "connector.name.message": "Specify the name for the connector",
+  "connector.name.placeholder": "Connector name",
+  "connector.website": "Website for the connector*",
+  "connector.website.message": "Specify the website for the connector",
+  "connector.website.placeholder": "https://connector.website",
+  "connector.email": "Your email address to get notified when it’s supported*",
+  "connector.email.placeholder": "richard@piedpiper.com",
+  "connector.source": "Source",
+  "connector.destination": "Destination",
+
   "demo.message.title": "This Airbyte demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so."
 }

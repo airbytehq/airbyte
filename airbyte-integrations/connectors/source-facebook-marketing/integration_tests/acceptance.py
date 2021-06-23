@@ -24,19 +24,11 @@
 
 
 import pytest
-from airbyte_cdk.models import AirbyteStream
-from source_facebook_marketing.client import Client, FacebookAPIException
+
+pytest_plugins = ("source_acceptance_test.plugin",)
 
 
-def test__health_check_with_wrong_token(config_with_wrong_token):
-    client = Client(**config_with_wrong_token)
-    alive, error = client.health_check()
-
-    assert not alive
-    assert error == "Error: 190, Invalid OAuth access token."
-
-
-def test__campaigns_with_wrong_token(config_with_wrong_token):
-    client = Client(**config_with_wrong_token)
-    with pytest.raises(FacebookAPIException, match="Error: 190, Invalid OAuth access token"):
-        next(client.read_stream(AirbyteStream(name="campaigns", json_schema={})))
+@pytest.fixture(scope="session", autouse=True)
+def connector_setup():
+    """This fixture is a placeholder for external resources that acceptance test might require."""
+    yield
