@@ -22,30 +22,47 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination;
+package io.airbyte.integrations.destination.bigquery;
 
-import io.airbyte.commons.string.Strings;
-import io.airbyte.commons.text.Names;
+import com.google.cloud.bigquery.JobInfo.WriteDisposition;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.TableDataWriteChannel;
+import com.google.cloud.bigquery.TableId;
 
-public class StandardNameTransformer implements NamingConventionTransformer {
+class BigQueryWriteConfig {
 
-  @Override
-  public String getIdentifier(String name) {
-    return convertStreamName(name);
+  private final TableId table;
+  private final TableId tmpTable;
+  private final TableDataWriteChannel writer;
+  private final WriteDisposition syncMode;
+  private final Schema schema;
+
+  BigQueryWriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer, WriteDisposition syncMode, Schema schema) {
+    this.table = table;
+    this.tmpTable = tmpTable;
+    this.writer = writer;
+    this.syncMode = syncMode;
+    this.schema = schema;
   }
 
-  @Override
-  public String getRawTableName(String streamName) {
-    return convertStreamName("_airbyte_raw_" + streamName);
+  public TableId getTable() {
+    return table;
   }
 
-  @Override
-  public String getTmpTableName(String streamName) {
-    return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + streamName);
+  public TableId getTmpTable() {
+    return tmpTable;
   }
 
-  protected String convertStreamName(String input) {
-    return Names.toAlphanumericAndUnderscore(input);
+  public TableDataWriteChannel getWriter() {
+    return writer;
+  }
+
+  public WriteDisposition getSyncMode() {
+    return syncMode;
+  }
+
+  public Schema getSchema() {
+    return schema;
   }
 
 }

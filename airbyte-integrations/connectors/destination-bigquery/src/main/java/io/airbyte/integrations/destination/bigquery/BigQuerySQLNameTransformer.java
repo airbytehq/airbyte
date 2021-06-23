@@ -24,38 +24,18 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
-import com.google.cloud.bigquery.TableDataWriteChannel;
-import com.google.cloud.bigquery.TableId;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-class WriteConfig {
+public class BigQuerySQLNameTransformer extends StandardNameTransformer {
 
-  private final TableId table;
-  private final TableId tmpTable;
-  private final TableDataWriteChannel writer;
-  private final WriteDisposition syncMode;
-
-  WriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer, WriteDisposition syncMode) {
-    this.table = table;
-    this.tmpTable = tmpTable;
-    this.writer = writer;
-    this.syncMode = syncMode;
-  }
-
-  public TableId getTable() {
-    return table;
-  }
-
-  public TableId getTmpTable() {
-    return tmpTable;
-  }
-
-  public TableDataWriteChannel getWriter() {
-    return writer;
-  }
-
-  public WriteDisposition getSyncMode() {
-    return syncMode;
+  @Override
+  public String convertStreamName(String input) {
+    String result = super.convertStreamName(input);
+    if (!result.substring(0, 1).matches("[A-Za-z_]")) {
+      // has to start with a letter or _
+      result = "_" + result;
+    }
+    return result;
   }
 
 }
