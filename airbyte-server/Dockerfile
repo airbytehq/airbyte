@@ -5,10 +5,6 @@ EXPOSE 8000
 ENV WAIT_VERSION=2.7.2
 ENV APPLICATION airbyte-server
 
-WORKDIR /
-# data is mapped to a volume. Check CONFIG_ROOT in .env file and docker-compoes file
-COPY build/resources/main/config data/config
-
 WORKDIR /app
 
 # Install wait

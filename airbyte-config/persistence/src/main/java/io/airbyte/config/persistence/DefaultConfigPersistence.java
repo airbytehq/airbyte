@@ -104,16 +104,6 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     });
   }
 
-  private <T> void validateConfigs(ConfigSchema configType, Stream<T> configs) {
-    configs.forEach(config -> {
-      try {
-        validateJson(config, configType);
-      } catch (JsonValidationException e) {
-        throw new RuntimeException(e);
-      }
-    });
-  }
-
   @Override
   public Map<String, Stream<JsonNode>> dump() throws IOException {
     final Map<String, Stream<JsonNode>> configs = new HashMap<>();

@@ -5,6 +5,8 @@ services:
   # every root service (no depends_on) should depend on init
   init:
     container_name: init-dev
+  seed:
+    container_name: airbyte-data-seed-dev
   scheduler:
     container_name: airbyte-scheduler-dev
   server:
