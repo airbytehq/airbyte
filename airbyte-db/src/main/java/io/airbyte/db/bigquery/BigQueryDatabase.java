@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
@@ -98,9 +99,11 @@ public class BigQueryDatabase extends SqlDatabase {
 
     final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, parameterValueList));
 
-    if (result.getLeft() != null)
-      return Streams.stream(result.getLeft().getQueryResults().iterateAll()).map(BigQueryUtils::rowToJson);
-    else
+    if (result.getLeft() != null) {
+      FieldList fieldList = result.getLeft().getQueryResults().getSchema().getFields();
+      return Streams.stream(result.getLeft().getQueryResults().iterateAll())
+          .map(fieldValues -> BigQueryUtils.rowToJson(fieldValues, fieldList));
+    } else
       throw new Exception("Failed to execute query " + sql + (params != null ? " with params " + Arrays
           .toString(params) : "") + ". Error: " + result.getRight());
   }
