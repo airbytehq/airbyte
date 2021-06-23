@@ -42,7 +42,7 @@ class Test300PageLimit:
     def _getter(self, params, **args):
 
         tickets_stream = self.tickets
-        updated_since = params.get("updated_since")
+        updated_since = params.get("updated_since", None)
 
         if updated_since:
             tickets_stream = filter(lambda ticket: pendulum.parse(ticket["updated_at"]) >= updated_since, self.tickets)

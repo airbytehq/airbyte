@@ -146,6 +146,7 @@ class StreamAPI(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter"""
         params = params or {}
+
         for page in range(1, self.maximum_page):
             batch = list(
                 getter(
@@ -291,12 +292,16 @@ class TicketsAPI(IncrementalStreamAPI):
         query using 'updated_since' = last_record, if there is more data remaining.
         """
         params = params or {}
-        # the maximum page allowed to pull during pagination.
-        # ticket_paginate_limit 300
+
         # Start page
         page = 1
         # Initial request parameters
-        params = {**params, "per_page": result_return_limit}
+        params = {
+            **params, 
+            "order_type": "asc", # ASC order, to get the old records first
+            "order_by": "updated_at", 
+            "per_page": result_return_limit
+        }
 
         while True:
             params["page"] = page
@@ -308,18 +313,17 @@ class TicketsAPI(IncrementalStreamAPI):
 
             # checkpoint & switch the pagination
             if page == ticket_paginate_limit:
-                # get last_record from latest batch, pos. 0, because of DESC order of records
-                last_record = batch[0]["updated_at"]
+                # get last_record from latest batch, pos. -1, because of ACS order of records
+                last_record_updated_at = batch[-1]["updated_at"]
                 page = 0  # reset page counter
                 # Adding +1 second to last_record value, to avoid record duplication,
                 # this potentialy could lead to skipping some records during the fetch,
                 # in cases where multiple records are created at the same datetime, at the level of seconds
                 # this behaviour is tested in test_300_page.py unit_test (test1)
                 # to avoid such ocations, please comment or remove the `.add(seconds=1)' part.
-                last_record = pendulum.parse(last_record).add(seconds=1)
+                last_record_updated_at = pendulum.parse(last_record_updated_at).add(seconds=1)
                 # updating request parameters with last_record state
-                params["order_by"] = "updated_at"
-                params["updated_since"] = last_record
+                params["updated_since"] = last_record_updated_at
             # Increment page
             page += 1
 
