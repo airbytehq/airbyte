@@ -22,34 +22,15 @@
  * SOFTWARE.
  */
 
-package io.airbyte.db;
+package io.airbyte.db.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.stream.Stream;
+import com.google.cloud.bigquery.FieldValueList;
 
-public abstract class SqlDatabase implements AutoCloseable {
+public class BigQueryUtils {
 
-  private JsonNode sourceConfig;
-  private JsonNode databaseConfig;
-
-  public abstract void execute(String sql) throws Exception;
-
-  public abstract Stream<JsonNode> query(String sql, String... params) throws Exception;
-
-  public JsonNode getSourceConfig() {
-    return sourceConfig;
-  }
-
-  public void setSourceConfig(JsonNode sourceConfig) {
-    this.sourceConfig = sourceConfig;
-  }
-
-  public JsonNode getDatabaseConfig() {
-    return databaseConfig;
-  }
-
-  public void setDatabaseConfig(JsonNode databaseConfig) {
-    this.databaseConfig = databaseConfig;
+  public static JsonNode rowToJson(FieldValueList rowValues) {
+    return null;
   }
 
 }
