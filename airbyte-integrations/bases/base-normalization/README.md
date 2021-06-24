@@ -3,7 +3,7 @@
 Related documentation on normalization is available here:
 
 - [architecture / Basic Normalization](../../../docs/architecture/basic-normalization.md)
-* [tutorials / Custom DBT normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
+* [tutorials / Custom dbt normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
 
 # Testing normalization
 

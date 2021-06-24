@@ -18,7 +18,7 @@ We understand that we're not "production-ready" for a lot of companies yet. In t
 * Support of most popular databases as both sources and destinations
 * CDC \(change data capture\) support across most popular databases \(MySQL / SQL Server / Oracle DB\)
 * Support of data lakes, starting with Delta Lake
-* Support for custom DBT transformations
+* Support for custom dbt transformations
 
 **Coming a bit later:**
 
@@ -40,7 +40,7 @@ Our first focus is to support batch-type ingestion integrations. We feel that we
 
 Before we move on to the next phase, we want to make sure we are supporting all the major integrations and that we are in a state where we can address the long tail, with the help of the community.
 
-We also want to fully integrate with the open-source ecosystem, including Airflow, DBT, Kubernetes, GreatExpectations, etc., so teams have the ability to fully build the data infrastructure they need.
+We also want to fully integrate with the open-source ecosystem, including Airflow, dbt, Kubernetes, GreatExpectations, etc., so teams have the ability to fully build the data infrastructure they need.
 
 ### **2. Data distribution from warehouses / databases**
 
