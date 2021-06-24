@@ -60,10 +60,14 @@ function NotificationService({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useNotificationService = (
+export const useNotificationService: (
   notification?: Notification,
   dependencies?: []
 ) => {
+  registerNotification: (notification: Notification) => void;
+  unregisterAllNotifications: () => void;
+  unregisterNotificationById: (notificationId: string | number) => void;
+} = (notification, dependencies) => {
   const notificationService = useContext(notificationServiceContext);
   if (!notificationService) {
     throw new Error(
