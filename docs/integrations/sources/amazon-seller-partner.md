@@ -57,4 +57,5 @@ Information about how to get credentials you may find [here](https://github.com/
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| `0.1.3` | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288) | `Bugfix failing connection check` |
 | `0.1.2` | 2021-06-15 | [#4108](https://github.com/airbytehq/airbyte/pull/4108) | `Fixed: Sync fails with timeout when create report is CANCELLED` |

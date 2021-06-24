@@ -5,10 +5,7 @@
     "title": "Google Ads Spec",
     "type": "object",
     "required": [
-      "developer_token",
-      "client_id",
-      "client_secret",
-      "refresh_token",
+      "credentials",
       "start_date",
       "customer_id"
     ],

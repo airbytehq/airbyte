@@ -72,3 +72,8 @@ If for any reason the request gets denied, let us know and we will be able to un
 
 The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)
 
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| `0.1.3` | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288) | `Bugfix: Correctly declare required parameters ` |
