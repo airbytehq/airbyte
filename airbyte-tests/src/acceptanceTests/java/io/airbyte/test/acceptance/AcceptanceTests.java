@@ -475,7 +475,7 @@ public class AcceptanceTests {
     // todo: wait for two attempts in the UI
     // if the wait isn't long enough, failures say "Connection refused" because the assert kills the
     // syncs in progress
-    sleep(Duration.ofMinutes(2).toMillis());
+    sleep(Duration.ofMinutes(4).toMillis());
     assertSourceAndDestinationDbInSync(sourcePsql, false);
   }
 
