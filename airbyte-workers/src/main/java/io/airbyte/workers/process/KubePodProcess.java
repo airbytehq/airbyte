@@ -531,7 +531,8 @@ public class KubePodProcess extends Process {
   }
 
   /**
-   * This method hits the Kube Api server to retrieve statuses. Most of the complexity here is minimising the api calls for performance.
+   * This method hits the Kube Api server to retrieve statuses. Most of the complexity here is
+   * minimising the api calls for performance.
    */
   private int getReturnCode(Pod pod) {
     if (returnCode != null) {
