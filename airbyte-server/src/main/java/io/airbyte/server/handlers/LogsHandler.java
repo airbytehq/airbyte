@@ -29,6 +29,10 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.helpers.LogHelpers;
 import java.io.File;
 
+/**
+ * This handler is only responsible for server and scheduler logs. Jobs logs paths are determined by
+ * the submitJob function in the JobSubmitter class in the airbyte-server module.
+ */
 public class LogsHandler {
 
   public File getLogs(Configs configs, LogsRequestBody logsRequestBody) {
