@@ -20,6 +20,9 @@ This Source is capable of syncing the following core Streams:
 * [Orders](https://help.shopify.com/en/api/reference/orders)
 * [Products](https://help.shopify.com/en/api/reference/products)
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
+* [Pages](https://help.shopify.com/en/api/reference/online-store/page)
+* [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
+* [Discount Codes](https://help.shopify.com/en/api/reference/discounts/discountcode)
 
 ### Data type mapping
 
