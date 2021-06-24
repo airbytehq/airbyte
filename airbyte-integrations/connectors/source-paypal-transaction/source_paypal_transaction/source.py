@@ -22,10 +22,10 @@
 # SOFTWARE.
 #
 
-import time
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+import time
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -54,7 +54,7 @@ class PaypalTransactionStream(HttpStream, ABC):
 
     stream_slice_period: Mapping[str, int] = {"days": 1}  # max period is 31 days (API limit)
 
-    requests_per_minute: int = 30  # API limit is 50 reqs/min from 1 IP to all endpoints
+    requests_per_minute: int = 30  # API limit is 50 reqs/min from 1 IP to all endpoints, otherwise IP is banned for 5 mins
 
     def __init__(
         self,
@@ -68,12 +68,11 @@ class PaypalTransactionStream(HttpStream, ABC):
         # Initiate data from config
         if config:
             start_date = isoparse(config["start_date"])
-            end_date_str = config.get("end_date")
-            end_date = isoparse(end_date_str) if end_date_str else None
+            end_date = isoparse(config.get("end_date")) if config.get("end_date") else None
             is_sandbox = config["is_sandbox"]
 
         self.start_date = start_date
-        self._end_date = end_date
+        self.end_date = end_date
         self.is_sandbox = is_sandbox
 
         self._validate_input_dates()
@@ -89,6 +88,10 @@ class PaypalTransactionStream(HttpStream, ABC):
             return now
         else:
             return self._end_date
+
+    @end_date.setter
+    def end_date(self, value: datetime):
+        self._end_date = value
 
     def _validate_input_dates(self):
 
@@ -124,6 +127,10 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         return {"Content-Type": "application/json"}
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        # API limit is 50 reqs/min from 1 IP to all endpoints, otherwise IP is banned for 5 mins
+        return 5 * 60.1
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
         json_response = response.json()
@@ -142,35 +149,28 @@ class PaypalTransactionStream(HttpStream, ABC):
         time.sleep(60 / self.requests_per_minute)
 
     @staticmethod
-    def update_field(record: Mapping[str, Any], field_path: List[str], update: Callable[[Any], None]):
+    def update_field(record: Mapping[str, Any], field_path: Union[List[str], str], update: Callable[[Any], None]):
 
-        data = record
         if not isinstance(field_path, List):
             field_path = [field_path]
-
-        for attr in field_path[:-1]:
-            if data and isinstance(data, dict):
-                data = data.get(attr)
-            else:
-                break
 
         last_field = field_path[-1]
-        data[last_field] = update(data[last_field])
-
-        return data
+        data = PaypalTransactionStream.get_field(record, field_path[:-1])
+        if data and last_field in data:
+            data[last_field] = update(data[last_field])
 
     @staticmethod
-    def get_field(record: Mapping[str, Any], field_path: List[str]):
+    def get_field(record: Mapping[str, Any], field_path: Union[List[str], str]):
 
-        data = record
         if not isinstance(field_path, List):
             field_path = [field_path]
 
+        data = record
         for attr in field_path:
             if data and isinstance(data, dict):
                 data = data.get(attr)
             else:
-                break
+                return None
 
         return data
 
@@ -315,8 +315,8 @@ class Balances(PaypalTransactionStream):
         The return value is a list of dicts {'start_date': date_string}.
         """
         if stream_state and stream_state.get("date"):
-            if isoparse(stream_state.get("date")) == self._end_date:
-                # Do not run any incremental requests if _end_date has been reached already
+            if isoparse(stream_state.get("date")) >= self.end_date:
+                # Do not run any incremental requests if end_date has been reached already
                 return []
             # For incremental sync don't extract balance at stream_state, because
             # it has been already extracted in previous scan. Start from next slice period instead:
@@ -325,7 +325,8 @@ class Balances(PaypalTransactionStream):
             start_date_slice = self.start_date
 
         dates = []
-        while start_date_slice < self.end_date:
+        end_date_limit = self.end_date  # - timedelta(**self.stream_slice_period)
+        while start_date_slice < end_date_limit:
             dates.append({"start_date": start_date_slice.isoformat()})
             start_date_slice = start_date_slice + timedelta(**self.stream_slice_period)
 
