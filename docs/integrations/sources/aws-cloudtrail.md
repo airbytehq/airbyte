@@ -4,6 +4,7 @@
 
 The AWS CloudTrail source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
+This Source Connector is based on a [Boto3 CloudTrail](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudtrail.html).
 
 ### Output schema
 
@@ -52,4 +53,4 @@ Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/usergu
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-06-23 | [4122](https://github.com/airbytehq/airbyte/pull/4122) | LookupEvent API |
+| 0.1.0   | 2021-06-23 | [4122](https://github.com/airbytehq/airbyte/pull/4122) | Initial release supporting the LookupEvent API |

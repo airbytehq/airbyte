@@ -24,7 +24,6 @@
 
 
 import math
-import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -32,6 +31,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import boto3
 import botocore
 import botocore.exceptions
+import pendulum
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -82,15 +82,6 @@ class AwsCloudtrailStream(Stream, ABC):
             params["StartTime"] = self.start_date
         if next_page_token:
             params["NextToken"] = next_page_token
-
-        if not stream_slice:
-            return params
-
-        # override time ranges using slice
-        if stream_slice.get("StartTime"):
-            params["StartTime"] = stream_slice["StartTime"]
-        if stream_slice.get("EndTime"):
-            params["EndTime"] = stream_slice["EndTime"]
 
         return params
 
@@ -162,12 +153,24 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
 
     data_field = "Events"
 
-    day_in_seconds = 24 * 60 * 60
-
-    data_lifetime = 90  # in days
+    data_lifetime = 90 * (24 * 60 * 60)  # in seconds (90 days)
 
     def send_request(self, **kwargs) -> Mapping[str, Any]:
         return self.client.session.lookup_events(**kwargs)
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        if stream_slice:
+            # override time ranges using slice
+            if stream_slice.get("StartTime"):
+                params["StartTime"] = stream_slice["StartTime"]
+            if stream_slice.get("EndTime"):
+                params["EndTime"] = stream_slice["EndTime"]
+
+        return params
 
     def parse_response(self, response: dict, **kwargs) -> Iterable[Mapping]:
         for event in response[self.data_field]:
@@ -180,40 +183,27 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        Slices whole time range to more granular slices (24h slices). Latest time slice goes first to avoid data loss
+        Slices whole time range to more granular slices (24h slices). Latest time slice should be the first to avoid data loss
         """
-        cursor_data = stream_state.get(self.cursor_field) if stream_state else None
+        cursor_data = stream_state.get(self.cursor_field) if stream_state else 0
+        end_time = pendulum.now()
+        # API stores data for last 90 days. Adjust starting time to avoid unnecessary API requests
         # ignores state if start_date option is higher than cursor
-        if cursor_data and cursor_data > self.start_date:
-            start_time = self.normalize_start_time(cursor_data)
-        else:
-            start_time = self.normalize_start_time(self.start_date)
-
-        end_time = time.time()
-        last_start_time = start_time
+        start_time = max(end_time.int_timestamp - self.data_lifetime, self.start_date, cursor_data)
+        last_start_time = pendulum.from_timestamp(start_time)
 
         slices = []
         while last_start_time < end_time:
             slices.append(
                 {
-                    "StartTime": last_start_time,
+                    "StartTime": last_start_time.int_timestamp,
                     # decrement second as API include records with specified StartTime and EndTime
-                    "EndTime": last_start_time + self.day_in_seconds - 1,
+                    "EndTime": last_start_time.add(days=1).int_timestamp - 1,
                 }
             )
-            last_start_time += self.day_in_seconds
+            last_start_time = last_start_time.add(days=1)
 
         return slices
-
-    def normalize_start_time(self, start_time: int) -> int:
-        """
-        API stores data for last 90 days. Adjust starting time to avoid redundant API requests
-        """
-        current_time = time.time()
-        if current_time - start_time > self.data_lifetime * self.day_in_seconds:
-            return current_time - self.data_lifetime * self.day_in_seconds
-
-        return start_time
 
 
 class SourceAwsCloudtrail(AbstractSource):
