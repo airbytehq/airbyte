@@ -12,8 +12,8 @@ To summarize, we can represent the ELT process in the diagram below. These are s
 
 ![](../.gitbook/assets/connecting-EL-with-T-4.png)
 
-In Airbyte, the current normalization option is implemented using a DBT Transformer composed of:
-- Airbyte base-normalization python package to generate DBT SQL models files
+In Airbyte, the current normalization option is implemented using a dbt Transformer composed of:
+- Airbyte base-normalization python package to generate dbt SQL models files
 - dbt to compile and executes the models on top of the data in the destinations that supports it.
 
 ## Overview
@@ -46,9 +46,9 @@ CREATE TABLE "cars" (
 
 You'll notice that we add some metadata to keep track of important information about each record.
 
-The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out DBT.
+The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out dbt.
 
-Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`. If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`. Under the hood, Airbyte is using DBT, which means that the data only ingresses into the data store one time. The normalization happens as a query within the datastore. This implementation avoids extra network time and costs.
+Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`. If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`. Under the hood, Airbyte is using dbt, which means that the data only ingresses into the data store one time. The normalization happens as a query within the datastore. This implementation avoids extra network time and costs.
 
 ## Destinations that Support Basic Normalization
 
@@ -212,7 +212,7 @@ The expanded table would have a conflict in terms of naming since both are named
 * Hash: Hash of the entire json path to reach the nested column reduced to 3 characters. This is to make sure we have a unique name \(in case part of the name gets truncated, see below\)
 * Nested column name: name of the column being expanded into its own table.
 
-By following this strategy, nested columns should "never" collide with other table names. If it does, an exception will probably be thrown either by the normalization process or by DBT that runs afterward.
+By following this strategy, nested columns should "never" collide with other table names. If it does, an exception will probably be thrown either by the normalization process or by dbt that runs afterward.
 
 ```sql
 CREATE TABLE "cars" (
@@ -276,4 +276,4 @@ To enable basic normalization (which is optional), you can toggle it on or disab
 Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overridden by your own custom choices. To do so, you can follow the following tutorials:
 
 * to build a [custom SQL view](../tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
-* to export, edit and run [custom DBT normalization](../tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
+* to export, edit and run [custom dbt normalization](../tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
