@@ -135,7 +135,7 @@ public class MssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues(null, "0", "255")
             .build());
 
-    // BUG Returns values true, false instead of 1 and 0.
+    // TODO BUG Returns values true, false instead of 1 and 0.
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
