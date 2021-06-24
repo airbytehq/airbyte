@@ -61,7 +61,8 @@ class SquareStream(HttpStream, ABC):
             return {"cursor": next_page_cursor}
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"Square-Version": self.api_version, "Content-Type": "application/json"}
 
@@ -77,12 +78,14 @@ class SquareCatalogObjectsStream(SquareStream):
     items_per_page_limit = 1000
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "catalog/search"
 
     def request_body_json(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
 
         json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
@@ -110,7 +113,8 @@ class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
 
     cursor_field = "updated_at"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+            Mapping[str, Any]:
 
         if current_stream_state is not None and self.cursor_field in current_stream_state:
             return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
@@ -118,7 +122,8 @@ class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
             return {self.cursor_field: self.start_date}
 
     def request_body_json(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
         json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
 
@@ -133,7 +138,8 @@ class IncrementalSquareStream(SquareStream, ABC):
 
     cursor_field = "created_at"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> \
+            Mapping[str, Any]:
 
         if current_stream_state is not None and self.cursor_field in current_stream_state:
             return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
@@ -141,10 +147,10 @@ class IncrementalSquareStream(SquareStream, ABC):
             return {self.cursor_field: self.start_date}
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
         params_payload = super().request_params(stream_state, stream_slice, next_page_token)
@@ -223,7 +229,8 @@ class Locations(SquareStream):
     data_field = "locations"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "locations"
 
@@ -235,7 +242,8 @@ class TeamMembers(SquareStream):
     http_method = "POST"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "team-members/search"
 
@@ -246,9 +254,25 @@ class TeamMemberWages(SquareStream):
     data_field = "team_member_wages"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "labor/team-member-wages"
+
+
+# TODO - add another customer to check the ASC ordering
+class Customers(SquareStream):
+    """ Docs: https://developer.squareup.com/explorer/square/customers-api/list-customers """
+
+    data_field = "customers"
+
+    def path(self, **kwargs) -> str:
+        return "customers"
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params_payload = super(Customers, self).request_params(**kwargs)
+        return {**params_payload, "sort_order": "ASC", "sort_field": "CREATED_AT"} \
+            if params_payload else {"sort_order": "ASC", "sort_field": "CREATED_AT"}
 
 
 class SourceSquare(AbstractSource):
@@ -293,4 +317,5 @@ class SourceSquare(AbstractSource):
             TeamMemberWages(**args),
             Refunds(**args),
             Payments(**args),
+            Customers(**args),
         ]
