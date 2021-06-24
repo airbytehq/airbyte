@@ -199,7 +199,7 @@ public class ServerApp {
         configRepository);
 
     LOGGER.info("Creating Scheduler persistence...");
-    final Database database = Databases.createPostgresDatabase(
+    final Database database = Databases.createPostgresDatabaseWithRetry(
         configs.getDatabaseUser(),
         configs.getDatabasePassword(),
         configs.getDatabaseUrl());
