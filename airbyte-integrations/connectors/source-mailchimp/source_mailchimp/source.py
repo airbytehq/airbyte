@@ -37,9 +37,9 @@ from .streams import Campaigns, EmailActivity, Lists
 
 class HttpBasicAuthenticator(TokenAuthenticator):
     def __init__(self, auth: Tuple[str, str], auth_method: str = "Basic", **kwargs):
-        # API keys have the format <key>-<data_center>. 
+        # API keys have the format <key>-<data_center>.
         # See https://mailchimp.com/developer/marketing/docs/fundamentals/#api-structure
-        self.data_center = auth[1].split('-').pop()
+        self.data_center = auth[1].split("-").pop()
         auth_string = f"{auth[0]}:{auth[1]}".encode("utf8")
         b64_encoded = base64.b64encode(auth_string).decode("utf8")
         super().__init__(token=b64_encoded, auth_method=auth_method, **kwargs)

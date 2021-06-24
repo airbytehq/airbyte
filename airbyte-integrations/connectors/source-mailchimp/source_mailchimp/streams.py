@@ -39,10 +39,9 @@ class MailChimpStream(HttpStream, ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.current_offset = 0
-        self.data_center = kwargs['authenticator'].data_center
+        self.data_center = kwargs["authenticator"].data_center
 
-    @property
-    def url_base(self):
+    def url_base(self) -> str:
         return f"https://{self.data_center}.api.mailchimp.com/3.0/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
