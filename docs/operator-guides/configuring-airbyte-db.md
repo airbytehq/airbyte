@@ -31,10 +31,10 @@ DATABASE_PORT=3000
 DATABASE_DB=postgres
 ```
 
-Additionally, you are free to redefine the JDBC URL constructed in the environment variable `DATABASE_URL` if you need to provide extra arguments to the JDBC driver (for example, to handle SSL):
+Additionally, you must redefine the JDBC URL constructed in the environment variable `DATABASE_URL` to include the correct host, port, and database. If you need to provide extra arguments to the JDBC driver (for example, to handle SSL) you should add it here as well:
 
 ```bash
-DATABASE_URL=jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}?ssl=true&sslmode=require
+DATABASE_URL=jdbc:postgresql://host.docker.internal:3000/postgres?ssl=true&sslmode=require
 ```
 
 ## Initializing the database
