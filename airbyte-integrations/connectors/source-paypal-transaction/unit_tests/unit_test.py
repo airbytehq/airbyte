@@ -136,16 +136,6 @@ def test_balances_stream_slices():
     stream_slices = b.stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
-    # b.start_date = isoparse("2021-06-01T10:00:00+00:00")
-    # b.end_date = isoparse("2021-06-03T12:00:00+00:00")
-    # stream_slices = b.stream_slices(sync_mode="any")
-    # assert [
-    #     {"start_date": "2021-06-01T10:00:00+00:00"},
-    #     {"start_date": "2021-06-02T10:00:00+00:00"},
-    #     {"start_date": "2021-06-03T10:00:00+00:00"},
-    #     {"start_date": "2021-06-03T12:00:00+00:00"},
-    # ] == stream_slices
-
     b.start_date = now() - timedelta(minutes=1)
     b.end_date = None
     stream_slices = b.stream_slices(sync_mode="any")
