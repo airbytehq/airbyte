@@ -51,6 +51,7 @@ Paypal transaction API has some [limits](https://developer.paypal.com/docs/integ
 - `stream_slice_period` = 1 day, the maximum supported date range is 31 days.
 - `records_per_request` = 10000, the maximum number of records in a single request.
 - `page_size` = 500, the maximum page size is 500.
+- `requests_per_minute` = 30, maximum limit is 50 requests per minute from IP address to all endpoint
 
 Transactions sync is performed with default `stream_slice_period` = 1 day, it means that there will be 1 request for each day between start_date and now (or end_date). if `start_date` is greater then `start_date_max`.
 Balances sync is similarly performed with default `stream_slice_period` = 1 day, but it will do additional request for the end_date of the sync (now).
@@ -59,4 +60,4 @@ Balances sync is similarly performed with default `stream_slice_period` = 1 day,
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-06-10 | [2942](https://github.com/airbytehq/airbyte/issues/1640) | PayPal Transaction Search API |
+| 0.1.0   | 2021-06-10 | [4240](https://github.com/airbytehq/airbyte/pull/4240) | PayPal Transaction Search API |
