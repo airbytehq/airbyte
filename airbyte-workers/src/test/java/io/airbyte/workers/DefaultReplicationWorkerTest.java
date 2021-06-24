@@ -46,9 +46,10 @@ import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.StandardTapConfig;
-import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
@@ -92,8 +93,8 @@ class DefaultReplicationWorkerTest {
   private NamespacingMapper mapper;
   private AirbyteDestination destination;
   private StandardSyncInput syncInput;
-  private StandardTapConfig sourceConfig;
-  private StandardTargetConfig destinationConfig;
+  private WorkerSourceConfig sourceConfig;
+  private WorkerDestinationConfig destinationConfig;
   private AirbyteMessageTracker sourceMessageTracker;
   private AirbyteMessageTracker destinationMessageTracker;
 
@@ -107,8 +108,8 @@ class DefaultReplicationWorkerTest {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     syncInput = syncPair.getValue();
 
-    sourceConfig = WorkerUtils.syncToTapConfig(syncInput);
-    destinationConfig = WorkerUtils.syncToTargetConfig(syncInput);
+    sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
+    destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
 
     source = mock(AirbyteSource.class);
     mapper = mock(NamespacingMapper.class);
@@ -155,7 +156,7 @@ class DefaultReplicationWorkerTest {
     // set up the mdc so that actually log to a file, so that we can verify that file logging captures
     // threads.
     final Path jobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
-    WorkerUtils.setJobMdc(jobRoot, "1");
+    LogHelpers.setJobMdc(jobRoot);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -168,7 +169,7 @@ class DefaultReplicationWorkerTest {
 
     worker.run(syncInput, jobRoot);
 
-    final Path logPath = jobRoot.resolve(WorkerConstants.LOG_FILENAME);
+    final Path logPath = jobRoot.resolve(LogHelpers.LOG_FILENAME);
     final String logs = IOs.readFile(logPath);
 
     // make sure we get logs from the threads.

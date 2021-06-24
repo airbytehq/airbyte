@@ -27,13 +27,13 @@ package io.airbyte.scheduler.app;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.concurrency.LifecycledCallable;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.scheduler.app.worker_run.TemporalWorkerRunFactory;
 import io.airbyte.scheduler.app.worker_run.WorkerRun;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
-import io.airbyte.workers.WorkerConstants;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -90,13 +90,12 @@ public class JobSubmitter implements Runnable {
     final int attemptNumber = job.getAttempts().size();
     threadPool.submit(new LifecycledCallable.Builder<>(workerRun)
         .setOnStart(() -> {
-          final Path logFilePath = workerRun.getJobRoot().resolve(WorkerConstants.LOG_FILENAME);
+          // TODO(Issue-4204): This should save the fully qualified job path.
+          final Path logFilePath = workerRun.getJobRoot().resolve(LogHelpers.LOG_FILENAME);
           final long persistedAttemptId = persistence.createAttempt(job.getId(), logFilePath);
           assertSameIds(attemptNumber, persistedAttemptId);
 
-          MDC.put("job_id", String.valueOf(job.getId()));
-          MDC.put("job_root", logFilePath.getParent().toString());
-          MDC.put("job_log_filename", logFilePath.getFileName().toString());
+          LogHelpers.setJobMdc(workerRun.getJobRoot());
         })
         .setOnSuccess(output -> {
           if (output.getOutput().isPresent()) {

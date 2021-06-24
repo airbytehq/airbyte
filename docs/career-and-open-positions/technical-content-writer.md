@@ -1,4 +1,4 @@
-# Technical Content Writer
+# Senior Technical Content Writer / Editor in Chief
 
 ## **About Airbyte**
 
@@ -10,7 +10,7 @@ We raised a total of $31.2M by some of the world's [top investors](./#our-invest
 
 ## **Description**
 
-As our team is small and growing, your role as a technical writer will be multi-faceted, but will aim toward these goals:
+As our team is small and growing, your role as our first technical content writer will be multi-faceted, but will aim toward these goals:
  
 * Empower developers and burgeoning contributors to produce solid content
 * Developing and maintaining a clear and concise style guide for all published content
