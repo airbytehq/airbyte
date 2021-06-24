@@ -2,23 +2,23 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "price_rule_id": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "code": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "usage_count": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "created_at": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null","string"],
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }
