@@ -108,7 +108,10 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         if start_date and pendulum.parse(start_date, strict=False) > pendulum.now():
             yield from []
         else:
-            yield from super().read_records(stream_state=stream_state, **kwargs)
+            records = super().read_records(stream_state=stream_state, **kwargs)
+            for record in records:
+                record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)
+                yield record
 
 
 class TwilioNestedStream(TwilioStream):
