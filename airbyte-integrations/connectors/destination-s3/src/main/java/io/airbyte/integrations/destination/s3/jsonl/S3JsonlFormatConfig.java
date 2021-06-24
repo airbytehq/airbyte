@@ -22,40 +22,16 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.bigquery;
+package io.airbyte.integrations.destination.s3.jsonl;
 
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
-import com.google.cloud.bigquery.TableDataWriteChannel;
-import com.google.cloud.bigquery.TableId;
+import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.S3FormatConfig;
 
-class WriteConfig {
+public class S3JsonlFormatConfig implements S3FormatConfig {
 
-  private final TableId table;
-  private final TableId tmpTable;
-  private final TableDataWriteChannel writer;
-  private final WriteDisposition syncMode;
-
-  WriteConfig(TableId table, TableId tmpTable, TableDataWriteChannel writer, WriteDisposition syncMode) {
-    this.table = table;
-    this.tmpTable = tmpTable;
-    this.writer = writer;
-    this.syncMode = syncMode;
-  }
-
-  public TableId getTable() {
-    return table;
-  }
-
-  public TableId getTmpTable() {
-    return tmpTable;
-  }
-
-  public TableDataWriteChannel getWriter() {
-    return writer;
-  }
-
-  public WriteDisposition getSyncMode() {
-    return syncMode;
+  @Override
+  public S3Format getFormat() {
+    return S3Format.JSONL;
   }
 
 }

@@ -22,18 +22,21 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.destination.s3.csv;
+package io.airbyte.integrations.source.db2;
 
-public class S3CsvConstants {
+import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
-  // These parameters are used by {@link StreamTransferManager}.
-  // See this doc about how they affect memory usage:
-  // https://alexmojaki.github.io/s3-stream-upload/javadoc/apidocs/alex/mojaki/s3upload/StreamTransferManager.html
-  // Total memory = (numUploadThreads + queueCapacity) * partSize + numStreams * (partSize + 6MB)
-  // = 31 MB at current configurations
-  public static final int DEFAULT_UPLOAD_THREADS = 2;
-  public static final int DEFAULT_QUEUE_CAPACITY = 2;
-  public static final int DEFAULT_PART_SIZE_MB = 5;
-  public static final int DEFAULT_NUM_STREAMS = 1;
+public class Db2JdbcStreamingQueryConfiguration implements
+    JdbcStreamingQueryConfiguration {
+
+  @Override
+  public void accept(Connection connection, PreparedStatement preparedStatement)
+      throws SQLException {
+    connection.setAutoCommit(false);
+    preparedStatement.setFetchSize(1000);
+  }
 
 }
