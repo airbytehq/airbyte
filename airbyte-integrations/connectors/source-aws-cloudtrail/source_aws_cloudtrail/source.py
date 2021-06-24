@@ -59,12 +59,12 @@ class Client:
 class AwsCloudtrailStream(Stream, ABC):
     limit: int = 50
 
-    start_date_format = "%Y-%m-%d"
+    start_date_format = "YYYY-MM-DD"
 
     def __init__(self, aws_key_id: str, aws_secret_key: str, aws_region_name: str, start_date: str, **kwargs):
         self.aws_secret_key = aws_secret_key
         self.aws_key_id = aws_key_id
-        self.start_date = self.datetime_to_timestamp(datetime.strptime(start_date, self.start_date_format))
+        self.start_date = pendulum.from_format(start_date, self.start_date_format).int_timestamp
         self.client = Client(aws_key_id, aws_secret_key, aws_region_name)
         # records_limit: is an option to limit maximum amount of records read by connector
         # use it for testing and development porpuses only
