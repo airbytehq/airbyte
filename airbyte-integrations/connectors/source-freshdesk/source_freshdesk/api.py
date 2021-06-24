@@ -297,10 +297,10 @@ class TicketsAPI(IncrementalStreamAPI):
         page = 1
         # Initial request parameters
         params = {
-            **params, 
-            "order_type": "asc", # ASC order, to get the old records first
-            "order_by": "updated_at", 
-            "per_page": result_return_limit
+            **params,
+            "order_type": "asc",  # ASC order, to get the old records first
+            "order_by": "updated_at",
+            "per_page": result_return_limit,
         }
 
         while True:
@@ -316,15 +316,10 @@ class TicketsAPI(IncrementalStreamAPI):
                 # get last_record from latest batch, pos. -1, because of ACS order of records
                 last_record_updated_at = batch[-1]["updated_at"]
                 page = 0  # reset page counter
-                # Adding +1 second to last_record value, to avoid record duplication,
-                # this potentialy could lead to skipping some records during the fetch,
-                # in cases where multiple records are created at the same datetime, at the level of seconds
-                # this behaviour is tested in test_300_page.py unit_test (test1)
-                # to avoid such ocations, please comment or remove the `.add(seconds=1)' part.
-                last_record_updated_at = pendulum.parse(last_record_updated_at).add(seconds=1)
+                last_record_updated_at = pendulum.parse(last_record_updated_at)
                 # updating request parameters with last_record state
                 params["updated_since"] = last_record_updated_at
-            # Increment page
+                # Increment page
             page += 1
 
     # Override the super().read() method with modified read for tickets
@@ -362,6 +357,8 @@ class ConversationsAPI(ClientIncrementalStreamAPI):
             tickets.state = self.state
         for ticket in tickets.list():
             url = f"tickets/{ticket['id']}/conversations"
+            print(f"\n TICKETS ID: {url}")
+            print(f"\n TICKETS ID: {ticket['updated_at']}")
             yield from self.read(partial(self._api_get, url=url))
 
 
