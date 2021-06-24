@@ -105,6 +105,11 @@ public class OracleIntegrationTest extends DestinationAcceptanceTest {
   }
 
   @Override
+  protected boolean supportsDBT() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveNormalizedRecords(TestDestinationEnv env, String streamName, String namespace)
       throws Exception {
     String tableName = namingResolver.getIdentifier(streamName);
