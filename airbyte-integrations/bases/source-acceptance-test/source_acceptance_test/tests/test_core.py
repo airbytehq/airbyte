@@ -116,7 +116,7 @@ class TestBasicRead(BaseTest):
 
                         assert record_data, (
                             f"Primary key subkeys {repr(pk_path)} "
-                            f"have null values or not present in {stream.stream.name} stream records. "
+                            f"have null values or not present in {stream.stream.name} stream records."
                         )
 
         if inputs.validate_output_from_all_streams:
