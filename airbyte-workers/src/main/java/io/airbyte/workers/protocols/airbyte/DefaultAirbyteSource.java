@@ -97,6 +97,12 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Override
   public boolean isFinished() {
     Preconditions.checkState(sourceProcess != null);
+    // As this check is done on every message read, it is important for this operation to be efficient.
+    // Short circuit early to avoid checking the underlying process.
+    var isEmpty = !messageIterator.hasNext();
+    if (!isEmpty) {
+      return false;
+    }
 
     return !sourceProcess.isAlive() && !messageIterator.hasNext();
   }
