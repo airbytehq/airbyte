@@ -58,6 +58,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -296,14 +297,21 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobs(ConfigType configType, String configId) throws IOException {
+  public List<Job> listJobs(ConfigType configType, String configId, int pagesize, int offset) throws IOException {
+    Set<ConfigType> configTypes = new HashSet<ConfigType>();
+    configTypes.add(configType);
+    return listJobs(configTypes, configId, pagesize, offset);
+  }
+
+  @Override
+  public List<Job> listJobs(Set<ConfigType> configTypes, String configId, int pagesize, int offset) throws IOException {
     return database.query(ctx -> getJobsFromResult(ctx.fetch(
         BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(config_type AS VARCHAR) = ? AND " +
-            "scope = ? " +
-            "ORDER BY jobs.created_at DESC",
-        Sqls.toSqlName(configType),
-        configId)));
+            "CAST(config_type AS VARCHAR) in " +  Sqls.toSqlInFragment(configTypes) + " " +
+            "AND scope = ? " +
+            "ORDER BY jobs.created_at DESC, jobs.id DESC " +
+            "LIMIT ? OFFSET ?",
+            configId, pagesize, offset)));
   }
 
   @Override

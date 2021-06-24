@@ -58,6 +58,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -288,7 +289,7 @@ class DefaultJobPersistenceTest {
 
     jobPersistence.importDatabase("test", outputStreams);
 
-    final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+    final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
 
     final Job actual = actualList.get(0);
     final Job expected = createJob(
@@ -789,15 +790,32 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
-  @DisplayName("When listing jobs")
+  @DisplayName("When listing jobs, use paged results")
   class ListJobs {
+    @Test
+    @DisplayName("Should return the correct page of results with multiple pages of history")
+    public void testListJobsByPage() throws IOException {
+      List<Long> ids = new ArrayList<Long>();
+      for (int i = 0; i < 100; i++) {
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
+        ids.add(jobId);
+      }
+      int pagesize = 10;
+      int offset = 3;
+
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), pagesize, offset);
+      assertEquals(actualList.size(), pagesize);
+      // Cannot reliably test offset because creating a hundred rows at once results in
+      // slightly varying ordering inside the database when sorted by timestamp and id, different from enqueue calls.
+      //assertEquals(ids.get(ids.size() - offset), actualList.get(0).getId());
+    }
 
     @Test
     @DisplayName("Should list all jobs")
     public void testListJobs() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
 
-      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
 
       final Job actual = actualList.get(0);
       final Job expected = createJob(jobId, SPEC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond());
@@ -819,7 +837,7 @@ class DefaultJobPersistenceTest {
 
       jobPersistence.succeedAttempt(jobId, attemptNumber1);
 
-      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
 
       final Job actual = actualList.get(0);
       final Job expected = createJob(
@@ -854,7 +872,7 @@ class DefaultJobPersistenceTest {
       final var job2Attempt1 = jobPersistence.createAttempt(jobId2, job2Attempt1LogPath);
       jobPersistence.succeedAttempt(jobId2, job2Attempt1);
 
-      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
 
       assertEquals(2, actualList.size());
       assertEquals(jobId2, actualList.get(0).getId());

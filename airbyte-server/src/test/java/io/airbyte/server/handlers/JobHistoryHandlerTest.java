@@ -26,6 +26,8 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -53,7 +55,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
@@ -130,6 +134,8 @@ public class JobHistoryHandlerTest {
     @DisplayName("Should return jobs with/without attempts in descending order")
     public void testListJobs() throws IOException {
       final var successfulJob = testJob;
+      final int pagesize = 25;
+      final int rowOffset = 0;
 
       final var jobId2 = JOB_ID + 100;
       final var createdAt2 = CREATED_AT + 1000;
@@ -137,11 +143,13 @@ public class JobHistoryHandlerTest {
           new Job(jobId2, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, Collections.emptyList(), JobStatus.PENDING,
               null, createdAt2, createdAt2);
 
-      when(jobPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(List.of(latestJobNoAttempt, successfulJob));
+      when(jobPersistence.listJobs(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, pagesize, rowOffset)).thenReturn(List.of(latestJobNoAttempt, successfulJob));
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
-          .configId(JOB_CONFIG_ID);
+          .configId(JOB_CONFIG_ID)
+          .pagesize(pagesize)
+          .rowOffset(rowOffset);
       final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
@@ -156,6 +164,8 @@ public class JobHistoryHandlerTest {
     @DisplayName("Should return jobs in descending order regardless of type")
     public void testListJobsFor() throws IOException {
       final var firstJob = testJob;
+      final int pagesize = 25;
+      final int rowOffset = 0;
 
       final var secondJobId = JOB_ID + 100;
       final var createdAt2 = CREATED_AT + 1000;
@@ -163,16 +173,23 @@ public class JobHistoryHandlerTest {
       final var secondJob = new Job(secondJobId, ConfigType.DISCOVER_SCHEMA, JOB_CONFIG_ID, JOB_CONFIG, ImmutableList.of(secondJobAttempt),
           JobStatus.SUCCEEDED, null, createdAt2, createdAt2);
 
+      final Set<ConfigType> configTypes = Set.of(
+          Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class),
+          Enums.convertTo(JobConfigType.SYNC, ConfigType.class),
+          Enums.convertTo(JobConfigType.DISCOVER_SCHEMA, ConfigType.class));
+
       final var latestJobId = secondJobId + 100;
       final var createdAt3 = createdAt2 + 1000;
       final var latestJob =
           new Job(latestJobId, ConfigType.SYNC, JOB_CONFIG_ID, JOB_CONFIG, Collections.emptyList(), JobStatus.PENDING, null, createdAt3, createdAt3);
 
-      when(jobPersistence.listJobs(CONFIG_TYPE, JOB_CONFIG_ID)).thenReturn(List.of(latestJob, secondJob, firstJob));
+      when(jobPersistence.listJobs(configTypes, JOB_CONFIG_ID, pagesize, rowOffset)).thenReturn(List.of(latestJob, secondJob, firstJob));
 
       final JobListRequestBody requestBody = new JobListRequestBody()
           .configTypes(List.of(CONFIG_TYPE_FOR_API, JobConfigType.SYNC, JobConfigType.DISCOVER_SCHEMA))
-          .configId(JOB_CONFIG_ID);
+          .configId(JOB_CONFIG_ID)
+          .pagesize(pagesize)
+          .rowOffset(rowOffset);
       final JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var firstJobWithAttemptRead =
