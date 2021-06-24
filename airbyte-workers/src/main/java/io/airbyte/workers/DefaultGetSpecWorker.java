@@ -68,7 +68,6 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       Optional<ConnectorSpecification> spec;
       try (InputStream stdout = process.getInputStream()) {
         spec = streamFactory.create(IOs.newBufferedReader(stdout))
-            .peek(x -> LOGGER.info("DEBUG RECORD: {}", x))
             .filter(message -> message.getType() == Type.SPEC)
             .map(AirbyteMessage::getSpec)
             .findFirst();

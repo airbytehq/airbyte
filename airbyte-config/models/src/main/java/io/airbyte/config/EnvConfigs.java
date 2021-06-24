@@ -181,8 +181,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getKubeNamespace() {
-    String namespace = getEnvOrDefault(KUBE_NAMESPACE, "default");
-    return namespace;
+    return getEnvOrDefault(KUBE_NAMESPACE, "default");
   }
 
   @Override
