@@ -151,4 +151,4 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
-| 0.1.0 | 2021-06-03 | [#3672](https://github.com/airbytehq/airbyte/pull/3672) | Initial release with CSV Parquet outputs|
+| 0.1.0 | 2021-06-24 | [#4329](https://github.com/airbytehq/airbyte/pull/4329) | Initial release with CSV Parquet outputs|
