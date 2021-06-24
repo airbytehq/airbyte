@@ -195,8 +195,8 @@ public class MssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("123.0", "1.23456794E9", null)
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so dates would be always
-    // represented as a datetime with 00:00:00 time
+    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so dates would be
+    // always represented as a datetime with 00:00:00 time
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
@@ -231,7 +231,7 @@ public class MssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
+    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
     // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -306,7 +306,7 @@ public class MssqlSourceComprehensiveTest extends SourceComprehensiveTest {
                 null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // BUG Returns binary value instead of actual value
+    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("binary")
@@ -317,7 +317,7 @@ public class MssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .addNullExpectedValue()
             .build());
 
-    // BUG Returns binary value instead of actual value
+    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varbinary")
@@ -329,7 +329,7 @@ public class MssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .addNullExpectedValue()
             .build());
 
-    // BUG: airbyte returns binary representation instead of readable one
+    // TODO BUG: airbyte returns binary representation instead of readable one
     // create table dbo_1_hierarchyid1 (test_column hierarchyid);
     // insert dbo_1_hierarchyid1 values ('/1/1/');
     // select test_column ,test_column.ToString() AS [Node Text],test_column.GetLevel() [Node Level]
@@ -354,7 +354,7 @@ public class MssqlSourceComprehensiveTest extends SourceComprehensiveTest {
                 null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // BUG: Airbyte returns binary representation instead of text one.
+    // TODO BUG: Airbyte returns binary representation instead of text one.
     // Proper select query example: SELECT test_column.STAsText() from dbo_1_geometry;
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -384,7 +384,7 @@ public class MssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("<user><user_id>1</user_id></user>", null, "")
             .build());
 
-    // BUG: Airbyte returns binary representation instead of text one.
+    // TODO BUG: Airbyte returns binary representation instead of text one.
     // Proper select query example: SELECT test_column.STAsText() from dbo_1_geography;
     addDataTypeTestData(
         TestDataHolder.builder()
