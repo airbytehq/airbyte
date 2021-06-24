@@ -223,8 +223,8 @@ public class CdcMySqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("decimal")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("decimal(10,4)")
-            .addInsertValues("0.188", "null")
-            .addExpectedValues("0.188", null)
+            .addInsertValues("0.1880", "null")
+            .addExpectedValues("0.1880", null)
             .build());
 
     addDataTypeTestData(
