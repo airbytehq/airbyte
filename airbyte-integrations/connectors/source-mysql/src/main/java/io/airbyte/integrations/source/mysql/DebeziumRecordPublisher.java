@@ -86,7 +86,17 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           // more on the tombstone:
           // https://debezium.io/documentation/reference/configuration/event-flattening.html
           if (e.value() != null) {
-            queue.add(e);
+            boolean inserted = false;
+            while (!inserted) {
+              inserted = queue.offer(e);
+              if (!inserted) {
+                try {
+                  Thread.sleep(10);
+                } catch (InterruptedException interruptedException) {
+                  throw new RuntimeException(interruptedException);
+                }
+              }
+            }
           }
         })
         .using((success, message, error) -> {

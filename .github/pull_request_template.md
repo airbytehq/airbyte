@@ -25,9 +25,10 @@ Expand the checklist which is relevant for this PR.
 - [ ] Code reviews completed
 - [ ] Credentials added to Github CI if needed and not already present. [instructions for injecting secrets into CI](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#using-credentials-in-ci). 
 - [ ] Documentation updated 
-    - [ ] README
-    - [ ] CHANGELOG.md
+    - [ ] `README.md`
+    - [ ] `docs/SUMMARY.md` if it's a new connector
     - [ ] Reference docs in the `docs/integrations/` directory.
+    - [ ] Changelog in the appropriate page in `docs/integrations/...`. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
     - [ ] Build status added to [build page](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/builds.md)
 - [ ] Build is successful
 - [ ] Connector version bumped like described [here](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#updating-a-connector)
