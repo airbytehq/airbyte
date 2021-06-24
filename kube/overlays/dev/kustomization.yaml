@@ -10,7 +10,7 @@ images:
   - name: airbyte/db
     newTag: dev
   - name: airbyte/scheduler
-    newTag: test
+    newTag: dev
   - name: airbyte/server
     newTag: dev
   - name: airbyte/webapp
