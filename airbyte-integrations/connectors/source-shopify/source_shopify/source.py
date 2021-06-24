@@ -55,7 +55,8 @@ class ShopifyStream(HttpStream, ABC):
     def url_base(self) -> str:
         return f"https://{self.shop}.myshopify.com/admin/api/{self.api_version}/"
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    @staticmethod
+    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
         # Getting next page link
         next_page = response.links.get("next", None)
         if next_page:
