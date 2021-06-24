@@ -357,8 +357,6 @@ class ConversationsAPI(ClientIncrementalStreamAPI):
             tickets.state = self.state
         for ticket in tickets.list():
             url = f"tickets/{ticket['id']}/conversations"
-            print(f"\n TICKETS ID: {url}")
-            print(f"\n TICKETS ID: {ticket['updated_at']}")
             yield from self.read(partial(self._api_get, url=url))
 
 
