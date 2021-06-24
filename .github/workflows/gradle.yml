@@ -337,6 +337,7 @@ jobs:
         with:
           minikube version: 'v1.21.0-beta.0'
           kubernetes version: 'v1.20.7'
+          driver: 'docker'
         # In case of self-hosted EC2 errors, remove this env block.
         env:
           USER: root
