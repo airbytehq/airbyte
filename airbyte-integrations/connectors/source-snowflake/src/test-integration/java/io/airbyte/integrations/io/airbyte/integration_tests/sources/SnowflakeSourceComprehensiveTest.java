@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Airbyte
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -82,11 +106,14 @@ public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
 
   @Override
   protected void initTests() {
+    // TODO https://github.com/airbytehq/airbyte/issues/4316
+    // should be tested with Snowflake extreme range -99999999999999999999999999999999999999 to
+    // +99999999999999999999999999999999999999 (inclusive)
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("NUMBER")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null","9223372036854775807", "-9223372036854775808")
+            .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
             .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
             .build());
     addDataTypeTestData(
@@ -112,11 +139,68 @@ public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("INT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
+            .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
+            .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("BIGINT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
+            .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
+            .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("SMALLINT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
+            .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
+            .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("TINYINT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
+            .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
+            .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("BYTEINT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("null", "9223372036854775807", "-9223372036854775808")
+            .addExpectedValues(null, "9223372036854775807", "-9223372036854775808")
+            .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("NUMBER")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .fullSourceDataType("NUMBER(10,5)")
             .addInsertValues("10.12345")
             .addExpectedValues("10.12345")
+            .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("DOUBLE")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("null", "-9007199254740991", "9007199254740991")
+            .addExpectedValues(null, "-9.007199254740991E15", "9.007199254740991E15")
+            .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("FLOAT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("10e-308", "10e+307")
+            .addExpectedValues("1.0E-307", "1.0E308")
+            .build());
+    // TODO should be fixed in scope of https://github.com/airbytehq/airbyte/issues/4316
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("FLOAT")
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("'NaN'", "'inf'", "'-inf'")
+            .addExpectedValues(null, null, null)
             .build());
 
     // Data Types for Text Strings
@@ -124,21 +208,22 @@ public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("VARCHAR")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null","'тест'", "'⚡ test ��'", "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
+            .addInsertValues("null", "'тест'", "'⚡ test ��'",
+                "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
             .addExpectedValues(null, "тест", "⚡ test ��", "!\"#$%&'()*+,-./:;<=>?@[]^_`|~")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("STRING")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null","'テスト'")
+            .addInsertValues("null", "'テスト'")
             .addExpectedValues(null, "テスト")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TEXT")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null","'-\041-'", "'-\\x25-'")
+            .addInsertValues("null", "'-\041-'", "'-\\x25-'")
             .addExpectedValues(null, "-!-", "-%-")
             .build());
     addDataTypeTestData(
@@ -163,7 +248,8 @@ public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("BOOLEAN")
             .airbyteType(JsonSchemaPrimitive.BOOLEAN)
-            .addInsertValues("null", "'true'", "5", "'false'", "0", "TO_BOOLEAN('y')", "TO_BOOLEAN('n')")
+            .addInsertValues("null", "'true'", "5", "'false'", "0", "TO_BOOLEAN('y')",
+                "TO_BOOLEAN('n')")
             .addExpectedValues(null, "true", "true", "false", "false", "true", "false")
             .build());
 
@@ -187,7 +273,8 @@ public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("TIME")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null", "'00:00:00'", "'1:59 PM'", "'23:59:59'")
-            .addExpectedValues(null, "1970-01-01T00:00:00Z", "1970-01-01T13:59:00Z", "1970-01-01T23:59:59Z")
+            .addExpectedValues(null, "1970-01-01T00:00:00Z", "1970-01-01T13:59:00Z",
+                "1970-01-01T23:59:59Z")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -224,7 +311,8 @@ public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("VARIANT")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .insertPatternSql(INSERT_SEMI_STRUCTURED_SQL)
-            .addInsertValues("null", "parse_json(' { \"key1\": \"value1\", \"key2\": \"value2\" } ')")
+            .addInsertValues("null",
+                "parse_json(' { \"key1\": \"value1\", \"key2\": \"value2\" } ')")
             .addExpectedValues(null, "{\n  \"key1\": \"value1\",\n  \"key2\": \"value2\"\n}")
             .build());
     addDataTypeTestData(
@@ -240,8 +328,10 @@ public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("OBJECT")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .insertPatternSql(INSERT_SEMI_STRUCTURED_SQL)
-            .addInsertValues("null", "parse_json(' { \"outer_key1\": { \"inner_key1A\": \"1a\", \"inner_key1B\": \"1b\" }, \"outer_key2\": { \"inner_key2\": 2 } } ')")
-            .addExpectedValues(null, "{\n  \"outer_key1\": {\n    \"inner_key1A\": \"1a\",\n    \"inner_key1B\": \"1b\"\n  },\n  \"outer_key2\": {\n    \"inner_key2\": 2\n  }\n}")
+            .addInsertValues("null",
+                "parse_json(' { \"outer_key1\": { \"inner_key1A\": \"1a\", \"inner_key1B\": \"1b\" }, \"outer_key2\": { \"inner_key2\": 2 } } ')")
+            .addExpectedValues(null,
+                "{\n  \"outer_key1\": {\n    \"inner_key1A\": \"1a\",\n    \"inner_key1B\": \"1b\"\n  },\n  \"outer_key2\": {\n    \"inner_key2\": 2\n  }\n}")
             .build());
 
     // Geospatial Data Types
@@ -249,8 +339,12 @@ public class SnowflakeSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("GEOGRAPHY")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("null", "'POINT(-122.35 37.55)'", "'LINESTRING(-124.20 42.00, -120.01 41.99)'")
-            .addExpectedValues(null, "{\n  \"coordinates\": [\n    -122.35,\n    37.55\n  ],\n  \"type\": \"Point\"\n}", "{\n  \"coordinates\": [\n    [\n      -124.2,\n      42\n    ],\n    [\n      -120.01,\n      41.99\n    ]\n  ],\n  \"type\": \"LineString\"\n}")
+            .addInsertValues("null", "'POINT(-122.35 37.55)'",
+                "'LINESTRING(-124.20 42.00, -120.01 41.99)'")
+            .addExpectedValues(null,
+                "{\n  \"coordinates\": [\n    -122.35,\n    37.55\n  ],\n  \"type\": \"Point\"\n}",
+                "{\n  \"coordinates\": [\n    [\n      -124.2,\n      42\n    ],\n    [\n      -120.01,\n      41.99\n    ]\n  ],\n  \"type\": \"LineString\"\n}")
             .build());
   }
+
 }
