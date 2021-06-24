@@ -22,9 +22,9 @@
 # SOFTWARE.
 #
 
+import time
 from abc import ABC
 from datetime import datetime, timedelta
-import time
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests

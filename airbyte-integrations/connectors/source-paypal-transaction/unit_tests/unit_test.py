@@ -61,7 +61,7 @@ def test_update_field():
 
     # Test success 2
     record = {"a": {"b": {"c": "d"}}}
-    PaypalTransactionStream.update_field(record, field_path="a", update=lambda x: 'updated')
+    PaypalTransactionStream.update_field(record, field_path="a", update=lambda x: "updated")
     assert record == {"a": "updated"}
 
     # Test failure - incorrect field_path
@@ -111,12 +111,22 @@ def test_transactions_stream_slices():
     assert 32 == len(stream_slices)
 
     t.start_date = isoparse("2021-06-01T10:00:00+00:00")
-    t.end_date = isoparse("2021-06-03T12:00:00+00:00")
+    t.end_date = isoparse("2021-06-04T12:00:00+00:00")
     stream_slices = t.stream_slices(sync_mode="any")
     assert [
         {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T00:00:00+00:00"},
-        {"start_date": "2021-06-02T00:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"},
+        {"start_date": "2021-06-02T00:00:00+00:00", "end_date": "2021-06-03T00:00:00+00:00"},
+        {"start_date": "2021-06-03T00:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
     ] == stream_slices
+
+    stream_slices = t.stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
+    assert [
+        {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T00:00:00+00:00"},
+        {"start_date": "2021-06-03T00:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
+    ] == stream_slices
+
+    stream_slices = t.stream_slices(sync_mode="any", stream_state={"date": "2021-06-04T10:00:00+00:00"})
+    assert [] == stream_slices
 
 
 def test_balances_stream_slices():
@@ -126,15 +136,15 @@ def test_balances_stream_slices():
     stream_slices = b.stream_slices(sync_mode="any")
     assert 1 == len(stream_slices)
 
-    b.start_date = isoparse("2021-06-01T10:00:00+00:00")
-    b.end_date = isoparse("2021-06-03T12:00:00+00:00")
-    stream_slices = b.stream_slices(sync_mode="any")
-    assert [
-        {"start_date": "2021-06-01T10:00:00+00:00"},
-        {"start_date": "2021-06-02T10:00:00+00:00"},
-        {"start_date": "2021-06-03T10:00:00+00:00"},
-        {"start_date": "2021-06-03T12:00:00+00:00"},
-    ] == stream_slices
+    # b.start_date = isoparse("2021-06-01T10:00:00+00:00")
+    # b.end_date = isoparse("2021-06-03T12:00:00+00:00")
+    # stream_slices = b.stream_slices(sync_mode="any")
+    # assert [
+    #     {"start_date": "2021-06-01T10:00:00+00:00"},
+    #     {"start_date": "2021-06-02T10:00:00+00:00"},
+    #     {"start_date": "2021-06-03T10:00:00+00:00"},
+    #     {"start_date": "2021-06-03T12:00:00+00:00"},
+    # ] == stream_slices
 
     b.start_date = now() - timedelta(minutes=1)
     b.end_date = None
@@ -155,6 +165,7 @@ def test_balances_stream_slices():
 
     b.start_date = isoparse("2021-06-01T10:00:00+00:00")
     b.end_date = isoparse("2021-06-03T12:00:00+00:00")
+
     stream_slices = b.stream_slices(sync_mode="any")
     assert [
         {"start_date": "2021-06-01T10:00:00+00:00"},
@@ -162,3 +173,15 @@ def test_balances_stream_slices():
         {"start_date": "2021-06-03T10:00:00+00:00"},
         {"start_date": "2021-06-03T12:00:00+00:00"},
     ] == stream_slices
+
+    stream_slices = b.stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
+    assert [
+        {"start_date": "2021-06-03T10:00:00+00:00"},
+        {"start_date": "2021-06-03T12:00:00+00:00"},
+    ] == stream_slices
+
+    stream_slices = b.stream_slices(sync_mode="any", stream_state={"date": "2021-06-03T11:00:00+00:00"})
+    assert [{"start_date": "2021-06-03T12:00:00+00:00"}] == stream_slices
+
+    stream_slices = b.stream_slices(sync_mode="any", stream_state={"date": "2021-06-03T12:00:00+00:00"})
+    assert [] == stream_slices
