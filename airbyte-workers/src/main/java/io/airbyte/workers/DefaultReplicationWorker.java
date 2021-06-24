@@ -216,7 +216,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             destination.accept(message);
             recordsRead += 1;
 
-            if (recordsRead % 100 == 0) {
+            if (recordsRead % 1000 == 0) {
               LOGGER.info("Records read: {}", recordsRead);
             }
           }
