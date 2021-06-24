@@ -16,13 +16,13 @@ This Source is capable of syncing the following core Streams:
 * [Collects](https://help.shopify.com/en/api/reference/products/collect)
 * [Custom Collections](https://help.shopify.com/en/api/reference/products/customcollection)
 * [Customers](https://help.shopify.com/en/api/reference/customers)
+* [Discount Codes](https://shopify.dev/docs/admin-api/rest/reference/discounts/discountcode)
 * [Metafields](https://help.shopify.com/en/api/reference/metafield)
 * [Orders](https://help.shopify.com/en/api/reference/orders)
 * [Products](https://help.shopify.com/en/api/reference/products)
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
-* [Discount Codes](https://help.shopify.com/en/api/reference/discounts/discountcode)
 
 ### Data type mapping
 
@@ -60,6 +60,7 @@ Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-ap
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.6   | 2021-06-24 | [4009](https://github.com/airbytehq/airbyte/pull/4009) | Add pages, price rules and discount codes streams |
 | 0.1.5   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
 | 0.1.4   | 2021-06-08 | [3926](https://github.com/airbytehq/airbyte/pull/3926) | New attributes to Orders schema |
 | 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787) | Add Native Shopify Source Connector |
