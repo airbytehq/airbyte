@@ -17,6 +17,7 @@
 {"type": "RECORD", "record": {"stream": "nested_stream_with_complex_columns_resulting_into_long_names", "emitted_at": 1602638599000, "data": { "id": 4.2, "date": "2020-08-29T00:00:00Z", "partition": { "double_array_data": [[ { "id": "EUR" } ]], "DATA": [ {"currency": "EUR" } ] } }}}
 {"type": "RECORD", "record": {"stream": "nested_stream_with_complex_columns_resulting_into_long_names", "emitted_at": 1602638599100, "data": { "id": "test record", "date": "2020-08-31T00:00:00Z", "partition": { "double_array_data": [[ { "id": "USD" } ], [ { "id": "GBP" } ]], "DATA": [ {"currency": "EUR" } ]} }}}
 
-{"type": "RECORD", "record": {"stream": "dedup_cdc_excluded", "emitted_at": 1602638599000, "data": { "id": 1, "val": "Mazda", "_ab_cdc_lsn": 2602638599000 }}}
-{"type": "RECORD", "record": {"stream": "dedup_cdc_excluded", "emitted_at": 1602638599100, "data": { "id": 2, "val": "Toyota", "_ab_cdc_lsn": 2602638599020 }}}
-{"type": "RECORD", "record": {"stream": "dedup_cdc_excluded", "emitted_at": 1602638599120, "data": { "id": 3, "_ab_cdc_lsn": 2602638599030, "_ab_cdc_deleted_at": 2602638599029 }}}
+
+{"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":1,"name":"honda","_ab_cdc_updated_at":1624490365120,"_ab_cdc_lsn":22932208,"_ab_cdc_deleted_at":null},"emitted_at":1624490382845,"namespace":"public"}}
+{"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":5,"name":"tobata","_ab_cdc_updated_at":1624490365130,"_ab_cdc_lsn":22932218,"_ab_cdc_deleted_at":null},"emitted_at":1624490382865,"namespace":"public"}}
+{"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":5,"name":"tobata","_ab_cdc_updated_at":1624490365140,"_ab_cdc_lsn":22932228,"_ab_cdc_deleted_at":22932218},"emitted_at":1624490382885,"namespace":"public"}}
