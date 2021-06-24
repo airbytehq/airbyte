@@ -51,6 +51,10 @@ public class Databases {
 
       try {
         database = createPostgresDatabase(username, password, jdbcConnectionString);
+        Optional<String> uuid = ServerUuid.get(database);
+        if (uuid.isEmpty()) {
+          throw new Exception("Server UUID not available yet!");
+        }
       } catch (Exception e) {
         // Ignore the exception because this likely means that the database server is still initializing.
         LOGGER.warn("Ignoring exception while trying to request database:", e);

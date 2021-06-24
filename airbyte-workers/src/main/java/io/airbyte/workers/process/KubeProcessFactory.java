@@ -26,6 +26,7 @@ package io.airbyte.workers.process;
 
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.kubernetes.client.openapi.ApiClient;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -39,20 +40,27 @@ public class KubeProcessFactory implements ProcessFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
   private final String namespace;
-  private final KubernetesClient kubeClient;
+  private final ApiClient officialClient;
+  private final KubernetesClient fabricClient;
   private final String kubeHeartbeatUrl;
   private final BlockingQueue<Integer> workerPorts;
 
   /**
    * @param namespace kubernetes namespace where spawned pods will live
-   * @param kubeClient kubernetes client
+   * @param officialClient official kubernetes client
+   * @param fabricClient fabric8 kubernetes client
    * @param kubeHeartbeatUrl a url where if the response is not 200 the spawned process will fail
    *        itself
    * @param workerPorts a set of ports that can be used for IO socket servers
    */
-  public KubeProcessFactory(String namespace, KubernetesClient kubeClient, String kubeHeartbeatUrl, BlockingQueue<Integer> workerPorts) {
+  public KubeProcessFactory(String namespace,
+                            ApiClient officialClient,
+                            KubernetesClient fabricClient,
+                            String kubeHeartbeatUrl,
+                            BlockingQueue<Integer> workerPorts) {
     this.namespace = namespace;
-    this.kubeClient = kubeClient;
+    this.officialClient = officialClient;
+    this.fabricClient = fabricClient;
     this.kubeHeartbeatUrl = kubeHeartbeatUrl;
     this.workerPorts = workerPorts;
   }
@@ -88,7 +96,8 @@ public class KubeProcessFactory implements ProcessFactory {
       };
 
       return new KubePodProcess(
-          kubeClient,
+          officialClient,
+          fabricClient,
           portReleaser,
           podName,
           namespace,
