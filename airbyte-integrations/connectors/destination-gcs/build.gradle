@@ -16,11 +16,8 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    //implementation group: 'commons-io', name: 'commons-io', version: '2.6'
-
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.1')
     implementation 'com.amazonaws:aws-java-sdk-s3'
-    //implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
     
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
