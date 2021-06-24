@@ -171,11 +171,11 @@ public class SchedulerApp {
   private static ProcessFactory getProcessBuilderFactory(Configs configs) throws IOException {
     if (configs.getWorkerEnvironment() == Configs.WorkerEnvironment.KUBERNETES) {
       final ApiClient officialClient = Config.defaultClient();
-      final KubernetesClient fabricClient = new DefaultKubernetesClient();
+      final KubernetesClient fabricClient = new DefaultKubernetesClient().inNamespace(configs.getKubeNamespace());
       final BlockingQueue<Integer> workerPorts = new LinkedBlockingDeque<>(configs.getTemporalWorkerPorts());
       final String localIp = InetAddress.getLocalHost().getHostAddress();
       final String kubeHeartbeatUrl = localIp + ":" + KUBE_HEARTBEAT_PORT;
-      return new KubeProcessFactory("default", officialClient, fabricClient, kubeHeartbeatUrl, workerPorts);
+      return new KubeProcessFactory(configs.getKubeNamespace(), officialClient, fabricClient, kubeHeartbeatUrl, workerPorts);
     } else {
       return new DockerProcessFactory(
           configs.getWorkspaceRoot(),

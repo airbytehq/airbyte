@@ -10,7 +10,7 @@ images:
   - name: airbyte/db
     newTag: dev
   - name: airbyte/scheduler
-    newTag: dev
+    newTag: test
   - name: airbyte/server
     newTag: dev
   - name: airbyte/webapp
@@ -21,3 +21,5 @@ images:
 configMapGenerator:
   - name: airbyte-env
     env: .env
+
+namespace: airbyte
