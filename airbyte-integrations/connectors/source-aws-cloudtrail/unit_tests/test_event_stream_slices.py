@@ -39,9 +39,7 @@ config = {
 def test_full_refresh_slice():
     current_time = pendulum.now().int_timestamp
     stream = ManagementEvents(**config)
-    slices = stream.stream_slices(
-        sync_mode=SyncMode.full_refresh, cursor_field=stream.cursor_field
-    )
+    slices = stream.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream.cursor_field)
 
     # checks that start time not more than 90 days before now
     assert slices[0]["StartTime"] >= current_time - ManagementEvents.data_lifetime
@@ -85,14 +83,10 @@ def test_incremental_slice_state_less_than_start_date():
 
 def test_full_refresh_slice_start_date_greater_than_now():
     config_with_big_start_date = config.copy()
-    config_with_big_start_date["start_date"] = (
-        pendulum.now().add(days=1).format(ManagementEvents.start_date_format)
-    )
+    config_with_big_start_date["start_date"] = pendulum.now().add(days=1).format(ManagementEvents.start_date_format)
 
     stream = ManagementEvents(**config_with_big_start_date)
-    slices = stream.stream_slices(
-        sync_mode=SyncMode.full_refresh, cursor_field=stream.cursor_field
-    )
+    slices = stream.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream.cursor_field)
 
     # checks that there no slices
     assert not slices
@@ -100,9 +94,7 @@ def test_full_refresh_slice_start_date_greater_than_now():
 
 def test_slices_not_intersect():
     stream = ManagementEvents(**config)
-    slices = stream.stream_slices(
-        sync_mode=SyncMode.full_refresh, cursor_field=stream.cursor_field
-    )
+    slices = stream.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream.cursor_field)
 
     # verify that StartTime and EndTime are not equal
     # next StartTime = EndTime + 1
