@@ -105,19 +105,17 @@ class TestBasicRead(BaseTest):
 
         assert records, "At least one record should be read using provided catalog"
 
-        for stream in [stream for stream in configured_catalog.streams if stream.stream.source_defined_primary_key]:
+        streams_with_primary_key = [stream for stream in configured_catalog.streams if stream.stream.source_defined_primary_key]
+        for stream in streams_with_primary_key:
             stream_records = [r for r in records if r.stream == stream.stream.name]
             for stream_record in stream_records:
-                for sub_pk in stream.stream.source_defined_primary_key:
+                for pk_path in stream.stream.source_defined_primary_key:
                     record_data = stream_record.data
-                    for sub_pk_part in sub_pk:
-                        if isinstance(record_data, dict):
-                            record_data = record_data.get(sub_pk_part)
-                        else:
-                            record_data = None
+                    for pk_path_part in pk_path:
+                        record_data = record_data.get(pk_path_part) if isinstance(record_data, dict) else None
 
                         assert record_data, (
-                            f"Primary key subkeys {repr(sub_pk)} "
+                            f"Primary key subkeys {repr(pk_path)} "
                             f"have null values or not present in {stream.stream.name} stream records. "
                         )
 
