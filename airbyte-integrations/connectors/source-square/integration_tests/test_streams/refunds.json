@@ -26,8 +26,7 @@
                       "currency": {
                         "type": ["null", "string"]
                       }
-                    },
-                    "required": ["amount", "currency"]
+                    }
                   },
                   "payment_id": {
                     "type": ["null", "string"]
