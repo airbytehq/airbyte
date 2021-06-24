@@ -78,9 +78,6 @@ class CatalogProcessor:
             tables_registry=tables_registry,
         )
         for stream_processor in stream_processors:
-            # Check properties
-            if not stream_processor.properties:
-                raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
             stream_processor.collect_table_names()
         for conflict in tables_registry.resolve_names():
             print(
@@ -142,10 +139,6 @@ class CatalogProcessor:
             properties = get_field(get_field(stream_config, "json_schema", message), "properties", message)
 
             from_table = "source('{}', '{}')".format(schema_name, raw_table_name)
-
-            # Check properties
-            if not properties:
-                raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
 
             stream_processor = StreamProcessor.create(
                 stream_name=stream_name,

@@ -16,7 +16,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
         project.plugins.apply 'ru.vyarus.use-python'
 
         project.python {
-            pythonBinary = 'python'
             envPath = venvDirectoryName
             minPythonVersion = '3.7'
             scope = 'VIRTUALENV'

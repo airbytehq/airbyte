@@ -48,6 +48,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: PAPERCUPS_STORYTIME
+            - name: FULLSTORY
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: FULLSTORY
             - name: IS_DEMO
               valueFrom:
                 configMapKeyRef:

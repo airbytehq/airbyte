@@ -24,6 +24,7 @@
 
 package io.airbyte.db;
 
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcStreamingQueryConfiguration;
@@ -31,11 +32,39 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import java.util.Optional;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jooq.SQLDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Databases {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(Databases.class);
+
   public static Database createPostgresDatabase(String username, String password, String jdbcConnectionString) {
     return createDatabase(username, password, jdbcConnectionString, "org.postgresql.Driver", SQLDialect.POSTGRES);
+  }
+
+  public static Database createPostgresDatabaseWithRetry(String username, String password, String jdbcConnectionString) {
+    Database database = null;
+
+    while (database == null) {
+      LOGGER.warn("Waiting for database to become available...");
+
+      try {
+        database = createPostgresDatabase(username, password, jdbcConnectionString);
+        Optional<String> uuid = ServerUuid.get(database);
+        if (uuid.isEmpty()) {
+          throw new Exception("Server UUID not available yet!");
+        }
+      } catch (Exception e) {
+        // Ignore the exception because this likely means that the database server is still initializing.
+        LOGGER.warn("Ignoring exception while trying to request database:", e);
+        database = null;
+        Exceptions.toRuntime(() -> Thread.sleep(5000));
+      }
+    }
+
+    LOGGER.info("Database available!");
+    return database;
   }
 
   public static JdbcDatabase createRedshiftDatabase(String username, String password, String jdbcConnectionString) {
@@ -75,7 +104,7 @@ public class Databases {
                                                 final String driverClassName,
                                                 final String connectionProperties) {
     final BasicDataSource connectionPool =
-        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.of(connectionProperties));
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
     return new DefaultJdbcDatabase(connectionPool);
   }
@@ -84,10 +113,13 @@ public class Databases {
                                                          final String password,
                                                          final String jdbcConnectionString,
                                                          final String driverClassName,
-                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery) {
-    final BasicDataSource connectionPool = createBasicDataSource(username, password, jdbcConnectionString, driverClassName);
+                                                         final JdbcStreamingQueryConfiguration jdbcStreamingQuery,
+                                                         final String connectionProperties) {
+    final BasicDataSource connectionPool =
+        createBasicDataSource(username, password, jdbcConnectionString, driverClassName, Optional.ofNullable(connectionProperties));
 
-    final JdbcDatabase defaultJdbcDatabase = createJdbcDatabase(username, password, jdbcConnectionString, driverClassName);
+    final JdbcDatabase defaultJdbcDatabase =
+        createJdbcDatabase(username, password, jdbcConnectionString, driverClassName, connectionProperties);
     return new StreamingJdbcDatabase(connectionPool, defaultJdbcDatabase, jdbcStreamingQuery);
   }
 
