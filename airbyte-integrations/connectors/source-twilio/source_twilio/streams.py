@@ -98,14 +98,14 @@ class IncrementalTwilioStream(TwilioStream, ABC):
         params = super().request_params(stream_state=stream_state, **kwargs)
         start_date = stream_state.get(self.cursor_field) or self._start_date
         if start_date:
-            params.update({self.incremental_filter_field: pendulum.parse(start_date).strftime(self.time_filter_template)})
+            params.update({self.incremental_filter_field: pendulum.parse(start_date, strict=False).strftime(self.time_filter_template)})
         return params
 
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         # Return an empty generator if start_date is in future to avoid Twilio exceptions
         start_date = stream_state.get(self.cursor_field) or self._start_date
-        if start_date and pendulum.parse(start_date) > pendulum.now():
+        if start_date and pendulum.parse(start_date, strict=False) > pendulum.now():
             yield from []
         else:
             yield from super().read_records(stream_state=stream_state, **kwargs)
