@@ -36,6 +36,7 @@
     * [Asana](integrations/sources/asana.md)
     * [Braintree](integrations/sources/braintree.md)
     * [ClickHouse](integrations/sources/clickhouse.md)
+    * [Db2](integrations/sources/db2.md) 
     * [Drift](integrations/sources/drift.md)
     * [Exchange Rates API](integrations/sources/exchangeratesapi.md)
     * [Facebook Marketing](integrations/sources/facebook-marketing.md)
