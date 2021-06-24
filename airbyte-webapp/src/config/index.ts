@@ -1,3 +1,4 @@
+import * as Fullstory from "@fullstory/browser";
 import { SegmentAnalytics } from "core/analytics/types";
 
 declare global {
@@ -30,27 +31,24 @@ type Config = {
     baseUrl: string;
     enableStorytime: boolean;
   };
-  fullstory: {
-    org: string;
-  };
+  fullstory: Fullstory.SnippetOptions;
   apiUrl: string;
   healthCheckInterval: number;
   isDemo: boolean;
   version?: string;
 };
 
+const BASE_DOCS_LINK = "https://docs.airbyte.io";
+
 const config: Config = {
   ui: {
-    technicalSupport: "https://docs.airbyte.io/troubleshooting/on-deploying",
+    technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
     helpLink: "https://airbyte.io/community",
     slackLink: "https://slack.airbyte.io",
     docsLink: "https://docs.airbyte.io",
-    configurationArchiveLink:
-      "https://docs.airbyte.io/tutorials/upgrading-airbyte",
-    normalizationLink:
-      "https://docs.airbyte.io/understanding-airbyte/namespaces",
-    namespaceLink:
-      "https://docs.airbyte.io/understanding-airbyte/connections#airbyte-basic-normalization",
+    configurationArchiveLink: `${BASE_DOCS_LINK}/tutorials/upgrading-airbyte`,
+    normalizationLink: `${BASE_DOCS_LINK}/understanding-airbyte/namespaces`,
+    namespaceLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections#airbyte-basic-normalization`,
     tutorialLink:
       "https://www.youtube.com/watch?v=Rcpt5SVsMpk&feature=emb_logo",
     workspaceId: "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",
@@ -68,7 +66,8 @@ const config: Config = {
     enableStorytime: window.PAPERCUPS_STORYTIME !== "disabled",
   },
   fullstory: {
-    org: window.FULLSTORY === "disabled" ? "" : "13AXQ4",
+    orgId: "13AXQ4",
+    devMode: window.FULLSTORY === "disabled",
   },
   version: window.AIRBYTE_VERSION,
   apiUrl:
