@@ -307,11 +307,11 @@ public class DefaultJobPersistence implements JobPersistence {
   public List<Job> listJobs(Set<ConfigType> configTypes, String configId, int pagesize, int offset) throws IOException {
     return database.query(ctx -> getJobsFromResult(ctx.fetch(
         BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(config_type AS VARCHAR) in " +  Sqls.toSqlInFragment(configTypes) + " " +
+            "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " " +
             "AND scope = ? " +
             "ORDER BY jobs.created_at DESC, jobs.id DESC " +
             "LIMIT ? OFFSET ?",
-            configId, pagesize, offset)));
+        configId, pagesize, offset)));
   }
 
   @Override

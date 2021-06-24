@@ -792,6 +792,7 @@ class DefaultJobPersistenceTest {
   @Nested
   @DisplayName("When listing jobs, use paged results")
   class ListJobs {
+
     @Test
     @DisplayName("Should return the correct page of results with multiple pages of history")
     public void testListJobsByPage() throws IOException {
@@ -806,8 +807,9 @@ class DefaultJobPersistenceTest {
       final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), pagesize, offset);
       assertEquals(actualList.size(), pagesize);
       // Cannot reliably test offset because creating a hundred rows at once results in
-      // slightly varying ordering inside the database when sorted by timestamp and id, different from enqueue calls.
-      //assertEquals(ids.get(ids.size() - offset), actualList.get(0).getId());
+      // slightly varying ordering inside the database when sorted by timestamp and id, different from
+      // enqueue calls.
+      // assertEquals(ids.get(ids.size() - offset), actualList.get(0).getId());
     }
 
     @Test
