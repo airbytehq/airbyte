@@ -14,7 +14,7 @@
   * [Windows - Browsing Local File Output](operator-guides/locating-files-local-destination.md)
   * [Transformations and Normalization](operator-guides/transformation-and-normalization/README.md)
     * [Transformations with SQL \(Part 1/3\)](operator-guides/transformation-and-normalization/transformations-with-sql.md)
-    * [Transformations with DBT \(Part 2/3\)](operator-guides/transformation-and-normalization/transformations-with-dbt.md)
+    * [Transformations with dbt \(Part 2/3\)](operator-guides/transformation-and-normalization/transformations-with-dbt.md)
     * [Transformations with Airbyte \(Part 3/3\)](operator-guides/transformation-and-normalization/transformations-with-airbyte.md)
 * [Example Use Cases](examples/README.md)
   * [Postgres Replication](examples/postgres-replication.md)
