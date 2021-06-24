@@ -180,6 +180,11 @@ public abstract class GcsStreamCopier implements StreamCopier {
     attemptWriteAndDeleteGcsObject(gcsConfig, outputTableName);
   }
 
+  public static void attemptGcsWriteAndDelete(GCSConfig gcsConfig) throws IOException {
+    final String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
+    attemptWriteAndDeleteGcsObject(gcsConfig, outputTableName);
+  }
+
   private static void attemptWriteAndDeleteGcsObject(GcsConfig gcsConfig, String outputTableName) throws IOException {
     var storage = getStorageClient(gcsConfig);
     var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
