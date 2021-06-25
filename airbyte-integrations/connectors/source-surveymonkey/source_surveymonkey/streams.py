@@ -75,7 +75,8 @@ class SurveymonkeyStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
+        # with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
+        with vcr.use_cassette("pretty_name.yaml", record_mode="new_episodes"):
             yield from super().read_records(
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
@@ -199,10 +200,7 @@ class SurveyQuestions(SurveymonkeyStream):
             yield {"survey_id": survey["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        if response_json.get("error"):
-            raise Exception(response_json.get("error"))
-        data = response_json.get(self.data_field)
+        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for entry in data:
             page_id = entry["id"]
             questions = entry["questions"]
@@ -226,12 +224,6 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         survey_stream = Surveys(start_date=self._start_date, authenticator=self.authenticator)
         for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"survey_id": survey["id"]}
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        if response_json.get("error"):
-            raise Exception(response_json.get("error"))
-        yield from response_json.get(self.data_field, [])
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
