@@ -84,11 +84,14 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: Install Pyenv
+        run: python3 -m pip install virtualenv==16.7.9 --user
+
       - name: Generate Template scaffold
         run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
 
       - name: Format
-        run: ./gradlew --no-daemon format --scan
+        run: ./gradlew --no-daemon format --scan --info --stacktrace
 
       - name: Ensure no file change
         run: git status --porcelain && test -z "$(git status --porcelain)"
@@ -191,6 +194,9 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: Install Pyenv
+        run: python3 -m pip install virtualenv==16.7.9 --user
+
       - name: Build Core Docker Images and Run Tests
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan
 
@@ -243,6 +249,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
+
+      - name: Install Pyenv
+        run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Build Core Docker Images and Run Tests
         run: CORE_ONLY=true ./gradlew --no-daemon composeBuild test -x :airbyte-webapp:test --scan
@@ -322,6 +331,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
+
+      - name: Install Pyenv
+        run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Fix EC-2 Runner
         run: |
