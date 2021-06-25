@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google PubSub Destination Spec",
     "type": "object",
-    "required": ["project_id", "topic_name", "credentials_json"],
+    "required": ["project_id", "topic_id", "credentials_json"],
     "additionalProperties": true,
     "properties": {
       "project_id": {
