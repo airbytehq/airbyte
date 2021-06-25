@@ -485,7 +485,7 @@ public class AcceptanceTests {
   // Since this is testing mechanisms orthogonal to Airbyte deployment method, there is no value in
   // repeating this test.
   @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "*")
+                                 matches = "true")
   public void testMultipleSchemasAndTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
@@ -512,7 +512,7 @@ public class AcceptanceTests {
   // Since this is testing mechanisms orthogonal to Airbyte deployment method, there is no value in
   // repeating this test.
   @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "*")
+                                 matches = "true")
   public void testMultipleSchemasSameTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
@@ -539,7 +539,7 @@ public class AcceptanceTests {
   // Since this is testing mechanisms orthogonal to Airbyte deployment method, there is no value in
   // repeating this test.
   @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "*")
+                                 matches = "true")
   public void testIncrementalDedupeSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -663,7 +663,7 @@ public class AcceptanceTests {
   // This is especially since logs are not local on Kube, and downloading them from S3 can take some
   // time.
   @DisabledIfEnvironmentVariable(named = "KUBE",
-                                 matches = "*")
+                                 matches = "true")
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = Files.readLines(
