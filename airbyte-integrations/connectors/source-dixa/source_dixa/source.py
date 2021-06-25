@@ -118,7 +118,7 @@ class SourceDixa(AbstractSource):
                         ) + timedelta(days=1)
                     ).strftime(SourceDixa.date_format)
                 },
-                auth=('bearer', config["api_key"])
+                auth=('bearer', config["api_token"])
             )
             response.raise_for_status()
             return True, None
@@ -132,5 +132,5 @@ class SourceDixa(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         start_date = datetime.strptime(config["start_date"], SourceDixa.date_format).date()
-        auth = TokenAuthenticator(token=config["api_key"])
+        auth = TokenAuthenticator(token=config["api_token"])
         return [ConversationExport(authenticator=auth, start_date=start_date)]
