@@ -79,7 +79,8 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
   private ProjectSubscriptionName subscriptionName;
   private Credentials credentials;
   private JsonNode configJson;
-  // Store retrieved data during the test run since we can't re-read it multiple times (ACKing messages causes them to be removed from pubsub)
+  // Store retrieved data during the test run since we can't re-read it multiple times (ACKing
+  // messages causes them to be removed from pubsub)
   private List<JsonNode> records;
 
   @Override
@@ -120,7 +121,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
       // verification
       SubscriberStubSettings subscriberStubSettings =
           SubscriberStubSettings.newBuilder()
-          .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+              .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
               .setTransportChannelProvider(
                   SubscriberStubSettings.defaultGrpcTransportProviderBuilder()
                       .setCredentials(credentials)
