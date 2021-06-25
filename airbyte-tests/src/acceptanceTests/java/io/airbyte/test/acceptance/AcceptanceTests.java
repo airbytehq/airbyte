@@ -118,6 +118,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -481,6 +482,10 @@ public class AcceptanceTests {
 
   @Test
   @Order(10)
+  // Since this is testing mechanisms orthogonal to Airbyte deployment method, there is no value in
+  // repeating this test.
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "*")
   public void testMultipleSchemasAndTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
@@ -504,6 +509,10 @@ public class AcceptanceTests {
 
   @Test
   @Order(11)
+  // Since this is testing mechanisms orthogonal to Airbyte deployment method, there is no value in
+  // repeating this test.
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "*")
   public void testMultipleSchemasSameTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
@@ -527,6 +536,10 @@ public class AcceptanceTests {
 
   @Test
   @Order(12)
+  // Since this is testing mechanisms orthogonal to Airbyte deployment method, there is no value in
+  // repeating this test.
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "*")
   public void testIncrementalDedupeSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -645,6 +658,12 @@ public class AcceptanceTests {
 
   @Test
   @Order(14)
+  // Since this is testing a mechanism orthogonal to how logs are logged, there is no value in
+  // repeating this for Kube.
+  // This is especially since logs are not local on Kube, and downloading them from S3 can take some
+  // time.
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "*")
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = Files.readLines(
