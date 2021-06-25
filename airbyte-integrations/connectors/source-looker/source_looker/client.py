@@ -23,7 +23,7 @@
 #
 
 
-from typing import List, Tuple
+from typing import Generator, List, Tuple
 
 import backoff
 import requests
@@ -31,12 +31,12 @@ from airbyte_protocol import AirbyteStream
 from base_python import BaseClient
 from requests.exceptions import ConnectionError
 from requests.structures import CaseInsensitiveDict
-from typing import Generator
+
 
 class Client(BaseClient):
     API_VERSION = "3.1"
 
-    def __init__(self, domain: str, client_id: str, client_secret: str, run_look_ids: list=[]):
+    def __init__(self, domain: str, client_id: str, client_secret: str, run_look_ids: list = []):
         """
         Note that we dynamically generate schemas for the stream__run_looks
         function because the fields returned depend on the user's look(s)
@@ -51,23 +51,40 @@ class Client(BaseClient):
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
-        
-        # Maps Looker types to JSON Schema types for run_look JSON schema 
+
+        # Maps Looker types to JSON Schema types for run_look JSON schema
         self._field_type_mapping = {
-            "string": "string", "date_date": "datetime", "date_raw": "datetime",
-            "date": "datetime", "date_week": "datetime", "date_day_of_week": "string",
-            "date_day_of_week_index": "integer", "date_month": "string",
-            "date_month_num": "integer", "date_month_name": "string",
-            "date_day_of_month": "integer", "date_fiscal_month_num": "integer",
-            "date_quarter": "string", "date_quarter_of_year": "string",
-            "date_fiscal_quarter": "string", "date_fiscal_quarter_of_year": "string",
-            "date_year": "integer", "date_day_of_year": "integer",
-            "date_week_of_year": "integer", "date_fiscal_year": "integer",
-            "date_time_of_day": "string", "date_hour": "string",
-            "date_hour_of_day": "integer", "date_minute": "datetime", 
-            "date_second": "datetime", "date_millisecond": "datetime",
-            "date_microsecond": "datetime", "number": "number", "int": "integer",
-            "list": "array", "yesno": "boolean"
+            "string": "string",
+            "date_date": "datetime",
+            "date_raw": "datetime",
+            "date": "datetime",
+            "date_week": "datetime",
+            "date_day_of_week": "string",
+            "date_day_of_week_index": "integer",
+            "date_month": "string",
+            "date_month_num": "integer",
+            "date_month_name": "string",
+            "date_day_of_month": "integer",
+            "date_fiscal_month_num": "integer",
+            "date_quarter": "string",
+            "date_quarter_of_year": "string",
+            "date_fiscal_quarter": "string",
+            "date_fiscal_quarter_of_year": "string",
+            "date_year": "integer",
+            "date_day_of_year": "integer",
+            "date_week_of_year": "integer",
+            "date_fiscal_year": "integer",
+            "date_time_of_day": "string",
+            "date_hour": "string",
+            "date_hour_of_day": "integer",
+            "date_minute": "datetime",
+            "date_second": "datetime",
+            "date_millisecond": "datetime",
+            "date_microsecond": "datetime",
+            "number": "number",
+            "int": "integer",
+            "list": "array",
+            "yesno": "boolean",
         }
 
         # Helpers for the self.stream__run_looks function
@@ -82,8 +99,8 @@ class Client(BaseClient):
         self._context_metadata_mapping = {"dashboards": [], "folders": [], "homepages": [], "looks": [], "spaces": []}
         super().__init__()
 
-    @property    
-    def streams(self) -> Generator[AirbyteStream, None, None]: 
+    @property
+    def streams(self) -> Generator[AirbyteStream, None, None]:
         """
         Uses the default streams except for the run_look endpoint, where we have
         to generate its JSON Schema on the fly for the given look
@@ -117,8 +134,11 @@ class Client(BaseClient):
         for look_id in run_look_ids:
             resp = self._request(f"{self.BASE_URL}/looks/{look_id}?fields=model(id),title")
             if resp == []:
-                return [], f"Unable to find look {look_id}. Verify that you have entered a valid look ID and that you have permission to run it."
-            
+                return (
+                    [],
+                    f"Unable to find look {look_id}. Verify that you have entered a valid look ID and that you have permission to run it.",
+                )
+
             looks.append((resp[0]["model"]["id"], look_id, resp[0]["title"]))
 
         return looks, None
@@ -154,14 +174,12 @@ class Client(BaseClient):
             "properties": {
                 self._get_run_look_key(look_id, look_name): {
                     "title": look_name,
-                    "properties": {
-                        field: self._get_look_field_schema(model, field) for field in self._get_look_fields(look_id)
-                    },
+                    "properties": {field: self._get_look_field_schema(model, field) for field in self._get_look_fields(look_id)},
                     "type": ["null", "object"],
-                    "additionalProperties": False
+                    "additionalProperties": False,
                 }
                 for (model, look_id, look_name) in self._run_looks
-            }
+            },
         }
         return json_schema
 
@@ -174,30 +192,25 @@ class Client(BaseClient):
         its properties for the run_look endpoint JSON Schema
         """
         explore = field.split(".")[0]
-        
+
         fields = self._get_explore_fields(model, explore)
 
-        field_type = "string" # default to string
-        for dimension in fields['dimensions']:
-            if field == dimension['name'] and dimension['type'] in self._field_type_mapping:
-                field_type = self._field_type_mapping[dimension['type']]
-        for measure in fields['measures']:
-            if field == measure['name']:
+        field_type = "string"  # default to string
+        for dimension in fields["dimensions"]:
+            if field == dimension["name"] and dimension["type"] in self._field_type_mapping:
+                field_type = self._field_type_mapping[dimension["type"]]
+        for measure in fields["measures"]:
+            if field == measure["name"]:
                 # Default to number except for list, date, and yesno
                 field_type = "number"
-                if measure['type'] in self._field_type_mapping:
-                    field_type = self._field_type_mapping[measure['type']]
+                if measure["type"] in self._field_type_mapping:
+                    field_type = self._field_type_mapping[measure["type"]]
 
-        if field_type == 'datetime':
+        if field_type == "datetime":
             # no datetime type for JSON Schema
-            return {
-                "type": ["null", "string"],
-                "format": "date-time"
-            }
-        
-        return {
-            "type": ["null", field_type]
-        }
+            return {"type": ["null", "string"], "format": "date-time"}
+
+        return {"type": ["null", field_type]}
 
     def _get_explore_fields(self, model, explore):
         """
@@ -205,8 +218,10 @@ class Client(BaseClient):
         and their types for run_look endpoint JSON Schema generation
         """
         if (model, explore) not in self._run_look_explore_fields:
-            self._run_look_explore_fields[(model, explore)] =  self._request(f"{self.BASE_URL}/lookml_models/{model}/explores/{explore}?fields=fields(dimensions(name,type),measures(name,type))")[0]['fields']
-        
+            self._run_look_explore_fields[(model, explore)] = self._request(
+                f"{self.BASE_URL}/lookml_models/{model}/explores/{explore}?fields=fields(dimensions(name,type),measures(name,type))"
+            )[0]["fields"]
+
         return self._run_look_explore_fields[(model, explore)]
 
     def _get_look_fields(self, look_id) -> List[str]:
@@ -328,8 +343,9 @@ class Client(BaseClient):
 
     def stream__run_looks(self, fields):
         for (model, look_id, look_name) in self._run_looks:
-            yield from [{self._get_run_look_key(look_id, look_name): row} 
-            for row in self._request(f"{self.BASE_URL}/looks/{look_id}/run/json")]
+            yield from [
+                {self._get_run_look_key(look_id, look_name): row} for row in self._request(f"{self.BASE_URL}/looks/{look_id}/run/json")
+            ]
 
     def stream__scheduled_plans(self, fields):
         yield from self._request(f"{self.BASE_URL}/scheduled_plans?all_users=true")
