@@ -26,6 +26,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
+import time
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -40,7 +41,7 @@ class ShopifyStream(HttpStream, ABC):
     # Latest Stable Release
     api_version = "2021-04"
     # Page size
-    limit = 250
+    limit = 1
     # Define primary key to all streams as primary key, sort key
     primary_key = "id"
 
@@ -108,59 +109,133 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
 
 class Customers(IncrementalShopifyStream):
     data_field = "customers"
+    cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-
-class Orders(IncrementalShopifyStream):
-    data_field = "orders"
-
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         if next_page_token:
             params = {"limit": self.limit, **next_page_token}
         else:
-            params = {
-                "limit": self.limit,
-                "order": f"{self.primary_key} asc",
-                "created_at_min": self.start_date,
-                "status": "any",
-                # Add state parameter "since_id" for incremental refresh
-                "since_id": stream_state.get(self.cursor_field),
-            }
+            if stream_state:
+                params = {
+                    "limit": self.limit,
+                    "order": f"{self.cursor_field} asc",
+                    "updated_at_min": stream_state.get(self.cursor_field),
+                }
+            else:
+                params = {
+                    "limit": self.limit,
+                    "order": f"{self.primary_key} asc",
+                    "created_at_min": self.start_date,
+                }
+        time.sleep(5)
+        print(f"\nPARAMS: {params}\n")
+        return params
+
+
+class Orders(IncrementalShopifyStream):
+    data_field = "orders"
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        if next_page_token:
+            params = {"limit": self.limit, **next_page_token}
+        else:
+            if stream_state:
+                params = {
+                    "limit": self.limit,
+                    "order": f"{self.cursor_field} asc",
+                    "updated_at_min": stream_state.get(self.cursor_field),
+                    "status": "any",
+                }
+            else:
+                params = {
+                    "limit": self.limit,
+                    "order": f"{self.primary_key} asc",
+                    "created_at_min": self.start_date,
+                    "status": "any",
+                }
+        time.sleep(5)
+        print(f"\nPARAMS: {params}\n")
         return params
 
 
 class Products(IncrementalShopifyStream):
     data_field = "products"
+    cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-
-class AbandonedCheckouts(IncrementalShopifyStream):
-    data_field = "checkouts"
-
-    def path(self, **kwargs) -> str:
-        return f"{self.data_field}.json"
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         if next_page_token:
             params = {"limit": self.limit, **next_page_token}
         else:
-            params = {
-                "limit": self.limit,
-                "order": f"{self.primary_key} asc",
-                "created_at_min": self.start_date,
-                "status": "any",
-                # Add state parameter "since_id" for incremental refresh
-                "since_id": stream_state.get(self.cursor_field),
-            }
+            if stream_state:
+                params = {
+                    "limit": self.limit,
+                    "order": f"{self.cursor_field} asc",
+                    "updated_at_min": stream_state.get(self.cursor_field),
+                }
+            else:
+                params = {
+                    "limit": self.limit,
+                    "order": f"{self.primary_key} asc",
+                    "created_at_min": self.start_date,
+                }
+        time.sleep(5)
+        print(f"\nPARAMS: {params}\n")
+        return params
+
+
+class AbandonedCheckouts(IncrementalShopifyStream):
+    data_field = "checkouts"
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+    
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        if next_page_token:
+            params = {"limit": self.limit, **next_page_token}
+        else:
+            if stream_state:
+                params = {
+                    "limit": self.limit,
+                    "order": f"{self.cursor_field} asc",
+                    "updated_at_min": stream_state.get(self.cursor_field),
+                    "status": "any",
+                }
+            else:
+                params = {
+                    "limit": self.limit,
+                    "order": f"{self.primary_key} asc",
+                    "created_at_min": self.start_date,
+                    "status": "any",
+                }
+        time.sleep(5)
+        print(f"\nPARAMS: {params}\n")
         return params
 
 
