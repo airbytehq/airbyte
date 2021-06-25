@@ -39,8 +39,8 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
   @Override
   public Response toResponse(Throwable e) {
+    LOGGER.error("Uncaught exception", e);
     KnownExceptionInfo exceptionInfo = KnownException.infoFromThrowableWithMessage(e, "Internal Server Error: " + e.getMessage());
-    LOGGER.error("Uncaught exception", exceptionInfo);
     return Response.status(500)
         .entity(Jsons.serialize(exceptionInfo))
         .type("application/json")
