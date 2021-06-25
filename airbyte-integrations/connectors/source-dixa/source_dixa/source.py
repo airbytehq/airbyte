@@ -35,7 +35,6 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 DATE_FORMAT = "%Y-%m-%d"
 
 
-# Basic full refresh stream
 class DixaStream(HttpStream, ABC):
     url_base = "https://exports.dixa.io/v1/"
     date_format = DATE_FORMAT
@@ -62,9 +61,7 @@ class DixaStream(HttpStream, ABC):
         self.created_after = self.created_before
         return {'continue': True}
 
-    def request_params(
-        self, **kwargs
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         self.created_before = min(
             self.created_after + timedelta(days=DixaStream.max_days_in_query),
             self.current_date
@@ -126,11 +123,6 @@ class SourceDixa(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
-
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
         start_date = datetime.strptime(config["start_date"], SourceDixa.date_format).date()
         auth = TokenAuthenticator(token=config["api_token"])
         return [ConversationExport(authenticator=auth, start_date=start_date)]
