@@ -28,38 +28,21 @@ from source_shopify.source import ShopifyStream
 response_header_links = {
     "Date": "Thu, 32 Jun 2099 24:24:24 GMT",
     "Content-Type": "application/json; charset=utf-8",
-    "Link": '<https://test_shop.myshopify.com/admin/api/2021-04/test_object.json?limit=1&page_info=eyJjcmVhdGVkX2F0X21pbiI6IjIwMjAtMDQtMDEgMDA6MDA6MDAgVVRDIiwib3JkZXIiOiJpZCBhc2MiLCJsYXN0X2lkIjozNjA0NjIxMTMxOTM0LCJsYXN0X3ZhbHVlIjozNjA0NjIxMTMxOTM0LCJkaXJlY3Rpb24iOiJuZXh0In0>; rel="next"'
+    "Link": '<https://test_shop.myshopify.com/admin/api/2021-04/test_object.json?limit=1&page_info=eyJjcmVhdGVkX2>; rel="next"',
+}
+expected_output_token = {
+    "limit": "1",
+    "page_info": "eyJjcmVhdGVkX2",
 }
 
-expected_output_token = {'page_info': 'eyJjcmVhdGVkX2F0X21pbiI6IjIwMjAtMDQtMDEgMDA6MDA6MDAgVVRDIiwib3JkZXIiOiJpZCBhc2MiLCJsYXN0X2lkIjozNjA0NjIxMTMxOTM0LCJsYXN0X3ZhbHVlIjozNjA0NjIxMTMxOTM0LCJkaXJlY3Rpb24iOiJuZXh0In0'}
-start_page_link = 'https://jolicookie.myshopify.com/admin/api/2021-04/customers.json?limit=1&page_info=eyJjcmVhdGVkX2F0X21pbiI6IjIwMjAtMDQtMDEgMDA6MDA6MDAgVVRDIiwib3JkZXIiOiJpZCBhc2MiLCJsYXN0X2lkIjozNjA0NjIxMTMxOTM0LCJsYXN0X3ZhbHVlIjozNjA0NjIxMTMxOTM0LCJkaXJlY3Rpb24iOiJuZXh0In0'
 
-class TestNextPageToken():
+def test_get_next_page_token(requests_mock):
+    """
+    Test shows that next_page parameters are parsed correctly from the response object and could be passed for next request API call,
+    """
 
-    def test_get_next_page_token(self, requests_mock):
-        """
-        Test shows that next_page parameters are parsed correctly from the response object and could be passed for next request API call, 
-        """
+    requests_mock.get("https://test.myshopify.com/", headers=response_header_links)
+    response = requests.get("https://test.myshopify.com/")
 
-        requests_mock.get("https://test.myshopify.com/", headers=response_header_links)
-        response = requests.get("https://test.myshopify.com/")
-
-        test = ShopifyStream.next_page_token(self, response=response)
-        assert test == expected_output_token
-
-
-
-
-
-
-
-    
-
-    
-
-
-    
-
-        
-
-
+    test = ShopifyStream.next_page_token(response)
+    assert test == expected_output_token
