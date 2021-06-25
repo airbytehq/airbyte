@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 public class JobHistoryHandler {
 
+  public static final int DEFAULT_PAGE_SIZE = 200;
   private final JobPersistence jobPersistence;
 
   public JobHistoryHandler(JobPersistence jobPersistence) {
@@ -62,7 +63,7 @@ public class JobHistoryHandler {
 
     final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configTypes,
         configId,
-        request.getPagesize() != null ? request.getPagesize() : 200,
+        request.getPagesize() != null ? request.getPagesize() : DEFAULT_PAGE_SIZE,
         request.getRowOffset() != null ? request.getRowOffset() : 0)
         .stream()
         .map(JobConverter::getJobWithAttemptsRead)

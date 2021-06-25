@@ -56,7 +56,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +108,8 @@ public class DefaultJobPersistence implements JobPersistence {
           + "FROM jobs LEFT OUTER JOIN attempts ON jobs.id = attempts.job_id ";
 
   private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
+  public static final String ORDER_BY_JOB_TIME_ATTEMPT_TIME =
+      "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC";
 
   private final ExceptionWrappingDatabase database;
   private final Supplier<Instant> timeSupplier;
@@ -296,9 +297,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @Override
   public List<Job> listJobs(ConfigType configType, String configId, int pagesize, int offset) throws IOException {
-    Set<ConfigType> configTypes = new HashSet<ConfigType>();
-    configTypes.add(configType);
-    return listJobs(configTypes, configId, pagesize, offset);
+    return listJobs(Set.of(configType), configId, pagesize, offset);
   }
 
   @Override
@@ -307,7 +306,7 @@ public class DefaultJobPersistence implements JobPersistence {
         BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " " +
             "AND scope = ? " +
-            "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC " +
+            ORDER_BY_JOB_TIME_ATTEMPT_TIME +
             "LIMIT ? OFFSET ?",
         configId, pagesize, offset)));
   }
@@ -323,7 +322,7 @@ public class DefaultJobPersistence implements JobPersistence {
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
             "CAST(jobs.status AS VARCHAR) = ? " +
-            "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC",
+            ORDER_BY_JOB_TIME_ATTEMPT_TIME,
             Sqls.toSqlName(status))));
   }
 
@@ -382,6 +381,8 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private static List<Job> getJobsFromResult(Result<Record> result) {
+    // Rewritten to use a simple approach keeping results strictly in order so the sql query controls
+    // the sort
     List<Job> jobs = new ArrayList<Job>();
     Job currentJob = null;
     for (Record entry : result) {
