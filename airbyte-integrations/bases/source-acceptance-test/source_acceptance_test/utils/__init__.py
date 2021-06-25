@@ -2,6 +2,7 @@ from .common import SecretDict, filter_output, full_refresh_only_catalog, increm
 from .compare import diff_dicts, serialize
 from .connector_runner import ConnectorRunner
 from .json_schema_helper import JsonSchemaHelper
+from .asserts import verify_records_schema
 
 __all__ = [
     "JsonSchemaHelper",
@@ -13,4 +14,5 @@ __all__ = [
     "ConnectorRunner",
     "diff_dicts",
     "serialize",
+    "verify_records_schema",
 ]
