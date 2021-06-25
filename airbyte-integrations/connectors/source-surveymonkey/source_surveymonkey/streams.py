@@ -75,8 +75,7 @@ class SurveymonkeyStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        # with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
-        with vcr.use_cassette("pretty_name.yaml", record_mode="new_episodes"):
+        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
             yield from super().read_records(
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
