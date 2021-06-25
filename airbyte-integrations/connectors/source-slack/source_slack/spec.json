@@ -22,8 +22,8 @@
       },
       "lookback_window": {
         "type": "integer",
-        "title": "Lookback window",
-        "description": "Lookback window in days from which to load data.",
+        "title": "Threads Lookback window (Days)",
+        "description": "How far into the past to look for messages in threads.",
         "examples": [7, 14]
       },
       "join_channels": {

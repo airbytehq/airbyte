@@ -17,7 +17,7 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       cursor_paths:
-        channel_messages: ["ts"]
+        channel_messages: ["float_ts"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_catalog.json"

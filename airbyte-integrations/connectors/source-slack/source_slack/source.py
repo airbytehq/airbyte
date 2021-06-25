@@ -40,7 +40,7 @@ from slack_sdk import WebClient
 
 class SlackStream(HttpStream, ABC):
     url_base = "https://slack.com/api/"
-    primary_key = None
+    primary_key = "id"
     page_size = 100
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -142,8 +142,8 @@ def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1)) -
 
 class IncrementalMessageStream(SlackStream, ABC):
     data_field = "messages"
-    cursor_field = "ts"
-    primary_key = "id"
+    cursor_field = "float_ts"
+    primary_key = ["channel_id", "ts"]
 
     def __init__(self, default_start_date: DateTime, **kwargs):
         self._start_ts = default_start_date.timestamp()
@@ -156,8 +156,8 @@ class IncrementalMessageStream(SlackStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
-            record[self.primary_key] = record[self.cursor_field]
-            record[self.cursor_field] = float(record[self.cursor_field])
+            record[self.primary_key[0]] = stream_slice.get("channel", "")
+            record[self.cursor_field] = float(record[self.primary_key[1]])
             yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -244,7 +244,7 @@ class JoinChannelsStream(HttpStream):
 
     url_base = "https://slack.com/api/"
     http_method = "POST"
-    primary_key = None
+    primary_key = "id"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         return [{"message": f"Successfully joined channel: {stream_slice['channel_name']}"}]

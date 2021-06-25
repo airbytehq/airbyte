@@ -20,9 +20,6 @@
     "ts": {
       "type": ["null", "number"]
     },
-    "id": {
-      "type": ["null", "string"]
-    },
     "team": {
       "type": ["null", "string"]
     },
