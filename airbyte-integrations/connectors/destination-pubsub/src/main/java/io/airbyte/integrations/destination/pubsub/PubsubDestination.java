@@ -96,8 +96,9 @@ public class PubsubDestination extends BaseConnector implements Destination {
 
   @Override
   public AirbyteMessageConsumer getConsumer(JsonNode config,
-      ConfiguredAirbyteCatalog configuredCatalog,
-      Consumer<AirbyteMessage> outputRecordCollector) {
+                                            ConfiguredAirbyteCatalog configuredCatalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector) {
     return new PubsubConsumer(config, configuredCatalog, outputRecordCollector);
   }
+
 }
