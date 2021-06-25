@@ -77,6 +77,15 @@ class DixaStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
 
+    def backoff_time(self, response: requests.Response):
+        """
+        The rate limit is 10 requests per minute, so we sleep for one minute
+        once we have reached 10 requests.
+
+        See https://support.dixa.help/en/articles/174-export-conversations-via-api
+        """
+        return 60
+
 
 class ConversationExport(DixaStream):
     primary_key = "id"
