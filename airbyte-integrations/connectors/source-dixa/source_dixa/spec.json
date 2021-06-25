@@ -17,6 +17,13 @@
         "description": "Start date from which to query data.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "examples": ["2021-06-25"]
+      },
+      "batch_size": {
+        "type": "number",
+        "description": "Number of days to batch into one request. Max 31.",
+        "pattern": "^[0-9]{1,2}$",
+        "examples": [1, 31],
+        "default": 31
       }
     }
   }

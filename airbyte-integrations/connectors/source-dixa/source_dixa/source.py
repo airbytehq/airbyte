@@ -38,14 +38,11 @@ DATE_FORMAT = "%Y-%m-%d"
 class DixaStream(HttpStream, ABC):
     url_base = "https://exports.dixa.io/v1/"
     date_format = DATE_FORMAT
-    max_days_in_query = 31  # see https://support.dixa.help/en/articles/174-export-conversations-via-api
 
-    def __init__(self, start_date: date, **kwargs) -> None:
+    def __init__(self, start_date: date, batch_size: int, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = start_date
-        self.current_date = datetime.now().date()
-        self.created_after = start_date
-        self.created_before = None
+        self.batch_size = batch_size
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -73,23 +70,24 @@ class DixaStream(HttpStream, ABC):
         end_date = datetime.now().date()
         created_after = self.start_date
         created_before = min(
-            created_after + timedelta(days=DixaStream.max_days_in_query),
+            created_after + timedelta(days=self.batch_size),
             end_date
         )
         slices = [{
             'created_after': created_after,
             'created_before': created_before
         }]
-        while created_before <= end_date:
+        while created_after < end_date:
             created_after = created_before
             created_before = min(
-                created_after + timedelta(days=DixaStream.max_days_in_query),
+                created_after + timedelta(days=self.batch_size),
                 end_date
             )
             slices.append({
                 'created_after': created_after,
                 'created_before': created_before
             })
+        return slices
 
 
 class ConversationExport(DixaStream):
@@ -120,7 +118,7 @@ class SourceDixa(AbstractSource):
                     "created_before": (
                         datetime.strptime(
                             config["start_date"], SourceDixa.date_format
-                        ) + timedelta(days=1)
+                        ) + timedelta(days=config["batch_size"])
                     ).strftime(SourceDixa.date_format)
                 },
                 auth=('bearer', config["api_token"])
@@ -133,4 +131,10 @@ class SourceDixa(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         start_date = datetime.strptime(config["start_date"], SourceDixa.date_format).date()
         auth = TokenAuthenticator(token=config["api_token"])
-        return [ConversationExport(authenticator=auth, start_date=start_date)]
+        return [
+            ConversationExport(
+                authenticator=auth,
+                start_date=start_date,
+                batch_size=config["batch_size"]
+            )
+        ]
