@@ -48,28 +48,10 @@ class DixaStream(HttpStream, ABC):
         self.created_before = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Checks whether there is more data to pull from the API.
+        return None
 
-        If we have reached the current date, then there is no more data to pull;
-        returns None.
-        If we have not reach the current date, then there is more data to pull
-        starting from the last day (created_before) of the previous query.
-        """
-        if self.created_before == self.current_date:
-            return None
-        self.created_after = self.created_before
-        return {'continue': True}
-
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        self.created_before = min(
-            self.created_after + timedelta(days=DixaStream.max_days_in_query),
-            self.current_date
-        )
-        return {
-            'created_after': self.created_after.strftime("%Y-%m-%d"),
-            'created_before': self.created_before.strftime("%Y-%m-%d")
-        }
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        return stream_slice
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
@@ -82,6 +64,32 @@ class DixaStream(HttpStream, ABC):
         See https://support.dixa.help/en/articles/174-export-conversations-via-api
         """
         return 60
+
+    def stream_slices(self, **kwargs):
+        """
+        Break down the days between start_date and the current date into
+        chunks.
+        """
+        end_date = datetime.now().date()
+        created_after = self.start_date
+        created_before = min(
+            created_after + timedelta(days=DixaStream.max_days_in_query),
+            end_date
+        )
+        slices = [{
+            'created_after': created_after,
+            'created_before': created_before
+        }]
+        while created_before <= end_date:
+            created_after = created_before
+            created_before = min(
+                created_after + timedelta(days=DixaStream.max_days_in_query),
+                end_date
+            )
+            slices.append({
+                'created_after': created_after,
+                'created_before': created_before
+            })
 
 
 class ConversationExport(DixaStream):
