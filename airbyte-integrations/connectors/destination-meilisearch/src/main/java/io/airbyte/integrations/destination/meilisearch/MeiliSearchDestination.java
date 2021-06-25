@@ -82,6 +82,8 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MeiliSearchDestination.class);
 
+  private static final int MAX_BATCH_SIZE = 10000;
+
   public static final String AB_PK_COLUMN = "_ab_pk";
 
   @Override
@@ -115,7 +117,8 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
         recordWriterFunction(indexNameToIndex),
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),
         catalog,
-        (data) -> true);
+        (data) -> true,
+        MAX_BATCH_SIZE);
   }
 
   private static Map<String, Index> createIndices(ConfiguredAirbyteCatalog catalog, Client client) throws Exception {

@@ -25,6 +25,7 @@
 package io.airbyte.config;
 
 import java.nio.file.Path;
+import java.util.Set;
 
 public interface Configs {
 
@@ -61,6 +62,19 @@ public interface Configs {
   WorkspaceRetentionConfig getWorkspaceRetentionConfig();
 
   String getTemporalHost();
+
+  Set<Integer> getTemporalWorkerPorts();
+
+  String getKubeNamespace();
+
+  // The following methods retrieve logging related information.
+  String getS3LogBucket();
+
+  String getS3LogBucketRegion();
+
+  String getAwsAccessKey();
+
+  String getAwsSecretAccessKey();
 
   enum TrackingStrategy {
     SEGMENT,

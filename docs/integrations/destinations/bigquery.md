@@ -10,9 +10,13 @@ description: >-
 
 The Airbyte BigQuery destination allows you to sync data to BigQuery. BigQuery is a serverless, highly scalable, and cost-effective data warehouse offered by Google Cloud Provider.
 
+There are two flavors of connectors for this destination:
+1. `destination-bigquery`: This is producing the standard Airbyte outputs using a `_airbyte_raw_*` tables storing the JSON blob data first. Afterward, these are transformed and normalized into separate tables, potentially "exploding" nested streams into their own tables if [basic normalization](../../understanding-airbyte/basic-normalization.md) is configured. 
+2. `destination-bigquery-denormalized`: Instead of splitting the final data into multiple tables, this destination leverages BigQuery capabilities with [Structured and Repeated fields](https://cloud.google.com/bigquery/docs/nested-repeated) to produce a single "big" table per stream. This does not write the `_airbyte_raw_*` tables in the destination and normalization from this connector is not supported at this time.
+
 ### Sync overview
 
-#### Output schema
+#### Output schema of `destination-bigquery`
 
 Each stream will be output into its own table in BigQuery. Each table will contain 3 columns:
 
@@ -57,7 +61,7 @@ BigQuery is typically enabled automatically in new projects. If this is not the 
 
 Airbyte needs a location in BigQuery to write the data being synced from your data sources. If you already have a Dataset into which Airbyte should sync data, skip this section. Otherwise, follow the Google Cloud guide for [Creating a Dataset via the Console UI](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset) to achieve this.
 
-Note that queries written in BigQueries can only reference Datasets in the same physical location. So if you plan on combining the data Airbyte synced with data from other datasets in your queries, make sure you create the datasets in the same location on Google Cloud. See the [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro) section for more info on considerations around creating Datasets.
+Note that queries written in BigQuery can only reference Datasets in the same physical location. So if you plan on combining the data Airbyte synced with data from other datasets in your queries, make sure you create the datasets in the same location on Google Cloud. See the [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro) section for more info on considerations around creating Datasets.
 
 #### Service account
 
@@ -80,9 +84,9 @@ Follow the [Creating and Managing Service Account Keys](https://cloud.google.com
 You should now have all the requirements needed to configure BigQuery as a destination in the UI. You'll need the following information to configure the BigQuery destination:
 
 * **Project ID**
-* **Dataset ID**
+* **Dataset Location**
+* **Dataset ID**: the name of the schema where the tables will be created.
 * **Service Account Key**: the contents of your Service Account Key JSON file
-* **Default Target Schema:** the name of the schema where the tables will be created. In most cases, this should match the Dataset ID. 
 
 Once you've configured BigQuery as a destination, delete the Service Account Key from your computer.
 
@@ -102,3 +106,17 @@ When you create a dataset in BigQuery, the dataset name must be unique for each 
 
 Therefore, Airbyte BigQuery destination will convert any invalid characters into '\_' characters when writing data.
 
+## CHANGELOG
+
+### destination-bigquery
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.3.6 | 2021-06-18 | [#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional. |
+| 0.3.4 | 2021-06-07 | [#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option |
+
+### destination-bigquery-denormalized
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.0 | 2021-06-21 | [#4176](https://github.com/airbytehq/airbyte/pull/4176) | Destination using Typed Struct and Repeated fields |

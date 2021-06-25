@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,9 +20,23 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
+
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk~=0.1",
+    "cached_property~=1.5",
+    "facebook_business~=11.0",
+    "pendulum",
+]
+
+TEST_REQUIREMENTS = [
+    "pytest~=6.1",
+    "pytest-mock~=3.6",
+    "requests_mock~=1.8",
+]
 
 setup(
     name="source_facebook_marketing",
@@ -29,14 +44,9 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=[
-        "airbyte-protocol==0.0.0",
-        "base-python==0.0.0",
-        "facebook_business==10.0.0",
-        "backoff==1.10.0",
-        "pendulum==1.2.0",
-        "cached_property==1.5.2",
-        "pytest==6.1.2",
-    ],
+    install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
 )

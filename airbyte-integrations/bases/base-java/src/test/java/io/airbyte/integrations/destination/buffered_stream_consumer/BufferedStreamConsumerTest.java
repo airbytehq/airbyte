@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -44,7 +43,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.Field.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -99,7 +98,8 @@ public class BufferedStreamConsumerTest {
         recordWriter,
         onClose,
         CATALOG,
-        isValidRecord);
+        isValidRecord,
+        10);
 
     when(isValidRecord.apply(any())).thenReturn(true);
   }
@@ -150,8 +150,9 @@ public class BufferedStreamConsumerTest {
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
   }
 
+  // todo (cgardens) - split testing buffer flushing into own test.
   @Test
-  void test1StreamWithStateAndThenMoreRecords() throws Exception {
+  void test1StreamWithStateAndThenMoreRecordsBiggerThanBuffer() throws Exception {
     final List<AirbyteMessage> expectedRecordsBatch1 = getNRecords(10);
     final List<AirbyteMessage> expectedRecordsBatch2 = getNRecords(10, 20);
 
@@ -163,13 +164,35 @@ public class BufferedStreamConsumerTest {
 
     verifyStartAndClose();
 
-    final List<AirbyteMessage> expectedRecords = Lists.newArrayList(expectedRecordsBatch1, expectedRecordsBatch2)
-        .stream()
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
-    verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
+    verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
+    verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch2);
 
     verify(checkpointConsumer).accept(STATE_MESSAGE1);
+  }
+
+  @Test
+  void test1StreamWithStateAndThenMoreRecordsSmallerThanBuffer() throws Exception {
+    final List<AirbyteMessage> expectedRecordsBatch1 = getNRecords(10);
+    final List<AirbyteMessage> expectedRecordsBatch2 = getNRecords(10, 20);
+
+    // consumer with big enough buffered that we see both batches are flushed in one go.
+    final BufferedStreamConsumer consumer = new BufferedStreamConsumer(
+        checkpointConsumer,
+        onStart,
+        recordWriter,
+        onClose,
+        CATALOG,
+        isValidRecord,
+        20);
+
+    consumer.start();
+    consumeRecords(consumer, expectedRecordsBatch1);
+    consumer.accept(STATE_MESSAGE1);
+    consumeRecords(consumer, expectedRecordsBatch2);
+    consumer.close();
+
+    verifyStartAndClose();
+
   }
 
   @Test

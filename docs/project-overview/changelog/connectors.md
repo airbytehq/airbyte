@@ -8,23 +8,131 @@ description: Do not miss the new connectors we support!
 
 Note: Airbyte is not built on top of Singer, but is compatible with Singer's protocol. Airbyte's ambitions go beyond what Singer enables to do, so we are building our own protocol that will keep its compatibility with Singer's one.
 
-## Currently under construction
+Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
-Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on
+## 6/24/2021 
+
+1 new source:
+* [**Db2**](https://docs.airbyte.io/integrations/sources/db2)
+
+New features:
+* **S3** destination: supports Avro and Jsonl output!
+* **BigQuery** destination: now supports loading JSON data as structured data.  
+* **Looker** source: Now supports self-hosted instances.  
+* **Facebook** source: is now migrated to the CDK.
+
+## 6/18/2021
+
+1 new source:
+* [**Snowflake**](https://docs.airbyte.io/integrations/sources/snowflake)
+
+New features:
+* **Postgres** source: now has comprehensive data type tests.
+* **Google Ads** source: now uses the [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview)!
+* **S3** destination: supports Parquet output!
+* **S3** destination: supports Minio S3!
+* **BigQuery** destination: credentials are now optional.
+
+## 6/10/2021
+1 new destination:
+* [**S3**](https://docs.airbyte.io/integrations/destinations/s3)
+  
+3 new sources:
+* [**Harvest**](https://docs.airbyte.io/integrations/sources/harvest)
+* [**Amplitude**](https://docs.airbyte.io/integrations/sources/amplitude)
+* [**Posthog**](https://docs.airbyte.io/integrations/sources/posthog)
+
+New features:
+* **Jira** source: now supports all available entities in Jira Cloud.
+* **ExchangeRatesAPI** source: clearer messages around unsupported currencies.
+* **MySQL** source: Comprehensive core extension to be more compatible with other JDBC sources.
+* **BigQuery** destination: Add dataset location.
+* **Shopify** source: Add order risks + new attributes to orders schema for native connector
+
+Bugfixes:
+* **MSSQL** destination: fixed handling of unicode symbols.
+
+Connector development updates:
+
+* Containerized connector code generator.
+* Added JDBC source connector bootstrap template.
+* Added Java destination generator.
+
+
+## 06/3/2021
+
+2 new sources:
+* [**Okta**](https://docs.airbyte.io/integrations/sources/okta)
+* [**Amazon Seller Partner**](https://docs.airbyte.io/integrations/sources/amazon-seller-partner)
+
+New features:
+* **MySQL CDC** now only polls for 5 minutes if we haven't received any records ([#3789](https://github.com/airbytehq/airbyte/pull/3789))
+* **Python CDK** now supports Python 3.7.X ([#3692](https://github.com/airbytehq/airbyte/pull/3692))
+* **File** source: now supports Azure Blob Storage ([#3660](https://github.com/airbytehq/airbyte/pull/3660))
+
+Bugfixes:
+* **Recurly** source: now uses type `number` instead of `integer` ([#3769](https://github.com/airbytehq/airbyte/pull/3769))
+* **Stripe** source: fix types in schema ([#3744](https://github.com/airbytehq/airbyte/pull/3744))
+* **Stripe** source: output `number` instead of `int` ([#3728](https://github.com/airbytehq/airbyte/pull/3728))
+* **MSSQL** destination: fix issue with unicode symbols handling ([#3671](https://github.com/airbytehq/airbyte/pull/3671))
+
+***
+
+## 05/25/2021
+
+4 new sources: 
+* [**Asana**](https://docs.airbyte.io/integrations/sources/asana)
+* [**Klaviyo**](https://docs.airbyte.io/integrations/sources/klaviyo)
+* [**Recharge**](https://docs.airbyte.io/integrations/sources/recharge)
+* [**Tempo**](https://docs.airbyte.io/integrations/sources/tempo)
+
+Progress on connectors:
+* **CDC for MySQL** is now available!
+* **Sendgrid** source: support incremental sync, as rewritten using HTTP CDK ([#3445](https://github.com/airbytehq/airbyte/pull/3445)) 
+* **Github** source bugfix: exception when parsing null date values, use `created_at` as cursor value for issue_milestones ([#3314](https://github.com/airbytehq/airbyte/pull/3314))
+* **Slack** source bugfix: don't overwrite thread_ts in threads stream  ([#3483](https://github.com/airbytehq/airbyte/pull/3483))
+* **Facebook Marketing** source: allow configuring insights lookback window ([#3396](https://github.com/airbytehq/airbyte/pull/3396))
+* **Freshdesk** source: fix discovery ([#3591](https://github.com/airbytehq/airbyte/pull/3591))
+
+## 05/18/2021
+
+1 new destination: [**MSSQL**](https://docs.airbyte.io/integrations/destinations/mssql)
+
+1 new source: [**ClickHouse**](https://docs.airbyte.io/integrations/sources/clickhouse)
+
+Progress on connectors:
+* **Shopify**: make this source more resilient to timeouts ([#3409](https://github.com/airbytehq/airbyte/pull/3409))
+* **Freshdesk** bugfix: output correct schema for various streams ([#3376](https://github.com/airbytehq/airbyte/pull/3376))
+* **Iterable**: update to use latest version of CDK ([#3378](https://github.com/airbytehq/airbyte/pull/3378))
+
+## 05/11/2021
+
+1 new destination: [**MySQL**](https://docs.airbyte.io/integrations/destinations/mysql)
+
+2 new sources:
+* [**Google Search Console**](https://docs.airbyte.io/integrations/sources/google-search-console)
+* [**PokeAPI**](https://docs.airbyte.io/integrations/sources/pokeapi) \(talking about long tail and having fun ;\)\)
+
+Progress on connectors:
+* **Zoom**: bugfix on declaring correct types to match data coming from API \([\#3159](https://github.com/airbytehq/airbyte/pull/3159)\), thanks to [vovavovavovavova](https://github.com/vovavovavovavova) 
+* **Smartsheets**: bugfix on gracefully handling empty cell values \([\#3337](https://github.com/airbytehq/airbyte/pull/3337)\), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
+* **Stripe**: fix date property name, only add connected account header when set, and set primary key \(\#3210\), thanks to [Nathan Yergler](https://github.com/nyergler)
 
 ## 05/04/2021
 
-2 new sources: 
+2 new sources:
+
 * [**Smartsheets**](https://docs.airbyte.io/integrations/sources/smartsheets), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
 * [**Zendesk Chat**](https://docs.airbyte.io/integrations/sources/zendesk-chat)
 
 Progress on connectors:
-* **Appstore**: bugfix private key handling in the UI ([#3201](https://github.com/airbytehq/airbyte/pull/3201))
-* **Facebook marketing**: Wait longer (5 min) for async jobs to start ([#3116](https://github.com/airbytehq/airbyte/pull/3116)), thanks to [Max Krog](https://github.com/MaxKrog)
-* **Stripe**: support reading data from connected accounts (#3121), and 2 new streams with Refunds & Bank Accounts ([#3030](https://github.com/airbytehq/airbyte/pull/3030)) ([#3086](https://github.com/airbytehq/airbyte/pull/3086))
-* **Redshift destination**: Ignore records that are too big (instead of failing) ([#2988](https://github.com/airbytehq/airbyte/pull/2988))
-* **MongoDB**: add supporting TLS and Replica Sets ([#3111](https://github.com/airbytehq/airbyte/pull/3111))
-* **HTTP sources**: bugfix on handling array responses gracefully ([#3008](https://github.com/airbytehq/airbyte/pull/3008))
+
+* **Appstore**: bugfix private key handling in the UI \([\#3201](https://github.com/airbytehq/airbyte/pull/3201)\)
+* **Facebook marketing**: Wait longer \(5 min\) for async jobs to start \([\#3116](https://github.com/airbytehq/airbyte/pull/3116)\), thanks to [Max Krog](https://github.com/MaxKrog)
+* **Stripe**: support reading data from connected accounts \(\#3121\), and 2 new streams with Refunds & Bank Accounts \([\#3030](https://github.com/airbytehq/airbyte/pull/3030)\) \([\#3086](https://github.com/airbytehq/airbyte/pull/3086)\)
+* **Redshift destination**: Ignore records that are too big \(instead of failing\) \([\#2988](https://github.com/airbytehq/airbyte/pull/2988)\)
+* **MongoDB**: add supporting TLS and Replica Sets \([\#3111](https://github.com/airbytehq/airbyte/pull/3111)\)
+* **HTTP sources**: bugfix on handling array responses gracefully \([\#3008](https://github.com/airbytehq/airbyte/pull/3008)\)
 
 ## 04/27/2021
 

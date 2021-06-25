@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { useResource } from "rest-hooks";
 
 import PageTitle from "components/PageTitle";
+import HeadTitle from "components/HeadTitle";
 import useRouter from "components/hooks/useRouterHook";
 import StepsMenu from "components/StepsMenu";
 import StatusView from "./components/StatusView";
@@ -12,9 +13,12 @@ import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import config from "config";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import FrequencyConfig from "data/FrequencyConfig.json";
+import FrequencyConfig from "config/FrequencyConfig.json";
 import Link from "components/Link";
 import { Routes } from "../../../routes";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import { equal } from "utils/objects";
 
 type ConnectionItemPageProps = {
   currentStep: "status" | "settings";
@@ -29,9 +33,28 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
     connectionId: query.id,
   });
 
-  const frequency = FrequencyConfig.find(
-    (item) =>
-      JSON.stringify(item.config) === JSON.stringify(connection.schedule)
+  const frequency = FrequencyConfig.find((item) =>
+    equal(item.config, connection.schedule)
+  );
+
+  const { source, destination } = connection;
+
+  const sourceDefinition = useResource(
+    SourceDefinitionResource.detailShape(),
+    source
+      ? {
+          sourceDefinitionId: source.sourceDefinitionId,
+        }
+      : null
+  );
+
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    destination
+      ? {
+          destinationDefinitionId: destination.destinationDefinitionId,
+        }
+      : null
   );
 
   const steps = [
@@ -59,11 +82,10 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
     AnalyticsService.track("Source - Action", {
       user_id: config.ui.workspaceId,
       action: "Edit schema",
-      connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.destinationName,
-      connector_destination_definition_id:
-        connection.destination?.destinationDefinitionId,
+      connector_source: source.sourceName,
+      connector_source_id: source.sourceDefinitionId,
+      connector_destination: destination.destinationName,
+      connector_destination_definition_id: destination.destinationDefinitionId,
       frequency: frequency?.text,
     });
   };
@@ -71,7 +93,12 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
   const renderStep = () => {
     if (currentStep === "status") {
       return (
-        <StatusView connection={connection} frequencyText={frequency?.text} />
+        <StatusView
+          connection={connection}
+          frequencyText={frequency?.text}
+          sourceDefinition={sourceDefinition}
+          destinationDefinition={destinationDefinition}
+        />
       );
     }
 
@@ -80,28 +107,41 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
         onAfterSaveSchema={onAfterSaveSchema}
         connectionId={connection.connectionId}
         frequencyText={frequency?.text}
+        sourceDefinition={sourceDefinition}
+        destinationDefinition={destinationDefinition}
       />
     );
   };
 
   const linkToSource = () => (
-    <Link clear to={`${Routes.Source}/${connection.source?.sourceId}`}>
-      {connection.source?.name}
+    <Link $clear to={`${Routes.Source}/${source.sourceId}`}>
+      {source.name}
     </Link>
   );
 
   const linkToDestination = () => (
-    <Link
-      clear
-      to={`${Routes.Destination}/${connection.destination?.destinationId}`}
-    >
-      {connection.destination?.name}
+    <Link $clear to={`${Routes.Destination}/${destination.destinationId}`}>
+      {destination.name}
     </Link>
   );
 
   return (
     <MainPageWithScroll
-      title={
+      headTitle={
+        <HeadTitle
+          titles={[
+            { id: "sidebar.connections" },
+            {
+              id: "connection.fromTo",
+              values: {
+                source: source.name,
+                destination: destination.name,
+              },
+            },
+          ]}
+        />
+      }
+      pageTitle={
         <PageTitle
           withLine
           title={

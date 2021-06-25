@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from abc import ABC, abstractmethod
@@ -213,8 +215,8 @@ class HttpStream(Stream, ABC):
         stream_state = stream_state or {}
         pagination_complete = False
 
+        next_page_token = None
         while not pagination_complete:
-            next_page_token = None
             request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
             request = self._create_prepared_request(
                 path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),

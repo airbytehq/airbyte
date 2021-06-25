@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,9 +20,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
-from typing import List, Optional
+import json
+from typing import List, Mapping, Optional
 
 import icdiff
 import py
@@ -65,3 +68,12 @@ def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
     icdiff_lines = list(differ.make_table(pretty_left, pretty_right, context=True))
 
     return ["equals failed"] + [color_off + line for line in icdiff_lines]
+
+
+def serialize(value) -> str:
+    """Simplify comparison of nested dicts/lists"""
+    if isinstance(value, Mapping):
+        return json.dumps({k: serialize(v) for k, v in value.items()}, sort_keys=True)
+    if isinstance(value, List):
+        return sorted([serialize(v) for v in value])
+    return str(value)

@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -30,7 +32,7 @@ setup(
     author_email="contact@airbyte.io",
     install_requires=[
         "pipelinewise-tap-google-analytics @ https://github.com/airbytehq/pipelinewise-tap-google-analytics/tarball/master#egg=pipelinewise-tap-google-analytics-1.3.0-airbyte",
-        "pydantic==1.6.1",
+        "pydantic==1.6.2",
         "base-singer",
         "base-python",
         "airbyte-protocol",

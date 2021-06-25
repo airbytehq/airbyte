@@ -11,12 +11,12 @@ This source can sync data for the [Zendesk Chat API](https://developer.zendesk.c
 This Source is capable of syncing the following core Streams:
 
 * [Accounts](https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account)
-* [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents) (Incremental)
-* [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export) (Incremental)
+* [Agents](https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents) \(Incremental\)
+* [Agent Timelines](https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export) \(Incremental\)
 * [Chats](https://developer.zendesk.com/rest_api/docs/chat/chats#list-chats)
 * [Shortcuts](https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts)
 * [Triggers](https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers)
-* [Bans](https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans) (Incremental)
+* [Bans](https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans) \(Incremental\)
 * [Departments](https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments)
 * [Goals](https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals)
 * [Skills](https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills)
@@ -38,7 +38,7 @@ This Source is capable of syncing the following core Streams:
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental Sync | Yes |  |
-| SSL connection | Yes | |
+| SSL connection | Yes |  |
 
 ### Performance considerations
 
@@ -57,3 +57,4 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 Generate a Access Token as described in [Zendesk Chat docs](https://developer.zendesk.com/rest_api/docs/chat/auth)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+

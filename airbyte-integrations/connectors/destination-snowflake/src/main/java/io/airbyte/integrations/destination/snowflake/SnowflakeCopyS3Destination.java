@@ -29,7 +29,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.CopyConsumer;
+import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
@@ -43,19 +43,20 @@ public class SnowflakeCopyS3Destination extends CopyDestination {
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog catalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
-    return new CopyConsumer<>(
-        getConfiguredSchema(config),
+    return CopyConsumerFactory.create(
+        outputRecordCollector,
+        getDatabase(config),
+        getSqlOperations(),
+        getNameTransformer(),
         getS3Config(config),
         catalog,
-        getDatabase(config),
         new SnowflakeS3StreamCopierFactory(),
-        getSqlOperations(),
-        getNameTransformer());
+        getConfiguredSchema(config));
   }
 
   @Override
   public void checkPersistence(JsonNode config) {
-    S3StreamCopier.attemptWriteToPersistence(getS3Config(config));
+    S3StreamCopier.attemptS3WriteAndDelete(getS3Config(config));
   }
 
   @Override

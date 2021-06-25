@@ -40,14 +40,15 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.WorkerConstants;
 import io.temporal.client.WorkflowClient;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,7 +82,7 @@ class TemporalClientTest {
   @BeforeEach
   void setup() throws IOException {
     final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_client_test");
-    logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(WorkerConstants.LOG_FILENAME);
+    logPath = workspaceRoot.resolve(String.valueOf(JOB_ID)).resolve(String.valueOf(ATTEMPT_ID)).resolve(LogHelpers.LOG_FILENAME);
     workflowClient = mock(WorkflowClient.class);
     temporalClient = new TemporalClient(workflowClient, workspaceRoot);
   }
@@ -178,11 +179,15 @@ class TemporalClientTest {
           .withSourceDockerImage(IMAGE_NAME2)
           .withSourceConfiguration(Jsons.emptyObject())
           .withDestinationConfiguration(Jsons.emptyObject())
+          .withOperationSequence(List.of())
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
       final StandardSyncInput input = new StandardSyncInput()
+          .withNamespaceDefinition(syncConfig.getNamespaceDefinition())
+          .withNamespaceFormat(syncConfig.getNamespaceFormat())
           .withPrefix(syncConfig.getPrefix())
           .withSourceConfiguration(syncConfig.getSourceConfiguration())
           .withDestinationConfiguration(syncConfig.getDestinationConfiguration())
+          .withOperationSequence(syncConfig.getOperationSequence())
           .withCatalog(syncConfig.getConfiguredAirbyteCatalog())
           .withState(syncConfig.getState());
 

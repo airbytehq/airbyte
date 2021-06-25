@@ -34,12 +34,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
+import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivity;
+import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivity;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivity;
@@ -67,6 +70,7 @@ class SyncWorkflowTest {
   private WorkflowClient client;
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
+  private DbtTransformationActivityImpl dbtTransformationActivity;
 
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
@@ -87,6 +91,7 @@ class SyncWorkflowTest {
 
   private StandardSyncInput syncInput;
   private NormalizationInput normalizationInput;
+  private OperatorDbtInput operatorDbtInput;
 
   private StandardSyncOutput replicationSuccessOutput;
 
@@ -106,13 +111,18 @@ class SyncWorkflowTest {
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
         .withCatalog(syncInput.getCatalog());
 
+    operatorDbtInput = new OperatorDbtInput()
+        .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+        .withOperatorDbt(syncInput.getOperationSequence().get(1).getOperatorDbt());
+
     replicationActivity = mock(ReplicationActivityImpl.class);
     normalizationActivity = mock(NormalizationActivityImpl.class);
+    dbtTransformationActivity = mock(DbtTransformationActivityImpl.class);
   }
 
   // bundle up all of the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    worker.registerActivitiesImplementations(replicationActivity, normalizationActivity);
+    worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity);
     testEnv.start();
     final SyncWorkflow workflow = client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
 
@@ -132,6 +142,7 @@ class SyncWorkflowTest {
 
     verifyReplication(replicationActivity, syncInput);
     verifyNormalize(normalizationActivity, normalizationInput);
+    verifyDbtTransform(dbtTransformationActivity, operatorDbtInput);
   }
 
   @Test
@@ -236,6 +247,13 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
         normalizationInput);
+  }
+
+  private static void verifyDbtTransform(DbtTransformationActivity dbtTransformationActivity, OperatorDbtInput operatorDbtInput) {
+    verify(dbtTransformationActivity).run(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        operatorDbtInput);
   }
 
   @AfterEach

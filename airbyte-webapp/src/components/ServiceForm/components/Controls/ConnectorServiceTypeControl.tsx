@@ -1,33 +1,98 @@
 import React, { useCallback, useMemo } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useField } from "formik";
 import styled from "styled-components";
-import { DropDown, DropDownRow, ControlLabels } from "components";
+
+import List from "react-widgets/lib/List";
+
+import { ControlLabels, DropDown, DropDownRow, ImageBlock } from "components";
 
 import { FormBaseItem } from "core/form/types";
-import { useServiceForm } from "../../serviceFormContext";
+import { SourceDefinition } from "core/resources/SourceDefinition";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { isSourceDefinition } from "core/domain/connector/source";
+
+import Instruction from "./Instruction";
+
+const BottomElement = styled.div`
+  background: ${(props) => props.theme.greyColro0};
+  padding: 6px 16px 8px;
+  width: 100%;
+  min-height: 34px;
+  border-top: 1px solid ${(props) => props.theme.greyColor20};
+`;
+
+const Block = styled.div`
+  cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
+
+  &:hover {
+    color: ${({ theme }) => theme.primaryColor};
+  }
+`;
+
+const ConnectorList = React.forwardRef(
+  ({ onClick, ...listProps }: { onClick: () => void }, ref) => (
+    <>
+      <List ref={ref} {...listProps} />
+      <BottomElement>
+        <Block onClick={onClick}>
+          <FormattedMessage id="connector.requestConnectorBlock" />
+        </Block>
+      </BottomElement>
+    </>
+  )
+);
 
 const DropdownLabels = styled(ControlLabels)`
   max-width: 202px;
 `;
 
-const ConnectorServiceTypeControl: React.FC<{ property: FormBaseItem }> = ({
+const ConnectorServiceTypeControl: React.FC<{
+  property: FormBaseItem;
+  formType: "source" | "destination";
+  availableServices: (SourceDefinition | DestinationDefinition)[];
+  isEditMode?: boolean;
+  documentationUrl?: string;
+  allowChangeConnector?: boolean;
+  onChangeServiceType?: (id: string) => void;
+  onOpenRequestConnectorModal: () => void;
+}> = ({
   property,
+  formType,
+  isEditMode,
+  allowChangeConnector,
+  onChangeServiceType,
+  availableServices,
+  documentationUrl,
+  onOpenRequestConnectorModal,
 }) => {
   const formatMessage = useIntl().formatMessage;
   const [field, fieldMeta, { setValue }] = useField(property.path);
 
-  const {
-    formType,
-    isEditMode,
-    allowChangeConnector,
-    onChangeServiceType,
-    dropDownData,
-  } = useServiceForm();
-
   const sortedDropDownData = useMemo(
-    () => dropDownData.sort(DropDownRow.defaultDataItemSort),
-    [dropDownData]
+    () =>
+      availableServices
+        .map((item: SourceDefinition | DestinationDefinition) => ({
+          text: item.name,
+          value: isSourceDefinition(item)
+            ? item.sourceDefinitionId
+            : item.destinationDefinitionId,
+          img: <ImageBlock img={item.icon} />,
+        }))
+        .sort(DropDownRow.defaultDataItemSort),
+    [availableServices]
+  );
+
+  const selectedService = React.useMemo(
+    () =>
+      availableServices.find(
+        (s) =>
+          (isSourceDefinition(s)
+            ? s.sourceDefinitionId
+            : s.destinationDefinitionId) === field.value
+      ),
+    [field.value, availableServices]
   );
 
   const handleSelect = useCallback(
@@ -49,6 +114,8 @@ const ConnectorServiceTypeControl: React.FC<{ property: FormBaseItem }> = ({
       >
         <DropDown
           {...field}
+          listComponent={ConnectorList}
+          listProps={{ onClick: onOpenRequestConnectorModal }}
           error={!!fieldMeta.error && fieldMeta.touched}
           disabled={isEditMode && !allowChangeConnector}
           hasFilter
@@ -59,17 +126,15 @@ const ConnectorServiceTypeControl: React.FC<{ property: FormBaseItem }> = ({
             id: "form.searchName",
           })}
           data={sortedDropDownData}
-          onSelect={handleSelect}
+          onChange={handleSelect}
         />
       </DropdownLabels>
-      {/*TODO: figure out when we want to include instruction*/}
-      {/*{field.value && includeInstruction && (*/}
-      {/*  <Instruction*/}
-      {/*    serviceId={field.value}*/}
-      {/*    dropDownData={dropDownData}*/}
-      {/*    documentationUrl={documentationUrl}*/}
-      {/*  />*/}
-      {/*)}*/}
+      {selectedService && documentationUrl && (
+        <Instruction
+          selectedService={selectedService}
+          documentationUrl={documentationUrl}
+        />
+      )}
     </>
   );
 };

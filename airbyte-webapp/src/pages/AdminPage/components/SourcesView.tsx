@@ -15,7 +15,8 @@ import SourceDefinitionResource, {
 } from "core/resources/SourceDefinition";
 import { SourceResource } from "core/resources/Source";
 import UpgradeAllButton from "./UpgradeAllButton";
-import useNotification from "components/hooks/services/useNotification";
+import useConnector from "components/hooks/services/useConnector";
+import HeadTitle from "components/HeadTitle";
 
 const SourcesView: React.FC = () => {
   const [successUpdate, setSuccessUpdate] = useState(false);
@@ -34,7 +35,7 @@ const SourcesView: React.FC = () => {
     SourceDefinitionResource.updateShape()
   );
 
-  const { hasNewSourceVersion } = useNotification();
+  const { hasNewSourceVersion, updateAllSourceVersions } = useConnector();
 
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
   const onUpdateVersion = useCallback(
@@ -72,9 +73,11 @@ const SourcesView: React.FC = () => {
         }: CellProps<{
           latestDockerImageTag: string;
           dockerImageTag: string;
+          icon?: string;
         }>) => (
           <ConnectorCell
             connectorName={cell.value}
+            img={row.original.icon}
             hasUpdate={
               row.original.latestDockerImageTag !== row.original.dockerImageTag
             }
@@ -141,8 +144,6 @@ const SourcesView: React.FC = () => {
     return Array.from(sourceDefinitionMap.values());
   }, [sources, sourceDefinitions]);
 
-  const { updateAllSourceVersions } = useNotification();
-
   const [{ loading, error }, onUpdate] = useAsyncFn(async () => {
     setSuccessUpdate(false);
     await updateAllSourceVersions();
@@ -154,6 +155,7 @@ const SourcesView: React.FC = () => {
 
   return (
     <>
+      <HeadTitle titles={[{ id: "sidebar.admin" }, { id: "admin.sources" }]} />
       {usedSourcesDefinitions.length ? (
         <Block>
           <Title bold>

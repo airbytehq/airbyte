@@ -34,7 +34,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,12 +77,8 @@ public class ConfigFileArchiver {
     writeConfigsToArchive(storageRoot, ConfigSchema.DESTINATION_CONNECTION, configRepository.listDestinationConnection());
     final List<StandardSync> standardSyncs = configRepository.listStandardSyncs();
     writeConfigsToArchive(storageRoot, ConfigSchema.STANDARD_SYNC, standardSyncs);
-    final List<StandardSyncSchedule> standardSchedules = standardSyncs
-        .stream()
-        .map(config -> Exceptions.toRuntime(() -> configRepository.getStandardSyncSchedule(config.getConnectionId())))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
-    writeConfigsToArchive(storageRoot, ConfigSchema.STANDARD_SYNC_SCHEDULE, standardSchedules);
+    final List<StandardSyncOperation> standardSyncOperations = configRepository.listStandardSyncOperations();
+    writeConfigsToArchive(storageRoot, ConfigSchema.STANDARD_SYNC_OPERATION, standardSyncOperations);
   }
 
   /**
@@ -114,7 +109,7 @@ public class ConfigFileArchiver {
         readConfigsFromArchive(storageRoot, ConfigSchema.SOURCE_CONNECTION, SourceConnection.class);
         readConfigsFromArchive(storageRoot, ConfigSchema.DESTINATION_CONNECTION, DestinationConnection.class);
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC, StandardSync.class);
-        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class);
+        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
       } else {
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardWorkspace(config)));
@@ -128,8 +123,8 @@ public class ConfigFileArchiver {
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeDestinationConnection(config)));
         readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC, StandardSync.class)
             .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSync(config)));
-        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_SCHEDULE, StandardSyncSchedule.class)
-            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSchedule(config)));
+        readConfigsFromArchive(storageRoot, ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class)
+            .forEach(config -> Exceptions.toRuntime(() -> configRepository.writeStandardSyncOperation(config)));;
         LOGGER.debug("Successful import of airbyte configs");
       }
     });

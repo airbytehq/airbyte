@@ -6,6 +6,7 @@ import ImageBlock from "components/ImageBlock";
 type IProps = {
   value: string;
   enabled?: boolean;
+  img?: string;
 };
 
 const Content = styled.div<{ enabled?: boolean }>`
@@ -19,10 +20,10 @@ const Image = styled(ImageBlock)`
   margin-right: 6px;
 `;
 
-const ConnectorCell: React.FC<IProps> = ({ value, enabled }) => {
+const ConnectorCell: React.FC<IProps> = ({ value, enabled, img }) => {
   return (
     <Content enabled={enabled}>
-      <Image small />
+      <Image small img={img} />
       {value}
     </Content>
   );

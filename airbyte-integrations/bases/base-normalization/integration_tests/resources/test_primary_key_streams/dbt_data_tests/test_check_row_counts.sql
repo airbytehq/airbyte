@@ -3,7 +3,7 @@ with table_row_counts as (
     from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }}
 union all
     select distinct count(*) as row_count, 7 as expected_count
-    from {{ ref('exchange_rate_f0e') }}
+    from {{ ref('exchange_rate') }}
 
 union all
 
@@ -11,10 +11,10 @@ union all
     from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
 union all
     select distinct count(*) as row_count, 7 as expected_count
-    from {{ ref('dedup_exchange_rate_scd_81d') }}
+    from {{ ref('dedup_exchange_rate_scd') }}
 union all
     select distinct count(*) as row_count, 4 as expected_count
-    from {{ ref('dedup_exchange_rate_81d') }}
+    from {{ ref('dedup_exchange_rate') }}
 
 union all
 
@@ -22,16 +22,16 @@ union all
     from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
 union all
     select distinct count(*) as row_count, 2 as expected_count
-    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_d67') }}
+    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names') }}
 union all
     select distinct count(*) as row_count, 2 as expected_count
-    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_64a_partition_44f') }}
+    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition') }}
 union all
     select count(distinct currency) as row_count, 1 as expected_count
-    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_669_DATA_886') }}
+    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_DATA') }}
 --union all
 --    select count(distinct id) as row_count, 3 as expected_count
---    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_e78_double_array_data_1b9') }}
+--    from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data') }}
 )
 select *
 from table_row_counts

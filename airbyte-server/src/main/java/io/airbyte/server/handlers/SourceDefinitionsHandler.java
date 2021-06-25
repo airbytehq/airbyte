@@ -35,7 +35,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
@@ -86,8 +86,8 @@ public class SourceDefinitionsHandler {
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()));
-    } catch (URISyntaxException | NullPointerException | IOException e) {
-      throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
+    } catch (URISyntaxException | NullPointerException e) {
+      throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
   }
 
@@ -112,7 +112,7 @@ public class SourceDefinitionsHandler {
     } catch (IOException e) {
       return Collections.emptyList();
     } catch (InterruptedException e) {
-      throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
+      throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
   }
 
@@ -158,8 +158,12 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(newSource);
   }
 
-  public static String loadIcon(String name) throws IOException {
-    return name == null ? null : MoreResources.readResource("icons/" + name);
+  public static String loadIcon(String name) {
+    try {
+      return name == null ? null : MoreResources.readResource("icons/" + name);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
 }

@@ -1,0 +1,23 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "gid": {
+      "type": ["null", "string"]
+    },
+    "resource_type": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "email_domains": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_organization": {
+      "type": ["null", "boolean"]
+    }
+  }
+}
