@@ -35,6 +35,7 @@ spec_path: str = Field(
     default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector"
 )
 configured_catalog_path: str = Field(default="integration_tests/configured_catalog.json", description="Path to configured catalog")
+timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
 
 
 class BaseConfig(BaseModel):
@@ -44,6 +45,7 @@ class BaseConfig(BaseModel):
 
 class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
+    timeout_seconds: int = timeout_seconds
 
 
 class ConnectionTestConfig(BaseConfig):
@@ -54,10 +56,12 @@ class ConnectionTestConfig(BaseConfig):
 
     config_path: str = config_path
     status: Status = Field(Status.Succeed, description="Indicate if connection check should succeed with provided config")
+    timeout_seconds: int = timeout_seconds
 
 
 class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
+    timeout_seconds: int = timeout_seconds
 
 
 class ExpectedRecordsConfig(BaseModel):
@@ -91,11 +95,13 @@ class BasicReadTestConfig(BaseConfig):
     configured_catalog_path: Optional[str] = configured_catalog_path
     validate_output_from_all_streams: bool = Field(False, description="Verify that all streams have records")
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
+    timeout_seconds: int = timeout_seconds
 
 
 class FullRefreshConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: str = configured_catalog_path
+    timeout_seconds: int = timeout_seconds
 
 
 class IncrementalConfig(BaseConfig):
@@ -105,6 +111,7 @@ class IncrementalConfig(BaseConfig):
         description="For each stream, the path of its cursor field in the output state messages."
     )
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
+    timeout_seconds: int = timeout_seconds
 
 
 class TestConfig(BaseConfig):
