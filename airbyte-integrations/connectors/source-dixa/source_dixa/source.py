@@ -22,7 +22,7 @@
 
 
 from abc import ABC
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -39,22 +39,39 @@ DATE_FORMAT = "%Y-%m-%d"
 class DixaStream(HttpStream, ABC):
     url_base = "https://exports.dixa.io/v1/"
     date_format = DATE_FORMAT
+    max_days_in_query = 31  # see https://support.dixa.help/en/articles/174-export-conversations-via-api
 
-    def __init__(self, start_date: datetime, **kwargs) -> None:
+    def __init__(self, start_date: date, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = start_date
+        self.current_date = datetime.now().date()
+        self.created_after = start_date
+        self.created_before = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        """
+        Checks whether there is more data to pull from the API.
+
+        If we have reached the current date, then there is no more data to pull;
+        returns None.
+        If we have not reach the current date, then there is more data to pull
+        starting from the last day (created_before) of the previous query.
+        """
+        if self.created_before == self.current_date:
+            return None
+        self.created_after = self.created_before
+        return {'continue': True}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, **kwargs
     ) -> MutableMapping[str, Any]:
+        self.created_before = min(
+            self.created_after + timedelta(days=DixaStream.max_days_in_query),
+            self.current_date
+        )
         return {
-            'created_after': self.start_date.strftime(DixaStream.date_format),
-            'created_before': (
-                self.start_date + timedelta(days=1)
-            ).strftime(DixaStream.date_format)
+            'created_after': self.created_after.strftime("%Y-%m-%d"),
+            'created_before': self.created_before.strftime("%Y-%m-%d")
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -105,6 +122,6 @@ class SourceDixa(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        start_date = datetime.strptime(config["start_date"], SourceDixa.date_format)
+        start_date = datetime.strptime(config["start_date"], SourceDixa.date_format).date()
         auth = TokenAuthenticator(token=config["api_key"])
         return [ConversationExport(authenticator=auth, start_date=start_date)]
