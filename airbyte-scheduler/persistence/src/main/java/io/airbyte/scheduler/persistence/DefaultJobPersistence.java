@@ -109,7 +109,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
   public static final String ORDER_BY_JOB_TIME_ATTEMPT_TIME =
-      "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC";
+      "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC ";
 
   private final ExceptionWrappingDatabase database;
   private final Supplier<Instant> timeSupplier;
