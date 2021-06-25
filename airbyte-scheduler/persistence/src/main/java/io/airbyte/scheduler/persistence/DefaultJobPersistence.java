@@ -382,7 +382,6 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static List<Job> getJobsFromResult(Result<Record> result) {
     // keeps results strictly in order so the sql query controls the sort
-    // the sort
     List<Job> jobs = new ArrayList<Job>();
     Job currentJob = null;
     for (Record entry : result) {
