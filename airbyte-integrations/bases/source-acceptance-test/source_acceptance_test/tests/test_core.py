@@ -25,6 +25,7 @@
 
 import json
 from collections import Counter, defaultdict
+from functools import reduce
 from typing import Any, List, Mapping, MutableMapping
 
 import pytest
@@ -85,6 +86,19 @@ class TestDiscovery(BaseTest):
         #         assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
 
 
+def primary_keys_for_records(streams, records):
+    streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
+    for stream in streams_with_primary_key:
+        stream_records = [r for r in records if r.stream == stream.stream.name]
+        for stream_record in stream_records:
+            pk_values = {}
+            for pk_path in stream.stream.source_defined_primary_key:
+                pk_value = reduce(lambda data, key: data.get(key) if isinstance(data, dict) else None, pk_path, stream_record.data)
+                pk_values[tuple(pk_path)] = pk_value
+
+            yield pk_values, stream_record
+
+
 @pytest.mark.timeout(300)
 class TestBasicRead(BaseTest):
     def test_read(
@@ -105,19 +119,11 @@ class TestBasicRead(BaseTest):
 
         assert records, "At least one record should be read using provided catalog"
 
-        streams_with_primary_key = [stream for stream in configured_catalog.streams if stream.stream.source_defined_primary_key]
-        for stream in streams_with_primary_key:
-            stream_records = [r for r in records if r.stream == stream.stream.name]
-            for stream_record in stream_records:
-                for pk_path in stream.stream.source_defined_primary_key:
-                    record_data = stream_record.data
-                    for pk_path_part in pk_path:
-                        record_data = record_data.get(pk_path_part) if isinstance(record_data, dict) else None
-
-                        assert record_data, (
-                            f"Primary key subkeys {repr(pk_path)} "
-                            f"have null values or not present in {stream.stream.name} stream records."
-                        )
+        for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
+            for pk_path, pk_value in pks.items():
+                assert pk_value is not None, (
+                    f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
+                )
 
         if inputs.validate_output_from_all_streams:
             assert (
