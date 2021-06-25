@@ -34,7 +34,7 @@ from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestCon
 from source_acceptance_test.utils import ConnectorRunner, serialize
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
     def test_spec(self, connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
@@ -45,7 +45,7 @@ class TestSpec(BaseTest):
             assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
 
 
-@pytest.mark.timeout(30)
+@pytest.mark.default_timeout(30)
 class TestConnection(BaseTest):
     def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
@@ -68,7 +68,7 @@ class TestConnection(BaseTest):
             assert "Traceback" in err.value.stderr.decode("utf-8"), "Connector should print exception"
 
 
-@pytest.mark.timeout(30)
+@pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
     def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         output = docker_runner.call_discover(config=connector_config)
@@ -84,7 +84,7 @@ class TestDiscovery(BaseTest):
         #         assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
 
 
-@pytest.mark.timeout(300)
+@pytest.mark.default_timeout(300)
 class TestBasicRead(BaseTest):
     def test_read(
         self,
