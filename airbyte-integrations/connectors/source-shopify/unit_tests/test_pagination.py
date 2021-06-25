@@ -22,9 +22,8 @@
 # SOFTWARE.
 #
 
-import requests_mock
 import requests
-from source_shopify.source import ShopifyStream, ShopifyAuthenticator
+from source_shopify.source import ShopifyStream
 
 response_header_links = {
     "Date": "Thu, 32 Jun 2099 24:24:24 GMT",
@@ -35,7 +34,7 @@ response_header_links = {
 expected_output_token = {'page_info': 'eyJjcmVhdGVkX2F0X21pbiI6IjIwMjAtMDQtMDEgMDA6MDA6MDAgVVRDIiwib3JkZXIiOiJpZCBhc2MiLCJsYXN0X2lkIjozNjA0NjIxMTMxOTM0LCJsYXN0X3ZhbHVlIjozNjA0NjIxMTMxOTM0LCJkaXJlY3Rpb24iOiJuZXh0In0'}
 start_page_link = 'https://jolicookie.myshopify.com/admin/api/2021-04/customers.json?limit=1&page_info=eyJjcmVhdGVkX2F0X21pbiI6IjIwMjAtMDQtMDEgMDA6MDA6MDAgVVRDIiwib3JkZXIiOiJpZCBhc2MiLCJsYXN0X2lkIjozNjA0NjIxMTMxOTM0LCJsYXN0X3ZhbHVlIjozNjA0NjIxMTMxOTM0LCJkaXJlY3Rpb24iOiJuZXh0In0'
 
-class TestNextPageToken:
+class TestNextPageToken():
 
     def test_get_next_page_token(self, requests_mock):
         """
