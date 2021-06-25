@@ -94,6 +94,7 @@
     * [Zoom](integrations/sources/zoom.md)
   * [Destinations](integrations/destinations/README.md)
     * [BigQuery](integrations/destinations/bigquery.md)
+    * [Google PubSub](integrations/destinations/pubsub.md)
     * [Local CSV](integrations/destinations/local-csv.md)
     * [Local JSON](integrations/destinations/local-json.md)
     * [MeiliSearch](integrations/destinations/meilisearch.md)
