@@ -37,34 +37,11 @@ DATE_FORMAT = "%Y-%m-%d"
 
 # Basic full refresh stream
 class DixaStream(HttpStream, ABC):
-    """
-    TODO remove this comment
+    url_base = "https://exports.dixa.io/v1/"
 
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class DixaStream(HttpStream, ABC)` which is the current class
-    `class Customers(DixaStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(DixaStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalDixaStream((DixaStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    def __init__(self, start_date: datetime, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.start_date = start_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -101,10 +78,6 @@ class DixaStream(HttpStream, ABC):
 
 
 class ConversationExport(DixaStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "customer_id"
 
