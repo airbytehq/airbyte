@@ -29,6 +29,7 @@ import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.S3Writer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -70,17 +71,7 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
     LOGGER.info("Full S3 path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
-    // The stream transfer manager lets us greedily stream into S3. The native AWS SDK does not
-    // have support for streaming multipart uploads. The alternative is first writing the entire
-    // output to disk before loading into S3. This is not feasible with large input.
-    // Data is chunked into parts during the upload. A part is sent off to a queue to be uploaded
-    // once it has reached it's configured part size.
-    // See {@link S3DestinationConstants} for memory usage calculation.
-    this.uploadManager = new StreamTransferManager(config.getBucketName(), objectKey, s3Client)
-        .numStreams(S3CsvConstants.DEFAULT_NUM_STREAMS)
-        .queueCapacity(S3CsvConstants.DEFAULT_QUEUE_CAPACITY)
-        .numUploadThreads(S3CsvConstants.DEFAULT_UPLOAD_THREADS)
-        .partSize(S3CsvConstants.DEFAULT_PART_SIZE_MB);
+    this.uploadManager = S3StreamTransferManagerHelper.getDefault(config.getBucketName(), objectKey, s3Client);
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8),
@@ -94,19 +85,17 @@ public class S3CsvWriter extends BaseS3Writer implements S3Writer {
   }
 
   @Override
-  public void close(boolean hasFailed) throws IOException {
+  protected void closeWhenSucceed() throws IOException {
     csvPrinter.close();
     outputStream.close();
+    uploadManager.complete();
+  }
 
-    if (hasFailed) {
-      LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.getName());
-      uploadManager.abort();
-      LOGGER.warn("Upload of stream '{}' aborted.", stream.getName());
-    } else {
-      LOGGER.info("Uploading remaining data for stream '{}'.", stream.getName());
-      uploadManager.complete();
-      LOGGER.info("Upload completed for stream '{}'.", stream.getName());
-    }
+  @Override
+  protected void closeWhenFail() throws IOException {
+    csvPrinter.close();
+    outputStream.close();
+    uploadManager.abort();
   }
 
 }
