@@ -332,25 +332,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install socat
 
-      - name: Setup Minikube
-        uses: manusa/actions-setup-minikube@v2.4.1
-        with:
-          minikube version: 'v1.21.0-beta.0'
-          kubernetes version: 'v1.20.7'
+      - name: KIND Kubernetes Cluster Setup
+        uses: helm/kind-action@v1.1.0
         # In case of self-hosted EC2 errors, remove this env block.
         env:
           USER: root
           HOME: /home/runner
           CHANGE_MINIKUBE_NONE_USER: true
-
-      - name: Manual Minikube Linking and Starting for EC2
-        env:
-          USER: root
-          HOME: /home/runner
-        run: |
-          ln -s $(which minikube) /usr/local/bin/kubectl
-          minikube start --memory=6000
-          kubectl get pods
 
       - name: Build Core Docker Images and Run Tests
         run: CORE_ONLY=true ./gradlew --no-daemon build --scan --rerun-tasks
