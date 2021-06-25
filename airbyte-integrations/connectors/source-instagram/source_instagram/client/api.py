@@ -29,7 +29,6 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence
 
 import backoff
 import pendulum
-from base_python.entrypoint import logger
 from facebook_business.adobjects.igmedia import IGMedia
 from facebook_business.adobjects.iguser import IGUser
 from facebook_business.api import Cursor
@@ -65,8 +64,109 @@ def clear_url(record_data: dict = None):
     return record_data
 
 
-class StreamAPI(ABC):
-    result_return_limit = 100
+class FBMarketingStream(Stream, ABC):
+    """Base stream class"""
+
+    primary_key = "id"
+
+    page_size = 100
+
+    enable_deleted = False
+    entity_prefix = None
+
+    def __init__(self, api: API, include_deleted: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self._api = api
+        self._include_deleted = include_deleted if self.enable_deleted else False
+
+    @cached_property
+    def fields(self) -> List[str]:
+        """List of fields that we want to query, for now just all properties from stream's schema"""
+        return list(self.get_json_schema().get("properties", {}).keys())
+
+    @backoff_policy
+    def execute_in_batch(self, requests: Iterable[FacebookRequest]) -> Sequence[MutableMapping[str, Any]]:
+        """Execute list of requests in batches"""
+        records = []
+
+        def success(response: FacebookResponse):
+            records.append(response.json())
+
+        def failure(response: FacebookResponse):
+            raise response.error()
+
+        api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
+        for request in requests:
+            api_batch.add_request(request, success=success, failure=failure)
+        retry_batch = api_batch.execute()
+        if retry_batch:
+            raise FacebookAPIException(f"Batch has failed {len(retry_batch)} requests")
+
+        return records
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Main read method used by CDK"""
+        for record in self._read_records(params=self.request_params(stream_state=stream_state)):
+            yield self._extend_record(record, fields=self.fields)
+
+    def _read_records(self, params: Mapping[str, Any]) -> Iterable:
+        """Wrapper around query to backoff errors.
+        We have default implementation because we still can override read_records so this method is not mandatory.
+        """
+        return []
+
+    @backoff_policy
+    def _extend_record(self, obj: Any, **kwargs):
+        """Wrapper around api_get to backoff errors"""
+        return obj.api_get(**kwargs).export_all_data()
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        """Parameters that should be passed to query_records method"""
+        params = {"limit": self.page_size}
+
+        if self._include_deleted:
+            params.update(self._filter_all_statuses())
+
+        return params
+
+    def _filter_all_statuses(self) -> MutableMapping[str, Any]:
+        """Filter that covers all possible statuses thus including deleted/archived records"""
+        filt_values = [
+            "active",
+            "archived",
+            "completed",
+            "limited",
+            "not_delivering",
+            "deleted",
+            "not_published",
+            "pending_review",
+            "permanently_deleted",
+            "recently_completed",
+            "recently_rejected",
+            "rejected",
+            "scheduled",
+            "inactive",
+        ]
+
+        return {
+            "filtering": [
+                {"field": f"{self.entity_prefix}.delivery_info", "operator": "IN", "value": filt_values},
+            ],
+        }
+
+
+class FBMarketingIncrementalStream(FBMarketingStream, ABC):
+    cursor_field = "updated_time"
+
+
+class InstagramStream(ABC):
+    page_size = 100
     non_object_fields = ["page_id", "business_account_id"]
 
     def __init__(self, api, *args, **kwargs):
@@ -103,7 +203,7 @@ class StreamAPI(ABC):
             next_page = not instance._finished_iteration
 
 
-class IncrementalStreamAPI(StreamAPI, ABC):
+class InstagramIncrementalStream(InstagramStream, ABC):
     @property
     @abstractmethod
     def state_pk(self):
@@ -148,7 +248,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         return record
 
 
-class UsersAPI(StreamAPI):
+class Users(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for account in self._api.accounts:
             yield {
@@ -161,7 +261,7 @@ class UsersAPI(StreamAPI):
         return ig_user.api_get(fields=fields).export_all_data()
 
 
-class UserLifetimeInsightsAPI(StreamAPI):
+class UserLifetimeInsights(StreamAPI):
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
     period = "lifetime"
 
@@ -184,7 +284,7 @@ class UserLifetimeInsightsAPI(StreamAPI):
         return instagram_user.get_insights(params=params)
 
 
-class UserInsightsAPI(IncrementalStreamAPI):
+class UserInsights(IncrementalStreamAPI):
     METRICS_BY_PERIOD = {
         "day": [
             "email_contacts",
@@ -267,7 +367,7 @@ class UserInsightsAPI(IncrementalStreamAPI):
         return instagram_user.get_insights(params=params)._queue
 
 
-class MediaAPI(StreamAPI):
+class Media(StreamAPI):
     # Children objects can only be of the media_type == "CAROUSEL_ALBUM".
     # And children object does not support INVALID_CHILDREN_FIELDS fields, so they are excluded when trying to get child objects to avoid the error.
     INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
@@ -301,7 +401,7 @@ class MediaAPI(StreamAPI):
         return IGMedia(media_id).api_get(fields=fields)
 
 
-class StoriesAPI(StreamAPI):
+class Stories(StreamAPI):
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
         for account in self._api.accounts:
             stories = self._get_stories(
@@ -321,7 +421,7 @@ class StoriesAPI(StreamAPI):
         yield from self.pagination(instagram_user, "get_stories", params=params, fields=fields)
 
 
-class MediaInsightsAPI(MediaAPI):
+class MediaInsights(MediaAPI):
     MEDIA_METRICS = ["engagement", "impressions", "reach", "saved"]
     CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
 
@@ -370,7 +470,7 @@ class MediaInsightsAPI(MediaAPI):
             raise error
 
 
-class StoriesInsightsAPI(StoriesAPI):
+class StoriesInsights(Stories):
     STORY_METRICS = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
