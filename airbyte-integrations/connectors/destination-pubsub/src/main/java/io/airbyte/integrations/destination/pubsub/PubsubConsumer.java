@@ -102,6 +102,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void acceptTracked(AirbyteMessage msg) throws Exception {
     if (msg.getType() == Type.STATE) {
       lastStateMessage = msg;
+      outputRecordCollector.accept(lastStateMessage);
       return;
     } else if (msg.getType() != Type.RECORD) {
       return;

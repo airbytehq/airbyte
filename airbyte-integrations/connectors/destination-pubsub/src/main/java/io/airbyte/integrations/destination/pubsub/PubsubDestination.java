@@ -30,6 +30,9 @@ import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
+import com.google.iam.v1.TestIamPermissionsRequest;
+import com.google.iam.v1.TestIamPermissionsResponse;
 import com.google.pubsub.v1.TopicName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
@@ -41,6 +44,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +76,16 @@ public class PubsubDestination extends BaseConnector implements Destination {
       TopicAdminClient adminClient = TopicAdminClient
           .create(TopicAdminSettings.newBuilder().setCredentialsProvider(
               FixedCredentialsProvider.create(credentials)).build());
+
+      // check if topic is present and the service account has necessary permissions on it
       TopicName topicName = TopicName.of(projectId, topicId);
-      adminClient.getTopic(topicName);
+      final List<String> requiredPermissions = List.of("pubsub.topics.publish");
+      final TestIamPermissionsResponse response = adminClient.testIamPermissions(
+          TestIamPermissionsRequest.newBuilder().setResource(topicName.toString())
+              .addAllPermissions(requiredPermissions).build());
+      Preconditions.checkArgument(response.getPermissionsList().containsAll(requiredPermissions),
+          "missing required permissions " + requiredPermissions);
+
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.info("Check failed.", e);

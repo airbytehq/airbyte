@@ -1,10 +1,10 @@
-# PubSub Test Configuration
+# Google PubSub Test Configuration
 
 In order to test the PubSub destination, you need a service account key file.
 
 ## Community Contributor
 
-As a community contributor, you will need access to a GCP project and BigQuery to run tests.
+As a community contributor, you will need access to a GCP project and PubSub to run tests.
 
 1. Go to the `Service Accounts` page on the GCP console
 1. Click on `+ Create Service Account" button

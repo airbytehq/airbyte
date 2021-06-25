@@ -3,14 +3,14 @@ description: >-
 Pub/Sub is an asynchronous messaging service provided by Google Cloud Provider.
 ---
 
-# PubSub
+# Google PubSub
 
 ## Overview
 
-The Airbyte PubSub destination allows you to send/stream data into PubSub. Pub/Sub is an asynchronous messaging service provided by Google Cloud Provider.
+The Airbyte Google PubSub destination allows you to send/stream data into PubSub. Pub/Sub is an asynchronous messaging service provided by Google Cloud Provider.
 
 ### Sync overview
-
+    
 #### Output schema
 
 Each stream will be output a PubSubMessage with attributes. The message attributes will be
@@ -21,7 +21,7 @@ Each stream will be output a PubSubMessage with attributes. The message attribut
 The data will be a serialized JSON, containing the following fields  
 * `_airbyte_ab_id`: a uuid string assigned by Airbyte to each event that is processed.
 * `_airbyte_emitted_at`: a long timestamp(ms) representing when the event was pulled from the data source.
-* `_airbyte_data`: a json string representing with the event data.
+* `_airbyte_data`: a json string representing source data.
 
 #### Features
 
