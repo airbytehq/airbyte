@@ -25,6 +25,15 @@
         "title": "Client Secret",
         "type": "string",
         "description": "The Client Secret is second part of an API3 key."
+      },
+      "run_look_ids": {
+        "title": "Look IDs to Run",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": ["^[0-9]*$"]
+        },
+        "description": "The IDs of any Looks to run (optional)"
       }
     }
   }

@@ -4765,6 +4765,28 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "run_looks",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": true,
+          "type": "object",
+          "properties": {
+            "look_id": {
+              "properties": {
+                "additionalProperties": true
+              },
+              "type": ["null", "object"],
+              "additionalProperties": true
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "destination_sync_mode": "overwrite",
+        "source_defined_cursor": false
+      }
     }
   ]
 }
