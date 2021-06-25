@@ -70,7 +70,7 @@ class ShopifyStream(HttpStream, ABC):
         if next_page_token:
             params = {"limit": self.limit, **next_page_token}
         else:
-            params = {"limit": self.limit, "order": f"{self.primary_key} asc", "updated_at": self.start_date}
+            params = {"limit": self.limit, "order": f"{self.primary_key} asc", "created_at_min": self.start_date}
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:

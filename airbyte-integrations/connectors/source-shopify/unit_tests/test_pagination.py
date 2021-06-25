@@ -49,27 +49,6 @@ class TestNextPageToken:
         assert test == expected_output_token
 
 
-class TestNextPageCall:
-
-    token = "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"
-
-    def test_next_page_call(self):
-        """
-        Test produces 1 real call to API destination to check the pagination works.
-        """
-
-        auth_header = ShopifyAuthenticator(token=self.token).get_auth_header()
-        session = requests.get(start_page_link, headers=auth_header)
-        data = session.json()
-        previous_page = session.links.get("previous", None).get("url")
-        next_page = session.links.get("next", None).get("url")
-
-        # if ok, we would have previous_page, next_page, and the data as the response from the previous page
-        if previous_page and data and next_page:
-            assert True
-        else:
-            assert False
-
 
 
 
