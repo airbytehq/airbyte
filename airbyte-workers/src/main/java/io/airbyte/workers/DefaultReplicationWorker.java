@@ -28,9 +28,9 @@ import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.StandardTapConfig;
-import io.airbyte.config.StandardTargetConfig;
 import io.airbyte.config.State;
+import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.protocols.Destination;
 import io.airbyte.workers.protocols.Mapper;
@@ -103,7 +103,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
     // todo (cgardens) - this should not be happening in the worker. this is configuration information
     // that is independent of workflow executions.
-    final StandardTargetConfig destinationConfig = WorkerUtils.syncToTargetConfig(syncInput);
+    final WorkerDestinationConfig destinationConfig = WorkerUtils.syncToWorkerDestinationConfig(syncInput);
     destinationConfig.setCatalog(mapper.mapCatalog(destinationConfig.getCatalog()));
 
     long startTime = System.currentTimeMillis();
@@ -112,7 +112,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .stream()
           .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
               s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
-      final StandardTapConfig sourceConfig = WorkerUtils.syncToTapConfig(syncInput);
+      final WorkerSourceConfig sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
 
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
@@ -205,6 +205,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
+      var recordsRead = 0;
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional = source.attemptRead();
@@ -213,6 +214,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             sourceMessageTracker.accept(message);
             destination.accept(message);
+            recordsRead += 1;
+
+            if (recordsRead % 1000 == 0) {
+              LOGGER.info("Records read: {}", recordsRead);
+            }
           }
         }
         destination.notifyEndOfStream();

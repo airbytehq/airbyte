@@ -31,6 +31,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
+import io.airbyte.integrations.destination.s3.writer.ProductionWriterFactory;
+import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -50,7 +52,7 @@ public class S3Destination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
     try {
-      S3StreamCopier.attemptS3WriteAndDelete(S3Config.getS3Config(config));
+      S3StreamCopier.attemptS3WriteAndDelete(S3Config.getS3Config(config), config.get("s3_bucket_path").asText());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
       LOGGER.error("Exception attempting to access the S3 bucket: ", e);
@@ -65,7 +67,7 @@ public class S3Destination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog configuredCatalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
-    S3OutputFormatterFactory formatterFactory = new S3OutputFormatterProductionFactory();
+    S3WriterFactory formatterFactory = new ProductionWriterFactory();
     return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
 

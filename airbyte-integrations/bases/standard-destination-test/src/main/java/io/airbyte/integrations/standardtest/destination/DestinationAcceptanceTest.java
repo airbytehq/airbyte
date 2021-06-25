@@ -31,11 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
@@ -45,7 +45,7 @@ import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardTargetConfig;
+import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -68,6 +68,7 @@ import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.protocols.airbyte.AirbyteDestination;
 import io.airbyte.workers.protocols.airbyte.DefaultAirbyteDestination;
+import io.airbyte.workers.test_helpers.EntrypointEnvChecker;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -188,7 +189,7 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  protected boolean normalizationFromSpec() throws WorkerException {
+  protected boolean normalizationFromSpec() throws Exception {
     final ConnectorSpecification spec = runSpec();
     assertNotNull(spec);
     if (spec.getSupportsNormalization() != null) {
@@ -370,8 +371,8 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-03-31T00:00:00Z")
-                    .put("HKD", 10)
-                    .put("NZD", 700)
+                    .put("HKD", 10.0)
+                    .put("NZD", 700.0)
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
@@ -403,8 +404,8 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD\u2028")
                     .put("date", "2020-03-\n31T00:00:00Z\r")
-                    .put("HKD", 10)
-                    .put("NZD", 700)
+                    .put("HKD", 10.0)
+                    .put("NZD", 700.0)
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
@@ -416,7 +417,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  public void specNormalizationValueShouldBeCorrect() throws WorkerException {
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
     assertEquals(normalizationFromSpec(), supportsNormalization());
   }
 
@@ -459,8 +460,8 @@ public abstract class DestinationAcceptanceTest {
                     .put("id", 1)
                     .put("currency", "USD")
                     .put("date", "2020-03-31T00:00:00Z")
-                    .put("HKD", 10)
-                    .put("NZD", 700)
+                    .put("HKD", 10.0)
+                    .put("NZD", 700.0)
                     .build()))),
         new AirbyteMessage()
             .withType(Type.STATE)
@@ -810,7 +811,7 @@ public abstract class DestinationAcceptanceTest {
 
     final var diffNamespaceStreams = new ArrayList<AirbyteStream>();
     final var namespace2 = "diff_source_namespace";
-    final var mapper = new ObjectMapper();
+    final var mapper = MoreMappers.initMapper();
     for (AirbyteStream stream : catalog.getStreams()) {
       var clonedStream = mapper.readValue(mapper.writeValueAsString(stream), AirbyteStream.class);
       clonedStream.setNamespace(namespace2);
@@ -845,6 +846,24 @@ public abstract class DestinationAcceptanceTest {
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
   }
 
+  /**
+   * In order to launch a source on Kubernetes in a pod, we need to be able to wrap the entrypoint.
+   * The source connector must specify its entrypoint in the AIRBYTE_ENTRYPOINT variable. This test
+   * ensures that the entrypoint environment variable is set.
+   */
+  @Test
+  public void testEntrypointEnvVar() throws Exception {
+    final String entrypoint = EntrypointEnvChecker.getEntrypointEnvVariable(
+        processFactory,
+        JOB_ID,
+        JOB_ATTEMPT,
+        jobRoot,
+        getImageName());
+
+    assertNotNull(entrypoint);
+    assertFalse(entrypoint.isBlank());
+  }
+
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory))
         .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
@@ -859,7 +878,10 @@ public abstract class DestinationAcceptanceTest {
     return new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory));
   }
 
-  private void runSyncAndVerifyStateOutput(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization)
+  protected void runSyncAndVerifyStateOutput(JsonNode config,
+                                             List<AirbyteMessage> messages,
+                                             ConfiguredAirbyteCatalog catalog,
+                                             boolean runNormalization)
       throws Exception {
     final List<AirbyteMessage> destinationOutput = runSync(config, messages, catalog, runNormalization);
     final AirbyteMessage expectedStateMessage = MoreLists.reversed(messages)
@@ -883,14 +905,14 @@ public abstract class DestinationAcceptanceTest {
   private List<AirbyteMessage> runSync(JsonNode config, List<AirbyteMessage> messages, ConfiguredAirbyteCatalog catalog, boolean runNormalization)
       throws Exception {
 
-    final StandardTargetConfig targetConfig = new StandardTargetConfig()
+    final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
         .withCatalog(catalog)
         .withDestinationConnectionConfiguration(config);
 
     final AirbyteDestination destination = getDestination();
 
-    destination.start(targetConfig, jobRoot);
+    destination.start(destinationConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
     destination.notifyEndOfStream();
 
@@ -910,14 +932,16 @@ public abstract class DestinationAcceptanceTest {
         processFactory);
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-    if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, targetConfig.getDestinationConnectionConfiguration(), targetConfig.getCatalog())) {
+    if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, destinationConfig.getDestinationConnectionConfiguration(),
+        destinationConfig.getCatalog())) {
       throw new WorkerException("Normalization Failed.");
     }
     runner.close();
     return destinationOutput;
   }
 
-  private void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema) throws Exception {
+  protected void retrieveRawRecordsAndAssertSameMessages(AirbyteCatalog catalog, List<AirbyteMessage> messages, String defaultSchema)
+      throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
     for (final AirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getName();
@@ -933,7 +957,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   // ignores emitted at.
-  private void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual, boolean pruneAirbyteInternalFields) {
+  protected void assertSameMessages(List<AirbyteMessage> expected, List<AirbyteRecordMessage> actual, boolean pruneAirbyteInternalFields) {
     final List<JsonNode> expectedProcessed = expected.stream()
         .filter(message -> message.getType() == AirbyteMessage.Type.RECORD)
         .map(AirbyteMessage::getRecord)
@@ -982,7 +1006,7 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  private List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {
+  protected List<AirbyteRecordMessage> retrieveNormalizedRecords(AirbyteCatalog catalog, String defaultSchema) throws Exception {
     final List<AirbyteRecordMessage> actualMessages = new ArrayList<>();
 
     for (final AirbyteStream stream : catalog.getStreams()) {
