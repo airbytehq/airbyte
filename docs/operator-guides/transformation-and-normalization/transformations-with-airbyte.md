@@ -53,6 +53,9 @@ In Airbyte, I can use the git url as: `https://airbyteuser:ghp_***********ShLrG2
 
 ![](../../.gitbook/assets/setup-custom-transformation.png)
 
+
+## How-to use custom dbt tips
+
 ### Refresh models partially
 
 Since I am using a mono-repo from my organization, other team members or departments may also contribute their dbt models to this centralized location. This will give us many dbt models and sources to build our complete data warehouse...
@@ -64,3 +67,11 @@ Therefore, I can restrict the execution of models to a particular tag or folder 
     run --models tag:covid_api opendata.base.*
 
 Now, when replications syncs are triggered by Airbyte, my custom transformations from my private git repository are also run at the end!
+
+### Using a custom run with variables 
+
+If you want to use a custom run and pass variables you need to use the follow syntax:
+```bash
+run --vars '"{table_name":"sample","schema_name":"other value"}'
+```
+The string shouldn't have any space.
