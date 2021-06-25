@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Slack Spec",
     "type": "object",
-    "required": ["api_token"],
+    "required": ["api_token", "start_date", "lookback_window", "join_channels"],
     "additionalProperties": false,
     "properties": {
       "api_token": {
@@ -12,6 +12,25 @@
         "title": "API Token",
         "description": "A slack bot token. See the <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
         "airbyte_secret": true
+      },
+      "start_date": {
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "examples": ["2017-01-25T00:00:00Z"],
+        "title": "Start date"
+      },
+      "lookback_window": {
+        "type": "integer",
+        "title": "Threads Lookback window (Days)",
+        "description": "How far into the past to look for messages in threads.",
+        "examples": [7, 14]
+      },
+      "join_channels": {
+        "type": "boolean",
+        "default": true,
+        "title": "Join all channels",
+        "description": "Whether to join all channels or to sync data only from channels the bot is already in.  If false, you'll need to manually add the bot to all the channels from which you'd like to sync messages. "
       }
     }
   }
