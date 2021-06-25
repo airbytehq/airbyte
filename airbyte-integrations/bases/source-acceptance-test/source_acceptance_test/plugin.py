@@ -83,6 +83,13 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_collection_modifyitems(config, items):
+    """
+    Get prepared test items and wrap them with `pytest.mark.timeout(timeout_seconds)` decorator.
+
+    `timeout_seconds` may be received either from acceptance test config or `pytest.mark.default_timeout(timeout_seconds)`,
+    if `timeout_seconds` is not specified in the acceptance test config.
+    """
+
     config = load_config(config.getoption("--acceptance-test-config"))
 
     i = 0
@@ -96,8 +103,8 @@ def pytest_collection_modifyitems(config, items):
         test_configs = getattr(config.tests, items[0].cls.config_key())
         for test_config, item in zip(test_configs, items):
             default_timeout = item.get_closest_marker("default_timeout")
-            if test_config.timeout:
-                item.add_marker(pytest.mark.timeout(test_config.timeout))
+            if test_config.timeout_seconds:
+                item.add_marker(pytest.mark.timeout(test_config.timeout_seconds))
             elif default_timeout:
                 item.add_marker(pytest.mark.timeout(*default_timeout.args))
 
