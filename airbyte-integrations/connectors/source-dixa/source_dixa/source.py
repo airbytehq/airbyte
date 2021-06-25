@@ -74,8 +74,8 @@ class DixaStream(HttpStream, ABC):
             end_date
         )
         slices = [{
-            'created_after': created_after,
-            'created_before': created_before
+            "created_after": created_after,
+            "created_before": created_before
         }]
         while created_after < end_date:
             created_after = created_before
@@ -84,8 +84,8 @@ class DixaStream(HttpStream, ABC):
                 end_date
             )
             slices.append({
-                'created_after': created_after,
-                'created_before': created_before
+                "created_after": created_after,
+                "created_before": created_before
             })
         return slices
 
@@ -108,9 +108,9 @@ class SourceDixa(AbstractSource):
         """
         try:
             url = "https://exports.dixa.io/v1/conversation_export"
-            headers = {'accept': 'application/json'}
+            headers = {"accept": "application/json"}
             response = requests.request(
-                'GET',
+                "GET",
                 url=url,
                 headers=headers,
                 params={
@@ -121,7 +121,7 @@ class SourceDixa(AbstractSource):
                         ) + timedelta(days=config["batch_size"])
                     ).strftime(SourceDixa.date_format)
                 },
-                auth=('bearer', config["api_token"])
+                auth=("bearer", config["api_token"])
             )
             response.raise_for_status()
             return True, None
