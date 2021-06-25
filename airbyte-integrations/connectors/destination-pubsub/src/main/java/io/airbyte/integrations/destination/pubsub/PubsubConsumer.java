@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package io.airbyte.integrations.destination.pubsub;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,8 +62,8 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   private AirbyteMessage lastStateMessage;
 
   public PubsubConsumer(JsonNode config,
-      ConfiguredAirbyteCatalog catalog,
-      Consumer<AirbyteMessage> outputRecordCollector) {
+                        ConfiguredAirbyteCatalog catalog,
+                        Consumer<AirbyteMessage> outputRecordCollector) {
     this.outputRecordCollector = outputRecordCollector;
     this.config = config;
     this.catalog = catalog;
@@ -136,4 +137,5 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
       outputRecordCollector.accept(lastStateMessage);
     }
   }
+
 }
