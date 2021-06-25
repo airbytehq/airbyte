@@ -36,6 +36,7 @@ import io.airbyte.api.model.ConnectionReadList;
 import io.airbyte.api.model.ConnectionSchedule;
 import io.airbyte.api.model.ConnectionStatus;
 import io.airbyte.api.model.ConnectionUpdate;
+import io.airbyte.api.model.ResourceRequirements;
 import io.airbyte.api.model.SyncMode;
 import io.airbyte.api.model.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
@@ -50,6 +51,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.converters.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -90,6 +92,13 @@ public class ConnectionsHandler {
         .withDestinationId(connectionCreate.getDestinationId())
         .withOperationIds(connectionCreate.getOperationIds())
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
+    if (connectionCreate.getResourceRequirements() != null) {
+      standardSync.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
+          .withCpu(connectionCreate.getResourceRequirements().getCpu())
+          .withMemory(connectionCreate.getResourceRequirements().getMemory()));
+    } else {
+      standardSync.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+    }
 
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
     if (connectionCreate.getSyncCatalog() != null) {
@@ -164,6 +173,15 @@ public class ConnectionsHandler {
         .withCatalog(CatalogConverter.toProtocol(connectionUpdate.getSyncCatalog()))
         .withStatus(toPersistenceStatus(connectionUpdate.getStatus()));
 
+    // update Resource Requirements
+    if (connectionUpdate.getResourceRequirements() != null) {
+      persistedSync.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
+          .withCpu(connectionUpdate.getResourceRequirements().getCpu())
+          .withMemory(connectionUpdate.getResourceRequirements().getMemory()));
+    } else {
+      persistedSync.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
+    }
+
     // update sync schedule
     if (connectionUpdate.getSchedule() != null) {
       final Schedule newSchedule = new Schedule()
@@ -215,7 +233,8 @@ public class ConnectionsHandler {
         .operationIds(connectionRead.getOperationIds())
         .syncCatalog(connectionRead.getSyncCatalog())
         .schedule(connectionRead.getSchedule())
-        .status(ConnectionStatus.DEPRECATED);
+        .status(ConnectionStatus.DEPRECATED)
+        .resourceRequirements(connectionRead.getResourceRequirements());
 
     updateConnection(connectionUpdate);
   }
@@ -241,7 +260,7 @@ public class ConnectionsHandler {
           .units(standardSync.getSchedule().getUnits());
     }
 
-    return new ConnectionRead()
+    final ConnectionRead connectionRead = new ConnectionRead()
         .connectionId(standardSync.getConnectionId())
         .sourceId(standardSync.getSourceId())
         .destinationId(standardSync.getDestinationId())
@@ -253,6 +272,17 @@ public class ConnectionsHandler {
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+
+    if (standardSync.getResourceRequirements() != null) {
+      connectionRead.resourceRequirements(new ResourceRequirements()
+          .cpu(standardSync.getResourceRequirements().getCpu())
+          .memory(standardSync.getResourceRequirements().getMemory()));
+    } else {
+      connectionRead.resourceRequirements(new ResourceRequirements()
+          .cpu(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpu())
+          .memory(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemory()));
+    }
+    return connectionRead;
   }
 
   private StandardSync.Status toPersistenceStatus(ConnectionStatus apiStatus) {

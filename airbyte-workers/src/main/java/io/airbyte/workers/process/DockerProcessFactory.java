@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -87,6 +88,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
+                        final ResourceRequirements resourceRequirements,
                         final String... args)
       throws WorkerException {
     try {
@@ -101,6 +103,8 @@ public class DockerProcessFactory implements ProcessFactory {
       for (Map.Entry<String, String> file : files.entrySet()) {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
+
+      // TODO convert resourceRequirements for docker
 
       final List<String> cmd =
           Lists.newArrayList(

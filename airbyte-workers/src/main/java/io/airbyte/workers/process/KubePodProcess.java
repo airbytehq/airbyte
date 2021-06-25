@@ -27,11 +27,14 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.config.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
@@ -51,6 +54,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -204,7 +208,12 @@ public class KubePodProcess extends Process {
         .build();
   }
 
-  private static Container getMain(String image, boolean usesStdin, String entrypoint, List<VolumeMount> mainVolumeMounts, String[] args)
+  private static Container getMain(String image,
+                                   boolean usesStdin,
+                                   String entrypoint,
+                                   List<VolumeMount> mainVolumeMounts,
+                                   ResourceRequirements resourceRequirements,
+                                   String[] args)
       throws IOException {
     var argsStr = String.join(" ", args);
     var entrypointWithArgs = entrypoint + " " + argsStr;
@@ -226,6 +235,9 @@ public class KubePodProcess extends Process {
         .withCommand("sh", "-c", mainCommand)
         .withWorkingDir(CONFIG_DIR)
         .withVolumeMounts(mainVolumeMounts)
+        .withResources(new ResourceRequirementsBuilder()
+            .withLimits(toResourceMap(resourceRequirements))
+            .build())
         .build();
   }
 
@@ -280,6 +292,7 @@ public class KubePodProcess extends Process {
                         boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypointOverride,
+                        ResourceRequirements resourceRequirements,
                         final String... args)
       throws IOException, InterruptedException {
     this.fabricClient = fabricClient;
@@ -328,8 +341,14 @@ public class KubePodProcess extends Process {
         .withMountPath(TERMINATION_DIR)
         .build();
 
-    Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
-    Container main = getMain(image, usesStdin, entrypoint, List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount), args);
+    Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));;
+    Container main = getMain(
+        image,
+        usesStdin,
+        entrypoint,
+        List.of(pipeVolumeMount, configVolumeMount, terminationVolumeMount),
+        resourceRequirements,
+        args);
 
     Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
@@ -578,6 +597,15 @@ public class KubePodProcess extends Process {
   @Override
   public int exitValue() {
     return getReturnCode(podDefinition);
+  }
+
+  private static Map<String, Quantity> toResourceMap(ResourceRequirements resourceRequirements) {
+    if (resourceRequirements != null) {
+      return Map.of(
+          "cpu", Quantity.parse(resourceRequirements.getCpu()),
+          "memory", Quantity.parse(resourceRequirements.getMemory()));
+    }
+    return Collections.emptyMap();
   }
 
 }

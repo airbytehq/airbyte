@@ -34,6 +34,7 @@ import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ReplicationAttemptSummary;
 import io.airbyte.config.ReplicationOutput;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -117,7 +118,7 @@ public interface SyncWorkflow {
                 .withDestinationConfiguration(syncInput.getDestinationConfiguration())
                 .withOperatorDbt(standardSyncOperation.getOperatorDbt());
 
-            dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, operatorDbtInput);
+            dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, syncInput.getResourceRequirements(), operatorDbtInput);
           } else {
             final String message = String.format("Unsupported operation type: %s", standardSyncOperation.getOperatorType());
             LOGGER.error(message);
@@ -243,12 +244,14 @@ public interface SyncWorkflow {
             sourceLauncherConfig.getJobId(),
             Math.toIntExact(sourceLauncherConfig.getAttemptId()),
             sourceLauncherConfig.getDockerImage(),
-            processFactory);
+            processFactory,
+            syncInput.getResourceRequirements());
         final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
             destinationLauncherConfig.getJobId(),
             Math.toIntExact(destinationLauncherConfig.getAttemptId()),
             destinationLauncherConfig.getDockerImage(),
-            processFactory);
+            processFactory,
+            syncInput.getResourceRequirements());
 
         // reset jobs use an empty source to induce resetting all data in destination.
         final AirbyteSource airbyteSource =
@@ -335,6 +338,7 @@ public interface SyncWorkflow {
     @ActivityMethod
     Void run(JobRunConfig jobRunConfig,
              IntegrationLauncherConfig destinationLauncherConfig,
+             ResourceRequirements resourceRequirements,
              OperatorDbtInput input);
 
   }
@@ -359,7 +363,10 @@ public interface SyncWorkflow {
     }
 
     @Override
-    public Void run(JobRunConfig jobRunConfig, IntegrationLauncherConfig destinationLauncherConfig, OperatorDbtInput input) {
+    public Void run(JobRunConfig jobRunConfig,
+                    IntegrationLauncherConfig destinationLauncherConfig,
+                    ResourceRequirements resourceRequirements,
+                    OperatorDbtInput input) {
 
       final Supplier<OperatorDbtInput> inputSupplier = () -> {
         validator.ensureAsRuntime(ConfigSchema.OPERATOR_DBT_INPUT, Jsons.jsonNode(input));
@@ -369,7 +376,7 @@ public interface SyncWorkflow {
       final TemporalAttemptExecution<OperatorDbtInput, Void> temporalAttemptExecution = new TemporalAttemptExecution<>(
           workspaceRoot,
           jobRunConfig,
-          getWorkerFactory(destinationLauncherConfig, jobRunConfig),
+          getWorkerFactory(destinationLauncherConfig, jobRunConfig, resourceRequirements),
           inputSupplier,
           new CancellationHandler.TemporalCancellationHandler());
 
@@ -377,10 +384,12 @@ public interface SyncWorkflow {
     }
 
     private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getWorkerFactory(IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                        JobRunConfig jobRunConfig) {
+                                                                                        JobRunConfig jobRunConfig,
+                                                                                        ResourceRequirements resourceRequirements) {
       return () -> new DbtTransformationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),
+          resourceRequirements,
           new DbtTransformationRunner(
               processFactory, NormalizationRunnerFactory.create(
                   destinationLauncherConfig.getDockerImage(),

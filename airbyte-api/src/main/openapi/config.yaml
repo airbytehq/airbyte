@@ -2000,6 +2000,8 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
     WebBackendConnectionCreate:
       allOf:
         - $ref: "#/components/schemas/ConnectionCreate"
@@ -2038,6 +2040,8 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
     WebBackendConnectionUpdate:
       allOf:
         - $ref: "#/components/schemas/ConnectionUpdate"
@@ -2087,6 +2091,8 @@ components:
           $ref: "#/components/schemas/ConnectionSchedule"
         status:
           $ref: "#/components/schemas/ConnectionStatus"
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
     ConnectionReadList:
       type: object
       required:
@@ -2572,6 +2578,14 @@ components:
           $ref: "#/components/schemas/ConnectionStateObject"
     ConnectionStateObject:
       type: object
+    ResourceRequirements:
+      description: optional resource requirements to run workers
+      type: object
+      properties:
+        cpu:
+          type: string
+        memory:
+          type: string
     # Web Backend
     WebBackendConnectionRead:
       type: object
@@ -2630,6 +2644,8 @@ components:
           $ref: "#/components/schemas/JobStatus"
         isSyncing:
           type: boolean
+        resourceRequirements:
+          $ref: "#/components/schemas/ResourceRequirements"
     WebBackendConnectionReadList:
       type: object
       required:

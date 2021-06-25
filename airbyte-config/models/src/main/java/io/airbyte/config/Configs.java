@@ -67,6 +67,10 @@ public interface Configs {
 
   String getKubeNamespace();
 
+  String getCpuResourceRequirement();
+
+  String getMemoryResourceRequirement();
+
   // The following methods retrieve logging related information.
   String getS3LogBucket();
 
