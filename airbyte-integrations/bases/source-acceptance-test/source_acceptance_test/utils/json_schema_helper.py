@@ -65,7 +65,7 @@ class JsonSchemaHelper:
 
     @staticmethod
     def parse_value(value: Any, format_: Set[str]):
-        if format_.intersection({"datetime", "date-time"}):
+        if format_.intersection({"datetime", "date-time", "date"}):
             if value is None and "null" not in format_:
                 raise ValueError(f"Invalid field format. Value: {value}. Format: {format_}")
             return pendulum.parse(value)
