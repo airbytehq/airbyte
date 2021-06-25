@@ -70,13 +70,15 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 
 ### Destinations
 | Connector | Grade |
-|----|----|----|
+|----|----|
 |[BigQuery](./destinations/bigquery.md)| Certified |
+|[Google Pubsub](./destinations/pubsub.md)| Alpha |
 |[Local CSV](./destinations/local-csv.md)| Certified |
 |[Local JSON](./destinations/local-json.md)| Certified |
 |[MeiliSearch](./destinations/meilisearch.md)| Beta |
-|[MySQL](./destinations/mysql.md)| Certified |
+|[MySQL](./destinations/mysql.md)| Alpha |
+|[Oracle](./destinations/oracle.md)| Alpha |
 |[Postgres](./destinations/postgres.md)| Certified |
 |[Redshift](./destinations/redshift.md)| Certified |
+|[SQL Server (MSSQL)](./destinations/mssql.md)| Alpha |
 |[Snowflake](./destinations/snowflake.md)| Certified |
-|[Oracle](./destinations/oracle.md)| Alpha |
