@@ -40,6 +40,7 @@ import io.airbyte.api.model.JobRead;
 import io.airbyte.api.model.JobReadList;
 import io.airbyte.api.model.JobWithAttemptsRead;
 import io.airbyte.api.model.LogRead;
+import io.airbyte.api.model.Pagination;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig;
@@ -146,8 +147,7 @@ public class JobHistoryHandlerTest {
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
           .configId(JOB_CONFIG_ID)
-          .pagesize(pagesize)
-          .rowOffset(rowOffset);
+          .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
       final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
@@ -186,8 +186,7 @@ public class JobHistoryHandlerTest {
       final JobListRequestBody requestBody = new JobListRequestBody()
           .configTypes(List.of(CONFIG_TYPE_FOR_API, JobConfigType.SYNC, JobConfigType.DISCOVER_SCHEMA))
           .configId(JOB_CONFIG_ID)
-          .pagesize(pagesize)
-          .rowOffset(rowOffset);
+          .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
       final JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var firstJobWithAttemptRead =
