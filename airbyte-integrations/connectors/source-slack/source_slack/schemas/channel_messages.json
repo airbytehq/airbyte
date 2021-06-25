@@ -184,8 +184,7 @@
       "type": ["null", "string"]
     },
     "ts": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "type": {
       "type": ["null", "string"]
