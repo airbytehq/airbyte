@@ -50,4 +50,9 @@ public interface CloudLogs {
    */
   List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException;
 
+  /**
+   * @return true if configuration is not set
+   */
+  boolean hasEmptyConfigs(Configs configs);
+
 }

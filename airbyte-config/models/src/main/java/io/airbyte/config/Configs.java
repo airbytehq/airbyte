@@ -65,6 +65,8 @@ public interface Configs {
 
   Set<Integer> getTemporalWorkerPorts();
 
+  String getKubeNamespace();
+
   // The following methods retrieve logging related information.
   String getS3LogBucket();
 
