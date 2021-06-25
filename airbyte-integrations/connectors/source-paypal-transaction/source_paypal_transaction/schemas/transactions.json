@@ -1,217 +1,217 @@
 {
-  "$schema": "http://json-schema.org/schema#",
-  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
   "properties": {
     "transaction_info": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "paypal_account_id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "transaction_id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "transaction_event_code": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "transaction_initiation_date": {
-          "type": "datetime"
+          "type": ["null", "datetime"]
         },
         "transaction_updated_date": {
-          "type": "datetime"
+          "type": ["null", "datetime"]
         },
         "transaction_amount": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "currency_code": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "value": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "fee_amount": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "currency_code": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "value": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "insurance_amount": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "currency_code": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "value": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "shipping_amount": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "currency_code": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "value": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "shipping_discount_amount": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "currency_code": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "value": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "transaction_status": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "transaction_subject": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "transaction_note": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "invoice_id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "custom_field": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "protection_eligibility": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "payer_info": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "account_id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "email_address": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "address_status": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "payer_status": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "payer_name": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "given_name": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "surname": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "alternate_full_name": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         },
         "country_code": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "shipping_info": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "address": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "line1": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "line2": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "city": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "country_code": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "postal_code": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           }
         }
       }
     },
     "cart_info": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "item_details": {
           "type": "array",
           "items": {
-            "type": "object",
+            "type": ["null", "object"],
             "properties": {
               "item_code": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "item_name": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "item_description": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "item_quantity": {
-                "type": "string"
+                "type": ["null", "string"]
               },
               "item_unit_price": {
-                "type": "object",
+                "type": ["null", "object"],
                 "properties": {
                   "currency_code": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "value": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   }
                 }
               },
               "item_amount": {
-                "type": "object",
+                "type": ["null", "object"],
                 "properties": {
                   "currency_code": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   },
                   "value": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   }
                 }
               },
               "tax_amounts": {
                 "type": "array",
                 "items": {
-                  "type": "object",
+                  "type": ["null", "object"],
                   "properties": {
                     "tax_amount": {
-                      "type": "object",
+                      "type": ["null", "object"],
                       "properties": {
                         "currency_code": {
-                          "type": "string"
+                          "type": ["null", "string"]
                         },
                         "value": {
-                          "type": "string"
+                          "type": ["null", "string"]
                         }
                       }
                     }
@@ -219,6 +219,67 @@
                 }
               },
               "total_item_amount": {
+                "type": ["null", "object"],
+                "properties": {
+                  "currency_code": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "invoice_number": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "store_info": {
+      "type": "object",
+      "properties": {
+        "store_id": {
+          "type": ["null", "string"]
+        },
+        "terminal_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "auction_info": {
+      "type": "object",
+      "properties": {
+        "auction_site": {
+          "type": ["null", "string"]
+        },
+        "auction_item_site": {
+          "type": ["null", "string"]
+        },
+        "auction_buyer_id": {
+          "type": ["null", "string"]
+        },
+        "auction_closing_date": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "incentive_info": {
+      "type": "object",
+      "properties": {
+        "incentive_details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "incentive_type": {
+                "type": ["null", "string"]
+              },
+              "incentive_code": {
+                "type": ["null", "string"]
+              },
+              "incentive_amount": {
                 "type": "object",
                 "properties": {
                   "currency_code": {
@@ -229,22 +290,13 @@
                   }
                 }
               },
-              "invoice_number": {
-                "type": "string"
+              "incentive_program_code": {
+                "type": ["null", "string"]
               }
             }
           }
         }
       }
-    },
-    "store_info": {
-      "type": "object"
-    },
-    "auction_info": {
-      "type": "object"
-    },
-    "incentive_info": {
-      "type": "object"
     }
   }
 }

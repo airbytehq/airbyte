@@ -199,7 +199,7 @@ class Transactions(PaypalTransactionStream):
     """
 
     data_field = "transaction_details"
-    primary_key = ["transaction_info", "transaction_id"]
+    primary_key = [["transaction_info", "transaction_id"]]
     cursor_field = ["transaction_info", "transaction_initiation_date"]
 
     start_date_max = {"hours": 36}  # this limit is found experimentally
