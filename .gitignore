@@ -21,6 +21,7 @@ __pycache__
 .venv
 .mypy_cache
 .ipynb_checkpoints
+.pytest_
 
 # dbt
 profiles.yml
