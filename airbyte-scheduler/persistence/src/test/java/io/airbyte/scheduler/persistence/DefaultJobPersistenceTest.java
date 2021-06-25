@@ -806,10 +806,25 @@ class DefaultJobPersistenceTest {
 
       final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), pagesize, offset);
       assertEquals(actualList.size(), pagesize);
-      // Cannot reliably test offset because creating a hundred rows at once results in
-      // slightly varying ordering inside the database when sorted by timestamp and id, different from
-      // enqueue calls.
-      // assertEquals(ids.get(ids.size() - offset), actualList.get(0).getId());
+      assertEquals(ids.get(ids.size() - 1 - offset), actualList.get(0).getId());
+    }
+
+    @Test
+    @DisplayName("Should return the results in the correct sort order")
+    public void testListJobsSortsDescending() throws IOException {
+      List<Long> ids = new ArrayList<Long>();
+      for (int i = 0; i < 100; i++) {
+        // These have strictly the same created_at due to the setup() above, so should come back sorted by
+        // id desc instead.
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
+        ids.add(jobId);
+      }
+      int pagesize = 200;
+      int offset = 0;
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), pagesize, offset);
+      for (int i = 0; i < 100; i++) {
+        assertEquals(ids.get(ids.size() - (i + 1)), actualList.get(i).getId(), "Job ids should have been in order but weren't.");
+      }
     }
 
     @Test
