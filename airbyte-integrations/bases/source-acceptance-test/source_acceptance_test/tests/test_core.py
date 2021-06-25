@@ -24,6 +24,7 @@
 
 
 from collections import Counter, defaultdict
+from functools import reduce
 from typing import Any, List, Mapping, MutableMapping
 
 import pytest
@@ -84,6 +85,19 @@ class TestDiscovery(BaseTest):
         #         assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
 
 
+def primary_keys_for_records(streams, records):
+    streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
+    for stream in streams_with_primary_key:
+        stream_records = [r for r in records if r.stream == stream.stream.name]
+        for stream_record in stream_records:
+            pk_values = {}
+            for pk_path in stream.stream.source_defined_primary_key:
+                pk_value = reduce(lambda data, key: data.get(key) if isinstance(data, dict) else None, pk_path, stream_record.data)
+                pk_values[tuple(pk_path)] = pk_value
+
+            yield pk_values, stream_record
+
+
 @pytest.mark.default_timeout(300)
 class TestBasicRead(BaseTest):
     def test_read(
@@ -103,6 +117,12 @@ class TestBasicRead(BaseTest):
         streams_without_records = all_streams - streams_with_records
 
         assert records, "At least one record should be read using provided catalog"
+
+        for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
+            for pk_path, pk_value in pks.items():
+                assert pk_value is not None, (
+                    f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
+                )
 
         if inputs.validate_output_from_all_streams:
             assert (
