@@ -135,13 +135,12 @@ public class MssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues(null, "0", "255")
             .build());
 
-    // TODO BUG Returns values true, false instead of 1 and 0.
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            // .addInsertValues("null", "0", "1", "'true'", "'false'")
-            // .addExpectedValues(null, "0", "1", "1", "0")
+            .addInsertValues("null", "0", "1", "'true'", "'false'")
+            .addExpectedValues(null, "false", "true", "true", "false")
             .addInsertValues("null")
             .addNullExpectedValue()
             .build());
