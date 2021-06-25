@@ -21,14 +21,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-import logging
-from typing import List, Iterator, Tuple
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, AirbyteRecordMessage
+import logging
+from typing import Iterator, List, Tuple
+
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft4Validator, ValidationError
 
 
-def verify_records_schema(records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog) -> Iterator[Tuple[AirbyteRecordMessage, List[ValidationError]]]:
+def verify_records_schema(
+    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog
+) -> Iterator[Tuple[AirbyteRecordMessage, List[ValidationError]]]:
     """Check records against their schemas from the catalog, yield error messages"""
     validators = {}
     for stream in catalog.streams:
