@@ -99,7 +99,7 @@
     * [MySQL](integrations/destinations/mysql.md)
     * [Oracle DB](integrations/destinations/oracle.md)
     * [Postgres](integrations/destinations/postgres.md)
-    * [PubSub](integrations/destinations/pubsub.md)
+    * [Google PubSub](integrations/destinations/pubsub.md)
     * [Redshift](integrations/destinations/redshift.md)
     * [S3](integrations/destinations/s3.md)
     * [Snowflake](integrations/destinations/snowflake.md)

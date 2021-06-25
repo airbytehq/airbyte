@@ -87,3 +87,4 @@ Once you've configured PubSub as a destination, delete the Service Account Key f
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
+| 0.1.0 | June 24, 2021 | [#4339](https://github.com/airbytehq/airbyte/pull/4339)| Initial release | 

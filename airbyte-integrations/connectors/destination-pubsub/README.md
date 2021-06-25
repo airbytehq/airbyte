@@ -17,5 +17,5 @@ As a community contributor, you will need access to a GCP project and BigQuery t
 
 ## Airbyte Employee
 
-1. Access the `PubSub Integration Test User` secret on Rippling under the `Engineering` folder
+1. Access the `google pubsub test credentials.json` secret on Lastpass under the `shared-integration-test` folder
 1. Create a file with the contents at `secrets/credentials.json`
