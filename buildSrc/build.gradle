@@ -7,5 +7,5 @@ repositories {
 }
 
 dependencies {
-    implementation 'ru.vyarus:gradle-use-python-plugin:2.2.0'
+    implementation 'ru.vyarus:gradle-use-python-plugin:2.3.0'
 }

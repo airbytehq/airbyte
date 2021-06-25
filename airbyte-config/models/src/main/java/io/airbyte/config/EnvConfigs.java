@@ -25,6 +25,7 @@
 package io.airbyte.config;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.config.helpers.LogHelpers;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
@@ -57,6 +58,7 @@ public class EnvConfigs implements Configs {
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
+  private static final String KUBE_NAMESPACE = "KUBE_NAMESPACE";
 
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
@@ -175,6 +177,31 @@ public class EnvConfigs implements Configs {
     return Arrays.stream(getEnvOrDefault(TEMPORAL_WORKER_PORTS, "").split(","))
         .map(Integer::valueOf)
         .collect(Collectors.toSet());
+  }
+
+  @Override
+  public String getKubeNamespace() {
+    return getEnvOrDefault(KUBE_NAMESPACE, "default");
+  }
+
+  @Override
+  public String getS3LogBucket() {
+    return getEnsureEnv(LogHelpers.S3_LOG_BUCKET);
+  }
+
+  @Override
+  public String getS3LogBucketRegion() {
+    return getEnsureEnv(LogHelpers.S3_LOG_BUCKET_REGION);
+  }
+
+  @Override
+  public String getAwsAccessKey() {
+    return getEnsureEnv(LogHelpers.AWS_ACCESS_KEY_ID);
+  }
+
+  @Override
+  public String getAwsSecretAccessKey() {
+    return getEnsureEnv(LogHelpers.AWS_SECRET_ACCESS_KEY);
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {
