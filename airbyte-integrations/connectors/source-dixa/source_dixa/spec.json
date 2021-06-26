@@ -19,7 +19,7 @@
         "examples": ["2021-06-25"]
       },
       "batch_size": {
-        "type": "number",
+        "type": "string",
         "description": "Number of days to batch into one request. Max 31.",
         "pattern": "^[0-9]{1,2}$",
         "examples": [1, 31],

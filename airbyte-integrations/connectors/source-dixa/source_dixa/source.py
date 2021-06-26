@@ -124,7 +124,7 @@ class SourceDixa(AbstractSource):
                     "created_before": (
                         datetime.strptime(
                             config["start_date"], SourceDixa.date_format
-                        ) + timedelta(days=config["batch_size"])
+                        ) + timedelta(days=int(config["batch_size"]))
                     ).strftime(SourceDixa.date_format)
                 },
                 auth=("bearer", config["api_token"])
@@ -141,7 +141,7 @@ class SourceDixa(AbstractSource):
             ConversationExport(
                 authenticator=auth,
                 start_date=start_date,
-                batch_size=config["batch_size"],
+                batch_size=int(config["batch_size"]),
                 logger=AirbyteLogger()
             )
         ]
