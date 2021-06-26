@@ -167,7 +167,7 @@ module.exports = function (plop) {
       {
         type: 'input',
         name: 'name',
-        message: 'Destination name, without the "destination-" prefix e.g: "google-analytics"',
+        message: 'Destination name, without the "destination-" prefix e.g: "google-pubsub"',
       },
       {
         type: 'input',
