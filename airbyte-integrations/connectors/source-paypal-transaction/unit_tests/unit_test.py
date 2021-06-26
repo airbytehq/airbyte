@@ -96,7 +96,7 @@ def test_transactions_stream_slices():
 
     t.start_date = now() - timedelta(**t.start_date_max) - timedelta(hours=2)
     stream_slices = t.stream_slices(sync_mode="any")
-    assert 2 == len(stream_slices)
+    assert 1 == len(stream_slices)
 
     t.start_date = now() - timedelta(**t.start_date_max) - timedelta(days=1)
     stream_slices = t.stream_slices(sync_mode="any")
@@ -104,29 +104,31 @@ def test_transactions_stream_slices():
 
     t.start_date = now() - timedelta(**t.start_date_max) - timedelta(days=1, hours=2)
     stream_slices = t.stream_slices(sync_mode="any")
-    assert 3 == len(stream_slices)
+    assert 2 == len(stream_slices)
 
     t.start_date = now() - timedelta(**t.start_date_max) - timedelta(days=30, minutes=1)
     stream_slices = t.stream_slices(sync_mode="any")
-    assert 32 == len(stream_slices)
+    assert 31 == len(stream_slices)
 
     t.start_date = isoparse("2021-06-01T10:00:00+00:00")
     t.end_date = isoparse("2021-06-04T12:00:00+00:00")
     stream_slices = t.stream_slices(sync_mode="any")
     assert [
-        {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T00:00:00+00:00"},
-        {"start_date": "2021-06-02T00:00:00+00:00", "end_date": "2021-06-03T00:00:00+00:00"},
-        {"start_date": "2021-06-03T00:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
+        {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T10:00:00+00:00"},
+        {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
+        {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-04T10:00:00+00:00"},
+        {"start_date": "2021-06-04T10:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
     ] == stream_slices
 
     stream_slices = t.stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
     assert [
-        {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T00:00:00+00:00"},
-        {"start_date": "2021-06-03T00:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
+        {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
+        {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-04T10:00:00+00:00"},
+        {"start_date": "2021-06-04T10:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
     ] == stream_slices
 
     stream_slices = t.stream_slices(sync_mode="any", stream_state={"date": "2021-06-04T10:00:00+00:00"})
-    assert [] == stream_slices
+    assert [{"start_date": "2021-06-04T10:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"}] == stream_slices
 
 
 def test_balances_stream_slices():
@@ -174,4 +176,4 @@ def test_balances_stream_slices():
     assert [{"start_date": "2021-06-03T12:00:00+00:00"}] == stream_slices
 
     stream_slices = b.stream_slices(sync_mode="any", stream_state={"date": "2021-06-03T12:00:00+00:00"})
-    assert [] == stream_slices
+    assert [{"start_date": "2021-06-03T12:00:00+00:00"}] == stream_slices
