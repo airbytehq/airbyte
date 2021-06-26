@@ -44,7 +44,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.26.1-alpha --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.26.4-alpha --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```
@@ -69,11 +69,13 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    docker volume rm $(docker volume ls -q | grep airbyte)
    ```
 
+   5.b. (Skip if you are using default database `airbyte-db`) If you [deployed an external database](configuring-airbyte-db.md) to be used by Airbyte, you might need to drop all tables from the database and re-initialize them from scratch using the latest updated [schema script](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/schema.sql) (replace "airbyte" and "docker" with the appropriate values). If no changes were made to the SQL tables since the last Airbyte version you were using, you can safely skip this step.
+
 6. Upgrade the docker instance to new version.
 
-   i. If you are running Airbyte from a cloned version of the Airbyte repo and want to use the current most recent stable version, just `git pull`.
+   i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
 
-   ii. If you are running Airbyte from a `.env`, edit the `VERSION` field in that file to be the desired version \(make sure your docker-compose.yaml is mirroring the [latest version](https://github.com/airbytehq/airbyte/tree/4f03fc460350cbf1e8613853ab13fa6db14c0d06/docker-compose.yaml) if you encounter any problems\).
+   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}` to pull the latest versions and overwrite both files.
 
 7. Bring Airbyte back online.
 
@@ -84,6 +86,33 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
 8. Complete Preferences section. In the subsequent setup page click "Skip Onboarding". Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Import. This will prompt you to upload the migrated archive to Airbyte. After this completes, your upgraded Airbyte instance will now be running with all of your original configuration.
 
 This step will throw an exception if the data you are trying to upload does not match the version of Airbyte that is running.
+
+## Upgrading \(K8s\)
+
+This process is similar to the Docker upgrade process with several changes to account for the Kubernetes resources.
+
+1. Follow **Step 3** in the [Docker upgrade process](#Upgrading-\(Docker\)) to export your current configurations as an archive.
+
+2. Follow **Step 4**. in the [Docker upgrade process](#Upgrading-\(Docker\)) process to run the migration on your archive.
+
+3. Turn off Airbyte fully and **\(see warning\)** delete the existing Airbyte Kubernetes volumes.
+
+   _WARNING: Make sure you have already exported your data \(step 1\). This command is going to delete your data in Kubernetes, you may lose your airbyte configurations!_
+
+   This is where all airbyte configurations are saved. Those configuration files need to be upgraded and restored with the proper version in the following steps.
+
+   ```bash
+   # Careful, this is deleting data!
+   kubectl delete -k kube/overlays/stable
+   ```
+4. Follow **Step 6** in the [Docker upgrade process](#Upgrading-\(Docker\)) to check out the most recent version of Airbyte. Although it is possible to
+   migrate by changing the `.env` file in the kube overlay directory, this is not recommended as it does not capture any changes to the Kubernetes manifests.
+
+5. Bring Airbyte back up.
+   ```bash
+   kubectl apply -k kube/overlays/stable
+   ```
+6. Follow **Step 8** in the [Docker upgrade process](#Upgrading-\(Docker\)) to upload your migrated Archive and restore your configuration and data.
 
 ## API Instruction
 
@@ -106,8 +135,3 @@ Here is an example of what this request might look like assuming that the migrat
 ```bash
 curl -H "Content-Type: application/x-gzip" -X POST localhost:8000/api/v1/deployment/import --data-binary @/tmp/airbyte_archive_migrated.tar.gz
 ```
-
-## Upgrading \(K8s\)
-
-_coming soon_
-

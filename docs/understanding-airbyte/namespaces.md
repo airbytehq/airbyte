@@ -16,7 +16,13 @@ If the Destination does not support namespaces, the [namespace field](https://gi
 
 ## Destination namespace configuration
 
-As part of the [connections sync settings](connections/README.md), it is possible to configure the namespace used by destination connectors. Available options are:
+As part of the [connections sync settings](connections/README.md), it is possible to configure the namespace used by:
+1. destination connectors: to store the `_airbyte_raw_*` tables.
+2. basic normalization: to store the final normalized tables.
+
+Note that custom transformation outputs are not affected by the namespace settings from Airbyte: It is up to the configuration of the custom dbt project, and how it is written to handle its [custom schemas](https://docs.getdbt.com/docs/building-a-dbt-project/building-models/using-custom-schemas). The default target schema for dbt in this case, will always be the destination namespace.
+
+Available options for namespace configurations are:
 
 ### - Mirror source structure
 
