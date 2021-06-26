@@ -26,6 +26,7 @@ from datetime import date, datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -39,15 +40,20 @@ class DixaStream(HttpStream, ABC):
     url_base = "https://exports.dixa.io/v1/"
     date_format = DATE_FORMAT
 
-    def __init__(self, start_date: date, batch_size: int, **kwargs) -> None:
+    def __init__(self, start_date: date, batch_size: int, logger: AirbyteLogger, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = start_date
         self.batch_size = batch_size
+        self.logger = logger
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        self.logger.info(
+            f"Sending request with created_after={stream_slice['created_after']} and "
+            f"created_before={stream_slice['created_before']}"
+        )
         return stream_slice
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -135,6 +141,7 @@ class SourceDixa(AbstractSource):
             ConversationExport(
                 authenticator=auth,
                 start_date=start_date,
-                batch_size=config["batch_size"]
+                batch_size=config["batch_size"],
+                logger=AirbyteLogger()
             )
         ]
