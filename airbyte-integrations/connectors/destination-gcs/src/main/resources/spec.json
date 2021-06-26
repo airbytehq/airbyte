@@ -31,6 +31,7 @@
         "examples": ["airbyte_sync"]
       },
       "gcs_bucket_path": {
+        "title": "GCS Bucket path",
         "description": "Directory under the GCS bucket where data will be written.",
         "type": "string",
         "examples": ["data_sync/test"]

@@ -26,9 +26,9 @@ package io.airbyte.integrations.destination.gcs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public interface GCSFormatConfig {
+public interface GcsFormatConfig {
 
-  GCSFormat getFormat();
+  GcsFormat getFormat();
 
   static String withDefault(JsonNode config, String property, String defaultValue) {
     JsonNode value = config.get(property);

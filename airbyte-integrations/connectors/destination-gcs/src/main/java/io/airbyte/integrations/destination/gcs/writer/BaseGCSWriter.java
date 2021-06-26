@@ -29,10 +29,10 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import io.airbyte.integrations.destination.gcs.GCSDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GCSDestinationConstants;
-import io.airbyte.integrations.destination.gcs.GCSFormat;
-import io.airbyte.integrations.destination.gcs.util.GCSOutputPathHelper;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConstants;
+import io.airbyte.integrations.destination.gcs.GcsFormat;
+import io.airbyte.integrations.destination.gcs.util.GcsOutputPathHelper;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -50,24 +50,24 @@ import org.slf4j.LoggerFactory;
  * <li>Create shared instance variables.</li>
  * <li>Create the bucket and prepare the bucket path.</li>
  */
-public abstract class BaseGCSWriter implements GCSWriter {
+public abstract class BaseGcsWriter implements GcsWriter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseGCSWriter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseGcsWriter.class);
 
-  protected final GCSDestinationConfig config;
+  protected final GcsDestinationConfig config;
   protected final AmazonS3 s3Client;
   protected final AirbyteStream stream;
   protected final DestinationSyncMode syncMode;
   protected final String outputPrefix;
 
-  protected BaseGCSWriter(GCSDestinationConfig config,
+  protected BaseGcsWriter(GcsDestinationConfig config,
                          AmazonS3 s3Client,
                          ConfiguredAirbyteStream configuredStream) {
     this.config = config;
     this.s3Client = s3Client;
     this.stream = configuredStream.getStream();
     this.syncMode = configuredStream.getDestinationSyncMode();
-    this.outputPrefix = GCSOutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
+    this.outputPrefix = GcsOutputPathHelper.getOutputPrefix(config.getBucketPath(), stream);
   }
 
   /**
@@ -104,8 +104,8 @@ public abstract class BaseGCSWriter implements GCSWriter {
   }
 
   // Filename: <upload-date>_<upload-millis>_0.<format-extension>
-  public static String getOutputFilename(Timestamp timestamp, GCSFormat format) {
-    DateFormat formatter = new SimpleDateFormat(GCSDestinationConstants.YYYY_MM_DD_FORMAT_STRING);
+  public static String getOutputFilename(Timestamp timestamp, GcsFormat format) {
+    DateFormat formatter = new SimpleDateFormat(GcsDestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
         "%s_%d_0.%s",

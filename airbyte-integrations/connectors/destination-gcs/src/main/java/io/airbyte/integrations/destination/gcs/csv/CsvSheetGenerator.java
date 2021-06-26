@@ -25,13 +25,13 @@
 package io.airbyte.integrations.destination.gcs.csv;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.gcs.csv.GCSCsvFormatConfig.Flattening;
+import io.airbyte.integrations.destination.gcs.csv.GcsCsvFormatConfig.Flattening;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * This class takes case of the generation of the CSV data sheet, including the header row and the
+ * This class takes care of the generation of the CSV data sheet, including the header row and the
  * data row.
  */
 public interface CsvSheetGenerator {
@@ -42,7 +42,7 @@ public interface CsvSheetGenerator {
 
   final class Factory {
 
-    public static CsvSheetGenerator create(JsonNode jsonSchema, GCSCsvFormatConfig formatConfig) {
+    public static CsvSheetGenerator create(JsonNode jsonSchema, GcsCsvFormatConfig formatConfig) {
       if (formatConfig.getFlattening() == Flattening.NO) {
         return new NoFlatteningSheetGenerator();
       } else if (formatConfig.getFlattening() == Flattening.ROOT_LEVEL) {

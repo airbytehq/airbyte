@@ -24,14 +24,14 @@
 
 package io.airbyte.integrations.destination.gcs;
 
-public enum GCSFormat {
+public enum GcsFormat {
 
   CSV("csv"),
   PARQUET("parquet");
 
   private final String fileExtension;
 
-  GCSFormat(String fileExtension) {
+  GcsFormat(String fileExtension) {
     this.fileExtension = fileExtension;
   }
 

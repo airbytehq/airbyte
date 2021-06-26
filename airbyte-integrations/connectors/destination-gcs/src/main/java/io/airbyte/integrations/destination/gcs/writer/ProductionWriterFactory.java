@@ -25,12 +25,12 @@
 package io.airbyte.integrations.destination.gcs.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.integrations.destination.gcs.GCSDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GCSFormat;
-import io.airbyte.integrations.destination.gcs.csv.GCSCsvWriter;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsFormat;
+import io.airbyte.integrations.destination.gcs.csv.GcsCsvWriter;
 import io.airbyte.integrations.destination.gcs.parquet.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.gcs.parquet.JsonToAvroSchemaConverter;
-import io.airbyte.integrations.destination.gcs.parquet.GCSParquetWriter;
+import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
@@ -38,21 +38,21 @@ import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProductionWriterFactory implements GCSWriterFactory {
+public class ProductionWriterFactory implements GcsWriterFactory {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(ProductionWriterFactory.class);
 
   @Override
-  public GCSWriter create(GCSDestinationConfig config,
+  public GcsWriter create(GcsDestinationConfig config,
                          AmazonS3 s3Client,
                          ConfiguredAirbyteStream configuredStream,
                          Timestamp uploadTimestamp)
       throws Exception {
-    GCSFormat format = config.getFormatConfig().getFormat();
-    if (format == GCSFormat.CSV) {
-      return new GCSCsvWriter(config, s3Client, configuredStream, uploadTimestamp);
+        GcsFormat format = config.getFormatConfig().getFormat();
+    if (format == GcsFormat.CSV) {
+      return new GcsCsvWriter(config, s3Client, configuredStream, uploadTimestamp);
     }
-    if (format == GCSFormat.PARQUET) {
+    if (format == GcsFormat.PARQUET) {
       AirbyteStream stream = configuredStream.getStream();
 
       JsonToAvroSchemaConverter schemaConverter = new JsonToAvroSchemaConverter();
@@ -64,7 +64,7 @@ public class ProductionWriterFactory implements GCSWriterFactory {
         LOGGER.info("The following field names will be standardized: {}", nameUpdater);
       }
 
-      return new GCSParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
+      return new GcsParquetWriter(config, s3Client, configuredStream, uploadTimestamp, avroSchema, nameUpdater);
     }
 
     throw new RuntimeException("Unexpected S3 destination format: " + format);

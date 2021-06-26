@@ -26,42 +26,38 @@ package io.airbyte.integrations.destination.gcs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class GCSDestinationConfig {
+public class GcsDestinationConfig {
 
   private final String bucketName;
   private final String bucketPath;
   private final String bucketRegion;
   private final String accessKeyId;
   private final String secretAccessKey;
-  private final String projectId;
-  private final GCSFormatConfig formatConfig;
+  private final GcsFormatConfig formatConfig;
 
-  public GCSDestinationConfig(
+  public GcsDestinationConfig(
                              String bucketName,
                              String bucketPath,
                              String bucketRegion,
                              String accessKeyId,
                              String secretAccessKey,
-                             String projectId,
-                             GCSFormatConfig formatConfig) {
+                             GcsFormatConfig formatConfig) {
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
     this.bucketRegion = bucketRegion;
     this.accessKeyId = accessKeyId;
     this.secretAccessKey = secretAccessKey;
-    this.projectId = projectId;
     this.formatConfig = formatConfig;
   }
 
-  public static GCSDestinationConfig getGCSDestinationConfig(JsonNode config) {
-    return new GCSDestinationConfig(
+  public static GcsDestinationConfig getGcsDestinationConfig(JsonNode config) {
+    return new GcsDestinationConfig(
         config.get("gcs_bucket_name").asText(),
         config.get("gcs_bucket_path").asText(),
         config.get("gcs_bucket_region").asText(),
         config.get("access_key_id").asText(),
         config.get("secret_access_key").asText(),
-        config.get("project_id").asText(),
-        GCSFormatConfigs.getGCSFormatConfig(config));
+        GcsFormatConfigs.getGcsFormatConfig(config));
   }
 
   public String getBucketName() {
@@ -83,12 +79,8 @@ public class GCSDestinationConfig {
   public String getSecretAccessKey() {
     return secretAccessKey;
   }
-
-  public String getProjectID() {
-    return projectId;
-  }
   
-  public GCSFormatConfig getFormatConfig() {
+  public GcsFormatConfig getFormatConfig() {
     return formatConfig;
   }
 

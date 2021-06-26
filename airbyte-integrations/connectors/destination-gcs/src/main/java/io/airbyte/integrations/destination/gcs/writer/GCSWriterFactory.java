@@ -25,16 +25,16 @@
 package io.airbyte.integrations.destination.gcs.writer;
 
 import com.amazonaws.services.s3.AmazonS3;
-import io.airbyte.integrations.destination.gcs.GCSDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.sql.Timestamp;
 
 /**
- * Create different {@link GCSWriterFactory} based on {@link GCSDestinationConfig}.
+ * Create different {@link GcsWriterFactory} based on {@link GcsDestinationConfig}.
  */
-public interface GCSWriterFactory {
+public interface GcsWriterFactory {
 
-  GCSWriter create(GCSDestinationConfig config,
+  GcsWriter create(GcsDestinationConfig config,
                   AmazonS3 s3Client,
                   ConfiguredAirbyteStream configuredStream,
                   Timestamp uploadTimestamp)

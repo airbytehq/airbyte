@@ -29,23 +29,23 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * {@link GCSWriter} is responsible for writing Airbyte stream data to an S3 location in a specific
+ * {@link GcsWriter} is responsible for writing Airbyte stream data to an S3 location in a specific
  * format.
  */
-public interface GCSWriter {
+public interface GcsWriter {
 
   /**
-   * Prepare an GCS writer for the stream.
+   * Prepare an Gcs writer for the stream.
    */
   void initialize() throws IOException;
 
   /**
-   * Write an Airbyte record message to an GCS object.
+   * Write an Airbyte record message to an Gcs object.
    */
   void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException;
 
   /**
-   * Close the GCS writer for the stream.
+   * Close the Gcs writer for the stream.
    */
   void close(boolean hasFailed) throws IOException;
 

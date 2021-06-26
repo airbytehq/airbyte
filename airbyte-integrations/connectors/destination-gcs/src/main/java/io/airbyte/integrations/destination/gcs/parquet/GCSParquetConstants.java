@@ -26,7 +26,7 @@ package io.airbyte.integrations.destination.gcs.parquet;
 
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
-public class GCSParquetConstants {
+public class GcsParquetConstants {
 
   // Parquet writer
   public static final CompressionCodecName DEFAULT_COMPRESSION_CODEC = CompressionCodecName.UNCOMPRESSED;

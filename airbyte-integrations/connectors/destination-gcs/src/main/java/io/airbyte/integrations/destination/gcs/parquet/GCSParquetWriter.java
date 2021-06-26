@@ -30,10 +30,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.gcs.GCSDestinationConfig;
-import io.airbyte.integrations.destination.gcs.GCSFormat;
-import io.airbyte.integrations.destination.gcs.writer.BaseGCSWriter;
-import io.airbyte.integrations.destination.gcs.writer.GCSWriter;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.GcsFormat;
+import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
+import io.airbyte.integrations.destination.gcs.writer.GcsWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -54,9 +54,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-public class GCSParquetWriter extends BaseGCSWriter implements GCSWriter {
+public class GcsParquetWriter extends BaseGcsWriter implements GcsWriter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GCSParquetWriter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GcsParquetWriter.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
   private static final ObjectWriter WRITER = MAPPER.writer();
 
@@ -65,7 +65,7 @@ public class GCSParquetWriter extends BaseGCSWriter implements GCSWriter {
   private final ParquetWriter<Record> parquetWriter;
   private final JsonAvroConverter converter = new JsonAvroConverter();
 
-  public GCSParquetWriter(GCSDestinationConfig config,
+  public GcsParquetWriter(GcsDestinationConfig config,
                          AmazonS3 s3Client,
                          ConfiguredAirbyteStream configuredStream,
                          Timestamp uploadTimestamp,
@@ -76,17 +76,17 @@ public class GCSParquetWriter extends BaseGCSWriter implements GCSWriter {
     this.schema = schema;
     this.nameUpdater = nameUpdater;
 
-    String outputFilename = BaseGCSWriter.getOutputFilename(uploadTimestamp, GCSFormat.PARQUET);
+    String outputFilename = BaseGcsWriter.getOutputFilename(uploadTimestamp, GcsFormat.PARQUET);
     String objectKey = String.join("/", outputPrefix, outputFilename);
 
-    LOGGER.info("Full GCS path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
+    LOGGER.info("Full Gcs path for stream '{}': {}/{}", stream.getName(), config.getBucketName(),
         objectKey);
 
     URI uri = new URI(
         String.format("s3a://%s/%s/%s", config.getBucketName(), outputPrefix, outputFilename));    // <----- CHECK
     Path path = new Path(uri);
 
-    GCSParquetFormatConfig formatConfig = (GCSParquetFormatConfig) config.getFormatConfig();
+    GcsParquetFormatConfig formatConfig = (GcsParquetFormatConfig) config.getFormatConfig();
     Configuration hadoopConfig = getHadoopConfig(config);
     this.parquetWriter = AvroParquetWriter.<GenericData.Record>builder(HadoopOutputFile.fromPath(path, hadoopConfig))
         .withSchema(schema)
@@ -99,16 +99,8 @@ public class GCSParquetWriter extends BaseGCSWriter implements GCSWriter {
         .build();
   }
 
-  public static Configuration getHadoopConfig(GCSDestinationConfig config) {
+  public static Configuration getHadoopConfig(GcsDestinationConfig config) {
     Configuration hadoopConfig = new Configuration();
-
-    // hadoopConfig.set("fs.gs.project.id", config.getProjectID());
-    // hadoopConfig.set("google.cloud.auth.service.account.email", "simphony-elt@data-247212.iam.gserviceaccount.com");
-    // hadoopConfig.set("fs.gs.auth.service.account.private.key.id", config.getAccessKeyId());
-    // hadoopConfig.set("fs.gs.auth.service.account.private.key", config.getSecretAccessKey());
-    // hadoopConfig.set("fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem"); 
-    // hadoopConfig.set("fs.AbstractFileSystem.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS");
-    // hadoopConfig.set("google.cloud.auth.service.account.enable", "true");
 
     hadoopConfig.set("fs.s3a.access.key", config.getAccessKeyId());
     hadoopConfig.set("fs.s3a.secret.key", config.getSecretAccessKey());
@@ -116,10 +108,6 @@ public class GCSParquetWriter extends BaseGCSWriter implements GCSWriter {
     hadoopConfig.set("fs.s3a.endpoint", "storage.googleapis.com");
     hadoopConfig.setInt("fs.s3a.list.version", 1);
 
-    // hadoopConfig
-    //     .set(Constants.ENDPOINT, String.format("s3.%s.amazonaws.com", config.getBucketRegion())); // <----- CHECK
-    // hadoopConfig.set(Constants.AWS_CREDENTIALS_PROVIDER,
-    //     "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
     return hadoopConfig;
   }
 

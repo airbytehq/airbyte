@@ -25,11 +25,11 @@
 package io.airbyte.integrations.destination.gcs.parquet;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.gcs.GCSFormat;
-import io.airbyte.integrations.destination.gcs.GCSFormatConfig;
+import io.airbyte.integrations.destination.gcs.GcsFormat;
+import io.airbyte.integrations.destination.gcs.GcsFormatConfig;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
-public class GCSParquetFormatConfig implements GCSFormatConfig {
+public class GcsParquetFormatConfig implements GcsFormatConfig {
 
   private final CompressionCodecName compressionCodec;
   private final int blockSize;
@@ -38,25 +38,25 @@ public class GCSParquetFormatConfig implements GCSFormatConfig {
   private final int dictionaryPageSize;
   private final boolean dictionaryEncoding;
 
-  public GCSParquetFormatConfig(JsonNode formatConfig) {
-    int blockSizeMb = GCSFormatConfig.withDefault(formatConfig, "block_size_mb", GCSParquetConstants.DEFAULT_BLOCK_SIZE_MB);
-    int maxPaddingSizeMb = GCSFormatConfig.withDefault(formatConfig, "max_padding_size_mb", GCSParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB);
-    int pageSizeKb = GCSFormatConfig.withDefault(formatConfig, "page_size_kb", GCSParquetConstants.DEFAULT_PAGE_SIZE_KB);
+  public GcsParquetFormatConfig(JsonNode formatConfig) {
+    int blockSizeMb = GcsFormatConfig.withDefault(formatConfig, "block_size_mb", GcsParquetConstants.DEFAULT_BLOCK_SIZE_MB);
+    int maxPaddingSizeMb = GcsFormatConfig.withDefault(formatConfig, "max_padding_size_mb", GcsParquetConstants.DEFAULT_MAX_PADDING_SIZE_MB);
+    int pageSizeKb = GcsFormatConfig.withDefault(formatConfig, "page_size_kb", GcsParquetConstants.DEFAULT_PAGE_SIZE_KB);
     int dictionaryPageSizeKb =
-        GCSFormatConfig.withDefault(formatConfig, "dictionary_page_size_kb", GCSParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB);
+        GcsFormatConfig.withDefault(formatConfig, "dictionary_page_size_kb", GcsParquetConstants.DEFAULT_DICTIONARY_PAGE_SIZE_KB);
 
     this.compressionCodec = CompressionCodecName
-        .valueOf(GCSFormatConfig.withDefault(formatConfig, "compression_codec", GCSParquetConstants.DEFAULT_COMPRESSION_CODEC.name()).toUpperCase());
+        .valueOf(GcsFormatConfig.withDefault(formatConfig, "compression_codec", GcsParquetConstants.DEFAULT_COMPRESSION_CODEC.name()).toUpperCase());
     this.blockSize = blockSizeMb * 1024 * 1024;
     this.maxPaddingSize = maxPaddingSizeMb * 1024 * 1024;
     this.pageSize = pageSizeKb * 1024;
     this.dictionaryPageSize = dictionaryPageSizeKb * 1024;
-    this.dictionaryEncoding = GCSFormatConfig.withDefault(formatConfig, "dictionary_encoding", GCSParquetConstants.DEFAULT_DICTIONARY_ENCODING);
+    this.dictionaryEncoding = GcsFormatConfig.withDefault(formatConfig, "dictionary_encoding", GcsParquetConstants.DEFAULT_DICTIONARY_ENCODING);
   }
 
   @Override
-  public GCSFormat getFormat() {
-    return GCSFormat.PARQUET;
+  public GcsFormat getFormat() {
+    return GcsFormat.PARQUET;
   }
 
   public CompressionCodecName getCompressionCodec() {
@@ -85,7 +85,7 @@ public class GCSParquetFormatConfig implements GCSFormatConfig {
 
   @Override
   public String toString() {
-    return "GCSParquetFormatConfig{" +
+    return "GcsParquetFormatConfig{" +
         "compressionCodec=" + compressionCodec + ", " +
         "blockSize=" + blockSize + ", " +
         "maxPaddingSize=" + maxPaddingSize + ", " +

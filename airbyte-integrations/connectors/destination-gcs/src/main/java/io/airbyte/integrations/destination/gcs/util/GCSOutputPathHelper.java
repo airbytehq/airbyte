@@ -24,13 +24,13 @@
 
 package io.airbyte.integrations.destination.gcs.util;
 
-import static io.airbyte.integrations.destination.gcs.GCSDestinationConstants.NAME_TRANSFORMER;
+import static io.airbyte.integrations.destination.gcs.GcsDestinationConstants.NAME_TRANSFORMER;
 
 import io.airbyte.protocol.models.AirbyteStream;
 import java.util.LinkedList;
 import java.util.List;
 
-public class GCSOutputPathHelper {
+public class GcsOutputPathHelper {
 
   public static String getOutputPrefix(String bucketPath, AirbyteStream stream) {
     return getOutputPrefix(bucketPath, stream.getNamespace(), stream.getName());

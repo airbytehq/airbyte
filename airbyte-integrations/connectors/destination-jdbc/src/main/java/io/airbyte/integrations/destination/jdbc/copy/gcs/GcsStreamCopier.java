@@ -180,7 +180,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
     attemptWriteAndDeleteGcsObject(gcsConfig, outputTableName);
   }
 
-  public static void attemptGcsWriteAndDelete(GCSConfig gcsConfig) throws IOException {
+  public static void attemptGcsWriteAndDelete(GcsConfig gcsConfig) throws IOException {
     final String outputTableName = "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteGcsObject(gcsConfig, outputTableName);
   }

@@ -32,7 +32,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsStreamCopier;
 import io.airbyte.integrations.destination.gcs.writer.ProductionWriterFactory;
-import io.airbyte.integrations.destination.gcs.writer.GCSWriterFactory;
+import io.airbyte.integrations.destination.gcs.writer.GcsWriterFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -41,12 +41,12 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GCSDestination extends BaseConnector implements Destination {
+public class GcsDestination extends BaseConnector implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GCSDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GcsDestination.class);
 
   public static void main(String[] args) throws Exception {
-    new IntegrationRunner(new GCSDestination()).run(args);
+    new IntegrationRunner(new GcsDestination()).run(args);
   }
 
   @Override
@@ -55,10 +55,10 @@ public class GCSDestination extends BaseConnector implements Destination {
       GcsStreamCopier.attemptGcsWriteAndDelete(GcsConfig.getGcsConfig(config));
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (Exception e) {
-      LOGGER.error("Exception attempting to access the GCS bucket: ", e.toString());
+      LOGGER.error("Exception attempting to access the Gcs bucket: ", e.toString());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the GCS bucket with the provided configuration. \n" + e
+          .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
               .getMessage());
     }
   }
@@ -67,7 +67,7 @@ public class GCSDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(JsonNode config,
                                             ConfiguredAirbyteCatalog configuredCatalog,
                                             Consumer<AirbyteMessage> outputRecordCollector) {
-    GCSWriterFactory formatterFactory = new ProductionWriterFactory();
-    return new GCSConsumer(GCSDestinationConfig.getGCSDestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
+    GcsWriterFactory formatterFactory = new ProductionWriterFactory();
+    return new GcsConsumer(GcsDestinationConfig.getGcsDestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
   }
 }

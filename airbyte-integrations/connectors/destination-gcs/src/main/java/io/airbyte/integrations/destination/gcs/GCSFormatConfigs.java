@@ -26,20 +26,20 @@ package io.airbyte.integrations.destination.gcs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.gcs.csv.GCSCsvFormatConfig;
-import io.airbyte.integrations.destination.gcs.parquet.GCSParquetFormatConfig;
+import io.airbyte.integrations.destination.gcs.csv.GcsCsvFormatConfig;
+import io.airbyte.integrations.destination.gcs.parquet.GcsParquetFormatConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GCSFormatConfigs {
+public class GcsFormatConfigs {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(GCSFormatConfigs.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(GcsFormatConfigs.class);
 
-  public static GCSFormatConfig getGCSFormatConfig(JsonNode config) {
+  public static GcsFormatConfigs getGcsFormatConfig(JsonNode config) {
     JsonNode formatConfig = config.get("format");
     LOGGER.info("GCS format config: {}", formatConfig.toString());
-    GCSFormat formatType = GCSFormat.valueOf(formatConfig.get("format_type").asText().toUpperCase());
+    GcsFormat formatType = GcsFormat.valueOf(formatConfig.get("format_type").asText().toUpperCase());
 
     switch (formatType) {
       case CSV -> {

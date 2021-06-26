@@ -24,7 +24,7 @@
 
 package io.airbyte.integrations.destination.gcs.csv;
 
-public class GCSCsvConstants {
+public class GcsCsvConstants {
 
   // These parameters are used by {@link StreamTransferManager}.
   // See this doc about how they affect memory usage:

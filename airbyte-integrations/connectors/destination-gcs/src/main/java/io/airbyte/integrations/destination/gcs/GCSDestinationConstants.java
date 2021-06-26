@@ -26,11 +26,11 @@ package io.airbyte.integrations.destination.gcs;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 
-public final class GCSDestinationConstants {
+public final class GcsDestinationConstants {
 
   public static final String YYYY_MM_DD_FORMAT_STRING = "yyyy_MM_dd";
   public static final ExtendedNameTransformer NAME_TRANSFORMER = new ExtendedNameTransformer();
 
-  private GCSDestinationConstants() {}
+  private GcsDestinationConstants() {}
 
 }

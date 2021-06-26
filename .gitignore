@@ -31,3 +31,6 @@ crash.log
 *.tfstate
 *.tfstate.backup
 *.lock.hcl
+
+# Marco's gradle
+gradlew

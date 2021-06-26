@@ -104,8 +104,8 @@ public class JsonToAvroSchemaConverter {
           stdName);
       builder = builder.doc(
           String.format("%s%s%s",
-              GCSParquetConstants.DOC_KEY_ORIGINAL_NAME,
-              GCSParquetConstants.DOC_KEY_VALUE_DELIMITER,
+              GcsParquetConstants.DOC_KEY_ORIGINAL_NAME,
+              GcsParquetConstants.DOC_KEY_VALUE_DELIMITER,
               name));
     }
     if (namespace != null) {
@@ -131,8 +131,8 @@ public class JsonToAvroSchemaConverter {
         LOGGER.warn("Field name contains illegal character(s) and is standardized: {} -> {}",
             fieldName, stdFieldName);
         fieldBuilder = fieldBuilder.doc(String.format("%s%s%s",
-            GCSParquetConstants.DOC_KEY_ORIGINAL_NAME,
-            GCSParquetConstants.DOC_KEY_VALUE_DELIMITER,
+        GcsParquetConstants.DOC_KEY_ORIGINAL_NAME,
+            GcsParquetConstants.DOC_KEY_VALUE_DELIMITER,
             fieldName));
       }
 

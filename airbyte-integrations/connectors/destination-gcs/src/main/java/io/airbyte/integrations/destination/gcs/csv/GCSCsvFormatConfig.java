@@ -26,10 +26,10 @@ package io.airbyte.integrations.destination.gcs.csv;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.gcs.GCSFormat;
-import io.airbyte.integrations.destination.gcs.GCSFormatConfig;
+import io.airbyte.integrations.destination.gcs.GcsFormat;
+import io.airbyte.integrations.destination.gcs.GcsFormatConfig;
 
-public class GCSCsvFormatConfig implements GCSFormatConfig {
+public class GcsCsvFormatConfig implements GcsFormatConfig {
 
   public enum Flattening {
 
@@ -61,13 +61,13 @@ public class GCSCsvFormatConfig implements GCSFormatConfig {
 
   private final Flattening flattening;
 
-  public GCSCsvFormatConfig(JsonNode formatConfig) {
+  public GcsCsvFormatConfig(JsonNode formatConfig) {
     this.flattening = Flattening.fromValue(formatConfig.get("flattening").asText());
   }
 
   @Override
-  public GCSFormat getFormat() {
-    return GCSFormat.CSV;
+  public GcsFormat getFormat() {
+    return GcsFormat.CSV;
   }
 
   public Flattening getFlattening() {
@@ -76,7 +76,7 @@ public class GCSCsvFormatConfig implements GCSFormatConfig {
 
   @Override
   public String toString() {
-    return "GCSCsvFormatConfig{" +
+    return "GcsCsvFormatConfig{" +
         "flattening=" + flattening +
         '}';
   }
