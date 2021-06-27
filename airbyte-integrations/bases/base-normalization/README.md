@@ -217,6 +217,14 @@ A nice improvement would be to add csv/json seed files as expected output data f
 The integration tests would verify that the content of such tables in the destination would match
 these seed files or fail.
 
+### Debug dbt operations with local database
+This only works for testing databases launched in local containers (e.g. postgres and mysql).
+
+- In `dbt_integration_test.py`, comment out the `tear_down_db` method so that the relevant database container is not deleted.
+- Find the name of the database container in the logs (e.g. by searching `Executing`).
+- Connect to the container by running `docker exec -it <container-name> bash` in the commandline.
+- Connect to the database inside the container (e.g. `mysql -u root` for mysql).
+
 ## Standard Destination Tests
 
 Generally, to invoke standard destination tests, you run with gradle using:

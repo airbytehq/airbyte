@@ -40,7 +40,7 @@
     cross join table(flatten({{ array_col }})) as {{ array_col }}
 {%- endmacro %}
 
-{# unnested_column_value -------------------------------------------------     #}
+{# unnested_column_value -- this macro is related to unnest_cte #}
 
 {% macro unnested_column_value(column_col) -%}
   {{ adapter.dispatch('unnested_column_value')(column_col) }}
@@ -59,6 +59,10 @@
 {%- endmacro %}
 
 {% macro redshift__unnested_column_value(column_col) -%}
+    _airbyte_nested_data
+{%- endmacro %}
+
+{% macro mysql__unnested_column_value(column_col) -%}
     _airbyte_nested_data
 {%- endmacro %}
 
@@ -126,8 +130,8 @@ joined as (
     joined as (
         select
             _airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
-            {# -- json_extract(column_col, '$[i]') as _airbyte_nested_data #}
-            json_extract({{ column_col }}, concat("'$[", numbers.generated_number - 1, "]'")) as _airbyte_nested_data
+            {# -- json_extract(column_col, '$[i][0]') as _airbyte_nested_data #}
+            json_extract({{ column_col }}, concat("$[", numbers.generated_number - 1, "][0]")) as _airbyte_nested_data
         from {{ ref(table_name) }}
         cross join numbers
         -- only generate the number of records in the cross join that corresponds
