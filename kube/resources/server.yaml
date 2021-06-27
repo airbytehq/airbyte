@@ -114,6 +114,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: AWS_SECRET_ACCESS_KEY
+            - name: S3_MINIO_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: S3_MINIO_ENDPOINT
           ports:
             - containerPort: 8001
           volumeMounts:
