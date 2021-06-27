@@ -57,6 +57,7 @@ models:
       - name: currency
         tests:
           - not_null
+        #quote: true in mysql
   - name: nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data
     columns:
       - name: id
