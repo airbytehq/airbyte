@@ -214,11 +214,11 @@ public class CockroachdbSource extends AbstractJdbcSource implements Source {
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(JsonNode config,
-      JdbcDatabase database,
-      ConfiguredAirbyteCatalog catalog,
-      Map<String, TableInfoInternal> tableNameToTable,
-      JdbcStateManager stateManager,
-      Instant emittedAt) {
+                                                                             JdbcDatabase database,
+                                                                             ConfiguredAirbyteCatalog catalog,
+                                                                             Map<String, TableInfoInternal> tableNameToTable,
+                                                                             JdbcStateManager stateManager,
+                                                                             Instant emittedAt) {
     /**
      * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
      * but selects all the tables in FULL_REFRESH mode then we would still end up going through this
@@ -336,53 +336,52 @@ public class CockroachdbSource extends AbstractJdbcSource implements Source {
     LOGGER.info("completed source: {}", CockroachdbSource.class);
   }
 
-
-//  static final String DRIVER_CLASS = "org.postgresql.Driver";
-//
-//
-//  public CockroachdbSource() {
-//    super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
-//  }
-//
-//
-//  @Override
-//  public JsonNode toJdbcConfig(JsonNode config) {
-//
-//    List<String> additionalParameters = new ArrayList<>();
-//
-//    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-//        config.get("host").asText(),
-//        config.get("port").asText(),
-//        config.get("database").asText()));
-//
-//    if (config.has("ssl") && config.get("ssl").asBoolean()) {
-//      additionalParameters.add("ssl=true");
-//      additionalParameters.add("sslmode=require");
-//    }
-//
-//    additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
-//
-//    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-//        .put("username", config.get("username").asText())
-//        .put("jdbc_url", jdbcUrl.toString());
-//
-//    if (config.has("password")) {
-//      configBuilder.put("password", config.get("password").asText());
-//    }
-//
-//    return Jsons.jsonNode(configBuilder.build());
-//  }
-//
-//  @Override
-//  public Set<String> getExcludedInternalSchemas() {
-//    return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
-//  }
-//
-//  public static void main(String[] args) throws Exception {
-//    final Source source = new CockroachdbSource();
-//    LOGGER.info("starting source: {}", CockroachdbSource.class);
-//    new IntegrationRunner(source).run(args);
-//    LOGGER.info("completed source: {}", CockroachdbSource.class);
-//  }
+  // static final String DRIVER_CLASS = "org.postgresql.Driver";
+  //
+  //
+  // public CockroachdbSource() {
+  // super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+  // }
+  //
+  //
+  // @Override
+  // public JsonNode toJdbcConfig(JsonNode config) {
+  //
+  // List<String> additionalParameters = new ArrayList<>();
+  //
+  // final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
+  // config.get("host").asText(),
+  // config.get("port").asText(),
+  // config.get("database").asText()));
+  //
+  // if (config.has("ssl") && config.get("ssl").asBoolean()) {
+  // additionalParameters.add("ssl=true");
+  // additionalParameters.add("sslmode=require");
+  // }
+  //
+  // additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
+  //
+  // final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+  // .put("username", config.get("username").asText())
+  // .put("jdbc_url", jdbcUrl.toString());
+  //
+  // if (config.has("password")) {
+  // configBuilder.put("password", config.get("password").asText());
+  // }
+  //
+  // return Jsons.jsonNode(configBuilder.build());
+  // }
+  //
+  // @Override
+  // public Set<String> getExcludedInternalSchemas() {
+  // return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  // }
+  //
+  // public static void main(String[] args) throws Exception {
+  // final Source source = new CockroachdbSource();
+  // LOGGER.info("starting source: {}", CockroachdbSource.class);
+  // new IntegrationRunner(source).run(args);
+  // LOGGER.info("completed source: {}", CockroachdbSource.class);
+  // }
 
 }

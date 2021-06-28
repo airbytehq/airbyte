@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package io.airbyte.integrations.source.cockroachdb;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -52,7 +53,7 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
-        //by some reason it return not a port number as exposed and mentioned in logs
+        // by some reason it return not a port number as exposed and mentioned in logs
         .put("port", container.getFirstMappedPort() - 1)
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
@@ -370,4 +371,5 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
             .build());
 
   }
+
 }

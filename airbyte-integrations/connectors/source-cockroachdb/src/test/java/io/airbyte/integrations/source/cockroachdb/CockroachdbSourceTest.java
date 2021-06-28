@@ -191,7 +191,7 @@ class CockroachdbSourceTest {
     // force the db server to start with sql_ascii encoding to verify the tap can read UTF8 even when
     // default settings are in another encoding
     try (CockroachContainer db = new CockroachContainer("cockroachdb/cockroach")) {
-//        .withCommand("postgres -c client_encoding=sql_ascii")
+      // .withCommand("postgres -c client_encoding=sql_ascii")
       db.start();
       final JsonNode config = getConfig(db);
       try (final Database database = getDatabaseFromConfig(config)) {
@@ -256,8 +256,9 @@ class CockroachdbSourceTest {
     assertTrue(CockroachdbSource.isCdc(config));
   }
 
-  private static AirbyteMessage createRecord(String stream, String namespace,
-      Map<Object, Object> data) {
+  private static AirbyteMessage createRecord(String stream,
+                                             String namespace,
+                                             Map<Object, Object> data) {
     return new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream)
             .withNamespace(namespace));

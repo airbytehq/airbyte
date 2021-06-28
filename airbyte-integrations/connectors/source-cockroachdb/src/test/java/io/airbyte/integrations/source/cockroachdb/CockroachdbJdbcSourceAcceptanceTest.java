@@ -134,7 +134,6 @@ class CockroachdbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     PSQL_DB.close();
   }
 
-
   @Override
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
@@ -509,8 +508,7 @@ class CockroachdbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             SCHEMA_NAME2,
             Field.of(COL_ID, JsonSchemaPrimitive.STRING),
             Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_ROW_ID, JsonSchemaPrimitive.NUMBER)
-        )
+            Field.of(COL_ROW_ID, JsonSchemaPrimitive.NUMBER))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))));
 
@@ -521,4 +519,5 @@ class CockroachdbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     actual.getStreams().sort(schemaTableCompare);
     assertEquals(expected, filterOutOtherSchemas(actual));
   }
+
 }
