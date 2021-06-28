@@ -215,7 +215,7 @@ const DropDown: React.FC<DropdownProps> = ({
           id: "form.noResult",
         }),
       }}
-      valueComponent={({ item }: { item: IDataItem }) =>
+      valueComponent={({ item }: { item?: IDataItem }) =>
         withButton ? (
           <WithButtonItem text={textButton} />
         ) : (
