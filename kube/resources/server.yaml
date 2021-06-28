@@ -124,6 +124,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: S3_PATH_STYLE_ACCESS
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: LOG_LEVEL
           ports:
             - containerPort: 8001
           volumeMounts:
