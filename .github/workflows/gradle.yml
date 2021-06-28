@@ -198,7 +198,7 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Build Core Docker Images and Run Tests
-        run: CORE_ONLY=true ./gradlew --no-daemon build --scan
+        run: CORE_ONLY=true ./gradlew --no-daemon composeBuild --scan
 
       - name: Run End-to-End Frontend Tests
         run: ./tools/bin/e2e_test.sh
@@ -254,10 +254,7 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Build Core Docker Images and Run Tests
-        run: CORE_ONLY=true ./gradlew --no-daemon composeBuild test -x :airbyte-webapp:test --scan
-        env:
-          GIT_REVISION: ${{ github.sha }}
-          CORE_ONLY: true
+        run: CORE_ONLY=true ./gradlew --no-daemon composeBuild --scan
 
       - name: Run Docker End-to-End Acceptance Tests
         run: |
@@ -353,7 +350,7 @@ jobs:
           CHANGE_MINIKUBE_NONE_USER: true
 
       - name: Build Core Docker Images and Run Tests
-        run: CORE_ONLY=true ./gradlew --no-daemon build --scan --rerun-tasks
+        run: CORE_ONLY=true ./gradlew --no-daemon composeBuild --scan
 
       - name: Run Logging Tests
         run: ./tools/bin/cloud_storage_logging_test.sh
