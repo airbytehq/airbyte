@@ -1,5 +1,7 @@
 {#
--- Adapted from https://github.com/fishtown-analytics/dbt-utils/blob/master/macros/schema_tests/equality.sql
+-- Adapted from https://github.com/fishtown-analytics/dbt-utils/blob/bbba960726667abc66b42624f0d36bbb62c37593/macros/schema_tests/equality.sql
+-- dbt-utils version: 0.6.4
+-- This macro needs to be updated accordingly when dbt-utils is upgraded.
 -- This is needed because MySQL does not support the EXCEPT operator!
 #}
 
@@ -42,17 +44,26 @@
     ),
 
     b_minus_a as (
-       select {{ compare_cols_csv }} from b
+        select {{ compare_cols_csv }} from b
         where ({{ compare_cols_csv }}) not in
             (select {{ compare_cols_csv }} from a)
     ),
 
     unioned as (
-        select 'a_minus_b' as which_diff from a_minus_b
+        select * from a_minus_b
         union all
-        select 'b_minus_a' as which_diff from b_minus_a
+        select * from b_minus_a
+    ),
+
+    final as (
+        select (select count(*) from unioned) +
+        (select abs(
+            (select count(*) from a_minus_b) -
+            (select count(*) from b_minus_a)
+            ))
+        as count
     )
 
-    select * from unioned
+    select count from final
 
 {% endmacro %}
