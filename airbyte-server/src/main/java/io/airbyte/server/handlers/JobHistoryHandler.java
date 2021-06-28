@@ -63,8 +63,8 @@ public class JobHistoryHandler {
 
     final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configTypes,
         configId,
-        request.getPagination().getPageSize() != null ? request.getPagination().getPageSize() : DEFAULT_PAGE_SIZE,
-        request.getPagination().getRowOffset() != null ? request.getPagination().getRowOffset() : 0)
+        (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize() : DEFAULT_PAGE_SIZE,
+        (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0)
         .stream()
         .map(JobConverter::getJobWithAttemptsRead)
         .collect(Collectors.toList());
