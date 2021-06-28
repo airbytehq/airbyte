@@ -182,13 +182,13 @@ font-style: italic;
   <h1>Airbyte Configuration API</h1>
     <div class="app-desc"><p>Airbyte Configuration API
 <a href="https://airbyte.io">https://airbyte.io</a>.</p>
-<p>This API is a collection HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.</p>
+<p>This API is a collection of HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.</p>
 <p>Here are some conventions that this API follows:</p>
 <ul>
 <li>All endpoints are http POST methods.</li>
 <li>All endpoints accept data via <code>application/json</code> request bodies. The API does not accept any data via query params.</li>
 <li>The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. <code>localhost:8000/v1/connections/create</code>.</li>
-<li>For all <code>update</code> method, the whole object must be passed in, even the fields that did not change.</li>
+<li>For all <code>update</code> methods, the whole object must be passed in, even the fields that did not change.</li>
 </ul>
 <p>Change Management:</p>
 <ul>
@@ -5241,6 +5241,7 @@ font-style: italic;
     <li><a href="#OperatorDbt"><code>OperatorDbt</code> - </a></li>
     <li><a href="#OperatorNormalization"><code>OperatorNormalization</code> - </a></li>
     <li><a href="#OperatorType"><code>OperatorType</code> - </a></li>
+    <li><a href="#Pagination"><code>Pagination</code> - </a></li>
     <li><a href="#SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
     <li><a href="#SourceCoreConfig"><code>SourceCoreConfig</code> - </a></li>
@@ -5643,6 +5644,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">configTypes </div><div class="param-desc"><span class="param-type"><a href="#JobConfigType">array[JobConfigType]</a></span>  </div>
 <div class="param">configId </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">pagination (optional)</div><div class="param-desc"><span class="param-type"><a href="#">Pagination</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -5833,6 +5835,14 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Pagination"><code>Pagination</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">pageSize (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+<div class="param">rowOffset (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
