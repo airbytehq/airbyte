@@ -120,7 +120,6 @@ jobs:
 
       # make sure these always run before pushing core docker images
       - name: Run End-to-End Acceptance Tests
-        if: success() && github.ref == 'refs/heads/master'
         run: ./tools/bin/acceptance_test.sh
 
       - name: Push Core Docker Images
