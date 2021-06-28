@@ -91,8 +91,6 @@ public class CockroachdbSource extends AbstractJdbcSource implements Source {
                                                     ConfiguredAirbyteCatalog catalog,
                                                     JsonNode state)
       throws Exception {
-    // this check is used to ensure that have the pgoutput slot available so Debezium won't attempt to
-    // create it.
     final AirbyteConnectionStatus check = check(config);
 
     if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {

@@ -242,18 +242,6 @@ class CockroachdbSourceTest {
     assertEquals(ASCII_MESSAGES, actualMessages);
   }
 
-  // @Test
-  // void testIsCdc() {
-  // final JsonNode config = getConfig(PSQL_DB, dbName);
-  //
-  // assertFalse(CockroachdbSource.isCdc(config));
-  //
-  // ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
-  // "replication_slot", "slot",
-  // "publication", "ab_pub")));
-  // assertTrue(CockroachdbSource.isCdc(config));
-  // }
-
   private static AirbyteMessage createRecord(String stream,
                                              String namespace,
                                              Map<Object, Object> data) {
