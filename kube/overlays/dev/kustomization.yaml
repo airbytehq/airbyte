@@ -20,6 +20,9 @@ images:
   - name: temporalio/auto-setup
     newTag: 1.7.0
 
+resources:
+  - standalone-minio.yaml
+
 configMapGenerator:
   - name: airbyte-env
     env: .env
