@@ -36,6 +36,8 @@ server {
     }
 
     location /api/ {
+        fastcgi_read_timeout 1d;
+        proxy_read_timeout 1d;
         client_max_body_size 200M;
         proxy_pass http://api-server/api/;
     }
