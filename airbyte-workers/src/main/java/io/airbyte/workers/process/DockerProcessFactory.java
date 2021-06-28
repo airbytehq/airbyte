@@ -108,7 +108,6 @@ public class DockerProcessFactory implements ProcessFactory {
               "run",
               "--rm",
               "--init",
-              "--log-driver none",
               "-i",
               "-v",
               String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION),
@@ -117,7 +116,9 @@ public class DockerProcessFactory implements ProcessFactory {
               "-w",
               rebasePath(jobRoot).toString(),
               "--network",
-              networkName);
+              networkName,
+              "--log-driver",
+              "none");
       if (!Strings.isNullOrEmpty(entrypoint)) {
         cmd.add("--entrypoint");
         cmd.add(entrypoint);
