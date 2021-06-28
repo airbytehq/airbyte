@@ -154,7 +154,7 @@ def read_json(input_path: str, apply_function=(lambda x: x)):
         ),
     ],
 )
-def test_get_simple_table_name(json_path: List[str], expected_postgres: str, expected_bigquery: str, expected_mysql: str):
+def test_get_simple_table_name(json_path: List[str], expected_postgres: str, expected_bigquery: str):
     """
     Checks how to generate a simple and easy to understand name from a json path
     """
@@ -166,10 +166,6 @@ def test_get_simple_table_name(json_path: List[str], expected_postgres: str, exp
     bigquery_registry = TableNameRegistry(DestinationType.BIGQUERY)
     actual_bigquery_name = bigquery_registry.get_simple_table_name(json_path)
     assert actual_bigquery_name == expected_bigquery
-
-    mysql_registry = TableNameRegistry(DestinationType.MYSQL)
-    actual_mysql_name = mysql_registry.get_simple_table_name(json_path)
-    assert actual_mysql_name == expected_mysql
 
 
 @pytest.mark.parametrize(
