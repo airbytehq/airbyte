@@ -99,6 +99,7 @@ public class KubePodProcess extends Process {
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   private static final String INIT_CONTAINER_NAME = "init";
+  private static final Long STATUS_CHECK_INTERVAL_MS = 30 * 1000L;
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -127,6 +128,7 @@ public class KubePodProcess extends Process {
   private InputStream stdout;
   private InputStream stderr;
   private Integer returnCode = null;
+  private Long lastStatusCheck = null;
 
   private final Consumer<Integer> portReleaser;
   private final ServerSocket stdoutServerSocket;
@@ -528,9 +530,18 @@ public class KubePodProcess extends Process {
     }
   }
 
+  /**
+   * This method hits the Kube Api server to retrieve statuses. Most of the complexity here is
+   * minimising the api calls for performance.
+   */
   private int getReturnCode(Pod pod) {
     if (returnCode != null) {
       return returnCode;
+    }
+
+    // Reuse the last status check result to prevent overloading the Kube Api server.
+    if (lastStatusCheck != null && System.currentTimeMillis() - lastStatusCheck < STATUS_CHECK_INTERVAL_MS) {
+      throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
 
     var name = pod.getMetadata().getName();
@@ -547,6 +558,7 @@ public class KubePodProcess extends Process {
     }
 
     if (!isTerminal(refreshedPod)) {
+      lastStatusCheck = System.currentTimeMillis();
       throw new IllegalThreadStateException("Kube pod process has not exited yet.");
     }
 
@@ -554,13 +566,12 @@ public class KubePodProcess extends Process {
         .stream()
         .filter(containerStatus -> containerStatus.getState() != null && containerStatus.getState().getTerminated() != null)
         .map(containerStatus -> {
-          int statusCode = containerStatus.getState().getTerminated().getExitCode();
-          LOGGER.info("Exit code for pod {}, container {} is {}", name, containerStatus.getName(), statusCode);
-          return statusCode;
+          return containerStatus.getState().getTerminated().getExitCode();
         })
         .reduce(Integer::sum)
         .orElseThrow();
 
+    LOGGER.info("Exit code for pod {} is {}", name, returnCode);
     return returnCode;
   }
 
