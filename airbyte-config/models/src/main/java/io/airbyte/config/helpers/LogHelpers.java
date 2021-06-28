@@ -55,6 +55,10 @@ public class LogHelpers {
   public static String APP_LOGGING_CLOUD_PREFIX = "app-logging";
   public static String JOB_LOGGING_CLOUD_PREFIX = "job-logging";
 
+  public static boolean shouldUseLocalLogs(Configs configs) {
+    return configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER) || s3.hasEmptyConfigs(configs);
+  }
+
   public static Path getServerLogsRoot(Configs configs) {
     return configs.getWorkspaceRoot().resolve("server/logs");
   }
@@ -66,7 +70,7 @@ public class LogHelpers {
   public static File getServerLogFile(Configs configs) {
     var logPathBase = getServerLogsRoot(configs);
 
-    if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
+    if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
 
@@ -81,7 +85,7 @@ public class LogHelpers {
   public static File getSchedulerLogFile(Configs configs) {
     var logPathBase = getSchedulerLogsRoot(configs);
 
-    if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
+    if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
 
@@ -94,7 +98,7 @@ public class LogHelpers {
   }
 
   public static List<String> getJobLogFile(Configs configs, Path logPath) throws IOException {
-    if (configs.getWorkerEnvironment().equals(WorkerEnvironment.DOCKER)) {
+    if (shouldUseLocalLogs(configs)) {
       return IOs.getTail(LOG_TAIL_SIZE, logPath);
     }
 

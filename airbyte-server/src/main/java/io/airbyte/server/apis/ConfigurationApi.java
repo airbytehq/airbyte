@@ -93,7 +93,8 @@ import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.SpecFetcher;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.BadObjectSchemaKnownException;
+import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.handlers.ArchiveHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -117,7 +118,6 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
-import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
 public class ConfigurationApi implements io.airbyte.api.V1Api {
@@ -552,12 +552,10 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     try {
       return call.call();
     } catch (ConfigNotFoundException e) {
-      throw new KnownException(
-          HttpStatus.UNPROCESSABLE_ENTITY_422,
-          String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()), e);
+      throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()),
+          e.getConfigId(), e);
     } catch (JsonValidationException e) {
-      throw new KnownException(
-          HttpStatus.UNPROCESSABLE_ENTITY_422,
+      throw new BadObjectSchemaKnownException(
           String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);
     } catch (IOException e) {
       throw new RuntimeException(e);
