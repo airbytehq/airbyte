@@ -52,16 +52,17 @@ public class CockroachdbSpecTest {
       + "\"database\" : \"postgres_db\",  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
-      + "\"ssl\" : true, "
-      + "\"replication_method\" : {    \"method\" : \"CDC\", \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\"  }"
-      + "}";
+      + "\"ssl\" : true }";
+
   private static JsonNode schema;
   private static JsonSchemaValidator validator;
 
   @BeforeAll
   static void init() throws IOException {
     final String spec = MoreResources.readResource("spec.json");
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec).toFile();
+    final File schemaFile = IOs
+        .writeFile(Files.createTempDirectory(Path.of("/tmp"), "pg-spec-test"), "schema.json", spec)
+        .toFile();
     schema = JsonSchemaValidator.getSchema(schemaFile).get("connectionSpecification");
     validator = new JsonSchemaValidator();
   }
@@ -85,43 +86,6 @@ public class CockroachdbSpecTest {
   void testWithReplicationMethodWithReplicationSlot() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
     assertTrue(validator.test(schema, config));
-  }
-
-  @Test
-  void testWithReplicationMethodMissingPublication() {
-    final JsonNode config = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) config.get("replication_method")).remove("replication_slot");
-
-    assertFalse(validator.test(schema, config));
-  }
-
-  @Test
-  void testWithReplicationMethodStandard() {
-    final JsonNode config = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) config.get("replication_method")).remove("replication_slot");
-    ((ObjectNode) config.get("replication_method")).remove("publication");
-    ((ObjectNode) config.get("replication_method")).put("method", "Standard");
-    assertTrue(validator.test(schema, config));
-
-    final JsonNode configReplicationMethodNotSet = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) configReplicationMethodNotSet).remove("replication_method");
-    assertTrue(validator.test(schema, configReplicationMethodNotSet));
-  }
-
-  @Test
-  void testWithReplicationMethodWithReplicationSlotWithWrongType() {
-    final JsonNode config = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) config.get("replication_method")).put("replication_slot", 10);
-
-    assertFalse(validator.test(schema, config));
-  }
-
-  @Test
-  void testWithReplicationMethodWithReplicationSlotWithNull() {
-    final JsonNode config = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) config.get("replication_method")).set("replication_slot", null);
-
-    assertFalse(validator.test(schema, config));
   }
 
 }

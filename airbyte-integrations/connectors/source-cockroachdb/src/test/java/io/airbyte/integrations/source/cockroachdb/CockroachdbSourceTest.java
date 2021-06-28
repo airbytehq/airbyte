@@ -25,11 +25,9 @@
 package io.airbyte.integrations.source.cockroachdb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -244,17 +242,17 @@ class CockroachdbSourceTest {
     assertEquals(ASCII_MESSAGES, actualMessages);
   }
 
-  @Test
-  void testIsCdc() {
-    final JsonNode config = getConfig(PSQL_DB, dbName);
-
-    assertFalse(CockroachdbSource.isCdc(config));
-
-    ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
-        "replication_slot", "slot",
-        "publication", "ab_pub")));
-    assertTrue(CockroachdbSource.isCdc(config));
-  }
+  // @Test
+  // void testIsCdc() {
+  // final JsonNode config = getConfig(PSQL_DB, dbName);
+  //
+  // assertFalse(CockroachdbSource.isCdc(config));
+  //
+  // ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
+  // "replication_slot", "slot",
+  // "publication", "ab_pub")));
+  // assertTrue(CockroachdbSource.isCdc(config));
+  // }
 
   private static AirbyteMessage createRecord(String stream,
                                              String namespace,
