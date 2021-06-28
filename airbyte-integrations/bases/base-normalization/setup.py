@@ -36,9 +36,8 @@ setuptools.setup(
         "airbyte-protocol",
         "pyyaml",
         "jinja2",
-        # TODO: change to dbt-mysql after this PR is merged:
-        # https://github.com/dbeatty10/dbt-mysql/pull/57
-        "dbt-mysql @ git+https://github.com/airbytehq/dbt-mysql-1@patch-1#egg=dbt-mysql",
+        "dbt==0.19.0",
+        "dbt-mysql @ git+https://github.com/dbeatty10/dbt-mysql@96655ea9f7fca7be90c9112ce8ffbb5aac1d3716#egg=dbt-mysql",
     ],
     package_data={"": ["*.yml"]},
     setup_requires=["pytest-runner"],
