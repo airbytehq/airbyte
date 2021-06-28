@@ -61,8 +61,18 @@ def setup_test_path(request):
 
 
 @pytest.mark.parametrize("column_count", [1500])
-@pytest.mark.parametrize("integration_type", list(DestinationType))
-def test_destination_supported_limits(integration_type: DestinationType, column_count: int, setup_test_path):
+@pytest.mark.parametrize(
+    "integration_type",
+    [
+        DestinationType.POSTGRES,
+        DestinationType.BIGQUERY,
+        DestinationType.SNOWFLAKE,
+        DestinationType.REDSHIFT,
+        # MySQL: the max number of columns is limited by row size (8KB),
+        # not absolute column count. It is way fewer than 1500.
+    ],
+)
+def test_destination_supported_limits(integration_type: DestinationType, column_count: int):
     run_test(integration_type, column_count)
 
 
@@ -81,7 +91,7 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
             "Operation failed because soft limit on objects of type 'Column' per table was exceeded.",
         ),
         ("Redshift", 1665, "target lists can have at most 1664 entries"),
-        # MySQL allows upto 4096 columns, and is not worth testing
+        ("MySQL", 250, "Row size too large (> 8126)"),
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
