@@ -17,7 +17,7 @@ Given that we'll pulling currency data for our example source, we'll define the 
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Python Http Tutorial Spec",
     "type": "object",
-    "required": ["start_date", "currency_base"],
+    "required": ["start_date", "base"],
     "additionalProperties": false,
     "properties": {
       "start_date": {
