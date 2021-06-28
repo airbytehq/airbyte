@@ -91,7 +91,7 @@ def test_destination_supported_limits(integration_type: DestinationType, column_
             "Operation failed because soft limit on objects of type 'Column' per table was exceeded.",
         ),
         ("Redshift", 1665, "target lists can have at most 1664 entries"),
-        ("MySQL", 250, "Row size too large \(> 8126\)"),
+        ("MySQL", 250, "Row size too large"),
     ],
 )
 def test_destination_failure_over_limits(integration_type: str, column_count: int, expected_exception_message: str, setup_test_path):
