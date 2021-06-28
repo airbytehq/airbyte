@@ -88,7 +88,7 @@ If you want to run your destination exactly as it will be run by Airbyte \(i.e. 
 
 ```text
 # First build the container
-docker build . -t airbyte/destination-<name>:dev
+./gradlew :airbyte-integrations:connectors:destination-<name>:build
 
 # Then use the following commands to run it
 # Runs the "spec" command, used to find out what configurations are needed to run a connector 
@@ -101,7 +101,7 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-<name>:dev check 
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/destination-<name>:dev write --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 
-Note: Each time you make a change to your implementation you need to re-build the connector image via `docker build . -t airbyte/destination-<name>:dev`.
+Note: Each time you make a change to your implementation you need to re-build the connector image via `./gradlew :airbyte-integrations:connectors:destination-<name>:build`.
 
 The nice thing about this approach is that you are running your destination exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
 
@@ -120,7 +120,7 @@ The generated code implements the `spec` method for you. As long as there's a fi
 See the `spec` operation in action:  
 ```bash
 # First build the connector 
-docker build . -t airbyte/destination-<name>:dev
+./gradlew :airbyte-integrations:connectors:destination-<name>:build
 
 # Run the spec operation
 docker run --rm airbyte/destination-<name>:dev spec
@@ -134,6 +134,16 @@ While developing, we recommend storing any credentials in `secrets/config.json`.
 
 Implement the `check` method in the generated file `<Name>Destination.java`. Here's an [example implementation](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L94) from the BigQuery destination.  
 
+Verify that the method is working by placing your config in `secrets/config.json` then running: 
+
+```
+# First build the connector
+./gradlew :airbyte-integrations:connectors:destination-<name>:build
+
+# Run the check method
+docker run -v $(pwd)/secrets:/secrets --rm airbyte/destination-<name>:dev check --config /secrets/config.json
+```
+
 ### Step 5: Implement `write`
 The `write` operation is the main workhorse of a destination connector: it reads input data from the source and writes it to the underlying destination. It takes as input the config file used to run the connector as well as the configured catalog: the file used to describe the schema of the incoming data and how it should be written to the destination. 
 
@@ -144,6 +154,7 @@ To implement the `write` Airbyte operation, implement the `getConsumer` method i
 * [Google Pubsub](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-pubsub/src/main/java/io/airbyte/integrations/destination/pubsub/PubsubDestination.java#L98)
 
 For a brief overview on the Airbyte catalog check out [the Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md).
+
 
 ### Step 6: Set up Acceptance Tests
 
