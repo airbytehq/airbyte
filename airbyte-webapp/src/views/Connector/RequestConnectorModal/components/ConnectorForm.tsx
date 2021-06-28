@@ -67,9 +67,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={requestConnectorValidationSchema}
-      onSubmit={async (values) => {
-        await onSubmit(values);
-      }}
+      onSubmit={onSubmit}
     >
       {({ setFieldValue }) => (
         <Form>
@@ -90,7 +88,7 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({
                     id: "connector.type.placeholder",
                   })}
                   error={!!meta.error && meta.touched}
-                  onSelect={(item) => {
+                  onChange={(item) => {
                     setFieldValue("connectorType", item.value);
                   }}
                 />
