@@ -24,7 +24,7 @@ You can remove any comment block using these tags <-- info --/>
 ## Enviroment
 - **Airbyte version**: <!-- you can remove this and replace with e.g.: 0.22.0-alpha -->
 - **OS Version / Instance**: <!-- macOS, Windows 7 / 10, Ubuntu 18.04 / GCP micro / AWS EC2 -->
-- **Deployment**: <!--Docker / Kubernetes>
+- **Deployment**: <!--Docker / Kubernetes -->
 - **Source Connector and version** (if applicable): <!-- Found in the admin page in the UI in the Source tab. -->
 - **Destination Connector and version** (if applicable): <!-- Found in the admin page in the UI in the Destination tab. -->
 - **Severity**: <!-- Very Low / Low / Medium / High / Critical -->
