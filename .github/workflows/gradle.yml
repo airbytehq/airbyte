@@ -231,7 +231,6 @@ jobs:
     # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
-#    runs-on: ubuntu-latest
     name: Acceptance Tests (Kube)
     steps:
       - name: Checkout Airbyte
