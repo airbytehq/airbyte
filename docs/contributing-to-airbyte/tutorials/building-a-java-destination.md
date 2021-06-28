@@ -169,3 +169,7 @@ The Acceptance Tests are meant to cover the basic functionality of a destination
 
 Each connector has its own documentation page. By convention, that page should have the following path: in `docs/integrations/destinations/<destination-name>.md`. For the documentation to get packaged with the docs, make sure to add a link to it in `docs/SUMMARY.md`. You can pattern match doing that from existing connectors.
 
+
+
+## Wrapping up
+Well done on making it this far! If you'd like your connector to ship with Airbyte by default, create a PR against the Airbyte repo and we'll work with you to get it across the finish line.  
