@@ -162,7 +162,7 @@ module.exports = function (plop) {
     });
 
   plop.setGenerator('Java Destination', {
-    description: 'Generate a minimal Java Airbyte Destination Connector that works with any kind of data source. Use this if none of the other templates serve your use case.',
+    description: 'Generate a Java Destination Connector.',
     prompts: [
       {
         type: 'input',
