@@ -31,7 +31,6 @@ import requests
 import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.utils import casing
 
 cache_file = tempfile.NamedTemporaryFile()
 
@@ -58,7 +57,7 @@ class GitlabStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = {"page": self.page, "per_page": self.per_page}
+        params = {"per_page": self.per_page}
         if next_page_token:
             params.update(next_page_token)
         params.update(self.stream_base_params)
@@ -107,10 +106,9 @@ class GitlabChildStream(GitlabStream):
     path_list = ["id"]
     flatten_parent_id = False
 
-    def __init__(self, parent_stream: GitlabStream, parent_similar: bool = False, repository_part: bool = False, **kwargs):
+    def __init__(self, parent_stream: GitlabStream, repository_part: bool = False, **kwargs):
         super().__init__(**kwargs)
         self.parent_stream = parent_stream
-        self.parent_similar = parent_similar
         self.repo_url = repository_part
 
     @property
@@ -118,14 +116,7 @@ class GitlabChildStream(GitlabStream):
         template = [self.parent_stream.name] + ["{" + path_key + "}" for path_key in self.path_list]
         if self.repo_url:
             template.append("repository")
-        template.append(casing.camel_to_snake(self.__class__.__name__))
-        return "/".join(template)
-
-    @property
-    def name(self) -> str:
-        if self.parent_similar:
-            return f"{self.parent_stream.name[:-1]}_{super().name}"
-        return super().name
+        return "/".join(template + [self.name])
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
@@ -201,37 +192,60 @@ class Groups(GitlabStream):
 class Projects(GitlabStream):
     stream_base_params = {"statistics": 1}
 
-    def __init__(self, project_ids: List = None, parent_stream: GitlabStream = None, **kwargs):
+    def __init__(self, project_ids: List = None, **kwargs):
         super().__init__(**kwargs)
         self.project_ids = project_ids
-        self.parent_stream = parent_stream
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"projects/{stream_slice['id']}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        if self.parent_stream:
-            group_project_ids = set()
-            for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-                for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
-                    group_project_ids.update({i["path_with_namespace"] for i in record["projects"]})
-                for pid in group_project_ids:
-                    if not self.project_ids or self.project_ids and pid in self.project_ids:
-                        yield {"id": pid.replace("/", "%2F")}
-        else:
-            for pid in self.project_ids:
-                yield {"id": pid.replace("/", "%2F")}
+        for pid in self.project_ids:
+            yield {"id": pid.replace("/", "%2F")}
 
 
-class Milestones(GitlabChildStream):
-    pass
+class GroupProjects(Projects):
+    name = "projects"
+
+    def __init__(self, parent_stream: GitlabStream = None, **kwargs):
+        super().__init__(**kwargs)
+        self.parent_stream = parent_stream
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        group_project_ids = set()
+        for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
+                group_project_ids.update({i["path_with_namespace"] for i in record["projects"]})
+            for pid in group_project_ids:
+                if not self.project_ids or self.project_ids and pid in self.project_ids:
+                    yield {"id": pid.replace("/", "%2F")}
 
 
-class Members(GitlabChildStream):
+class GroupMilestones(GitlabChildStream):
+    path_template = "groups/{id}/milestones"
+
+
+class ProjectMilestones(GitlabChildStream):
+    path_template = "projects/{id}/milestones"
+
+
+class GroupMembers(GitlabChildStream):
+    path_template = "groups/{id}/members"
     flatten_parent_id = True
 
 
-class Labels(GitlabChildStream):
+class ProjectMembers(GitlabChildStream):
+    path_template = "projects/{id}/members"
+    flatten_parent_id = True
+
+
+class GroupLabels(GitlabChildStream):
+    path_template = "groups/{id}/labels"
+    flatten_parent_id = True
+
+
+class ProjectLabels(GitlabChildStream):
+    path_template = "projects/{id}/labels"
     flatten_parent_id = True
 
 
@@ -319,13 +333,13 @@ class Users(GitlabChildStream):
     pass
 
 
-# TODO: No permissions to check
+# TODO: We need to upgrade the plan for these feature (epics) to be available
 class Epics(GitlabChildStream):
     primary_key = "iid"
     flatten_id_keys = ["author"]
 
 
-# TODO: No permissions to check
+# TODO: We need to upgrade the plan for these feature (epics) to be available
 class EpicIssues(GitlabChildStream):
     primary_key = "epic_issue_id"
     path_list = ["group_id", "id"]
