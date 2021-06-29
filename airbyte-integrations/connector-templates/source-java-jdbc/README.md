@@ -40,7 +40,8 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 We use `JUnit` for Java tests.
 
 ### Unit and Integration Tests
-Place unit tests under `src/test/io/airbyte/integrations/sources/{{snakeCase name}}`.
+Place unit tests under `src/test/...`
+Place integration tests in `src/test-integration/...` 
 
 #### Acceptance Tests
 Airbyte has a standard test suite that all source connectors must pass. Implement the `TODO`s in
