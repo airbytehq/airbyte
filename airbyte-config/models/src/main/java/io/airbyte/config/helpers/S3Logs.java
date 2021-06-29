@@ -134,6 +134,7 @@ public class S3Logs implements CloudLogs {
 
   private void createS3ClientIfNotExist(Configs configs) {
     if (S3 == null) {
+      LOGGER.info("==== creating S3 Log Client");
       checkValidCredentials(configs);
       var s3Region = configs.getS3LogBucketRegion();
       var builder = S3Client.builder().region(Region.of(s3Region));
