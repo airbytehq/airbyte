@@ -1,16 +1,16 @@
-FROM airbyte/integration-base-python:0.1.3
+FROM python:3.7-slim
 
 # Bash is installed for more convenient debugging.
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
-ENV CODE_PATH="source_iterable"
-ENV AIRBYTE_IMPL_MODULE="source_iterable"
-ENV AIRBYTE_IMPL_PATH="SourceIterable"
-
 WORKDIR /airbyte/integration_code
-COPY $CODE_PATH ./$CODE_PATH
+COPY source_iterable ./source_iterable
+COPY main.py ./
 COPY setup.py ./
 RUN pip install .
 
-LABEL io.airbyte.version=0.1.0
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+
+LABEL io.airbyte.version=0.1.6
 LABEL io.airbyte.name=airbyte/source-iterable

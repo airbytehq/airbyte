@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,21 +20,22 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
-import json
 from collections import Counter, defaultdict
+from functools import reduce
 from typing import Any, List, Mapping, MutableMapping
 
 import pytest
-from airbyte_protocol import AirbyteMessage, ConnectorSpecification, Status, Type
+from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Status, Type
 from docker.errors import ContainerError
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
-from source_acceptance_test.utils import ConnectorRunner
+from source_acceptance_test.utils import ConnectorRunner, serialize
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
     def test_spec(self, connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
@@ -44,7 +46,7 @@ class TestSpec(BaseTest):
             assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
 
 
-@pytest.mark.timeout(30)
+@pytest.mark.default_timeout(30)
 class TestConnection(BaseTest):
     def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
@@ -67,22 +69,36 @@ class TestConnection(BaseTest):
             assert "Traceback" in err.value.stderr.decode("utf-8"), "Connector should print exception"
 
 
-@pytest.mark.timeout(30)
+@pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
-    def test_discover(self, connector_config, catalog, docker_runner: ConnectorRunner):
+    def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         output = docker_runner.call_discover(config=connector_config)
         catalog_messages = [message for message in output if message.type == Type.CATALOG]
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
-        if catalog:
-            for stream1, stream2 in zip(catalog_messages[0].catalog.streams, catalog.streams):
-                assert stream1.json_schema == stream2.json_schema, f"Streams: {stream1.name} vs {stream2.name}, stream schemas should match"
-                stream1.json_schema = None
-                stream2.json_schema = None
-                assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
+        # TODO(sherifnada) return this once an input bug is fixed (test suite currently fails if this file is not provided)
+        # if catalog:
+        #     for stream1, stream2 in zip(catalog_messages[0].catalog.streams, catalog.streams):
+        #         assert stream1.json_schema == stream2.json_schema, f"Streams: {stream1.name} vs {stream2.name}, stream schemas should match"
+        #         stream1.json_schema = None
+        #         stream2.json_schema = None
+        #         assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
 
 
-@pytest.mark.timeout(300)
+def primary_keys_for_records(streams, records):
+    streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
+    for stream in streams_with_primary_key:
+        stream_records = [r for r in records if r.stream == stream.stream.name]
+        for stream_record in stream_records:
+            pk_values = {}
+            for pk_path in stream.stream.source_defined_primary_key:
+                pk_value = reduce(lambda data, key: data.get(key) if isinstance(data, dict) else None, pk_path, stream_record.data)
+                pk_values[tuple(pk_path)] = pk_value
+
+            yield pk_values, stream_record
+
+
+@pytest.mark.default_timeout(300)
 class TestBasicRead(BaseTest):
     def test_read(
         self,
@@ -101,6 +117,12 @@ class TestBasicRead(BaseTest):
         streams_without_records = all_streams - streams_with_records
 
         assert records, "At least one record should be read using provided catalog"
+
+        for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
+            for pk_path, pk_value in pks.items():
+                assert pk_value is not None, (
+                    f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
+                )
 
         if inputs.validate_output_from_all_streams:
             assert (
@@ -149,8 +171,8 @@ class TestBasicRead(BaseTest):
                     r2 = TestBasicRead.remove_extra_fields(r2, r1)
                 assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
         else:
-            expected = set(map(TestBasicRead.serialize_record_for_comparison, expected))
-            actual = set(map(TestBasicRead.serialize_record_for_comparison, actual))
+            expected = set(map(serialize, expected))
+            actual = set(map(serialize, actual))
             missing_expected = set(expected) - set(actual)
 
             assert not missing_expected, f"Stream {stream_name}: All expected records must be produced"
@@ -167,7 +189,3 @@ class TestBasicRead(BaseTest):
             result[record.stream].append(record.data)
 
         return result
-
-    @staticmethod
-    def serialize_record_for_comparison(record: Mapping) -> str:
-        return json.dumps(record, sort_keys=True)

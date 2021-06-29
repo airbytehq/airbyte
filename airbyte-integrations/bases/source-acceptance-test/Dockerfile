@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-python:0.1.4
+FROM python:3.7-slim
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 ENV CODE_PATH="source_acceptance_test"
 
@@ -8,7 +8,7 @@ COPY setup.py ./
 COPY pytest.ini ./
 RUN pip install .
 
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.6
 LABEL io.airbyte.name=airbyte/source-acceptance-test
 
 ENTRYPOINT ["python", "-m", "pytest", "-p", "source_acceptance_test.plugin"]

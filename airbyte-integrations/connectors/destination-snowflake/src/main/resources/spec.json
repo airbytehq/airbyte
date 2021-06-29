@@ -1,6 +1,8 @@
 {
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/snowflake",
   "supportsIncremental": true,
+  "supportsNormalization": true,
+  "supportsDBT": true,
   "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -77,25 +79,38 @@
             "title": "Standard Inserts",
             "additionalProperties": false,
             "description": "Uses <pre>INSERT</pre> statements to send batches of records to Snowflake. Easiest (no setup) but not recommended for large production workloads due to slow speed.",
-            "required": [],
-            "properties": {}
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["Standard"],
+                "default": "Standard"
+              }
+            }
           },
           {
             "title": "AWS S3 Staging",
             "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": [
+              "method",
               "s3_bucket_name",
               "access_key_id",
               "secret_access_key"
             ],
             "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["S3 Staging"],
+                "default": "S3 Staging",
+                "order": 0
+              },
               "s3_bucket_name": {
                 "title": "S3 Bucket Name",
                 "type": "string",
                 "description": "The name of the staging S3 bucket. Airbyte will write files to this bucket and read them via <pre>COPY</pre> statements on Snowflake.",
                 "examples": ["airbyte.staging"],
-                "order": 0
+                "order": 1
               },
               "s3_bucket_region": {
                 "title": "S3 Bucket Region",
@@ -116,10 +131,10 @@
                   "ap-northeast-3",
                   "ap-southeast-1",
                   "ap-southeast-2",
-                  "ap-northeast-1",
                   "ca-central-1",
                   "cn-north-1",
                   "cn-northwest-1",
+                  "eu-central-1",
                   "eu-west-1",
                   "eu-west-2",
                   "eu-west-3",
@@ -128,33 +143,66 @@
                   "sa-east-1",
                   "me-south-1"
                 ],
-                "order": 1
+                "order": 2
               },
               "access_key_id": {
                 "type": "string",
                 "description": "The Access Key Id granting allow one to access the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket.",
                 "title": "S3 Key Id",
                 "airbyte_secret": true,
-                "order": 2
+                "order": 3
               },
               "secret_access_key": {
                 "type": "string",
                 "description": "The corresponding secret to the above access key id.",
                 "title": "S3 Access Key",
                 "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          },
+          {
+            "title": "GCS Staging",
+            "additionalProperties": false,
+            "description": "Writes large batches of records to a file, uploads the file to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
+            "required": [
+              "method",
+              "project_id",
+              "bucket_name",
+              "credentials_json"
+            ],
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": ["GCS Staging"],
+                "default": "GCS Staging",
+                "order": 0
+              },
+              "project_id": {
+                "title": "GCP Project ID",
+                "type": "string",
+                "description": "The name of the GCP project ID for your credentials.",
+                "examples": ["my-project"],
+                "order": 1
+              },
+              "bucket_name": {
+                "title": "GCS Bucket Name",
+                "type": "string",
+                "description": "The name of the staging GCS bucket. Airbyte will write files to this bucket and read them via <pre>COPY</pre> statements on Snowflake.",
+                "examples": ["airbyte-staging"],
+                "order": 2
+              },
+              "credentials_json": {
+                "title": "Google Application Credentials",
+                "type": "string",
+                "description": "The contents of the JSON key file that has read/write permissions to the staging GCS bucket. You will separately need to grant bucket access to your Snowflake GCP service account. See the <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\">GCP docs</a> for more information on how to generate a JSON key for your service account.",
+                "airbyte_secret": true,
+                "multiline": true,
                 "order": 3
               }
             }
           }
         ]
-      },
-      "basic_normalization": {
-        "type": "boolean",
-        "default": true,
-        "description": "Whether or not to normalize the data in the destination. See <a href=\"https://docs.airbyte.io/architecture/basic-normalization\">basic normalization</a> for more details.",
-        "title": "Basic Normalization",
-        "examples": [true, false],
-        "order": 8
       }
     }
   }

@@ -20,6 +20,7 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     module = "pytest"
     command = "-s integration_tests"
 
+    dependsOn ':airbyte-integrations:bases:base-normalization:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
@@ -27,3 +28,12 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
 }
 
 integrationTest.dependsOn("customIntegrationTestPython")
+
+// TODO fix and use https://github.com/airbytehq/airbyte/issues/3192 instead
+task('mypyCheck', type: PythonTask) {
+    module = "mypy"
+    command = "normalization --config-file ${project.rootProject.file('tools/python/.mypy.ini').absolutePath}"
+
+    dependsOn 'blackFormat'
+}
+check.dependsOn mypyCheck

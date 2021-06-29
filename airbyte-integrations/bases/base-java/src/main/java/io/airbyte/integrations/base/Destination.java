@@ -25,8 +25,10 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.util.function.Consumer;
 
 public interface Destination extends Integration {
 
@@ -42,6 +44,13 @@ public interface Destination extends Integration {
    *         or failure.
    * @throws Exception - any exception.
    */
-  AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception;
+  AirbyteMessageConsumer getConsumer(JsonNode config,
+                                     ConfiguredAirbyteCatalog catalog,
+                                     Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception;
+
+  static void defaultOutputRecordCollector(AirbyteMessage message) {
+    System.out.println(Jsons.serialize(message));
+  }
 
 }

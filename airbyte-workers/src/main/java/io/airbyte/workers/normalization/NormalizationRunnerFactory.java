@@ -24,13 +24,9 @@
 
 package io.airbyte.workers.normalization;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.normalization.NormalizationRunner.NoOpNormalizationRunner;
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.workers.process.ProcessFactory;
 import java.util.Map;
-import java.util.Optional;
 
 public class NormalizationRunnerFactory {
 
@@ -42,25 +38,16 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-snowflake", DefaultNormalizationRunner.DestinationType.SNOWFLAKE)
           .build();
 
-  public static NormalizationRunner create(String imageName, ProcessBuilderFactory pbf, JsonNode config) {
-    if (!shouldNormalize(config)) {
-      return new NoOpNormalizationRunner();
-    }
+  public static NormalizationRunner create(String imageName, ProcessFactory processFactory) {
 
     final String imageNameWithoutTag = imageName.split(":")[0];
 
     if (NORMALIZATION_MAPPING.containsKey(imageNameWithoutTag)) {
-      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), pbf);
+      return new DefaultNormalizationRunner(NORMALIZATION_MAPPING.get(imageNameWithoutTag), processFactory);
     } else {
       throw new IllegalStateException(
           String.format("Requested normalization for %s, but it is not included in the normalization mapping.", imageName));
     }
-  }
-
-  private static boolean shouldNormalize(JsonNode config) {
-    return Optional.ofNullable(config.get(WorkerConstants.BASIC_NORMALIZATION_KEY))
-        .map(JsonNode::asBoolean)
-        .orElse(false);
   }
 
 }

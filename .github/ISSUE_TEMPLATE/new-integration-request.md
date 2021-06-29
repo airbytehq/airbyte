@@ -1,17 +1,17 @@
 ---
-name: New Integration request
-about: Suggest a new Integration
+name: New Connector request
+about: Suggest a new Connector
 title: ''
-labels: area/integration, new-integration
+labels: area/connectors, new-connector
 assignees: ''
 
 ---
 
-## Tell us about the new integration you’d like to have
+## Tell us about the new connector you’d like to have
 * Which source and which destination?
 * Do you need a specific version of the underlying data source e.g: you specifically need support for an older version of the API or DB? 
 
-## Describe the context around this new integration
+## Describe the context around this new connector
 * Which team in your company wants this integration, what for? This helps us understand the use case.
 * How often do you want to run syncs?
 * If this is an API source connector, which entities/endpoints do you need supported?

@@ -6,7 +6,7 @@ import useRouter from "components/hooks/useRouterHook";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import StepsMenu from "components/StepsMenu";
-import { FormPageContent } from "components/SourceAndDestinationsBlocks";
+import { FormPageContent } from "components/ConnectorBlocks";
 import CreateEntityView from "./components/CreateEntityView";
 import SourceForm from "./components/SourceForm";
 import DestinationForm from "./components/DestinationForm";
@@ -15,6 +15,9 @@ import { Routes } from "../../../routes";
 import CreateConnectionContent from "components/CreateConnectionContent";
 import SourceResource from "core/resources/Source";
 import DestinationResource from "core/resources/Destination";
+import DestinationDefinitionResource from "core/resources/DestinationDefinition";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
+import HeadTitle from "components/HeadTitle";
 
 type IProps = {
   type: "source" | "destination" | "connection";
@@ -47,11 +50,28 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         }
       : null
   );
+  const sourceDefinition = useResource(
+    SourceDefinitionResource.detailShape(),
+    source
+      ? {
+          sourceDefinitionId: source.sourceDefinitionId,
+        }
+      : null
+  );
+
   const destination = useResource(
     DestinationResource.detailShape(),
     location.state?.destinationId
       ? {
           destinationId: location.state.destinationId,
+        }
+      : null
+  );
+  const destinationDefinition = useResource(
+    DestinationDefinitionResource.detailShape(),
+    destination
+      ? {
+          destinationDefinitionId: destination.destinationDefinitionId,
         }
       : null
   );
@@ -161,20 +181,24 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
           },
         ];
 
+  const titleId = () => {
+    switch (type) {
+      case "connection":
+        return "connection.newConnectionTitle";
+      case "destination":
+        return "destinations.newDestinationTitle";
+      case "source":
+        return "sources.newSourceTitle";
+    }
+  };
+
   return (
     <MainPageWithScroll
-      title={
+      headTitle={<HeadTitle titles={[{ id: titleId() }]} />}
+      pageTitle={
         <PageTitle
           withLine
-          title={
-            type === "connection" ? (
-              <FormattedMessage id="connection.newConnectionTitle" />
-            ) : type === "destination" ? (
-              <FormattedMessage id="destinations.newDestinationTitle" />
-            ) : (
-              <FormattedMessage id="sources.newSourceTitle" />
-            )
-          }
+          title={<FormattedMessage id={titleId()} />}
           middleComponent={
             <StepsMenu lightMode data={steps} activeStep={currentStep} />
           }
@@ -185,8 +209,19 @@ const CreationFormPage: React.FC<IProps> = ({ type }) => {
         {currentStep !== StepsTypes.CREATE_CONNECTION &&
           (!!source || !!destination) && (
             <ConnectionBlock
-              itemFrom={source ? { name: source.name } : undefined}
-              itemTo={destination ? { name: destination.name } : undefined}
+              itemFrom={
+                source
+                  ? { name: source.name, icon: sourceDefinition?.icon }
+                  : undefined
+              }
+              itemTo={
+                destination
+                  ? {
+                      name: destination.name,
+                      icon: destinationDefinition?.icon,
+                    }
+                  : undefined
+              }
             />
           )}
         {renderStep()}

@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -28,7 +30,7 @@ MAIN_REQUIREMENTS = [
     "base-python",
     "backoff==1.10.0",
     "requests==2.25.1",
-    "pendulum==1.2.0",
+    "pendulum==2.1.2",
 ]
 
 TEST_REQUIREMENTS = [

@@ -25,7 +25,6 @@
 package io.airbyte.server.errors;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -38,8 +37,7 @@ public class InvalidJsonInputExceptionMapper implements ExceptionMapper<JsonMapp
   public Response toResponse(JsonMappingException e) {
     return Response.status(422)
         .entity(
-            Jsons.serialize(
-                ImmutableMap.of("message", "Invalid JSON", "details", e.getOriginalMessage())))
+            Jsons.serialize(KnownException.infoFromThrowableWithMessage(e, "Invalid json input. " + e.getMessage() + " " + e.getOriginalMessage())))
         .type("application/json")
         .build();
   }

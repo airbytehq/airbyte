@@ -14,6 +14,7 @@ import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
+import SourceDefinitionResource from "core/resources/SourceDefinition";
 
 const Content = styled.div`
   max-width: 813px;
@@ -43,6 +44,9 @@ const SourceSettings: React.FC<IProps> = ({
       sourceDefinitionId: currentSource.sourceDefinitionId,
     }
   );
+  const sourceDefinition = useResource(SourceDefinitionResource.detailShape(), {
+    sourceDefinitionId: currentSource.sourceDefinitionId,
+  });
 
   const onSubmit = async (values: {
     name: string;
@@ -95,13 +99,7 @@ const SourceSettings: React.FC<IProps> = ({
           isEditMode
           onSubmit={onSubmit}
           formType="source"
-          dropDownData={[
-            {
-              value: currentSource.sourceDefinitionId,
-              text: currentSource.sourceName,
-              img: "/default-logo-catalog.svg",
-            },
-          ]}
+          availableServices={[sourceDefinition]}
           successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           errorMessage={errorStatusRequest?.statusMessage}
           formValues={{

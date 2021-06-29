@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 """
@@ -53,6 +55,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "pytest==6.1.2"],
+    install_requires=["airbyte-cdk", "pytest==6.1.2"],
     package_data={"": ["*.json"]},
 )

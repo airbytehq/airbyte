@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from collections import UserDict
@@ -33,7 +35,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-from airbyte_protocol import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
 from source_acceptance_test.config import Config
 
 

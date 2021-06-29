@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
@@ -50,7 +52,7 @@ class SourceSalesforceSinger(SingerSource):
 
             r = None
             try:
-                logger.info(f"Making POST request to {login_url} with body {login_body}")
+                logger.info(f"Making POST request to {login_url} for check Salesforce credentials")
                 headers = {"Content-Type": "application/x-www-form-urlencoded"}
                 r = requests.post(login_url, headers=headers, data=login_body)
                 if r.status_code == 200:

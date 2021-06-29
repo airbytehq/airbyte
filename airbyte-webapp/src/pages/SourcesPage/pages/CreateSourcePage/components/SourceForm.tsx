@@ -4,14 +4,13 @@ import { FormattedMessage } from "react-intl";
 import ContentCard from "components/ContentCard";
 import ServiceForm from "components/ServiceForm";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
-import config from "config";
 import useRouter from "components/hooks/useRouterHook";
 import { useSourceDefinitionSpecificationLoad } from "components/hooks/services/useSourceHook";
-import { IDataItem } from "components/DropDown/components/ListItem";
 import { JobInfo } from "core/resources/Scheduler";
 import { JobsLogItem } from "components/JobItem";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
+import { SourceDefinition } from "core/resources/SourceDefinition";
 
 type IProps = {
   onSubmit: (values: {
@@ -21,7 +20,7 @@ type IProps = {
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
   afterSelectConnector?: () => void;
-  dropDownData: IDataItem[];
+  sourceDefinitions: SourceDefinition[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
   jobInfo?: JobInfo;
@@ -29,7 +28,7 @@ type IProps = {
 
 const SourceForm: React.FC<IProps> = ({
   onSubmit,
-  dropDownData,
+  sourceDefinitions,
   error,
   hasSuccess,
   jobInfo,
@@ -46,8 +45,8 @@ const SourceForm: React.FC<IProps> = ({
   } = useSourceDefinitionSpecificationLoad(sourceDefinitionId);
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
-    const connector = dropDownData.find(
-      (item) => item.value === sourceDefinitionId
+    const connector = sourceDefinitions.find(
+      (item) => item.sourceDefinitionId === sourceDefinitionId
     );
 
     if (afterSelectConnector) {
@@ -55,9 +54,8 @@ const SourceForm: React.FC<IProps> = ({
     }
 
     AnalyticsService.track("New Source - Action", {
-      user_id: config.ui.workspaceId,
       action: "Select a connector",
-      connector_source_definition: connector?.text,
+      connector_source_definition: connector?.name,
       connector_source_definition_id: sourceDefinitionId,
     });
   };
@@ -77,11 +75,12 @@ const SourceForm: React.FC<IProps> = ({
   return (
     <ContentCard title={<FormattedMessage id="onboarding.sourceSetUp" />}>
       <ServiceForm
-        onDropDownSelect={onDropDownSelect}
+        onServiceSelect={onDropDownSelect}
         onSubmit={onSubmitForm}
         formType="source"
-        dropDownData={dropDownData}
+        availableServices={sourceDefinitions}
         specifications={sourceDefinitionSpecification?.connectionSpecification}
+        documentationUrl={sourceDefinitionSpecification?.documentationUrl}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
         isLoading={isLoading}

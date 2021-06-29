@@ -4,13 +4,16 @@ import styled from "styled-components";
 
 import { Spinner } from "components";
 
+import { SourceDefinition } from "core/resources/SourceDefinition";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+
 import { FormBlock } from "core/form/types";
 import { ServiceFormValues } from "./types";
 import { useServiceForm } from "./serviceFormContext";
 import { FormSection } from "./components/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import EditControls from "./components/EditControls";
-import BottomBlock from "./components/BottomBlock";
+import CreateControls from "./components/CreateControls";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -26,18 +29,18 @@ const LoadingMessage = styled.div`
 `;
 
 const FormRoot: React.FC<{
+  formFields: FormBlock;
+  selectedService?: SourceDefinition | DestinationDefinition;
   hasSuccess?: boolean;
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  formFields: FormBlock;
-  connector?: string;
   onRetest?: () => void;
 }> = ({
   onRetest,
   formFields,
-  connector,
   successMessage,
+  selectedService,
   errorMessage,
   hasSuccess,
   additionBottomControls,
@@ -63,7 +66,7 @@ const FormRoot: React.FC<{
         <LoaderContainer>
           <Spinner />
           <LoadingMessage>
-            <ShowLoadingMessage connector={connector} />
+            <ShowLoadingMessage connector={selectedService?.name} />
           </LoadingMessage>
         </LoaderContainer>
       )}
@@ -83,7 +86,7 @@ const FormRoot: React.FC<{
           successMessage={successMessage}
         />
       ) : (
-        <BottomBlock
+        <CreateControls
           isSubmitting={isSubmitting}
           errorMessage={errorMessage}
           isLoadSchema={isLoadingSchema}

@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import os
@@ -34,7 +36,8 @@ from normalization.transform_catalog.destination_name_transformer import (
 
 @pytest.fixture(scope="function", autouse=True)
 def before_tests(request):
-    # This makes the test run whether it is executed from the tests folder (with pytest/gradle) or from the base-normalization folder (through pycharm)
+    # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
+    # or from the base-normalization folder (through pycharm)
     unit_tests_dir = os.path.join(request.fspath.dirname, "unit_tests")
     if os.path.exists(unit_tests_dir):
         os.chdir(unit_tests_dir)
@@ -184,7 +187,7 @@ def test_normalize_column_name(input_str: str, destination_type: str, expected: 
         ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iii", "Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iii"),
         # over the limit
         ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii", "Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii"),
-        ("Aaaa_Bbbb_Cccc_Dddd_a_very_long_name_Ffff_Gggg_Hhhh_Iiii", "Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii"),
+        ("Aaaa_Bbbb_Cccc_Dddd_Eeee_a_very_long_name_Ffff_Gggg_Hhhh_Iiii", "Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii"),
         ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii_Jjjj_Kkkk", "Aaaa_Bbbb_Cccc_Dddd___g_Hhhh_Iiii_Jjjj_Kkkk"),
         ("ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz_0123456789", "ABCDEFGHIJKLMNOPQRST__qrstuvwxyz_0123456789"),
     ],
@@ -193,7 +196,7 @@ def test_truncate_identifier(input_str: str, expected: str):
     """
     Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
     - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
-    - `Aaaa_Bbbb_Cccc_Dddd_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
+    - `Aaaa_Bbbb_Cccc_Dddd_Eeee_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
 
     Deciding on how to truncate (in the middle) are being verified in these tests.
     In this instance, both strings ends up as:`Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`

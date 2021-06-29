@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -36,6 +38,6 @@ setup(
         "base-singer",
         "pytest==6.1.2",
         "requests",
-        "tap-salesforce==1.4.34",
+        "tap-salesforce @ https://github.com/airbytehq/tap-salesforce/tarball/v1.4.38-airbyte",
     ],
 )

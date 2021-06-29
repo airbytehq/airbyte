@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,22 +20,23 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import setuptools
 
 MAIN_REQUIREMENTS = [
-    "airbyte-protocol",
-    "docker==4.4.4",
-    "PyYAML==5.4.0",
-    "inflection==0.5.1",
-    "icdiff==1.9.1",
-    "pendulum==1.2.0",
-    "pydantic==1.6.1",
-    "pytest==6.1.2",
-    "pytest-sugar==0.9.4",
-    "pytest-timeout==1.4.2",
-    "pprintpp==0.4.0",
+    "airbyte-cdk~=0.1",
+    "docker~=4.4",
+    "PyYAML~=5.4",
+    "icdiff~=1.9",
+    "inflection~=0.5",
+    "pdbpp~=0.10",
+    "pydantic~=1.6",
+    "pytest~=6.1",
+    "pytest-sugar~=0.9",
+    "pytest-timeout~=1.4",
+    "pprintpp~=0.4",
 ]
 
 setuptools.setup(

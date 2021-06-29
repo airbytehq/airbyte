@@ -1,7 +1,0 @@
-{
-  "sourceDefinitionId": "b39a7370-74c3-45a6-ac3a-380d48520a83",
-  "name": "Oracle DB",
-  "dockerRepository": "airbyte/source-oracle",
-  "dockerImageTag": "0.3.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-oracle"
-}

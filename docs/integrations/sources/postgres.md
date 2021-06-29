@@ -51,6 +51,7 @@ Postgres data types are mapped to the following data types when synchronizing da
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
 | Incremental - Append Sync | Yes |  |
+| Replicating Views | Yes |  |
 | Replicate Incremental Deletes | Yes |  |
 | Logical Replication \(WAL\) | Yes |  |
 | SSL Support | Yes |  |
@@ -151,14 +152,14 @@ We recommend using a user specifically for Airbyte's replication so you can mini
 Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`:
 
 ```text
-SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');`
+SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
 This slot **must** use `pgoutput`.
 
 #### Create publications and replication identities for tables
 
-For each table you want to replicate with CDC, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLES <tbl1, tbl2, tbl3>;`. This publication name is customizable. For each of these tables, you will need to run `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;`. **You cannot run `ALTER`/`UPDATE`/`DELETE` commands on a table between the creation of a publication and adding the replica identity**, so we recommend running the `CREATE PUBLICATION` and adding all relevant `REPLICATION IDENTITY` alterations immediately. Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLES <tbl1, tbl2, tbl3>;`. This publication name is customizable. **You must add the replication identity before creating the publication. Otherwise, `ALTER`/`UPDATE`/`DELETE` statements may fail if Postgres cannot determine how to uniquely identify rows.** Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 
 The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 
@@ -215,3 +216,31 @@ Unfortunately, logical replication is not configurable for Google CloudSQL. You 
 
 If you encounter one of those not listed below, please consider [contributing to our docs](https://github.com/airbytehq/airbyte/tree/master/docs) and providing setup instructions.
 
+
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.3.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
+| 0.3.3   | 2021-06-08 | [3960](https://github.com/airbytehq/airbyte/pull/3960) | Add method field in specification parameters |
+| 0.3.2   | 2021-05-26 | [3179](https://github.com/airbytehq/airbyte/pull/3179) | Remove `isCDC` logging |
+| 0.3.1   | 2021-04-21 | [2878](https://github.com/airbytehq/airbyte/pull/2878) | Set defined cursor for CDC |
+| 0.3.0   | 2021-04-21 | [2990](https://github.com/airbytehq/airbyte/pull/2990) | Support namespaces |
+| 0.2.7   | 2021-04-16 | [2923](https://github.com/airbytehq/airbyte/pull/2923) | SSL spec as optional |
+| 0.2.6   | 2021-04-16 | [2757](https://github.com/airbytehq/airbyte/pull/2757) | Support SSL connection |
+| 0.2.5   | 2021-04-12 | [2859](https://github.com/airbytehq/airbyte/pull/2859) | CDC bugfix |
+| 0.2.4   | 2021-04-09 | [2548](https://github.com/airbytehq/airbyte/pull/2548) | Support CDC |
+| 0.2.3   | 2021-03-28 | [2600](https://github.com/airbytehq/airbyte/pull/2600) | Add NCHAR and NVCHAR support to DB and cursor type casting |
+| 0.2.2   | 2021-03-26 | [2460](https://github.com/airbytehq/airbyte/pull/2460) | Destination supports destination sync mode |
+| 0.2.1   | 2021-03-18 | [2488](https://github.com/airbytehq/airbyte/pull/2488) | Sources support primary keys |
+| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.13  | 2021-02-02 | [1887](https://github.com/airbytehq/airbyte/pull/1887) | Migrate AbstractJdbcSource to use iterators |
+| 0.1.12  | 2021-01-25 | [1746](https://github.com/airbytehq/airbyte/pull/1746) | Fix NPE in State Decorator |
+| 0.1.11  | 2021-01-25 | [1765](https://github.com/airbytehq/airbyte/pull/1765) | Add field titles to specification |
+| 0.1.10  | 2021-01-19 | [1724](https://github.com/airbytehq/airbyte/pull/1724) | Fix JdbcSource handling of tables with same names in different schemas |
+| 0.1.9   | 2021-01-14 | [1655](https://github.com/airbytehq/airbyte/pull/1655) | Fix JdbcSource OOM |
+| 0.1.8   | 2021-01-13 | [1588](https://github.com/airbytehq/airbyte/pull/1588) | Handle invalid numeric values in JDBC source |
+| 0.1.7   | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307) | Migrate Postgres and MySql to use new JdbcSource |
+| 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync |
+| 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |

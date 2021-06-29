@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87",
-  "name": "Sendgrid",
-  "dockerRepository": "airbyte/source-sendgrid",
-  "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-sendgrid",
-  "icon": "sendgrid.svg"
-}

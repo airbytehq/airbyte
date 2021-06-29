@@ -1,7 +1,0 @@
-{
-  "sourceDefinitionId": "d1aa448b-7c54-498e-ad95-263cbebcd2db",
-  "name": "Tempo",
-  "dockerRepository": "airbyte/source-tempo",
-  "dockerImageTag": "0.2.2",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-tempo"
-}

@@ -9,8 +9,7 @@ import {
   SchemaList,
 } from "rest-hooks";
 
-import { NetworkError } from "core/request/NetworkError";
-import { AirbyteRequestService } from "../request/AirbyteRequestService";
+import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 // TODO: rename to crud resource after upgrade to rest-hook 5.0.0
 export default abstract class BaseResource extends Resource {
@@ -26,9 +25,12 @@ export default abstract class BaseResource extends Resource {
         "Content-Type": "application/json",
       },
     };
-    if (this.fetchOptionsPlugin) options = this.fetchOptionsPlugin(options);
-    if (body) options.body = JSON.stringify(body);
-
+    if (this.fetchOptionsPlugin) {
+      options = this.fetchOptionsPlugin(options);
+    }
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
     return fetch(url, options);
   }
 
@@ -40,13 +42,7 @@ export default abstract class BaseResource extends Resource {
   ): Promise<T> {
     const response = await this.fetchResponse(method, url, body);
 
-    if (response.status >= 200 && response.status < 300) {
-      return response.status === 204 ? {} : await response.json();
-    } else {
-      const e = new NetworkError(response);
-      e.status = response.status;
-      throw e;
-    }
+    return AirbyteRequestService.parseResponse(response);
   }
 
   static listUrl<T extends typeof Resource>(this: T): string {

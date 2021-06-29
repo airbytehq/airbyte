@@ -26,48 +26,35 @@ package io.airbyte.workers.normalization;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
-import io.airbyte.workers.normalization.NormalizationRunner.NoOpNormalizationRunner;
-import io.airbyte.workers.process.ProcessBuilderFactory;
-import java.util.Collections;
+import io.airbyte.workers.process.ProcessFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 class NormalizationRunnerFactoryTest {
 
-  private static final JsonNode CONFIG_WITH_NORMALIZATION = Jsons.jsonNode(ImmutableMap.of("basic_normalization", true));
-  private ProcessBuilderFactory pbf;
+  private ProcessFactory processFactory;
 
   @BeforeEach
   void setup() {
-    pbf = mock(ProcessBuilderFactory.class);
+    processFactory = mock(ProcessFactory.class);
   }
 
   @Test
   void testMappings() {
     assertEquals(DestinationType.BIGQUERY,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-bigquery:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
+            "airbyte/destination-bigquery:0.1.0", processFactory)).getDestinationType());
     assertEquals(DestinationType.POSTGRES,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-postgres:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
+            "airbyte/destination-postgres:0.1.0", processFactory)).getDestinationType());
     assertEquals(DestinationType.SNOWFLAKE,
         ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-            "airbyte/destination-snowflake:0.1.0", pbf, CONFIG_WITH_NORMALIZATION)).getDestinationType());
+            "airbyte/destination-snowflake:0.1.0", processFactory)).getDestinationType());
     assertThrows(IllegalStateException.class,
-        () -> NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", pbf, CONFIG_WITH_NORMALIZATION));
-  }
-
-  @Test
-  void testShouldNotNormalize() {
-    assertTrue(NormalizationRunnerFactory.create("airbyte/destination-bigquery:0.1.0", pbf,
-        Jsons.jsonNode(Collections.emptyMap())) instanceof NoOpNormalizationRunner);
+        () -> NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", processFactory));
   }
 
 }

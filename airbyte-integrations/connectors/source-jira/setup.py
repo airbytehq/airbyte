@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,9 +20,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
+
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "requests==2.25.1", "pendulum>=1.2.0"]
+
+TEST_REQUIREMENTS = [
+    "pytest==6.1.2",
+    "source-acceptance-test",
+]
 
 setup(
     name="source_jira",
@@ -29,6 +38,9 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-protocol", "base-python", "requests", "pytest==6.1.2"],
+    install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
 )

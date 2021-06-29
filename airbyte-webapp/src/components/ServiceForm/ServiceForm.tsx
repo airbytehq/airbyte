@@ -1,8 +1,6 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Formik } from "formik";
 import { JSONSchema7 } from "json-schema";
-
-import { DropDownRow } from "components";
 
 import {
   useBuildForm,
@@ -13,12 +11,20 @@ import {
 import { ServiceFormValues } from "./types";
 import { ServiceFormContextProvider } from "./serviceFormContext";
 import { FormRoot } from "./FormRoot";
+import RequestConnectorModal from "views/Connector/RequestConnectorModal";
+import { SourceDefinition } from "core/resources/SourceDefinition";
+import { DestinationDefinition } from "core/resources/DestinationDefinition";
+import { FormBaseItem } from "core/form/types";
+import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
+import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
+import { isSourceDefinition } from "core/domain/connector/source";
 
 type ServiceFormProps = {
   formType: "source" | "destination";
   onSubmit: (values: ServiceFormValues) => void;
   onRetest?: (values: ServiceFormValues) => void;
   specifications?: JSONSchema7;
+  documentationUrl?: string;
   isLoading?: boolean;
   isEditMode?: boolean;
   allowChangeConnector?: boolean;
@@ -27,9 +33,8 @@ type ServiceFormProps = {
   additionBottomControls?: React.ReactNode;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
-  dropDownData: Array<DropDownRow.IDataItem>;
-  onDropDownSelect?: (id: string) => void;
-  documentationUrl?: string;
+  availableServices: (SourceDefinition | DestinationDefinition)[];
+  onServiceSelect?: (id: string) => void;
 };
 
 const FormikPatch: React.FC = () => {
@@ -38,7 +43,16 @@ const FormikPatch: React.FC = () => {
 };
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
-  const { specifications, formValues, onSubmit, isLoading, onRetest } = props;
+  const [isOpenRequestModal, setIsOpenRequestModal] = useState(false);
+
+  const {
+    specifications,
+    formType,
+    formValues,
+    onSubmit,
+    isLoading,
+    onRetest,
+  } = props;
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({
       type: "object",
@@ -56,11 +70,45 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     [isLoading, specifications]
   );
 
+  const uiOverrides = useMemo(
+    () => ({
+      name: {
+        component: (property: FormBaseItem) => (
+          <ConnectorNameControl property={property} formType={formType} />
+        ),
+      },
+      serviceType: {
+        component: (property: FormBaseItem) => (
+          <ConnectorServiceTypeControl
+            property={property}
+            formType={formType}
+            documentationUrl={props.documentationUrl}
+            onChangeServiceType={props.onServiceSelect}
+            availableServices={props.availableServices}
+            allowChangeConnector={props.allowChangeConnector}
+            isEditMode={props.isEditMode}
+            onOpenRequestConnectorModal={() => setIsOpenRequestModal(true)}
+          />
+        ),
+      },
+    }),
+    [
+      formType,
+      setIsOpenRequestModal,
+      props.allowChangeConnector,
+      props.availableServices,
+      props.documentationUrl,
+      props.isEditMode,
+      props.onServiceSelect,
+    ]
+  );
+
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
   const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgets(
     formFields,
-    initialValues
+    initialValues,
+    uiOverrides
   );
 
   const validationSchema = useConstructValidationSchema(
@@ -88,22 +136,11 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       });
       return onRetest(valuesToSend);
     },
-    [validationSchema, onRetest]
+    [onRetest, validationSchema]
   );
 
-  //  TODO: dropdownData should be map of entities instead of UI representation
   return (
-    <ServiceFormContextProvider
-      widgetsInfo={uiWidgetsInfo}
-      setUiWidgetsInfo={setUiWidgetsInfo}
-      formType={props.formType}
-      isEditMode={props.isEditMode}
-      allowChangeConnector={props.allowChangeConnector}
-      isLoadingSchema={props.isLoading}
-      onChangeServiceType={props.onDropDownSelect}
-      dropDownData={props.dropDownData}
-      documentationUrl={props.documentationUrl}
-    >
+    <>
       <Formik
         validateOnBlur={true}
         validateOnChange={true}
@@ -112,7 +149,13 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
         onSubmit={onFormSubmit}
       >
         {({ values, setSubmitting }) => (
-          <>
+          <ServiceFormContextProvider
+            widgetsInfo={uiWidgetsInfo}
+            setUiWidgetsInfo={setUiWidgetsInfo}
+            formType={formType}
+            isEditMode={props.isEditMode}
+            isLoadingSchema={props.isLoading}
+          >
             <FormikPatch />
             <FormRoot
               {...props}
@@ -121,17 +164,24 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
                 await onRetestForm(values);
                 setSubmitting(false);
               }}
+              selectedService={props.availableServices.find(
+                (s) =>
+                  (isSourceDefinition(s)
+                    ? s.sourceDefinitionId
+                    : s.destinationDefinitionId) === values.serviceType
+              )}
               formFields={formFields}
-              connector={
-                props.dropDownData?.find(
-                  (item) => item.value === values.serviceType
-                )?.text
-              }
             />
-          </>
+            {isOpenRequestModal && (
+              <RequestConnectorModal
+                connectorType={formType}
+                onClose={() => setIsOpenRequestModal(false)}
+              />
+            )}
+          </ServiceFormContextProvider>
         )}
       </Formik>
-    </ServiceFormContextProvider>
+    </>
   );
 };
 

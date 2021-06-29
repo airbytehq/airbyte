@@ -29,11 +29,10 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardTapConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
@@ -76,21 +75,18 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   @Override
-  public void start(StandardTapConfig input, Path jobRoot) throws Exception {
+  public void start(WorkerSourceConfig sourceConfig, Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
-
-    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(input.getSourceConnectionConfiguration()));
-    IOs.writeFile(jobRoot, WorkerConstants.SOURCE_CATALOG_JSON_FILENAME, Jsons.serialize(input.getCatalog()));
-    if (input.getState() != null) {
-      IOs.writeFile(jobRoot, WorkerConstants.INPUT_STATE_JSON_FILENAME, Jsons.serialize(input.getState().getState()));
-    }
 
     sourceProcess = integrationLauncher.read(jobRoot,
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+        Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        input.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME).start();
+        Jsons.serialize(sourceConfig.getCatalog()),
+        sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
+        sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error);
+    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source");
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
@@ -101,6 +97,12 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Override
   public boolean isFinished() {
     Preconditions.checkState(sourceProcess != null);
+    // As this check is done on every message read, it is important for this operation to be efficient.
+    // Short circuit early to avoid checking the underlying process.
+    var isEmpty = !messageIterator.hasNext();
+    if (!isEmpty) {
+      return false;
+    }
 
     return !sourceProcess.isAlive() && !messageIterator.hasNext();
   }
@@ -127,7 +129,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
         FORCED_SHUTDOWN_DURATION);
 
     if (sourceProcess.isAlive() || sourceProcess.exitValue() != 0) {
-      throw new WorkerException("Source process wasn't successful");
+      LOGGER.warn(
+          "Source process might not have shut down correctly. source process alive: {}, source process exit value: {}. This warning is normal if the job was cancelled.",
+          sourceProcess.isAlive(), sourceProcess.exitValue());
     }
   }
 

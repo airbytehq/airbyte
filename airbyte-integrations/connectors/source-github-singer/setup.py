@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
@@ -30,11 +32,9 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=[
-        "tap-github @ https://github.com/airbytehq/tap-github/tarball/v1.9.4-airbyte",
+        "tap-github @ https://github.com/airbytehq/tap-github/tarball/v1.9.5-airbyte",
         "requests==2.20.0",
-        "airbyte-protocol",
-        "base-singer",
-        "base-python",
+        "airbyte-cdk==0.1.2",
     ],
     package_data={"": ["*.json"]},
 )

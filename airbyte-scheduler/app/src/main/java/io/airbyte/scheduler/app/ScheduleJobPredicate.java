@@ -24,7 +24,7 @@
 
 package io.airbyte.scheduler.app;
 
-import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
-public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, StandardSyncSchedule> {
+public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, StandardSync> {
 
   private final Supplier<Instant> timeSupplier;
 
@@ -42,13 +42,13 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
   }
 
   @Override
-  public boolean test(Optional<Job> previousJobOptional, StandardSyncSchedule standardSyncSchedule) {
+  public boolean test(Optional<Job> previousJobOptional, StandardSync standardSync) {
     // if manual scheduler, then we never programmatically schedule.
-    if (standardSyncSchedule.getManual()) {
+    if (standardSync.getManual()) {
       return false;
     }
 
-    final boolean timeForNewJob = isTimeForNewJob(previousJobOptional, standardSyncSchedule);
+    final boolean timeForNewJob = isTimeForNewJob(previousJobOptional, standardSync);
     return shouldSchedule(previousJobOptional, timeForNewJob);
   }
 
@@ -67,7 +67,7 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  private boolean isTimeForNewJob(Optional<Job> previousJobOptional, StandardSyncSchedule standardSyncSchedule) {
+  private boolean isTimeForNewJob(Optional<Job> previousJobOptional, StandardSync standardSync) {
     // if non-manual scheduler, and there has never been a previous run, always schedule.
     if (previousJobOptional.isEmpty()) {
       return true;
@@ -81,7 +81,7 @@ public class ScheduleJobPredicate implements BiPredicate<Optional<Job>, Standard
     }
 
     long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
-    long nextRunStart = prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSyncSchedule.getSchedule());
+    long nextRunStart = prevRunStart + ScheduleHelpers.getIntervalInSecond(standardSync.getSchedule());
     return nextRunStart < timeSupplier.get().getEpochSecond();
   }
 

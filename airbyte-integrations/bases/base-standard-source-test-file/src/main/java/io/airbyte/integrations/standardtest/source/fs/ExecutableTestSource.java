@@ -27,7 +27,8 @@ package io.airbyte.integrations.standardtest.source.fs;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.standardtest.source.StandardSourceTest;
+import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.nio.file.Path;
@@ -39,7 +40,7 @@ import javax.annotation.Nullable;
  * Extends TestSource such that it can be called using resources pulled from the file system. Will
  * also add the ability to execute arbitrary scripts in the next version.
  */
-public class ExecutableTestSource extends StandardSourceTest {
+public class ExecutableTestSource extends SourceAcceptanceTest {
 
   public static class TestConfig {
 
@@ -119,7 +120,7 @@ public class ExecutableTestSource extends StandardSourceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
     // no-op, for now
   }
 

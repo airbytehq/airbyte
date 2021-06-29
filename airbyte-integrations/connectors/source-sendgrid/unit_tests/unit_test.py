@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,12 +20,14 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
-from source_sendgrid.client import Client
+from airbyte_cdk.logger import AirbyteLogger
+from source_sendgrid.source import SourceSendgrid
 
 
-def test_client_wrong_credentials():
-    client = Client("fake_apikey")
-    status, error = client.health_check()
+def test_source_wrong_credentials():
+    source = SourceSendgrid()
+    status, error = source.check_connection(logger=AirbyteLogger(), config={"apikey": "wrong.api.key123"})
     assert not status

@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "396e4ca3-8a97-4b85-aa4e-c9d8c2d5f992",
-  "name": "Braintree",
-  "dockerRepository": "airbyte/source-braintree-singer",
-  "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-braintree-singer",
-  "icon": "braintree.svg"
-}

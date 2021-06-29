@@ -82,6 +82,18 @@ VERSION=dev docker-compose up
 ./gradlew :airbyte-tests:acceptanceTests
 ```
 
+## Run formatting automation/tests
+
+To format code in the repo, simply run `./gradlew format` at the base of the repo.
+
+Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
+
+```python
+"""
+[FILENAME] includes [INSERT DESCRIPTION OF CONTENTS HERE]
+"""
+```
+
 ### Develop on `airbyte-webapp`
 
 * Spin up Airbyte locally so the UI can make requests against the local API.
@@ -112,7 +124,7 @@ VERSION=dev docker-compose up
 
 ### Resetting the Airbyte developer environment
 
-Sometimes you'll want to reset the data in your local environment. One common case for this is if you are updating an connector's entry in the database \(`airbyte-config/init/src/main/resources/config`\), often the easiest thing to do, is wipe the local database and start it from scratch. To reset your data back to a clean install of Airbyte, follow these steps:
+Sometimes you'll want to reset the data in your local environment. One common case for this is if you are updating an connector's entry in the database \(`airbyte-server/src/main/resources/config`\), often the easiest thing to do, is wipe the local database and start it from scratch. To reset your data back to a clean install of Airbyte, follow these steps:
 
 * Delete the datastore volumes in docker
 

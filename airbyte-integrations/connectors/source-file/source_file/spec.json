@@ -79,6 +79,31 @@
             }
           },
           {
+            "title": "AzBlob: Azure Blob Storage",
+            "required": ["storage", "storage_account"],
+            "properties": {
+              "storage": {
+                "type": "string",
+                "enum": ["AzBlob"],
+                "default": "AzBlob"
+              },
+              "storage_account": {
+                "type": "string",
+                "description": "The globally unique name of the storage account that the desired blob sits within. See <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview\" target=\"_blank\">here</a> for more details."
+              },
+              "sas_token": {
+                "type": "string",
+                "description": "To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a SAS (Shared Access Signature) token. If accessing publicly available data, this field is not necessary.",
+                "airbyte_secret": true
+              },
+              "shared_key": {
+                "type": "string",
+                "description": "To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a storage account shared key (aka account key or access key). If accessing publicly available data, this field is not necessary.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
             "title": "SSH: Secure Shell",
             "required": ["storage", "user", "host"],
             "properties": {

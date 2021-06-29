@@ -26,7 +26,9 @@ package io.airbyte.workers.temporal;
 
 import static java.util.stream.Collectors.toSet;
 
-import io.airbyte.workers.process.ProcessBuilderFactory;
+import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.workers.process.ProcessFactory;
+import io.airbyte.workers.temporal.SyncWorkflow.DbtTransformationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.SyncWorkflow.ReplicationActivityImpl;
 import io.temporal.api.namespace.v1.NamespaceInfo;
@@ -47,12 +49,12 @@ public class TemporalPool implements Runnable {
 
   private final WorkflowServiceStubs temporalService;
   private final Path workspaceRoot;
-  private final ProcessBuilderFactory pbf;
+  private final ProcessFactory processFactory;
 
-  public TemporalPool(WorkflowServiceStubs temporalService, Path workspaceRoot, ProcessBuilderFactory pbf) {
+  public TemporalPool(WorkflowServiceStubs temporalService, Path workspaceRoot, ProcessFactory processFactory) {
     this.temporalService = temporalService;
     this.workspaceRoot = workspaceRoot;
-    this.pbf = pbf;
+    this.processFactory = processFactory;
   }
 
   @Override
@@ -63,48 +65,50 @@ public class TemporalPool implements Runnable {
 
     final Worker specWorker = factory.newWorker(TemporalJobType.GET_SPEC.name());
     specWorker.registerWorkflowImplementationTypes(SpecWorkflow.WorkflowImpl.class);
-    specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(pbf, workspaceRoot));
+    specWorker.registerActivitiesImplementations(new SpecWorkflow.SpecActivityImpl(processFactory, workspaceRoot));
 
     final Worker checkConnectionWorker = factory.newWorker(TemporalJobType.CHECK_CONNECTION.name());
     checkConnectionWorker.registerWorkflowImplementationTypes(CheckConnectionWorkflow.WorkflowImpl.class);
-    checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(pbf, workspaceRoot));
+    checkConnectionWorker.registerActivitiesImplementations(new CheckConnectionWorkflow.CheckConnectionActivityImpl(processFactory, workspaceRoot));
 
     final Worker discoverWorker = factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name());
     discoverWorker.registerWorkflowImplementationTypes(DiscoverCatalogWorkflow.WorkflowImpl.class);
-    discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(pbf, workspaceRoot));
+    discoverWorker.registerActivitiesImplementations(new DiscoverCatalogWorkflow.DiscoverCatalogActivityImpl(processFactory, workspaceRoot));
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name());
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflow.WorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(
-        new ReplicationActivityImpl(pbf, workspaceRoot),
-        new NormalizationActivityImpl(pbf, workspaceRoot));
+        new ReplicationActivityImpl(processFactory, workspaceRoot),
+        new NormalizationActivityImpl(processFactory, workspaceRoot),
+        new DbtTransformationActivityImpl(processFactory, workspaceRoot));
 
     factory.start();
   }
 
-  private void waitForTemporalServerAndLog() {
+  protected void waitForTemporalServerAndLog() {
     LOGGER.info("Waiting for temporal server...");
 
-    while (!getNamespaces(temporalService).contains("default")) {
+    boolean temporalStatus = false;
+
+    while (!temporalStatus) {
       LOGGER.warn("Waiting for default namespace to be initialized in temporal...");
-      wait(2);
+      Exceptions.toRuntime(() -> Thread.sleep(2000));
+
+      try {
+        temporalStatus = getNamespaces(temporalService).contains("default");
+      } catch (Exception e) {
+        // Ignore the exception because this likely means that the Temporal service is still initializing.
+        LOGGER.warn("Ignoring exception while trying to request Temporal namespaces:", e);
+      }
     }
 
     // sometimes it takes a few additional seconds for workflow queue listening to be available
-    wait(5);
+    Exceptions.toRuntime(() -> Thread.sleep(5000));
 
     LOGGER.info("Found temporal default namespace!");
   }
 
-  private static void wait(int seconds) {
-    try {
-      Thread.sleep(seconds * 1000);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
+  protected static Set<String> getNamespaces(WorkflowServiceStubs temporalService) {
     return temporalService.blockingStub()
         .listNamespaces(ListNamespacesRequest.newBuilder().build())
         .getNamespacesList()

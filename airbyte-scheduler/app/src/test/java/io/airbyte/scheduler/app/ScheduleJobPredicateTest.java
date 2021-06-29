@@ -30,7 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.config.Schedule;
-import io.airbyte.config.StandardSyncSchedule;
+import io.airbyte.config.StandardSync;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import java.time.Duration;
@@ -45,7 +45,7 @@ import org.junit.jupiter.params.provider.EnumSource.Mode;
 
 class ScheduleJobPredicateTest {
 
-  private static final StandardSyncSchedule SCHEDULE = new StandardSyncSchedule()
+  private static final StandardSync STANDARD_SYNC = new StandardSync()
       .withManual(false)
       .withSchedule(new Schedule()
           .withTimeUnit(Schedule.TimeUnit.DAYS)
@@ -68,13 +68,13 @@ class ScheduleJobPredicateTest {
 
   @Test
   public void testManualSchedule() {
-    final StandardSyncSchedule standardSyncSchedule = new StandardSyncSchedule().withManual(true);
-    assertFalse(scheduleJobPredicate.test(Optional.empty(), standardSyncSchedule));
+    final StandardSync standardSync = new StandardSync().withManual(true);
+    assertFalse(scheduleJobPredicate.test(Optional.empty(), standardSync));
   }
 
   @Test
   public void testNoPreviousJob() {
-    assertTrue(scheduleJobPredicate.test(Optional.empty(), SCHEDULE));
+    assertTrue(scheduleJobPredicate.test(Optional.empty(), STANDARD_SYNC));
   }
 
   @Test
@@ -82,7 +82,7 @@ class ScheduleJobPredicateTest {
     when(job.getStatus()).thenReturn(JobStatus.SUCCEEDED);
     when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(1)).getEpochSecond()));
 
-    assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE));
+    assertFalse(scheduleJobPredicate.test(Optional.of(job), STANDARD_SYNC));
   }
 
   // use Mode.EXCLUDE so that when new values are added to the enum, these tests will fail if that
@@ -95,7 +95,7 @@ class ScheduleJobPredicateTest {
     when(job.getStatus()).thenReturn(status);
     when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 
-    assertTrue(scheduleJobPredicate.test(Optional.of(job), SCHEDULE), "job status: " + status.toString());
+    assertTrue(scheduleJobPredicate.test(Optional.of(job), STANDARD_SYNC), "job status: " + status.toString());
   }
 
   @ParameterizedTest
@@ -106,7 +106,7 @@ class ScheduleJobPredicateTest {
     when(job.getStatus()).thenReturn(status);
     when(job.getStartedAtInSecond()).thenReturn(Optional.of(now.minus(Duration.ofDays(2)).getEpochSecond()));
 
-    assertFalse(scheduleJobPredicate.test(Optional.of(job), SCHEDULE), "job status: " + status.toString());
+    assertFalse(scheduleJobPredicate.test(Optional.of(job), STANDARD_SYNC), "job status: " + status.toString());
   }
 
 }

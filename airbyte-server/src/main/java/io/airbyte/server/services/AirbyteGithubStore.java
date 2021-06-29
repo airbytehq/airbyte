@@ -43,24 +43,26 @@ public class AirbyteGithubStore {
 
   private static final String GITHUB_BASE_URL = "https://raw.githubusercontent.com";
   private static final String SOURCE_DEFINITION_LIST_LOCATION_PATH =
-      "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml";
+      "/airbytehq/airbyte/master/airbyte-server/src/main/resources/seed/source_definitions.yaml";
   private static final String DESTINATION_DEFINITION_LIST_LOCATION_PATH =
-      "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml";
+      "/airbytehq/airbyte/master/airbyte-server/src/main/resources/seed/destination_definitions.yaml";
 
   private static final HttpClient httpClient = HttpClient.newHttpClient();
 
   private final String baseUrl;
+  private final Duration timeout;
 
   public static AirbyteGithubStore production() {
-    return new AirbyteGithubStore(GITHUB_BASE_URL);
+    return new AirbyteGithubStore(GITHUB_BASE_URL, Duration.ofSeconds(30));
   }
 
-  public static AirbyteGithubStore test(String testBaseUrl) {
-    return new AirbyteGithubStore(testBaseUrl);
+  public static AirbyteGithubStore test(String testBaseUrl, Duration timeout) {
+    return new AirbyteGithubStore(testBaseUrl, timeout);
   }
 
-  public AirbyteGithubStore(String baseUrl) {
+  public AirbyteGithubStore(String baseUrl, Duration timeout) {
     this.baseUrl = baseUrl;
+    this.timeout = timeout;
   }
 
   public List<StandardDestinationDefinition> getLatestDestinations() throws IOException, InterruptedException {
@@ -75,7 +77,7 @@ public class AirbyteGithubStore {
   String getFile(String filePathWithSlashPrefix) throws IOException, InterruptedException {
     final var request = HttpRequest
         .newBuilder(URI.create(baseUrl + filePathWithSlashPrefix))
-        .timeout(Duration.ofSeconds(1))
+        .timeout(timeout)
         .header("accept", "*/*") // accept any file type
         .build();
     return httpClient.send(request, BodyHandlers.ofString()).body();

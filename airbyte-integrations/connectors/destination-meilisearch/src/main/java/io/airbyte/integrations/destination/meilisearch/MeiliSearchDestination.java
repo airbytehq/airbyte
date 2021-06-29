@@ -33,13 +33,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +82,8 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MeiliSearchDestination.class);
 
+  private static final int MAX_BATCH_SIZE = 10000;
+
   public static final String AB_PK_COLUMN = "_ab_pk";
 
   @Override
@@ -101,17 +104,21 @@ public class MeiliSearchDestination extends BaseConnector implements Destination
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  public AirbyteMessageConsumer getConsumer(JsonNode config,
+                                            ConfiguredAirbyteCatalog catalog,
+                                            Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
     final Client client = getClient(config);
     final Map<String, Index> indexNameToIndex = createIndices(catalog, client);
 
     return new BufferedStreamConsumer(
+        outputRecordCollector,
         () -> LOGGER.info("Starting write to MeiliSearch."),
         recordWriterFunction(indexNameToIndex),
         (hasFailed) -> LOGGER.info("Completed writing to MeiliSearch. Status: {}", hasFailed ? "FAILED" : "SUCCEEDED"),
         catalog,
-        AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog),
-        (data) -> true);
+        (data) -> true,
+        MAX_BATCH_SIZE);
   }
 
   private static Map<String, Index> createIndices(ConfiguredAirbyteCatalog catalog, Client client) throws Exception {

@@ -25,9 +25,11 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import io.airbyte.api.model.CheckConnectionRead;
 import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.ConnectionIdRequestBody;
+import io.airbyte.api.model.ConnectionState;
 import io.airbyte.api.model.DestinationCoreConfig;
 import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
@@ -51,6 +53,8 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.State;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -75,9 +79,15 @@ import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SchedulerHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
 
   private final ConfigRepository configRepository;
   private final SchedulerJobClient schedulerJobClient;
@@ -157,7 +167,8 @@ public class SchedulerHandler {
 
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceConnection updatedSource = configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getConnectionConfiguration());
+    final SourceConnection updatedSource =
+        configurationUpdate.source(sourceUpdate.getSourceId(), sourceUpdate.getName(), sourceUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpecFromSourceDefinitionId(updatedSource.getSourceDefinitionId());
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedSource.getConfiguration());
@@ -192,7 +203,7 @@ public class SchedulerHandler {
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(DestinationUpdate destinationUpdate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationConnection updatedDestination = configurationUpdate
-        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getConnectionConfiguration());
+        .destination(destinationUpdate.getDestinationId(), destinationUpdate.getName(), destinationUpdate.getConnectionConfiguration());
 
     final ConnectorSpecification spec = getSpecFromDestinationDefinitionId(updatedDestination.getDestinationDefinitionId());
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedDestination.getConfiguration());
@@ -263,6 +274,8 @@ public class SchedulerHandler {
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
+        .supportsNormalization(spec.getSupportsNormalization())
+        .supportsDbt(spec.getSupportsDBT())
         .destinationDefinitionId(destinationDefinitionId);
   }
 
@@ -284,12 +297,19 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
     final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
 
+    final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
+    for (var operationId : standardSync.getOperationIds()) {
+      final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
+      standardSyncOperations.add(standardSyncOperation);
+    }
+
     final Job job = schedulerJobClient.createOrGetActiveSyncJob(
         source,
         destination,
         standardSync,
         sourceImageName,
-        destinationImageName);
+        destinationImageName,
+        standardSyncOperations);
 
     return JobConverter.getJobInfoRead(job);
   }
@@ -304,9 +324,27 @@ public class SchedulerHandler {
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
     final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
 
-    final Job job = schedulerJobClient.createOrGetActiveResetConnectionJob(destination, standardSync, destinationImageName);
+    final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
+    for (var operationId : standardSync.getOperationIds()) {
+      final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
+      standardSyncOperations.add(standardSyncOperation);
+    }
+
+    final Job job = schedulerJobClient.createOrGetActiveResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations);
 
     return JobConverter.getJobInfoRead(job);
+  }
+
+  public ConnectionState getState(ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
+    final Optional<State> currentState = jobPersistence.getCurrentState(connectionIdRequestBody.getConnectionId());
+    LOGGER.info("currentState server: {}", currentState);
+
+    final ConnectionState connectionState = new ConnectionState()
+        .connectionId(connectionIdRequestBody.getConnectionId());
+
+    currentState.ifPresent(state -> connectionState.state(state.getState()));
+
+    return connectionState;
   }
 
   public JobInfoRead cancelJob(JobIdRequestBody jobIdRequestBody) throws IOException {

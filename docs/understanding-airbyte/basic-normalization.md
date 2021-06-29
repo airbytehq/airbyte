@@ -1,5 +1,21 @@
 # Basic Normalization
 
+At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT process. These steps can also be referred in Airbyte's dialect as "Source" and "Destination".
+
+However, this is actually producing a table in the destination with a JSON blob column... For the typical analytics use case, you probably want this json blob normalized so that each field is its own column.
+
+So, after EL, comes the T \(transformation\) and the first T step that Airbyte actually applies on top of the extracted data is called "Normalization".
+
+Airbyte runs this step before handing the final data over to other tools that will manage further transformation down the line.
+
+To summarize, we can represent the ELT process in the diagram below. These are steps that happens between your "Source Database or API" and the final "Replicated Tables" with examples of implementation underneath:
+
+![](../.gitbook/assets/connecting-EL-with-T-4.png)
+
+In Airbyte, the current normalization option is implemented using a dbt Transformer composed of:
+- Airbyte base-normalization python package to generate dbt SQL models files
+- dbt to compile and executes the models on top of the data in the destinations that supports it.
+
 ## Overview
 
 Basic Normalization uses a fixed set of rules to map a json object from a source to the types and format that are native to the destination. For example if a source emits data that looks like this:
@@ -30,9 +46,9 @@ CREATE TABLE "cars" (
 
 You'll notice that we add some metadata to keep track of important information about each record.
 
-The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out DBT.
+The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out dbt.
 
-Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`. If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`. Under the hood, Airbyte is using DBT, which means that the data only ingresses into the data store one time. The normalization happens as a query within the datastore. This implementation avoids extra network time and costs.
+Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`. If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`. Under the hood, Airbyte is using dbt, which means that the data only ingresses into the data store one time. The normalization happens as a query within the datastore. This implementation avoids extra network time and costs.
 
 ## Destinations that Support Basic Normalization
 
@@ -196,7 +212,7 @@ The expanded table would have a conflict in terms of naming since both are named
 * Hash: Hash of the entire json path to reach the nested column reduced to 3 characters. This is to make sure we have a unique name \(in case part of the name gets truncated, see below\)
 * Nested column name: name of the column being expanded into its own table.
 
-By following this strategy, nested columns should "never" collide with other table names. If it does, an exception will probably be thrown either by the normalization process or by DBT that runs afterward.
+By following this strategy, nested columns should "never" collide with other table names. If it does, an exception will probably be thrown either by the normalization process or by dbt that runs afterward.
 
 ```sql
 CREATE TABLE "cars" (
@@ -243,8 +259,21 @@ As an example from the hubspot source, we could have the following tables with n
 | Final table name of expanded nested column on BigQuery | companies\_2e8\_property\_engag**ements\_last\_meeting\_bo**oked\_campaign | deals\_prop**erties**\_6e6\_engagements\_l**ast\_meeting\_**booked\_medium |
 | Final table name of expanded nested column on Postgres | companies\_2e8\_property\_engag**\_\_**oked\_campaign | deals\_prop\_6e6\_engagements\_l**\_\_**booked\_medium |
 
-Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overriden by your own custom choices. To do so, you can follow the following tutorial
+As mentioned in the overview:
 
-* to build a [custom SQL view]() with your own naming conventions
-* to export, edit and run [custom DBT normalization](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
+- Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`.
+- If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`.
+- In certain pathological cases, basic normalization is required to generate large models with many columns and multiple intermediate transformation steps for a stream. This may break down the "ephemeral" materialization strategy and require the use of additional intermediate views or tables instead. As a result, you may notice additional temporary tables being generated in the destination to handle these checkpoints.
 
+## UI Configurations
+
+To enable basic normalization (which is optional), you can toggle it on or disable it in the "Normalization and Transformation" section when setting up your connection:
+
+![](../.gitbook/assets/basic-normalization-configuration.png)
+
+## Extending Basic Normalization
+
+Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overridden by your own custom choices. To do so, you can follow the following tutorials:
+
+* to build a [custom SQL view](../tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
+* to export, edit and run [custom dbt normalization](../tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
