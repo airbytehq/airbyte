@@ -54,7 +54,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -229,16 +229,17 @@ public class KubePodProcess extends Process {
         .replaceAll("STDERR_PIPE_FILE", STDERR_PIPE_FILE)
         .replaceAll("STDOUT_PIPE_FILE", STDOUT_PIPE_FILE);
 
-    return new ContainerBuilder()
+    final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName("main")
         .withImage(image)
         .withCommand("sh", "-c", mainCommand)
         .withWorkingDir(CONFIG_DIR)
-        .withVolumeMounts(mainVolumeMounts)
-        .withResources(new ResourceRequirementsBuilder()
-            .withLimits(toResourceMap(resourceRequirements))
-            .build())
-        .build();
+        .withVolumeMounts(mainVolumeMounts);
+    final ResourceRequirementsBuilder resourceRequirementsBuilder = getResourceRequirementsBuilder(resourceRequirements);
+    if (resourceRequirementsBuilder != null) {
+      containerBuilder.withResources(resourceRequirementsBuilder.build());
+    }
+    return containerBuilder.build();
   }
 
   private static void copyFilesToKubeConfigVolume(ApiClient officialClient, String podName, String namespace, Map<String, String> files) {
@@ -599,13 +600,19 @@ public class KubePodProcess extends Process {
     return getReturnCode(podDefinition);
   }
 
-  private static Map<String, Quantity> toResourceMap(ResourceRequirements resourceRequirements) {
+  private static ResourceRequirementsBuilder getResourceRequirementsBuilder(ResourceRequirements resourceRequirements) {
     if (resourceRequirements != null) {
-      return Map.of(
-          "cpu", Quantity.parse(resourceRequirements.getCpu()),
-          "memory", Quantity.parse(resourceRequirements.getMemory()));
+      final Map<String, Quantity> resourceMap = new HashMap<>();
+      // if null then use unbounded resource allocation
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpu())) {
+        resourceMap.put("cpu", Quantity.parse(resourceRequirements.getCpu()));
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemory())) {
+        resourceMap.put("memory", Quantity.parse(resourceRequirements.getMemory()));
+      }
+      return new ResourceRequirementsBuilder().withLimits(resourceMap);
     }
-    return Collections.emptyMap();
+    return null;
   }
 
 }

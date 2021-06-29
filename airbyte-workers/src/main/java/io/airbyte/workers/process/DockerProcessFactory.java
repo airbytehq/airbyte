@@ -34,6 +34,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.fabric8.kubernetes.api.model.Quantity;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -104,8 +105,6 @@ public class DockerProcessFactory implements ProcessFactory {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
-      // TODO convert resourceRequirements for docker
-
       final List<String> cmd =
           Lists.newArrayList(
               "docker",
@@ -125,6 +124,15 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add("--entrypoint");
         cmd.add(entrypoint);
       }
+      if (resourceRequirements != null) {
+        if (!Strings.isNullOrEmpty(resourceRequirements.getCpu())) {
+          cmd.add(String.format("--cpus=%s", resourceRequirements.getCpu());
+        }
+        if (!Strings.isNullOrEmpty(resourceRequirements.getMemory())) {
+          cmd.add(String.format("--memory=%s", resourceRequirements.getMemory());
+        }
+      }
+
       cmd.add(imageName);
       cmd.addAll(Arrays.asList(args));
 

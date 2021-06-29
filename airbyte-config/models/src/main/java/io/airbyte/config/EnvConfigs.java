@@ -62,8 +62,8 @@ public class EnvConfigs implements Configs {
   private static final String RESOURCE_REQUIREMENT_CPU = "RESOURCE_REQUIREMENT_CPU";
   private static final String RESOURCE_REQUIREMENT_MEMORY = "RESOURCE_REQUIREMENT_MEMORY";
   private static final String DEFAULT_KUBE_NAMESPACE = "default";
-  private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = "1";
-  private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = "2G";
+  private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
+  private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
