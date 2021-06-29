@@ -17,16 +17,17 @@ Right now we are in alpha, so we're releasing versions a lot more frequently tha
 normal. You can help us get to the root of the problem faster by filling out the
 questionnaire below!
 
-You can remove any comment block using these tags <-- info --/>
+It's really important having all information and context. 
+You can remove the examples bellow and fill out with your information.
 
 --> 
 
 ## Enviroment
-- **Airbyte version**:  eg: 0.22.0-alpha
-- **OS Version / Instance**: eg: macOS, Windows 7/10, Ubuntu 18.04, GCP n2. / AWS EC2 -->
-- **Deployment**: eg: Docker or Kubernetes
-- **Source Connector and version** eg: (if applicable) Salesforce 0.2.3 <!-- Found in the admin page in the UI in the Source tab. -->
-- **Destination Connector and version** eg: (if applicable): Postgres 0.3.3 <!-- Found in the admin page in the UI in the Destination tab. -->
+- **Airbyte version**:  example is 0.22.0-alpha
+- **OS Version / Instance**: example macOS, Windows 7/10, Ubuntu 18.04, GCP n2. , AWS EC2
+- **Deployment**: example are Docker or Kubernetes deploy env
+- **Source Connector and version**: (if applicable example Salesforce 0.2.3) <!-- Found in the admin page in the UI in the Source tab. -->
+- **Destination Connector and version**: (if applicable example Postgres 0.3.3) <!-- Found in the admin page in the UI in the Destination tab. -->
 - **Severity**: Very Low / Low / Medium / High / Critical
 - **Step where error happened**: Deploy / Sync job / Setup new connection / Update connector / Upgrade Airbyte
 
@@ -40,11 +41,7 @@ You can remove any comment block using these tags <-- info --/>
 *If applicable, please upload the logs from the failing operation. 
 For sync jobs, you can download the full logs from the UI by going to the sync attempt page and 
 clicking the download logs button at the top right of the logs display window.*
-<!-- You can remove this block.
 
-If you share the complete log you can put them inside the details tag.
-This helps with keeping the issue easy to read.
-e.g:
 <details><summary>LOG</summary> 
 ```
 
@@ -54,7 +51,6 @@ output here
 
 ```
 </details>
--->
 
 ## Steps to Reproduce
 1.
