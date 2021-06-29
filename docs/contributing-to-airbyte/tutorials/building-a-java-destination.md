@@ -76,7 +76,7 @@ This will build the code and run any unit tests. This approach is great when you
 
 **TDD using acceptance tests & integration tests**
 
-Airbyte provides a standard test suite (dubbed "Destination Acceptance Tests") that is run against every Airbyte destination connector. The objective of these tests is to provide some "free" baseline tests that ensure that the basic functionality of the destination works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
+Airbyte provides a standard test suite (dubbed "Acceptance Tests") that runs against every destination connector. They are "free" baseline tests to ensure the basic functionality of the destination. When developing a connector, you can simply run the tests between each change and use the feedback to guide your development.
 
 If you want to try out this approach, check out Step 6 which describes what you need to do to set up the acceptance Tests for your destination.
 
@@ -107,9 +107,9 @@ The nice thing about this approach is that you are running your destination exac
 
 ### Step 3: Implement `spec`
 
-Each destination contains a specification that describes what inputs it needs in order to run. Defining the specification is a good place to start when developing your destination. The easiest way is to use [JsonSchema](https://json-schema.org/) to define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres destination.
+Each destination contains a specification written in JsonSchema that describes its inputs. Defining the specification is a good place to start when developing your destination. Check out the documentation [here](https://json-schema.org/) to learn the syntax. Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres destination.
 
-Your generated template should have the spec file in `airbyte-integrations/connectors/destination-<name>/src/main/resources/spec.json`. Edit it and you should be done with this step. 
+Your generated template should have the spec file in `airbyte-integrations/connectors/destination-<name>/src/main/resources/spec.json`. The generated connector will take care of reading this file and converting it to the correct output. Edit it and you should be done with this step. 
 
 For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-specification.md).
 
