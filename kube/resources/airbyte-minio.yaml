@@ -61,7 +61,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: airbyte-minio
+  name: airbyte-minio-svc
 spec:
   ports:
     - port: 9000
