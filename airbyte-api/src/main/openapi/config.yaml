@@ -2579,7 +2579,7 @@ components:
     ConnectionStateObject:
       type: object
     ResourceRequirements:
-      description: optional resource requirements to run workers
+      description: optional resource requirements to run workers (blank for unbounded allocations)
       type: object
       properties:
         cpu:
