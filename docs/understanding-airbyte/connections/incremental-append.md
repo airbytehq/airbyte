@@ -97,7 +97,7 @@ Additionally, you may run into behavior where you see the same row being emitted
 Due to the use of a cursor column, if modifications to the underlying records are made without properly updating the cursor field, then the updated records won't be picked up by the **Incremental** sync as expected since the source connectors extract delta rows using a SQL query looking like:
 
 ```sql
-select * from table where cursor_field > 'last_sync_max_cursor_field_value'
+SELECT * FROM table WHERE cursor_field >= 'last_sync_max_cursor_field_value'
 ```
 
 Let's say the following data already exists into our data warehouse.
