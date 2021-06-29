@@ -107,7 +107,7 @@ The nice thing about this approach is that you are running your destination exac
 
 ### Step 3: Implement `spec`
 
-Each destination contains a specification that describes what inputs it needs in order to run. Defining the specification is a good place to start when developing your destination. The easiest way is to use [JsonSchema](https://json-schema.org/) to define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres destination.
+Each destination contains a specification written in JsonSchema that describes its inputs. Defining the specification is a good place to start when developing your destination. Check out the documentation [here](https://json-schema.org/) to learn the syntax. Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres destination.
 
 Your generated template should have the spec file in `airbyte-integrations/connectors/destination-<name>/src/main/resources/spec.json`. Edit it and you should be done with this step. 
 
