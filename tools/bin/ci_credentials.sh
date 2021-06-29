@@ -23,6 +23,7 @@ function write_standard_creds() {
 
 write_standard_creds destination-bigquery "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
 write_standard_creds destination-bigquery-denormalized "$BIGQUERY_INTEGRATION_TEST_CREDS" "credentials.json"
+write_standard_creds destination-pubsub "$DESTINATION_PUBSUB_TEST_CREDS" "credentials.json"
 write_standard_creds destination-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "insert_config.json"
 write_standard_creds destination-snowflake "$SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS" "copy_s3_config.json"
 write_standard_creds destination-snowflake "$SNOWFLAKE_GCS_COPY_INTEGRATION_TEST_CREDS" "copy_gcs_config.json"
@@ -91,3 +92,4 @@ write_standard_creds source-zoom-singer "$ZOOM_INTEGRATION_TEST_CREDS"
 write_standard_creds source-plaid "$PLAID_INTEGRATION_TEST_CREDS"
 write_standard_creds source-file "$AZURE_STORAGE_INTEGRATION_TEST_CREDS" "azblob.json"
 write_standard_creds source-snowflake "$SNOWFLAKE_INTEGRATION_TEST_CREDS" "config.json"
+write_standard_creds source-aws-cloudtrail "$SOURCE_AWS_CLOUDTRAIL_CREDS"
