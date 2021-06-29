@@ -1,16 +1,20 @@
 # Troubleshooting
 
-This section try to collect common issues users have and give the solution.
-Not all problems are listed here and if this is your case, you can send a message in 
-our #issue Slack channel. Take a look here to get the template this really helps us
-understand what is happening.
+This section is aimed at collecting common issues users have to provide quick solutions. 
+There are some sections you can find:
+- [On Deployment](on-deployment.md): 
+- [On Setting up a New Connection](new-connection.md)
+- [On Running a Sync](running-sync.md)
+- [On Upgrading](on-upgrading.md)
 
 
+If you don't see your issue listed in those sections, you can send a message in our #issues Slack channel.
+Using the template bellow will allow us to address your issue quickly and will give us full understanding of your situation.
 
 
-## Slack issue template
+## Slack Issue Template
 
-**Is your first time deploying Airbyte**: No / Yes <br>
+**Is this your first time deploying Airbyte**: No / Yes <br>
 **OS Version / Instance**: Ubuntu 18.04, Mac OS, Windows, GCP , EC2 micro.a4 <br>
 **Memory / Disk**: 16Gb / 1Tb SSD <br>
 **Deployment**: Docker / Kubernetes <br>
@@ -18,8 +22,7 @@ understand what is happening.
 **Source name/version**: File 0.24 <br>
 **Destination name/version**: Postgres 0.3.0 <br>
 **Step**: Setting new connection, source / On sync <br>
-**Description**: I'm trying to sync for the first time and the process never finish.
-I had enable CDC and other cool features. <br>
+**Description**: I'm trying to sync for the first time and the process doesn't finish. I had enabled CDC and other cool features. <br>
 
 Add the logs and other relevant information in the message thread.
 Below is an example:
