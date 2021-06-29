@@ -3,8 +3,8 @@
     <Properties>
         <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %X - %m%n</Property>
         <Property name="default-worker-file-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %p (%X{job_root}) %C{1}(%M):%L - %m%n</Property>
-        <Property name="log-level">$${env:LOG_LEVEL}</Property>
-
+        <!-- Always log INFO by default. -->
+        <Property name="log-level">$${env:LOG_LEVEL:-INFO}</Property>
         <Property name="s3-bucket">$${env:S3_LOG_BUCKET}</Property>
         <Property name="s3-region">$${env:S3_LOG_BUCKET_REGION}</Property>
         <Property name="s3-aws-key">$${env:AWS_ACCESS_KEY_ID}</Property>
