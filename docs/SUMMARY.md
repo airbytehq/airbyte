@@ -142,6 +142,7 @@
       * [Building a Connector: The Hard Way](contributing-to-airbyte/tutorials/build-a-connector-the-hard-way.md)
       * [Adding Incremental to a Source](contributing-to-airbyte/tutorials/adding-incremental-sync.md)
       * [Building a Python Source](contributing-to-airbyte/tutorials/building-a-python-source.md)
+      * [Building a Java Destination](contributing-to-airbyte/tutorials/building-a-java-destination.md)
   * [Code Style](contributing-to-airbyte/code-style.md)
   * [Gradle Cheatsheet](contributing-to-airbyte/gradle-cheatsheet.md)
   * [Updating Documentation](contributing-to-airbyte/updating-documentation.md)
