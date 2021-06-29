@@ -114,6 +114,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: AWS_SECRET_ACCESS_KEY
+            - name: RESOURCE_REQUIREMENT_CPU
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_REQUIREMENT_CPU
+            - name: RESOURCE_REQUIREMENT_MEMORY
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_REQUIREMENT_MEMORY
           ports:
             - containerPort: 8001
           volumeMounts:
