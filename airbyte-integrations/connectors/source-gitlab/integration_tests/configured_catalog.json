@@ -25,7 +25,7 @@
         "name": "branches",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["project_id"], ["name"]]
+        "source_defined_primary_key": [["name"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -37,7 +37,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["created_at"],
-        "source_defined_primary_key": [["project_id"], ["id"]]
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
@@ -50,7 +50,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["project_id"], ["id"]]
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
@@ -61,7 +61,7 @@
         "name": "jobs",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["project_id"], ["pipeline_id"], ["id"]]
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -133,7 +133,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["project_id"], ["id"]]
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
@@ -141,10 +141,20 @@
     },
     {
       "stream": {
+        "name": "merge_request_commits",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "releases",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["project_id"], ["name"]]
+        "source_defined_primary_key": [["name"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -154,7 +164,7 @@
         "name": "tags",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["project_id"], ["name"]]
+        "source_defined_primary_key": [["name"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -166,7 +176,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["project_id"], ["pipeline_id"], ["id"]]
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
@@ -174,7 +184,7 @@
     },
     {
       "stream": {
-        "name": "users",
+        "name": "pipelines_extended",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
@@ -184,24 +194,10 @@
     },
     {
       "stream": {
-        "name": "merge_request_commits",
+        "name": "users",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [
-          ["project_id"],
-          ["merge_request_iid"],
-          ["id"]
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "pipelines_extended",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["project_id"], ["id"]]
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
