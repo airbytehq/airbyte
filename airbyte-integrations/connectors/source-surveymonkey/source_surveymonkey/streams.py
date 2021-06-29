@@ -45,6 +45,17 @@ class SurveymonkeyStream(HttpStream, ABC):
         self._start_date = start_date
         super().__init__(**kwargs)
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        """
+        # respecting daily limit if valid
+            daily_limit_remaining = response.headers.get('X-Ratelimit-App-Global-Day-Remaining')
+            if daily_limit_remaining and daily_limit_remaining<=0:
+                return response.headers.get('X-Ratelimit-App-Global-Day-Reset')
+        """
+        minute_limit_remaining = response.headers.get("X-Ratelimit-App-Global-Minute-Remaining")
+        if minute_limit_remaining and minute_limit_remaining <= 1:
+            return 60
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
         links = resp_json.get("links", {})
@@ -79,6 +90,10 @@ class SurveymonkeyStream(HttpStream, ABC):
             yield from super().read_records(
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
+        """
+        We need to save all the request - to main stream, to details etc. So we need to use all epizodes construct,
+        since we need much more to save then 1 request.
+        """
 
 
 class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
@@ -128,10 +143,7 @@ class Surveys(IncrementalSurveymonkeyStream):
         return "surveys"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        if response_json.get("error"):
-            raise Exception(response_json.get("error"))
-        result = response_json.get(self.data_field, [])
+        result = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for record in result:
             substream = SurveyDetails(survey_id=record["id"], start_date=self._start_date, authenticator=self.authenticator)
             child_record = substream.read_records(sync_mode=SyncMode.full_refresh)
@@ -142,7 +154,23 @@ class SurveyDetails(SurveymonkeyStream):
     """
     Actually stream above can just filter, sort and enumarate survey ids.
     It does not contain the needed information. I will need it as stream slice source
-    in all of endpoints
+    in all of endpoints.
+
+    SOME requested explanation about implmentation.
+    Actually, /id/details endpoint contains full data about pages and questions. This data is already collected and
+    gathered into array [pages] and array of arrays questions, where each inner array contains data about certain page.
+    Example [[q1, q2,q3], [q4,q5]] means we have 2 pages, first page contains 3 questions q1, q2, q3, second page contains other.
+
+    If we use "normal" query, we need to query surveys/id/pages for page enumeration,
+        then we need to query each page id in every new request for details (becuase `pages` doesn't contain full info
+        and valid only for enumeration), then for each page need to enumerate questions and get each question id for details
+        (since `/surveys/id/pages/id/questions` without ending /id also doesnt contain full info,
+
+    In other words, we need to have triple stream slices, send 100500 requests (please note that api is very very limited
+    and we need details for each survey etc), and finally we get a response similar to those we can have from /id/details
+    endpoint. Also we will need to gather info to array in case of overrequesting, but details is already gathered for us.
+    We just need to apply filtering or small data transformation against array.
+    So this way is logically and timely better and very very much better in a matter of API limits.
     """
 
     def __init__(self, survey_id, start_date, **kwargs):
@@ -153,9 +181,10 @@ class SurveyDetails(SurveymonkeyStream):
         return f"surveys/{self.survey_id}/details"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        # no inheritance since we dont need to access data_field
         response_json = response.json()
         if response_json.get("error"):
-            raise Exception(response_json.get("error"))
+            raise Exception(repr(response_json.get("error")))
         response_json.pop("pages", None)
         yield response_json
 
@@ -175,10 +204,11 @@ class SurveyPages(SurveymonkeyStream):
             yield {"survey_id": survey["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        # no inheritance since we dont need to access data_field
         response_json = response.json()
         data = response_json.get(self.data_field)
         if response_json.get("error"):
-            raise Exception(response_json.get("error"))
+            raise Exception(repr(response_json.get("error")))
         for record in data:
             record.pop("questions", None)
             yield record
