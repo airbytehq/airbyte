@@ -13,6 +13,9 @@ RUN chmod +x wait
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
+RUN mkdir latest_seeds
+COPY build/resources/main/config latest_seeds
+
 RUN tar xf ${APPLICATION}.tar --strip-components=1
 
 # wait for upstream dependencies to become available before starting server
