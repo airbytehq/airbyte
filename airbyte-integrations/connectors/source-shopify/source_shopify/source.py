@@ -88,6 +88,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     @property
     def limit(self):
         return super().limit
+
     # Setting the check point interval to the limit of the records output
     state_checkpoint_interval = limit
     # Setting the default cursor field for all streams
@@ -102,7 +103,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
             params = {"limit": self.limit, **next_page_token}
         else:
             if stream_state:
-                params = {"limit": self.limit,"order": f"{self.cursor_field} asc", "updated_at_min": stream_state.get(self.cursor_field)}
+                params = {"limit": self.limit, "order": f"{self.cursor_field} asc", "updated_at_min": stream_state.get(self.cursor_field)}
             else:
                 params = super().request_params(**kwargs)
         return params
@@ -121,9 +122,9 @@ class Orders(IncrementalShopifyStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any]=None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, next_page_token = next_page_token, **kwargs)
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         params.update({"status": "any"})
         if next_page_token:
             params.pop("status", None)
@@ -143,9 +144,9 @@ class AbandonedCheckouts(IncrementalShopifyStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any]=None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, next_page_token = next_page_token, **kwargs)
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         params.update({"status": "any"})
         if next_page_token:
             params.pop("status", None)
@@ -165,9 +166,9 @@ class CustomCollections(IncrementalShopifyStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any]=None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, next_page_token = next_page_token, **kwargs)
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if stream_state == {}:
             params.pop("created_at_min", None)
             params.update({"published_at_min": self.start_date})
@@ -181,10 +182,10 @@ class Collects(IncrementalShopifyStream):
     """
     Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
     https://shopify.dev/docs/admin-api/rest/reference/products/collect
-    
+
     The Collect stream is the link between Products and Collections, if the Collection is created for Products,
-    the `collect` record is created, it's reasonable to Full Refresh all collects. As for Incremental refresh - 
-    we would use the since_id specificaly for this stream. 
+    the `collect` record is created, it's reasonable to Full Refresh all collects. As for Incremental refresh -
+    we would use the since_id specificaly for this stream.
 
     """
 
@@ -193,7 +194,7 @@ class Collects(IncrementalShopifyStream):
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
-    
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
@@ -217,7 +218,9 @@ class OrderRefunds(IncrementalShopifyStream):
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
-    def read_records(self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -230,7 +233,7 @@ class OrderRefunds(IncrementalShopifyStream):
                         yield record
             else:
                 yield from refund_records
-            
+
 
 class OrderRisks(IncrementalShopifyStream):
     data_field = "risks"
@@ -243,7 +246,9 @@ class OrderRisks(IncrementalShopifyStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
-    def read_records(self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -269,7 +274,9 @@ class Transactions(IncrementalShopifyStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -304,13 +311,17 @@ class DiscountCodes(IncrementalShopifyStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         price_rule_id = stream_slice["price_rule_id"]
         return f"price_rules/{price_rule_id}/{self.data_field}.json"
-    
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        price_rules_stream = PriceRules(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
+        price_rules_stream = PriceRules(
+            authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password
+        )
         for data in price_rules_stream.read_records(sync_mode=SyncMode.full_refresh):
             discount_codes = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
             # Getting records >= state

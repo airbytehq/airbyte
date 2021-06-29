@@ -60,6 +60,7 @@ Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-ap
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.8   | 2021-06-29 | []() | Changed the cursor_field from `since_id` to `updated_at` for all streams using Inremental Refresh |
 | 0.1.7   | 2021-06-26 | [4290](https://github.com/airbytehq/airbyte/pull/4290) | Fixed the bug when limiting output records to 1 caused infinity loop |
 | 0.1.6   | 2021-06-24 | [4009](https://github.com/airbytehq/airbyte/pull/4009) | Add pages, price rules and discount codes streams |
 | 0.1.5   | 2021-06-10 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support |
