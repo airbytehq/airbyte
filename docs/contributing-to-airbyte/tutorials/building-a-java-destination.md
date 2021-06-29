@@ -141,7 +141,10 @@ docker run -v $(pwd)/secrets:/secrets --rm airbyte/destination-<name>:dev check 
 ```
 
 ### Step 5: Implement `write`
-The `write` operation is the main workhorse of a destination connector: it reads input data from the source and writes it to the underlying destination. It takes as input the config file used to run the connector as well as the configured catalog: the file used to describe the schema of the incoming data and how it should be written to the destination. 
+The `write` operation is the main workhorse of a destination connector: it reads input data from the source and writes it to the underlying destination. It takes as input the config file used to run the connector as well as the configured catalog: the file used to describe the schema of the incoming data and how it should be written to the destination. Its "output" is two things: 
+
+1. Data written to the underlying destination
+2. `AirbyteMessage`s of type `AirbyteStateMessage`, written to stdout to indicate which records have been written so far during a sync. See the [write operation protocol reference](https://docs.airbyte.io/understanding-airbyte/airbyte-specification#write) for more information.
 
 To implement the `write` Airbyte operation, implement the `getConsumer` method in your generated `<Name>Destination.java` file. Here are some example implementations from different destination conectors:
  
@@ -149,6 +152,7 @@ To implement the `write` Airbyte operation, implement the `getConsumer` method i
 * [Google Pubsub](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-pubsub/src/main/java/io/airbyte/integrations/destination/pubsub/PubsubDestination.java#L98) 
 * [Local CSV](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-csv/src/main/java/io/airbyte/integrations/destination/csv/CsvDestination.java#L90)
 * [Postgres](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/java/io/airbyte/integrations/destination/postgres/PostgresDestination.java)
+
 
 {% hint style="info" %}
 The Postgres destination leverages the `AbstractJdbcDestination` superclass which makes it extremely easy to create a destination for a database or data warehouse if it has a compatible JDBC driver. If the destination you are implementing has a JDBC driver, be sure to check out `AbstractJdbcDestination`. 
