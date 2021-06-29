@@ -101,6 +101,26 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
   protected void initTests() {
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("array")
+            .fullSourceDataType("STRING[]")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("ARRAY['sky', 'road', 'car']", "null")
+            .addExpectedValues("{sky,road,car}", null)
+            .build());
+
+    // TODO https://github.com/airbytehq/airbyte/issues/4408
+    // BIT type is currently parsed as a Boolean which is incorrect
+    // addDataTypeTestData(
+    // TestDataHolder.builder()
+    // .sourceType("bit")
+    // .fullSourceDataType("BIT(3)")
+    // .airbyteType(JsonSchemaPrimitive.NUMBER)
+    // .addInsertValues("B'101'")
+    // //.addExpectedValues("101")
+    // .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("bigint")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
@@ -131,17 +151,6 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("1", "32767", "0", "-32767")
             .build());
 
-    // BUG https://github.com/airbytehq/airbyte/issues/3932
-    // BIT type is currently parsed as a Boolean which is incorrect
-    // addDataTypeTestData(
-    // TestDataHolder.builder()
-    // .sourceType("bit")
-    // .fullSourceDataType("BIT(3)")
-    // .airbyteType(JsonSchemaPrimitive.NUMBER)
-    // .addInsertValues("B'101'")
-    // //.addExpectedValues("101")
-    // - .build());
-
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit_varying")
@@ -162,6 +171,14 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bytea")
+            .airbyteType(JsonSchemaPrimitive.OBJECT)
+            .addInsertValues("decode('1234', 'hex')")
+            .addExpectedValues("EjQ=")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("blob")
             .airbyteType(JsonSchemaPrimitive.OBJECT)
             .addInsertValues("decode('1234', 'hex')")
             .addExpectedValues("EjQ=")
@@ -205,8 +222,9 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
                 "            ", null)
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it doesnt suppose to handle BC
-    // dates
+    // TODO https://github.com/airbytehq/airbyte/issues/4408
+    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" so it doesnt
+    // suppose to handle BC dates
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
@@ -215,6 +233,7 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("1999-01-08T00:00:00Z", null) // , "199-10-10 BC")
             .build());
 
+    // TODO https://github.com/airbytehq/airbyte/issues/4408
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
     // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
@@ -226,6 +245,7 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("123.0", "1.2345678901234567E9", null)
             .build());
 
+    // TODO https://github.com/airbytehq/airbyte/issues/4408
     // Values "'-Infinity'", "'Infinity'", "'Nan'" will not be parsed due to:
     // JdbcUtils -> setJsonField contains:
     // case FLOAT, DOUBLE -> o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite));
@@ -277,9 +297,6 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues(null, "[1, 2, 3]")
             .build());
 
-    // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
-    // we try to map it like this, so it fails
-    // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
@@ -288,8 +305,9 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("99999", null)
             .build());
 
-    // The numeric type in Postres may contain 'Nan' type, but in JdbcUtils-> rowToJson
-    // we try to map it like this, so it fails
+    // TODO https://github.com/airbytehq/airbyte/issues/4408
+    // The decimal type in CockroachDB may contain 'Nan', inf, infinity, +inf, +infinity, -inf,
+    // -infinity types, but in JdbcUtils-> rowToJson we try to map it like this, so it fails
     // case NUMERIC, DECIMAL -> o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i)));
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -316,6 +334,7 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
+    // TODO https://github.com/airbytehq/airbyte/issues/4408
     // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
     // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
@@ -326,7 +345,8 @@ public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
             .addNullExpectedValue()
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
+    // https://github.com/airbytehq/airbyte/issues/4408
+    // TODO JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
     // So Time only (04:05:06) would be represented like "1970-01-01T04:05:06Z" which is incorrect
     addDataTypeTestData(
         TestDataHolder.builder()
