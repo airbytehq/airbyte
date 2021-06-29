@@ -65,7 +65,7 @@ We recommend the following ways of iterating on your connector as you're making 
 * Test-driven development (TDD) using Airbyte's Acceptance Tests
 * Directly running the docker image 
 
-**Test-driven development in Java**
+#### Test-driven development in Java
 This should feel like a standard flow for a Java developer: you make some code changes then run java tests against them. You can do this directly in your IDE, but you can also run all unit tests via Gradle by running the command to build the connector: 
 
 ```
@@ -74,7 +74,7 @@ This should feel like a standard flow for a Java developer: you make some code c
 
 This will build the code and run any unit tests. This approach is great when you are testing local behaviors and writing unit tests. 
 
-**TDD using acceptance tests & integration tests**
+#### TDD using acceptance tests & integration tests
 
 Airbyte provides a standard test suite (dubbed "Acceptance Tests") that runs against every destination connector. They are "free" baseline tests to ensure the basic functionality of the destination. When developing a connector, you can simply run the tests between each change and use the feedback to guide your development.
 
@@ -82,7 +82,7 @@ If you want to try out this approach, check out Step 6 which describes what you 
 
 The nice thing about this approach is that you are running your destination exactly as Airbyte will run it in the CI. The downside is that the tests do not run very quickly. As such, we recommend this iteration approach only once you've implemented most of your connector and are in the finishing stages of implementation. Note that Acceptance Tests are required for every connector supported by Airbyte, so you should make sure to run them a couple of times while iterating to make sure your connector is compatible with Airbyte. 
 
-**Directly running the destination using Docker**
+#### Directly running the destination using Docker
 
 If you want to run your destination exactly as it will be run by Airbyte \(i.e. within a docker container\), you can use the following commands from the connector module directory \(`airbyte-integrations/connectors/destination-<name>`\):
 
