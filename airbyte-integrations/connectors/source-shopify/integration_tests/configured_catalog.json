@@ -3499,45 +3499,6 @@
     },
     {
       "stream": {
-        "name": "collects",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "collection_id": {
-              "type": ["null", "integer"]
-            },
-            "created_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            },
-            "position": {
-              "type": ["null", "integer"]
-            },
-            "product_id": {
-              "type": ["null", "integer"]
-            },
-            "sort_value": {
-              "type": ["null", "string"]
-            },
-            "updated_at": {
-              "type": ["null", "string"],
-              "format": "date-time"
-            }
-          }
-        },
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["id"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["id"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "order_refunds",
         "json_schema": {
           "type": "object",
