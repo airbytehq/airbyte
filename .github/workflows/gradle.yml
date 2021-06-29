@@ -122,6 +122,9 @@ jobs:
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
 
+      - name: Automatic Migration Acceptance Test
+        run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") ./gradlew --no-daemon :airbyte-tests:automaticMigrationAcceptanceTest --rerun-tasks --scan -i
+
       - name: Push Core Docker Images
         if: success() && github.ref == 'refs/heads/master'
         run: |

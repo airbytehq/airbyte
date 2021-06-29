@@ -1,0 +1,14 @@
+{
+  "name": "MySQL localhost",
+  "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
+  "workspaceId": "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",
+  "sourceId": "28ffee2b-372a-4f72-9b95-8ed56a8b99c5",
+  "configuration": {
+    "username": "root",
+    "password": "password",
+    "database": "localhost_test",
+    "port": 3306,
+    "host": "host.docker.internal"
+  },
+  "tombstone": false
+}

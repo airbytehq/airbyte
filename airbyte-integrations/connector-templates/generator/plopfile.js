@@ -24,7 +24,7 @@ ${additionalMessage || ""}
 
 module.exports = function (plop) {
   const docRoot = '../../../docs/integrations';
-  const definitionRoot = '../../../airbyte-config/init/src/main/resources';
+  const definitionRoot = '../../../airbyte-server/src/main/resources';
 
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';

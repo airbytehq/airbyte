@@ -136,4 +136,17 @@ public class AirbyteVersion {
         '}';
   }
 
+  public static AirbyteVersion versionWithoutPatch(AirbyteVersion airbyteVersion) {
+    String versionWithoutPatch = "" + airbyteVersion.getMajorVersion()
+        + "."
+        + airbyteVersion.getMinorVersion()
+        + ".0-"
+        + airbyteVersion.getVersion().replace("\n", "").strip().split("-")[1];
+    return new AirbyteVersion(versionWithoutPatch);
+  }
+
+  public static AirbyteVersion versionWithoutPatch(String airbyteVersion) {
+    return versionWithoutPatch(new AirbyteVersion(airbyteVersion));
+  }
+
 }

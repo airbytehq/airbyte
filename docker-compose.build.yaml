@@ -18,8 +18,8 @@ services:
   seed:
     image: airbyte/seed:${VERSION}
     build:
-      dockerfile: Dockerfile
-      context: airbyte-config/init
+      dockerfile: seed.Dockerfile
+      context: airbyte-server
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   scheduler:

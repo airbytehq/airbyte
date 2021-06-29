@@ -239,7 +239,8 @@ public class SchedulerApp {
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
     int loopCount = 0;
-    while (airbyteDatabaseVersion.isEmpty() && loopCount < 300) {
+    while ((airbyteDatabaseVersion.isEmpty() || !AirbyteVersion.isCompatible(configs.getAirbyteVersion(), airbyteDatabaseVersion.get()))
+        && loopCount < 300) {
       LOGGER.warn("Waiting for Server to start...");
       TimeUnit.SECONDS.sleep(1);
       airbyteDatabaseVersion = jobPersistence.getVersion();
