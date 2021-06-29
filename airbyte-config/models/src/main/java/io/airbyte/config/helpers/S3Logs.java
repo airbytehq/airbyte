@@ -141,6 +141,7 @@ public class S3Logs implements CloudLogs {
       var minioEndpoint = configs.getS3MinioEndpoint();
       if (minioEndpoint != null) {
         try {
+          LOGGER.info("==== using Minio client");
           var minioUri = new URI(minioEndpoint);
           builder.endpointOverride(minioUri);
         } catch (URISyntaxException e) {
