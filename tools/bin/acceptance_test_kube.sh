@@ -8,7 +8,6 @@ assert_root
 
 echo "Starting app..."
 
-cat kube/overlays/dev/.env | grep S3_MINIO_ENDPOINT
 echo "Applying dev manifests to kubernetes..."
 kubectl apply -k kube/overlays/dev
 
