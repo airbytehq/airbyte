@@ -206,12 +206,12 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class);
   }
 
-  public <T> void atomicImportOfConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) throws IOException {
-    persistence.atomicConfigImport(configs, dryRun);
+  public <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) throws IOException {
+    persistence.replaceAllConfigs(configs, dryRun);
   }
 
-  public Map<String, Stream<JsonNode>> dump() throws IOException {
-    return persistence.dump();
+  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
+    return persistence.dumpConfigs();
   }
 
 }

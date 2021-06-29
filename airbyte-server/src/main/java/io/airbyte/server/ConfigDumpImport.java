@@ -196,7 +196,7 @@ public class ConfigDumpImport {
           configSchema, configs, latestSeeds);
       data.put(configSchema, configs);
     }
-    configRepository.atomicImportOfConfigs(data, dryRun);
+    configRepository.replaceAllConfigs(data, dryRun);
   }
 
   private <T> Map<ConfigSchema, Map<String, T>> latestSeeds() throws IOException {

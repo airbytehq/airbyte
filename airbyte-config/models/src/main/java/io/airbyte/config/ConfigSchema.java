@@ -66,34 +66,34 @@ public enum ConfigSchema {
       }),
   STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml", StandardSyncSummary.class,
       standardSyncSummary -> {
-        throw new RuntimeException("No Id for StandardSyncSummary exists");
+        throw new RuntimeException("StandardSyncSummary doesn't have an id");
       }),
 
   // worker
   STANDARD_SYNC_INPUT("StandardSyncInput.yaml", StandardSyncInput.class,
       standardSyncInput -> {
-        throw new RuntimeException("No Id for StandardSyncInput exists");
+        throw new RuntimeException("StandardSyncInput doesn't have an id");
       }),
   NORMALIZATION_INPUT("NormalizationInput.yaml", NormalizationInput.class,
       normalizationInput -> {
-        throw new RuntimeException("No Id for NormalizationInput exists");
+        throw new RuntimeException("NormalizationInput doesn't have an id");
       }),
   OPERATOR_DBT_INPUT("OperatorDbtInput.yaml", OperatorDbtInput.class,
       operatorDbtInput -> {
-        throw new RuntimeException("No Id for OperatorDbtInput exists");
+        throw new RuntimeException("OperatorDbtInput doesn't have an id");
       }),
 
   STANDARD_SYNC_OUTPUT("StandardSyncOutput.yaml", StandardSyncOutput.class,
       standardWorkspace -> {
-        throw new RuntimeException("No Id for StandardSyncOutput exists");
+        throw new RuntimeException("StandardSyncOutput doesn't have an id");
       }),
   REPLICATION_OUTPUT("ReplicationOutput.yaml", ReplicationOutput.class,
       standardWorkspace -> {
-        throw new RuntimeException("No Id for ReplicationOutput exists");
+        throw new RuntimeException("ReplicationOutput doesn't have an id");
       }),
 
   STATE("State.yaml", State.class, standardWorkspace -> {
-    throw new RuntimeException("No Id for State exists");
+    throw new RuntimeException("State doesn't have an id");
   });
 
   static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("types", ConfigSchema.class);
@@ -122,8 +122,7 @@ public enum ConfigSchema {
     if (getClassName().isInstance(object)) {
       return ((Function<T, String>) extractId).apply(object);
     }
-    throw new RuntimeException(
-        "Object: " + object + " is not instance of class " + getClassName().getName());
+    throw new RuntimeException("Object: " + object + " is not instance of class " + getClassName().getName());
   }
 
 }

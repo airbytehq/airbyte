@@ -120,7 +120,7 @@ public class ConfigDumpExport {
   }
 
   private void dumpConfigs(Path parentFolder) throws IOException {
-    for (Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dump().entrySet()) {
+    for (Map.Entry<String, Stream<JsonNode>> configEntry : configRepository.dumpConfigs().entrySet()) {
       writeConfigsToArchive(parentFolder, configEntry.getKey(), configEntry.getValue());
     }
   }

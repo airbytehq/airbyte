@@ -40,8 +40,8 @@ public interface ConfigPersistence {
 
   <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException;
 
-  <T> void atomicConfigImport(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) throws IOException;
+  <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) throws IOException;
 
-  Map<String, Stream<JsonNode>> dump() throws IOException;
+  Map<String, Stream<JsonNode>> dumpConfigs() throws IOException;
 
 }

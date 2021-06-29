@@ -57,8 +57,8 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   private final Path storageRootWithConfigDirectory;
   private final Path storageRoot;
 
-  public DefaultConfigPersistence(final Path storageRootConfig) {
-    this(storageRootConfig, new JsonSchemaValidator());
+  public DefaultConfigPersistence(final Path storageRoot) {
+    this(storageRoot, new JsonSchemaValidator());
   }
 
   public DefaultConfigPersistence(final Path storageRoot, final JsonSchemaValidator schemaValidator) {
@@ -85,12 +85,12 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   @Override
   public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException {
     synchronized (lock) {
-      writeConfigInternal(configType, configId, config, Optional.empty());
+      writeConfigInternal(configType, configId, config, storageRootWithConfigDirectory);
     }
   }
 
   private <T> void writeConfig(ConfigSchema configType, String configId, T config, Path rootOverride) throws JsonValidationException, IOException {
-    writeConfigInternal(configType, configId, config, Optional.of(rootOverride));
+    writeConfigInternal(configType, configId, config, rootOverride);
   }
 
   private <T> void writeConfigs(ConfigSchema configType, Stream<T> configs, Path rootOverride) {
@@ -105,7 +105,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public Map<String, Stream<JsonNode>> dump() throws IOException {
+  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
     final Map<String, Stream<JsonNode>> configs = new HashMap<>();
 
     final List<String> directories = listDirectories();
@@ -153,7 +153,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void atomicConfigImport(Map<ConfigSchema, Stream<T>> configs, boolean dryRun)
+  public <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun)
       throws IOException {
     // create a new folder
     String importDirectory = CONFIG_DIR + UUID.randomUUID().toString();
@@ -186,7 +186,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
 
   private <T> Optional<T> getConfigInternalWithoutValidation(ConfigSchema configType, String configId, Class<T> clazz) throws IOException {
     // validate file with schema
-    final Path configPath = buildConfigPath(configType, configId, Optional.empty());
+    final Path configPath = buildConfigPath(configType, configId, storageRootWithConfigDirectory);
     if (!Files.exists(configPath)) {
       return Optional.empty();
     } else {
@@ -205,7 +205,7 @@ public class DefaultConfigPersistence implements ConfigPersistence {
   }
 
   private <T> List<T> listConfigsInternal(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
-    final Path configTypePath = buildTypePath(configType, Optional.empty());
+    final Path configTypePath = buildTypePath(configType, storageRootWithConfigDirectory);
     if (!Files.exists(configTypePath)) {
       return Collections.emptyList();
     }
@@ -230,24 +230,23 @@ public class DefaultConfigPersistence implements ConfigPersistence {
     }
   }
 
-  private <T> void writeConfigInternal(ConfigSchema configType, String configId, T config, Optional<Path> rootOverride)
+  private <T> void writeConfigInternal(ConfigSchema configType, String configId, T config, Path storageRootWithConfigDirectory)
       throws JsonValidationException, IOException {
     // validate config with schema
     validateJson(Jsons.jsonNode(config), configType);
 
-    final Path configPath = buildConfigPath(configType, configId, rootOverride);
+    final Path configPath = buildConfigPath(configType, configId, storageRootWithConfigDirectory);
     Files.createDirectories(configPath.getParent());
 
     Files.writeString(configPath, Jsons.serialize(config));
   }
 
-  private Path buildConfigPath(ConfigSchema type, String configId, Optional<Path> rootOverride) {
-    return buildTypePath(type, rootOverride).resolve(String.format("%s.json", configId));
+  private static Path buildConfigPath(ConfigSchema type, String configId, Path storageRootWithConfigDirectory) {
+    return buildTypePath(type, storageRootWithConfigDirectory).resolve(String.format("%s.json", configId));
   }
 
-  private Path buildTypePath(ConfigSchema type, Optional<Path> rootOverride) {
-    return rootOverride.map(path -> path.resolve(type.toString()))
-        .orElseGet(() -> storageRootWithConfigDirectory.resolve(type.toString()));
+  private static Path buildTypePath(ConfigSchema type, Path storageRootWithConfigDirectory) {
+    return storageRootWithConfigDirectory.resolve(type.toString());
   }
 
   private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
