@@ -65,6 +65,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Shopify](./sources/shopify.md)| Certified |
 |[Slack](./sources/slack.md)| Beta |
 |[Smartsheets](./sources/smartsheets.md)| Beta |
+|[Snowflake](./sources/snowflake.md)| Beta |
 |[Stripe](./sources/stripe.md)| Certified |
 |[Tempo](./sources/tempo.md)| Beta |
 |[Twilio](./sources/twilio.md)| Beta |
