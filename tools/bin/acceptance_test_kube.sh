@@ -11,6 +11,8 @@ echo "Starting app..."
 echo "Applying dev manifests to kubernetes..."
 cat kube/overlays/dev/.env | grep S3_PATH_STYLE_ACCESS
 cat kube/overlays/dev/.env | grep S3_MINIO_ENDPOINT
+docker images | head -n 10
+
 kubectl apply -k kube/overlays/dev
 
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
