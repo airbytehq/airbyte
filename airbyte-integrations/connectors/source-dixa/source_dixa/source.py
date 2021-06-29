@@ -51,8 +51,8 @@ class DixaStream(HttpStream, ABC):
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         self.logger.info(
-            f"Sending request with created_after={stream_slice['created_after']} and "
-            f"created_before={stream_slice['created_before']}"
+            f"Sending request with updated_after={stream_slice['updated_after']} and "
+            f"updated_before={stream_slice['updated_before']}"
         )
         return stream_slice
 
@@ -74,24 +74,24 @@ class DixaStream(HttpStream, ABC):
         chunks.
         """
         end_date = datetime.now().date()
-        created_after = self.start_date
-        created_before = min(
-            created_after + timedelta(days=self.batch_size),
+        updated_after = self.start_date
+        updated_before = min(
+            updated_after + timedelta(days=self.batch_size),
             end_date
         )
         slices = [{
-            "created_after": created_after,
-            "created_before": created_before
+            "updated_after": updated_after,
+            "updated_before": updated_before
         }]
-        while created_after < end_date:
-            created_after = created_before
-            created_before = min(
-                created_after + timedelta(days=self.batch_size),
+        while updated_after < end_date:
+            updated_after = updated_before
+            updated_before = min(
+                updated_after + timedelta(days=self.batch_size),
                 end_date
             )
             slices.append({
-                "created_after": created_after,
-                "created_before": created_before
+                "updated_after": updated_after,
+                "updated_before": updated_before
             })
         return slices
 
@@ -120,8 +120,8 @@ class SourceDixa(AbstractSource):
                 url=url,
                 headers=headers,
                 params={
-                    "created_after": config["start_date"],
-                    "created_before": (
+                    "updated_after": config["start_date"],
+                    "updated_before": (
                         datetime.strptime(
                             config["start_date"], SourceDixa.date_format
                         ) + timedelta(days=1)
