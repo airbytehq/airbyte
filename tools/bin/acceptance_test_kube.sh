@@ -9,6 +9,8 @@ assert_root
 echo "Starting app..."
 
 echo "Applying dev manifests to kubernetes..."
+cat kube/overlays/dev/.env | grep S3_PATH_STYLE_ACCESS
+cat kube/overlays/dev/.env | grep S3_MINIO_ENDPOINT
 kubectl apply -k kube/overlays/dev
 
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
@@ -26,8 +28,8 @@ trap "echo 'kube logs:' && print_all_logs" EXIT
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
-echo "Running worker integration tests..."
-./gradlew --no-daemon :airbyte-workers:integrationTest --scan
+#echo "Running worker integration tests..."
+#./gradlew --no-daemon :airbyte-workers:integrationTest --scan
 
 echo "Running e2e tests via gradle..."
 KUBE=true ./gradlew --no-daemon :airbyte-tests:acceptanceTests --scan
