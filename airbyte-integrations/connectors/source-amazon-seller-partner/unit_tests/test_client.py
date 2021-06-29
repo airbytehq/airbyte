@@ -22,9 +22,11 @@
 # SOFTWARE.
 #
 
+import abc
 from datetime import datetime
 from typing import Mapping
 
+from airbyte_cdk.logger import AirbyteLogger
 from dateutil.relativedelta import relativedelta
 from source_amazon_seller_partner.client import BaseClient
 
@@ -48,6 +50,8 @@ ORDERS_RESPONSE = [{"orderId": 1}]
 
 
 class MockAmazonClient:
+    COUNT = 1
+
     def __init__(self, credentials, marketplace):
         self.credentials = credentials
         self.marketplace = marketplace
@@ -55,9 +59,45 @@ class MockAmazonClient:
     def fetch_orders(updated_after, page_count, next_token=None):
         return ORDERS_RESPONSE
 
+    @abc.abstractmethod
+    def get_report(self, reportId):
+        return
+
+
+class AmazonSuccess(MockAmazonClient):
+    def get_report(self, reportId):
+        if self.COUNT == 3:
+            return {"processingStatus": "DONE", "reportDocumentId": 1}
+        else:
+            self.COUNT = self.COUNT + 1
+            return {"processingStatus": "IN_PROGRESS"}
+
+
+class AmazonCancelled(MockAmazonClient):
+    def get_report(self, reportId):
+        if self.COUNT == 3:
+            return {"processingStatus": "CANCELLED"}
+        else:
+            self.COUNT = self.COUNT + 1
+            return {"processingStatus": "IN_PROGRESS"}
+
 
 def get_base_client(config: Mapping):
     return BaseClient(**config)
+
+
+def test_wait_for_report(mocker):
+    reportId = "123"
+
+    amazon_client = AmazonCancelled(credentials={}, marketplace="USA")
+    wait_response = BaseClient._wait_for_report(AirbyteLogger(), amazon_client, reportId)
+
+    assert wait_response == (False, None)
+
+    amazon_client = AmazonSuccess(credentials={}, marketplace="USA")
+
+    wait_response = BaseClient._wait_for_report(AirbyteLogger(), amazon_client, reportId)
+    assert wait_response == (True, 1)
 
 
 def test_check_connection(mocker):
@@ -65,20 +105,6 @@ def test_check_connection(mocker):
     base_client = get_base_client(SP_CREDENTIALS)
 
     assert ORDERS_RESPONSE == base_client.check_connection()
-
-
-def test_get_cursor_state():
-    cursor_value = "2021-05-02"
-    end_date = "2021-06-02"
-
-    base_client = get_base_client(SP_CREDENTIALS)
-
-    assert "2021-05-03" == base_client._get_cursor_state(cursor_value=cursor_value, end_date=end_date)
-
-    cursor_value = "2021-02-28"
-    end_date = "2021-03-02"
-
-    assert "2021-03-03" == base_client._get_cursor_state(cursor_value=cursor_value, end_date=end_date)
 
 
 def test_get_records():

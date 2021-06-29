@@ -11,3 +11,7 @@ docker-compose up
 
 * Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000](http://localhost:8000)!
 
+----
+
+If you want to schedule a 20-min call with our team to get you set up, don't hesitate to select [some time here](https://calendly.com/nataliekwong/airbyte-onboarding). 
+
