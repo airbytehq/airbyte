@@ -43,7 +43,7 @@ Configure `kubectl` to connect to your cluster by using `kubectl use-context my-
 
 ### Configure Logs
 
-Both `dev` and `stable` versions of Airbyte include a stand-alone `Minio` deployment. Airbyte uses publishes logs to this `Minio` deployment.
+Both `dev` and `stable` versions of Airbyte include a stand-alone `Minio` deployment. Airbyte publishes logs to this `Minio` deployment.
 This means Airbyte comes as a **self-contained Kubernetes deployment - no other configuration is required**.
 
 Airbyte currently supports logging to `Minio` or `S3`. The following instructions are for users wishing to log to their own `Minio` layer or `S3` bucket.
