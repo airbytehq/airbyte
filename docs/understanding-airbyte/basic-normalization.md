@@ -275,5 +275,6 @@ To enable basic normalization (which is optional), you can toggle it on or disab
 
 Note that all the choices made by Normalization as described in this documentation page in terms of naming could be overridden by your own custom choices. To do so, you can follow the following tutorials:
 
-* to build a [custom SQL view](../tutorials/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
-* to export, edit and run [custom dbt normalization](../tutorials/transformation-and-normalization/transformations-with-dbt.md) yourself
+* to build a [custom SQL view](../operator-guides/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
+* to export, edit and run [custom dbt normalization](../operator-guides/transformation-and-normalization/transformations-with-dbt.md) yourself
+* or further, you can configure the use of a custom dbt project within Airbyte by following [this guide](../operator-guides/transformation-and-normalization/transformations-with-airbyte.md).
