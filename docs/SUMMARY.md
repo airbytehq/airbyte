@@ -192,3 +192,4 @@
     * [Singer vs Airbyte](faq/differences-with/singer-vs-airbyte.md)
     * [Pipelinewise vs Airbyte](faq/differences-with/pipelinewise-vs-airbyte.md)
     * [Meltano vs Airbyte](faq/differences-with/meltano-vs-airbyte.md)
+  * [Using Non-Standard Operating Systems](faq/deploying-on-other-os.md)
