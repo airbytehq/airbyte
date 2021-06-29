@@ -41,6 +41,13 @@ class TwilioStream(HttpStream, ABC):
     def data_field(self):
         return self.name
 
+    @property
+    def changeable_fields(self):
+        """
+        :return list of changeable fields that should be removed from the records
+        """
+        return []
+
     def path(self, **kwargs):
         return f"{self.name.title()}.json"
 
@@ -57,6 +64,11 @@ class TwilioStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         records = response.json().get(self.data_field, [])
+        if self.changeable_fields:
+            for record in records:
+                for field in self.changeable_fields:
+                    record.pop(field, None)
+                    yield record
         yield from records
 
     def request_params(
@@ -103,15 +115,10 @@ class IncrementalTwilioStream(TwilioStream, ABC):
 
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
-        # Return an empty generator if start_date is in future to avoid Twilio exceptions
-        start_date = stream_state.get(self.cursor_field) or self._start_date
-        if start_date and pendulum.parse(start_date, strict=False) > pendulum.now():
-            yield from []
-        else:
-            records = super().read_records(stream_state=stream_state, **kwargs)
-            for record in records:
-                record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)
-                yield record
+        records = super().read_records(stream_state=stream_state, **kwargs)
+        for record in records:
+            record[self.cursor_field] = pendulum.parse(record[self.cursor_field], strict=False).strftime(self.time_filter_template)
+            yield record
 
 
 class TwilioNestedStream(TwilioStream):
@@ -185,7 +192,12 @@ class Applications(TwilioNestedStream):
 
 
 class AvailablePhoneNumberCountries(TwilioNestedStream):
-    """https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries"""
+    """
+    https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries
+
+    List of available phone number countries, as well as local, mobile and toll free numbers
+    may be different on each request, so could not pass the full refresh tests.
+    """
 
     parent_stream = Accounts
     data_field = "countries"
@@ -246,6 +258,17 @@ class Conferences(TwilioNestedStream, IncrementalTwilioStream):
     parent_stream = Accounts
     incremental_filter_field = "DateUpdated>"
     time_filter_template = "%Y-%m-%d"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        records = response.json().get(self.data_field, [])
+        if stream_state.get(self.cursor_field):
+            for record in records:
+                if pendulum.parse(record[self.cursor_field], strict=False) <= pendulum.parse(stream_state[self.cursor_field], strict=False):
+                    yield record
+        yield from records
 
 
 class ConferenceParticipants(TwilioNestedStream):
@@ -332,6 +355,7 @@ class UsageRecords(UsageNestedStream, IncrementalTwilioStream):
     cursor_field = "start_date"
     path_name = "Records"
     primary_key = [["account_sid"], ["category"]]
+    changeable_fields = ["as_of"]
 
 
 class UsageTriggers(UsageNestedStream):

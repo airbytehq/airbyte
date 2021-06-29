@@ -15,7 +15,8 @@ tests:
       validate_output_from_all_streams: yes
   incremental:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/no_empty_streams_no_conferences_catalog.json"
+      # usage records stream produces and error if cursor date gte than current date
+      configured_catalog_path: "integration_tests/no_empty_streams_no_usage_records_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
         calls: ["end_time"]
@@ -23,8 +24,9 @@ tests:
         recordings: ["date_created"]
         messages: ["date_sent"]
         message_media: ["date_created"]
-        usage_records: ["start_date"]
         alerts: ["date_updated"]
   full_refresh:
     - config_path: "secrets/config.json"
+      # `constant_records_catalog.json` does not contain the available phone numbers streams,
+      # as they may change on each request
       configured_catalog_path: "integration_tests/constant_records_catalog.json"

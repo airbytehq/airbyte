@@ -46,10 +46,6 @@
       "format": "date-time",
       "type": ["null", "string"]
     },
-    "as_of": {
-      "format": "date-time",
-      "type": ["null", "string"]
-    },
     "usage_unit": {
       "type": ["null", "string"]
     },
