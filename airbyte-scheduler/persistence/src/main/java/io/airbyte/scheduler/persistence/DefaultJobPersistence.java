@@ -83,6 +83,10 @@ import org.slf4j.LoggerFactory;
 public class DefaultJobPersistence implements JobPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
+  private static final Set<String> SYSTEM_SCHEMA = Set
+      .of("pg_toast", "information_schema", "pg_catalog", "import_backup", "pg_internal",
+          "catalog_history");
+
   private static final JSONFormat DB_JSON_FORMAT = new JSONFormat().recordFormat(RecordFormat.OBJECT);
   protected static final String DEFAULT_SCHEMA = "public";
   private static final String BACKUP_SCHEMA = "import_backup";
@@ -436,10 +440,10 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void setVersion(String airbyteVersion) throws IOException {
     database.query(ctx -> ctx.execute(String.format(
-        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s');",
+        "INSERT INTO %s VALUES('%s', '%s'), ('%s_init_db', '%s') ON CONFLICT (key) DO UPDATE SET value = '%s'",
         AIRBYTE_METADATA_TABLE,
         AirbyteVersion.AIRBYTE_VERSION_KEY_NAME, airbyteVersion,
-        current_timestamp(), airbyteVersion)));
+        current_timestamp(), airbyteVersion, airbyteVersion)));
   }
 
   private static String current_timestamp() {
@@ -449,6 +453,27 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public Map<DatabaseSchema, Stream<JsonNode>> exportDatabase() throws IOException {
     return exportDatabase(DEFAULT_SCHEMA);
+  }
+
+  /**
+   * This is different from {@link #exportDatabase()} cause it exports all the tables in all the
+   * schemas available
+   */
+  @Override
+  public Map<String, Stream<JsonNode>> dump() throws IOException {
+    final Map<String, Stream<JsonNode>> result = new HashMap<>();
+    for (String schema : listSchemas()) {
+      final List<String> tables = listAllTables(schema);
+
+      for (final String table : tables) {
+        if (result.containsKey(table)) {
+          throw new RuntimeException("Multiple tables found with the same name " + table);
+        }
+        result.put(table.toUpperCase(), exportTable(schema, table));
+      }
+    }
+
+    return result;
   }
 
   private Map<DatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
@@ -475,6 +500,25 @@ public class DefaultJobPersistence implements JobPersistence {
     } else {
       return List.of();
     }
+  }
+
+  private List<String> listAllTables(final String schema) throws IOException {
+    if (schema != null) {
+      return database.query(context -> context.meta().getSchemas(schema).stream()
+          .flatMap(s -> context.meta(s).getTables().stream())
+          .map(Named::getName)
+          .collect(Collectors.toList()));
+    } else {
+      return List.of();
+    }
+  }
+
+  private List<String> listSchemas() throws IOException {
+    return database.query(context -> context.meta().getSchemas().stream()
+        .map(Named::getName)
+        .filter(c -> !SYSTEM_SCHEMA.contains(c))
+        .collect(Collectors.toList()));
+
   }
 
   private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {

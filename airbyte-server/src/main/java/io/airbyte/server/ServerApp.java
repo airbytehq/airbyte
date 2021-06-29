@@ -29,6 +29,7 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogHelpers;
@@ -210,15 +211,50 @@ public class ServerApp {
       LOGGER.info(String.format("Setting Database version to %s...", airbyteVersion));
       jobPersistence.setVersion(airbyteVersion);
     }
-    final Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+
+    Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
+    boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
+    if (!isKubernetes && airbyteDatabaseVersion.isPresent() && !AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
+        && !isDatabaseVersionAheadOfAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
+      runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
+      // After migration, upgrade the DB version
+      airbyteDatabaseVersion = jobPersistence.getVersion();
+    }
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
       new ServerApp(configRepository, jobPersistence, configs).start();
     } else {
-      LOGGER.info("Start serving version mismatch errors...");
+      LOGGER.info("Start serving version mismatch errors. "
+          + (isKubernetes ? " Automatic migration can't run on KUBERNETES." : " Automatic migration must have failed"));
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
+  }
+
+  private static void runAutomaticMigration(ConfigRepository configRepository,
+                                            JobPersistence jobPersistence,
+                                            String airbyteVersion,
+                                            String airbyteDatabaseVersion) {
+    LOGGER.info("Running Automatic Migration from version : " + airbyteDatabaseVersion + " to version : " + airbyteVersion);
+    final Path latestSeedsPath = Path.of(System.getProperty("user.dir")).resolve("latest_seeds");
+    LOGGER.info("Last seeds dir: {}", latestSeedsPath);
+    try (RunMigration runMigration = new RunMigration(airbyteDatabaseVersion,
+        jobPersistence, configRepository, airbyteVersion, latestSeedsPath)) {
+      runMigration.run();
+    } catch (Exception e) {
+      LOGGER.error("Automatic Migration failed ", e);
+    }
+  }
+
+  public static boolean isDatabaseVersionAheadOfAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
+    AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
+    AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
+
+    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) > 0) {
+      return true;
+    }
+
+    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) > 0;
   }
 
 }
