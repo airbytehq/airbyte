@@ -55,8 +55,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -110,6 +108,8 @@ public class DefaultJobPersistence implements JobPersistence {
           + "FROM jobs LEFT OUTER JOIN attempts ON jobs.id = attempts.job_id ";
 
   private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
+  public static final String ORDER_BY_JOB_TIME_ATTEMPT_TIME =
+      "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC ";
 
   private final ExceptionWrappingDatabase database;
   private final Supplier<Instant> timeSupplier;
@@ -296,14 +296,19 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<Job> listJobs(ConfigType configType, String configId) throws IOException {
+  public List<Job> listJobs(ConfigType configType, String configId, int pagesize, int offset) throws IOException {
+    return listJobs(Set.of(configType), configId, pagesize, offset);
+  }
+
+  @Override
+  public List<Job> listJobs(Set<ConfigType> configTypes, String configId, int pagesize, int offset) throws IOException {
     return database.query(ctx -> getJobsFromResult(ctx.fetch(
         BASE_JOB_SELECT_AND_JOIN + "WHERE " +
-            "CAST(config_type AS VARCHAR) = ? AND " +
-            "scope = ? " +
-            "ORDER BY jobs.created_at DESC",
-        Sqls.toSqlName(configType),
-        configId)));
+            "CAST(config_type AS VARCHAR) in " + Sqls.toSqlInFragment(configTypes) + " " +
+            "AND scope = ? " +
+            ORDER_BY_JOB_TIME_ATTEMPT_TIME +
+            "LIMIT ? OFFSET ?",
+        configId, pagesize, offset)));
   }
 
   @Override
@@ -317,7 +322,7 @@ public class DefaultJobPersistence implements JobPersistence {
         .fetch(BASE_JOB_SELECT_AND_JOIN + "WHERE " +
             "CAST(config_type AS VARCHAR) IN " + Sqls.toSqlInFragment(configTypes) + " AND " +
             "CAST(jobs.status AS VARCHAR) = ? " +
-            "ORDER BY jobs.created_at DESC",
+            ORDER_BY_JOB_TIME_ATTEMPT_TIME,
             Sqls.toSqlName(status))));
   }
 
@@ -376,46 +381,38 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private static List<Job> getJobsFromResult(Result<Record> result) {
-    final Map<Long, List<Record>> jobIdToAttempts = result.stream().collect(Collectors.groupingBy(r -> r.getValue("job_id", Long.class)));
+    // keeps results strictly in order so the sql query controls the sort
+    List<Job> jobs = new ArrayList<Job>();
+    Job currentJob = null;
+    for (Record entry : result) {
+      if (currentJob == null || currentJob.getId() != entry.get("job_id", Long.class)) {
+        currentJob = new Job(entry.get("job_id", Long.class),
+            Enums.toEnum(entry.get("config_type", String.class), ConfigType.class).orElseThrow(),
+            entry.get("scope", String.class),
+            Jsons.deserialize(entry.get("config", String.class), JobConfig.class),
+            new ArrayList<Attempt>(),
+            JobStatus.valueOf(entry.get("job_status", String.class).toUpperCase()),
+            Optional.ofNullable(entry.get("job_started_at")).map(value -> getEpoch(entry, "started_at")).orElse(null),
+            getEpoch(entry, "job_created_at"),
+            getEpoch(entry, "job_updated_at"));
+        jobs.add(currentJob);
+      }
+      if (entry.getValue("attempt_number") != null) {
+        currentJob.getAttempts().add(new Attempt(
+            entry.get("attempt_number", Long.class),
+            entry.get("job_id", Long.class),
+            Path.of(entry.get("log_path", String.class)),
+            entry.get("attempt_output", String.class) == null ? null : Jsons.deserialize(entry.get("attempt_output", String.class), JobOutput.class),
+            Enums.toEnum(entry.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+            getEpoch(entry, "attempt_created_at"),
+            getEpoch(entry, "attempt_updated_at"),
+            Optional.ofNullable(entry.get("attempt_ended_at"))
+                .map(value -> getEpoch(entry, "attempt_ended_at"))
+                .orElse(null)));
+      }
+    }
 
-    return jobIdToAttempts.values().stream()
-        .map(records -> {
-          final Record jobEntry = records.get(0);
-
-          List<Attempt> attempts = Collections.emptyList();
-          if (jobEntry.get("attempt_number") != null) {
-            attempts = records.stream().map(attemptRecord -> {
-              final String outputDb = attemptRecord.get("attempt_output", String.class);
-              final JobOutput output = outputDb == null ? null : Jsons.deserialize(outputDb, JobOutput.class);
-              return new Attempt(
-                  attemptRecord.get("attempt_number", Long.class),
-                  attemptRecord.get("job_id", Long.class),
-                  Path.of(attemptRecord.get("log_path", String.class)),
-                  output,
-                  Enums.toEnum(attemptRecord.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
-                  getEpoch(attemptRecord, "attempt_created_at"),
-                  getEpoch(attemptRecord, "attempt_updated_at"),
-                  Optional.ofNullable(attemptRecord.get("attempt_ended_at"))
-                      .map(value -> getEpoch(attemptRecord, "attempt_ended_at"))
-                      .orElse(null));
-            })
-                .sorted(Comparator.comparingLong(Attempt::getId))
-                .collect(Collectors.toList());
-          }
-          final JobConfig jobConfig = Jsons.deserialize(jobEntry.get("config", String.class), JobConfig.class);
-          return new Job(
-              jobEntry.get("job_id", Long.class),
-              Enums.toEnum(jobEntry.get("config_type", String.class), ConfigType.class).orElseThrow(),
-              jobEntry.get("scope", String.class),
-              jobConfig,
-              attempts,
-              JobStatus.valueOf(jobEntry.get("job_status", String.class).toUpperCase()),
-              Optional.ofNullable(jobEntry.get("job_started_at")).map(value -> getEpoch(jobEntry, "started_at")).orElse(null),
-              getEpoch(jobEntry, "job_created_at"),
-              getEpoch(jobEntry, "job_updated_at"));
-        })
-        .sorted(Comparator.comparingLong(Job::getCreatedAtInSecond).reversed())
-        .collect(Collectors.toList());
+    return jobs;
   }
 
   @VisibleForTesting
