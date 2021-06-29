@@ -68,13 +68,15 @@ class DixaStream(HttpStream, ABC):
         """
         return 60
 
-    def stream_slices(self, **kwargs):
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs):
         """
         Break down the days between start_date and the current date into
         chunks.
         """
         end_date = datetime.now().date()
-        updated_after = self.start_date
+        updated_after = datetime.strptime(
+            stream_state["date"], "%Y-%m-%d"
+        ).date() if stream_state and "date" in stream_state else self.start_date
         updated_before = min(
             updated_after + timedelta(days=self.batch_size),
             end_date
@@ -98,11 +100,24 @@ class DixaStream(HttpStream, ABC):
 
 class ConversationExport(DixaStream):
     primary_key = "id"
+    cursor_field = "updated_at"
 
     def path(
         self, **kwargs
     ) -> str:
         return "conversation_export"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+        """
+        Uses the date from the `updated_at` field, which is a Unix timestamp with millisecond precision.
+        """
+        if current_stream_state is not None and 'date' in current_stream_state:
+            current_state_value = datetime.strptime(current_stream_state["date"], "%Y-%m-%d").date()
+            # Divide millisecond-precision timestamp by 1000 to get second-precision timestamp
+            latest_record_value = datetime.fromtimestamp(latest_record[ConversationExport.cursor_field]//1000).date()
+            return {'date': max(current_state_value, latest_record_value).strftime("%Y-%m-%d")}
+        else:
+            return {'date': self.start_date.strftime("%Y-%m-%d")}
 
 
 class SourceDixa(AbstractSource):
