@@ -90,12 +90,14 @@ If you only care about having the latest snapshot of your data, you may want to 
 
 When replicating data incrementally, Airbyte provides an at-least-once delivery guarantee. This means that it is acceptable for sources to re-send some data when ran incrementally. One case where this is particularly relevant is when a source's cursor is not very granular. For example, if a cursor field has the granularity of a day \(but not hours, seconds, etc\), then if that source is run twice in the same day, there is no way for the source to know which records that are that date were already replicated earlier that day. By convention, sources should prefer resending data if the cursor field is ambiguous.
 
+Additionally, you may run into behavior where you see the same row being emitted during each sync. This will occur if your data has not changed and you attempt to run additional syncs, as the cursor field will always be greater than or equal to itself, causing it to pull the latest row multiple times until there is new data at the source.  
+
 ## Known Limitations
 
 Due to the use of a cursor column, if modifications to the underlying records are made without properly updating the cursor field, then the updated records won't be picked up by the **Incremental** sync as expected since the source connectors extract delta rows using a SQL query looking like:
 
 ```sql
-select * from table where cursor_field > 'last_sync_max_cursor_field_value'
+SELECT * FROM table WHERE cursor_field >= 'last_sync_max_cursor_field_value'
 ```
 
 Let's say the following data already exists into our data warehouse.
