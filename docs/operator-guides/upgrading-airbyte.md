@@ -26,15 +26,11 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
 
    ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}` to pull the latest versions and overwrite both files.
 
-7. Bring Airbyte back online.
+3. Bring Airbyte back online.
 
    ```bash
    docker-compose up
    ```
-
-8. Complete Preferences section. In the subsequent setup page click "Skip Onboarding". Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Import. This will prompt you to upload the migrated archive to Airbyte. After this completes, your upgraded Airbyte instance will now be running with all of your original configuration.
-
-This step will throw an exception if the data you are trying to upload does not match the version of Airbyte that is running.
 
 ## Upgrading \(K8s\)
 
