@@ -1,4 +1,0 @@
-resources:
-- deployment.yaml
-patchesStrategicMerge:
-- set_memory.yaml
