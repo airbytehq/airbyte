@@ -29,6 +29,7 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
+import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogHelpers;
@@ -212,8 +213,8 @@ public class ServerApp {
     }
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    if (airbyteDatabaseVersion.isPresent() && !AirbyteVersion
-        .isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
+    boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
+    if (!isKubernetes && airbyteDatabaseVersion.isPresent() && !AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
         && !isDatabaseVersionAheadOfAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
       runAutomaticMigration(configRepository, jobPersistence, airbyteVersion,
           airbyteDatabaseVersion.get());
@@ -225,7 +226,7 @@ public class ServerApp {
       LOGGER.info("Starting server...");
       new ServerApp(configRepository, jobPersistence, configs).start();
     } else {
-      LOGGER.info("Start serving version mismatch errors. Automatic migration must have failed");
+      LOGGER.info("Start serving version mismatch errors. " + (isKubernetes ? " Automatic migration can't run on KUBERNETES." : " Automatic migration must have failed"));
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
   }
