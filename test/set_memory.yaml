@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-nginx
+spec:
+  template:
+    spec:
+      containers:
+      - name: my-nginx
+        resources:
+          limits:
+            memory: 512Mi

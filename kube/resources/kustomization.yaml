@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - db.yaml
-  - resource-defaults.yaml
   - scheduler.yaml
   - scheduler-service-account.yaml
   - server.yaml
