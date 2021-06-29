@@ -63,7 +63,9 @@ class ShopifyStream(HttpStream, ABC):
             return None
 
     def request_params(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             params = {"limit": self.limit, **next_page_token}
@@ -97,7 +99,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs):
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         stream_state = stream_state or {}
         if next_page_token:
             params = {"limit": self.limit, **next_page_token}
@@ -105,7 +107,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
             if stream_state:
                 params = {"limit": self.limit, "order": f"{self.cursor_field} asc", "updated_at_min": stream_state.get(self.cursor_field)}
             else:
-                params = super().request_params(**kwargs)
+                params = super().request_params(stream_state=stream_state, **kwargs)
         return params
 
 
@@ -122,7 +124,9 @@ class Orders(IncrementalShopifyStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         params.update({"status": "any"})
@@ -144,7 +148,9 @@ class AbandonedCheckouts(IncrementalShopifyStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         params.update({"status": "any"})
@@ -166,7 +172,9 @@ class CustomCollections(IncrementalShopifyStream):
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
 
-    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if stream_state == {}:
@@ -198,7 +206,9 @@ class Collects(IncrementalShopifyStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
-    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         if next_page_token:
             params = {"limit": self.limit, **next_page_token}
@@ -219,7 +229,7 @@ class OrderRefunds(IncrementalShopifyStream):
         return f"orders/{order_id}/{self.data_field}.json"
 
     def read_records(
-        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
@@ -247,7 +257,7 @@ class OrderRisks(IncrementalShopifyStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
     def read_records(
-        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
@@ -275,7 +285,7 @@ class Transactions(IncrementalShopifyStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def read_records(
-        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
@@ -316,7 +326,7 @@ class DiscountCodes(IncrementalShopifyStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
     def read_records(
-        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         price_rules_stream = PriceRules(
