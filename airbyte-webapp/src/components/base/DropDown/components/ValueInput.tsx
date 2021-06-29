@@ -5,7 +5,7 @@ import { IDataItem } from "./ListItem";
 import Text from "./Text";
 
 export type IProps = {
-  item: IDataItem;
+  item?: IDataItem;
 };
 
 const ItemView = styled.div`
@@ -32,7 +32,7 @@ const Icon = styled.div`
   display: inline-block;
 `;
 
-const ValueInput: React.FC<IProps> = ({ item }) => {
+const ValueInput: React.FC<IProps> = ({ item = {} }) => {
   if (item.groupValue || item.groupValueText) {
     return (
       <div>

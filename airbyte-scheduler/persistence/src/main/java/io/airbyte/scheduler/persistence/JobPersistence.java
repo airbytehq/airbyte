@@ -128,7 +128,9 @@ public interface JobPersistence {
    * @return lists job in descending order by created_at
    * @throws IOException - what you do when you IO
    */
-  List<Job> listJobs(JobConfig.ConfigType configType, String configId) throws IOException;
+  List<Job> listJobs(Set<JobConfig.ConfigType> configTypes, String configId, int limit, int offset) throws IOException;
+
+  List<Job> listJobs(JobConfig.ConfigType configType, String configId, int limit, int offset) throws IOException;
 
   List<Job> listJobsWithStatus(JobStatus status) throws IOException;
 
