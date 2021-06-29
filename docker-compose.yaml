@@ -31,7 +31,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 4G
   seed:
     image: airbyte/seed:${VERSION}
@@ -76,7 +76,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 2G
   server:
     image: airbyte/server:${VERSION}
@@ -86,7 +86,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 2G
     environment:
       - WEBAPP_URL=${WEBAPP_URL}
@@ -133,7 +133,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 512M
   airbyte-temporal:
     image: temporalio/auto-setup:1.7.0
@@ -154,7 +154,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 512M
 volumes:
   workspace:
