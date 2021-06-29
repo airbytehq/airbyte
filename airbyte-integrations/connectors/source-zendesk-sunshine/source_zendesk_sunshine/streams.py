@@ -23,14 +23,14 @@
 #
 
 
-import pendulum
 import urllib.parse
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SunshineStream(HttpStream, ABC):
@@ -40,7 +40,7 @@ class SunshineStream(HttpStream, ABC):
     page_size = 100
 
     def __init__(self, subdomain: str, start_date: pendulum.datetime, **kwargs):
-        self.url_base = f"https://{subdomain}.zendesk.com/api/sunshine/" #url_base #kwargs.pop("base_url")
+        self.url_base = f"https://{subdomain}.zendesk.com/api/sunshine/"  # url_base #kwargs.pop("base_url")
         self._start_date = start_date
         self.subdomain = subdomain
         super().__init__(**kwargs)
@@ -52,16 +52,14 @@ class SunshineStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
-        if resp_json.get("links") and resp_json.get("links").get('next'):
-            next_query_string = urllib.parse.urlsplit(resp_json.get("links").get('next')).query
+        if resp_json.get("links") and resp_json.get("links").get("next"):
+            next_query_string = urllib.parse.urlsplit(resp_json.get("links").get("next")).query
             params = dict(urllib.parse.parse_qsl(next_query_string))
             return params
         return {}
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {
-            "Content-Type": "application/json"
-        }
+        return {"Content-Type": "application/json"}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -71,7 +69,7 @@ class SunshineStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
-        params = {'per_page': self.page_size}
+        params = {"per_page": self.page_size}
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -79,7 +77,7 @@ class SunshineStream(HttpStream, ABC):
 
 class IncrementalSunshineStream(SunshineStream, ABC):
     state_checkpoint_interval = 1000
-    cursor_field = 'updated_at'  # most common
+    cursor_field = "updated_at"  # most common
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -97,32 +95,29 @@ class IncrementalSunshineStream(SunshineStream, ABC):
 
 
 class ObjectTypes(SunshineStream):
-
     def path(self, **kwargs) -> str:
         return "objects/types"
 
 
 class ObjectRecords(IncrementalSunshineStream):
-    http_method = 'POST'
+    http_method = "POST"
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         type_ = stream_slice["type"]
         state_value = stream_state.get(type_, {}).get(self.cursor_field)
         start_date = state_value or self._start_date
-        formatted_start_date = pendulum.parse(start_date).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        formatted_start_date = pendulum.parse(start_date).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         query = {
-            "query": {
-                "_type": {"$eq": type_}
-            },
+            "query": {"_type": {"$eq": type_}},
             "_updated_at": {
                 "start": formatted_start_date,
             },
-            'sort_by': "_updated_at asc"
+            "sort_by": "_updated_at asc",
         }
         return query
 
@@ -130,11 +125,7 @@ class ObjectRecords(IncrementalSunshineStream):
         return "objects/query"
 
     def stream_slices(self, **kwargs):
-        parent_stream = ObjectTypes(
-            authenticator=self.authenticator,
-            subdomain=self.subdomain,
-            start_date=self._start_date
-        )
+        parent_stream = ObjectTypes(authenticator=self.authenticator, subdomain=self.subdomain, start_date=self._start_date)
         for obj_type in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"type": obj_type["key"]}
 
@@ -154,22 +145,16 @@ class ObjectRecords(IncrementalSunshineStream):
 
 
 class RelationshipTypes(SunshineStream):
-
     def path(self, **kwargs) -> str:
         return "relationships/types"
 
 
 class RelationshipRecords(SunshineStream):
-
     def path(self, **kwargs) -> str:
         return "relationships/records"
 
     def stream_slices(self, **kwargs):
-        parent_stream = RelationshipTypes(
-            authenticator=self.authenticator,
-            subdomain=self.subdomain,
-            start_date=self._start_date
-        )
+        parent_stream = RelationshipTypes(authenticator=self.authenticator, subdomain=self.subdomain, start_date=self._start_date)
         for rel_type in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"type": rel_type["key"]}
 
@@ -177,13 +162,9 @@ class RelationshipRecords(SunshineStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
-        params = super().request_params(
-            stream_state=stream_state,
-            stream_slice=stream_slice,
-            next_page_token=next_page_token
-        )
-        type_ = stream_slice['type']
-        params['type'] = type_
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        type_ = stream_slice["type"]
+        params["type"] = type_
         return params
 
 
@@ -194,18 +175,14 @@ class CustomObjectEvents(SunshineStream):
     I requested the call, but since they did not approve it,
     this endpoint will return 403 Forbidden
     """
+
     def path(self, **kwargs) -> str:
         return "objects/events"
 
 
 class ObjectTypePolicies(SunshineStream):
-
     def stream_slices(self, **kwargs):
-        parent_stream = ObjectTypes(
-            authenticator=self.authenticator,
-            subdomain=self.subdomain,
-            start_date=self._start_date
-        )
+        parent_stream = ObjectTypes(authenticator=self.authenticator, subdomain=self.subdomain, start_date=self._start_date)
         for obj_type in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"type": obj_type["key"]}
 
@@ -214,26 +191,20 @@ class ObjectTypePolicies(SunshineStream):
         return f"objects/types/{obj_type}/permissions"
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            **kwargs
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         response_json = response.json()
         data = response_json.get(self.data_field, [])
         # the response does not contain info about parent itself - only rules. Need to add this.
-        data['object_type'] = stream_slice["type"]
+        data["object_type"] = stream_slice["type"]
         yield data
 
 
 class Jobs(SunshineStream):
-
     def path(self, **kwargs) -> str:
         return "jobs"
 
 
 class Limits(SunshineStream):
-
     def path(self, **kwargs) -> str:
         return "limits"

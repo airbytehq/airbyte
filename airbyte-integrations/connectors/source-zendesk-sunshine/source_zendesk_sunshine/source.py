@@ -23,9 +23,9 @@
 #
 
 
+import base64
 from typing import Any, List, Mapping, Tuple
 
-import base64
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -33,16 +33,16 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import (
-    ObjectTypes,
-    ObjectRecords,
-    RelationshipTypes,
-    RelationshipRecords,
-    CustomObjectEvents,
-    ObjectTypePolicies,
+from .streams import (  # CustomObjectEvents,
     Jobs,
-    Limits
+    Limits,
+    ObjectRecords,
+    ObjectTypePolicies,
+    ObjectTypes,
+    RelationshipRecords,
+    RelationshipTypes,
 )
+
 
 class HttpBasicAuthenticator(TokenAuthenticator):
     def __init__(self, auth: Tuple[str, str], auth_method: str = "Basic", **kwargs):
@@ -56,18 +56,12 @@ class SourceZendeskSunshine(AbstractSource):
         try:
             pendulum.parse(config["start_date"], strict=True)
             authenticator = HttpBasicAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
-            args = {
-                'authenticator': authenticator,
-                "subdomain": config["subdomain"],
-                'start_date': pendulum.parse(config['start_date'])
-            }
+            args = {"authenticator": authenticator, "subdomain": config["subdomain"], "start_date": pendulum.parse(config["start_date"])}
             stream = Limits(**args)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
         except Exception as e:
-            #import traceback
-            #print(traceback.format_exc())
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -78,11 +72,7 @@ class SourceZendeskSunshine(AbstractSource):
         This stream was requested to be removed due to this reason.
         """
         authenticator = HttpBasicAuthenticator(auth=(f'{config["email"]}/token', config["api_token"]))
-        args = {
-            'authenticator': authenticator,
-            "subdomain": config["subdomain"],
-            'start_date': config['start_date']
-        }
+        args = {"authenticator": authenticator, "subdomain": config["subdomain"], "start_date": config["start_date"]}
         return [
             ObjectTypes(**args),
             ObjectRecords(**args),
@@ -91,6 +81,5 @@ class SourceZendeskSunshine(AbstractSource):
             # CustomObjectEvents(**args),
             ObjectTypePolicies(**args),
             Jobs(**args),
-            Limits(**args)
-
+            Limits(**args),
         ]
