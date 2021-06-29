@@ -122,6 +122,14 @@ public class S3Logs implements CloudLogs {
     return lines;
   }
 
+  @Override
+  public boolean hasEmptyConfigs(Configs configs) {
+    return configs.getAwsAccessKey().isBlank() ||
+        configs.getAwsSecretAccessKey().isBlank() ||
+        configs.getS3LogBucketRegion().isBlank() ||
+        configs.getS3LogBucket().isBlank();
+  }
+
   private void createS3ClientIfNotExist(Configs configs) {
     if (S3 == null) {
       checkValidCredentials(configs);

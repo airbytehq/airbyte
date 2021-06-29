@@ -10,6 +10,17 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 6/24/2021 
+
+1 new source:
+* [**Db2**](https://docs.airbyte.io/integrations/sources/db2)
+
+New features:
+* **S3** destination: supports Avro and Jsonl output!
+* **BigQuery** destination: now supports loading JSON data as structured data.  
+* **Looker** source: Now supports self-hosted instances.  
+* **Facebook** source: is now migrated to the CDK.
+
 ## 6/18/2021
 
 1 new source:
