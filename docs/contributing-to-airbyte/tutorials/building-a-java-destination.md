@@ -61,9 +61,9 @@ this compiles the java code for your destination and builds a Docker image with 
 
 We recommend the following ways of iterating on your connector as you're making changes:
 
-1. Test-driven development in Java 
-2. Test-driven development using Airbyte's Acceptance Tests
-3. Directly running the docker image 
+* Test-driven development (TDD) in Java 
+* Test-driven development (TDD) using Airbyte's Acceptance Tests
+* Directly running the docker image 
 
 **Test-driven development in Java**
 This should feel like a standard flow for a Java developer: you make some code changes then run java tests against them. You can do this directly in your IDE, but you can also run all unit tests via Gradle by running the command to build the connector: 
@@ -76,11 +76,11 @@ This will build the code and run any unit tests. This approach is great when you
 
 **TDD using acceptance tests & integration tests**
 
-Airbyte provides a standard test suite (dubbed "Acceptance Tests") that is run against every destination. The objective of these tests is to provide some "free" baseline tests that ensure that the basic functionality of the destination works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
+Airbyte provides a standard test suite (dubbed "Destination Acceptance Tests") that is run against every Airbyte destination connector. The objective of these tests is to provide some "free" baseline tests that ensure that the basic functionality of the destination works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
 
 If you want to try out this approach, check out Step 6 which describes what you need to do to set up the acceptance Tests for your destination.
 
-The nice thing about this approach is that you are running your destination exactly as Airbyte will run it in the CI. The downside is that the tests do not run very quickly. As such, we recommend this iteration approach only once you've implemented most of your connector and are in the finishing stages of implementation. 
+The nice thing about this approach is that you are running your destination exactly as Airbyte will run it in the CI. The downside is that the tests do not run very quickly. As such, we recommend this iteration approach only once you've implemented most of your connector and are in the finishing stages of implementation. Note that Acceptance Tests are required for every connector supported by Airbyte, so you should make sure to run them a couple of times while iterating to make sure your connector is compatible with Airbyte. 
 
 **Directly running the destination using Docker**
 
@@ -112,10 +112,6 @@ Each destination contains a specification that describes what inputs it needs in
 Your generated template should have the spec file in `airbyte-integrations/connectors/destination-<name>/src/main/resources/spec.json`. Edit it and you should be done with this step. 
 
 For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-specification.md).
-
-{% hint style="info" %}
-The generated code implements the `spec` method for you. As long as there's a file called `spec.json` in the directory mentioned above, the generated connector will take care of reading it and converting 
-{% endhint %}
 
 See the `spec` operation in action:  
 ```bash
@@ -149,9 +145,14 @@ The `write` operation is the main workhorse of a destination connector: it reads
 
 To implement the `write` Airbyte operation, implement the `getConsumer` method in your generated `<Name>Destination.java` file. Here are some example implementations from different destination conectors:
  
-* [BigQuery](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L188) 
+* [BigQuery](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L188)
+* [Google Pubsub](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-pubsub/src/main/java/io/airbyte/integrations/destination/pubsub/PubsubDestination.java#L98) 
 * [Local CSV](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-csv/src/main/java/io/airbyte/integrations/destination/csv/CsvDestination.java#L90)
-* [Google Pubsub](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-pubsub/src/main/java/io/airbyte/integrations/destination/pubsub/PubsubDestination.java#L98)
+* [Postgres](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/java/io/airbyte/integrations/destination/postgres/PostgresDestination.java)
+
+{% hint style="info" %}
+The Postgres destination leverages the `AbstractJdbcDestination` superclass which makes it extremely easy to create a destination for a database or data warehouse if it has a compatible JDBC driver. If the destination you are implementing has a JDBC driver, be sure to check out `AbstractJdbcDestination`. 
+{% endhint %}
 
 For a brief overview on the Airbyte catalog check out [the Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md).
 
@@ -168,8 +169,6 @@ The Acceptance Tests are meant to cover the basic functionality of a destination
 #### Step 8: Update the docs
 
 Each connector has its own documentation page. By convention, that page should have the following path: in `docs/integrations/destinations/<destination-name>.md`. For the documentation to get packaged with the docs, make sure to add a link to it in `docs/SUMMARY.md`. You can pattern match doing that from existing connectors.
-
-
 
 ## Wrapping up
 Well done on making it this far! If you'd like your connector to ship with Airbyte by default, create a PR against the Airbyte repo and we'll work with you to get it across the finish line.  
