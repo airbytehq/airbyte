@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,14 +20,16 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "tap-exacttarget",
     "airbyte-cdk",
     "Salesforce-FuelSDK",
     "suds-py3",
+    # "tap-exacttarget @ git+https://github.com/schlattk/exacttarget-singer-clone",
+    "tap-exacttarget",
 ]
 
 TEST_REQUIREMENTS = [

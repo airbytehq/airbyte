@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,11 +20,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 import json
-import FuelSDK
 
+import FuelSDK
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from airbyte_cdk.sources.singer import SingerSource
@@ -47,45 +49,44 @@ class SourceSfMarketingcloudSinger(SingerSource):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         local_config = {
-          'clientid': config['client_id'],
-          'clientsecret': config['client_secret'],
-          'tenant_subdomain': config['tenant_subdomain'],
-          'start_date': config['start_date'],
-          'request_timeout': '50000',
-          'useOAuth2Authentication': 'True',
-          'authenticationurl': ''
+            "clientid": config["client_id"],
+            "clientsecret": config["client_secret"],
+            "tenant_subdomain": config["tenant_subdomain"],
+            "start_date": config["start_date"],
+            "request_timeout": "50000",
+            "useOAuth2Authentication": "True",
+            "authenticationurl": "",
         }
-        ## taken from line 52 - 80 in tap_exacttarget/client.py
+        # taken from line 52 - 80 in tap_exacttarget/client.py
         try:
-            logger.info('Trying to authenticate using V1 endpoint')
-            local_config['useOAuth2Authentication'] = "False"
+            logger.info("Trying to authenticate using V1 endpoint")
+            local_config["useOAuth2Authentication"] = "False"
             auth_stub = FuelSDK.ET_Client(params=local_config)
-            transport = HttpAuthenticated(timeout=int(local_config.get('request_timeout', 900)))
+            transport = HttpAuthenticated(timeout=int(local_config.get("request_timeout", 900)))
             auth_stub.soap_client.set_options(transport=transport)
             logger.info("Success.")
         except Exception as e:
-            logger.info('Failed to auth using V1 endpoint')
-            if not local_config.get('tenant_subdomain'):
-                logger.info('No tenant_subdomain found, will not attempt to auth with V2 endpoint')
+            logger.info("Failed to auth using V1 endpoint")
+            if not local_config.get("tenant_subdomain"):
+                logger.info("No tenant_subdomain found, will not attempt to auth with V2 endpoint")
                 raise e
 
         # Next try V2
         # Move to OAuth2: https://help.salesforce.com/articleView?id=mc_rn_january_2019_platform_ip_remove_legacy_package_create_ability.htm&type=5
         try:
-            logger.info('Trying to authenticate using V2 endpoint')
-            local_config['useOAuth2Authentication'] = "True"
+            logger.info("Trying to authenticate using V2 endpoint")
+            local_config["useOAuth2Authentication"] = "True"
 
-            local_config['authenticationurl'] = ('https://{}.auth.marketingcloudapis.com'.format(local_config['tenant_subdomain']))
+            local_config["authenticationurl"] = "https://{}.auth.marketingcloudapis.com".format(local_config["tenant_subdomain"])
             auth_stub = FuelSDK.ET_Client(params=local_config)
-            transport = HttpAuthenticated(timeout=int(local_config.get('request_timeout', 900)))
+            transport = HttpAuthenticated(timeout=int(local_config.get("request_timeout", 900)))
             auth_stub.soap_client.set_options(transport=transport)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            logger.info('Failed to auth using V2 endpoint')
+            logger.info("Failed to auth using V2 endpoint")
             raise e
-            logger.info('Login succeeded')
+            logger.info("Login succeeded")
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
-
 
     # def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
     #     """
