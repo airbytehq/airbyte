@@ -42,7 +42,9 @@ You can remove the examples bellow and fill out with your information.
 For sync jobs, you can download the full logs from the UI by going to the sync attempt page and 
 clicking the download logs button at the top right of the logs display window.*
 
-<details><summary>LOG</summary> 
+<details>
+<summary>LOG</summary> 
+
 ```
 
 replace this with
@@ -50,6 +52,7 @@ your long log
 output here
 
 ```
+
 </details>
 
 ## Steps to Reproduce
