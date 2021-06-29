@@ -22,13 +22,13 @@ You can remove any comment block using these tags <-- info --/>
 --> 
 
 ## Enviroment
-- **Airbyte version**: <!-- you can remove this and replace with e.g.: 0.22.0-alpha -->
-- **OS Version / Instance**: <!-- macOS, Windows 7 / 10, Ubuntu 18.04 / GCP micro / AWS EC2 -->
-- **Deployment**: <!--Docker / Kubernetes -->
-- **Source Connector and version** (if applicable): <!-- Found in the admin page in the UI in the Source tab. -->
-- **Destination Connector and version** (if applicable): <!-- Found in the admin page in the UI in the Destination tab. -->
-- **Severity**: <!-- Very Low / Low / Medium / High / Critical -->
-- **Step where error happened**: <!-- Sync / Setup new connection or destination / Update connector -->
+- **Airbyte version**:  eg: 0.22.0-alpha
+- **OS Version / Instance**: eg: macOS, Windows 7/10, Ubuntu 18.04, GCP n2. / AWS EC2 -->
+- **Deployment**: eg: Docker or Kubernetes
+- **Source Connector and version** eg: (if applicable) Salesforce 0.2.3 <!-- Found in the admin page in the UI in the Source tab. -->
+- **Destination Connector and version** eg: (if applicable): Postgres 0.3.3 <!-- Found in the admin page in the UI in the Destination tab. -->
+- **Severity**: Very Low / Low / Medium / High / Critical
+- **Step where error happened**: Deploy / Sync job / Setup new connection / Update connector / Upgrade Airbyte
 
 ## Current Behavior
 *Tell us what happens.*
@@ -60,3 +60,15 @@ output here
 1.
 2.
 3.
+
+## Are you willing to submit a PR?
+<!--- 
+We accept contributions! 
+Don't feel pressured, but if you want to contribute we can help you by giving some tips, 
+highlighting the necessary code change or explaining any relevant point your feature will impact.
+You can also send questions on #dev Slack channel.
+
+We understand if you can't submit a PR and we're tremendously grateful
+that you've already contributed by suggesting a new feature.
+-->
+Remove this with your answer.
