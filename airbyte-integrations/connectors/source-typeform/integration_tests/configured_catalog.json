@@ -1,9 +1,8 @@
-// TODO: Construct a configured catalog that can be used for testing. Each stream's `json_schema` field should match the corresponding json schema file.
 {
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "forms",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -11,45 +10,177 @@
             "id": {
               "type": ["null", "string"]
             },
-            "name": {
+            "title": {
               "type": ["null", "string"]
             },
-            "signup_date": {
+            "last_updated_at": {
               "type": ["null", "string"],
               "format": "date-time"
+            },
+            "self": {
+              "type": ["null", "object"],
+              "properties": {
+                "href": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "theme": {
+              "type": ["null", "object"],
+              "properties": {
+                "href": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "_links": {
+              "type": ["null", "object"],
+              "properties": {
+                "display": {
+                  "type": ["null", "string"]
+                }
+              }
             }
           }
         },
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "append"
     },
     {
       "stream": {
-        "name": "employees",
+        "name": "responses",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": {
+            "response_id": {
               "type": ["null", "string"]
             },
-            "name": {
+            "landed_at": {
               "type": ["null", "string"]
             },
-            "years_of_service": {
+            "submitted_at": {
               "type": ["null", "integer"]
             },
-            "start_date": {
-              "type": ["null", "string"],
-              "format": "date-time"
+            "metadata": {
+              "type": ["null", "object"],
+              "properties": {
+                "user_agent": {
+                  "type": ["null", "string"]
+                },
+                "platform": {
+                  "type": ["null", "string"]
+                },
+                "referer": {
+                  "type": ["null", "string"]
+                },
+                "network_id": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "definition": {
+              "type": ["null", "object"],
+              "properties": {
+                "fields": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "title": {
+                        "type": ["null", "string"]
+                      },
+                      "description": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "variables": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "key": {
+                    "type": ["null", "string"]
+                  },
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "text": {
+                    "type": ["null", "string"]
+                  },
+                  "number": {
+                    "type": ["null", "number"]
+                  }
+                }
+              }
+            },
+            "hidden": {
+              "type": ["null", "object"]
+            },
+            "calculated": {
+              "type": ["null", "object"],
+              "properties": {
+                "score": {
+                  "type": ["null", "integer"]
+                }
+              }
+            },
+            "answers": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "field": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "ref": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "type": {
+                    "type": ["null", "string"]
+                  },
+                  "text": {
+                    "type": ["null", "string"]
+                  },
+                  "choice": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "label": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     }
   ]

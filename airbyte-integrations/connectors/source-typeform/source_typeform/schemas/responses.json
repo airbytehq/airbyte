@@ -2,18 +2,101 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": {
+    "response_id": {
       "type": ["null", "string"]
     },
-    "name": {
+    "landed_at": {
       "type": ["null", "string"]
     },
-    "years_of_service": {
+    "submitted_at": {
       "type": ["null", "integer"]
     },
-    "start_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "user_agent": {
+          "type": ["null", "string"]
+        },
+        "platform": {
+          "type": ["null", "string"]
+        },
+        "referer": {
+          "type": ["null", "string"]
+        },
+        "network_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "variables": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "key": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          },
+          "text": {
+            "type": ["null", "string"]
+          },
+          "number": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
+    "hidden": {
+      "type": ["null", "object"]
+    },
+    "calculated": {
+      "type": ["null", "object"],
+      "properties": {
+        "score": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "answers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          },
+          "type": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "choice": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
