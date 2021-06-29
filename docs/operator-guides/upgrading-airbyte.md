@@ -34,7 +34,7 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
 
 ## Upgrading \(K8s\)
 
-This process is similar to the Docker upgrade process with several changes to account for the Kubernetes resources.
+Airbyte Kubernetes **does not** support automatic migration. Please follow the following steps to upgrade your Airbyte Kubernetes deployment.
 
 1. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive \(gzipped tarball\) of all of your Airbyte configuration data and sync history locally.
 
