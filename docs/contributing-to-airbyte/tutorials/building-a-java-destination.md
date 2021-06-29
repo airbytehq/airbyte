@@ -54,7 +54,7 @@ You can build the destination by running:
 this compiles the java code for your destination and builds a Docker image with the connector. At this point, we haven't implemented anything of value yet, but once we do, you'll use this command to compile your code and Docker image. 
 
 {% hint style="info" %}
-    Airbyte uses Gradle to manage Java dependencies. To add dependencies for your connector, manage them in the `build.gradle` file inside your connector's directory.   
+Airbyte uses Gradle to manage Java dependencies. To add dependencies for your connector, manage them in the `build.gradle` file inside your connector's directory.   
 {% endhint %}
 
 #### Iterating on your implementation
