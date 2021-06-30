@@ -21,10 +21,15 @@
 # SOFTWARE.
 
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import base64
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -43,6 +48,7 @@ The approach here is not authoritative, and devs are free to use their own judge
 
 There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
 """
+
 
 
 # Basic full refresh stream
@@ -73,8 +79,7 @@ class MixpanelStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = "https://mixpanel.com/api/2.0/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -93,6 +98,14 @@ class MixpanelStream(HttpStream, ABC):
         """
         return None
 
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        """
+        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        """
+        return {"Accept": "application/json"}
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -107,25 +120,77 @@ class MixpanelStream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
+        json_response = response.json()
+        if self.data_field is not None:
+            data = json_response.get(self.data_field, [])
+        else:
+            data = [json_response]
 
+        print(data)
 
-class Customers(MixpanelStream):
+        for record in data:
+            # In order to support direct datetime string comparison (which is performed in incremental acceptance tests)
+            # convert any date format to python iso format string for date based cursors
+            self.update_field(record, self.cursor_field, lambda date: isoparse(date).isoformat())
+            yield record
+
+        # sleep for 1-2 secs to not reach rate limit: 50 requests per minute
+        time.sleep(60 / self.requests_per_minute)
+
+class Funnels(MixpanelStream):
     """
-    TODO: Change class name to match the table/data source this stream corresponds to.
+    Docs: https://developer.mixpanel.com/reference/funnels#funnels-query
+
+    url = "https://mixpanel.com/api/2.0/funnels"
+           https://mixpanel.com/api/2.0/funnels/list
     """
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
+    primary_key = None # 'funnel_id'
+    data_field = None
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
+    def path(self, **kwargs) -> str:
+        return "funnels/list"
+
+class Insights(MixpanelStream):
+    """
+    Docs: https://developer.mixpanel.com/reference/export
+
+    """
+
+    path = 'insights'
+
+
+class Export(MixpanelStream):
+    """
+    Docs: https://developer.mixpanel.com/reference/insights
+
+
+    https://data.mixpanel.com/api/2.0/export
+
+
+    url = "https://data.mixpanel.com/api/2.0/export"
+
+    querystring = {"from_date":"2021-01-01","to_date":"2021-07-01"}
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": "Basic ZGVhNTE4ZDQ0YmYzNWE0ZjBmZDBlMmFhM2QxMTVhNjE6"
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+
+    print(response.text)
+
+
+     Your plan does not support raw data export. Visit mixpanel.com/pricing to upgrade.
+
+    """
+
+    path = 'export'
+
+
+
+
 
 
 # Basic incremental stream
@@ -157,46 +222,12 @@ class IncrementalMixpanelStream(MixpanelStream, ABC):
         return {}
 
 
-class Employees(IncrementalMixpanelStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
-
-    def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
-
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
-
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
-
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError("Implement stream slices or delete this method!")
-
+class TokenAuthenticatorBase64(TokenAuthenticator):
+    def __init__(self, token:str, auth_method:str = 'Basic',**kwargs):
+        #token = base64.b64encode(token.encode()).decode()
+        token = base64.b64encode(token.encode("utf8")).decode("utf8")
+        print(f"token: {token}")
+        super().__init__(token=token, auth_method=auth_method, **kwargs)
 
 # Source
 class SourceMixpanel(AbstractSource):
@@ -211,14 +242,21 @@ class SourceMixpanel(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        authenticator = TokenAuthenticatorBase64(token=config["api_secret"])
+        print(authenticator.get_auth_header())
+        # Try to initiate a stream and validate input date params
+        try:
+            Funnels(authenticator=authenticator) # , #**config)
+
+        except Exception as e:
+            return False, e
+
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+
+        auth = TokenAuthenticatorBase64(token=config["api_secret"])
+        return [Funnels(authenticator=auth)]
