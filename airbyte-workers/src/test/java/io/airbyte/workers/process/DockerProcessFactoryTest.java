@@ -75,7 +75,7 @@ class DockerProcessFactoryTest {
     Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
-    assertTrue(processFactory.checkImageExists("airbyte/scheduler:dev"));
+    assertTrue(processFactory.checkImageExists("busybox"));
   }
 
   @Test
@@ -92,7 +92,7 @@ class DockerProcessFactoryTest {
     Path jobRoot = workspaceRoot.resolve("job");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
-    processFactory.create("job_id", 0, jobRoot, "airbyte/scheduler:dev", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi");
+    processFactory.create("job_id", 0, jobRoot, "busybox", false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi");
 
     assertEquals(
         Jsons.jsonNode(ImmutableMap.of("data", 2)),

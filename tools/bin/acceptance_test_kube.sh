@@ -6,6 +6,15 @@ set -e
 
 assert_root
 
+# Since KIND does not have access to the local docker agent, manually load the minimum images required for the Kubernetes Acceptance Tests.
+# See https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster.
+echo "Loading images into KIND..."
+kind load docker-image airbyte/server:dev --name chart-testing
+kind load docker-image airbyte/scheduler:dev --name chart-testing
+kind load docker-image airbyte/webapp:dev --name chart-testing
+kind load docker-image airbyte/seed:dev --name chart-testing
+kind load docker-image airbyte/db:dev --name chart-testing
+
 echo "Starting app..."
 
 echo "Applying dev manifests to kubernetes..."
