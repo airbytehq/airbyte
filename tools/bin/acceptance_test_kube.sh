@@ -6,6 +6,12 @@ set -e
 
 assert_root
 
+echo "Loading images into KIND..."
+kind load docker-image airbyte/server:dev --name kind-chart-testing
+kind load docker-image airbyte/scheduler:dev --name kind-chart-testing
+kind load docker-image airbyte/webapp:dev --name kind-chart-testing
+kind load docker-image airbyte/seed:dev --name kind-chart-testing
+
 echo "Starting app..."
 
 echo "Applying dev manifests to kubernetes..."
