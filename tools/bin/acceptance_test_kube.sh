@@ -19,11 +19,15 @@ sleep 120s
 
 server_logs () { echo "server logs:" && kubectl logs deployment.apps/airbyte-server; }
 scheduler_logs () { echo "scheduler logs:" && kubectl logs deployment.apps/airbyte-scheduler; }
-print_all_logs () { server_logs; scheduler_logs; }
+describe_pods () { echo "describe pods:" && kubectl describe pods; }
+print_all_logs () { server_logs; scheduler_logs; describe_pods; }
 
 trap "echo 'kube logs:' && print_all_logs" EXIT
 
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
+
+echo "Running worker integration tests..."
+./gradlew --no-daemon :airbyte-workers:integrationTest --scan
 
 echo "Running e2e tests via gradle..."
 KUBE=true ./gradlew --no-daemon :airbyte-tests:acceptanceTests --scan
