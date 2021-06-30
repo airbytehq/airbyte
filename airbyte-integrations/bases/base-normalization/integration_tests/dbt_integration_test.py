@@ -33,6 +33,7 @@ import string
 import subprocess
 import sys
 import threading
+from time import sleep
 from typing import Any, Dict, List
 
 from normalization.destination_type import DestinationType
@@ -147,6 +148,7 @@ class DbtIntegrationTest(object):
             for line in iter(process.stdout.readline, b""):
                 f.write(line)
                 sys.stdout.write(line.decode("utf-8"))
+
             thread.join()
             process.wait()
         return process.returncode == 0

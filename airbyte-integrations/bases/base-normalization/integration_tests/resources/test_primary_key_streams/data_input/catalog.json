@@ -180,7 +180,7 @@
             "id": {
               "type": "integer"
             },
-            "value": {
+            "name": {
               "type": ["string", "null"]
             },
             "_ab_cdc_lsn": {
