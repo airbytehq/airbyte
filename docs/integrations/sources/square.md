@@ -75,4 +75,4 @@ Some Square API endpoints has different page size limitation
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-06-30 | [4439](https://github.com/airbytehq/airbyte/pull/4439) | Initial Square API |
+| 0.1.0   | 2021-06-30 | [4439](https://github.com/airbytehq/airbyte/pull/4439) | Initial release supporting the Square API |
