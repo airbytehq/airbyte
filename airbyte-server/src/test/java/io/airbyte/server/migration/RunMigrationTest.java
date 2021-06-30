@@ -43,7 +43,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DefaultConfigPersistence;
+import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.migrate.Migrations;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -121,8 +121,7 @@ public class RunMigrationTest {
 
   private void assertPostMigrationConfigs(Path importRoot)
       throws IOException, JsonValidationException, ConfigNotFoundException {
-    ConfigRepository configRepository = new ConfigRepository(
-        new DefaultConfigPersistence(importRoot));
+    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(importRoot));
     StandardSyncOperation standardSyncOperation = assertSyncOperations(configRepository);
     assertStandardSyncs(configRepository, standardSyncOperation);
     assertWorkspace(configRepository);
@@ -287,7 +286,7 @@ public class RunMigrationTest {
     try (RunMigration runMigration = new RunMigration(
         INITIAL_VERSION,
         jobPersistence,
-        new ConfigRepository(new DefaultConfigPersistence(exportConfigRoot)),
+        new ConfigRepository(FileSystemConfigPersistence.createWithValidation(exportConfigRoot)),
         TARGET_VERSION,
         Path.of(System.getProperty("user.dir")).resolve("build/config_init/resources/main/config"))) {
       runMigration.run();

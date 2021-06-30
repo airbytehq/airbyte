@@ -31,6 +31,8 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 // we force all interaction with disk storage to be effectively single threaded.
 public class ValidatingConfigPersistence implements ConfigPersistence {
@@ -68,6 +70,17 @@ public class ValidatingConfigPersistence implements ConfigPersistence {
   public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws JsonValidationException, IOException {
     validateJson(Jsons.jsonNode(config), configType);
     decoratedPersistence.writeConfig(configType, configId, config);
+  }
+
+  @Override
+  public <T> void replaceAllConfigs(final Map<ConfigSchema, Stream<T>> configs, final boolean dryRun) throws IOException {
+    // todo (cgardens) need to do validation here.
+    decoratedPersistence.replaceAllConfigs(configs, dryRun);
+  }
+
+  @Override
+  public Map<String, Stream<JsonNode>> dumpConfigs() throws IOException {
+    return decoratedPersistence.dumpConfigs();
   }
 
   private <T> void validateJson(T config, ConfigSchema configType) throws JsonValidationException {
