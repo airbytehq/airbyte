@@ -58,6 +58,7 @@ public class EnvConfigs implements Configs {
   private static final String MAXIMUM_WORKSPACE_SIZE_MB = "MAXIMUM_WORKSPACE_SIZE_MB";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
+  private static final String KUBE_NAMESPACE = "KUBE_NAMESPACE";
 
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
@@ -179,6 +180,11 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getKubeNamespace() {
+    return getEnvOrDefault(KUBE_NAMESPACE, "default");
+  }
+
+  @Override
   public String getS3LogBucket() {
     return getEnsureEnv(LogHelpers.S3_LOG_BUCKET);
   }
@@ -196,6 +202,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getAwsSecretAccessKey() {
     return getEnsureEnv(LogHelpers.AWS_SECRET_ACCESS_KEY);
+  }
+
+  @Override
+  public String getS3MinioEndpoint() {
+    return getEnv(LogHelpers.S3_MINIO_ENDPOINT);
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {
