@@ -13,10 +13,13 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 | Connector | Grade |
 |----|----|
 |[Amazon Seller Partner](./sources/amazon-seller-partner.md)| Alpha |
+|[Amplitude](./sources/amplitude.md)| Beta |
 |[Appstore](./sources/appstore.md)| Alpha |
 |[Asana](./sources/asana.md) | Beta |
+|[AWS CloudTrail](./sources/aws-cloudtrail.md)| Beta |
 |[Braintree](./sources/braintree.md)| Alpha |
 |[ClickHouse](./sources/clickhouse.md)| Beta |
+|[Db2](./sources/db2.md)| Beta |
 |[Drift](./sources/drift.md)| Beta |
 |[Exchange Rates API](./sources/exchangeratesapi.md)| Certified |
 |[Facebook Marketing](./sources/facebook-marketing.md)| Beta |
@@ -24,6 +27,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Freshdesk](./sources/freshdesk.md)| Certified |
 |[GitHub](./sources/github.md)| Beta |
 |[GitLab](./sources/gitlab.md)| Beta |
+|[Google Ads](./sources/google-ads.md)| Beta |
 |[Google Adwords](./sources/google-adwords.md)| Beta |
 |[Google Analytics](./sources/googleanalytics.md)| Beta |
 |[Google Directory](./sources/google-directory.md)| Certified |
@@ -33,13 +37,12 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Greenhouse](./sources/greenhouse.md)| Beta |
 |[HTTP Request](./sources/http-request.md)| Alpha |
 |[Hubspot](./sources/hubspot.md)| Certified |
-|[IBM Db2](./sources/db2.md)| Beta |
 |[Instagram](./sources/instagram.md)| Certified |
 |[Intercom](./sources/intercom.md)| Beta |
 |[Iterable](./sources/iterable.md)| Beta |
 |[Jira](./sources/jira.md)| Certified |
-|[Klaviyo](./sources/klaviyo.md)| Beta |
 |[Looker](./sources/looker.md)| Beta |
+|[Klaviyo](./sources/klaviyo.md)| Beta |
 |[Mailchimp](./sources/mailchimp.md)| Certified |
 |[Marketo](./sources/marketo.md)| Certified |
 |[Microsoft SQL Server \(MSSQL\)](./sources/mssql.md)| Certified |
@@ -52,6 +55,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Plaid](./sources/plaid.md)| Alpha |
 |[PokéAPI](./sources/pokeapi.md)| Beta |
 |[Postgres](./sources/postgres.md)| Certified |
+|[PostHog](./sources/posthog.md)| Beta |
 |[Quickbooks](./sources/quickbooks.md)| Beta |
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |
@@ -61,7 +65,9 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Shopify](./sources/shopify.md)| Certified |
 |[Slack](./sources/slack.md)| Beta |
 |[Smartsheets](./sources/smartsheets.md)| Beta |
+|[Snowflake](./sources/snowflake.md)| Beta |
 |[Stripe](./sources/stripe.md)| Certified |
+|[Tempo](./sources/tempo.md)| Beta |
 |[Twilio](./sources/twilio.md)| Beta |
 |[Zendesk Chat](./sources/zendesk-chat.md)| Certified |
 |[Zendesk Support](./sources/zendesk-support.md)| Certified |
@@ -80,5 +86,6 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Oracle](./destinations/oracle.md)| Alpha |
 |[Postgres](./destinations/postgres.md)| Certified |
 |[Redshift](./destinations/redshift.md)| Certified |
+|[S3](./destinations/s3.md)| Certified |
 |[SQL Server (MSSQL)](./destinations/mssql.md)| Alpha |
 |[Snowflake](./destinations/snowflake.md)| Certified |
