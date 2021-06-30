@@ -98,9 +98,16 @@ class GithubStream(HttpStream, ABC):
             "User-Agent": "PostmanRuntime/7.28.0",
         }
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
-            yield self.transform(record=record)
+            self.transform(record=record)
+            yield record
 
     def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -131,7 +138,79 @@ class GithubStream(HttpStream, ABC):
             field_values = record.pop(field, [])
             record[field] = [value["id"] for value in field_values]
 
-        return record
+
+class SemiIncrementalGithubStream(GithubStream):
+    supports_incremental = True
+    cursor_field = "updated_at"
+
+    # This flag is used to indicate that current stream supports `sort` and `direction` request parameters and that
+    # we should break processing records if possible (see comment for `self._should_stop`).
+    should_break_if_sorter = False
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # This flag is used for streams which support `sort` and `direction` request parameters
+        # (`should_break_if_sorter` is set to `True`). If `sort` is set to `updated` and `direction` is set to `desc`
+        # this means that latest records will be at the beginning of the response and after we processed those latest
+        # records we can just stop and not process other record. This will increase speed of each incremental stream
+        # which supports those 2 request parameters.
+        self._should_stop = False
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
+        object and returning an updated state object.
+        """
+        state_value = latest_cursor_value = latest_record.get(self.cursor_field)
+
+        if current_stream_state.get(self.cursor_field):
+            state_value = max(latest_cursor_value, current_stream_state[self.cursor_field])
+
+        return {self.cursor_field: state_value}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if not self._should_stop:
+            return super().next_page_token(response=response)
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json():  # GitHub puts records in an array.
+            state_value = stream_state.get(self.cursor_field)
+
+            if not state_value or record.get(self.cursor_field) > state_value:
+                self.transform(record=record)
+                yield record
+            elif self.should_break_if_sorter and record.get(self.cursor_field) < state_value:
+                self._should_stop = True
+                break
+
+
+class IncrementalGithubStream(SemiIncrementalGithubStream):
+    def __init__(self, start_date, **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = start_date
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        start_point = self._start_date
+        if stream_state.get(self.cursor_field):
+            start_point = max(start_point, stream_state[self.cursor_field])
+        params["since"] = start_point
+
+        return params
+
+
+# Below are full refresh streams
 
 
 class Assignees(GithubStream):
@@ -159,21 +238,35 @@ class Collaborators(GithubStream):
     pass
 
 
-class Releases(GithubStream):
+class IssueLabels(GithubStream):
+    def path(self, **kwargs) -> str:
+        return f"repos/{self.repository}/labels"
+
+
+class Teams(GithubStream):
+    def path(self, **kwargs) -> str:
+        owner, _ = self.repository.split("/")
+        return f"orgs/{owner}/teams"
+
+
+# Below are semi incremental streams
+
+
+class Releases(SemiIncrementalGithubStream):
+    cursor_field = "created_at"
     object_fields = ("author",)
 
     def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        record = super().transform(record=record)
+        super().transform(record=record)
 
         assets = record.get("assets", [])
         for asset in assets:
             uploader = asset.pop("uploader", None)
             asset["uploader_id"] = uploader.get("id") if uploader else None
 
-        return record
 
-
-class Events(GithubStream):
+class Events(SemiIncrementalGithubStream):
+    cursor_field = "created_at"
     object_fields = (
         "actor",
         "repo",
@@ -181,14 +274,8 @@ class Events(GithubStream):
     )
 
 
-class Comments(GithubStream):
-    object_fields = ("user",)
-
-    def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/issues/comments"
-
-
-class PullRequests(GithubStream):
+class PullRequests(SemiIncrementalGithubStream):
+    should_break_if_sorter = True
     object_fields = (
         "user",
         "milestone",
@@ -211,10 +298,12 @@ class PullRequests(GithubStream):
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params["state"] = "all"
+        params["sort"] = "updated"
+        params["direction"] = "desc"
         return params
 
     def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        record = super().transform(record=record)
+        super().transform(record=record)
 
         head = record.get("head", {})
         head_user = head.pop("user", None)
@@ -228,17 +317,16 @@ class PullRequests(GithubStream):
         base_repo = base.pop("repo", None)
         base["repo_id"] = base_repo.get("id") if base_repo else None
 
-        return record
 
-
-class CommitComments(GithubStream):
+class CommitComments(SemiIncrementalGithubStream):
     object_fields = ("user",)
 
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/comments"
 
 
-class IssueMilestones(GithubStream):
+class IssueMilestones(SemiIncrementalGithubStream):
+    should_break_if_sorter = True
     object_fields = ("creator",)
 
     def path(self, **kwargs) -> str:
@@ -247,19 +335,14 @@ class IssueMilestones(GithubStream):
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params["state"] = "all"
+        params["sort"] = "updated"
+        params["direction"] = "desc"
         return params
 
 
-class Commits(GithubStream):
-    primary_key = "sha"
-    object_fields = (
-        "author",
-        "committer",
-    )
-
-
-class Stargazers(GithubStream):
+class Stargazers(SemiIncrementalGithubStream):
     primary_key = "user_id"
+    cursor_field = "starred_at"
     object_fields = ("user",)
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
@@ -270,13 +353,7 @@ class Stargazers(GithubStream):
         return headers
 
 
-class Teams(GithubStream):
-    def path(self, **kwargs) -> str:
-        owner, _ = self.repository.split("/")
-        return f"orgs/{owner}/teams"
-
-
-class Projects(GithubStream):
+class Projects(SemiIncrementalGithubStream):
     object_fields = ("creator",)
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
@@ -292,12 +369,69 @@ class Projects(GithubStream):
         return headers
 
 
-class IssueLabels(GithubStream):
+class IssueEvents(SemiIncrementalGithubStream):
+    cursor_field = "created_at"
+    object_fields = (
+        "actor",
+        "issue",
+    )
+
     def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/labels"
+        return f"repos/{self.repository}/issues/events"
 
 
-class Issues(GithubStream):
+# Below are incremental streams
+
+
+class Comments(IncrementalGithubStream):
+    object_fields = ("user",)
+
+    def path(self, **kwargs) -> str:
+        return f"repos/{self.repository}/issues/comments"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params["sort"] = "updated"
+        params["direction"] = "desc"
+
+        return params
+
+
+class Commits(IncrementalGithubStream):
+    primary_key = "sha"
+    cursor_field = "created_at"
+    object_fields = (
+        "author",
+        "committer",
+    )
+
+    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        super().transform(record=record)
+
+        # Record of the `commits` stream doesn't have an updated_at/created_at field at the top level (so we could
+        # just write `record["updated_at"]` or `record["created_at"]`). Instead each record has such value in
+        # `commit.author.date`. So the easiest way is to just enrich the record returned from API with top level
+        # field `created_at` and use it as cursor_field.
+        record["created_at"] = record["commit"]["author"]["date"]
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json():  # GitHub puts records in an array.
+            state_value = stream_state.get(self.cursor_field)
+
+            self.transform(record=record)
+            if not state_value or record.get(self.cursor_field) > state_value:
+                yield record
+
+
+class Issues(IncrementalGithubStream):
     object_fields = (
         "user",
         "assignee",
@@ -308,17 +442,12 @@ class Issues(GithubStream):
         "assignees",
     )
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["state"] = "all"
+        params["sort"] = "updated"
+        params["direction"] = "desc"
+
         return params
-
-
-class IssueEvents(GithubStream):
-    object_fields = (
-        "actor",
-        "issue",
-    )
-
-    def path(self, **kwargs) -> str:
-        return f"repos/{self.repository}/issues/events"
