@@ -68,6 +68,11 @@ class SurveymonkeyStream(HttpStream, ABC):
         return {"Content-Type": "application/json"}
 
     def raise_error_from_response(self, response_json):
+        """
+        this method use in all parse responses
+        including those who does not inherit / super() due to
+        necessity use raw response instead of accessing `data_field`
+        """
         if response_json.get("error"):
             raise Exception(repr(response_json.get("error")))
 
