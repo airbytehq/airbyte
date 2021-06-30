@@ -22,7 +22,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Db2](./sources/db2.md)| Beta |
 |[Drift](./sources/drift.md)| Beta |
 |[Exchange Rates API](./sources/exchangeratesapi.md)| Certified |
-|[Facebook Marketing](./sources/facebook-marketing.md)| Certified |
+|[Facebook Marketing](./sources/facebook-marketing.md)| Beta |
 |[Files](./sources/file.md)| Certified |
 |[Freshdesk](./sources/freshdesk.md)| Certified |
 |[GitHub](./sources/github.md)| Beta |
@@ -55,7 +55,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Plaid](./sources/plaid.md)| Alpha |
 |[PokéAPI](./sources/pokeapi.md)| Beta |
 |[Postgres](./sources/postgres.md)| Certified |
-|[PostHog](./sources/posthog.md)| Certified |
+|[PostHog](./sources/posthog.md)| Beta |
 |[Quickbooks](./sources/quickbooks.md)| Beta |
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |
