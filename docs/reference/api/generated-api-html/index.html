@@ -373,8 +373,10 @@ font-style: italic;
     <pre class="example"><code>{
   "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "resourceRequirements" : {
-    "memory" : "memory",
-    "cpu" : "cpu"
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
   },
   "schedule" : {
     "units" : 0,
@@ -523,8 +525,10 @@ font-style: italic;
     <pre class="example"><code>{
   "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "resourceRequirements" : {
-    "memory" : "memory",
-    "cpu" : "cpu"
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
   },
   "schedule" : {
     "units" : 0,
@@ -687,8 +691,10 @@ font-style: italic;
   "connections" : [ {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
-      "memory" : "memory",
-      "cpu" : "cpu"
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
     },
     "schedule" : {
       "units" : 0,
@@ -736,8 +742,10 @@ font-style: italic;
   }, {
     "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
-      "memory" : "memory",
-      "cpu" : "cpu"
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
     },
     "schedule" : {
       "units" : 0,
@@ -1018,8 +1026,10 @@ font-style: italic;
     <pre class="example"><code>{
   "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "resourceRequirements" : {
-    "memory" : "memory",
-    "cpu" : "cpu"
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
   },
   "schedule" : {
     "units" : 0,
@@ -4080,8 +4090,10 @@ font-style: italic;
   },
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "resourceRequirements" : {
-    "memory" : "memory",
-    "cpu" : "cpu"
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
   },
   "schedule" : {
     "units" : 0,
@@ -4233,8 +4245,10 @@ font-style: italic;
   },
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "resourceRequirements" : {
-    "memory" : "memory",
-    "cpu" : "cpu"
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
   },
   "schedule" : {
     "units" : 0,
@@ -4390,8 +4404,10 @@ font-style: italic;
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
-      "memory" : "memory",
-      "cpu" : "cpu"
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
     },
     "schedule" : {
       "units" : 0,
@@ -4490,8 +4506,10 @@ font-style: italic;
     },
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "resourceRequirements" : {
-      "memory" : "memory",
-      "cpu" : "cpu"
+      "cpu_limit" : "cpu_limit",
+      "memory_request" : "memory_request",
+      "memory_limit" : "memory_limit",
+      "cpu_request" : "cpu_request"
     },
     "schedule" : {
       "units" : 0,
@@ -4771,8 +4789,10 @@ font-style: italic;
   },
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "resourceRequirements" : {
-    "memory" : "memory",
-    "cpu" : "cpu"
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
   },
   "schedule" : {
     "units" : 0,
@@ -5892,8 +5912,10 @@ font-style: italic;
     <h3><a name="ResourceRequirements"><code>ResourceRequirements</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'>optional resource requirements to run workers (blank for unbounded allocations)</div>
     <div class="field-items">
-      <div class="param">cpu (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">memory (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">cpu_request (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">cpu_limit (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">memory_request (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">memory_limit (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

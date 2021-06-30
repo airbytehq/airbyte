@@ -602,17 +602,24 @@ public class KubePodProcess extends Process {
 
   private static ResourceRequirementsBuilder getResourceRequirementsBuilder(ResourceRequirements resourceRequirements) {
     if (resourceRequirements != null) {
-      final Map<String, Quantity> resourceMap = new HashMap<>();
+      final Map<String, Quantity> requestMap = new HashMap<>();
       // if null then use unbounded resource allocation
-      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpu())) {
-        resourceMap.put("cpu", Quantity.parse(resourceRequirements.getCpu()));
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
+        requestMap.put("cpu", Quantity.parse(resourceRequirements.getCpuRequest()));
       }
-      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemory())) {
-        resourceMap.put("memory", Quantity.parse(resourceRequirements.getMemory()));
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemoryRequest())) {
+        requestMap.put("memory", Quantity.parse(resourceRequirements.getMemoryRequest()));
+      }
+      final Map<String, Quantity> limitMap = new HashMap<>();
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
+        limitMap.put("cpu", Quantity.parse(resourceRequirements.getCpuLimit()));
+      }
+      if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemoryLimit())) {
+        limitMap.put("memory", Quantity.parse(resourceRequirements.getMemoryLimit()));
       }
       return new ResourceRequirementsBuilder()
-          .withRequests(resourceMap)
-          .withLimits(resourceMap);
+          .withRequests(requestMap)
+          .withLimits(limitMap);
     }
     return null;
   }

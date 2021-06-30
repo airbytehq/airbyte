@@ -106,8 +106,10 @@ class ConnectionsHandlerTest {
         .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
         .syncCatalog(catalog)
         .resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
-            .cpu(standardSync.getResourceRequirements().getCpu())
-            .memory(standardSync.getResourceRequirements().getMemory()));
+            .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+            .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+            .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
+            .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
 
     final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 

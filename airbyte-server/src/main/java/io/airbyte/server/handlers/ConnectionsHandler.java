@@ -94,8 +94,10 @@ public class ConnectionsHandler {
         .withStatus(toPersistenceStatus(connectionCreate.getStatus()));
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
-          .withCpu(connectionCreate.getResourceRequirements().getCpu())
-          .withMemory(connectionCreate.getResourceRequirements().getMemory()));
+          .withCpuRequest(connectionCreate.getResourceRequirements().getCpuRequest())
+          .withCpuLimit(connectionCreate.getResourceRequirements().getCpuLimit())
+          .withMemoryRequest(connectionCreate.getResourceRequirements().getMemoryRequest())
+          .withMemoryLimit(connectionCreate.getResourceRequirements().getMemoryLimit()));
     } else {
       standardSync.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     }
@@ -176,8 +178,10 @@ public class ConnectionsHandler {
     // update Resource Requirements
     if (connectionUpdate.getResourceRequirements() != null) {
       persistedSync.withResourceRequirements(new io.airbyte.config.ResourceRequirements()
-          .withCpu(connectionUpdate.getResourceRequirements().getCpu())
-          .withMemory(connectionUpdate.getResourceRequirements().getMemory()));
+          .withCpuRequest(connectionUpdate.getResourceRequirements().getCpuRequest())
+          .withCpuLimit(connectionUpdate.getResourceRequirements().getCpuLimit())
+          .withMemoryRequest(connectionUpdate.getResourceRequirements().getMemoryRequest())
+          .withMemoryLimit(connectionUpdate.getResourceRequirements().getMemoryLimit()));
     } else {
       persistedSync.withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     }
@@ -275,12 +279,16 @@ public class ConnectionsHandler {
 
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(new ResourceRequirements()
-          .cpu(standardSync.getResourceRequirements().getCpu())
-          .memory(standardSync.getResourceRequirements().getMemory()));
+          .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+          .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+          .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
+          .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
     } else {
       connectionRead.resourceRequirements(new ResourceRequirements()
-          .cpu(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpu())
-          .memory(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemory()));
+          .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
+          .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
+          .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
+          .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
     }
     return connectionRead;
   }

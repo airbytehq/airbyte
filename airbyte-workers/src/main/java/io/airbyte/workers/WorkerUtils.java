@@ -209,8 +209,10 @@ public class WorkerUtils {
   private static ResourceRequirements initResourceRequirements() {
     final EnvConfigs configs = new EnvConfigs();
     return new ResourceRequirements()
-        .withCpu(configs.getCpuResourceRequirement())
-        .withMemory(configs.getMemoryResourceRequirement());
+        .withCpuRequest(configs.getCpuRequest())
+        .withCpuLimit(configs.getCpuLimit())
+        .withMemoryRequest(configs.getMemoryRequest())
+        .withMemoryLimit(configs.getMemoryLimit());
   }
 
 }

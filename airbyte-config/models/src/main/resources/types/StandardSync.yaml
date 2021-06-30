@@ -73,7 +73,11 @@ properties:
     description: optional resource requirements to run sync workers
     additionalProperties: false
     properties:
-      memory:
+      cpu_request:
         type: string
-      cpu:
+      cpu_limit:
+        type: string
+      memory_request:
+        type: string
+      memory_limit:
         type: string

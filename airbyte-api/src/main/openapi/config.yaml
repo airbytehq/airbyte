@@ -2592,9 +2592,13 @@ components:
       description: optional resource requirements to run workers (blank for unbounded allocations)
       type: object
       properties:
-        cpu:
+        cpu_request:
           type: string
-        memory:
+        cpu_limit:
+          type: string
+        memory_request:
+          type: string
+        memory_limit:
           type: string
     # Web Backend
     WebBackendConnectionRead:

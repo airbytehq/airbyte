@@ -125,8 +125,10 @@ public class ConnectionHelpers {
         .schedule(generateBasicConnectionSchedule())
         .syncCatalog(ConnectionHelpers.generateBasicApiCatalog())
         .resourceRequirements(new ResourceRequirements()
-            .cpu(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpu())
-            .memory(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemory()));
+            .cpuRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuRequest())
+            .cpuLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getCpuLimit())
+            .memoryRequest(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryRequest())
+            .memoryLimit(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS.getMemoryLimit()));
   }
 
   public static ConnectionRead generateExpectedConnectionRead(StandardSync standardSync) {
