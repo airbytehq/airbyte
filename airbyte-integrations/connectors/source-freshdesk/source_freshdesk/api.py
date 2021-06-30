@@ -45,7 +45,12 @@ from source_freshdesk.utils import CallCredit, retry_after_handler, retry_connec
 
 class API:
     def __init__(
-        self, domain: str, api_key: str, requests_per_minute: int = None, verify: bool = True, proxies: MutableMapping[str, Any] = None
+        self,
+        domain: str,
+        api_key: str,
+        requests_per_minute: int = None,
+        verify: bool = True,
+        proxies: MutableMapping[str, Any] = None,
     ):
         """Basic HTTP interface to read from endpoints"""
         self._api_prefix = f"https://{domain.rstrip('/')}/api/v2/"
@@ -141,12 +146,21 @@ class StreamAPI(ABC):
     def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
         """Read using getter"""
         params = params or {}
+
         for page in range(1, self.maximum_page):
-            batch = list(getter(params={**params, "per_page": self.result_return_limit, "page": page}))
+            batch = list(
+                getter(
+                    params={
+                        **params,
+                        "per_page": self.result_return_limit,
+                        "page": page,
+                    }
+                )
+            )
             yield from batch
 
             if len(batch) < self.result_return_limit:
-                break
+                return iter(())
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
@@ -265,6 +279,66 @@ class TicketsAPI(IncrementalStreamAPI):
         """Iterate over entities"""
         params = {"include": "description"}
         yield from self.read(partial(self._api_get, url="tickets"), params=params)
+
+    @staticmethod
+    def get_tickets(
+        result_return_limit: int, getter: Callable, params: Mapping[str, Any] = None, ticket_paginate_limit: int = 300
+    ) -> Iterator:
+        """
+        Read using getter
+
+        This block extends TicketsAPI Stream to overcome '300 page' server error.
+        Since the TicketsAPI Stream list has a 300 page pagination limit, after 300 pages, update the parameters with
+        query using 'updated_since' = last_record, if there is more data remaining.
+        """
+        params = params or {}
+
+        # Start page
+        page = 1
+        # Initial request parameters
+        params = {
+            **params,
+            "order_type": "asc",  # ASC order, to get the old records first
+            "order_by": "updated_at",
+            "per_page": result_return_limit,
+        }
+
+        while True:
+            params["page"] = page
+            batch = list(getter(params=params))
+            yield from batch
+
+            if len(batch) < result_return_limit:
+                return iter(())
+
+            # checkpoint & switch the pagination
+            if page == ticket_paginate_limit:
+                # get last_record from latest batch, pos. -1, because of ACS order of records
+                last_record_updated_at = batch[-1]["updated_at"]
+                page = 0  # reset page counter
+                last_record_updated_at = pendulum.parse(last_record_updated_at)
+                # updating request parameters with last_record state
+                params["updated_since"] = last_record_updated_at
+                # Increment page
+            page += 1
+
+    # Override the super().read() method with modified read for tickets
+    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
+        """Read using getter, patched to respect current state"""
+        params = params or {}
+        params = {**params, **self._state_params()}
+        latest_cursor = None
+        for record in self.get_tickets(self.result_return_limit, getter, params):
+            cursor = pendulum.parse(record[self.state_pk])
+            # filter out records older then state
+            if self._state and self._state >= cursor:
+                continue
+            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+            yield record
+
+        if latest_cursor:
+            logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
+            self._state = max(latest_cursor, self._state) if self._state else latest_cursor
 
 
 class TimeEntriesAPI(ClientIncrementalStreamAPI):
