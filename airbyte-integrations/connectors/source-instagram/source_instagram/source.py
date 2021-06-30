@@ -29,18 +29,15 @@ from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
-from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import (
-    AdCreatives,
-    Ads,
-    AdSets,
-    AdsInsights,
-    AdsInsightsAgeAndGender,
-    AdsInsightsCountry,
-    AdsInsightsDma,
-    AdsInsightsPlatformAndDevice,
-    AdsInsightsRegion,
-    Campaigns,
+from source_instagram.api import InstagramAPI
+from source_instagram.streams import (
+    Media,
+    MediaInsights,
+    Stories,
+    StoriesInsights,
+    Users,
+    UserLifetimeInsights,
+    UserInsights,
 )
 
 
@@ -73,8 +70,8 @@ class SourceInstagram(AbstractSource):
 
         try:
             config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-            api = API(account_id=config.account_id, access_token=config.access_token)
-            logger.info(f"Select account {api.account}")
+            api = InstagramAPI(access_token=config.access_token)
+            logger.info(f"Available accounts: {api.accounts}")
             ok = True
         except Exception as exc:
             error_msg = repr(exc)
@@ -87,7 +84,7 @@ class SourceInstagram(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-        api = API(account_id=config.account_id, access_token=config.access_token)
+        api = InstagramAPI(access_token=config.access_token)
 
         return [
             Media(api=api),

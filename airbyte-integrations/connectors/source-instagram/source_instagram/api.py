@@ -22,13 +22,9 @@
 # SOFTWARE.
 #
 
-
-from typing import Any, List, Mapping, Tuple
+from typing import List, Tuple, Mapping, Any
 
 import backoff
-import pendulum
-from base_python import BaseClient
-from base_python.entrypoint import logger
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
@@ -37,49 +33,24 @@ from facebook_business.adobjects.page import Page
 from facebook_business.api import Cursor
 from facebook_business.exceptions import FacebookRequestError
 
-from .api import MediaAPI, MediaInsightsAPI, StoriesAPI, StoriesInsightsAPI, UserInsightsAPI, UserLifetimeInsightsAPI, UsersAPI
-from .common import InstagramAPIException, retry_pattern
+from source_instagram.common import InstagramAPIException, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=4, factor=5)
 
 
-class Client(BaseClient):
-    def __init__(self, access_token: str, start_date: str):
-        self._start_date = pendulum.parse(start_date)
-
+class InstagramAPI:
+    def __init__(self, access_token: str):
         self._api = FacebookAdsApi.init(access_token=access_token)
-        self._apis = {
-            "media": MediaAPI(self),
-            "media_insights": MediaInsightsAPI(self),
-            "stories": StoriesAPI(self),
-            "story_insights": StoriesInsightsAPI(self),
-            "users": UsersAPI(self),
-            "user_lifetime_insights": UserLifetimeInsightsAPI(self),
-            "user_insights": UserInsightsAPI(self),
-        }
-        super().__init__()
-
-    def _enumerate_methods(self) -> Mapping[str, callable]:
-        """Detect available streams and return mapping"""
-        return {name: api.list for name, api in self._apis.items()}
-
-    def stream_has_state(self, name: str) -> bool:
-        """Tell if stream supports incremental sync"""
-        return hasattr(self._apis[name], "state")
-
-    def get_stream_state(self, name: str) -> Any:
-        """Get state of stream with corresponding name"""
-        return self._apis[name].state
-
-    def set_stream_state(self, name: str, state: Any):
-        """Set state of stream with corresponding name"""
-        self._apis[name].state = state
 
     @cached_property
-    def accounts(self):
+    def accounts(self) -> List[Mapping[str, Any]]:
         return self._find_accounts()
 
-    def _find_accounts(self) -> List:
+    @cached_property
+    def user(self) -> IGUser:
+        return self._get_instagram_user()
+
+    def _find_accounts(self) -> List[Mapping[str, Any]]:
         try:
             instagram_business_accounts = []
             accounts = self._get_accounts()
@@ -106,15 +77,3 @@ class Client(BaseClient):
     @backoff_policy
     def _get_instagram_user(self, page: Page) -> IGUser:
         return IGUser(page.get("instagram_business_account").get("id"))
-
-    def health_check(self) -> Tuple[bool, str]:
-        alive = True
-        error_message = None
-        try:
-            self._find_accounts()
-        except InstagramAPIException as exc:
-            logger.error(str(exc))
-            alive = False
-            error_message = str(exc)
-
-        return alive, error_message

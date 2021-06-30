@@ -31,7 +31,7 @@ MAIN_REQUIREMENTS = [
     "cached_property~=1.5",
     "facebook_business~=11.0",
     "pendulum",
-    "backoff==1.10.0",
+    "backoff",
 ]
 
 TEST_REQUIREMENTS = [

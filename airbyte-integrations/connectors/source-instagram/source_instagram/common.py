@@ -23,11 +23,12 @@
 #
 
 
+import urllib.parse as urlparse
 import sys
 
 import backoff
-from base_python.entrypoint import logger
 from requests.status_codes import codes as status_codes
+from airbyte_cdk.entrypoint import logger  # FIXME (Eugene K): register logger as standard python logger
 
 
 class InstagramAPIException(Exception):
@@ -41,14 +42,19 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def should_retry_api_error(exc):
-        if (
-            exc.http_status() == status_codes.TOO_MANY_REQUESTS
-            or (exc.http_status() == status_codes.FORBIDDEN and exc.api_error_message() == "(#4) Application request limit reached")
-            or exc.http_status()
-            == status_codes.BAD_REQUEST  # Issue 4028, Sometimes an error about the Rate Limit is returned with a 400 HTTP code
-            or exc.api_transient_error()
-        ):
+        if exc.http_status() in (status_codes.TOO_MANY_REQUESTS, status_codes.BAD_REQUEST):
             return True
+
+        if exc.http_status() == status_codes.FORBIDDEN and exc.api_error_message() == "(#4) Application request limit reached":
+            return True
+
+        # Issue 4028, Sometimes an error about the Rate Limit is returned with a 400 HTTP code
+        if exc.http_status() == status_codes.BAD_REQUEST:
+            return True
+
+        if exc.api_transient_error():
+            return True
+
         return False
 
     return backoff.on_exception(
@@ -59,3 +65,15 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         giveup=lambda exc: not should_retry_api_error(exc),
         **wait_gen_kwargs,
     )
+
+
+def remove_params_from_url(url, params):
+    parsed_url = urlparse.urlparse(url)
+    res_query = []
+    for q in parsed_url.query.split("&"):
+        key, value = q.split("=")
+        if key not in params:
+            res_query.append(f"{key}={value}")
+
+    parse_result = parsed_url._replace(query="&".join(res_query))
+    return urlparse.urlunparse(parse_result)
