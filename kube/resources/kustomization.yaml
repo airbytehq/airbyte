@@ -11,3 +11,4 @@ resources:
   - volume-workspace.yaml
   - webapp.yaml
   - temporal.yaml
+  - airbyte-minio.yaml
