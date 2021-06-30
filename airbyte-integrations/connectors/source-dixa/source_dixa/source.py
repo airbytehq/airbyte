@@ -40,16 +40,26 @@ class ConversationExport(HttpStream, ABC):
 
     def __init__(self, start_timestamp: int, batch_size: int, logger: AirbyteLogger, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.start_timestamp = start_timestamp
+        self.start_timestamp = ConversationExport._validate_ms_timestamp(start_timestamp)
         self.batch_size = batch_size
         self.logger = logger
+
+    @staticmethod
+    def _validate_ms_timestamp(milliseconds: int) -> int:
+        if not type(milliseconds) == int or not len(str(milliseconds)) == 13:
+            raise ValueError(
+                f"Not a millisecond-precision timestamp: {milliseconds}"
+            )
+        return milliseconds
 
     @staticmethod
     def ms_timestamp_to_datetime(milliseconds: int) -> datetime:
         """
         Converts a millisecond-precision timestamp to a datetime object.
         """
-        return datetime.fromtimestamp(milliseconds / 1000)
+        return datetime.fromtimestamp(
+            ConversationExport._validate_ms_timestamp(milliseconds) / 1000
+        )
 
     @staticmethod
     def datetime_to_ms_timestamp(dt: datetime) -> int:
