@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.json.Jsons;
@@ -33,6 +34,7 @@ import io.debezium.connector.sqlserver.Lsn;
 import io.debezium.engine.ChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -58,13 +60,14 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
-  private static final TimeUnit SLEEP_TIME_UNIT = TimeUnit.SECONDS;
-  private static final int SLEEP_TIME_AMOUNT = 5;
+  private static final WaitTime FIRST_RECORD_WAIT_TIME_MINUTES = new WaitTime(1, TimeUnit.MINUTES);
+  private static final WaitTime SUBSEQUENT_RECORD_WAIT_TIME_SECONDS = new WaitTime(5, TimeUnit.SECONDS);
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
   private final Lsn targetLsn;
   private final Supplier<Boolean> publisherStatusSupplier;
   private final VoidCallable requestClose;
+  private boolean receivedFirstRecord;
 
   public DebeziumRecordIterator(LinkedBlockingQueue<ChangeEvent<String, String>> queue,
                                 Lsn targetLsn,
@@ -74,6 +77,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     this.targetLsn = targetLsn;
     this.publisherStatusSupplier = publisherStatusSupplier;
     this.requestClose = requestClose;
+    this.receivedFirstRecord = false;
   }
 
   @Override
@@ -86,7 +90,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
       try {
-        next = queue.poll(SLEEP_TIME_AMOUNT, SLEEP_TIME_UNIT);
+        WaitTime waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME_SECONDS : FIRST_RECORD_WAIT_TIME_MINUTES;
+        next = queue.poll(waitTime.period, waitTime.timeUnit);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -132,7 +137,6 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
    * @param event - event with LSN to check.
    * @return whether or not the event is at or above the LSN we are looking for.
    */
-  // todo: ensure that this ^ postgres logic holds true for MSSQL, otherwise will need to alter below
   private boolean shouldSignalClose(ChangeEvent<String, String> event) {
     final Lsn eventLsn = extractLsn(event);
 
@@ -172,7 +176,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   private Lsn extractLsn(ChangeEvent<String, String> event) {
     return Optional.ofNullable(event.value())
         .flatMap(value -> Optional.ofNullable(Jsons.deserialize(value).get("source")))
-        .flatMap(source -> Optional.ofNullable(source.get("lsn").asText()))
+        .flatMap(source -> Optional.ofNullable(source.get("commit_lsn").asText()))
         .map(Lsn::valueOf)
         .orElseThrow(() -> new IllegalStateException("Could not find LSN"));
   }
@@ -189,6 +193,17 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     TRUE,
     FALSE,
     LAST
+  }
+
+  private static class WaitTime {
+
+    public final int period;
+    public final TimeUnit timeUnit;
+
+    public WaitTime(int period, TimeUnit timeUnit) {
+      this.period = period;
+      this.timeUnit = timeUnit;
+    }
   }
 
 }

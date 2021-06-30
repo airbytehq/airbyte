@@ -26,8 +26,6 @@ package io.airbyte.integrations.source.mssql;
 
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_DELETED_AT;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_LSN;
-//import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_LOG_FILE;
-//import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_LOG_POS;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_UPDATED_AT;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -66,12 +64,11 @@ public class DebeziumEventUtils {
     final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
 
     long transactionMillis = source.get("ts_ms").asLong();
-    String lsn = source.get("lsn").asText(); //todo: I changed this to String... check this works
+    String commitLsn = source.get("commit_lsn").asText();
+//    String changeLsn = source.get("change_lsn") != null ? source.get("change_lsn").asText() : null;
 
     base.put(CDC_UPDATED_AT, transactionMillis);
-    base.put(CDC_LSN, lsn);
-//    base.put(CDC_LOG_FILE, source.get("file").asText());
-//    base.put(CDC_LOG_POS, source.get("pos").asLong());
+    base.put(CDC_LSN, commitLsn);
 
     if (after.isNull()) {
       base.put(CDC_DELETED_AT, transactionMillis);

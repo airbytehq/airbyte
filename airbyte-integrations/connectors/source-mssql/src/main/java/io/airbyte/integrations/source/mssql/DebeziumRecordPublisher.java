@@ -55,16 +55,21 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
   private final AirbyteFileOffsetBackingStore offsetManager;
+  private final AirbyteSchemaHistoryStorage schemaHistoryManager;
 
   private final AtomicBoolean hasClosed;
   private final AtomicBoolean isClosing;
   private final AtomicReference<Throwable> thrownError;
   private final CountDownLatch engineLatch;
 
-  public DebeziumRecordPublisher(JsonNode config, ConfiguredAirbyteCatalog catalog, AirbyteFileOffsetBackingStore offsetManager) {
+  public DebeziumRecordPublisher(JsonNode config,
+                                 ConfiguredAirbyteCatalog catalog,
+                                 AirbyteFileOffsetBackingStore offsetManager,
+                                 AirbyteSchemaHistoryStorage schemaHistoryManager) {
     this.config = config;
     this.catalog = catalog;
     this.offsetManager = offsetManager;
+    this.schemaHistoryManager = schemaHistoryManager;
     this.hasClosed = new AtomicBoolean(false);
     this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();
@@ -96,9 +101,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     executor.execute(engine);
   }
 
-  public boolean hasClosed() {
-    return hasClosed.get();
-  }
+  public boolean hasClosed() { return hasClosed.get(); }
 
   public void close() throws Exception {
     if (isClosing.compareAndSet(false, true)) {
@@ -123,7 +126,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     }
   }
 
-  protected static Properties getDebeziumProperties(JsonNode config, ConfiguredAirbyteCatalog catalog, AirbyteFileOffsetBackingStore offsetManager) {
+  protected Properties getDebeziumProperties(JsonNode config, ConfiguredAirbyteCatalog catalog, AirbyteFileOffsetBackingStore offsetManager) {
     final Properties props = new Properties();
 
     // debezium engine configuration
@@ -136,11 +139,21 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     // snapshot config
     // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-mode
     props.setProperty("snapshot.mode", "initial");
+    // https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
     // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
     // we set this to avoid preventing other (non-Airbyte) transactions from updating table rows while we snapshot
-    // info on MSSQL isolation levels:
-    // https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
     props.setProperty("snapshot.isolation.mode", "snapshot");
+
+    // https://debezium.io/documentation/reference/1.4/operations/debezium-server.html#debezium-source-database-history-file-filename
+    // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
+    // As mentioned in the documents above, debezium connector for MSSQL needs to track the schema
+    // changes. If we don't do this, we can't fetch records for the table
+    // We have implemented our own implementation to filter out the schema information from other
+    // databases that the connector is not syncing
+    props.setProperty("database.history",
+        "io.airbyte.integrations.source.mssql.FilteredFileDatabaseHistory");
+    props.setProperty("database.history.file.filename",
+        schemaHistoryManager.getPath().toString());
 
     // https://debezium.io/documentation/reference/configuration/avro.html
     props.setProperty("key.converter.schemas.enable", "false");

@@ -24,9 +24,12 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.jdbc.JdbcStateManager;
 import io.airbyte.integrations.source.jdbc.models.CdcState;
 import java.io.EOFException;
 import java.io.IOException;
@@ -81,10 +84,19 @@ public class AirbyteFileOffsetBackingStore {
     return new CdcState().withState(asJson);
   }
 
+  public Map<String, String> readMap() {
+    final Map<ByteBuffer, ByteBuffer> raw = load();
+
+    return raw.entrySet().stream().collect(Collectors.toMap(
+        e -> byteBufferToString(e.getKey()),
+        e -> byteBufferToString(e.getValue())));
+  }
+
   @SuppressWarnings("unchecked")
   public void persist(CdcState cdcState) {
     final Map<String, String> mapAsString =
-        cdcState != null && cdcState.getState() != null ? Jsons.object(cdcState.getState(), Map.class) : Collections.emptyMap();
+        cdcState != null && cdcState.getState() != null ?
+            Jsons.object(cdcState.getState().get(MSSQL_CDC_OFFSET), Map.class) : Collections.emptyMap();
     final Map<ByteBuffer, ByteBuffer> mappedAsStrings = mapAsString.entrySet().stream().collect(Collectors.toMap(
         e -> stringToByteBuffer(e.getKey()),
         e -> stringToByteBuffer(e.getValue())));
@@ -147,6 +159,21 @@ public class AirbyteFileOffsetBackingStore {
     } catch (IOException e) {
       throw new ConnectException(e);
     }
+  }
+
+  static AirbyteFileOffsetBackingStore initializeState(JdbcStateManager stateManager) {
+    final Path cdcWorkingDir;
+    try {
+      cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
+
+    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(
+        cdcOffsetFilePath);
+    offsetManager.persist(stateManager.getCdcStateManager().getCdcState());
+    return offsetManager;
   }
 
 }
