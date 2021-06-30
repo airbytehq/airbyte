@@ -28,7 +28,6 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
     "Salesforce-FuelSDK",
     "suds-py3",
-    # "tap-exacttarget @ git+https://github.com/schlattk/exacttarget-singer-clone",
     "tap-exacttarget",
 ]
 
