@@ -1,0 +1,7 @@
+{
+  "aws_key_id": "123",
+  "aws_secret_key": "123",
+  "aws_region_name": "eu-west-1",
+  "start_date": "2020-06-09",
+  "records_limit": 250
+}

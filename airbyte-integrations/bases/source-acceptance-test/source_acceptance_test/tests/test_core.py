@@ -24,6 +24,7 @@
 
 
 from collections import Counter, defaultdict
+from functools import reduce
 from typing import Any, List, Mapping, MutableMapping
 
 import pytest
@@ -34,7 +35,7 @@ from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestCon
 from source_acceptance_test.utils import ConnectorRunner, serialize
 
 
-@pytest.mark.timeout(10)
+@pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
     def test_spec(self, connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
         output = docker_runner.call_spec()
@@ -45,7 +46,7 @@ class TestSpec(BaseTest):
             assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
 
 
-@pytest.mark.timeout(30)
+@pytest.mark.default_timeout(30)
 class TestConnection(BaseTest):
     def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
@@ -68,7 +69,7 @@ class TestConnection(BaseTest):
             assert "Traceback" in err.value.stderr.decode("utf-8"), "Connector should print exception"
 
 
-@pytest.mark.timeout(30)
+@pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
     def test_discover(self, connector_config, docker_runner: ConnectorRunner):
         output = docker_runner.call_discover(config=connector_config)
@@ -84,7 +85,20 @@ class TestDiscovery(BaseTest):
         #         assert stream1.dict() == stream2.dict(), f"Streams {stream1.name} and {stream2.name}, stream configs should match"
 
 
-@pytest.mark.timeout(300)
+def primary_keys_for_records(streams, records):
+    streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
+    for stream in streams_with_primary_key:
+        stream_records = [r for r in records if r.stream == stream.stream.name]
+        for stream_record in stream_records:
+            pk_values = {}
+            for pk_path in stream.stream.source_defined_primary_key:
+                pk_value = reduce(lambda data, key: data.get(key) if isinstance(data, dict) else None, pk_path, stream_record.data)
+                pk_values[tuple(pk_path)] = pk_value
+
+            yield pk_values, stream_record
+
+
+@pytest.mark.default_timeout(300)
 class TestBasicRead(BaseTest):
     def test_read(
         self,
@@ -103,6 +117,12 @@ class TestBasicRead(BaseTest):
         streams_without_records = all_streams - streams_with_records
 
         assert records, "At least one record should be read using provided catalog"
+
+        for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
+            for pk_path, pk_value in pks.items():
+                assert pk_value is not None, (
+                    f"Primary key subkeys {repr(pk_path)} " f"have null values or not present in {record.stream} stream records."
+                )
 
         if inputs.validate_output_from_all_streams:
             assert (

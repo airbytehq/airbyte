@@ -205,6 +205,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
+      var recordsRead = 0;
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional = source.attemptRead();
@@ -213,6 +214,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             sourceMessageTracker.accept(message);
             destination.accept(message);
+            recordsRead += 1;
+
+            if (recordsRead % 1000 == 0) {
+              LOGGER.info("Records read: {}", recordsRead);
+            }
           }
         }
         destination.notifyEndOfStream();

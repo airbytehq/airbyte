@@ -43,9 +43,9 @@ public class AirbyteGithubStore {
 
   private static final String GITHUB_BASE_URL = "https://raw.githubusercontent.com";
   private static final String SOURCE_DEFINITION_LIST_LOCATION_PATH =
-      "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml";
+      "/airbytehq/airbyte/master/airbyte-server/src/main/resources/seed/source_definitions.yaml";
   private static final String DESTINATION_DEFINITION_LIST_LOCATION_PATH =
-      "/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml";
+      "/airbytehq/airbyte/master/airbyte-server/src/main/resources/seed/destination_definitions.yaml";
 
   private static final HttpClient httpClient = HttpClient.newHttpClient();
 
