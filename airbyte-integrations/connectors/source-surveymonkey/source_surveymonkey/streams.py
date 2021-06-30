@@ -48,11 +48,11 @@ class SurveymonkeyStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
         # respecting daily limit if valid
-            daily_limit_remaining = response.headers.get('X-Ratelimit-App-Global-Day-Remaining')
+            daily_limit_remaining = int(response.headers.get('X-Ratelimit-App-Global-Day-Remaining'))
             if daily_limit_remaining and daily_limit_remaining<=0:
                 return response.headers.get('X-Ratelimit-App-Global-Day-Reset')
         """
-        minute_limit_remaining = response.headers.get("X-Ratelimit-App-Global-Minute-Remaining")
+        minute_limit_remaining = int(response.headers.get("X-Ratelimit-App-Global-Minute-Remaining"))
         if minute_limit_remaining and minute_limit_remaining <= 1:
             return 60
 
@@ -67,10 +67,13 @@ class SurveymonkeyStream(HttpStream, ABC):
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {"Content-Type": "application/json"}
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
+    def raise_error_from_response(self, response_json):
         if response_json.get("error"):
             raise Exception(repr(response_json.get("error")))
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        self.raise_error_from_response(response_json=response_json)
         result = response_json.get(self.data_field, [])
         yield from result
 
@@ -152,25 +155,20 @@ class Surveys(IncrementalSurveymonkeyStream):
 
 class SurveyDetails(SurveymonkeyStream):
     """
-    Actually stream above can just filter, sort and enumarate survey ids.
-    It does not contain the needed information. I will need it as stream slice source
-    in all of endpoints.
-
-    SOME requested explanation about implmentation.
-    Actually, /id/details endpoint contains full data about pages and questions. This data is already collected and
+    The `/id/details` endpoint contains full data about pages and questions. This data is already collected and
     gathered into array [pages] and array of arrays questions, where each inner array contains data about certain page.
     Example [[q1, q2,q3], [q4,q5]] means we have 2 pages, first page contains 3 questions q1, q2, q3, second page contains other.
 
-    If we use "normal" query, we need to query surveys/id/pages for page enumeration,
-        then we need to query each page id in every new request for details (becuase `pages` doesn't contain full info
-        and valid only for enumeration), then for each page need to enumerate questions and get each question id for details
+    If we use the "normal" query, we need to query surveys/id/pages for page enumeration,
+        then we need to query each page_id in every new request for details (because `pages` doesn't contain full info
+        and valid only for enumeration), then for each page need to enumerate questions and get each question_id for details
         (since `/surveys/id/pages/id/questions` without ending /id also doesnt contain full info,
 
-    In other words, we need to have triple stream slices, send 100500 requests (please note that api is very very limited
-    and we need details for each survey etc), and finally we get a response similar to those we can have from /id/details
-    endpoint. Also we will need to gather info to array in case of overrequesting, but details is already gathered for us.
+    In other words, we need to have triple stream slices, (note that api is very very rate limited
+    and we need details for each survey etc), and finally we get a response similar to those we can have from `/id/details`
+    endpoint. Also we will need to gather info to array in case of overrequesting, but details is already gathered it for us.
     We just need to apply filtering or small data transformation against array.
-    So this way is logically and timely better and very very much better in a matter of API limits.
+    So this way is very much better in terms of API limits.
     """
 
     def __init__(self, survey_id, start_date, **kwargs):
@@ -181,10 +179,8 @@ class SurveyDetails(SurveymonkeyStream):
         return f"surveys/{self.survey_id}/details"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        # no inheritance since we dont need to access data_field
         response_json = response.json()
-        if response_json.get("error"):
-            raise Exception(repr(response_json.get("error")))
+        self.raise_error_from_response(response_json=response_json)
         response_json.pop("pages", None)
         yield response_json
 
@@ -204,11 +200,7 @@ class SurveyPages(SurveymonkeyStream):
             yield {"survey_id": survey["id"]}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        # no inheritance since we dont need to access data_field
-        response_json = response.json()
-        data = response_json.get(self.data_field)
-        if response_json.get("error"):
-            raise Exception(repr(response_json.get("error")))
+        data = super().parse_response(response=response, stream_state=stream_state, **kwargs)
         for record in data:
             record.pop("questions", None)
             yield record
@@ -240,7 +232,7 @@ class SurveyQuestions(SurveymonkeyStream):
 
 class SurveyResponses(IncrementalSurveymonkeyStream):
     """
-    Docs: https://posthog.com/docs/api/events
+    Docs: https://developer.surveymonkey.com/api/v3/#survey-responses
     """
 
     cursor_field = "date_modified"
@@ -256,7 +248,7 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        Return the latest state by comparing the campaign_id and cursor value in the latest record with the stream's most recent state object
+        Return the latest state by comparing the survey_id and cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         survey_id = latest_record.get("survey_id")
