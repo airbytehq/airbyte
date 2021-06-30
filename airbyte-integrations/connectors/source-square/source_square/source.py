@@ -169,6 +169,8 @@ class IncrementalSquareStream(SquareStream, ABC):
         if next_page_token:
             return params_payload.update({"cursor": next_page_token["cursor"]})
 
+        params_payload.update({"limit": self.items_per_page_limit})
+
         return params_payload
 
 
@@ -291,6 +293,7 @@ class TeamMembers(SquareStream):
         if "next_page_token" in kwargs and kwargs["next_page_token"]:
             json_payload.update({"cursor": kwargs["next_page_token"]["cursor"]})
 
+        json_payload.update({"limit": self.items_per_page_limit})
         return json_payload
 
 
@@ -298,6 +301,7 @@ class TeamMemberWages(SquareStream):
     """ Docs: https://developer.squareup.com/reference/square_2021-06-16/labor-api/list-team-member-wages """
 
     data_field = "team_member_wages"
+    items_per_page_limit = 200
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -312,6 +316,7 @@ class TeamMemberWages(SquareStream):
         if "next_page_token" in kwargs and kwargs["next_page_token"]:
             params_payload.update({"cursor": kwargs["next_page_token"]["cursor"]})
 
+        params_payload.update({"limit": self.items_per_page_limit})
         return params_payload
 
 
@@ -368,6 +373,7 @@ class Orders(SquareStream):
         if "next_page_token" in kwargs and kwargs["next_page_token"]:
             json_payload.update({"cursor": kwargs["next_page_token"]["cursor"]})
 
+        json_payload.update({"limit": self.items_per_page_limit})
         return json_payload
 
 

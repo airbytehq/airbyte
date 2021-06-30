@@ -4,10 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Square Source CDK Specifications",
     "type": "object",
-    "required": [
-      "api_key",
-      "is_sandbox"
-    ],
+    "required": ["api_key", "is_sandbox"],
     "additionalProperties": false,
     "properties": {
       "api_key": {
