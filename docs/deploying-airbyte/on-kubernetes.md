@@ -43,13 +43,41 @@ Configure `kubectl` to connect to your cluster by using `kubectl use-context my-
 
 ### Configure Logs
 
-Airbyte requires an S3 bucket for logs. Configure this by filling up the following variables in the `.env` file in the `kube/overlays/stable`
-directory:
+Both `dev` and `stable` versions of Airbyte include a stand-alone `Minio` deployment. Airbyte publishes logs to this `Minio` deployment by default.
+This means Airbyte comes as a **self-contained Kubernetes deployment - no other configuration is required**.
+
+Airbyte currently supports logging to `Minio` or `S3`. The following instructions are for users wishing to log to their own `Minio` layer or `S3` bucket.
+
+#### Configuring Custom Minio Log Location
+Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
 ```text
+# The Minio bucket to write logs in.
 S3_LOG_BUCKET=
-S3_LOG_BUCKET_REGION=
+# Minio Access Key.
 AWS_ACCESS_KEY_ID=
+# Minio Secret Key.
 AWS_SECRET_ACCESS_KEY=
+# Endpoint where Minio is deployed at.
+S3_MINIO_ENDPOINT=
+```
+The `S3_PATH_STYLE_ACCESS` should remain `true`. Although `S3_LOG_BUCKET_REGION` is used to create the Minio client, it's value is not actually used
+and can remain untouched.
+
+#### Configuring Custom S3 Log Location
+Replace the following variables in the `.env` file in the `kube/overlays/stable` directory:
+```text
+# The S3 bucket to write logs in.
+S3_LOG_BUCKET=
+# The S3 bucket region.
+S3_LOG_BUCKET_REGION=
+# Aws Access Key Id.
+AWS_ACCESS_KEY_ID=
+# Aws Secret Access Key
+AWS_SECRET_ACCESS_KEY=
+# Set this to empty.
+S3_MINIO_ENDPOINT=
+# Set this to empty.
+S3_PATH_STYLE_ACCESS=
 ```
 
 The provided credentials require both S3 read/write permissions. The logger attempts to create the bucket if it does not exist. See [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)
