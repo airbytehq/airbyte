@@ -34,7 +34,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
+# from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 
@@ -78,10 +78,9 @@ class ZuoraAuthenticator(HttpAuthenticator):
 
 
 # Basic full refresh stream
-class ZuoraStream(HttpStream, ABC):
+class ZuoraStream(Stream, ABC):
     
     def __init__(self, auth_header: dict, start_date: str, client_id: str, client_secret: str, is_sandbox: bool, **kwargs):
-        super().__init__(**kwargs)
         self.auth_header = auth_header
         self.start_date = start_date
         self.client_id = client_id
@@ -113,6 +112,7 @@ class ZuoraStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         pass
 
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
@@ -126,8 +126,21 @@ class Account(ZuoraStream):
     obj = "Account"
     primary_key = "id"
 
-    def get_data(self, obj: str):
-        return print(self.submit_data_query_job(zuora_object=obj, start_date=self.start_date))
+    """ def some_func(self, obj: str):
+        return print(self.submit_data_query_job(zuora_object=obj, start_date=self.start_date)) """
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+        zuora_object: str = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        This method should be overridden by subclasses to read records based on the inputs
+        """
+        return print(self.submit_data_query_job(zuora_object=self.obj, start_date=self.start_date))
 
 
     def path(
