@@ -270,6 +270,9 @@ jobs:
         env:
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
 
+      - name: Present local images
+        run: docker images | head -n 10
+
       - name: Load Airbyte Images into KIND
         run: kind load docker-image airbyte/server:dev
 
