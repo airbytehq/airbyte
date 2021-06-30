@@ -123,6 +123,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
       }
     }
+    if (!conn.isClosed())
+      conn.close();
   }
 
   @Override
