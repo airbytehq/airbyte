@@ -75,7 +75,7 @@ class DockerProcessFactoryTest {
     Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(workspaceRoot, "", "", "");
-    assertTrue(processFactory.checkImageExists("airbyte/scheduler:dev"));
+    assertTrue(processFactory.checkImageExists("busybox"));
   }
 
   @Test
