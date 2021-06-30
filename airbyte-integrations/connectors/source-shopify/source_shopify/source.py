@@ -110,6 +110,17 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                 params = super().request_params(stream_state=stream_state, **kwargs)
         return params
 
+    # Parse the stream_slice with respect to stream_state for Incremental refresh
+    def parse_stream_slice(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable[Mapping]:
+        stream_state = stream_state or {}
+        # Getting records >= state
+        if stream_state:
+            for record in records_slice:
+                if record[self.cursor_field] >= stream_state.get(self.cursor_field):
+                    yield record
+        else:
+            yield from records_slice
+
 
 class Customers(IncrementalShopifyStream):
     data_field = "customers"
@@ -129,9 +140,8 @@ class Orders(IncrementalShopifyStream):
     ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        params.update({"status": "any"})
-        if next_page_token:
-            params.pop("status", None)
+        if not next_page_token:
+            params.update({"status": "any"})
         return params
 
 
@@ -153,9 +163,8 @@ class AbandonedCheckouts(IncrementalShopifyStream):
     ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        params.update({"status": "any"})
-        if next_page_token:
-            params.pop("status", None)
+        if not next_page_token:
+            params.update({"status": "any"})
         return params
 
 
@@ -177,7 +186,7 @@ class CustomCollections(IncrementalShopifyStream):
     ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        if stream_state == {}:
+        if not stream_state:
             params.pop("created_at_min", None)
             params.update({"published_at_min": self.start_date})
         if next_page_token:
@@ -210,13 +219,14 @@ class Collects(IncrementalShopifyStream):
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        params.pop("order", None)
+        params.pop("created_at_min", None)
+        if stream_state:
+            params.pop("updated_at_min", None)
+            params.update({"since_id": stream_state.get(self.cursor_field)})
         if next_page_token:
-            params = {"limit": self.limit, **next_page_token}
-        else:
-            if stream_state:
-                params = {"limit": self.limit, "since_id": stream_state.get(self.cursor_field)}
-            else:
-                params = {"limit": self.limit}
+            params.pop("since_id", None)
         return params
 
 
@@ -234,15 +244,8 @@ class OrderRefunds(IncrementalShopifyStream):
         stream_state = stream_state or {}
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
-            refund_records = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
-            # Getting records >= state
-            if stream_state:
-                # For the case where the order has multiple refunds
-                for record in refund_records:
-                    if record[self.cursor_field] >= stream_state.get(self.cursor_field):
-                        yield record
-            else:
-                yield from refund_records
+            refund_slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
+            yield from super().parse_stream_slice(stream_state=stream_state, records_slice=refund_slice)
 
 
 class OrderRisks(IncrementalShopifyStream):
@@ -262,15 +265,8 @@ class OrderRisks(IncrementalShopifyStream):
         stream_state = stream_state or {}
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
-            refund_records = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
-            # Getting records >= state
-            if stream_state:
-                # For the case where the order has multiple risks
-                for record in refund_records:
-                    if record[self.cursor_field] >= stream_state.get(self.cursor_field):
-                        yield record
-            else:
-                yield from refund_records
+            risks_slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
+            yield from super().parse_stream_slice(stream_state=stream_state, records_slice=risks_slice)
 
 
 class Transactions(IncrementalShopifyStream):
@@ -281,24 +277,14 @@ class Transactions(IncrementalShopifyStream):
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
-
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
-            refund_records = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
-            # Getting records >= state
-            if stream_state:
-                # For the case where the order has multiple risks
-                for record in refund_records:
-                    if record[self.cursor_field] >= stream_state.get(self.cursor_field):
-                        yield record
-            else:
-                yield from refund_records
+            transaction_slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
+            yield from super().parse_stream_slice(stream_state=stream_state, records_slice=transaction_slice)
 
 
 class Pages(IncrementalShopifyStream):
@@ -322,9 +308,6 @@ class DiscountCodes(IncrementalShopifyStream):
         price_rule_id = stream_slice["price_rule_id"]
         return f"price_rules/{price_rule_id}/{self.data_field}.json"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
-
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
@@ -333,15 +316,8 @@ class DiscountCodes(IncrementalShopifyStream):
             authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password
         )
         for data in price_rules_stream.read_records(sync_mode=SyncMode.full_refresh):
-            discount_codes = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
-            # Getting records >= state
-            if stream_state:
-                # For the case where the order has multiple risks
-                for record in discount_codes:
-                    if record[self.cursor_field] >= stream_state.get(self.cursor_field):
-                        yield record
-            else:
-                yield from discount_codes
+            discount_slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
+            yield from super().parse_stream_slice(stream_state=stream_state, records_slice=discount_slice)
 
 
 class ShopifyAuthenticator(HttpAuthenticator):
