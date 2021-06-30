@@ -89,8 +89,7 @@ public class CdcMssqlSourceTest {
 
   private static final String MODELS_SCHEMA = "models_schema";
   private static final String MODELS_STREAM_NAME = "models";
-  private static final Set<String> STREAM_NAMES = Sets
-      .newHashSet(MODELS_STREAM_NAME);
+  private static final Set<String> STREAM_NAMES = Sets.newHashSet(MODELS_STREAM_NAME);
   private static final String COL_ID = "id";
   private static final String COL_MAKE_ID = "make_id";
   private static final String COL_MODEL = "model";
@@ -172,7 +171,6 @@ public class CdcMssqlSourceTest {
   }
 
   private void revokeAllPermissions() {
-    // this is probably overkill
     executeQuery("REVOKE ALL FROM " + TEST_USER_NAME + " CASCADE;");
     executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + TEST_USER_NAME + ";\"");
   }
