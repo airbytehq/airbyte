@@ -41,6 +41,16 @@ dependencies {
     testImplementation "org.testcontainers:postgresql:1.15.1"
 }
 
+// we want to be able to access the generated db files from config/init when we build the server docker image.
+task copySeed(type: Copy, dependsOn: [project(':airbyte-config:init').processResources]) {
+    from "${project(':airbyte-config:init').buildDir}/resources/main/config"
+    into "${buildDir}/config_init/resources/main/config"
+}
+
+// need to make sure that the files are in the resource directory before copying.
+//project.tasks.copySeed.mustRunAfter(project(':airbyte-config:init').tasks.processResources)
+assemble.dependsOn(project.tasks.copySeed)
+
 application {
     mainClass = 'io.airbyte.server.ServerApp'
 }
@@ -60,44 +70,4 @@ run {
     environment "AIRBYTE_VERSION", env.VERSION
     environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
     environment "TEMPORAL_HOST", "localhost:7233"
-
 }
-
-// generate seed for each yaml file.
-task generateSeed {
-    def seeds = [
-            [
-                    "sourceDefinitionId",
-                    new File(project.projectDir, '/src/main/resources/seed/source_definitions.yaml'),
-                    new File(project.projectDir, '/src/main/resources/config/STANDARD_SOURCE_DEFINITION')
-            ],
-            [
-                    "destinationDefinitionId",
-                    new File(project.projectDir, '/src/main/resources/seed/destination_definitions.yaml'),
-                    new File(project.projectDir, '/src/main/resources/config/STANDARD_DESTINATION_DEFINITION')
-            ],
-    ]
-    seeds.each{val ->
-        def name = val[0]
-        def taskName = "generateSeed$name"
-        dependsOn taskName
-        task "$taskName"(type: JavaExec) {
-            classpath = sourceSets.main.runtimeClasspath
-
-            main = 'io.airbyte.server.SeedRepository'
-
-            // arguments to pass to the application
-            args '--id-name'
-            args val[0]
-            args '--input-path'
-            args val[1]
-            args '--output-path'
-            args val[2]
-        }
-    }
-}
-
-// we only want to attempt generateSeed if tests have passed.
-generateSeed.dependsOn(check)
-generateSeed.dependsOn(assemble)
-build.dependsOn(generateSeed)

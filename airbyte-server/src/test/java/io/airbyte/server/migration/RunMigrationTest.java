@@ -289,7 +289,7 @@ public class RunMigrationTest {
         jobPersistence,
         new ConfigRepository(new DefaultConfigPersistence(exportConfigRoot)),
         TARGET_VERSION,
-        Path.of(Resources.getResource("config").toURI()))) {
+        Path.of(System.getProperty("user.dir")).resolve("build/config_init/resources/main/config"))) {
       runMigration.run();
     }
   }
