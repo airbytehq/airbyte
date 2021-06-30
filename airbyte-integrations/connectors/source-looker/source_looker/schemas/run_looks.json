@@ -1,0 +1,3 @@
+{
+  "comment": "This schema gets created in client.py, but we need a placeholder for the super() method to work"
+}
