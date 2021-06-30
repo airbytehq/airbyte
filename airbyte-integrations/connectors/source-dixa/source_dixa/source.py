@@ -22,7 +22,7 @@
 
 
 from abc import ABC
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -33,18 +33,36 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
-DATE_FORMAT = "%Y-%m-%d"
-
-
-class DixaStream(HttpStream, ABC):
+class ConversationExport(HttpStream, ABC):
     url_base = "https://exports.dixa.io/v1/"
-    date_format = DATE_FORMAT
+    primary_key = "id"
+    cursor_field = "updated_at"
 
-    def __init__(self, start_date: date, batch_size: int, logger: AirbyteLogger, **kwargs) -> None:
+    def __init__(self, start_timestamp: int, batch_size: int, logger: AirbyteLogger, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.start_date = start_date
+        self.start_timestamp = start_timestamp
         self.batch_size = batch_size
         self.logger = logger
+
+    @staticmethod
+    def ms_timestamp_to_datetime(milliseconds: int) -> datetime:
+        """
+        Converts a millisecond-precision timestamp to a datetime object.
+        """
+        return datetime.fromtimestamp(milliseconds / 1000)
+
+    @staticmethod
+    def datetime_to_ms_timestamp(dt: datetime) -> int:
+        """
+        Converts a datetime object to a millisecond-precision timestamp.
+        """
+        return int(dt.timestamp() * 1000)
+
+    @staticmethod
+    def add_days_to_ms_timestamp(days: int, milliseconds: int) -> int:
+        return ConversationExport.datetime_to_ms_timestamp(
+            ConversationExport.ms_timestamp_to_datetime(milliseconds) + timedelta(days=days)
+        )
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -73,34 +91,30 @@ class DixaStream(HttpStream, ABC):
         Break down the days between start_date and the current date into
         chunks.
         """
-        end_date = datetime.now().date()
-        updated_after = datetime.strptime(
-            stream_state["date"], "%Y-%m-%d"
-        ).date() if stream_state and "date" in stream_state else self.start_date
+        end_dt = datetime.now()
+        end_timestamp = ConversationExport.datetime_to_ms_timestamp(end_dt)
+        updated_after = stream_state["updated_at"] \
+            if stream_state and "updated_at" in stream_state \
+            else self.start_timestamp
         updated_before = min(
-            updated_after + timedelta(days=self.batch_size),
-            end_date
+            ConversationExport.add_days_to_ms_timestamp(days=self.batch_size, milliseconds=updated_after),
+            end_timestamp
         )
         slices = [{
             "updated_after": updated_after,
             "updated_before": updated_before
         }]
-        while updated_after < end_date:
+        while updated_before < end_timestamp:
             updated_after = updated_before
             updated_before = min(
-                updated_after + timedelta(days=self.batch_size),
-                end_date
+                ConversationExport.add_days_to_ms_timestamp(days=self.batch_size, milliseconds=updated_after),
+                end_timestamp
             )
             slices.append({
                 "updated_after": updated_after,
                 "updated_before": updated_before
             })
         return slices
-
-
-class ConversationExport(DixaStream):
-    primary_key = "id"
-    cursor_field = "updated_at"
 
     def path(
         self, **kwargs
@@ -109,25 +123,27 @@ class ConversationExport(DixaStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
         """
-        Uses the date from the `updated_at` field, which is a Unix timestamp with millisecond precision.
+        Uses the `updated_at` field, which is a Unix timestamp with millisecond precision.
         """
-        if current_stream_state is not None and 'date' in current_stream_state:
-            current_state_value = datetime.strptime(current_stream_state["date"], "%Y-%m-%d").date()
-            # Divide millisecond-precision timestamp by 1000 to get second-precision timestamp
-            latest_record_value = datetime.fromtimestamp(latest_record[ConversationExport.cursor_field]//1000).date()
-            return {'date': max(current_state_value, latest_record_value).strftime("%Y-%m-%d")}
+        if current_stream_state is not None and ConversationExport.cursor_field in current_stream_state:
+            return {
+                ConversationExport.cursor_field: max(
+                    current_stream_state[ConversationExport.cursor_field],
+                    latest_record[ConversationExport.cursor_field]
+                )
+            }
         else:
-            return {'date': self.start_date.strftime("%Y-%m-%d")}
+            return {ConversationExport.cursor_field: self.start_timestamp}
 
 
 class SourceDixa(AbstractSource):
-    date_format = DATE_FORMAT
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         Try loading one day's worth of data.
         """
         try:
+            start_timestamp = int(config["start_timestamp"])
             url = "https://exports.dixa.io/v1/conversation_export"
             headers = {"accept": "application/json"}
             response = requests.request(
@@ -135,12 +151,10 @@ class SourceDixa(AbstractSource):
                 url=url,
                 headers=headers,
                 params={
-                    "updated_after": config["start_date"],
-                    "updated_before": (
-                        datetime.strptime(
-                            config["start_date"], SourceDixa.date_format
-                        ) + timedelta(days=1)
-                    ).strftime(SourceDixa.date_format)
+                    "updated_after": start_timestamp,
+                    "updated_before": ConversationExport.add_days_to_ms_timestamp(
+                        days=1, milliseconds=start_timestamp
+                    )
                 },
                 auth=("bearer", config["api_token"])
             )
@@ -150,12 +164,11 @@ class SourceDixa(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        start_date = datetime.strptime(config["start_date"], SourceDixa.date_format).date()
         auth = TokenAuthenticator(token=config["api_token"])
         return [
             ConversationExport(
                 authenticator=auth,
-                start_date=start_date,
+                start_timestamp=int(config["start_timestamp"]),
                 batch_size=int(config["batch_size"]),
                 logger=AirbyteLogger()
             )
