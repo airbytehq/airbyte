@@ -22,12 +22,13 @@
 # SOFTWARE.
 #
 
-
+import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -67,6 +68,21 @@ class SquareStream(HttpStream, ABC):
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
         yield from records
 
+    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
+        try:
+            return super()._send_request(request)
+        except requests.exceptions.HTTPError as e:
+            if e.response.content:
+                content = json.loads(e.response.content.decode())
+                if content and "errors" in content:
+                    raise SquareException(str(content["errors"]))
+            else:
+                raise e
+
+
+class SquareException(Exception):
+    """ Just for formatting the exception as Square"""
+
 
 class SquareCatalogObjectsStream(SquareStream):
     data_field = "objects"
@@ -85,7 +101,7 @@ class SquareCatalogObjectsStream(SquareStream):
         json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
 
         if not json_payload:
-            json_payload = dict()
+            json_payload = {}
 
         if self.path() == "catalog/search":
             json_payload.update(
@@ -235,17 +251,29 @@ class Locations(SquareStream):
 
 class Shifts(SquareStream):
     """ Docs: https://developer.squareup.com/reference/square/labor-api/search-shifts """
+
     data_field = "shifts"
     http_method = "POST"
+    items_per_page_limit = 200
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "labor/shifts/search"
 
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
+        json_payload = super(Shifts, self).request_body_json(**kwargs)
+        if not json_payload:
+            json_payload = {}
+
+        if "next_page_token" in kwargs and kwargs["next_page_token"]:
+            json_payload.update({"cursor": kwargs["next_page_token"]["cursor"]})
+
+        return json_payload
+
 
 class TeamMembers(SquareStream):
-    """ Docs: https://developer.squareup.com/explorer/square/team-api/search-team-members """
+    """ Docs: https://developer.squareup.com/reference/square/team-api/search-team-members """
 
     data_field = "team_members"
     http_method = "POST"
@@ -254,6 +282,16 @@ class TeamMembers(SquareStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "team-members/search"
+
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
+        json_payload = super(TeamMembers, self).request_body_json(**kwargs)
+        if not json_payload:
+            json_payload = {}
+
+        if "next_page_token" in kwargs and kwargs["next_page_token"]:
+            json_payload.update({"cursor": kwargs["next_page_token"]["cursor"]})
+
+        return json_payload
 
 
 class TeamMemberWages(SquareStream):
@@ -266,9 +304,19 @@ class TeamMemberWages(SquareStream):
     ) -> str:
         return "labor/team-member-wages"
 
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params_payload = super(TeamMemberWages, self).request_params(**kwargs)
+        if not params_payload:
+            params_payload = {}
+
+        if "next_page_token" in kwargs and kwargs["next_page_token"]:
+            params_payload.update({"cursor": kwargs["next_page_token"]["cursor"]})
+
+        return params_payload
+
 
 class Customers(SquareStream):
-    """ Docs: https://developer.squareup.com/explorer/square/customers-api/list-customers """
+    """ Docs: https://developer.squareup.com/reference/square_2021-06-16/customers-api/list-customers """
 
     data_field = "customers"
 
@@ -277,11 +325,50 @@ class Customers(SquareStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params_payload = super(Customers, self).request_params(**kwargs)
-        return (
-            {**params_payload, "sort_order": "ASC", "sort_field": "CREATED_AT"}
-            if params_payload
-            else {"sort_order": "ASC", "sort_field": "CREATED_AT"}
-        )
+        if not params_payload:
+            params_payload = {}
+
+        if "next_page_token" in kwargs and kwargs["next_page_token"]:
+            params_payload.update({"cursor": kwargs["next_page_token"]["cursor"]})
+
+        params_payload.update({"sort_order": "ASC", "sort_field": "CREATED_AT"})
+        return params_payload
+
+
+class Orders(SquareStream):
+    """ Docs: https://developer.squareup.com/reference/square/orders-api/search-orders """
+
+    data_field = "orders"
+    http_method = "POST"
+    items_per_page_limit = 500
+
+    def path(self, **kwargs) -> str:
+        return "orders/search"
+
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
+        json_payload = super().request_body_json(**kwargs)
+        if not json_payload:
+            json_payload = {}
+
+        args = {
+            "authenticator": self.authenticator,
+            "is_sandbox": self.is_sandbox,
+            "api_version": self.api_version,
+            "start_date": self.start_date,
+            "include_deleted_objects": self.include_deleted_objects,
+        }
+
+        location_ids = []
+        for location_item in Locations(**args).read_records(sync_mode=SyncMode.full_refresh):
+            location_ids.append(location_item["id"])
+
+        if location_ids:
+            json_payload.update({"location_ids": location_ids})
+
+        if "next_page_token" in kwargs and kwargs["next_page_token"]:
+            json_payload.update({"cursor": kwargs["next_page_token"]["cursor"]})
+
+        return json_payload
 
 
 class SourceSquare(AbstractSource):
@@ -329,4 +416,5 @@ class SourceSquare(AbstractSource):
             Customers(**args),
             ModifierList(**args),
             Shifts(**args),
+            Orders(**args),
         ]
