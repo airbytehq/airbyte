@@ -18,43 +18,6 @@
         "type": "string",
         "airbyte_secret": true,
         "description": "API Token. See the <a href=\"https://docs.airbyte.io/integrations/sources/surveymonkey\">docs</a> for information on how to generate this key."
-      },
-      "objects_to_replicate": {
-        "type": "object",
-        "title": "Surveys to replicate",
-        "description": "Replicate all surveys or some of them?",
-        "oneOf": [
-          {
-            "title": "Replicate all surveys",
-            "additionalProperties": false,
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "enum": ["replicate_all"],
-                "default": "replicate_all"
-              }
-            }
-          },
-          {
-            "title": "Replicate some surveys",
-            "additionalProperties": false,
-            "required": ["method", "survey_ids"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "enum": ["replicate_some"],
-                "default": "replicate_some"
-              },
-              "survey_ids": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        ]
       }
     }
   }
