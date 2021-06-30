@@ -88,31 +88,39 @@ class ConversationExport(HttpStream, ABC):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs):
         """
-        Break down the days between start_date and the current date into
-        chunks.
+        Returns slices of size self.batch_size.
         """
         end_dt = datetime.now()
         end_timestamp = ConversationExport.datetime_to_ms_timestamp(end_dt)
-        updated_after = stream_state["updated_at"] \
-            if stream_state and "updated_at" in stream_state \
-            else self.start_timestamp
+        slices = []
+
+        if stream_state and ConversationExport.cursor_field in stream_state:
+            updated_after = stream_state[ConversationExport.cursor_field]
+        else:
+            updated_after = self.start_timestamp
         updated_before = min(
-            ConversationExport.add_days_to_ms_timestamp(days=self.batch_size, milliseconds=updated_after),
+            ConversationExport.add_days_to_ms_timestamp(
+                days=self.batch_size,
+                milliseconds=updated_after
+            ),
             end_timestamp
         )
-        slices = [{
-            "updated_after": updated_after,
-            "updated_before": updated_before
-        }]
-        while updated_before < end_timestamp:
+        slices.append({
+            'updated_after': updated_after,
+            'updated_before': updated_before
+        })
+        while updated_after < end_timestamp:
             updated_after = updated_before
             updated_before = min(
-                ConversationExport.add_days_to_ms_timestamp(days=self.batch_size, milliseconds=updated_after),
+                ConversationExport.add_days_to_ms_timestamp(
+                    days=self.batch_size,
+                    milliseconds=updated_after
+                ),
                 end_timestamp
             )
             slices.append({
-                "updated_after": updated_after,
-                "updated_before": updated_before
+                'updated_after': updated_after,
+                'updated_before': updated_before
             })
         return slices
 
