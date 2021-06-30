@@ -18,3 +18,19 @@ assignees: ''
 
 ## Describe the alternative you are considering or using
 What are you considering doing if you don’t have this integration through Airbyte?
+
+## Are you willing to submit a PR?
+<!--- 
+We accept and love contributions! 
+We just released the Airbyte Python Connector Development Framework (CDK), 
+which helps simplify the process of building a new source connector. 
+If you are even somewhat familiar with Python, this can be a good way to 
+help us add a new connector! You can check out the #connector-development 
+Slack channel to get more information about building a connector or to receive
+help during the process!
+
+Don't feel pressured in any way.
+We understand if you can't submit a PR and we're tremendously grateful
+that you've already contributed by suggesting a new integration.
+-->
+Remove this with your answer :-)

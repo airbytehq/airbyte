@@ -4,13 +4,13 @@ info:
     Airbyte Configuration API
     [https://airbyte.io](https://airbyte.io).
 
-    This API is a collection HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.
+    This API is a collection of HTTP RPC-style methods. While it is not a REST API, those familiar with REST should find the conventions of this API recognizable.
 
     Here are some conventions that this API follows:
     * All endpoints are http POST methods.
     * All endpoints accept data via `application/json` request bodies. The API does not accept any data via query params.
     * The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8000/v1/connections/create`.
-    * For all `update` method, the whole object must be passed in, even the fields that did not change.
+    * For all `update` methods, the whole object must be passed in, even the fields that did not change.
 
     Change Management:
     * The major version of the API endpoint can be determined / specified in the URL `localhost:8080/v1/connections/create`
@@ -2387,6 +2387,9 @@ components:
             $ref: "#/components/schemas/JobConfigType"
         configId:
           type: string
+        pagination:
+          type: object
+          $ref: "#/components/schemas/Pagination"
     JobIdRequestBody:
       type: object
       required:
@@ -2537,6 +2540,13 @@ components:
           type: boolean
         logs:
           $ref: "#/components/schemas/LogRead"
+    Pagination:
+      type: object
+      properties:
+        pageSize:
+          type: integer
+        rowOffset:
+          type: integer
     # Health
     HealthCheckRead:
       type: object

@@ -76,6 +76,8 @@ public interface Configs {
 
   String getAwsSecretAccessKey();
 
+  String getS3MinioEndpoint();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
