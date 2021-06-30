@@ -12,21 +12,15 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination{{snakeCase name}}/spec.json` file.
+**If you are a community contributor**, generate the necessary credentials and place them in `secrets/config.json` conforming to the spec file in `src/main/resources/spec.json`.
 Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, follow the [instruction](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#using-credentials-in-ci) to set up the credentials.
+**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector#using-credentials-in-ci) to set up the credentials.
 
 ### Locally running the connector docker image
 
 #### Build
-First, make sure you build the latest Docker image:
-```
-docker build . -t airbyte/destination-{{dashCase name}}:dev
-```
-
-You can also build the connector image via Gradle:
+Build the connector image via Gradle:
 ```
 ./gradlew :airbyte-integrations:connectors:destination-{{dashCase name}}:airbyteDocker
 ```
@@ -46,10 +40,11 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 We use `JUnit` for Java tests.
 
 ### Unit and Integration Tests
-Place unit and integration test files under `src/test/io/airbyte/integrations/destinations/{{snakeCase name}}`.
+Place unit tests under `src/test/io/airbyte/integrations/destinations/{{snakeCase name}}`.
 
 #### Acceptance Tests
-Airbyte has a test suite for all connectors. Place acceptance test under `src/test-integration/java/io/airbyte/integrations/destinations/{{snakeCase name}}`.
+Airbyte has a standard test suite that all destination connectors must pass. Implement the `TODO`s in
+`src/test-integration/java/io/airbyte/integrations/destinations/{{snakeCase name}}DestinationAcceptanceTest.java`.
 
 ### Using gradle to run tests
 All commands should be run from airbyte project root.

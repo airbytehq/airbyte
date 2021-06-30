@@ -20,19 +20,27 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    docker-compose down
    ```
 
-2. Turn back on the Airbyte web app, server, and db \(using the "old" working version from which you are upgrading from\).
+2. Upgrade the docker instance to new version.
+
+   i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
+
+   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}` to pull the latest versions and overwrite both files.
+
+3. Bring Airbyte back online.
 
    ```bash
-   docker-compose up -d db server webapp
+   docker-compose up
    ```
 
-   _Note: the `-d` flag in the previous command is optional and is meant to run the docker services in the background. This would let you free to keep interacting with the terminal and type the next commands in the tutorial._
+## Upgrading \(K8s\)
 
-3. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive \(gzipped tarball\) of all of your Airbyte configuration data and sync history locally.
+Airbyte Kubernetes **does not** support automatic migration. Please follow the following steps to upgrade your Airbyte Kubernetes deployment.
+
+1. Switching over to your browser, navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Export. This will download a compressed back-up archive \(gzipped tarball\) of all of your Airbyte configuration data and sync history locally.
 
    _Note: Any secrets that you have entered into Airbyte will be in this archive, so you should treat it as secret._
 
-4. Back to the terminal, migrate the local archive to the new version using the Migration App \(packaged in a docker container\).
+2. Back to the terminal, migrate the local archive to the new version using the Migration App \(packaged in a docker container\).
 
    ```bash
    docker run --rm -v <path to directory containing downloaded airbyte_archive.tar.gz>:/config airbyte/migration:<version you are upgrading to> --\
@@ -49,52 +57,6 @@ If you inadvertently upgrade to a version of Airbyte that is not compatible with
    --output /config/airbyte_archive_migrated.tar.gz
    ```
 
-5. Turn off Airbyte fully and **\(see warning\)** delete the existing Airbyte docker volumes.
-
-   _WARNING: Make sure you have already exported your data \(step 3\). This command is going to delete your data in Docker, you may lose your airbyte configurations!_
-
-   This is where all airbyte configurations are saved. Those configuration files need to be upgraded and restored with the proper version in the following steps.
-
-   ```bash
-   # Careful, this is deleting data!
-   docker-compose down -v
-   ```
-
-   The `-v` flag is equivalent to running the following two steps in a single command:
-
-   ```bash
-   # Turn off Airbyte fully
-   docker-compose down
-   # Delete the existing Airbyte docker volumes where all airbyte configurations are saved. 
-   docker volume rm $(docker volume ls -q | grep airbyte)
-   ```
-
-   5.b. (Skip if you are using default database `airbyte-db`) If you [deployed an external database](configuring-airbyte-db.md) to be used by Airbyte, you might need to drop all tables from the database and re-initialize them from scratch using the latest updated [schema script](https://github.com/airbytehq/airbyte/blob/master/airbyte-db/src/main/resources/schema.sql) (replace "airbyte" and "docker" with the appropriate values). If no changes were made to the SQL tables since the last Airbyte version you were using, you can safely skip this step.
-
-6. Upgrade the docker instance to new version.
-
-   i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
-
-   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}` to pull the latest versions and overwrite both files.
-
-7. Bring Airbyte back online.
-
-   ```bash
-   docker-compose up
-   ```
-
-8. Complete Preferences section. In the subsequent setup page click "Skip Onboarding". Navigate to the Admin page in the UI. Then go to the Configuration Tab. Click Import. This will prompt you to upload the migrated archive to Airbyte. After this completes, your upgraded Airbyte instance will now be running with all of your original configuration.
-
-This step will throw an exception if the data you are trying to upload does not match the version of Airbyte that is running.
-
-## Upgrading \(K8s\)
-
-This process is similar to the Docker upgrade process with several changes to account for the Kubernetes resources.
-
-1. Follow **Step 3** in the [Docker upgrade process](#Upgrading-\(Docker\)) to export your current configurations as an archive.
-
-2. Follow **Step 4**. in the [Docker upgrade process](#Upgrading-\(Docker\)) process to run the migration on your archive.
-
 3. Turn off Airbyte fully and **\(see warning\)** delete the existing Airbyte Kubernetes volumes.
 
    _WARNING: Make sure you have already exported your data \(step 1\). This command is going to delete your data in Kubernetes, you may lose your airbyte configurations!_
@@ -105,7 +67,7 @@ This process is similar to the Docker upgrade process with several changes to ac
    # Careful, this is deleting data!
    kubectl delete -k kube/overlays/stable
    ```
-4. Follow **Step 6** in the [Docker upgrade process](#Upgrading-\(Docker\)) to check out the most recent version of Airbyte. Although it is possible to
+4. Follow **Step 2** in the [Docker upgrade process](#Upgrading-\(Docker\)) to check out the most recent version of Airbyte. Although it is possible to
    migrate by changing the `.env` file in the kube overlay directory, this is not recommended as it does not capture any changes to the Kubernetes manifests.
 
 5. Bring Airbyte back up.
