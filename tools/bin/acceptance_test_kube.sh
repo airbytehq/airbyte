@@ -11,6 +11,7 @@ kind load docker-image airbyte/server:dev --name chart-testing
 kind load docker-image airbyte/scheduler:dev --name chart-testing
 kind load docker-image airbyte/webapp:dev --name chart-testing
 kind load docker-image airbyte/seed:dev --name chart-testing
+kind load docker-image airbyte/db:dev --name chart-testing
 
 echo "Starting app..."
 
@@ -33,7 +34,7 @@ trap "echo 'kube logs:' && print_all_logs" EXIT
 kubectl port-forward svc/airbyte-server-svc 8001:8001 &
 
 echo "Running worker integration tests..."
-./gradlew --no-daemon :airbyte-workers:integrationTest --scan
+#./gradlew --no-daemon :airbyte-workers:integrationTest --scan
 
 echo "Running e2e tests via gradle..."
 KUBE=true ./gradlew --no-daemon :airbyte-tests:acceptanceTests --scan
