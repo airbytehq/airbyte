@@ -33,7 +33,6 @@ import string
 import subprocess
 import sys
 import threading
-from time import sleep
 from typing import Any, Dict, List
 
 from normalization.destination_type import DestinationType
