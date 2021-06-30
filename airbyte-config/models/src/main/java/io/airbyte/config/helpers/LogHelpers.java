@@ -50,6 +50,7 @@ public class LogHelpers {
   public static String S3_LOG_BUCKET_REGION = "S3_LOG_BUCKET_REGION";
   public static String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
   public static String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
+  public static String S3_MINIO_ENDPOINT = "S3_MINIO_ENDPOINT";
 
   public static String LOG_FILENAME = "logs.log";
   public static String APP_LOGGING_CLOUD_PREFIX = "app-logging";
@@ -73,7 +74,6 @@ public class LogHelpers {
     if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
-
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return s3.downloadCloudLog(configs, cloudLogPath);
@@ -88,7 +88,6 @@ public class LogHelpers {
     if (shouldUseLocalLogs(configs)) {
       return logPathBase.resolve(LOG_FILENAME).toFile();
     }
-
     var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + logPathBase;
     try {
       return s3.downloadCloudLog(configs, cloudLogPath);

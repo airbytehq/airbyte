@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -134,7 +136,19 @@ public class S3Logs implements CloudLogs {
     if (S3 == null) {
       checkValidCredentials(configs);
       var s3Region = configs.getS3LogBucketRegion();
-      S3 = S3Client.builder().region(Region.of(s3Region)).build();
+      var builder = S3Client.builder().region(Region.of(s3Region));
+
+      var minioEndpoint = configs.getS3MinioEndpoint();
+      if (minioEndpoint != null) {
+        try {
+          var minioUri = new URI(minioEndpoint);
+          builder.endpointOverride(minioUri);
+        } catch (URISyntaxException e) {
+          throw new RuntimeException("Error creating S3 log client to Minio", e);
+        }
+      }
+
+      S3 = builder.build();
     }
   }
 

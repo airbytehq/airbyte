@@ -204,6 +204,11 @@ public class EnvConfigs implements Configs {
     return getEnsureEnv(LogHelpers.AWS_SECRET_ACCESS_KEY);
   }
 
+  @Override
+  public String getS3MinioEndpoint() {
+    return getEnv(LogHelpers.S3_MINIO_ENDPOINT);
+  }
+
   private String getEnvOrDefault(String key, String defaultValue) {
     return getEnvOrDefault(key, defaultValue, Function.identity());
   }
