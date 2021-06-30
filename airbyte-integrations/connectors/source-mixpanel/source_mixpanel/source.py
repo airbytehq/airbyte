@@ -40,49 +40,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
-"""
-
-
-
-# Basic full refresh stream
 class MixpanelStream(HttpStream, ABC):
-    """
-    TODO remove this comment
-
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class MixpanelStream(HttpStream, ABC)` which is the current class
-    `class Customers(MixpanelStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(MixpanelStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalMixpanelStream((MixpanelStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
 
     url_base = "https://mixpanel.com/api/2.0/"
 
@@ -106,9 +65,6 @@ class MixpanelStream(HttpStream, ABC):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        """
-        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
-        """
         return {"Accept": "application/json"}
 
     def request_params(
@@ -169,25 +125,41 @@ class Funnels(MixpanelStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
+        response.json() example:
+        {
+            "meta": {
+                "dates": [
+                    "2016-09-12"
+                    "2016-09-19"
+                    "2016-09-26"
+                ]
+            }
+            "data": {
+                "2016-09-12": {
+                    "steps": [...]
+                    "analysis": {
+                        "completion": 20524
+                        "starting_amount": 32688
+                        "steps": 2
+                        "worst": 1
+                    }
+                }
+                "2016-09-19": {
+                    ...
+                }
+            }
+        }
         :return an iterable containing each record in the response
         """
-
-        funnel_id = int(urlparse(response.request.path_url).query.split('=')[-1])
+        # extract 'funnel_id' from internal request object
+        query = urlparse(response.request.path_url).query
+        funnel_id = int(query.split('=')[-1])
 
         json_response = response.json()
-        if self.data_field is not None:
-            data = json_response.get(self.data_field, [])
-        elif isinstance(json_response, list):
-            data = json_response
-        elif isinstance(json_response, dict):
-            data = [json_response]
 
-        # print(f"data: {data} \n")
-
-
-        for date in data:
-
+        records = json_response.get(self.data_field, [])
+        for date in records:
+            # add funnel_id, name
             yield {'funnel_id': funnel_id,
                    'name': self.funnels[funnel_id],
                    'date': date,
