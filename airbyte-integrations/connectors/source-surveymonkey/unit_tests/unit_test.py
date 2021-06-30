@@ -30,6 +30,23 @@ from airbyte_cdk.models import SyncMode
 from source_surveymonkey import SourceSurveymonkey
 
 
+def test_get_updated_state_unit():
+    source = SourceSurveymonkey()
+    config = json.load(open("secrets/config.json"))
+    streams = source.streams(config=config)
+    stream = [i for i in streams if i.__class__.__name__ == "Surveys"][0]
+
+    record = {"title": "Market Research - Product Testing Template", "date_modified": "2021-06-08T18:09:00", "id": "306079584"}
+
+    current_state = {"date_modified": "2021-06-10T11:02:01"}
+    expected_state = current_state
+    assert stream.get_updated_state(current_state, record) == expected_state
+
+    record_with_bigger_date = {"title": "My random title", "date_modified": "2021-06-15T18:09:00", "id": "306079584"}
+    expected_state = {stream.cursor_field: record_with_bigger_date[stream.cursor_field]}
+    assert stream.get_updated_state(current_state, record_with_bigger_date) == expected_state
+
+
 def test_get_updated_state():
     source = SourceSurveymonkey()
     config = json.load(open("secrets/config.json"))
