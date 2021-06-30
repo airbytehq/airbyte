@@ -113,10 +113,9 @@ class TestBasicRead(BaseTest):
         if inputs.validate_schema:
             streams_with_errors = set()
             for record, errors in verify_records_schema(records, configured_catalog):
-                if record.stream in streams_with_errors:
-                    continue
-                logging.error(f"The {record.stream} stream has the following schema errors: {errors}")
-                streams_with_errors.add(record.stream)
+                if record.stream not in streams_with_errors:
+                    logging.error(f"The {record.stream} stream has the following schema errors: {errors}")
+                    streams_with_errors.add(record.stream)
 
             if streams_with_errors:
                 pytest.fail(f"Please check your json_schema in selected streams {streams_with_errors}.")
