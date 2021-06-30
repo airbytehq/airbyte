@@ -514,7 +514,7 @@ from {{ from_table }}
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
             cdc_active_row=cdc_active_row_pattern,
-            cdc_updated_at_order=cdc_updated_order_pattern
+            cdc_updated_at_order=cdc_updated_order_pattern,
         )
         return sql
 
