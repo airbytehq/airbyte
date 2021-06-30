@@ -73,7 +73,7 @@ public class DbtTransformationRunner implements AutoCloseable {
    */
   public boolean run(String jobId, int attempt, Path jobRoot, JsonNode config, ResourceRequirements resourceRequirements, OperatorDbt dbtConfig)
       throws Exception {
-    if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, dbtConfig)) {
+    if (!normalizationRunner.configureDbt(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig)) {
       return false;
     }
     return transform(jobId, attempt, jobRoot, config, resourceRequirements, dbtConfig);

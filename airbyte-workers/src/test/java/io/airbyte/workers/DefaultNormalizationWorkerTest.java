@@ -66,7 +66,7 @@ class DefaultNormalizationWorkerTest {
         JOB_ATTEMPT,
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog()))
+        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS))
             .thenReturn(true);
   }
 
@@ -82,7 +82,7 @@ class DefaultNormalizationWorkerTest {
         JOB_ATTEMPT,
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
-        normalizationInput.getCatalog());
+        normalizationInput.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     verify(normalizationRunner).close();
   }
 

@@ -88,7 +88,7 @@ class DefaultNormalizationRunnerTest {
 
     when(process.exitValue()).thenReturn(0);
 
-    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog));
+    assertTrue(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
   }
 
   @Test
@@ -96,7 +96,7 @@ class DefaultNormalizationRunnerTest {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory);
-    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog);
+    runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
     runner.close();
 
     verify(process).destroy();
@@ -107,7 +107,8 @@ class DefaultNormalizationRunnerTest {
     doThrow(new RuntimeException()).when(process).exitValue();
 
     final NormalizationRunner runner = new DefaultNormalizationRunner(DestinationType.BIGQUERY, processFactory);
-    assertThrows(RuntimeException.class, () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog));
+    assertThrows(RuntimeException.class,
+        () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS));
 
     verify(process).destroy();
   }

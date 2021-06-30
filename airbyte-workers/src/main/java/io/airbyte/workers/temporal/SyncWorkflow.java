@@ -110,7 +110,8 @@ public interface SyncWorkflow {
           if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
             final NormalizationInput normalizationInput = new NormalizationInput()
                 .withDestinationConfiguration(syncInput.getDestinationConfiguration())
-                .withCatalog(run.getOutputCatalog());
+                .withCatalog(run.getOutputCatalog())
+                .withResourceRequirements(syncInput.getResourceRequirements());
 
             normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
           } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {

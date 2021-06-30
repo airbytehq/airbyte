@@ -934,7 +934,7 @@ public abstract class DestinationAcceptanceTest {
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot, destinationConfig.getDestinationConnectionConfiguration(),
-        destinationConfig.getCatalog())) {
+        destinationConfig.getCatalog(), WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS)) {
       throw new WorkerException("Normalization Failed.");
     }
     runner.close();
