@@ -22,13 +22,18 @@
 
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
+
+from collections import ChainMap
+
+
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 import base64
+from urllib.parse import urlparse
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -123,19 +128,23 @@ class MixpanelStream(HttpStream, ABC):
         json_response = response.json()
         if self.data_field is not None:
             data = json_response.get(self.data_field, [])
-        else:
+        elif isinstance(json_response, list):
+            data = json_response
+        elif isinstance(json_response, dict):
             data = [json_response]
 
-        print(data)
+        print(f"data: {data}")
 
         for record in data:
-            # In order to support direct datetime string comparison (which is performed in incremental acceptance tests)
-            # convert any date format to python iso format string for date based cursors
-            self.update_field(record, self.cursor_field, lambda date: isoparse(date).isoformat())
             yield record
 
-        # sleep for 1-2 secs to not reach rate limit: 50 requests per minute
-        time.sleep(60 / self.requests_per_minute)
+
+class FunnelsList(MixpanelStream):
+    primary_key = 'funnel_id' # 'funnel_id'
+    data_field = None
+
+    def path(self, **kwargs) -> str:
+        return "funnels/list"
 
 class Funnels(MixpanelStream):
     """
@@ -145,11 +154,60 @@ class Funnels(MixpanelStream):
            https://mixpanel.com/api/2.0/funnels/list
     """
 
-    primary_key = None # 'funnel_id'
-    data_field = None
+    primary_key = ['funnel_id', 'date']
+    # cursor_field = ['funnel_id', 'date']
+    data_field = 'data'
 
     def path(self, **kwargs) -> str:
-        return "funnels/list"
+        return "funnels"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        # print(f"stream_slice: f{stream_slice} \n")
+        return {"funnel_id": stream_slice["funnel_id"]}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+
+        funnel_id = int(urlparse(response.request.path_url).query.split('=')[-1])
+
+        json_response = response.json()
+        if self.data_field is not None:
+            data = json_response.get(self.data_field, [])
+        elif isinstance(json_response, list):
+            data = json_response
+        elif isinstance(json_response, dict):
+            data = [json_response]
+
+        # print(f"data: {data} \n")
+
+
+        for date in data:
+
+            yield {'funnel_id': funnel_id,
+                   'name': self.funnels[funnel_id],
+                   'date': date,
+                   **data[date]}
+
+
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Override to define the slices for this stream. See the stream slicing section of the docs for more information.
+
+        :param stream_state:
+        :return:
+        """
+        stream_slices = FunnelsList(authenticator=self._authenticator).read_records(sync_mode=sync_mode)
+        stream_slices = list(stream_slices)
+        # print(f'stream_slices: {self.stream_slices} \n')
+        self.funnels = dict((funnel['funnel_id'], funnel['name']) for funnel in stream_slices)
+        return stream_slices
 
 class Insights(MixpanelStream):
     """
@@ -189,11 +247,6 @@ class Export(MixpanelStream):
     path = 'export'
 
 
-
-
-
-
-# Basic incremental stream
 class IncrementalMixpanelStream(MixpanelStream, ABC):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
@@ -224,9 +277,7 @@ class IncrementalMixpanelStream(MixpanelStream, ABC):
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
     def __init__(self, token:str, auth_method:str = 'Basic',**kwargs):
-        #token = base64.b64encode(token.encode()).decode()
         token = base64.b64encode(token.encode("utf8")).decode("utf8")
-        print(f"token: {token}")
         super().__init__(token=token, auth_method=auth_method, **kwargs)
 
 # Source
