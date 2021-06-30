@@ -8,8 +8,6 @@ assert_root
 
 echo "Starting app..."
 
-echo "Updating dev manifests with S3 logging configuration..."
-
 echo "Applying dev manifests to kubernetes..."
 kubectl apply -k kube/overlays/dev
 
