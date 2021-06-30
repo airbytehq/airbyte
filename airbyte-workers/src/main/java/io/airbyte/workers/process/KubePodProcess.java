@@ -610,7 +610,9 @@ public class KubePodProcess extends Process {
       if (!com.google.common.base.Strings.isNullOrEmpty(resourceRequirements.getMemory())) {
         resourceMap.put("memory", Quantity.parse(resourceRequirements.getMemory()));
       }
-      return new ResourceRequirementsBuilder().withLimits(resourceMap);
+      return new ResourceRequirementsBuilder()
+          .withRequests(resourceMap)
+          .withLimits(resourceMap);
     }
     return null;
   }
