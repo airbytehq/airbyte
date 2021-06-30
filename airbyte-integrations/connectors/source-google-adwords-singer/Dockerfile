@@ -12,5 +12,5 @@ COPY setup.py ./
 RUN pip install tap-adwords==1.12.0
 RUN pip install .
 
-LABEL io.airbyte.version=0.2.3
+LABEL io.airbyte.version=0.2.5
 LABEL io.airbyte.name=airbyte/source-google-adwords-singer
