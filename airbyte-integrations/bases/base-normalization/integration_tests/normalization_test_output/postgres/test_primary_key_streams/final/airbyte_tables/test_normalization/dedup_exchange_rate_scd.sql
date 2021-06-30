@@ -23,8 +23,8 @@ select
         partition by "id", currency, cast(nzd as 
     varchar
 )
-        order by "date" desc, _airbyte_emitted_at desc 
-    ) is null  as _airbyte_active_row,
+        order by "date" desc, _airbyte_emitted_at desc
+    ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_dedup_exchange_rate_hashid
 from "postgres"._airbyte_test_normalization."dedup_exchange_rate_ab4"

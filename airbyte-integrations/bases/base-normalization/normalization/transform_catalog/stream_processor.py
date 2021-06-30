@@ -490,8 +490,8 @@ select
     ) as _airbyte_end_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc {{ cdc_updated_at_order }}
-    ) is null {{ cdc_active_row }} as _airbyte_active_row,
+        order by {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
+    ) is null {{ cdc_active_row }}as _airbyte_active_row,
     _airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}
@@ -502,7 +502,7 @@ from {{ from_table }}
         cdc_active_row_pattern = ""
         cdc_updated_order_pattern = ""
         if "_ab_cdc_deleted_at" in column_names.keys():
-            cdc_active_row_pattern = "and _ab_cdc_deleted_at is null"
+            cdc_active_row_pattern = "and _ab_cdc_deleted_at is null "
             cdc_updated_order_pattern = ", _ab_cdc_updated_at desc"
 
         sql = template.render(

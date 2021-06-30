@@ -15,8 +15,8 @@ select
     ) as _airbyte_end_at,
     lag("date") over (
         partition by "id"
-        order by "date" desc, _airbyte_emitted_at desc 
-    ) is null  as _airbyte_active_row,
+        order by "date" desc, _airbyte_emitted_at desc
+    ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_nested_stre__nto_long_names_hashid
 from "postgres"._airbyte_test_normalization."nested_stream_with_c__lting_into_long_names_ab4"

@@ -15,8 +15,8 @@ select
     ) as _airbyte_end_at,
     lag({{ adapter.quote('date') }}) over (
         partition by {{ adapter.quote('id') }}, currency, cast(nzd as {{ dbt_utils.type_string() }})
-        order by {{ adapter.quote('date') }} desc, _airbyte_emitted_at desc 
-    ) is null  as _airbyte_active_row,
+        order by {{ adapter.quote('date') }} desc, _airbyte_emitted_at desc
+    ) is null as _airbyte_active_row,
     _airbyte_emitted_at,
     _airbyte_dedup_exchange_rate_hashid
 from {{ ref('dedup_exchange_rate_ab4') }}
