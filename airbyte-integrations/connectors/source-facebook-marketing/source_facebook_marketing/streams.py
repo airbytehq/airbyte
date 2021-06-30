@@ -251,6 +251,7 @@ class Campaigns(FBMarketingIncrementalStream):
 
 class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
+
     cursor_field = "date_start"
     primary_key = None
 
