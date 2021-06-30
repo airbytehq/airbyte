@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "https://api.census.gov/ Source Spec",
     "type": "object",
-    "required": ["api_key", "path"],
+    "required": ["api_key", "query_path"],
     "additionalProperties": false,
     "properties": {
       "query_params": {
