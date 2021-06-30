@@ -23,7 +23,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 Runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@main
+        uses: machulav/ec2-github-runner@v2
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -32,7 +32,7 @@ jobs:
           subnet-id: subnet-0469a9e68a379c1d3
           security-group-id: sg-0793f3c9413f21970
   build:
-    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
+    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-build-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-build-runner.outputs.label }} # run the job on the newly created runner
     name: Build Airbyte
@@ -118,20 +118,11 @@ jobs:
       - name: Image Cleanup
         run: ./tools/bin/clean_images.sh
 
-      # make sure these always run before pushing core docker images
       - name: Run End-to-End Acceptance Tests
         run: ./tools/bin/acceptance_test.sh
 
       - name: Automatic Migration Acceptance Test
         run: MIGRATION_TEST_VERSION=$(grep VERSION .env | tr  -d "VERSION=") ./gradlew --no-daemon :airbyte-tests:automaticMigrationAcceptanceTest --rerun-tasks --scan -i
-
-      - name: Push Core Docker Images
-        if: success() && github.ref == 'refs/heads/master'
-        run: |
-          docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          VERSION=dev docker-compose -f docker-compose.build.yaml push
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Slack Notification - Failure
         if: failure() && github.ref == 'refs/heads/master'
@@ -168,7 +159,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@main
+        uses: machulav/ec2-github-runner@v2
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -205,7 +196,7 @@ jobs:
         run: ./tools/bin/e2e_test.sh
 
   ## Kube Acceptance Tests
-  # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
+  # In case of self-hosted EC2 errors, remove this block.
   # Docker acceptance tests run as part of the build job.
   start-kube-acceptance-test-runner:
     name: Start Kube Acceptance Test EC2 Runner
@@ -222,7 +213,7 @@ jobs:
           aws-region: us-east-2
       - name: Start EC2 runner
         id: start-ec2-runner
-        uses: machulav/ec2-github-runner@main
+        uses: machulav/ec2-github-runner@v2
         with:
           mode: start
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
@@ -231,7 +222,7 @@ jobs:
           subnet-id: subnet-0469a9e68a379c1d3
           security-group-id: sg-0793f3c9413f21970
   kube-acceptance-test:
-    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
+    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     name: Acceptance Tests (Kube)
@@ -302,7 +293,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@main
+        uses: machulav/ec2-github-runner@v2
         with:
           mode: stop
           github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
