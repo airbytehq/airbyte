@@ -18,6 +18,11 @@ union all
 
 union all
 
+    select distinct count(*) as row_count, 4 as expected_count
+    from {{ ref('dedup_cdc_excluded') }}
+
+union all
+
     select distinct count(*) as row_count, 2 as expected_count
     from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
 union all
