@@ -44,7 +44,7 @@ import org.junit.jupiter.api.Test;
  * Tests that the postgres spec passes JsonSchema validation. While this may seem like overkill, we
  * are doing it because there are some gotchas in correctly configuring the oneOf.
  */
-public class CockroachdbSpecTest {
+public class CockroachDbSpecTest {
 
   private static final String CONFIGURATION = "{  "
       + "\"password\" : \"pwd\",  "

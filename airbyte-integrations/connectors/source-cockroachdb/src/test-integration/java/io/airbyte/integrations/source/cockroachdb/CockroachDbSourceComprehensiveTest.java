@@ -39,12 +39,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.CockroachContainer;
 
-public class CockroachSourceComprehensiveTest extends SourceComprehensiveTest {
+public class CockroachDbSourceComprehensiveTest extends SourceComprehensiveTest {
 
   private CockroachContainer container;
   private JsonNode config;
   private static final Logger LOGGER = LoggerFactory
-      .getLogger(CockroachSourceComprehensiveTest.class);
+      .getLogger(CockroachDbSourceComprehensiveTest.class);
 
   @Override
   protected Database setupDatabase() throws SQLException {

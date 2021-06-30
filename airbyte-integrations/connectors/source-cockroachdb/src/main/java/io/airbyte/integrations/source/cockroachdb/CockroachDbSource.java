@@ -41,13 +41,13 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CockroachdbSource extends AbstractJdbcSource implements Source {
+public class CockroachDbSource extends AbstractJdbcSource implements Source {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CockroachdbSource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
   static final String DRIVER_CLASS = "org.postgresql.Driver";
 
-  public CockroachdbSource() {
+  public CockroachDbSource() {
     super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
   }
 
@@ -101,10 +101,10 @@ public class CockroachdbSource extends AbstractJdbcSource implements Source {
   }
 
   public static void main(String[] args) throws Exception {
-    final Source source = new CockroachdbSource();
-    LOGGER.info("starting source: {}", CockroachdbSource.class);
+    final Source source = new CockroachDbSource();
+    LOGGER.info("starting source: {}", CockroachDbSource.class);
     new IntegrationRunner(source).run(args);
-    LOGGER.info("completed source: {}", CockroachdbSource.class);
+    LOGGER.info("completed source: {}", CockroachDbSource.class);
   }
 
 }

@@ -63,7 +63,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.utility.MountableFile;
 
-class CockroachdbSourceTest {
+class CockroachDbSourceTest {
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
@@ -202,7 +202,7 @@ class CockroachdbSourceTest {
       }
 
       final Set<AirbyteMessage> actualMessages = MoreIterators
-          .toSet(new CockroachdbSource().read(config, CONFIGURED_CATALOG, null));
+          .toSet(new CockroachDbSource().read(config, CONFIGURED_CATALOG, null));
       setEmittedAtToNull(actualMessages);
 
       assertEquals(UTF8_MESSAGES, actualMessages);
@@ -210,16 +210,16 @@ class CockroachdbSourceTest {
   }
 
   private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
-    for (AirbyteMessage actualMessage : messages) {
-      if (actualMessage.getRecord() != null) {
-        actualMessage.getRecord().setEmittedAt(null);
+    messages.forEach(msg -> {
+      if (msg.getRecord() != null) {
+        msg.getRecord().setEmittedAt(null);
       }
-    }
+    });
   }
 
   @Test
   void testDiscoverWithPk() throws Exception {
-    final AirbyteCatalog actual = new CockroachdbSource().discover(getConfig(PSQL_DB, dbName));
+    final AirbyteCatalog actual = new CockroachDbSource().discover(getConfig(PSQL_DB, dbName));
     actual.getStreams().forEach(actualStream -> {
       final Optional<AirbyteStream> expectedStream =
           CATALOG.getStreams().stream()
@@ -236,7 +236,7 @@ class CockroachdbSourceTest {
             .filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
                 Collectors.toList()));
     final Set<AirbyteMessage> actualMessages = MoreIterators
-        .toSet(new CockroachdbSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
+        .toSet(new CockroachDbSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);

@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.cockroachdb.CockroachdbSource'
+    mainClass = 'io.airbyte.integrations.source.cockroachdb.CockroachDbSource'
 }
 
 dependencies {

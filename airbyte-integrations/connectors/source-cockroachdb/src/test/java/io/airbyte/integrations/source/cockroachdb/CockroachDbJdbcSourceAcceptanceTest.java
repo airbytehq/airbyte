@@ -69,7 +69,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.utility.MountableFile;
 
-class CockroachdbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static CockroachContainer PSQL_DB;
   public static String COL_ROW_ID = "rowid";
@@ -116,7 +116,7 @@ class CockroachdbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Override
   public AbstractJdbcSource getSource() {
-    return new CockroachdbSource();
+    return new CockroachDbSource();
   }
 
   @Override
@@ -126,7 +126,7 @@ class CockroachdbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Override
   public String getDriverClass() {
-    return CockroachdbSource.DRIVER_CLASS;
+    return CockroachDbSource.DRIVER_CLASS;
   }
 
   @AfterAll

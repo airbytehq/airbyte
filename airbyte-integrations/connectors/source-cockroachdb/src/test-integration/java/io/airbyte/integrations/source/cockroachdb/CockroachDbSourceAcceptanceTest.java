@@ -47,7 +47,7 @@ import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.CockroachContainer;
 
-public class CockroachSourceAcceptanceTest extends SourceAcceptanceTest {
+public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
