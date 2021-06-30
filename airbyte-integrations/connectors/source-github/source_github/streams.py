@@ -140,7 +140,6 @@ class GithubStream(HttpStream, ABC):
 
 
 class SemiIncrementalGithubStream(GithubStream):
-    supports_incremental = True
     cursor_field = "updated_at"
 
     # This flag is used to indicate that current stream supports `sort` and `direction` request parameters and that
