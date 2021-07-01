@@ -159,7 +159,7 @@ class Combinations(PrestaShopStream):
         return "combinations"
 
 
-class Configurations(IncrementalPrestaShopStream):
+class Configurations(PrestaShopStream):
     """
     Shop configuration, used to store miscellaneous parameters from the shop
     (maintenance, multi shop, email settings, …)
