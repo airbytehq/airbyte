@@ -51,6 +51,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -103,7 +104,12 @@ class ConnectionsHandlerTest {
         .prefix("presto_to_hudi")
         .status(ConnectionStatus.ACTIVE)
         .schedule(ConnectionHelpers.generateBasicConnectionSchedule())
-        .syncCatalog(catalog);
+        .syncCatalog(catalog)
+        .resourceRequirements(new io.airbyte.api.model.ResourceRequirements()
+            .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
+            .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
+            .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest())
+            .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit()));
 
     final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
@@ -195,7 +201,8 @@ class ConnectionsHandlerTest {
         .withDestinationId(standardSync.getDestinationId())
         .withStatus(StandardSync.Status.INACTIVE)
         .withCatalog(configuredCatalog)
-        .withManual(true);
+        .withManual(true)
+        .withResourceRequirements(WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
 
     when(configRepository.getStandardSync(standardSync.getConnectionId()))
         .thenReturn(standardSync)
@@ -263,7 +270,8 @@ class ConnectionsHandlerTest {
         .operationIds(connectionRead.getOperationIds())
         .status(ConnectionStatus.DEPRECATED)
         .syncCatalog(connectionRead.getSyncCatalog())
-        .schedule(connectionRead.getSchedule());
+        .schedule(connectionRead.getSchedule())
+        .resourceRequirements(connectionRead.getResourceRequirements());
 
     final ConnectionsHandler spiedConnectionsHandler = spy(connectionsHandler);
     doReturn(connectionRead).when(spiedConnectionsHandler).getConnection(connectionIdRequestBody);

@@ -92,7 +92,6 @@ import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -128,6 +127,11 @@ import org.testcontainers.utility.MountableFile;
 // We order tests such that earlier tests test more basic behavior that is relied upon in later
 // tests.
 // e.g. We test that we can create a destination before we test whether we can sync data to it.
+//
+// Many of the tests here are disabled for Kubernetes. This is because they are already run
+// as part of the Docker acceptance tests and there is little value re-running on Kubernetes,
+// especially operations take much longer due to Kubernetes pod spin up times.
+// We run a subset to sanity check basic Airbyte Kubernetes Sync features.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AcceptanceTests {
 
@@ -223,6 +227,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(-1)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testGetDestinationSpec() throws ApiException {
     final UUID destinationDefinitionId = getDestinationDefId();
     DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
@@ -233,6 +239,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(0)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testGetSourceSpec() throws ApiException {
     final UUID sourceDefId = getPostgresSourceDefinitionId();
     SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
@@ -243,6 +251,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(1)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testCreateDestination() throws ApiException {
     final UUID destinationDefId = getDestinationDefId();
     final JsonNode destinationConfig = getDestinationDbConfig();
@@ -263,6 +273,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(2)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testDestinationCheckConnection() throws ApiException {
     final UUID destinationId = createDestination().getDestinationId();
 
@@ -275,7 +287,9 @@ public class AcceptanceTests {
 
   @Test
   @Order(3)
-  public void testCreateSource() throws ApiException, IOException {
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
+  public void testCreateSource() throws ApiException {
     final String dbName = "acc-test-db";
     final UUID postgresSourceDefinitionId = getPostgresSourceDefinitionId();
     final UUID defaultWorkspaceId = PersistenceConstants.DEFAULT_WORKSPACE_ID;
@@ -298,6 +312,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(4)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testSourceCheckConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
 
@@ -347,6 +363,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(6)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testCreateConnection() throws ApiException {
     final UUID sourceId = createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
@@ -457,6 +475,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(9)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testScheduledSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = createPostgresSource().getSourceId();
@@ -482,8 +502,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(10)
-  // Since this is testing mechanisms orthogonal to Airbyte deployment method, there is no value in
-  // repeating this test.
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testMultipleSchemasAndTablesSync() throws Exception {
@@ -509,8 +527,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(11)
-  // Since this is testing mechanisms orthogonal to Airbyte deployment method, there is no value in
-  // repeating this test.
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testMultipleSchemasSameTablesSync() throws Exception {
@@ -536,8 +552,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(12)
-  // Since this is testing mechanisms orthogonal to Airbyte deployment method, there is no value in
-  // repeating this test.
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testIncrementalDedupeSync() throws Exception {
@@ -585,6 +599,8 @@ public class AcceptanceTests {
 
   @Test
   @Order(13)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")
@@ -658,10 +674,6 @@ public class AcceptanceTests {
 
   @Test
   @Order(14)
-  // Since this is testing a mechanism orthogonal to how logs are logged, there is no value in
-  // repeating this for Kube.
-  // This is especially since logs are not local on Kube, and downloading them from S3 can take some
-  // time.
   @DisabledIfEnvironmentVariable(named = "KUBE",
                                  matches = "true")
   public void testRedactionOfSensitiveRequestBodies() throws Exception {
@@ -687,6 +699,8 @@ public class AcceptanceTests {
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @Test
   @Order(15)
+  @DisabledIfEnvironmentVariable(named = "KUBE",
+                                 matches = "true")
   public void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
         .name("E2E Test Source")

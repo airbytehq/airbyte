@@ -28,7 +28,7 @@
 - sourceDefinitionId: fdc8b827-3257-4b33-83cc-106d234c34d4
   name: Google Adwords (Deprecated)
   dockerRepository: airbyte/source-google-adwords-singer
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.5
   documentationUrl: https://hub.docker.com/r/airbyte/source-google-adwords-singer
   icon: google-adwords.svg
 - sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
@@ -81,7 +81,7 @@
 - sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   name: MySQL
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.3.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
 - sourceDefinitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
@@ -111,7 +111,7 @@
 - sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   name: Facebook Marketing
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.12
+  dockerImageTag: 0.2.13
   documentationUrl: https://hub.docker.com/r/airbyte/source-facebook-marketing
   icon: facebook.svg
 - sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
@@ -128,7 +128,7 @@
 - sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   name: Shopify
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/shopify
 - sourceDefinitionId: 9845d17a-45f1-4070-8a60-50914b1c8e2b
   name: HTTP Request
@@ -160,12 +160,6 @@
   dockerImageTag: 0.2.2
   documentationUrl: https://hub.docker.com/r/airbyte/source-braintree-singer
   icon: braintree.svg
-- sourceDefinitionId: 41375467-61ae-4204-8e38-e2b8b7365f23
-  name: Slack
-  dockerRepository: airbyte/source-slack-singer
-  dockerImageTag: 0.2.3
-  documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack-singer
-  icon: slack.svg
 - sourceDefinitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
   name: Greenhouse
   dockerRepository: airbyte/source-greenhouse
@@ -223,8 +217,8 @@
 - sourceDefinitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
   name: Looker
   dockerRepository: airbyte/source-looker
-  dockerImageTag: 0.2.3
-  documentationUrl: https://hub.docker.com/r/airbyte/source-looker
+  dockerImageTag: 0.2.4
+  documentationUrl: https://docs.airbyte.io/integrations/sources/looker
   icon: looker.svg
 - sourceDefinitionId: ed799e2b-2158-4c66-8da4-b40fe63bc72a
   name: Plaid
@@ -334,8 +328,19 @@
   dockerRepository: airbyte/source-db2
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/db2
+- sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
+  name: Slack
+  dockerRepository: airbyte/source-slack
+  dockerImageTag: 0.1.7
+  documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack
+  icon: slack.svg
 - sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
   name: AWS CloudTrail
   dockerRepository: airbyte/source-aws-cloudtrail
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/aws-cloudtrail
+- sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
+  name: Okta
+  dockerRepository: airbyte/source-okta
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/okta
