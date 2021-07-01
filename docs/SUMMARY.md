@@ -74,6 +74,7 @@
     * [Plaid](integrations/sources/plaid.md)
     * [PokéAPI](integrations/sources/pokeapi.md)
     * [Postgres](integrations/sources/postgres.md)
+    * [CockroachDb](integrations/sources/cockroachdb.md)
     * [PostHog](integrations/sources/posthog.md)
     * [Quickbooks](integrations/sources/quickbooks.md)
     * [Recharge](integrations/sources/recharge.md)
