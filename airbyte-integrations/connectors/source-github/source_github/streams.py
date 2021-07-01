@@ -90,8 +90,7 @@ class GithubStream(HttpStream, ABC):
         if next_page_token:
             params.update(next_page_token)
 
-        if self.stream_base_params:
-            params.update(self.stream_base_params)
+        params.update(self.stream_base_params)
 
         return params
 
@@ -140,6 +139,11 @@ class GithubStream(HttpStream, ABC):
             field_values = record.pop(field, [])
             record[field] = [value.get("id") for value in field_values]
 
+        # TODO In the future when we will add support for multiple repositories we will need an additional field in
+        #  each stream that will tell which repository the record belongs to. In singer it was `_sdc_repository` field.
+        #  You may see an example here:
+        #  https://github.com/airbytehq/tap-github/blob/a0530b80d299864a9a106398b74d87c31ecc8a7a/tap_github/__init__.py#L253
+        #  I decided to leave this field for future usage when support for multiple repositories will be added.
         record["_sdc_repository"] = None
 
         return record
