@@ -36,7 +36,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class SunshineStream(HttpStream, ABC):
     primary_key = "id"
     data_field = "data"
-    url_base = "https://XXX"
     page_size = 100
 
     def __init__(self, subdomain: str, start_date: pendulum.datetime, **kwargs):
