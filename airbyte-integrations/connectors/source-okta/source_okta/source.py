@@ -38,7 +38,6 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 class OktaStream(HttpStream, ABC):
     page_size = 200
-    last_page = {}
 
     def __init__(self, url_base: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -54,9 +53,6 @@ class OktaStream(HttpStream, ABC):
         # https://developer.okta.com/docs/reference/api-overview/#pagination
         links = response.links
         if 'next' in links:
-
-            print(links)
-            print(links['next'])
             next_url = links['next']['url']
             parsed_link = parse.urlparse(next_url)
             query_params = dict(parse.parse_qsl(parsed_link.query))
