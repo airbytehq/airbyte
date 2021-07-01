@@ -7,9 +7,9 @@ dependencies {
 
     implementation 'org.apache.cxf:cxf-core:3.4.2'
 
+    implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
-
     implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
     implementation 'org.glassfish.jersey.containers:jersey-container-servlet'
     implementation 'org.glassfish.jersey.inject:jersey-hk2'
@@ -26,6 +26,7 @@ dependencies {
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-db')
     implementation project(":airbyte-json-validation")
+    implementation project(':airbyte-migration')
     implementation project(':airbyte-notification')
     implementation project(':airbyte-protocol:models')
     implementation project(':airbyte-scheduler:client')
@@ -39,6 +40,16 @@ dependencies {
 
     testImplementation "org.testcontainers:postgresql:1.15.1"
 }
+
+// we want to be able to access the generated db files from config/init when we build the server docker image.
+task copySeed(type: Copy, dependsOn: [project(':airbyte-config:init').processResources]) {
+    from "${project(':airbyte-config:init').buildDir}/resources/main/config"
+    into "${buildDir}/config_init/resources/main/config"
+}
+
+// need to make sure that the files are in the resource directory before copying.
+//project.tasks.copySeed.mustRunAfter(project(':airbyte-config:init').tasks.processResources)
+assemble.dependsOn(project.tasks.copySeed)
 
 application {
     mainClass = 'io.airbyte.server.ServerApp'
@@ -59,5 +70,4 @@ run {
     environment "AIRBYTE_VERSION", env.VERSION
     environment "AIRBYTE_ROLE", System.getenv('AIRBYTE_ROLE')
     environment "TEMPORAL_HOST", "localhost:7233"
-
 }
