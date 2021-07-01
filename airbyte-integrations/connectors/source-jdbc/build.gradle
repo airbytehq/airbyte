@@ -32,8 +32,6 @@ dependencies {
     testImplementation "org.postgresql:postgresql:42.2.18"
     testImplementation "org.testcontainers:postgresql:1.15.1"
 
-
-
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation "org.testcontainers:postgresql:1.15.1"
 
@@ -53,9 +51,6 @@ dependencies {
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
     testFixturesImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.4.6'
-
-
-
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
