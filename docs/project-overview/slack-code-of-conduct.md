@@ -2,7 +2,7 @@
 description: 'Be nice to one another.'
 ---
 
-# Code of Conduct
+# Slack Code of Conduct
 
 Airbyte's Slack community is growing incredibly fast. We're home to over 1500 data professionals and are growing at an awesome pace. We are proud of our community, and have provided these guidelines to support new members in maintaining the wholesome spirit we have developed here. We appreciate your continued commitment to making this a community we are all excited to be a part of.
 
