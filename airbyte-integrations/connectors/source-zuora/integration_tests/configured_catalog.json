@@ -336,6 +336,88 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "orders",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "createdbymigration": {
+              "type": [
+                "null",
+                "boolean"
+              ]
+            },
+            "accountid": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "description": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "createdbyid": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "updateddate": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "updatedbyid": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "createddate": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "ordernumber": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "id": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "orderdate": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
