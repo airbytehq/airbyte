@@ -1,20 +1,11 @@
 {#
--- Adapted from https://github.com/fishtown-analytics/dbt-utils/blob/bbba960726667abc66b42624f0d36bbb62c37593/macros/schema_tests/equality.sql
+-- Adapted from https://github.com/dbt-labs/dbt-utils/blob/0-19-0-updates/macros/schema_tests/equality.sql
 -- dbt-utils version: 0.6.4
 -- This macro needs to be updated accordingly when dbt-utils is upgraded.
 -- This is needed because MySQL does not support the EXCEPT operator!
 #}
 
 {% macro mysql__test_equality(model, compare_model, compare_columns=None) %}
-
-    {% set set_diff %}
-        count(*) + coalesce(abs(
-            sum(case when which_diff = 'a_minus_b' then 1 else 0 end) -
-            sum(case when which_diff = 'b_minus_a' then 1 else 0 end)
-        ), 0)
-    {% endset %}
-
-    {{ config(fail_calc = set_diff) }}
 
     {%- if not execute -%}
         {{ return('') }}
