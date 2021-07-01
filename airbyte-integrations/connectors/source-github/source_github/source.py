@@ -55,31 +55,31 @@ class SourceGithub(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
-            args = {"authenticator": authenticator, "repository": config["repository"]}
-            collaborators_stream = Collaborators(**args)
+            collaborators_stream = Collaborators(authenticator=authenticator, repository=config["repository"])
             next(collaborators_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
-            return False, e
+            return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["access_token"], auth_method="token")
-        args = {"authenticator": authenticator, "repository": config["repository"]}
+        full_refresh_args = {"authenticator": authenticator, "repository": config["repository"]}
+        incremental_args = {"authenticator": authenticator, "repository": config["repository"], "start_date": config["start_date"]}
         return [
-            Assignees(**args),
-            Reviews(**args),
-            Collaborators(**args),
-            Releases(**args),
-            Events(**args),
-            Comments(start_date=config["start_date"], **args),
-            PullRequests(**args),
-            CommitComments(**args),
-            IssueMilestones(**args),
-            Commits(start_date=config["start_date"], **args),
-            Stargazers(**args),
-            Teams(**args),
-            Projects(**args),
-            IssueLabels(**args),
-            Issues(start_date=config["start_date"], **args),
-            IssueEvents(**args),
+            Assignees(**full_refresh_args),
+            Reviews(**full_refresh_args),
+            Collaborators(**full_refresh_args),
+            Teams(**full_refresh_args),
+            IssueLabels(**full_refresh_args),
+            Releases(**incremental_args),
+            Events(**incremental_args),
+            Comments(**incremental_args),
+            PullRequests(**incremental_args),
+            CommitComments(**incremental_args),
+            IssueMilestones(**incremental_args),
+            Commits(**incremental_args),
+            Stargazers(**incremental_args),
+            Projects(**incremental_args),
+            Issues(**incremental_args),
+            IssueEvents(**incremental_args),
         ]

@@ -25,7 +25,7 @@
 
 import tempfile
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 import vcr
@@ -44,18 +44,18 @@ class GithubStream(HttpStream, ABC):
     # GitHub pagination could be from 1 to 100.
     page_size = 100
 
-    # These fields will be used for data clearing. Put here keys which represent
-    # objects `{}`, like `user`, `actor` etc.
-    object_fields = ()
+    # Default page value for pagination.
+    _page = 1
 
-    # These fields will be used for data clearing. Put here keys which represent
-    # lists `[]`, like `labels`, `assignees` etc.
-    list_fields = ()
+    stream_base_params = {}
+
+    # Fields in below 2 variables will be used for data clearing. Put there keys which represent:
+    object_fields = ()  # objects `{}`, like `user`, `actor` etc.
+    list_fields = ()  # lists `[]`, like `labels`, `assignees` etc.
 
     def __init__(self, repository: str, **kwargs):
         super().__init__(**kwargs)
         self.repository = repository
-        self._page = 1
 
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/{self.name}"
@@ -90,6 +90,9 @@ class GithubStream(HttpStream, ABC):
         if next_page_token:
             params.update(next_page_token)
 
+        if self.stream_base_params:
+            params.update(self.stream_base_params)
+
         return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
@@ -106,8 +109,7 @@ class GithubStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
-            self.transform(record=record)
-            yield record
+            yield self.transform(record=record)
 
     def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -136,7 +138,11 @@ class GithubStream(HttpStream, ABC):
 
         for field in self.list_fields:
             field_values = record.pop(field, [])
-            record[field] = [value["id"] for value in field_values]
+            record[field] = [value.get("id") for value in field_values]
+
+        record["_sdc_repository"] = None
+
+        return record
 
 
 class SemiIncrementalGithubStream(GithubStream):
@@ -146,8 +152,10 @@ class SemiIncrementalGithubStream(GithubStream):
     # we should break processing records if possible (see comment for `self._should_stop`).
     should_break_if_sorter = False
 
-    def __init__(self, **kwargs):
+    def __init__(self, start_date: str, **kwargs):
         super().__init__(**kwargs)
+
+        self._start_date = start_date
 
         # This flag is used for streams which support `sort` and `direction` request parameters
         # (`should_break_if_sorter` is set to `True`). If `sort` is set to `updated` and `direction` is set to `desc`
@@ -179,27 +187,21 @@ class SemiIncrementalGithubStream(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            state_value = stream_state.get(self.cursor_field)
+        start_point = self._start_date
+        if stream_state.get(self.cursor_field):
+            start_point = max(start_point, stream_state[self.cursor_field])
 
-            if not state_value or record.get(self.cursor_field) > state_value:
-                self.transform(record=record)
-                yield record
-            elif self.should_break_if_sorter and record.get(self.cursor_field) < state_value:
+        for record in response.json():  # GitHub puts records in an array.
+            if record.get(self.cursor_field) > start_point:
+                yield self.transform(record=record)
+            elif self.should_break_if_sorter and record.get(self.cursor_field) < start_point:
                 self._should_stop = True
                 break
 
 
 class IncrementalGithubStream(SemiIncrementalGithubStream):
-    def __init__(self, start_date, **kwargs):
-        super().__init__(**kwargs)
-        self._start_date = start_date
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
 
         start_point = self._start_date
         if stream_state.get(self.cursor_field):
@@ -225,9 +227,7 @@ class Reviews(GithubStream):
         pull_request_number = stream_slice["pull_request_number"]
         return f"repos/{self.repository}/pulls/{pull_request_number}/reviews"
 
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         pull_requests_stream = PullRequests(authenticator=self.authenticator, repository=self.repository)
         for pull_request in pull_requests_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"pull_request_number": pull_request["number"]}
@@ -256,12 +256,14 @@ class Releases(SemiIncrementalGithubStream):
     object_fields = ("author",)
 
     def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        super().transform(record=record)
+        record = super().transform(record=record)
 
         assets = record.get("assets", [])
         for asset in assets:
             uploader = asset.pop("uploader", None)
             asset["uploader_id"] = uploader.get("id") if uploader else None
+
+        return record
 
 
 class Events(SemiIncrementalGithubStream):
@@ -286,6 +288,11 @@ class PullRequests(SemiIncrementalGithubStream):
         "requested_reviewers",
         "requested_teams",
     )
+    stream_base_params = {
+        "state": "all",
+        "sort": "updated",
+        "direction": "desc",
+    }
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
@@ -294,15 +301,8 @@ class PullRequests(SemiIncrementalGithubStream):
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/pulls"
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
-        params["state"] = "all"
-        params["sort"] = "updated"
-        params["direction"] = "desc"
-        return params
-
     def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        super().transform(record=record)
+        record = super().transform(record=record)
 
         head = record.get("head", {})
         head_user = head.pop("user", None)
@@ -316,6 +316,8 @@ class PullRequests(SemiIncrementalGithubStream):
         base_repo = base.pop("repo", None)
         base["repo_id"] = base_repo.get("id") if base_repo else None
 
+        return record
+
 
 class CommitComments(SemiIncrementalGithubStream):
     object_fields = ("user",)
@@ -327,16 +329,14 @@ class CommitComments(SemiIncrementalGithubStream):
 class IssueMilestones(SemiIncrementalGithubStream):
     should_break_if_sorter = True
     object_fields = ("creator",)
+    stream_base_params = {
+        "state": "all",
+        "sort": "updated",
+        "direction": "desc",
+    }
 
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/milestones"
-
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
-        params["state"] = "all"
-        params["sort"] = "updated"
-        params["direction"] = "desc"
-        return params
 
 
 class Stargazers(SemiIncrementalGithubStream):
@@ -354,11 +354,9 @@ class Stargazers(SemiIncrementalGithubStream):
 
 class Projects(SemiIncrementalGithubStream):
     object_fields = ("creator",)
-
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
-        params["state"] = "all"
-        return params
+    stream_base_params = {
+        "state": "all",
+    }
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         headers = super().request_headers(**kwargs)
@@ -384,18 +382,13 @@ class IssueEvents(SemiIncrementalGithubStream):
 
 class Comments(IncrementalGithubStream):
     object_fields = ("user",)
+    stream_base_params = {
+        "sort": "updated",
+        "direction": "desc",
+    }
 
     def path(self, **kwargs) -> str:
         return f"repos/{self.repository}/issues/comments"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["sort"] = "updated"
-        params["direction"] = "desc"
-
-        return params
 
 
 class Commits(IncrementalGithubStream):
@@ -407,13 +400,15 @@ class Commits(IncrementalGithubStream):
     )
 
     def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        super().transform(record=record)
+        record = super().transform(record=record)
 
         # Record of the `commits` stream doesn't have an updated_at/created_at field at the top level (so we could
         # just write `record["updated_at"]` or `record["created_at"]`). Instead each record has such value in
         # `commit.author.date`. So the easiest way is to just enrich the record returned from API with top level
         # field `created_at` and use it as cursor_field.
         record["created_at"] = record["commit"]["author"]["date"]
+
+        return record
 
     def parse_response(
         self,
@@ -425,7 +420,7 @@ class Commits(IncrementalGithubStream):
         for record in response.json():  # GitHub puts records in an array.
             state_value = stream_state.get(self.cursor_field)
 
-            self.transform(record=record)
+            record = self.transform(record=record)
             if not state_value or record.get(self.cursor_field) > state_value:
                 yield record
 
@@ -440,13 +435,8 @@ class Issues(IncrementalGithubStream):
         "labels",
         "assignees",
     )
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["state"] = "all"
-        params["sort"] = "updated"
-        params["direction"] = "desc"
-
-        return params
+    stream_base_params = {
+        "state": "all",
+        "sort": "updated",
+        "direction": "desc",
+    }
