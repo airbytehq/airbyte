@@ -25,16 +25,12 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 import com.google.common.collect.Sets;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
-import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,14 +40,13 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class DefaultConfigPersistenceTest {
+class FileSystemConfigPersistenceTest {
 
   public static final UUID UUID_1 = new UUID(0, 1);
   public static final StandardSourceDefinition SOURCE_1 = new StandardSourceDefinition();
 
   static {
-    SOURCE_1.withSourceDefinitionId(UUID_1)
-        .withName("apache storm");
+    SOURCE_1.withSourceDefinitionId(UUID_1).withName("apache storm");
   }
 
   public static final UUID UUID_2 = new UUID(0, 2);
@@ -59,21 +54,16 @@ class DefaultConfigPersistenceTest {
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
 
   static {
-    SOURCE_2.withSourceDefinitionId(UUID_2)
-        .withName("apache storm");
+    SOURCE_2.withSourceDefinitionId(UUID_2).withName("apache storm");
   }
 
-  private Path rootPath;
-  private JsonSchemaValidator schemaValidator;
-
-  private DefaultConfigPersistence configPersistence;
+  private FileSystemConfigPersistence configPersistence;
 
   @BeforeEach
   void setUp() throws IOException {
-    schemaValidator = mock(JsonSchemaValidator.class);
-    rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), DefaultConfigPersistenceTest.class.getName());
+    final Path rootPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), FileSystemConfigPersistenceTest.class.getName());
 
-    configPersistence = new DefaultConfigPersistence(rootPath, schemaValidator);
+    configPersistence = new FileSystemConfigPersistence(rootPath);
   }
 
   @Test
@@ -115,18 +105,6 @@ class DefaultConfigPersistenceTest {
     assertEquals(
         standardSync,
         configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, UUID_1.toString(), StandardSync.class));
-  }
-
-  @Test
-  void writeConfigInvalidConfig() throws JsonValidationException {
-    StandardSourceDefinition standardSourceDefinition = SOURCE_1.withName(null);
-
-    doThrow(new JsonValidationException("error")).when(schemaValidator).ensure(any(), any());
-
-    assertThrows(JsonValidationException.class, () -> configPersistence.writeConfig(
-        ConfigSchema.STANDARD_SOURCE_DEFINITION,
-        UUID_1.toString(),
-        standardSourceDefinition));
   }
 
 }
