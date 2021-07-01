@@ -89,10 +89,6 @@ class IncrementalSunshineStream(SunshineStream, ABC):
         # dates are ISOformatted, no need to parse
         return {self.cursor_field: max(latest_state, current_state)}
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        yield from response_json.get(self.data_field, [])
-
 
 class ObjectTypes(SunshineStream):
     def path(self, **kwargs) -> str:
@@ -194,7 +190,7 @@ class ObjectTypePolicies(SunshineStream):
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         response_json = response.json()
-        data = response_json.get(self.data_field, [])
+        data = response_json.get(self.data_field, {})
         # the response does not contain info about parent itself - only rules. Need to add this.
         data["object_type"] = stream_slice["type"]
         yield data

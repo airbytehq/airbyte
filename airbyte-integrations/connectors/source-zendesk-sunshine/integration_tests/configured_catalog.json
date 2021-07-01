@@ -230,40 +230,6 @@
     },
     {
       "stream": {
-        "name": "jobs",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "job_status": {
-              "type": "string"
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string"
-            },
-            "completed_at": {
-              "type": "string"
-            }
-          }
-        },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": [],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "limits",
         "json_schema": {
           "type": "object",
