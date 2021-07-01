@@ -175,7 +175,7 @@
   * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
   * [Founding Developer Evangelist](career-and-open-positions/founding-developer-evangelist.md)
   * [Senior Technical Writer / Editor in Chief](career-and-open-positions/technical-content-writer.md)
-  * [Technical Recruiter](career-and-open-positions/recruiter.md)
+  * [Senior Technical Recruiter](career-and-open-positions/recruiter.md)
 * [Troubleshooting](troubleshooting/README.md)
   * [On Deploying](troubleshooting/on-deploying.md)
   * [On Setting up a New Connection](troubleshooting/new-connection.md)
