@@ -58,6 +58,10 @@ class OktaStream(HttpStream, ABC):
             if cursor_type == "next":
                 parsed_link = parse.urlparse(link)
                 query_params = dict(parse.parse_qsl(parsed_link.query))
+
+                # Typically, the absence of the "next" link header indicates there are more pages to read
+                # However, some streams contain the "next" link header even when there are no more pages to read
+                # See https://developer.okta.com/docs/reference/api-overview/#link-header
                 if self.last_page == query_params:
                     break
                 self.last_page = query_params
