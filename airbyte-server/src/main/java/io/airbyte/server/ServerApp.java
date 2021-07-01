@@ -35,7 +35,7 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.helpers.LogHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DefaultConfigPersistence;
+import io.airbyte.config.persistence.FileSystemConfigPersistence;
 import io.airbyte.config.persistence.PersistenceConstants;
 import io.airbyte.db.Database;
 import io.airbyte.db.Databases;
@@ -187,7 +187,7 @@ public class ServerApp {
     LOGGER.info("configRoot = " + configRoot);
 
     LOGGER.info("Creating config repository...");
-    final ConfigRepository configRepository = new ConfigRepository(new DefaultConfigPersistence(configRoot));
+    final ConfigRepository configRepository = new ConfigRepository(FileSystemConfigPersistence.createWithValidation(configRoot));
 
     // hack: upon installation we need to assign a random customerId so that when
     // tracking we can associate all action with the correct anonymous id.
