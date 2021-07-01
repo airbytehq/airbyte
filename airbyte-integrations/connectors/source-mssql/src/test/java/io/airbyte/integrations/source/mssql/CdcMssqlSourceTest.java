@@ -207,6 +207,7 @@ public class CdcMssqlSourceTest {
     executeQuery(String.format("USE " + dbName + "\n" + "CREATE TABLE %s.%s(%s INT %s, %s INT, %s VARCHAR(200));",
         schema, table, COL_ID, primaryKeyString, COL_MAKE_ID, COL_MODEL));
 
+    // TODO: this is still failing on occasion!
     // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still spinning up
     // therefore looping with query to check if it has started (with timeout in case something is wrong)
     // Question for reviewer: is there a better way to do this?

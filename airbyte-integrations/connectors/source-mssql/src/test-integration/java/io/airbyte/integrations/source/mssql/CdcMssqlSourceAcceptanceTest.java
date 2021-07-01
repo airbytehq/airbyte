@@ -170,6 +170,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
         SCHEMA_NAME, STREAM_NAME2));
 
+    // TODO: this is still failing on occasion!
     // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still spinning up
     // therefore looping with query to check if it has started (with timeout in case something is wrong)
     long waitMinutes = 5;
