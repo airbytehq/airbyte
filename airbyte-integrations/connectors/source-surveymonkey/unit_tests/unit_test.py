@@ -25,49 +25,39 @@
 import json
 
 import pendulum
-import vcr
-from airbyte_cdk.models import SyncMode
-from source_surveymonkey import SourceSurveymonkey
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from source_surveymonkey.streams import Surveys
+
+test_parameters = {
+    "base_date": "2021-06-10T11:02:01",
+    "lesser_dates": ["2021-06-09T11:02:01", "2021-05-10T11:02:01", "2020-06-10T11:02:01"],  # lesser than base date
+    "bigger_dates": ["2021-06-10T11:02:02", "2025-06-10T11:02:01", "2021-08-10T11:02:01"],  # bigger than base date
+}
 
 
 def test_get_updated_state_unit():
-    source = SourceSurveymonkey()
-    config = json.load(open("secrets/config.json"))
-    streams = source.streams(config=config)
-    stream = [i for i in streams if i.__class__.__name__ == "Surveys"][0]
+    config = json.load(open("secrets/config.json"))  # not used but required as __init__ arguments
+    authenticator = TokenAuthenticator(token=config["access_token"])
+    start_date = pendulum.parse(config["start_date"])
+    stream = Surveys(authenticator=authenticator, start_date=start_date)
 
     record = {"title": "Market Research - Product Testing Template", "date_modified": "2021-06-08T18:09:00", "id": "306079584"}
 
-    current_state = {"date_modified": "2021-06-10T11:02:01"}
+    current_state = {"date_modified": test_parameters["base_date"]}
+
+    # test lesser current state
     expected_state = current_state
-    assert stream.get_updated_state(current_state, record) == expected_state
+    for lesser_date in test_parameters["lesser_dates"]:
+        record = {"title": "test", "id": 100500, "date_modified": lesser_date}
+        assert stream.get_updated_state(current_state, record) == expected_state
 
-    record_with_bigger_date = {"title": "My random title", "date_modified": "2021-06-15T18:09:00", "id": "306079584"}
-    expected_state = {stream.cursor_field: record_with_bigger_date[stream.cursor_field]}
-    assert stream.get_updated_state(current_state, record_with_bigger_date) == expected_state
+    # test bigger current state
+    for bigger_date in test_parameters["bigger_dates"]:
+        record = {"title": "test", "id": 100500, "date_modified": bigger_date}
+        expected_state = {stream.cursor_field: bigger_date}
+        assert stream.get_updated_state(current_state, record) == expected_state
 
-
-def test_get_updated_state():
-    source = SourceSurveymonkey()
-    config = json.load(open("secrets/config.json"))
-    streams = source.streams(config=config)
-    surveys_instance = [i for i in streams if i.__class__.__name__ == "Surveys"][0]
-    survey_responses_instance = [i for i in streams if i.__class__.__name__ == "SurveyResponses"][0]
-    with vcr.use_cassette("pretty_name.yaml", record_mode="new_episodes"):
-        surveys_generator = surveys_instance.read_records(sync_mode=SyncMode.full_refresh)
-        latest_record = next(surveys_generator)
-        survey_id = latest_record["id"]
-        survey_responses_generator = survey_responses_instance.read_records(
-            sync_mode=SyncMode.full_refresh, stream_slice={"survey_id": survey_id}
-        )
-        responses_latest_record = next(survey_responses_generator)
-
-    new_state = surveys_instance.get_updated_state(current_stream_state={}, latest_record=latest_record)
-    new_response_state = survey_responses_instance.get_updated_state(current_stream_state={}, latest_record=responses_latest_record)
-    assert new_state
-    assert len(new_state) == 1
-    pendulum.parse(list(new_state.values())[0])
-    assert new_response_state
-    assert survey_id in new_response_state
-    expected_date_value = list(new_response_state[survey_id].values())[0]
-    pendulum.parse(expected_date_value)
+    # test zero current state
+    record_with_some_date = {"title": "test", "date_modified": "2000-06-15T18:09:00", "id": 1}
+    expected_state = {stream.cursor_field: record_with_some_date[stream.cursor_field]}
+    assert stream.get_updated_state({}, record_with_some_date) == expected_state

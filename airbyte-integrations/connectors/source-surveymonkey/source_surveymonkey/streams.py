@@ -94,14 +94,14 @@ class SurveymonkeyStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
-            yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
         """
         We need to save all the request - to main stream, to details etc. So we need to use all epizodes construct,
         since we need much more to save then 1 request.
         """
+        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
 
 
 class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
