@@ -48,17 +48,22 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemConfigPersistence.class);
   private static final String CONFIG_DIR = "config";
+  private static final String TMP_DIR = "tmp_storage";
 
   private static final Object lock = new Object();
 
+  // root of the file system persistence
   private final Path storageRoot;
+  // root for where configs are stored
+  private final Path configRoot;
 
   public static ConfigPersistence createWithValidation(final Path storageRoot) {
     return new ValidatingConfigPersistence(new FileSystemConfigPersistence(storageRoot));
   }
 
   public FileSystemConfigPersistence(final Path storageRoot) {
-    this.storageRoot = storageRoot.resolve(CONFIG_DIR);
+    this.storageRoot = storageRoot;
+    this.configRoot = storageRoot.resolve(CONFIG_DIR);
   }
 
   @Override
@@ -79,20 +84,16 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   @Override
   public <T> void writeConfig(ConfigSchema configType, String configId, T config) throws IOException {
     synchronized (lock) {
-      writeConfigInternal(configType, configId, config, storageRoot);
+      writeConfigInternal(configType, configId, config);
     }
-  }
-
-  private <T> void writeConfig(ConfigSchema configType, String configId, T config, Path rootOverride) throws JsonValidationException, IOException {
-    writeConfigInternal(configType, configId, config, rootOverride);
   }
 
   private <T> void writeConfigs(ConfigSchema configType, Stream<T> configs, Path rootOverride) {
     configs.forEach(config -> {
-      String id = configType.getId(config);
+      String configId = configType.getId(config);
       try {
-        writeConfig(configType, id, config, rootOverride);
-      } catch (JsonValidationException | IOException e) {
+        writeConfigInternal(configType, configId, config, rootOverride);
+      } catch (IOException e) {
         throw new RuntimeException(e);
       }
     });
@@ -111,13 +112,13 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   private List<String> listDirectories() throws IOException {
-    try (Stream<Path> files = Files.list(storageRoot)) {
+    try (Stream<Path> files = Files.list(configRoot)) {
       return files.map(c -> c.getFileName().toString()).collect(Collectors.toList());
     }
   }
 
   private List<JsonNode> listConfig(String configType) throws IOException {
-    final Path configTypePath = storageRoot.resolve(configType);
+    final Path configTypePath = configRoot.resolve(configType);
     if (!Files.exists(configTypePath)) {
       return Collections.emptyList();
     }
@@ -130,7 +131,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
       final List<JsonNode> configs = Lists.newArrayList();
       for (String id : ids) {
         try {
-          final Path configPath = storageRoot.resolve(configType).resolve(String.format("%s.json", id));
+          final Path configPath = configRoot.resolve(configType).resolve(String.format("%s.json", id));
           if (!Files.exists(configPath)) {
             throw new RuntimeException("Config NotFound");
           }
@@ -147,15 +148,15 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   @Override
-  public <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun)
-      throws IOException {
+  public <T> void replaceAllConfigs(Map<ConfigSchema, Stream<T>> configs, boolean dryRun) throws IOException {
+    final String oldConfigsDir = "config_deprecated";
     // create a new folder
-    String importDirectory = CONFIG_DIR + UUID.randomUUID().toString();
-    Path rootOverride = storageRoot.resolve(importDirectory);
+    final String importDirectory = TMP_DIR + UUID.randomUUID();
+    final Path rootOverride = storageRoot.resolve(importDirectory);
     Files.createDirectories(rootOverride);
 
     // write everything
-    for (Map.Entry<ConfigSchema, Stream<T>> config : configs.entrySet()) {
+    for (final Map.Entry<ConfigSchema, Stream<T>> config : configs.entrySet()) {
       writeConfigs(config.getKey(), config.getValue(), rootOverride);
     }
 
@@ -164,24 +165,20 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
       return;
     }
 
-    boolean configToDeprecated = storageRoot.toFile().renameTo(storageRoot.resolve("config_deprecated").toFile());
-    if (configToDeprecated) {
-      LOGGER.info("Renamed config to config_deprecated successfully");
-    }
-    boolean newConfig = rootOverride.toFile().renameTo(storageRoot.toFile());
-    if (newConfig) {
-      LOGGER.info("Renamed " + importDirectory + " to config successfully");
-    }
+    FileUtils.moveDirectory(configRoot.toFile(), storageRoot.resolve(oldConfigsDir).toFile());
+    LOGGER.info("Renamed config to {} successfully", oldConfigsDir);
 
-    LOGGER.info("Deleting config_deprecated");
-    FileUtils.deleteDirectory(storageRoot.resolve("config_deprecated").toFile());
+    FileUtils.moveDirectory(rootOverride.toFile(), configRoot.toFile());
+    LOGGER.info("Renamed " + importDirectory + " to config successfully");
 
+    FileUtils.deleteDirectory(storageRoot.resolve(oldConfigsDir).toFile());
+    LOGGER.info("Deleted {}", oldConfigsDir);
   }
 
   private <T> T getConfigInternal(ConfigSchema configType, String configId, Class<T> clazz)
       throws ConfigNotFoundException, IOException {
     // validate file with schema
-    final Path configPath = buildConfigPath(configType, configId, storageRoot);
+    final Path configPath = buildConfigPath(configType, configId, configRoot);
     if (!Files.exists(configPath)) {
       throw new ConfigNotFoundException(configType, configId);
     } else {
@@ -190,7 +187,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   private <T> List<T> listConfigsInternal(ConfigSchema configType, Class<T> clazz) throws JsonValidationException, IOException {
-    final Path configTypePath = buildTypePath(configType, storageRoot);
+    final Path configTypePath = buildTypePath(configType, configRoot);
     if (!Files.exists(configTypePath)) {
       return Collections.emptyList();
     }
@@ -216,7 +213,7 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
   }
 
   private <T> void writeConfigInternal(ConfigSchema configType, String configId, T config) throws IOException {
-    writeConfigInternal(configType, configId, config, storageRoot);
+    writeConfigInternal(configType, configId, config, configRoot);
   }
 
   private <T> void writeConfigInternal(ConfigSchema configType, String configId, T config, Path storageRoot) throws IOException {
@@ -227,12 +224,12 @@ public class FileSystemConfigPersistence implements ConfigPersistence {
     Files.writeString(configPath, Jsons.serialize(config));
   }
 
-  private static Path buildConfigPath(ConfigSchema type, String configId, Path storageRootWithConfigDirectory) {
-    return buildTypePath(type, storageRootWithConfigDirectory).resolve(String.format("%s.json", configId));
+  private static Path buildConfigPath(ConfigSchema configType, String configId, Path storageRoot) {
+    return buildTypePath(configType, storageRoot).resolve(String.format("%s.json", configId));
   }
 
-  private static Path buildTypePath(ConfigSchema type, Path storageRootWithConfigDirectory) {
-    return storageRootWithConfigDirectory.resolve(type.toString());
+  private static Path buildTypePath(ConfigSchema configType, Path storageRoot) {
+    return storageRoot.resolve(configType.toString());
   }
 
 }
