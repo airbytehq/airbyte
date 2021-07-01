@@ -322,6 +322,8 @@
   "settings.webhookTestText": "Testing the Webhook will send a “Hello World”. ",
   "settings.yourWebhook": "Your Webhook URL",
   "settings.test": "Test",
+  "settings.notifications": "Notifications",
+  "settings.metrics": "Metrics",
 
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
