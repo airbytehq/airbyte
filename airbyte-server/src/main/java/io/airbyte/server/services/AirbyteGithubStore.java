@@ -74,7 +74,8 @@ public class AirbyteGithubStore {
     try {
       return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
     } catch (IOException e) {
-      LOGGER.warn("Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.");
+      LOGGER.warn(
+          "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.");
       return Collections.emptyList();
     }
   }
@@ -83,7 +84,8 @@ public class AirbyteGithubStore {
     try {
       return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
     } catch (IOException e) {
-      LOGGER.warn("Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.");
+      LOGGER.warn(
+          "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.");
       return Collections.emptyList();
     }
   }

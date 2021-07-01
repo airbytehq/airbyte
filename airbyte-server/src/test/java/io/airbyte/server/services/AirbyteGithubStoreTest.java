@@ -55,6 +55,7 @@ public class AirbyteGithubStoreTest {
   @Nested
   @DisplayName("when no internet")
   class noInternet {
+
     @Test
     void testGetLatestDestinations() throws InterruptedException, IOException {
       webServer.shutdown();
@@ -66,6 +67,7 @@ public class AirbyteGithubStoreTest {
       webServer.shutdown();
       assertEquals(Collections.emptyList(), githubStore.getLatestSources());
     }
+
   }
 
   @Nested
