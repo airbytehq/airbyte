@@ -48,9 +48,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -134,10 +132,15 @@ public class BigQueryDatabase extends SqlDatabase {
     return executeQuery(queryJob);
   }
 
-  public List<Table> getNameSpaceTables(String nameSpace) {
-    Page<Table> tables = bigQuery.listTables(nameSpace);
+  public List<Table> getProjectTables(String projectId) {
     List<Table> tableList = new ArrayList<>();
-    tables.iterateAll().forEach(tableList::add);
+    bigQuery.listDatasets(projectId)
+        .iterateAll()
+        .forEach(dataset ->
+            bigQuery.listTables(dataset.getDatasetId())
+            .iterateAll()
+            .forEach(tableList::add)
+        );
     return tableList;
   }
 
