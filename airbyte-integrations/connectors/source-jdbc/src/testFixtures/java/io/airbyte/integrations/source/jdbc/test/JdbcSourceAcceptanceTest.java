@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.source.jdbc.test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,6 +71,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -283,7 +285,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
   }
 
-  private AirbyteCatalog filterOutOtherSchemas(AirbyteCatalog catalog) {
+  protected AirbyteCatalog filterOutOtherSchemas(AirbyteCatalog catalog) {
     if (supportsSchemas()) {
       final AirbyteCatalog filteredCatalog = Jsons.clone(catalog);
       filteredCatalog.setStreams(filteredCatalog.getStreams()
@@ -344,9 +346,8 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessages);
     List<AirbyteMessage> expectedMessages = getTestMessages();
-    assertTrue(expectedMessages.size() == actualMessages.size());
-    assertTrue(expectedMessages.containsAll(actualMessages));
-    assertTrue(actualMessages.containsAll(expectedMessages));
+    assertThat(expectedMessages, Matchers.containsInAnyOrder(actualMessages.toArray()));
+    assertThat(actualMessages, Matchers.containsInAnyOrder(expectedMessages.toArray()));
   }
 
   @Test
@@ -777,7 +778,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   // get catalog and perform a defensive copy.
-  private ConfiguredAirbyteCatalog getConfiguredCatalogWithOneStream(final String defaultNamespace) {
+  protected ConfiguredAirbyteCatalog getConfiguredCatalogWithOneStream(final String defaultNamespace) {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers.toDefaultConfiguredCatalog(getCatalog(defaultNamespace));
     // Filter to only keep the main stream name as configured stream
     catalog.withStreams(
@@ -786,7 +787,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return catalog;
   }
 
-  private AirbyteCatalog getCatalog(final String defaultNamespace) {
+  protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
@@ -815,7 +816,7 @@ public abstract class JdbcSourceAcceptanceTest {
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
-  private List<AirbyteMessage> getTestMessages() {
+  protected List<AirbyteMessage> getTestMessages() {
     return Lists.newArrayList(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
@@ -838,7 +839,7 @@ public abstract class JdbcSourceAcceptanceTest {
                         COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
   }
 
-  private ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
+  protected ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
     final String tableNameWithSpaces = TABLE_NAME_WITH_SPACES + "2";
     final String streamName2 = tableNameWithSpaces;
 
@@ -908,7 +909,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return supportsSchemas() ? SCHEMA_NAME : null;
   }
 
-  private String getDefaultNamespace() {
+  protected String getDefaultNamespace() {
     // mysql does not support schemas. it namespaces using database names instead.
     if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
       return config.get("database").asText();
@@ -917,7 +918,7 @@ public abstract class JdbcSourceAcceptanceTest {
     }
   }
 
-  private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
+  protected static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
     for (AirbyteMessage actualMessage : messages) {
       if (actualMessage.getRecord() != null) {
         actualMessage.getRecord().setEmittedAt(null);
