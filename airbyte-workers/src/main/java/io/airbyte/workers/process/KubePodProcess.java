@@ -342,7 +342,7 @@ public class KubePodProcess extends Process {
         .withMountPath(TERMINATION_DIR)
         .build();
 
-    Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));;
+    Container init = getInit(usesStdin, List.of(pipeVolumeMount, configVolumeMount));
     Container main = getMain(
         image,
         usesStdin,

@@ -28,11 +28,6 @@ services:
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     volumes:
       - db:/var/lib/postgresql/data
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 4G
   seed:
     image: airbyte/seed:${VERSION}
     container_name: airbyte-data-seed
@@ -75,21 +70,11 @@ services:
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
       - data:${CONFIG_ROOT}
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 2G
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging
     container_name: airbyte-server
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 2G
     environment:
       - WEBAPP_URL=${WEBAPP_URL}
       - WAIT_BEFORE_HOSTS=5
@@ -134,11 +119,6 @@ services:
       - FULLSTORY=${FULLSTORY:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 512M
   airbyte-temporal:
     image: temporalio/auto-setup:1.7.0
     logging: *default-logging
@@ -155,11 +135,6 @@ services:
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
     volumes:
       - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 512M
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
