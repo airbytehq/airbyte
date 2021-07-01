@@ -154,7 +154,8 @@ public class WebBackendConnectionsHandler {
         .schedule(connectionRead.getSchedule())
         .source(source)
         .destination(destination)
-        .operations(operations.getOperations());
+        .operations(operations.getOperations())
+        .resourceRequirements(connectionRead.getResourceRequirements());
   }
 
   private JobReadList getSyncJobs(ConnectionRead connectionRead) throws IOException {
@@ -270,7 +271,7 @@ public class WebBackendConnectionsHandler {
   private List<UUID> createOperations(WebBackendConnectionCreate webBackendConnectionCreate)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<UUID> operationIds = new ArrayList<>();
-    for (var operationCreate : webBackendConnectionCreate.getWithOperations()) {
+    for (var operationCreate : webBackendConnectionCreate.getOperations()) {
       operationIds.add(operationsHandler.createOperation(operationCreate).getOperationId());
     }
     return operationIds;
@@ -331,6 +332,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.syncCatalog(webBackendConnectionCreate.getSyncCatalog());
     connectionCreate.schedule(webBackendConnectionCreate.getSchedule());
     connectionCreate.status(webBackendConnectionCreate.getStatus());
+    connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
 
     return connectionCreate;
   }
@@ -347,6 +349,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.syncCatalog(webBackendConnectionUpdate.getSyncCatalog());
     connectionUpdate.schedule(webBackendConnectionUpdate.getSchedule());
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
+    connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
 
     return connectionUpdate;
   }

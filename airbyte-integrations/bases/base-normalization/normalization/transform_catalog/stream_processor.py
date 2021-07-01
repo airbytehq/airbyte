@@ -389,9 +389,9 @@ from {{ from_table }}
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
             return column_name
         elif is_array(definition["type"]):
-            return self.cast_property_type_as_array(property_name, column_name)
+            return column_name
         elif is_object(definition["type"]):
-            sql_type = self.cast_property_type_as_object(property_name, column_name)
+            sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
         elif is_boolean(definition["type"]):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
@@ -406,18 +406,6 @@ from {{ from_table }}
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
         return f"cast({column_name} as {sql_type}) as {column_name}"
-
-    def cast_property_type_as_array(self, property_name: str, column_name: str) -> str:
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
-            # TODO build a struct/record type from properties JSON schema
-            pass
-        return column_name
-
-    def cast_property_type_as_object(self, property_name: str, column_name: str) -> str:
-        if self.destination_type.value == DestinationType.BIGQUERY.value:
-            # TODO build a struct/record type from properties JSON schema
-            pass
-        return jinja_call("type_json()")
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> str:
         template = Template(
@@ -502,14 +490,21 @@ select
     ) as _airbyte_end_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} desc, _airbyte_emitted_at desc
-    ) is null as _airbyte_active_row,
+        order by {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
+    ) is null {{ cdc_active_row }}as _airbyte_active_row,
     _airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
         """
         )
+
+        cdc_active_row_pattern = ""
+        cdc_updated_order_pattern = ""
+        if "_ab_cdc_deleted_at" in column_names.keys():
+            cdc_active_row_pattern = "and _ab_cdc_deleted_at is null "
+            cdc_updated_order_pattern = ", _ab_cdc_updated_at desc"
+
         sql = template.render(
             parent_hash_id=self.parent_hash_id(),
             fields=self.list_fields(column_names),
@@ -518,6 +513,8 @@ from {{ from_table }}
             hash_id=self.hash_id(),
             from_table=jinja_call(from_table),
             sql_table_comment=self.sql_table_comment(include_from_table=True),
+            cdc_active_row=cdc_active_row_pattern,
+            cdc_updated_at_order=cdc_updated_order_pattern,
         )
         return sql
 

@@ -90,7 +90,7 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
         yield record_value, state_value
 
 
-@pytest.mark.timeout(20 * 60)
+@pytest.mark.default_timeout(20 * 60)
 class TestIncremental(BaseTest):
     def test_two_sequential_reads(self, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner):
         stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}

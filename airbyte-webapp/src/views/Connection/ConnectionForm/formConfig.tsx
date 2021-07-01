@@ -20,11 +20,15 @@ import {
 import { DropDownRow } from "components";
 import FrequencyConfig from "config/FrequencyConfig.json";
 import { DestinationDefinitionSpecification } from "core/resources/DestinationDefinitionSpecification";
+import { Connection, ScheduleProperties } from "core/resources/Connection";
+import { ConnectionNamespaceDefinition } from "core/domain/connection";
 
 type FormikConnectionFormValues = {
-  frequency: string;
+  schedule?: ScheduleProperties | null;
   prefix: string;
   syncCatalog: SyncSchema;
+  namespaceDefinition: ConnectionNamespaceDefinition;
+  namespaceFormat: string;
   transformations?: Transformation[];
   normalization?: NormalizationType;
 };
@@ -49,55 +53,77 @@ const DEFAULT_TRANSFORMATION: Transformation = {
   },
 };
 
-const connectionValidationSchema = yup.object<ConnectionFormValues>({
-  frequency: yup.string().required("form.empty.error"),
-  prefix: yup.string(),
-  syncCatalog: yup.object<SyncSchema>({
-    streams: yup.array().of(
-      yup.object<SyncSchemaStream>({
-        id: yup
-          .string()
-          // This is required to get rid of id fields we are using to detect stream for edition
-          .when("$isRequest", (isRequest: boolean, schema: yup.StringSchema) =>
-            isRequest ? schema.strip(true) : schema
-          ),
-        stream: yup.object(),
-        // @ts-ignore
-        config: yup.object().test({
-          name: "connectionSchema.config.validator",
-          // eslint-disable-next-line no-template-curly-in-string
-          message: "${path} is wrong",
-          test: function (value: AirbyteStreamConfiguration) {
-            if (!value.selected) {
-              return true;
-            }
-            if (DestinationSyncMode.Dedupted === value.destinationSyncMode) {
-              if (value.primaryKey.length === 0) {
-                return this.createError({
-                  message: "connectionForm.primaryKey.required",
-                  path: `schema.streams[${this.parent.id}].config.primaryKey`,
-                });
-              }
-            }
-
-            if (SyncMode.Incremental === value.syncMode) {
-              if (
-                !this.parent.stream.sourceDefinedCursor &&
-                value.cursorField.length === 0
-              ) {
-                return this.createError({
-                  message: "connectionForm.cursorField.required",
-                  path: `schema.streams[${this.parent.id}].config.cursorField`,
-                });
-              }
-            }
-            return true;
-          },
-        }),
+const connectionValidationSchema = yup
+  .object({
+    schedule: yup
+      .object({
+        units: yup.number().required("form.empty.error"),
+        timeUnit: yup.string().required("form.empty.error"),
       })
-    ),
-  }),
-});
+      .nullable()
+      .defined("form.empty.error"),
+    namespaceDefinition: yup
+      .string()
+      .oneOf([
+        ConnectionNamespaceDefinition.Source,
+        ConnectionNamespaceDefinition.Destination,
+        ConnectionNamespaceDefinition.CustomFormat,
+      ])
+      .required("form.empty.error"),
+    namespaceFormat: yup.string().when("namespaceDefinition", {
+      is: ConnectionNamespaceDefinition.CustomFormat,
+      then: yup.string().required("form.empty.error"),
+    }),
+    prefix: yup.string(),
+    syncCatalog: yup.object({
+      streams: yup.array().of(
+        yup.object({
+          id: yup
+            .string()
+            // This is required to get rid of id fields we are using to detect stream for edition
+            .when(
+              "$isRequest",
+              (isRequest: boolean, schema: yup.StringSchema) =>
+                isRequest ? schema.strip(true) : schema
+            ),
+          stream: yup.object(),
+          // @ts-ignore
+          config: yup.object().test({
+            name: "connectionSchema.config.validator",
+            // eslint-disable-next-line no-template-curly-in-string
+            message: "${path} is wrong",
+            test: function (value: AirbyteStreamConfiguration) {
+              if (!value.selected) {
+                return true;
+              }
+              if (DestinationSyncMode.Dedupted === value.destinationSyncMode) {
+                if (value.primaryKey.length === 0) {
+                  return this.createError({
+                    message: "connectionForm.primaryKey.required",
+                    path: `schema.streams[${this.parent.id}].config.primaryKey`,
+                  });
+                }
+              }
+
+              if (SyncMode.Incremental === value.syncMode) {
+                if (
+                  !this.parent.stream.sourceDefinedCursor &&
+                  value.cursorField.length === 0
+                ) {
+                  return this.createError({
+                    message: "connectionForm.cursorField.required",
+                    path: `schema.streams[${this.parent.id}].config.cursorField`,
+                  });
+                }
+              }
+              return true;
+            },
+          }),
+        })
+      ),
+    }),
+  })
+  .noUnknown();
 
 /**
  * Returns {@link Operation}[]
@@ -212,30 +238,27 @@ const useInitialSchema = (schema: SyncSchema): SyncSchema =>
     [schema.streams]
   );
 
-const useInitialValues = (props: {
-  syncCatalog: SyncSchema;
-  destDefinition: DestinationDefinitionSpecification;
-  operations?: Operation[];
-  prefixValue?: string;
-  isEditMode?: boolean;
-  frequencyValue?: string;
-}) => {
-  const {
-    syncCatalog,
-    frequencyValue,
-    prefixValue,
-    isEditMode,
-    destDefinition,
-    operations = [],
-  } = props;
-  const initialSchema = useInitialSchema(syncCatalog);
+const useInitialValues = (
+  connection:
+    | Connection
+    | (Partial<Connection> &
+        Pick<Connection, "syncCatalog" | "source" | "destination">),
+  destDefinition: DestinationDefinitionSpecification,
+  isEditMode?: boolean
+) => {
+  const initialSchema = useInitialSchema(connection.syncCatalog);
 
   return useMemo<FormikConnectionFormValues>(() => {
     const initialValues: FormikConnectionFormValues = {
       syncCatalog: initialSchema,
-      frequency: frequencyValue || "",
-      prefix: prefixValue || "",
+      schedule: connection.schedule,
+      prefix: connection.prefix || "",
+      namespaceDefinition:
+        connection.namespaceDefinition ?? ConnectionNamespaceDefinition.Source,
+      namespaceFormat: connection.namespaceFormat ?? "${SOURCE_NAMESPACE}",
     };
+
+    const { operations = [] } = connection;
 
     if (destDefinition.supportsDbt) {
       initialValues.transformations =
@@ -260,16 +283,8 @@ const useInitialValues = (props: {
     }
 
     return initialValues;
-  }, [
-    initialSchema,
-    frequencyValue,
-    prefixValue,
-    isEditMode,
-    destDefinition,
-    operations,
-  ]);
+  }, [initialSchema, connection, isEditMode, destDefinition]);
 };
-
 const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
   const formatMessage = useIntl().formatMessage;
 
@@ -289,7 +304,7 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
                 }
               ),
       })),
-    [formatMessage]
+    []
   );
 };
 
