@@ -31,6 +31,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
@@ -87,6 +88,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
+                        final ResourceRequirements resourceRequirements,
                         final String... args)
       throws WorkerException {
     try {
@@ -123,6 +125,21 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add("--entrypoint");
         cmd.add(entrypoint);
       }
+      if (resourceRequirements != null) {
+        if (!Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
+          cmd.add(String.format("--cpu-shares=%s", resourceRequirements.getCpuRequest()));
+        }
+        if (!Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
+          cmd.add(String.format("--cpus=%s", resourceRequirements.getCpuLimit()));
+        }
+        if (!Strings.isNullOrEmpty(resourceRequirements.getMemoryRequest())) {
+          cmd.add(String.format("--memory-reservation=%s", resourceRequirements.getMemoryRequest()));
+        }
+        if (!Strings.isNullOrEmpty(resourceRequirements.getMemoryLimit())) {
+          cmd.add(String.format("--memory=%s", resourceRequirements.getMemoryLimit()));
+        }
+      }
+
       cmd.add(imageName);
       cmd.addAll(Arrays.asList(args));
 
