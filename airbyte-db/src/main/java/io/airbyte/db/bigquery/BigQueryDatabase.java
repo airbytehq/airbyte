@@ -27,7 +27,6 @@ package io.airbyte.db.bigquery;
 import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.api.gax.paging.Page;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -91,6 +90,10 @@ public class BigQueryDatabase extends SqlDatabase {
     LOGGER.info("BigQuery successfully finished execution SQL: " + sql);
   }
 
+  public Stream<JsonNode> query(String sql, QueryParameterValue... params) throws Exception {
+    return query(sql, (params == null ? Collections.emptyList() : Arrays.asList(params)));
+  }
+
   @Override
   public Stream<JsonNode> query(String sql, String... params) throws Exception {
     List<QueryParameterValue> parameterValueList;
@@ -100,15 +103,18 @@ public class BigQueryDatabase extends SqlDatabase {
       parameterValueList = Arrays.stream(params).map(param -> QueryParameterValue.newBuilder().setValue(param).setType(
           StandardSQLTypeName.STRING).build()).collect(Collectors.toList());
 
-    final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, parameterValueList));
+    return query(sql, parameterValueList);
+  }
+
+  public Stream<JsonNode> query(String sql, List<QueryParameterValue> params) throws Exception {
+    final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, params));
 
     if (result.getLeft() != null) {
       FieldList fieldList = result.getLeft().getQueryResults().getSchema().getFields();
       return Streams.stream(result.getLeft().getQueryResults().iterateAll())
           .map(fieldValues -> BigQueryUtils.rowToJson(fieldValues, fieldList));
     } else
-      throw new Exception("Failed to execute query " + sql + (params != null ? " with params " + Arrays
-          .toString(params) : "") + ". Error: " + result.getRight());
+      throw new Exception("Failed to execute query " + sql + (params != null && !params.isEmpty() ? " with params " + params : "") + ". Error: " + result.getRight());
   }
 
   @Override
@@ -143,7 +149,6 @@ public class BigQueryDatabase extends SqlDatabase {
         );
     return tableList;
   }
-
 
   private ImmutablePair<Job, String> executeQuery(Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);

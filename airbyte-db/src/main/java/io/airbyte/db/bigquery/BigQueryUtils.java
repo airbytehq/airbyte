@@ -34,6 +34,7 @@ import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
@@ -84,13 +85,17 @@ public class BigQueryUtils {
   }
 
   public static JsonSchemaPrimitive getType(StandardSQLTypeName bigQueryType) {
-    return
-        switch (bigQueryType) {
-          case BOOL -> JsonSchemaPrimitive.BOOLEAN;
-          case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaPrimitive.NUMBER;
-          case STRING, BYTES, TIMESTAMP, DATE, TIME, DATETIME -> JsonSchemaPrimitive.STRING;
-          default -> JsonSchemaPrimitive.STRING;
+    return switch (bigQueryType) {
+      case BOOL -> JsonSchemaPrimitive.BOOLEAN;
+      case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaPrimitive.NUMBER;
+      case STRING, BYTES, TIMESTAMP, DATE, TIME, DATETIME -> JsonSchemaPrimitive.STRING;
+      default -> JsonSchemaPrimitive.STRING;
     };
+  }
+
+  // @TODO probably we need a reverse value transformation. especially for time and date types.
+  public static QueryParameterValue getQueryParameter(StandardSQLTypeName paramType, String paramValue) {
+    return QueryParameterValue.newBuilder().setType(paramType).setValue(paramValue).build();
   }
 
 }

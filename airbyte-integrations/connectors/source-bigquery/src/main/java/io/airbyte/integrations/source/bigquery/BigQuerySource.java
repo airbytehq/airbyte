@@ -25,22 +25,24 @@
 package io.airbyte.integrations.source.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Databases;
 import io.airbyte.db.bigquery.BigQueryDatabase;
 import io.airbyte.db.bigquery.BigQueryUtils;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.SourceJdbcUtils;
 import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +96,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) throws Exception {
-    List<Table> nameSpaceTables = database.getNameSpaceTables(dbConfig.get(CONFIG_PROJECT_ID).asText());
+    List<Table> nameSpaceTables = database.getProjectTables(dbConfig.get(CONFIG_PROJECT_ID).asText());
 
     return null;
   }
@@ -111,7 +113,22 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(BigQueryDatabase database, List<String> columnNames, String schemaName, String tableName, String cursorField, StandardSQLTypeName cursorFieldType, String cursor) {
-    return null;
+    return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s >= @cursor",
+        enquoteIdentifierList(columnNames),
+        getFullTableName(schemaName, tableName),
+        cursorField),
+        BigQueryUtils.getQueryParameter(cursorFieldType, cursor));
+  }
+
+  private AutoCloseableIterator<JsonNode> queryTableWithParams(BigQueryDatabase database, String sqlQuery, QueryParameterValue... params) {
+    return AutoCloseableIterators.lazyIterator(() -> {
+      try {
+        final Stream<JsonNode> stream = database.query(sqlQuery, params);
+        return AutoCloseableIterators.fromStream(stream);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   public static void main(String[] args) throws Exception {
