@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "stores",
+        "name": "languages",
         "json_schema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
@@ -10,316 +10,28 @@
     "id": {
       "type": "integer"
     },
-    "id_country": {
+    "name": {
       "type": "string"
     },
-    "id_state": {
+    "iso_code": {
       "type": "string"
     },
-    "hours": {
+    "locale": {
       "type": "string"
     },
-    "postcode": {
-      "type": "string"
-    },
-    "city": {
-      "type": "string"
-    },
-    "latitude": {
-      "type": "string"
-    },
-    "longitude": {
-      "type": "string"
-    },
-    "phone": {
-      "type": "string"
-    },
-    "fax": {
-      "type": "string"
-    },
-    "email": {
+    "language_code": {
       "type": "string"
     },
     "active": {
       "type": "string"
     },
-    "date_add": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "date_upd": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "name": {
+    "is_rtl": {
       "type": "string"
     },
-    "address1": {
+    "date_format_lite": {
       "type": "string"
     },
-    "address2": {
-      "type": "string"
-    },
-    "note": {
-      "type": "string"
-    }
-  }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "suppliers",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "link_rewrite": {
-      "type": "string"
-    },
-    "name": {
-      "type": "string"
-    },
-    "active": {
-      "type": "string"
-    },
-    "date_add": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "date_upd": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "description": {
-      "type": "string"
-    },
-    "meta_title": {
-      "type": "string"
-    },
-    "meta_description": {
-      "type": "string"
-    },
-    "meta_keywords": {
-      "type": "string"
-    }
-  }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "tags",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "id_lang": {
-      "type": "string"
-    },
-    "name": {
-      "type": "string"
-    }
-  }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "tax_rule_groups",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "name": {
-      "type": "string"
-    },
-    "active": {
-      "type": "string"
-    },
-    "deleted": {
-      "type": "string"
-    },
-    "date_add": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "date_upd": {
-      "type": "string",
-      "format": "date-time"
-    }
-  }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "tax_rules",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "id_tax_rules_group": {
-      "type": "string"
-    },
-    "id_state": {
-      "type": "string"
-    },
-    "id_country": {
-      "type": "string"
-    },
-    "zipcode_from": {
-      "type": "string"
-    },
-    "zipcode_to": {
-      "type": "string"
-    },
-    "id_tax": {
-      "type": "string"
-    },
-    "behavior": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    }
-  }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "taxes",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "rate": {
-      "type": "string"
-    },
-    "active": {
-      "type": "string"
-    },
-    "deleted": {
-      "type": "string"
-    },
-    "name": {
-      "type": "string"
-    }
-  }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "translated_configurations",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "value": {
-      "type": "string"
-    },
-    "date_add": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "date_upd": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "name": {
-      "type": "string"
-    },
-    "id_shop_group": {
-      "type": "string"
-    },
-    "id_shop": {
-      "type": "string"
-    }
-  }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "weight_ranges",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "id_carrier": {
-      "type": "string"
-    },
-    "delimiter1": {
-      "type": "string"
-    },
-    "delimiter2": {
-      "type": "string"
-    }
-  }
-        },
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "zones",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "name": {
-      "type": "string"
-    },
-    "active": {
+    "date_format_full": {
       "type": "string"
     }
   }

@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,8 +20,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 from abc import ABC
+from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
@@ -34,39 +37,69 @@ class PrestaShopStream(HttpStream, ABC):
 
     primary_key = "id"
     data_key = None
+    limit = 50
 
     def __init__(self, url: str, **kwargs):
         super(PrestaShopStream, self).__init__(**kwargs)
         self._url = url
+        self._offset = 0
+        self._has_next_page = False
 
     @property
     def url_base(self) -> str:
         return f"{self._url}/api/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+        return self._has_next_page
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        base_params = {
-            "output_format": "JSON",
-            "display": "full"
-        }
+        base_params = {"output_format": "JSON", "display": "full", "limit": ",".join([str(self._offset), str(self.limit)])}
         return base_params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         data_key = self.data_key if self.data_key else self.name
-        records = response_json.get(data_key, [])
-        if isinstance(records, list):
+        # pagination can be implemented via limit parameter
+        # https://devdocs.prestashop.com/1.7/webservice/tutorials/advanced-use/additional-list-parameters/#limit-parameter
+        # when records exist API returns dict, in another case empty list
+        if isinstance(response_json, dict):
+            records = response_json.get(data_key, [])
+            # as API response doesn't contain next_page parameter, we can only check records count to set offset
+            record_count = len(records)
+            self._has_next_page = record_count != 0
+            self._offset += record_count
             yield from records
         else:
-            yield records
+            self._has_next_page = False
 
 
-class Addresses(PrestaShopStream):
+class IncrementalPrestaShopStream(PrestaShopStream, ABC):
+    cursor_field = "date_upd"
+
+    def __init__(self, url: str, **kwargs):
+        super(IncrementalPrestaShopStream, self).__init__(url, **kwargs)
+        self._end_date = datetime.now()
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_record_state = latest_record.get(self.cursor_field)
+        return {self.cursor_field: max(latest_record_state, current_stream_state.get(self.cursor_field, latest_record_state))}
+
+    def request_params(self, stream_state=None, **kwargs):
+        stream_state = stream_state or {}
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        start_date = stream_state.get(self.cursor_field)
+        # for filtering interval operator is used
+        # https://devdocs.prestashop.com/1.7/webservice/tutorials/advanced-use/additional-list-parameters/#filter-parameter
+        if start_date:
+            params["filter[date_upd]"] = f"[{start_date},{self._end_date}]"
+        params["date"] = 1
+        params["sort"] = f"[{self.cursor_field}_ASC]"
+        return params
+
+
+class Addresses(IncrementalPrestaShopStream):
     """
     The Customer, Manufacturer and Customer addresses
     https://devdocs.prestashop.com/1.7/webservice/resources/addresses/
@@ -86,7 +119,7 @@ class Carriers(PrestaShopStream):
         return "carriers"
 
 
-class CartRules(PrestaShopStream):
+class CartRules(IncrementalPrestaShopStream):
     """
     Cart rules management (discount, promotions, …)
     https://devdocs.prestashop.com/1.7/webservice/resources/cart_rules/
@@ -96,7 +129,7 @@ class CartRules(PrestaShopStream):
         return "cart_rules"
 
 
-class Carts(PrestaShopStream):
+class Carts(IncrementalPrestaShopStream):
     """
     Customer’s carts
     https://devdocs.prestashop.com/1.7/webservice/resources/carts/
@@ -106,7 +139,7 @@ class Carts(PrestaShopStream):
         return "carts"
 
 
-class Categories(PrestaShopStream):
+class Categories(IncrementalPrestaShopStream):
     """
     The product categories
     https://devdocs.prestashop.com/1.7/webservice/resources/categories/
@@ -126,7 +159,7 @@ class Combinations(PrestaShopStream):
         return "combinations"
 
 
-class Configurations(PrestaShopStream):
+class Configurations(IncrementalPrestaShopStream):
     """
     Shop configuration, used to store miscellaneous parameters from the shop
     (maintenance, multi shop, email settings, …)
@@ -177,7 +210,7 @@ class Currencies(PrestaShopStream):
         return "currencies"
 
 
-class CustomerMessages(PrestaShopStream):
+class CustomerMessages(IncrementalPrestaShopStream):
     """
     Customer services messages
     https://devdocs.prestashop.com/1.7/webservice/resources/customer_messages/
@@ -187,7 +220,7 @@ class CustomerMessages(PrestaShopStream):
         return "customer_messages"
 
 
-class CustomerThreads(PrestaShopStream):
+class CustomerThreads(IncrementalPrestaShopStream):
     """
     Customer services threads
     https://devdocs.prestashop.com/1.7/webservice/resources/customer_threads/
@@ -197,7 +230,7 @@ class CustomerThreads(PrestaShopStream):
         return "customer_threads"
 
 
-class Customers(PrestaShopStream):
+class Customers(IncrementalPrestaShopStream):
     """
     The e-shop’s customers
     https://devdocs.prestashop.com/1.7/webservice/resources/customers/
@@ -267,7 +300,7 @@ class Languages(PrestaShopStream):
         return "languages"
 
 
-class Manufacturers(PrestaShopStream):
+class Manufacturers(IncrementalPrestaShopStream):
     """
     The product manufacturers
     https://devdocs.prestashop.com/1.7/webservice/resources/manufacturers/
@@ -277,21 +310,25 @@ class Manufacturers(PrestaShopStream):
         return "manufacturers"
 
 
-class Messages(PrestaShopStream):
+class Messages(IncrementalPrestaShopStream):
     """
     The customers messages
     https://devdocs.prestashop.com/1.7/webservice/resources/messages/
     """
 
+    cursor_field = "date_add"
+
     def path(self, **kwargs) -> str:
         return "messages"
 
 
-class OrderCarriers(PrestaShopStream):
+class OrderCarriers(IncrementalPrestaShopStream):
     """
     The order carriers
     https://devdocs.prestashop.com/1.7/webservice/resources/order_carriers/
     """
+
+    cursor_field = "date_add"
 
     def path(self, **kwargs) -> str:
         return "order_carriers"
@@ -307,41 +344,48 @@ class OrderDetails(PrestaShopStream):
         return "order_details"
 
 
-class OrderHistories(PrestaShopStream):
+class OrderHistories(IncrementalPrestaShopStream):
     """
     The Order histories
     https://devdocs.prestashop.com/1.7/webservice/resources/order_histories/
     """
 
+    cursor_field = "date_add"
+
     def path(self, **kwargs) -> str:
         return "order_histories"
 
 
-class OrderInvoices(PrestaShopStream):
+class OrderInvoices(IncrementalPrestaShopStream):
     """
     The Order invoices
     https://devdocs.prestashop.com/1.7/webservice/resources/order_invoices/
     """
 
+    cursor_field = "date_add"
+
     def path(self, **kwargs) -> str:
         return "order_invoices"
 
 
-class OrderPayments(PrestaShopStream):
+class OrderPayments(IncrementalPrestaShopStream):
     """
     The Order payments
     https://devdocs.prestashop.com/1.7/webservice/resources/order_payments/
     """
 
+    cursor_field = "date_add"
+
     def path(self, **kwargs) -> str:
         return "order_payments"
 
 
-class OrderSlip(PrestaShopStream):
+class OrderSlip(IncrementalPrestaShopStream):
     """
     The Order slips (used for refund)
     https://devdocs.prestashop.com/1.7/webservice/resources/order_slip/
     """
+
     data_key = "order_slips"
 
     def path(self, **kwargs) -> str:
@@ -358,7 +402,7 @@ class OrderStates(PrestaShopStream):
         return "order_states"
 
 
-class Orders(PrestaShopStream):
+class Orders(IncrementalPrestaShopStream):
     """
     The Customers orders
     https://devdocs.prestashop.com/1.7/webservice/resources/orders/
@@ -383,6 +427,7 @@ class ProductCustomizationFields(PrestaShopStream):
     The Product customization fields
     https://devdocs.prestashop.com/1.7/webservice/resources/product_customization_fields/
     """
+
     data_key = "customization_fields"
 
     def path(self, **kwargs) -> str:
@@ -439,7 +484,7 @@ class ProductSuppliers(PrestaShopStream):
         return "product_suppliers"
 
 
-class Products(PrestaShopStream):
+class Products(IncrementalPrestaShopStream):
     """
     The products
     https://devdocs.prestashop.com/1.7/webservice/resources/products/
@@ -519,7 +564,7 @@ class StockAvailables(PrestaShopStream):
         return "stock_availables"
 
 
-class StockMovementReasons(PrestaShopStream):
+class StockMovementReasons(IncrementalPrestaShopStream):
     """
     The stock movement reason (Increase, Decrease, Custom Order, …)
     https://devdocs.prestashop.com/1.7/webservice/resources/stock_movement_reasons/
@@ -529,18 +574,20 @@ class StockMovementReasons(PrestaShopStream):
         return "stock_movement_reasons"
 
 
-class StockMovements(PrestaShopStream):
+class StockMovements(IncrementalPrestaShopStream):
     """
     Stock movements management
     https://devdocs.prestashop.com/1.7/webservice/resources/stock_movements/
     """
+
     data_key = "stock_mvts"
+    cursor_field = "date_add"
 
     def path(self, **kwargs) -> str:
         return "stock_movements"
 
 
-class Stores(PrestaShopStream):
+class Stores(IncrementalPrestaShopStream):
     """
     The stores
     https://devdocs.prestashop.com/1.7/webservice/resources/stores/
@@ -550,7 +597,7 @@ class Stores(PrestaShopStream):
         return "stores"
 
 
-class Suppliers(PrestaShopStream):
+class Suppliers(IncrementalPrestaShopStream):
     """
     The product suppliers
     https://devdocs.prestashop.com/1.7/webservice/resources/suppliers/
@@ -570,7 +617,7 @@ class Tags(PrestaShopStream):
         return "tags"
 
 
-class TaxRuleGroups(PrestaShopStream):
+class TaxRuleGroups(IncrementalPrestaShopStream):
     """
     Group of Tax rule, along with their name
     https://devdocs.prestashop.com/1.7/webservice/resources/tax_rule_groups/
@@ -606,6 +653,8 @@ class TranslatedConfigurations(PrestaShopStream):
     https://devdocs.prestashop.com/1.7/webservice/resources/translated_configurations/
     """
 
+    # This API endpoint has cursor field date_upd, but it has empty value
+
     def path(self, **kwargs) -> str:
         return "translated_configurations"
 
@@ -628,4 +677,3 @@ class Zones(PrestaShopStream):
 
     def path(self, **kwargs) -> str:
         return "zones"
-
