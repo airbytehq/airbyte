@@ -95,8 +95,11 @@ class SurveymonkeyStream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
-        We need to save all the request - to main stream, to details etc. So we need to use all epizodes construct,
-        since we need much more to save then 1 request.
+        We need to cache all requests to all endpoints during iteration.
+        This API is very very rate limited, we need to reuse everything possible.
+        "Cause an error to be raised for new requests if there is a cassette file" is not that I need.
+        I need to save all of them and reuse all of them. In stream slices, in details, etc.
+        Thats why `new_episodes` record mode is using
         """
         with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
             yield from super().read_records(
