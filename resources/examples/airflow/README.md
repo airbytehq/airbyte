@@ -12,3 +12,6 @@ Simple enter that ID into your terminal and a connection will be set up in Airfl
 ![](./assets/airflow_start_dag.png)
 
 Trigger the DAG with the switch in the top right and you should be in business! If it doesn't automatically run, just hit the play button in the top right to kick off the sync.
+
+## Cleaning Up
+Run `down.sh` to clean up the containers. Or run `docker-compose down -v` here and in the root directory, your call.
