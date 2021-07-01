@@ -41,7 +41,6 @@
     },
     {
       "non_nested_stream_without_namespace_resulting_into_long_names": "non_nested_stream_wit__lting_into_long_names"
-    },
-    { "#quote: true in mysql": "quote: true" }
+    }
   ]
 }
