@@ -213,12 +213,14 @@ public class DefaultJobPersistence implements JobPersistence {
     return database.transaction(ctx -> {
       final Job job = getJob(ctx, jobId);
       if (job.isJobInTerminalState()) {
-        var errMsg = String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(), job.getStatus(), job.getScope());
+        var errMsg = String.format("Cannot create an attempt for a job id: %s that is in a terminal state: %s for connection id: %s", job.getId(),
+            job.getStatus(), job.getScope());
         throw new IllegalStateException(errMsg);
       }
 
       if (job.hasRunningAttempt()) {
-        var errMsg = String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(), job.getStatus(), job.getScope());
+        var errMsg = String.format("Cannot create an attempt for a job id: %s that has a running attempt: %s for connection id: %s", job.getId(),
+            job.getStatus(), job.getScope());
         throw new IllegalStateException(errMsg);
       }
 
