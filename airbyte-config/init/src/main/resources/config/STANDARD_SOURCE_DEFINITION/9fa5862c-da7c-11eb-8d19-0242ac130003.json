@@ -3,6 +3,5 @@
   "name": "Cockroachdb",
   "dockerRepository": "airbyte/source-postgres",
   "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-cockroachdb",
-  "icon": "cockroachdb.svg"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-cockroachdb"
 }

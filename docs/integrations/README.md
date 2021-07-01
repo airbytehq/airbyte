@@ -52,6 +52,7 @@ Airbyte uses a grading system for connectors to help users understand what to ex
 |[Plaid](./sources/plaid.md)| Alpha |
 |[PokéAPI](./sources/pokeapi.md)| Beta |
 |[Postgres](./sources/postgres.md)| Certified |
+|[CockroachDb](./sources/cockroachdb.md)| Beta |
 |[Quickbooks](./sources/quickbooks.md)| Beta |
 |[Recharge](./sources/recharge.md)| Beta |
 |[Recurly](./sources/recurly.md)| Beta |
