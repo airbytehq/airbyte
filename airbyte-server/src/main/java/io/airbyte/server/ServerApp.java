@@ -229,7 +229,7 @@ public class ServerApp {
       LOGGER.info("Starting server...");
       new ServerApp(configRepository, jobPersistence, configs).start();
     } else {
-      LOGGER.info("Start serving version mismatch errors. Automatic migration must have failed or didn't run");
+      LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
   }
