@@ -54,7 +54,6 @@
   dockerRepository: airbyte/source-postgres
   dockerImageTag: 0.1.0
   documentationUrl: https://hub.docker.com/r/airbyte/source-cockroachdb
-  icon: cockroachdb.svg
 - sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   name: PostHog
   dockerRepository: airbyte/source-posthog
