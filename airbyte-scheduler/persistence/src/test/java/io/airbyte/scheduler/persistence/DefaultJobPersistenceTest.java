@@ -58,6 +58,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -288,7 +289,7 @@ class DefaultJobPersistenceTest {
 
     jobPersistence.importDatabase("test", outputStreams);
 
-    final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+    final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
 
     final Job actual = actualList.get(0);
     final Job expected = createJob(
@@ -789,15 +790,49 @@ class DefaultJobPersistenceTest {
   }
 
   @Nested
-  @DisplayName("When listing jobs")
+  @DisplayName("When listing jobs, use paged results")
   class ListJobs {
+
+    @Test
+    @DisplayName("Should return the correct page of results with multiple pages of history")
+    public void testListJobsByPage() throws IOException {
+      List<Long> ids = new ArrayList<Long>();
+      for (int i = 0; i < 100; i++) {
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
+        ids.add(jobId);
+      }
+      int pagesize = 10;
+      int offset = 3;
+
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), pagesize, offset);
+      assertEquals(actualList.size(), pagesize);
+      assertEquals(ids.get(ids.size() - 1 - offset), actualList.get(0).getId());
+    }
+
+    @Test
+    @DisplayName("Should return the results in the correct sort order")
+    public void testListJobsSortsDescending() throws IOException {
+      List<Long> ids = new ArrayList<Long>();
+      for (int i = 0; i < 100; i++) {
+        // These have strictly the same created_at due to the setup() above, so should come back sorted by
+        // id desc instead.
+        final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
+        ids.add(jobId);
+      }
+      int pagesize = 200;
+      int offset = 0;
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), pagesize, offset);
+      for (int i = 0; i < 100; i++) {
+        assertEquals(ids.get(ids.size() - (i + 1)), actualList.get(i).getId(), "Job ids should have been in order but weren't.");
+      }
+    }
 
     @Test
     @DisplayName("Should list all jobs")
     public void testListJobs() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
 
-      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
 
       final Job actual = actualList.get(0);
       final Job expected = createJob(jobId, SPEC_JOB_CONFIG, JobStatus.PENDING, Collections.emptyList(), NOW.getEpochSecond());
@@ -819,7 +854,7 @@ class DefaultJobPersistenceTest {
 
       jobPersistence.succeedAttempt(jobId, attemptNumber1);
 
-      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
 
       final Job actual = actualList.get(0);
       final Job expected = createJob(
@@ -854,7 +889,7 @@ class DefaultJobPersistenceTest {
       final var job2Attempt1 = jobPersistence.createAttempt(jobId2, job2Attempt1LogPath);
       jobPersistence.succeedAttempt(jobId2, job2Attempt1);
 
-      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString());
+      final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
 
       assertEquals(2, actualList.size());
       assertEquals(jobId2, actualList.get(0).getId());
