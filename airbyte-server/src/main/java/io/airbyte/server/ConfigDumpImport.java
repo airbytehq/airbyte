@@ -144,8 +144,7 @@ public class ConfigDumpImport {
       // identify this instance as the new customer id.
       TrackingClientSingleton.get().identify();
       // report that the previous customer id is now superseded by the imported one.
-      previousCustomerIdOptional.ifPresent(
-          previousCustomerId -> TrackingClientSingleton.get().alias(previousCustomerId.toString()));
+      previousCustomerIdOptional.ifPresent(previousCustomerId -> TrackingClientSingleton.get().alias(previousCustomerId.toString()));
     } catch (IOException | JsonValidationException | RuntimeException e) {
       LOGGER.error("Import failed", e);
       result = new ImportRead().status(StatusEnum.FAILED).reason(e.getMessage());
