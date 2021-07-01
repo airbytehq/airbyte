@@ -35,7 +35,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_zuora.zuora_auth import ZuoraAuthenticator
+from source_zuora.auth import ZuoraAuthenticator
 
 
 # Basic full refresh stream
@@ -308,13 +308,13 @@ class SourceZuora(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
         """
-        Testing connection availability for the connector.
+        Testing connection availability for the connector by granting the token.
         """
         client_id = config["client_id"]
         client_secret = config["client_secret"]
         is_sandbox = config["is_sandbox"]
 
-        auth = ZuoraAuthenticator(client_id=client_id, client_secret=client_secret, is_sandbox=is_sandbox).generateToken()
+        auth = ZuoraAuthenticator(client_id, client_secret, is_sandbox).generateToken()
 
         if auth["status"] == 200:
             return True, None
@@ -328,13 +328,11 @@ class SourceZuora(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
-        inst = ZuoraAuthenticator(client_id=config["client_id"], client_secret=config["client_secret"], is_sandbox=config["is_sandbox"])
-        auth = inst.generateToken()
-        auth_header = inst.get_auth_header()
+        auth = ZuoraAuthenticator(config["client_id"], config["client_secret"], config["is_sandbox"]).generateToken()
 
         args = {
             "authenticator": auth['token'],
-            "auth_header": auth_header,
+            "auth_header": auth['header'],
             "start_date": config["start_date"],
             "client_id": config["client_id"],
             "client_secret": config["client_secret"],
