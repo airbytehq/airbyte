@@ -1,7 +1,7 @@
 plugins {
     id 'airbyte-docker'
     id 'airbyte-python'
-    id 'airbyte-standard-source-test-file'
+    id 'airbyte-source-acceptance-test'
 }
 
 airbytePython {
@@ -18,7 +18,6 @@ airbyteStandardSourceTestFile {
 
 
 dependencies {
-    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
-    implementation files(project(':airbyte-integrations:bases:base-singer').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
 }
 
