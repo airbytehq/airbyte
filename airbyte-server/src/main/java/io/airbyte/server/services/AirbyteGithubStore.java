@@ -75,7 +75,8 @@ public class AirbyteGithubStore {
       return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
     } catch (IOException e) {
       LOGGER.warn(
-          "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.");
+          "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
+          e);
       return Collections.emptyList();
     }
   }
@@ -85,7 +86,8 @@ public class AirbyteGithubStore {
       return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
     } catch (IOException e) {
       LOGGER.warn(
-          "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.");
+          "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
+          e);
       return Collections.emptyList();
     }
   }
@@ -97,7 +99,12 @@ public class AirbyteGithubStore {
         .timeout(timeout)
         .header("accept", "*/*") // accept any file type
         .build();
-    return httpClient.send(request, BodyHandlers.ofString()).body();
+    final var resp = httpClient.send(request, BodyHandlers.ofString());
+    if (resp.statusCode() == 404) {
+      // If the file does not exist.
+      throw new IOException("Missing file!");
+    }
+    return resp.body();
   }
 
 }
