@@ -280,6 +280,7 @@ class MergeRequestCommits(GitlabChildStream):
     path_template = "projects/{project_id}/merge_requests/{iid}"
 
     def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
         record["project_id"] = stream_slice["project_id"]
         record["merge_request_iid"] = stream_slice["iid"]
 
