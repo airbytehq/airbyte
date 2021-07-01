@@ -39,7 +39,15 @@
     cast(decode({{ field }}, 'true', '1', 'false', '0')::integer as boolean)
 {%- endmacro %}
 
-{# cast_to_bigint -------------------------------------------------     #}
-{% macro mysql__type_bigint() %}
-    signed
-{% endmacro %}
+{# cast_to_float -------------------------------------------------     #}
+{% macro cast_to_float(field) -%}
+    {{ adapter.dispatch('cast_to_float')(field) }}
+{%- endmacro %}
+
+{% macro default__cast_to_float(field) -%}
+    cast({{ field }} as dbt_utils.type_float())
+{%- endmacro %}
+
+{% macro mysql__cast_to_float(field) -%}
+    cast(ifnull({{ field }}, 0) as float)
+{%- endmacro %}
