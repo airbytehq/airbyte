@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from typing import Mapping, Any, Optional, Union, List
+
 
 import pytest
 import requests
@@ -42,17 +42,17 @@ class TestPagination:
     @pytest.mark.parametrize(
         ("_self_header", "_next_header", "expected_npt", "assert_msg"),
         [
-            (None, 'XYZ', {'after': 'XYZ'}, "Expected to receive a new page token if next header is set and self is not set"),
-            ('ABC', 'XYZ', {'after': 'XYZ'}, "Expected to receive a new page token if next and self headers have different values"),
-            ('ABC', 'ABC', None, "Expected no new page token if next and self headers are the same"),
-            ('ABC', None, None, "Expected no new page token if next header is not set")
+            (None, "XYZ", {"after": "XYZ"}, "Expected to receive a new page token if next header is set and self is not set"),
+            ("ABC", "XYZ", {"after": "XYZ"}, "Expected to receive a new page token if next and self headers have different values"),
+            ("ABC", "ABC", None, "Expected no new page token if next and self headers are the same"),
+            ("ABC", None, None, "Expected no new page token if next header is not set"),
         ],
     )
     def test_pagination(self, _self_header, _next_header, expected_npt, assert_msg):
         stream = MockStream()
 
         fake_response = requests.Response()
-        link_header = ''
+        link_header = ""
 
         if _self_header:
             link_header += f'<https://somedomain.com/api/v1/users?after={_self_header}>; rel="self",'
