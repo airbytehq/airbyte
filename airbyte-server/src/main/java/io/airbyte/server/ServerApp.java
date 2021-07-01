@@ -218,8 +218,7 @@ public class ServerApp {
     }
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    if (airbyteDatabaseVersion.isPresent() && !AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
-        && !isDatabaseVersionAheadOfAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
+    if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
       boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
       boolean versionSupportsAutoMigrate =
           new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
@@ -256,15 +255,15 @@ public class ServerApp {
     }
   }
 
-  public static boolean isDatabaseVersionAheadOfAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
+  public static boolean isDatabaseVersionBehindAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
     AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
     AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
 
-    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) > 0) {
+    if (serverVersion.getMajorVersion().compareTo(databaseVersion.getMajorVersion()) > 0) {
       return true;
     }
 
-    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) > 0;
+    return serverVersion.getMinorVersion().compareTo(databaseVersion.getMinorVersion()) > 0;
   }
 
 }
