@@ -80,7 +80,12 @@ public class ServerApp {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServerApp.class);
   private static final int PORT = 8001;
-
+  /**
+   * We can't support automatic migration for kube before this version because we had a bug in kube
+   * which would cause airbyte db to erase state upon termination, as a result the automatic migration
+   * wouldn't run
+   */
+  private static final AirbyteVersion KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION = new AirbyteVersion("0.26.5-alpha");
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final Configs configs;
@@ -213,20 +218,24 @@ public class ServerApp {
     }
 
     Optional<String> airbyteDatabaseVersion = jobPersistence.getVersion();
-    boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
-    if (!isKubernetes && airbyteDatabaseVersion.isPresent() && !AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())
-        && !isDatabaseVersionAheadOfAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
-      runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
-      // After migration, upgrade the DB version
-      airbyteDatabaseVersion = jobPersistence.getVersion();
+    if (airbyteDatabaseVersion.isPresent() && isDatabaseVersionBehindAppVersion(airbyteVersion, airbyteDatabaseVersion.get())) {
+      boolean isKubernetes = configs.getWorkerEnvironment() == WorkerEnvironment.KUBERNETES;
+      boolean versionSupportsAutoMigrate =
+          new AirbyteVersion(airbyteDatabaseVersion.get()).patchVersionCompareTo(KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION) >= 0;
+      if (!isKubernetes || versionSupportsAutoMigrate) {
+        runAutomaticMigration(configRepository, jobPersistence, airbyteVersion, airbyteDatabaseVersion.get());
+        // After migration, upgrade the DB version
+        airbyteDatabaseVersion = jobPersistence.getVersion();
+      } else {
+        LOGGER.info("Can not run automatic migration for Airbyte on KUBERNETES before version " + KUBE_SUPPORT_FOR_AUTOMATIC_MIGRATION.getVersion());
+      }
     }
 
     if (airbyteDatabaseVersion.isPresent() && AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion.get())) {
       LOGGER.info("Starting server...");
       new ServerApp(configRepository, jobPersistence, configs).start();
     } else {
-      LOGGER.info("Start serving version mismatch errors. "
-          + (isKubernetes ? " Automatic migration can't run on KUBERNETES." : " Automatic migration must have failed"));
+      LOGGER.info("Start serving version mismatch errors. Automatic migration either failed or didn't run");
       new VersionMismatchServer(airbyteVersion, airbyteDatabaseVersion.get(), PORT).start();
     }
   }
@@ -246,15 +255,20 @@ public class ServerApp {
     }
   }
 
-  public static boolean isDatabaseVersionAheadOfAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
+  public static boolean isDatabaseVersionBehindAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
+    boolean bothVersionsCompatible = AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion);
+    if (bothVersionsCompatible) {
+      return false;
+    }
+
     AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
     AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
 
-    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) > 0) {
+    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
       return true;
     }
 
-    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) > 0;
+    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
 }
