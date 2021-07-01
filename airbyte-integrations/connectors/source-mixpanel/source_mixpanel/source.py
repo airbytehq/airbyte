@@ -27,23 +27,49 @@ import logging
 from collections import ChainMap
 
 
-
+from datetime import date, timedelta
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 import base64
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
+
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, HttpAuthenticator
 
 
 class MixpanelStream(HttpStream, ABC):
 
     url_base = "https://mixpanel.com/api/2.0/"
+    date_window_size = 30  # days
+
+    def __init__(
+        self,
+        authenticator: HttpAuthenticator,
+        start_date: Union[date, str] = None,
+        end_date: Union[date, str] = None,
+        date_window_size: int = 30,  # days
+        **kwargs,
+    ):
+        now = date.today()
+
+        if start_date and isinstance(start_date, str):
+            start_date = date.fromisoformat(start_date)
+        self.start_date = start_date or now - timedelta(days=364)  # set to 1 year ago by default
+
+        if end_date and isinstance(end_date, str):
+            end_date = date.fromisoformat(end_date)
+        self.end_date = end_date or now  # set to now by default
+
+        self.logger.log("INFO", f'Using start_date: {self.start_date}, end_date: {self.end_date}')
+
+        self.date_window_size = date_window_size
+
+        super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -111,8 +137,8 @@ class Funnels(MixpanelStream):
     """
 
     primary_key = ['funnel_id', 'date']
-    # cursor_field = ['funnel_id', 'date']
     data_field = 'data'
+    cursor_field = 'date'
 
     def path(self, **kwargs) -> str:
         return "funnels"
@@ -121,7 +147,12 @@ class Funnels(MixpanelStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         # print(f"stream_slice: f{stream_slice} \n")
-        return {"funnel_id": stream_slice["funnel_id"]}
+        return {
+            "funnel_id": stream_slice["funnel_id"],
+            # 'unit': 'day'
+            'from_date': stream_slice["start_date"],
+            'to_date': stream_slice["end_date"],
+        }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -153,33 +184,74 @@ class Funnels(MixpanelStream):
         """
         # extract 'funnel_id' from internal request object
         query = urlparse(response.request.path_url).query
-        funnel_id = int(query.split('=')[-1])
+        params = parse_qs(query)
+        funnel_id = int(params['funnel_id'][0])
 
-        json_response = response.json()
-
-        records = json_response.get(self.data_field, [])
+        records = response.json().get(self.data_field, {})
         for date in records:
-            # add funnel_id, name
+            # for each record add funnel_id, name
             yield {'funnel_id': funnel_id,
                    'name': self.funnels[funnel_id],
                    'date': date,
-                   **data[date]}
+                   **records[date]}
 
+    def date_slices(self, stream_state: Mapping[str, Any] = None) -> List[dict]:
+        date_slices = []
+        # use the latest date between self.start_date and stream_state
+        start_date = max(self.start_date, date.fromisoformat(stream_state['date']) if stream_state else self.start_date)
+        # use the lowest date between start_date and self.end_date, otherwise API could fail of start_date is in future
+        start_date = min(start_date, self.end_date)
+        while start_date <= self.end_date:
+            end_date = start_date + timedelta(days=self.date_window_size)
+            date_slices.append({
+                'start_date': str(start_date),
+                'end_date': str(min(end_date, self.end_date)),
+            })
+            # add 1 additional day because date range is inclusive
+            start_date = end_date + timedelta(days=1)
+
+        print(f'==== date_slices: {date_slices} \n')
+        return date_slices
+
+    def funnel_slices(self, sync_mode) -> List[dict]:
+
+        funnel_slices = FunnelsList(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
+        funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
+        print(f'==== funnel_slices: {funnel_slices} \n')
+
+        # save all funnels in dict(<funnel_id1>:<name1>, ...)
+        self.funnels = dict((funnel['funnel_id'], funnel['name']) for funnel in funnel_slices)
+
+        return funnel_slices
 
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        Override to define the slices for this stream. See the stream slicing section of the docs for more information.
-
         :param stream_state:
         :return:
         """
-        stream_slices = FunnelsList(authenticator=self._authenticator).read_records(sync_mode=sync_mode)
-        stream_slices = list(stream_slices)
-        # print(f'stream_slices: {self.stream_slices} \n')
-        self.funnels = dict((funnel['funnel_id'], funnel['name']) for funnel in stream_slices)
+
+        print(f'==== stream_state: {stream_state}')
+
+        # One stream slice is a combination of all funnel_slices and stream_slices
+        stream_slices = []
+        funnel_slices = self.funnel_slices(sync_mode)
+        date_slices = self.date_slices(stream_state)
+        for funnel_slice in funnel_slices:
+            for date_slice in date_slices:
+                stream_slices.append({**funnel_slice, **date_slice})
+
+        print(f'==== stream_slices: {stream_slices} \n')
         return stream_slices
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
+        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
+        current_stream_state = current_stream_state or {}
+        current_stream_state_date = current_stream_state.get("date", str(self.start_date))
+        latest_record_date = latest_record.get(self.cursor_field, str(self.start_date))
+        return {'date': max(current_stream_state_date, latest_record_date)}
 
 class Insights(MixpanelStream):
     """
@@ -248,11 +320,11 @@ class IncrementalMixpanelStream(MixpanelStream, ABC):
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
-    def __init__(self, token:str, auth_method:str = 'Basic',**kwargs):
+    def __init__(self, token:str, auth_method:str = 'Basic', **kwargs):
         token = base64.b64encode(token.encode("utf8")).decode("utf8")
         super().__init__(token=token, auth_method=auth_method, **kwargs)
 
-# Source
+
 class SourceMixpanel(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
@@ -266,11 +338,21 @@ class SourceMixpanel(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         authenticator = TokenAuthenticatorBase64(token=config["api_secret"])
-        print(authenticator.get_auth_header())
-        # Try to initiate a stream and validate input date params
         try:
-            Funnels(authenticator=authenticator) # , #**config)
+            response = requests.request(
+                "GET",
+                url = "https://mixpanel.com/api/2.0/funnels/list",
+                headers = {
+                    "Accept": "application/json",
+                    **authenticator.get_auth_header(),
+                })
 
+            if response.status_code != 200:
+                message = response.json()
+                error_message = message.get('error')
+                if error_message:
+                    return False, error_message
+                response.raise_for_status()
         except Exception as e:
             return False, e
 
@@ -282,4 +364,4 @@ class SourceMixpanel(AbstractSource):
         """
 
         auth = TokenAuthenticatorBase64(token=config["api_secret"])
-        return [Funnels(authenticator=auth)]
+        return [Funnels(authenticator=auth, **config)]
