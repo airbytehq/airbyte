@@ -6,7 +6,7 @@ import { Redirect, Route, Switch } from "react-router";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import LoadingPage from "components/LoadingPage";
-import AccountSettings from "./components/AccountSettings";
+import NotificationPage from "./pages/NotificationPage";
 import HeadTitle from "components/HeadTitle";
 import SideMenu from "components/SideMenu";
 import { Routes } from "pages/routes";
@@ -81,7 +81,7 @@ const SettingsPage: React.FC = () => {
                 <div>Configuration</div>
               </Route>
               <Route path={`${Routes.Settings}${Routes.Notifications}`}>
-                <AccountSettings />
+                <NotificationPage />
               </Route>
               <Route path={`${Routes.Settings}${Routes.Metrics}`}>
                 <div>Metrics</div>

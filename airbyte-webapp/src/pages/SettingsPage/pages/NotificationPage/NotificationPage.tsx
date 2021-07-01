@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { ContentCard } from "components";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
-import WebHookForm from "./WebHookForm";
+import WebHookForm from "./components/WebHookForm";
 
 const SettingsCard = styled(ContentCard)`
   max-width: 638px;
@@ -21,7 +21,7 @@ const Content = styled.div`
   padding: 27px 26px 15px;
 `;
 
-const AccountSettings: React.FC = () => {
+const NotificationPage: React.FC = () => {
   const {
     workspace,
     updatePreferences,
@@ -116,4 +116,4 @@ const AccountSettings: React.FC = () => {
   );
 };
 
-export default AccountSettings;
+export default NotificationPage;
