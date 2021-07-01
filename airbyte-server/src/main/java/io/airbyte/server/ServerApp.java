@@ -256,14 +256,19 @@ public class ServerApp {
   }
 
   public static boolean isDatabaseVersionBehindAppVersion(String airbyteVersion, String airbyteDatabaseVersion) {
+    boolean bothVersionsCompatible = AirbyteVersion.isCompatible(airbyteVersion, airbyteDatabaseVersion);
+    if (bothVersionsCompatible) {
+      return false;
+    }
+
     AirbyteVersion serverVersion = new AirbyteVersion(airbyteVersion);
     AirbyteVersion databaseVersion = new AirbyteVersion(airbyteDatabaseVersion);
 
-    if (serverVersion.getMajorVersion().compareTo(databaseVersion.getMajorVersion()) > 0) {
+    if (databaseVersion.getMajorVersion().compareTo(serverVersion.getMajorVersion()) < 0) {
       return true;
     }
 
-    return serverVersion.getMinorVersion().compareTo(databaseVersion.getMinorVersion()) > 0;
+    return databaseVersion.getMinorVersion().compareTo(serverVersion.getMinorVersion()) < 0;
   }
 
 }
