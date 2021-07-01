@@ -10,6 +10,11 @@ Note: Airbyte is not built on top of Singer, but is compatible with Singer's pro
 
 Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/3) to see what we're currently working on.
 
+## 7/01/2021 
+
+Bugfixes:
+* **Facebook Marketing** source: Using cursor field as `date_start` for Ads Insights and taking all records.
+
 ## 6/24/2021 
 
 1 new source:
