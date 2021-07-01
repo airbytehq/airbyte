@@ -34,6 +34,10 @@ from source_acceptance_test.utils import diff_dicts, load_config
 HERE = Path(__file__).parent.absolute()
 
 
+def pytest_configure(config):
+    config.addinivalue_line("markers", "default_timeout: mark test to be wrapped by `timeout` decorator with default value")
+
+
 def pytest_load_initial_conftests(early_config: Config, parser: Parser, args: List[str]):
     """Hook function to add acceptance tests to args"""
     args.append(str(HERE / "tests"))
@@ -76,6 +80,33 @@ def pytest_generate_tests(metafunc):
                 pytest.skip(f"Skipping {test_name} because no inputs provided")
 
             metafunc.parametrize("inputs", test_inputs)
+
+
+def pytest_collection_modifyitems(config, items):
+    """
+    Get prepared test items and wrap them with `pytest.mark.timeout(timeout_seconds)` decorator.
+
+    `timeout_seconds` may be received either from acceptance test config or `pytest.mark.default_timeout(timeout_seconds)`,
+    if `timeout_seconds` is not specified in the acceptance test config.
+    """
+
+    config = load_config(config.getoption("--acceptance-test-config"))
+
+    i = 0
+    packed_items = []
+    while i < len(items):
+        inner_items = [item for item in items if item.originalname == items[i].originalname]
+        packed_items.append(inner_items)
+        i += len(inner_items)
+
+    for items in packed_items:
+        test_configs = getattr(config.tests, items[0].cls.config_key())
+        for test_config, item in zip(test_configs, items):
+            default_timeout = item.get_closest_marker("default_timeout")
+            if test_config.timeout_seconds:
+                item.add_marker(pytest.mark.timeout(test_config.timeout_seconds))
+            elif default_timeout:
+                item.add_marker(pytest.mark.timeout(*default_timeout.args))
 
 
 def pytest_assertrepr_compare(config, op, left, right):
