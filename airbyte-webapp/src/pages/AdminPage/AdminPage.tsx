@@ -10,7 +10,6 @@ import LoadingPage from "components/LoadingPage";
 import SourcesView from "./components/SourcesView";
 import DestinationsView from "./components/DestinationsView";
 import CreateConnector from "./components/CreateConnector";
-import ConfigurationView from "./components/ConfigurationView";
 import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div`
@@ -46,9 +45,6 @@ const AdminPage: React.FC = () => {
   const renderStep = () => {
     if (currentStep === StepsTypes.SOURCES) {
       return <SourcesView />;
-    }
-    if (currentStep === StepsTypes.CONFIGURATION) {
-      return <ConfigurationView />;
     }
 
     return <DestinationsView />;

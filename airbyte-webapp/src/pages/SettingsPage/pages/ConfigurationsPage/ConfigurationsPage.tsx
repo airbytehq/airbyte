@@ -8,8 +8,8 @@ import ContentCard from "components/ContentCard";
 import config from "config";
 import Link from "components/Link";
 import DeploymentService from "core/resources/DeploymentService";
-import ImportConfigurationModal from "./ImportConfigurationModal";
-import LogsContent from "./LogsContent";
+import ImportConfigurationModal from "./components/ImportConfigurationModal";
+import LogsContent from "./components/LogsContent";
 import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div`
@@ -45,7 +45,7 @@ const Warning = styled.div`
   font-weight: bold;
 `;
 
-const ConfigurationView: React.FC = () => {
+const ConfigurationsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -143,4 +143,4 @@ const ConfigurationView: React.FC = () => {
   );
 };
 
-export default ConfigurationView;
+export default ConfigurationsPage;
