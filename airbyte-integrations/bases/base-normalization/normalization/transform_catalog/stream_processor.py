@@ -399,8 +399,7 @@ from {{ from_table }}
         elif is_integer(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
-            cast_operation = jinja_call(f"cast_to_float({jinja_column})")
-            return f"{cast_operation} as {column_name}"
+            sql_type = jinja_call("dbt_utils.type_float()")
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
         else:
