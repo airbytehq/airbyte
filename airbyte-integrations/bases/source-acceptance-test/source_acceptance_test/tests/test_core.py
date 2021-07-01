@@ -35,11 +35,6 @@ from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestCon
 from source_acceptance_test.utils import ConnectorRunner, serialize
 
 
-class TestEnvVarExists(BaseTest):
-    def test_env_var_exists(self, connector_config, docker_runner: ConnectorRunner):
-        result = docker_runner.has_env_var()
-        assert result
-
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
     def test_spec(self, connector_spec: ConnectorSpecification, docker_runner: ConnectorRunner):
@@ -49,6 +44,9 @@ class TestSpec(BaseTest):
         assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
         if connector_spec:
             assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
+
+        result = docker_runner.has_env_var()
+        assert result
 
 
 @pytest.mark.default_timeout(30)
