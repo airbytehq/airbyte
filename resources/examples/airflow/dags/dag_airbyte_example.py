@@ -11,7 +11,7 @@ with DAG(dag_id='trigger_airbyte_job_example',
          start_date=days_ago(1)
          ) as dag:
 
-    money_to_json = AirbyteTriggerSyncOperator(
+    example_sync = AirbyteTriggerSyncOperator(
         task_id='airbyte_example',
         airbyte_conn_id='airbyte_example',
         connection_id=airbyte_connection_id,
