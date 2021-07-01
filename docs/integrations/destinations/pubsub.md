@@ -1,6 +1,5 @@
 ---
-description: >-
-Pub/Sub is an asynchronous messaging service provided by Google Cloud Provider.
+description: 'Pub/Sub is an asynchronous messaging service provided by Google Cloud Provider.'
 ---
 
 # Google PubSub
