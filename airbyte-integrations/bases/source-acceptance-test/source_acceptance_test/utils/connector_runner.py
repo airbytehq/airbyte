@@ -130,3 +130,9 @@ class ConnectorRunner:
                 yield AirbyteMessage.parse_raw(line)
             except ValidationError as exc:
                 logging.warning("Unable to parse connector's output %s", exc)
+
+    def has_env_var(self, lookup_env_var: str = "AIRBYTE_ENTRYPOINT"):
+        self._env_vars = self._image.attrs['Config']['Env']
+        self._env_airbyte_entrypoint = [i for i in self._env_vars if i.startswith(lookup_env_var)]
+        ret = self._env_airbyte_entrypoint and self._env_airbyte_entrypoint[0].split(f"{lookup_env_var}=", 1)[1]
+        return bool(ret)
