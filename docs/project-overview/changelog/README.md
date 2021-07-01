@@ -1,5 +1,49 @@
 # Changelog
 
+## 06/24/2021 Summary
+
+* New Source: [IBM Db2](../../integrations/sources/db2.md)
+* 💎 We now support Avro and JSONL output for our S3 destination! 💎
+* 💎 Brand new BigQuery destination flavor that now supports denormalized STRUCT types.
+* ✨ Looker source now supports self-hosted instances.
+* ✨ Facebook Marketing source is now migrated to the CDK, massively improving async job performance and error handling.
+
+View the full connector release notes [here](./connectors.md).
+
+As usual, thank you to some of our awesome community contributors this week: Harshith Mullapudi, Tyler DeLange, Daniel Mateus Pires, EdBizarro, Tyler Schroeder, and Konrad Schlatte!
+
+## 06/18/2021 Summary
+
+* New Source: [Snowflake](../../integrations/sources/snowflake.md)
+* 💎 We now support custom dbt transformations! 💎
+* ✨ We now support configuring your destination namespace at the table level when setting up a connection!
+* ✨ The S3 destination now supports Minio S3 and Parquet output!
+
+View the full release notes here: [Platform](./platform.md), [Connectors](./connectors.md)
+
+As usual, thank you to some of our awesome community contributors this week: Tyler DeLange, Mario Molina, Rodrigo Parra, Prashanth Patali, Christopher Wu, Itai Admi, Fred Reimer, and Konrad Schlatte!
+
+## 06/10/2021 Summary
+
+* New Destination: [S3!!](../../integrations/destinations/s3.md) 
+* New Sources: [Harvest](../../integrations/sources/harvest.md), [Amplitude](../../integrations/sources/amplitude.md), [Posthog](../../integrations/sources/posthog.md)
+* 🐛 Ensure that logs from threads created by replication workers are added to the log file.
+* 🐛 Handle TINYINT(1) and BOOLEAN correctly and fix target file comparison for MySQL CDC.
+* Jira source: now supports all available entities in Jira Cloud.
+* 📚 Added a troubleshooting section, a gradle cheatsheet, a reminder on what the reset button does, and a refresh on our docs best practices.
+
+#### Connector Development:
+* Containerized connector code generator
+* Added JDBC source connector bootstrap template.
+* Added Java destination generator.
+
+View the full release notes highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+
+As usual, thank you to some of our awesome community contributors this week (I've noticed that we've had more contributors to our docs, which we really appreciate).
+Ping, Harshith Mullapudi, Michael Irvine, Matheus di Paula, jacqueskpoty and P.VAD.
+
+## Overview
+
 Airbyte is comprised of 2 parts:
 
 * Platform (The scheduler, workers, api, web app, and the Airbyte protocol). Here is the [changelog for Platform](platform.md). 
