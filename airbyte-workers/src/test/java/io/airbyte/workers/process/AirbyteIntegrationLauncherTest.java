@@ -27,6 +27,7 @@ package io.airbyte.workers.process;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
@@ -63,7 +64,9 @@ class AirbyteIntegrationLauncherTest {
   void spec() throws WorkerException {
     launcher.spec(JOB_ROOT);
 
-    Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, Collections.emptyMap(), null, "spec");
+    Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, Collections.emptyMap(), null,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
+        "spec");
   }
 
   @Test
@@ -71,6 +74,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.check(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
         "check",
         "--config", "config");
   }
@@ -80,6 +84,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.discover(JOB_ROOT, "config", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
         "discover",
         "--config", "config");
   }
@@ -89,6 +94,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.read(JOB_ROOT, "config", "{}", "catalog", "{}", "state", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
         Lists.newArrayList(
             "read",
             "--config", "config",
@@ -101,6 +107,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.write(JOB_ROOT, "config", "{}", "catalog", "{}");
 
     Mockito.verify(processFactory).create(JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
+        WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS,
         "write",
         "--config", "config",
         "--catalog", "catalog");

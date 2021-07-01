@@ -62,7 +62,7 @@ public abstract class SourceAbstractTest {
   protected Path localRoot;
   private ProcessFactory processFactory;
 
-  private static final long JOB_ID = 0L;
+  private static final String JOB_ID = String.valueOf(0L);
   private static final int JOB_ATTEMPT = 0;
 
   /**

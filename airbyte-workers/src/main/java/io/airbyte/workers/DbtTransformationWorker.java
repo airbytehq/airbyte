@@ -25,6 +25,7 @@
 package io.airbyte.workers;
 
 import io.airbyte.config.OperatorDbtInput;
+import io.airbyte.config.ResourceRequirements;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -39,15 +40,18 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
   private final String jobId;
   private final int attempt;
   private final DbtTransformationRunner dbtTransformationRunner;
+  private final ResourceRequirements resourceRequirements;
 
   private final AtomicBoolean cancelled;
 
   public DbtTransformationWorker(final String jobId,
                                  final int attempt,
+                                 ResourceRequirements resourceRequirements,
                                  DbtTransformationRunner dbtTransformationRunner) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.dbtTransformationRunner = dbtTransformationRunner;
+    this.resourceRequirements = resourceRequirements;
 
     this.cancelled = new AtomicBoolean(false);
   }
@@ -60,7 +64,12 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
       LOGGER.info("Running dbt transformation.");
       dbtTransformationRunner.start();
       final Path transformRoot = Files.createDirectories(jobRoot.resolve("transform"));
-      if (!dbtTransformationRunner.run(jobId, attempt, transformRoot, operatorDbtInput.getDestinationConfiguration(),
+      if (!dbtTransformationRunner.run(
+          jobId,
+          attempt,
+          transformRoot,
+          operatorDbtInput.getDestinationConfiguration(),
+          resourceRequirements,
           operatorDbtInput.getOperatorDbt())) {
         throw new WorkerException("DBT Transformation Failed.");
       }

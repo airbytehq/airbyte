@@ -78,7 +78,8 @@ public class TemporalWorkerRunFactory {
             .withSourceConfiguration(Jsons.emptyObject())
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
-            .withOperationSequence(resetConnection.getOperationSequence());
+            .withOperationSequence(resetConnection.getOperationSequence())
+            .withResourceRequirements(resetConnection.getResourceRequirements());
 
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config);
         return toOutputAndStatus(output);

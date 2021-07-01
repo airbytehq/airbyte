@@ -24,6 +24,7 @@
 
 package io.airbyte.workers.process;
 
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import java.nio.file.Path;
 import java.util.List;
@@ -53,6 +54,7 @@ public interface ProcessFactory {
                  final boolean usesStdin,
                  final Map<String, String> files,
                  final String entrypoint,
+                 final ResourceRequirements resourceRequirements,
                  final String... args)
       throws WorkerException;
 
@@ -63,9 +65,10 @@ public interface ProcessFactory {
                          final boolean usesStdin,
                          final Map<String, String> files,
                          final String entrypoint,
+                         final ResourceRequirements resourceRequirements,
                          final List<String> args)
       throws WorkerException {
-    return create(jobId, attempt, jobPath, imageName, usesStdin, files, entrypoint, args.toArray(new String[0]));
+    return create(jobId, attempt, jobPath, imageName, usesStdin, files, entrypoint, resourceRequirements, args.toArray(new String[0]));
   }
 
 }

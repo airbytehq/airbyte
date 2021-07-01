@@ -31,6 +31,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -102,7 +103,8 @@ public interface SpecWorkflow {
             launcherConfig.getJobId(),
             launcherConfig.getAttemptId().intValue(),
             launcherConfig.getDockerImage(),
-            processFactory);
+            processFactory,
+            WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
 
         return new DefaultGetSpecWorker(integrationLauncher);
       };

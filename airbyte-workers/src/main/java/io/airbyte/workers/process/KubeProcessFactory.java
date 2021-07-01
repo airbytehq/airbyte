@@ -24,6 +24,7 @@
 
 package io.airbyte.workers.process;
 
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.kubernetes.client.openapi.ApiClient;
@@ -73,6 +74,7 @@ public class KubeProcessFactory implements ProcessFactory {
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
+                        final ResourceRequirements resourceRequirements,
                         final String... args)
       throws WorkerException {
     try {
@@ -108,6 +110,7 @@ public class KubeProcessFactory implements ProcessFactory {
           usesStdin,
           files,
           entrypoint,
+          resourceRequirements,
           args);
     } catch (Exception e) {
       throw new WorkerException(e.getMessage(), e);

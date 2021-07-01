@@ -120,7 +120,8 @@ public class DefaultJobCreator implements JobCreator {
         .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
-        .withState(null);
+        .withState(null)
+        .withResourceRequirements(standardSync.getResourceRequirements());
 
     jobPersistence.getCurrentState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
@@ -156,7 +157,8 @@ public class DefaultJobCreator implements JobCreator {
         .withDestinationDockerImage(destinationDockerImage)
         .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
-        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog);
+        .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
+        .withResourceRequirements(standardSync.getResourceRequirements());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)

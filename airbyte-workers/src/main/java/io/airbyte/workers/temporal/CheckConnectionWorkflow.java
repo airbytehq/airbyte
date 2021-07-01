@@ -31,6 +31,7 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.DefaultCheckConnectionWorker;
 import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -112,7 +113,8 @@ public interface CheckConnectionWorkflow {
             launcherConfig.getJobId(),
             Math.toIntExact(launcherConfig.getAttemptId()),
             launcherConfig.getDockerImage(),
-            processFactory);
+            processFactory,
+            WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
 
         return new DefaultCheckConnectionWorker(integrationLauncher);
       };

@@ -59,7 +59,13 @@ public class EnvConfigs implements Configs {
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String KUBE_NAMESPACE = "KUBE_NAMESPACE";
-
+  private static final String RESOURCE_CPU_REQUEST = "RESOURCE_CPU_REQUEST";
+  private static final String RESOURCE_CPU_LIMIT = "RESOURCE_CPU_LIMIT";
+  private static final String RESOURCE_MEMORY_REQUEST = "RESOURCE_MEMORY_REQUEST";
+  private static final String RESOURCE_MEMORY_LIMIT = "RESOURCE_MEMORY_LIMIT";
+  private static final String DEFAULT_KUBE_NAMESPACE = "default";
+  private static final String DEFAULT_RESOURCE_REQUIREMENT_CPU = null;
+  private static final String DEFAULT_RESOURCE_REQUIREMENT_MEMORY = null;
   private static final long DEFAULT_MINIMUM_WORKSPACE_RETENTION_DAYS = 1;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_RETENTION_DAYS = 60;
   private static final long DEFAULT_MAXIMUM_WORKSPACE_SIZE_MB = 5000;
@@ -181,7 +187,27 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getKubeNamespace() {
-    return getEnvOrDefault(KUBE_NAMESPACE, "default");
+    return getEnvOrDefault(KUBE_NAMESPACE, DEFAULT_KUBE_NAMESPACE);
+  }
+
+  @Override
+  public String getCpuRequest() {
+    return getEnvOrDefault(RESOURCE_CPU_REQUEST, DEFAULT_RESOURCE_REQUIREMENT_CPU);
+  }
+
+  @Override
+  public String getCpuLimit() {
+    return getEnvOrDefault(RESOURCE_CPU_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_CPU);
+  }
+
+  @Override
+  public String getMemoryRequest() {
+    return getEnvOrDefault(RESOURCE_MEMORY_REQUEST, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
+  }
+
+  @Override
+  public String getMemoryLimit() {
+    return getEnvOrDefault(RESOURCE_MEMORY_LIMIT, DEFAULT_RESOURCE_REQUIREMENT_MEMORY);
   }
 
   @Override
