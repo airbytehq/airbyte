@@ -42,7 +42,7 @@ class SquareStream(HttpStream, ABC):
         self.api_version = api_version
         # Converting users ISO 8601 format (YYYY-MM-DD) to RFC 3339 (2021-06-14T13:47:56.799Z)
         # Because this standard is used by square in 'updated_at' records field
-        self.start_date = "{}".format(pendulum.parse(start_date))
+        self.start_date = pendulum.parse(start_date).to_rfc3339_string()
         self.include_deleted_objects = include_deleted_objects
 
     data_field = None
@@ -118,17 +118,19 @@ class SquareCatalogObjectsStream(SquareStream):
         return json_payload
 
 
-class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
-    state_checkpoint_interval = SquareCatalogObjectsStream.items_per_page_limit
-
-    cursor_field = "updated_at"
-
+class IncrementalSquareGenericStream(SquareStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
 
         if current_stream_state is not None and self.cursor_field in current_stream_state:
             return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
         else:
             return {self.cursor_field: self.start_date}
+
+
+class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, IncrementalSquareGenericStream, ABC):
+    state_checkpoint_interval = SquareCatalogObjectsStream.items_per_page_limit
+
+    cursor_field = "updated_at"
 
     def request_body_json(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -141,17 +143,10 @@ class IncrementalSquareCatalogObjectsStream(SquareCatalogObjectsStream, ABC):
         return json_payload
 
 
-class IncrementalSquareStream(SquareStream, ABC):
+class IncrementalSquareStream(IncrementalSquareGenericStream, ABC):
     state_checkpoint_interval = SquareStream.items_per_page_limit
 
     cursor_field = "created_at"
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-
-        if current_stream_state is not None and self.cursor_field in current_stream_state:
-            return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
-        else:
-            return {self.cursor_field: self.start_date}
 
     def request_params(
         self,
@@ -179,7 +174,7 @@ class Items(IncrementalSquareCatalogObjectsStream):
     with object_types = ITEM"""
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        return {**super(Items, self).request_body_json(**kwargs), "object_types": ["ITEM"]}
+        return {**super().request_body_json(**kwargs), "object_types": ["ITEM"]}
 
 
 class Categories(IncrementalSquareCatalogObjectsStream):
@@ -187,7 +182,7 @@ class Categories(IncrementalSquareCatalogObjectsStream):
     with object_types = CATEGORY"""
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        return {**super(Categories, self).request_body_json(**kwargs), "object_types": ["CATEGORY"]}
+        return {**super().request_body_json(**kwargs), "object_types": ["CATEGORY"]}
 
 
 class Discounts(IncrementalSquareCatalogObjectsStream):
@@ -195,7 +190,7 @@ class Discounts(IncrementalSquareCatalogObjectsStream):
     with object_types = DISCOUNT"""
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        return {**super(Discounts, self).request_body_json(**kwargs), "object_types": ["DISCOUNT"]}
+        return {**super().request_body_json(**kwargs), "object_types": ["DISCOUNT"]}
 
 
 class Taxes(IncrementalSquareCatalogObjectsStream):
@@ -203,7 +198,7 @@ class Taxes(IncrementalSquareCatalogObjectsStream):
     with object_types = TAX"""
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        return {**super(Taxes, self).request_body_json(**kwargs), "object_types": ["TAX"]}
+        return {**super().request_body_json(**kwargs), "object_types": ["TAX"]}
 
 
 class ModifierList(IncrementalSquareCatalogObjectsStream):
@@ -211,7 +206,7 @@ class ModifierList(IncrementalSquareCatalogObjectsStream):
     with object_types = MODIFIER_LIST"""
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        return {**super(ModifierList, self).request_body_json(**kwargs), "object_types": ["MODIFIER_LIST"]}
+        return {**super().request_body_json(**kwargs), "object_types": ["MODIFIER_LIST"]}
 
 
 class Refunds(IncrementalSquareStream):
@@ -223,7 +218,7 @@ class Refunds(IncrementalSquareStream):
         return "refunds"
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params_payload = super(Refunds, self).request_params(**kwargs)
+        params_payload = super().request_params(**kwargs)
         return {**params_payload, "sort_order": "ASC"} if params_payload else {"sort_order": "ASC"}
 
 
@@ -236,7 +231,7 @@ class Payments(IncrementalSquareStream):
         return "payments"
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params_payload = super(Payments, self).request_params(**kwargs)
+        params_payload = super().request_params(**kwargs)
         return {**params_payload, "sort_order": "ASC"} if params_payload else {"sort_order": "ASC"}
 
 
@@ -264,7 +259,7 @@ class Shifts(SquareStream):
         return "labor/shifts/search"
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        json_payload = super(Shifts, self).request_body_json(**kwargs)
+        json_payload = super().request_body_json(**kwargs)
         if not json_payload:
             json_payload = {}
 
@@ -286,7 +281,7 @@ class TeamMembers(SquareStream):
         return "team-members/search"
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        json_payload = super(TeamMembers, self).request_body_json(**kwargs)
+        json_payload = super().request_body_json(**kwargs)
         if not json_payload:
             json_payload = {}
 
@@ -309,7 +304,7 @@ class TeamMemberWages(SquareStream):
         return "labor/team-member-wages"
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params_payload = super(TeamMemberWages, self).request_params(**kwargs)
+        params_payload = super().request_params(**kwargs)
         if not params_payload:
             params_payload = {}
 
@@ -329,7 +324,7 @@ class Customers(SquareStream):
         return "customers"
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params_payload = super(Customers, self).request_params(**kwargs)
+        params_payload = super().request_params(**kwargs)
         if not params_payload:
             params_payload = {}
 
