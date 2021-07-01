@@ -35,14 +35,15 @@ CockroachDb data types are mapped to the following data types when synchronizing
 | `timestamp without timezone` | string | may be written as a native date type depending on the destination |
 | `uuid` | string |  |
 
-**Note:** arrays for all the above types as well as custom types are supported, although they may be de-nested depending on the destination. Byte arrays are currently unsupported.
+**Note:** arrays for all the above types as well as custom types are supported, although they may be de-nested depending on the destination.
 
 ### Features
 
 | Feature | Supported | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
+| Incremental Sync| Yes |  |
+| Change Data Capture | No |  |
 | SSL Support | Yes |  |
 
 

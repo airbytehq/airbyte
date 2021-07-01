@@ -171,9 +171,10 @@ public class CockroachDbSourceComprehensiveTest extends SourceComprehensiveTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bytea")
+            .fullSourceDataType("bytea[]")
             .airbyteType(JsonSchemaPrimitive.OBJECT)
-            .addInsertValues("decode('1234', 'hex')")
-            .addExpectedValues("EjQ=")
+            .addInsertValues("ARRAY['☃'::bytes, 'ї'::bytes]")
+            .addExpectedValues("{\"\\\\xe29883\",\"\\\\xd197\"}")
             .build());
 
     addDataTypeTestData(

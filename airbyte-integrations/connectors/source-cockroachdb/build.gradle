@@ -31,9 +31,4 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
-
-
-
-
-
 }
