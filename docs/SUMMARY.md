@@ -169,7 +169,7 @@
   * [Changelog](project-overview/changelog/README.md)
     * [Platform](project-overview/changelog/platform.md)
     * [Connectors](project-overview/changelog/connectors.md)
-  * [Code of Conduct](project-overview/code-of-conduct.md)
+  * [Slack Code of Conduct](project-overview/slack-code-of-conduct.md)
   * [License](project-overview/license.md)
 * [Careers & Open Positions](career-and-open-positions/README.md)
   * [Senior Software Engineer](career-and-open-positions/senior-software-engineer.md)
