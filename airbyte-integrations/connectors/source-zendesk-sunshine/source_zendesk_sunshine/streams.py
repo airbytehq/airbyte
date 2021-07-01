@@ -48,7 +48,7 @@ class SunshineStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")
         if delay_time:
-            return int(delay_time)
+            return float(delay_time)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         resp_json = response.json()
