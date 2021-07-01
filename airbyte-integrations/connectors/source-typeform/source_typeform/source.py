@@ -23,7 +23,6 @@
 #
 
 
-import logging
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -31,13 +30,13 @@ from urllib.parse import parse_qs
 
 import pendulum
 import requests
+from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-logging.basicConfig(level=logging.DEBUG)
+from pendulum.datetime import DateTime
 
 
 class TypeformStream(HttpStream, ABC):
@@ -46,6 +45,14 @@ class TypeformStream(HttpStream, ABC):
     limit: int = 2
 
     date_format: str = "YYYY-MM-DDTHH:mm:ss[Z]"
+
+    def __init__(self, **kwargs: Mapping[str, Any]):
+        super().__init__(authenticator=kwargs["authenticator"])
+        self.config: Mapping[str, Any] = kwargs
+        self.start_date: DateTime = pendulum.from_format(kwargs["start_date"], self.date_format)
+
+        if kwargs.get("page_size"):
+            self.limit = kwargs.get("page_size")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -57,6 +64,8 @@ class TypeformStream(HttpStream, ABC):
 
 class TrimForms(TypeformStream):
     primary_key = "id"
+
+    limit: int = 200
 
     def path(
         self,
@@ -73,6 +82,9 @@ class TrimForms(TypeformStream):
         return next_page
 
     def get_current_page_token(self, url: str) -> Optional[int]:
+        """
+        Fetches page query parameter from URL
+        """
         parsed = urlparse.urlparse(url)
         page = parse_qs(parsed.query).get("page")
         return int(page[0]) if page else None
@@ -88,7 +100,16 @@ class TrimForms(TypeformStream):
         return params
 
 
-class Forms(TypeformStream):
+class StreamMixin:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        forms = TrimForms(**self.config)
+        for item in forms.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"form_id": item["id"]}
+
+        yield from []
+
+
+class Forms(StreamMixin, TypeformStream):
     primary_key = "id"
 
     def path(
@@ -98,11 +119,6 @@ class Forms(TypeformStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return f"/forms/{stream_slice['form_id']}"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        forms = TrimForms(authenticator=self.authenticator)
-        for item in forms.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"form_id": item["id"]}
 
     def request_params(
         self,
@@ -142,16 +158,13 @@ class IncrementalTypeformStream(TypeformStream, ABC):
         return None
 
 
-class Responses(IncrementalTypeformStream):
+class Responses(StreamMixin, IncrementalTypeformStream):
     primary_key = "response_id"
+
+    limit: int = 1000
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"/forms/{stream_slice['form_id']}/responses"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        forms = TrimForms(authenticator=self.authenticator)
-        for item in forms.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"form_id": item["id"]}
 
     def get_form_id(self, record: Mapping[str, Any]) -> Optional[str]:
         """
@@ -172,11 +185,11 @@ class Responses(IncrementalTypeformStream):
         last_record_cursor = latest_record.get(self.cursor_field)
         current_stream_state[form_id] = current_stream_state.get(form_id, {})
 
-        record_state = max(
+        new_state = max(
             pendulum.from_format(last_record_cursor, self.date_format).int_timestamp if last_record_cursor else 1,
             current_stream_state[form_id].get(self.cursor_field, 1),
         )
-        current_stream_state[form_id][self.cursor_field] = record_state
+        current_stream_state[form_id][self.cursor_field] = new_state
         return current_stream_state
 
     def request_params(
@@ -187,7 +200,8 @@ class Responses(IncrementalTypeformStream):
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.limit}
         stream_state = stream_state or {}
-        since = stream_state.get(stream_slice["form_id"], {}).get(self.cursor_field)
+        # start from last state or from start date
+        since = max(self.start_date.int_timestamp, stream_state.get(stream_slice["form_id"], {}).get(self.cursor_field, 1))
 
         if not next_page_token:
             # use state for first request in incremental sync
@@ -203,7 +217,7 @@ class Responses(IncrementalTypeformStream):
 
 
 class SourceTypeform(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             url = f"{TypeformStream.url_base}/forms"
             auth_headers = {"Authorization": f"Bearer {config['token']}"}
@@ -215,4 +229,4 @@ class SourceTypeform(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config["token"])
-        return [Forms(authenticator=auth), Responses(authenticator=auth)]
+        return [Forms(authenticator=auth, **config), Responses(authenticator=auth, **config)]
