@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.OperatorDbt;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerException;
@@ -66,7 +67,13 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   @Override
-  public boolean configureDbt(String jobId, int attempt, Path jobRoot, JsonNode config, OperatorDbt dbtConfig) throws Exception {
+  public boolean configureDbt(String jobId,
+                              int attempt,
+                              Path jobRoot,
+                              JsonNode config,
+                              ResourceRequirements resourceRequirements,
+                              OperatorDbt dbtConfig)
+      throws Exception {
     final Map<String, String> files = ImmutableMap.of(
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
     final String gitRepoUrl = dbtConfig.getGitRepoUrl();
@@ -75,12 +82,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     }
     final String gitRepoBranch = dbtConfig.getGitRepoBranch();
     if (Strings.isNullOrEmpty(gitRepoBranch)) {
-      return runProcess(jobId, attempt, jobRoot, files, "configure-dbt",
+      return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
           "--integration-type", destinationType.toString().toLowerCase(),
           "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
           "--git-repo", gitRepoUrl);
     } else {
-      return runProcess(jobId, attempt, jobRoot, files, "configure-dbt",
+      return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
           "--integration-type", destinationType.toString().toLowerCase(),
           "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
           "--git-repo", gitRepoUrl,
@@ -89,20 +96,32 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   }
 
   @Override
-  public boolean normalize(String jobId, int attempt, Path jobRoot, JsonNode config, ConfiguredAirbyteCatalog catalog) throws Exception {
+  public boolean normalize(String jobId,
+                           int attempt,
+                           Path jobRoot,
+                           JsonNode config,
+                           ConfiguredAirbyteCatalog catalog,
+                           ResourceRequirements resourceRequirements)
+      throws Exception {
     final Map<String, String> files = ImmutableMap.of(
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    return runProcess(jobId, attempt, jobRoot, files, "run",
+    return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "run",
         "--integration-type", destinationType.toString().toLowerCase(),
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
   }
 
-  private boolean runProcess(String jobId, int attempt, Path jobRoot, Map<String, String> files, final String... args) throws Exception {
+  private boolean runProcess(String jobId,
+                             int attempt,
+                             Path jobRoot,
+                             Map<String, String> files,
+                             ResourceRequirements resourceRequirements,
+                             final String... args)
+      throws Exception {
     try {
-      process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, false, files, null, args);
+      process = processFactory.create(jobId, attempt, jobRoot, NORMALIZATION_IMAGE_NAME, false, files, null, resourceRequirements, args);
 
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
