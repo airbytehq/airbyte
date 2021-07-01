@@ -28,6 +28,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: CONFIG_ROOT
+            - name: DATABASE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_HOST
+            - name: DATABASE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_PORT
             - name: DATABASE_PASSWORD
               valueFrom:
                 configMapKeyRef:
@@ -51,6 +61,7 @@ spec:
             - name: WAIT_BEFORE_HOSTS
               value: "5"
             - name: WAIT_HOSTS
+              #Translate value: $(DATABASE_HOST):$(DATABASE_PORT)
               value: airbyte-db-svc:5432
             - name: WAIT_HOSTS_TIMEOUT
               value: "45"
