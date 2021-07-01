@@ -79,7 +79,7 @@ class ZuoraStream(Stream, ABC):
         token_retry = 0
         while token_retry <= self.token_retry_max:
             try:
-                print(f"\nUSE TOKEN: {self.authenticator}")
+                # print(f"\nUSE TOKEN: {self.authenticator}")
                 # make initial submition
                 submit_job = requests.post(url=f"{self.url_base}/query/jobs", headers=self.authenticator, json=query)
                 submit_job.raise_for_status()
@@ -90,7 +90,7 @@ class ZuoraStream(Stream, ABC):
                 # we refresh it and replace `self.authenticator` with the new token
                 token_retry += 1
                 if token_retry <= self.token_retry_max:
-                    print(f"\nOLD TOKEN: {self.authenticator}")
+                    # print(f"\nOLD TOKEN: {self.authenticator}")
                     print(f"Refreshing Token...")
                     self.authenticator = ZuoraAuthenticator(self.is_sandbox).generateToken(self.client_id, self.client_secret).get("header")
                     continue
