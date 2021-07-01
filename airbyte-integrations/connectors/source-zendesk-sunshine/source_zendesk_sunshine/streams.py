@@ -40,10 +40,13 @@ class SunshineStream(HttpStream, ABC):
     page_size = 100
 
     def __init__(self, subdomain: str, start_date: pendulum.datetime, **kwargs):
-        self.url_base = f"https://{subdomain}.zendesk.com/api/sunshine/"  # url_base #kwargs.pop("base_url")
         self._start_date = start_date
         self.subdomain = subdomain
         super().__init__(**kwargs)
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.subdomain}.zendesk.com/api/sunshine/"
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")
