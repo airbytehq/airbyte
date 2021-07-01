@@ -13,7 +13,11 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 ## 7/01/2021 
 
 Bugfixes:
-* **Facebook Marketing** source: Using cursor field as `date_start` for Ads Insights and taking all records.
+* **Looker** source: Now supports the Run Look stream.
+* **Google Adwords**: CI is fixed and new version is published.
+* **Slack** source: Now Airbyte native and supports channels, channel members, messages, users, and threads streams.
+* **Freshdesk** source: Does not fail after 300 pages anymore.  
+* **MSSQL** source: Now has comprehensive data type tests.
 
 ## 6/24/2021 
 
