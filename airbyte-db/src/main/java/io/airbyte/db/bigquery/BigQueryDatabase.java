@@ -27,6 +27,7 @@ package io.airbyte.db.bigquery;
 import static java.util.Objects.isNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.api.gax.paging.Page;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -37,15 +38,19 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
+import com.google.cloud.bigquery.Table;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Streams;
 import io.airbyte.db.SqlDatabase;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -128,6 +133,14 @@ public class BigQueryDatabase extends SqlDatabase {
     final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
     return executeQuery(queryJob);
   }
+
+  public List<Table> getNameSpaceTables(String nameSpace) {
+    Page<Table> tables = bigQuery.listTables(nameSpace);
+    List<Table> tableList = new ArrayList<>();
+    tables.iterateAll().forEach(tableList::add);
+    return tableList;
+  }
+
 
   private ImmutablePair<Job, String> executeQuery(Job queryJob) {
     final Job completedJob = waitForQuery(queryJob);
