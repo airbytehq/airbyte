@@ -25,6 +25,7 @@
 package io.airbyte.db.bigquery;
 
 import static io.airbyte.db.DataTypeUtils.nullIfInvalid;
+import static io.airbyte.db.DataTypeUtils.toISO8601String;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,8 +34,9 @@ import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.DataTypeUtils;
+import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -65,13 +67,8 @@ public class BigQueryUtils {
       case BIGNUMERIC -> node.put(fieldName, nullIfInvalid(fieldValue::getNumericValue));
       case STRING -> node.put(fieldName, fieldValue.getStringValue());
       case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
-      case STRUCT -> node.put(fieldName, ""); // @TODO impl
-      case ARRAY -> node.put(fieldName, ""); // @TODO impl
-      case TIMESTAMP -> node.put(fieldName, ""); // @TODO impl
-      case DATE -> node.put(fieldName, DataTypeUtils.toISO8601String(getDateValue(fieldValue)));
-      case TIME -> node.put(fieldName, ""); // @TODO impl
-      case DATETIME -> node.put(fieldName, ""); // @TODO impl
-      case GEOGRAPHY -> node.put(fieldName, ""); // @TODO impl
+      case TIMESTAMP, DATE, TIME, DATETIME -> node.put(fieldName, toISO8601String(fieldValue.getTimestampValue()));
+      default -> node.put(fieldName, fieldValue.getStringValue());
     }
   }
 
@@ -85,24 +82,15 @@ public class BigQueryUtils {
     }
     return parsedValue;
   }
-  /*
-   * final int columnTypeInt = r.getMetaData().getColumnType(i); final String columnName =
-   * r.getMetaData().getColumnName(i); final JDBCType columnType = safeGetJdbcType(columnTypeInt);
-   *
-   * // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-   * switch (columnType) { case BIT, BOOLEAN -> o.put(columnName, r.getBoolean(i)); case TINYINT,
-   * SMALLINT -> o.put(columnName, r.getShort(i)); case INTEGER -> putInteger(o, columnName, r, i);
-   * case BIGINT -> o.put(columnName, nullIfInvalid(() -> r.getLong(i))); case FLOAT, DOUBLE ->
-   * o.put(columnName, nullIfInvalid(() -> r.getDouble(i), Double::isFinite)); case REAL ->
-   * o.put(columnName, nullIfInvalid(() -> r.getFloat(i), Float::isFinite)); case NUMERIC, DECIMAL ->
-   * o.put(columnName, nullIfInvalid(() -> r.getBigDecimal(i))); case CHAR, VARCHAR, LONGVARCHAR ->
-   * o.put(columnName, r.getString(i)); case DATE -> o.put(columnName, toISO8601String(r.getDate(i)));
-   * case TIME -> o.put(columnName, toISO8601String(r.getTime(i))); case TIMESTAMP -> { //
-   * https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-   * final Timestamp t = r.getTimestamp(i); java.util.Date d = new java.util.Date(t.getTime() +
-   * (t.getNanos() / 1000000)); o.put(columnName, toISO8601String(d)); } case BLOB, BINARY, VARBINARY,
-   * LONGVARBINARY -> o.put(columnName, r.getBytes(i)); default -> o.put(columnName, r.getString(i));
-   * }
-   */
+
+  public static JsonSchemaPrimitive getType(StandardSQLTypeName bigQueryType) {
+    return
+        switch (bigQueryType) {
+          case BOOL -> JsonSchemaPrimitive.BOOLEAN;
+          case INT64, FLOAT64, NUMERIC, BIGNUMERIC -> JsonSchemaPrimitive.NUMBER;
+          case STRING, BYTES, TIMESTAMP, DATE, TIME, DATETIME -> JsonSchemaPrimitive.STRING;
+          default -> JsonSchemaPrimitive.STRING;
+    };
+  }
 
 }
