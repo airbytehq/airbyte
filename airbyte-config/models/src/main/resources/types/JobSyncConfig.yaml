@@ -47,3 +47,7 @@ properties:
   state:
     description: optional state of the previous run. this object is defined per integration.
     "$ref": State.yaml
+  resourceRequirements:
+    type: object
+    description: optional resource requirements to run sync workers
+    existingJavaType: io.airbyte.config.ResourceRequirements

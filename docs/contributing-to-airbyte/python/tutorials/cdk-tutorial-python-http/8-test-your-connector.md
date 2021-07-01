@@ -8,7 +8,7 @@ You can run the tests using `python -m pytest -s unit_tests`
 
 ## Integration Tests
 
-Place any integration tests in the `integration_tests` directory such that they can be [discovered by pytest](https://docs.pytest.org/en/reorganize-docs/new-docs/user/naming_conventions.html).
+Place any integration tests in the `integration_tests` directory such that they can be [discovered by pytest](https://docs.pytest.org/en/6.2.x/goodpractices.html#conventions-for-python-test-discovery).
 
 ## Standard Tests
 
