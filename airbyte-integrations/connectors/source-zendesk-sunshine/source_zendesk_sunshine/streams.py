@@ -88,7 +88,7 @@ class IncrementalSunshineStream(SunshineStream, ABC):
         """
         latest_state = latest_record.get(self.cursor_field)
         current_state = current_stream_state.get(self.cursor_field) or latest_state
-        # dates are ISOformatted, no need to parse
+        # dates are ISO-formatted, no need to parse
         return {self.cursor_field: max(latest_state, current_state)}
 
 
