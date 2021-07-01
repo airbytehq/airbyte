@@ -36,7 +36,7 @@ test_parameters = {
 
 
 def test_get_updated_state_unit():
-    config = json.load(open("secrets/config.json"))  # not used but required as __init__ arguments
+    config = {"start_date": "2021-01-01T00:00:00", "access_token": "something"}
     authenticator = TokenAuthenticator(token=config["access_token"])
     start_date = pendulum.parse(config["start_date"])
     stream = Surveys(authenticator=authenticator, start_date=start_date)
