@@ -103,14 +103,12 @@ public class SourceDefinitionsHandler {
   }
 
   public SourceDefinitionReadList listLatestSourceDefinitions() {
-    return toSourceDefinitionReadList(getLatestDestinations());
+    return toSourceDefinitionReadList(getLatestSources());
   }
 
-  private List<StandardSourceDefinition> getLatestDestinations() {
+  private List<StandardSourceDefinition> getLatestSources() {
     try {
       return githubStore.getLatestSources();
-    } catch (IOException e) {
-      return Collections.emptyList();
     } catch (InterruptedException e) {
       throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }

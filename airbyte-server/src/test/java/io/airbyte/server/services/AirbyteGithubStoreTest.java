@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -49,6 +50,22 @@ public class AirbyteGithubStoreTest {
   public static void setUp() {
     webServer = new MockWebServer();
     githubStore = AirbyteGithubStore.test(webServer.url("/").toString(), TIMEOUT);
+  }
+
+  @Nested
+  @DisplayName("when no internet")
+  class noInternet {
+    @Test
+    void testGetLatestDestinations() throws InterruptedException, IOException {
+      webServer.shutdown();
+      assertEquals(Collections.emptyList(), githubStore.getLatestDestinations());
+    }
+
+    @Test
+    void testGetLatestSources() throws InterruptedException, IOException {
+      webServer.shutdown();
+      assertEquals(Collections.emptyList(), githubStore.getLatestSources());
+    }
   }
 
   @Nested
@@ -79,6 +96,12 @@ public class AirbyteGithubStoreTest {
       webServer.enqueue(timeoutResp);
 
       assertThrows(HttpTimeoutException.class, () -> githubStore.getFile("test-file"));
+    }
+
+    @Test
+    void testNoInternet() throws IOException, InterruptedException {
+      webServer.shutdown();
+      githubStore.getFile("test-file");
     }
 
   }

@@ -34,12 +34,17 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Convenience class for retrieving files checked into the Airbyte Github repo.
  */
 public class AirbyteGithubStore {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteGithubStore.class);
 
   private static final String GITHUB_BASE_URL = "https://raw.githubusercontent.com";
   private static final String SOURCE_DEFINITION_LIST_LOCATION_PATH =
@@ -65,12 +70,22 @@ public class AirbyteGithubStore {
     this.timeout = timeout;
   }
 
-  public List<StandardDestinationDefinition> getLatestDestinations() throws IOException, InterruptedException {
-    return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
+  public List<StandardDestinationDefinition> getLatestDestinations() throws InterruptedException {
+    try {
+      return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
+    } catch (IOException e) {
+      LOGGER.warn("Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.");
+      return Collections.emptyList();
+    }
   }
 
-  public List<StandardSourceDefinition> getLatestSources() throws IOException, InterruptedException {
-    return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
+  public List<StandardSourceDefinition> getLatestSources() throws InterruptedException {
+    try {
+      return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
+    } catch (IOException e) {
+      LOGGER.warn("Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.");
+      return Collections.emptyList();
+    }
   }
 
   @VisibleForTesting
