@@ -14,7 +14,6 @@ import HeadTitle from "components/HeadTitle";
 
 const Content = styled.div`
   max-width: 813px;
-  margin: 4px auto;
 `;
 
 const ControlContent = styled(ContentCard)`
@@ -85,9 +84,9 @@ const ConfigurationsPage: React.FC = () => {
   return (
     <Content>
       <HeadTitle
-        titles={[{ id: "sidebar.admin" }, { id: "admin.configuration" }]}
+        titles={[{ id: "sidebar.settings" }, { id: "admin.configuration" }]}
       />
-      <ControlContent title={<FormattedMessage id="admin.export" />}>
+      <ContentCard title={<FormattedMessage id="admin.export" />}>
         <ButtonContent>
           <LoadingButton onClick={onExport} isLoading={loadingExport}>
             <FormattedMessage id="admin.exportConfiguration" />
@@ -109,7 +108,7 @@ const ConfigurationsPage: React.FC = () => {
             />
           </Text>
         </ButtonContent>
-      </ControlContent>
+      </ContentCard>
 
       <ControlContent title={<FormattedMessage id="admin.import" />}>
         <ButtonContent>

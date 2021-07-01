@@ -6,6 +6,7 @@ import { ContentCard } from "components";
 import { PreferencesForm } from "views/Settings/PreferencesForm";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
 import WebHookForm from "./components/WebHookForm";
+import HeadTitle from "../../../../components/HeadTitle";
 
 const SettingsCard = styled(ContentCard)`
   max-width: 638px;
@@ -85,6 +86,9 @@ const NotificationPage: React.FC = () => {
 
   return (
     <>
+      <HeadTitle
+        titles={[{ id: "sidebar.settings" }, { id: "settings.notifications" }]}
+      />
       <SettingsCard title={<FormattedMessage id="settings.webhook" />}>
         <Content>
           <WebHookForm

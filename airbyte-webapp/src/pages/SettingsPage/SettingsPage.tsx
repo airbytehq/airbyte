@@ -12,6 +12,7 @@ import { Routes } from "pages/routes";
 import useRouter from "components/hooks/useRouterHook";
 import NotificationPage from "./pages/NotificationPage";
 import ConfigurationsPage from "./pages/ConfigurationsPage";
+import { DestinationsPage, SourcesPage } from "./pages/ConnectorsPage";
 
 const Content = styled.div`
   margin: 0 33px 0 27px;
@@ -73,10 +74,10 @@ const SettingsPage: React.FC = () => {
           <Suspense fallback={<LoadingPage />}>
             <Switch>
               <Route path={`${Routes.Settings}${Routes.Source}`}>
-                <div>Source</div>
+                <SourcesPage />
               </Route>
               <Route path={`${Routes.Settings}${Routes.Destination}`}>
-                <div>Destination</div>
+                <DestinationsPage />
               </Route>
               <Route path={`${Routes.Settings}${Routes.Configuration}`}>
                 <ConfigurationsPage />
