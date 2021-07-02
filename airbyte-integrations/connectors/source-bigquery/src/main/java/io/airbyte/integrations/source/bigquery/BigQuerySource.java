@@ -25,9 +25,7 @@
 package io.airbyte.integrations.source.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.cloud.bigquery.QueryParameterValue;
-import com.google.cloud.bigquery.StandardSQLTypeName;
-import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.*;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
@@ -42,6 +40,9 @@ import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
+
+import java.sql.JDBCType;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +53,6 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySource.class);
 
-  // TODO insert your driver name. Ex: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
-  static final String DRIVER_CLASS = "driver_name_here";
   static final String CONFIG_DATASET_ID = "dataset_id";
   static final String CONFIG_PROJECT_ID = "project_id";
   static final String CONFIG_DATASET_LOCATION = "dataset_location";
@@ -81,7 +80,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   public List<CheckedConsumer<BigQueryDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
-    return new ArrayList<>();
+    return Collections.emptyList();
   }
 
   @Override
@@ -96,14 +95,24 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
 
   @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) throws Exception {
-    List<Table> nameSpaceTables = database.getProjectTables(dbConfig.get(CONFIG_PROJECT_ID).asText());
-
-    return null;
+    String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
+    List<Table> tables = database.getProjectTables(projectId);
+    List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();
+    tables.stream()
+            .map(table -> Objects.requireNonNull(table.getDefinition().getSchema()).getFields())
+            .forEach(fields -> fields.stream().map(field -> TableInfo.<CommonField<StandardSQLTypeName>>builder()
+                    .nameSpace(projectId)
+                    .name(field.getName())
+            .fields(fields.stream().map(f -> {
+              StandardSQLTypeName standardType = f.getType().getStandardType();
+              return new CommonField<>(f.getName(), standardType);
+            }).collect(Collectors.toList())).build()).forEach(result::add));
+    return result;
   }
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(BigQueryDatabase database, List<TableInfo<CommonField<StandardSQLTypeName>>> tableInfos) {
-    return null;
+    return Collections.emptyMap();
   }
 
   @Override
