@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
-import { Field, FieldProps, Form, Formik } from "formik";
 
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
@@ -9,10 +8,11 @@ import config from "config";
 import FeedbackBlock from "../../../components/FeedbackBlock";
 
 export type MetricsFormProps = {
-  onSubmit: (data: { anonymousDataCollection: boolean }) => void;
+  onChange: (data: { anonymousDataCollection: boolean }) => void;
   anonymousDataCollection?: boolean;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
+  isLoading?: boolean;
 };
 
 const FormItem = styled.div`
@@ -42,60 +42,45 @@ const Text = styled.div`
 `;
 
 const MetricsForm: React.FC<MetricsFormProps> = ({
-  onSubmit,
+  onChange,
   anonymousDataCollection,
   successMessage,
   errorMessage,
+  isLoading,
 }) => {
   return (
-    <Formik
-      initialValues={{
-        anonymousDataCollection: anonymousDataCollection || false,
-      }}
-      onSubmit={async (values) => {
-        await onSubmit(values);
-      }}
-    >
-      {({ isSubmitting, handleChange, handleSubmit }) => (
-        <Form>
-          <Subtitle>
-            <FormattedMessage id="preferences.anonymizeUsage" />
-          </Subtitle>
-          <Text>
-            <FormattedMessage
-              id={"preferences.collectData"}
-              values={{
-                docs: (...docs: React.ReactNode[]) => (
-                  <DocsLink target="_blank" href={config.ui.docsLink}>
-                    {docs}
-                  </DocsLink>
-                ),
-              }}
-            />
-          </Text>
-          <FormItem>
-            <Field name="anonymousDataCollection">
-              {({ field }: FieldProps<string>) => (
-                <LabeledToggle
-                  {...field}
-                  disabled={isSubmitting}
-                  label={<FormattedMessage id="preferences.anonymizeData" />}
-                  onChange={(event) => {
-                    handleChange(event);
-                    handleSubmit();
-                  }}
-                />
-              )}
-            </Field>
-            <FeedbackBlock
-              errorMessage={errorMessage}
-              successMessage={successMessage}
-              isLoading={isSubmitting}
-            />
-          </FormItem>
-        </Form>
-      )}
-    </Formik>
+    <>
+      <Subtitle>
+        <FormattedMessage id="preferences.anonymizeUsage" />
+      </Subtitle>
+      <Text>
+        <FormattedMessage
+          id={"preferences.collectData"}
+          values={{
+            docs: (...docs: React.ReactNode[]) => (
+              <DocsLink target="_blank" href={config.ui.docsLink}>
+                {docs}
+              </DocsLink>
+            ),
+          }}
+        />
+      </Text>
+      <FormItem>
+        <LabeledToggle
+          checked={anonymousDataCollection}
+          disabled={isLoading}
+          label={<FormattedMessage id="preferences.anonymizeData" />}
+          onChange={(event) => {
+            onChange({ anonymousDataCollection: event.target.checked });
+          }}
+        />
+        <FeedbackBlock
+          errorMessage={errorMessage}
+          successMessage={successMessage}
+          isLoading={isLoading}
+        />
+      </FormItem>
+    </>
   );
 };
 

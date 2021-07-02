@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -6,6 +6,7 @@ import { ContentCard } from "components";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
 import HeadTitle from "components/HeadTitle";
 import MetricsForm from "./components/MetricsForm";
+import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 
 const SettingsCard = styled(ContentCard)`
   max-width: 638px;
@@ -22,23 +23,17 @@ const Content = styled.div`
 `;
 
 const MetricsPage: React.FC = () => {
-  const { workspace, updatePreferences } = useWorkspace();
-  const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
-  const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null);
+  const { workspace } = useWorkspace();
 
-  const onSubmit = async (data: { anonymousDataCollection: boolean }) => {
-    setErrorMessage(null);
-    setSuccessMessage(null);
-    try {
-      await updatePreferences({
-        anonymousDataCollection: data.anonymousDataCollection,
-        news: workspace.news,
-        securityUpdates: workspace.securityUpdates,
-      });
-      setSuccessMessage(<FormattedMessage id="form.changesSaved" />);
-    } catch (e) {
-      setErrorMessage(<FormattedMessage id="form.someError" />);
-    }
+  const {
+    errorMessage,
+    successMessage,
+    loading,
+    updateData,
+  } = useWorkspaceEditor();
+
+  const onChange = async (data: { anonymousDataCollection: boolean }) => {
+    await updateData({ ...workspace, ...data });
   };
 
   return (
@@ -49,10 +44,11 @@ const MetricsPage: React.FC = () => {
       <SettingsCard title={<FormattedMessage id="settings.metricsSettings" />}>
         <Content>
           <MetricsForm
-            onSubmit={onSubmit}
+            onChange={onChange}
             anonymousDataCollection={workspace.anonymousDataCollection}
             successMessage={successMessage}
             errorMessage={errorMessage}
+            isLoading={loading}
           />
         </Content>
       </SettingsCard>

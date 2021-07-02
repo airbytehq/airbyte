@@ -7,6 +7,7 @@ import NotificationsForm from "./components/NotificationsForm";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
 import WebHookForm from "./components/WebHookForm";
 import HeadTitle from "components/HeadTitle";
+import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 
 const SettingsCard = styled(ContentCard)`
   max-width: 638px;
@@ -23,14 +24,13 @@ const Content = styled.div`
 `;
 
 const NotificationPage: React.FC = () => {
+  const { workspace, updateWebhook, testWebhook } = useWorkspace();
   const {
-    workspace,
-    updatePreferences,
-    updateWebhook,
-    testWebhook,
-  } = useWorkspace();
-  const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
-  const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null);
+    errorMessage,
+    successMessage,
+    loading,
+    updateData,
+  } = useWorkspaceEditor();
   const [
     errorWebhookMessage,
     setErrorWebhookMessage,
@@ -40,21 +40,11 @@ const NotificationPage: React.FC = () => {
     setSuccessWebhookMessage,
   ] = useState<React.ReactNode>(null);
 
-  const onSubmit = async (data: {
+  const onChange = async (data: {
     news: boolean;
     securityUpdates: boolean;
   }) => {
-    setErrorMessage(null);
-    setSuccessMessage(null);
-    try {
-      await updatePreferences({
-        ...data,
-        anonymousDataCollection: workspace.anonymousDataCollection,
-      });
-      setSuccessMessage(<FormattedMessage id="form.changesSaved" />);
-    } catch (e) {
-      setErrorMessage(<FormattedMessage id="form.someError" />);
-    }
+    await updateData({ ...workspace, ...data });
   };
 
   const onSubmitWebhook = async (data: { webhook: string }) => {
@@ -103,9 +93,10 @@ const NotificationPage: React.FC = () => {
           />
 
           <NotificationsForm
+            isLoading={loading}
             errorMessage={errorMessage}
             successMessage={successMessage}
-            onSubmit={onSubmit}
+            onChange={onChange}
             preferencesValues={{
               news: workspace.news,
               securityUpdates: workspace.securityUpdates,
