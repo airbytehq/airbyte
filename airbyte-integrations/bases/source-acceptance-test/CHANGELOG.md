@@ -5,3 +5,7 @@ Add test whether PKs present and not None if `source_defined_primary_key` define
 
 ## 0.1.5
 Add configurable timeout for the acceptance tests: https://github.com/airbytehq/airbyte/pull/4296
+
+## 0.1.7
+Add: `test_spec` additionally checks if Dockerfile has `ENV AIRBYTE_ENTRYPOINT` defined 
+    and equal to `space_joined ENTRYPOINT`
