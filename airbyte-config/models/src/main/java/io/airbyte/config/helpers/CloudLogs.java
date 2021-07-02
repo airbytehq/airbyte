@@ -54,15 +54,27 @@ public interface CloudLogs {
    * @return true if no configuration is set;
    */
   static boolean hasEmptyConfigs(Configs configs) {
+    return !hasAwsCredentials(configs) && !hasGcpCredentials(configs);
+  }
+
+  static CloudLogs createCloudLogClient(Configs configs) {
+    // check if the configs exists, and pick a client.
+    if (hasAwsCredentials(configs)) {
+      return new S3Logs();
+    }
+
+    throw new RuntimeException("Error no cloud credentials configured..");
+  }
+
+  private static boolean hasAwsCredentials(Configs configs) {
     return configs.getAwsAccessKey().isBlank() ||
         configs.getAwsSecretAccessKey().isBlank() ||
         configs.getS3LogBucketRegion().isBlank() ||
         configs.getS3LogBucket().isBlank();
   }
 
-  static CloudLogs createCloudLogClient(Configs configs) {
-    // check if the configs exists, and pick a client.
-    return new S3Logs();
+  private static boolean hasGcpCredentials(Configs configs) {
+    return configs.getAwsAccessKey().isBlank() ||
+        configs.getAwsSecretAccessKey().isBlank();
   }
-
 }
