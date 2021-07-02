@@ -24,4 +24,4 @@ spec:
           command:
             - /bin/sh
             - -c
-            - while :; do kubectl -n ${KUBE_NAMESPACE} -l airbyte get pod | grep Completed | awk '{print $1}' | xargs --no-run-if-empty kubectl -n ${KUBE_NAMESPACE} delete pod | xargs --no-run-if-empty echo `date "+%Y-%m-%d %H:%M:%S"`; sleep 1; done
+            - while :; do kubectl -n ${KUBE_NAMESPACE} -l airbyte=worker-pod get pod | grep Completed | awk '{print $1}' | xargs --no-run-if-empty kubectl -n ${KUBE_NAMESPACE} delete pod | xargs --no-run-if-empty echo `date "+%Y-%m-%d %H:%M:%S"`; sleep 1; done
