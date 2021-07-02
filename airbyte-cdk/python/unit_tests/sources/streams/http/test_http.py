@@ -28,7 +28,6 @@ from unittest.mock import ANY
 
 import pytest
 import requests
-import requests_mock
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
@@ -46,16 +45,16 @@ class StubBasicReadHttpStream(HttpStream):
         return None
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return ""
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         stubResp = {"data": self.resp_counter}
         self.resp_counter += 1
@@ -64,10 +63,10 @@ class StubBasicReadHttpStream(HttpStream):
 
 def test_request_kwargs_used(mocker, requests_mock):
     stream = StubBasicReadHttpStream()
-    request_kwargs = {'cert': None, 'proxies': 'google.com'}
-    mocker.patch.object(stream, 'request_kwargs', return_value=request_kwargs)
-    mocker.patch.object(stream._session, 'send', wraps=stream._session.send)
-    requests_mock.register_uri('GET', stream.url_base)
+    request_kwargs = {"cert": None, "proxies": "google.com"}
+    mocker.patch.object(stream, "request_kwargs", return_value=request_kwargs)
+    mocker.patch.object(stream._session, "send", wraps=stream._session.send)
+    requests_mock.register_uri("GET", stream.url_base)
 
     list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
