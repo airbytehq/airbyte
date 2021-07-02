@@ -166,6 +166,9 @@ spec:
               mountPath: /configs
             - name: airbyte-volume-workspace
               mountPath: /workspace
+            - name: gcs-log-creds-volume
+              mountPath: /secrets/gcs-log-creds
+              readOnly: true
       volumes:
         - name: airbyte-volume-workspace
           persistentVolumeClaim:
@@ -173,3 +176,6 @@ spec:
         - name: airbyte-volume-configs
           persistentVolumeClaim:
             claimName: airbyte-volume-configs
+        - name: gcs-log-creds-volume
+          secret:
+            secretName: gcs-log-creds
