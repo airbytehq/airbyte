@@ -135,3 +135,7 @@ class ConnectorRunner:
     def env_variables(self):
         env_vars = self._image.attrs["Config"]["Env"]
         return {env.split("=", 1)[0]: env.split("=", 1)[1] for env in env_vars}
+
+    @property
+    def entry_point(self):
+        return self._image.attrs["Config"]["Entrypoint"]
