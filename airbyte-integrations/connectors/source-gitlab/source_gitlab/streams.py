@@ -27,6 +27,7 @@ import tempfile
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
+import pendulum
 import requests
 import vcr
 from airbyte_cdk.models import SyncMode
@@ -47,9 +48,9 @@ class GitlabStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.api_url = api_url
 
-    @vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json")
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        yield from super().read_records(**kwargs)
+        with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
+            yield from super().read_records(**kwargs)
 
     def request_params(
         self,
@@ -153,7 +154,8 @@ class IncrementalGitlabChildStream(GitlabChildStream):
         if current_state:
             current_state = current_state.get(self.cursor_field)
         current_state_value = current_state or latest_cursor_value
-        current_stream_state[str(project_id)] = {self.cursor_field: max(current_state_value, latest_cursor_value)}
+        max_value = max(pendulum.parse(current_state_value), pendulum.parse(latest_cursor_value))
+        current_stream_state[str(project_id)] = {self.cursor_field: str(max_value)}
         return current_stream_state
 
     def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
