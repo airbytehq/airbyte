@@ -207,8 +207,7 @@ class SourceDefinitionsHandlerTest {
 
     @Test
     @DisplayName("returns empty collection if cannot find latest definitions")
-    void testHttpTimeout() throws IOException, InterruptedException {
-      when(githubStore.getLatestSources()).thenThrow(new IOException());
+    void testHttpTimeout() {
       assertEquals(0, sourceHandler.listLatestSourceDefinitions().getSourceDefinitions().size());
     }
 
