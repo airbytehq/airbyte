@@ -27,12 +27,6 @@ import pytest
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_surveymonkey.streams import Surveys
 
-test_parameters = {
-    "base_date": "2021-06-10T11:02:01",
-    "lesser_dates": ["2021-06-09T11:02:01", "2021-05-10T11:02:01", "2020-06-10T11:02:01"],  # lesser than base date
-    "bigger_dates": ["2021-06-10T11:02:02", "2025-06-10T11:02:01", "2021-08-10T11:02:01"],  # bigger than base date
-}
-
 
 class TestFacebookMarketingSource:
     @pytest.mark.parametrize(
