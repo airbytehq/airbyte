@@ -9,7 +9,8 @@
     "properties": {
       "start_date": {
         "type": "string",
-        "description": "Start Date in format: YYYY-MM-DD hh:mm:ss"
+        "description": "Start Date in format: YYYY-MM-DD",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       },
       "window_in_days": {
         "type": "integer",
@@ -18,11 +19,13 @@
       },
       "client_id": {
         "type": "string",
-        "description": "Client id"
+        "description": "Client id",
+        "airbyte_secret": true
       },
       "client_secret": {
         "type": "string",
-        "description": "Client Secret"
+        "description": "Client Secret",
+        "airbyte_secret": true
       },
       "is_sandbox": {
         "type": "boolean",
