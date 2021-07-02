@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-pod-sweeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      airbyte: pod-sweeper
+  template:
+    metadata:
+      labels:
+        airbyte: pod-sweeper
+    spec:
+      containers:
+        - name: airbyte-pod-sweeper
+          image: bitnami/kubectl
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - while :; do kubectl get pod | grep Completed | awk '{print $1}' | xargs --no-run-if-empty kubectl delete pod | xargs --no-run-if-empty echo `date "+%Y-%m-%d %H:%M:%S"`; sleep 300; done
+
