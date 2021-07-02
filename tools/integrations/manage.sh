@@ -32,14 +32,14 @@ cmd_build() {
   local run_tests=$1; shift || run_tests=true
   # TODO re-enable build cache if needed (https://github.com/airbytehq/airbyte/issues/4508)
   echo "Building $path"
-  ./gradlew --no-daemon -no-build-cache "$(_to_gradle_path "$path" clean)"
-  ./gradlew --no-daemon -no-build-cache "$(_to_gradle_path "$path" build)"
+  ./gradlew --no-daemon --no-build-cache "$(_to_gradle_path "$path" clean)"
+  ./gradlew --no-daemon --no-build-cache "$(_to_gradle_path "$path" build)"
 
   if [ "$run_tests" = false ] ; then
     echo "Skipping integration tests..."
   else
     echo "Running integration tests..."
-    ./gradlew --no-daemon -no-build-cache "$(_to_gradle_path "$path" integrationTest)"
+    ./gradlew --no-daemon --no-build-cache "$(_to_gradle_path "$path" integrationTest)"
   fi
 }
 
