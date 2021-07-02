@@ -1,5 +1,32 @@
 # Changelog
 
+## 07/01/2021 Summary
+
+Hey @channel, here's this week's changelog announcements for Airbyte!
+
+* New Destination: Google PubSub
+* New Source: AWS CloudTrail
+
+*The risks and issues with upgrading Airbyte are now gone...*
+* 🎉 Airbyte automatically upgrades versions safely at server startup 🎉
+
+
+* 💎 Logs on K8s are now stored in Minio by default, no S3 bucket required
+* ✨ Looker Source: Supports the Run Look output stream
+* ✨ Slack Source: is now Airbyte native!
+* 🐛 Freshdesk Source: No longer fails after 300 pages
+* 📚 New tutorial on building Java destinations
+
+Starting from next week, our weekly office hours will now become demo days! Drop by to get sneak peeks and new feature demos.
+
+* We added the #careers channel, so if you're hiring, post your job reqs there!
+* We added a #understanding-airbyte channel to mirror [this](../../understanding-airbyte) section on our docs site. Ask any questions about our architecture or protocol there.
+* We added a #contributing-to-airbyte channel. A lot of people ask us about how to contribute to the project, so ask away there!
+
+View the full release highlights here: [Platform](./platform.md), [Connectors](./connectors.md)
+
+As usual, thank you to our awesome community contributors this week: Harshith Mullapudi, Michael Irvine, and [sabifranjo](https://github.com/sabifranjo).
+
 ## 06/24/2021 Summary
 
 * New Source: [IBM Db2](../../integrations/sources/db2.md)
