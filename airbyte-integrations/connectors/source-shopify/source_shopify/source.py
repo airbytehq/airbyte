@@ -134,6 +134,7 @@ class Orders(IncrementalShopifyStream):
             }
         return params
 
+
 class DraftOrders(IncrementalShopifyStream):
     data_field = "draft_orders"
 
@@ -147,6 +148,7 @@ class DraftOrders(IncrementalShopifyStream):
         else:
             params = {"limit": self.limit, "updated_at_min": self.start_date, "since_id": stream_state.get(self.cursor_field)}
         return params
+
 
 class Products(IncrementalShopifyStream):
     data_field = "products"
