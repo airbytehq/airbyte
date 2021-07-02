@@ -31,9 +31,13 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
+TWILIO_API_URL_BASE = "https://api.twilio.com"
+TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
+TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
+
 
 class TwilioStream(HttpStream, ABC):
-    url_base = "https://api.twilio.com/2010-04-01/"
+    url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
     page_size = 100
 
@@ -82,6 +86,10 @@ class TwilioStream(HttpStream, ABC):
 
 
 class IncrementalTwilioStream(TwilioStream, ABC):
+    """
+    If child streams are not incremental, then
+    """
+
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -122,7 +130,11 @@ class IncrementalTwilioStream(TwilioStream, ABC):
 
 
 class TwilioNestedStream(TwilioStream):
-    url_base = "https://api.twilio.com"
+    """
+    Basic class for the streams that are dependant on the results of another stream output (parent-child relations).
+    Parent class read is always full refresh, even if it supports incremental read.
+    """
+
     media_exist_validation = {}
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
@@ -159,6 +171,8 @@ class TwilioNestedStream(TwilioStream):
 class Accounts(TwilioStream):
     """https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources"""
 
+    url_base = TWILIO_API_URL_BASE_VERSIONED
+
 
 class Addresses(TwilioNestedStream):
     """https://www.twilio.com/docs/usage/api/address#read-multiple-address-resources"""
@@ -170,7 +184,7 @@ class DependentPhoneNumbers(TwilioNestedStream):
     """https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources"""
 
     parent_stream = Addresses
-    url_base = "https://api.twilio.com/2010-04-01/"
+    url_base = TWILIO_API_URL_BASE_VERSIONED
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return f"Accounts/{stream_slice['account_sid']}/Addresses/{stream_slice['sid']}/DependentPhoneNumbers.json"
@@ -272,7 +286,12 @@ class Conferences(TwilioNestedStream, IncrementalTwilioStream):
 
 
 class ConferenceParticipants(TwilioNestedStream):
-    """https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources"""
+    """
+    https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources
+
+    This streams has records only if there are active conference participants (participants,
+    which are on conference call at the moment request is made).
+    """
 
     parent_stream = Conferences
     data_field = "participants"
@@ -324,7 +343,7 @@ class MessageMedia(TwilioNestedStream, IncrementalTwilioStream):
 
 
 class UsageNestedStream(TwilioNestedStream):
-    url_base = "https://api.twilio.com/2010-04-01/"
+    url_base = TWILIO_API_URL_BASE_VERSIONED
 
     @property
     @abstractmethod
@@ -369,7 +388,7 @@ class UsageTriggers(UsageNestedStream):
 class Alerts(IncrementalTwilioStream):
     """https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources"""
 
-    url_base = "https://monitor.twilio.com/v1/"
+    url_base = TWILIO_MONITOR_URL_BASE
     incremental_filter_field = "StartDate"
 
     def path(self, **kwargs):

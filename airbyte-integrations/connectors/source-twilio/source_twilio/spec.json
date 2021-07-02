@@ -13,9 +13,9 @@
         "airbyte_secret": true,
         "type": "string"
       },
-      "api_key": {
-        "title": "API Key",
-        "description": "Twilio API Key.",
+      "auth_token": {
+        "title": "Auth Token",
+        "description": "Twilio Auth Token.",
         "airbyte_secret": true,
         "type": "string"
       },
