@@ -131,12 +131,7 @@ class ConnectorRunner:
             except ValidationError as exc:
                 logging.warning("Unable to parse connector's output %s", exc)
 
-    def has_env_var(self, lookup_env_var: str):
+    @property
+    def env_variables(self):
         env_vars = self._image.attrs["Config"]["Env"]
-        env_vars_dict = {env.split("=")[0]: env.split("=")[1] for env in env_vars}
-        if lookup_env_var in env_vars_dict:
-            entrypoint_value = " ".join(self._image.attrs["Config"]["Entrypoint"])
-            check_value_eq_to_entrypoint = entrypoint_value == env_vars_dict[lookup_env_var]
-            return check_value_eq_to_entrypoint and {lookup_env_var: env_vars_dict[lookup_env_var]}
-
-        return False
+        return {env.split("=", 1)[0]: env.split("=", 1)[1] for env in env_vars}

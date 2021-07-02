@@ -45,8 +45,7 @@ class TestSpec(BaseTest):
         if connector_spec:
             assert spec_messages[0].spec == connector_spec, "Spec should be equal to the one in spec.json file"
 
-        result = docker_runner.has_env_var(lookup_env_var="AIRBYTE_ENTRYPOINT")
-        assert result
+        assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT"), "AIRBYTE_ENTRYPOINT must be set in dockerfile"
 
 
 @pytest.mark.default_timeout(30)
