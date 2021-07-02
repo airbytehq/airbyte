@@ -8,4 +8,4 @@ Add configurable timeout for the acceptance tests: https://github.com/airbytehq/
 
 ## 0.1.7
 Add: `test_spec` additionally checks if Dockerfile has `ENV AIRBYTE_ENTRYPOINT` defined 
-    and equal to `space_joined ENTRYPOINT`
+    and equal to space_joined `ENTRYPOINT`
