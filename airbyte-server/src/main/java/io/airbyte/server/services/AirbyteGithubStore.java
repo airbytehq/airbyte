@@ -100,9 +100,8 @@ public class AirbyteGithubStore {
         .header("accept", "*/*") // accept any file type
         .build();
     final var resp = httpClient.send(request, BodyHandlers.ofString());
-    if (resp.statusCode() == 404) {
-      // If the file does not exist.
-      throw new IOException("Missing file!");
+    if (resp.statusCode() >= 400) {
+      throw new IOException("getFile request ran into status code error: " + resp.statusCode() + "with message: " + resp.getClass());
     }
     return resp.body();
   }
