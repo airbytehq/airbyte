@@ -12,6 +12,7 @@ import { Routes } from "pages/routes";
 import useRouter from "components/hooks/useRouterHook";
 import NotificationPage from "./pages/NotificationPage";
 import ConfigurationsPage from "./pages/ConfigurationsPage";
+import MetricsPage from "./pages/MetricsPage";
 import { DestinationsPage, SourcesPage } from "./pages/ConnectorsPage";
 
 const Content = styled.div`
@@ -86,7 +87,7 @@ const SettingsPage: React.FC = () => {
                 <NotificationPage />
               </Route>
               <Route path={`${Routes.Settings}${Routes.Metrics}`}>
-                <div>Metrics</div>
+                <MetricsPage />
               </Route>
 
               <Redirect to={`${Routes.Settings}${Routes.Source}`} />
