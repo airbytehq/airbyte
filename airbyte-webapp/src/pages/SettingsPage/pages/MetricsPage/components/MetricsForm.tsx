@@ -6,7 +6,7 @@ import { Field, FieldProps, Form, Formik } from "formik";
 import Label from "components/Label";
 import LabeledToggle from "components/LabeledToggle";
 import config from "config";
-import Spinner from "components/Spinner";
+import FeedbackBlock from "../../../components/FeedbackBlock";
 
 export type MetricsFormProps = {
   onSubmit: (data: { anonymousDataCollection: boolean }) => void;
@@ -41,42 +41,12 @@ const Text = styled.div`
   padding-bottom: 9px;
 `;
 
-const SuccessBlock = styled.div`
-  margin-left: 10px;
-  color: ${({ theme }) => theme.successColor};
-  font-size: 13px;
-  line-height: 16px;
-`;
-
-const ErrorBlock = styled(SuccessBlock)`
-  color: ${({ theme }) => theme.dangerColor};
-`;
-
 const MetricsForm: React.FC<MetricsFormProps> = ({
   onSubmit,
   anonymousDataCollection,
   successMessage,
   errorMessage,
 }) => {
-  const feedbackContent = (isSubmitting: boolean) => {
-    if (isSubmitting) {
-      return (
-        <SuccessBlock>
-          <Spinner small />
-        </SuccessBlock>
-      );
-    }
-
-    if (errorMessage) {
-      return <ErrorBlock>{errorMessage}</ErrorBlock>;
-    }
-
-    if (successMessage) {
-      return <SuccessBlock>{successMessage}</SuccessBlock>;
-    }
-
-    return null;
-  };
   return (
     <Formik
       initialValues={{
@@ -117,7 +87,11 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
                 />
               )}
             </Field>
-            {feedbackContent(isSubmitting)}
+            <FeedbackBlock
+              errorMessage={errorMessage}
+              successMessage={successMessage}
+              isLoading={isSubmitting}
+            />
           </FormItem>
         </Form>
       )}

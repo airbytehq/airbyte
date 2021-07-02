@@ -3,10 +3,10 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { ContentCard } from "components";
-import { PreferencesForm } from "views/Settings/PreferencesForm";
+import NotificationsForm from "./components/NotificationsForm";
 import useWorkspace from "components/hooks/services/useWorkspaceHook";
 import WebHookForm from "./components/WebHookForm";
-import HeadTitle from "../../../../components/HeadTitle";
+import HeadTitle from "components/HeadTitle";
 
 const SettingsCard = styled(ContentCard)`
   max-width: 638px;
@@ -41,15 +41,16 @@ const NotificationPage: React.FC = () => {
   ] = useState<React.ReactNode>(null);
 
   const onSubmit = async (data: {
-    email: string;
-    anonymousDataCollection: boolean;
     news: boolean;
     securityUpdates: boolean;
   }) => {
     setErrorMessage(null);
     setSuccessMessage(null);
     try {
-      await updatePreferences(data);
+      await updatePreferences({
+        ...data,
+        anonymousDataCollection: workspace.anonymousDataCollection,
+      });
       setSuccessMessage(<FormattedMessage id="form.changesSaved" />);
     } catch (e) {
       setErrorMessage(<FormattedMessage id="form.someError" />);
@@ -89,7 +90,9 @@ const NotificationPage: React.FC = () => {
       <HeadTitle
         titles={[{ id: "sidebar.settings" }, { id: "settings.notifications" }]}
       />
-      <SettingsCard title={<FormattedMessage id="settings.webhook" />}>
+      <SettingsCard
+        title={<FormattedMessage id="settings.notificationSettings" />}
+      >
         <Content>
           <WebHookForm
             notificationUrl={initialWebhookUrl}
@@ -98,18 +101,12 @@ const NotificationPage: React.FC = () => {
             errorMessage={errorWebhookMessage}
             successMessage={successWebhookMessage}
           />
-        </Content>
-      </SettingsCard>
-      <SettingsCard title={<FormattedMessage id="settings.accountSettings" />}>
-        <Content>
-          <PreferencesForm
+
+          <NotificationsForm
             errorMessage={errorMessage}
             successMessage={successMessage}
             onSubmit={onSubmit}
-            isEdit
             preferencesValues={{
-              email: workspace.email,
-              anonymousDataCollection: workspace.anonymousDataCollection,
               news: workspace.news,
               securityUpdates: workspace.securityUpdates,
             }}

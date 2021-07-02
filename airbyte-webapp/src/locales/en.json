@@ -326,6 +326,9 @@
   "settings.metrics": "Metrics",
   "settings.notificationSettings": "Notification Settings",
   "settings.metricsSettings": "Metrics Settings",
+  "settings.emailNotifications": "Email notifications",
+  "settings.securityUpdates": "Security updates (recommended)",
+  "settings.newsletter": "Newsletter with feature updates.",
 
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
