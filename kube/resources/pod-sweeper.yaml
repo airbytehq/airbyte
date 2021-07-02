@@ -20,4 +20,3 @@ spec:
             - /bin/sh
             - -c
             - while :; do kubectl get pod | grep Completed | awk '{print $1}' | xargs --no-run-if-empty kubectl delete pod | xargs --no-run-if-empty echo `date "+%Y-%m-%d %H:%M:%S"`; sleep 300; done
-
