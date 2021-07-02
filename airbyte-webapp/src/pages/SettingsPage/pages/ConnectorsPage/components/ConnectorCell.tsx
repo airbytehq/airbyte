@@ -14,10 +14,12 @@ const Content = styled.div<{ enabled?: boolean }>`
   align-items: center;
   padding-left: 30px;
   position: relative;
+  margin: -5px 0;
+  min-width: 290px;
 `;
 
 const Image = styled.div`
-  height: 17px;
+  height: 25px;
   width: 17px;
   margin-right: 9px;
 `;
