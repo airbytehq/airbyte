@@ -86,10 +86,6 @@ class TwilioStream(HttpStream, ABC):
 
 
 class IncrementalTwilioStream(TwilioStream, ABC):
-    """
-    If child streams are not incremental, then
-    """
-
     cursor_field = "date_updated"
     time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
 
