@@ -1,8 +1,9 @@
 {
   "streams": [
     {
-      "name": "tickets",
-      "json_schema": {
+      "stream": {
+        "name": "tickets",
+        "json_schema": {
         "properties": {
           "organization_id": {
             "type": ["null", "integer"]
@@ -225,11 +226,17 @@
           }
         },
         "type": ["null", "object"]
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
-      "name": "groups",
-      "json_schema": {
+      "stream": {
+        "name": "groups",
+        "json_schema": {
         "type": ["null", "object"],
         "properties": {
           "name": {
@@ -253,11 +260,17 @@
             "type": ["null", "integer"]
           }
         }
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
-      "name": "users",
-      "json_schema": {
+      "stream": {
+        "name": "users",
+        "json_schema": {
         "type": ["null", "object"],
         "properties": {
           "verified": {
@@ -453,11 +466,17 @@
             "type": ["null", "boolean"]
           }
         }
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
-      "name": "organizations",
-      "json_schema": {
+      "stream": {
+        "name": "organizations",
+        "json_schema": {
         "type": ["null", "object"],
         "properties": {
           "group_id": {
@@ -517,11 +536,17 @@
             "format": "date-time"
           }
         }
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
-      "name": "ticket_audits",
-      "json_schema": {
+      "stream": {
+        "name": "ticket_audits",
+        "json_schema": {
         "type": ["null", "object"],
         "properties": {
           "events": {
@@ -935,11 +960,17 @@
             }
           }
         }
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
-      "name": "ticket_comments",
-      "json_schema": {
+      "stream": {
+        "name": "ticket_comments",
+        "json_schema": {
         "properties": {
           "created_at": {
             "type": ["null", "string"],
@@ -1194,11 +1225,17 @@
           }
         },
         "type": ["null", "object"]
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
-      "name": "ticket_fields",
-      "json_schema": {
+      "stream": {
+        "name": "ticket_fields",
+        "json_schema": {
         "properties": {
           "created_at": {
             "type": ["null", "string"],
@@ -1300,11 +1337,17 @@
           }
         },
         "type": ["null", "object"]
-      }
-    },
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+  },
     {
-      "name": "ticket_forms",
-      "json_schema": {
+      "stream": {
+        "name": "ticket_forms",
+        "json_schema": {
         "properties": {
           "created_at": {
             "type": ["null", "string"],
@@ -1361,11 +1404,17 @@
           }
         },
         "type": ["null", "object"]
-      }
-    },
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+  },
     {
-      "name": "group_memberships",
-      "json_schema": {
+      "stream": {
+        "name": "group_memberships",
+        "json_schema": {
         "properties": {
           "default": {
             "type": ["null", "boolean"]
@@ -1392,11 +1441,17 @@
           }
         },
         "type": ["null", "object"]
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
-      "name": "macros",
-      "json_schema": {
+      "stream": {
+        "name": "macros",
+        "json_schema": {
         "properties": {
           "id": {
             "type": ["null", "integer"]
@@ -1457,11 +1512,17 @@
           }
         },
         "type": ["null", "object"]
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
-      "name": "satisfaction_ratings",
-      "json_schema": {
+      "stream": {
+        "name": "satisfaction_ratings",
+        "json_schema": {
         "type": ["null", "object", "string"],
         "properties": {
           "id": {
@@ -1503,11 +1564,17 @@
             "type": ["null", "string"]
           }
         }
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
-      "name": "tags",
-      "json_schema": {
+      "stream": {
+        "name": "tags",
+        "json_schema": {
         "properties": {
           "count": {
             "type": ["null", "integer"]
@@ -1517,9 +1584,15 @@
           }
         },
         "type": ["null", "object"]
-      }
+      },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
+      "stream": {
       "name": "ticket_metrics",
       "json_schema": {
         "properties": {
@@ -1671,9 +1744,15 @@
           }
         },
         "type": ["null", "object"]
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     },
     {
+      "stream": {
       "name": "sla_policies",
       "json_schema": {
         "properties": {
@@ -1759,7 +1838,12 @@
           }
         },
         "type": ["object"]
-      }
+      },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
