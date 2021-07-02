@@ -1,8 +1,9 @@
 {
   "streams": [
     {
-      "name": "tickets",
-      "json_schema": {
+      "stream": {
+        "name": "tickets",
+        "json_schema": {
         "properties": {
           "organization_id": {
             "type": ["null", "integer"]
@@ -225,7 +226,12 @@
           }
         },
         "type": ["null", "object"]
-      }
+      },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
     }
   ]
 }
