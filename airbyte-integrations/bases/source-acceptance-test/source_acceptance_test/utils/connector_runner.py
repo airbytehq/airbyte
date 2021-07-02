@@ -133,5 +133,10 @@ class ConnectorRunner:
 
     def has_env_var(self, lookup_env_var: str):
         env_vars = self._image.attrs["Config"]["Env"]
-        env_vars_list = [env.split("=")[0] for env in env_vars]
-        return lookup_env_var in env_vars_list
+        env_vars_dict = {env.split("=")[0]: env.split("=")[1] for env in env_vars}
+        if lookup_env_var in env_vars_dict:
+            entrypoint_value = " ".join(self._image.attrs["Config"]["Entrypoint"])
+            check_value_eq_to_entrypoint = entrypoint_value == env_vars_dict[lookup_env_var]
+            return check_value_eq_to_entrypoint and {lookup_env_var: env_vars_dict[lookup_env_var]}
+
+        return False
