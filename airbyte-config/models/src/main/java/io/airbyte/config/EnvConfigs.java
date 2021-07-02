@@ -212,27 +212,37 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getS3LogBucket() {
-    return getEnsureEnv(LogClientSingleton.S3_LOG_BUCKET);
+    return getEnv(LogClientSingleton.S3_LOG_BUCKET);
   }
 
   @Override
   public String getS3LogBucketRegion() {
-    return getEnsureEnv(LogClientSingleton.S3_LOG_BUCKET_REGION);
+    return getEnv(LogClientSingleton.S3_LOG_BUCKET_REGION);
   }
 
   @Override
   public String getAwsAccessKey() {
-    return getEnsureEnv(LogClientSingleton.AWS_ACCESS_KEY_ID);
+    return getEnv(LogClientSingleton.AWS_ACCESS_KEY_ID);
   }
 
   @Override
   public String getAwsSecretAccessKey() {
-    return getEnsureEnv(LogClientSingleton.AWS_SECRET_ACCESS_KEY);
+    return getEnv(LogClientSingleton.AWS_SECRET_ACCESS_KEY);
   }
 
   @Override
   public String getS3MinioEndpoint() {
     return getEnv(LogClientSingleton.S3_MINIO_ENDPOINT);
+  }
+
+  @Override
+  public String getGcpStorageBucket() {
+    return getEnv(LogClientSingleton.GCP_STORAGE_BUCKET);
+  }
+
+  @Override
+  public String getGoogleApplicationCredentials() {
+    return getEnv(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS);
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {

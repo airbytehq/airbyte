@@ -24,6 +24,7 @@
 
 package io.airbyte.config.helpers;
 
+import com.google.api.client.util.Preconditions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.string.Strings;
@@ -52,10 +53,10 @@ public class S3Logs implements CloudLogs {
   private static S3Client S3;
 
   private static void checkValidCredentials(Configs configs) {
-    configs.getAwsAccessKey();
-    configs.getAwsSecretAccessKey();
-    configs.getS3LogBucketRegion();
-    configs.getS3LogBucket();
+    Preconditions.checkNotNull(configs.getAwsAccessKey());
+    Preconditions.checkNotNull(configs.getAwsSecretAccessKey());
+    Preconditions.checkNotNull(configs.getS3LogBucketRegion());
+    Preconditions.checkNotNull(configs.getS3LogBucket());
   }
 
   @Override
@@ -64,8 +65,8 @@ public class S3Logs implements CloudLogs {
   }
 
   @VisibleForTesting
-  File getFile(Configs configs, String logPath, int maxKeysPerPage) throws IOException {
-    LOGGER.info("Retrieving logs from S3 path: {}", logPath);
+  static File getFile(Configs configs, String logPath, int maxKeysPerPage) throws IOException {
+    LOGGER.debug("Retrieving logs from S3 path: {}", logPath);
     createS3ClientIfNotExist(configs);
 
     var s3Bucket = configs.getS3LogBucket();
@@ -73,10 +74,10 @@ public class S3Logs implements CloudLogs {
     var tmpOutputFile = new File("/tmp/" + randomName);
     var os = new FileOutputStream(tmpOutputFile);
 
-    LOGGER.info("Start S3 list request.");
+    LOGGER.debug("Start S3 list request.");
     var listObjReq = ListObjectsV2Request.builder().bucket(s3Bucket)
         .prefix(logPath).maxKeys(maxKeysPerPage).build();
-    LOGGER.info("Start getting S3 objects.");
+    LOGGER.debug("Start getting S3 objects.");
     // Objects are returned in lexicographical order.
     for (var page : S3.listObjectsV2Paginator(listObjReq)) {
       for (var objMetadata : page.contents()) {
@@ -90,7 +91,7 @@ public class S3Logs implements CloudLogs {
     }
     os.close();
 
-    LOGGER.info("Done retrieving S3 logs: {}.", logPath);
+    LOGGER.debug("Done retrieving S3 logs: {}.", logPath);
     return tmpOutputFile;
   }
 
@@ -124,7 +125,7 @@ public class S3Logs implements CloudLogs {
     return lines;
   }
 
-  private void createS3ClientIfNotExist(Configs configs) {
+  private static void createS3ClientIfNotExist(Configs configs) {
     if (S3 == null) {
       checkValidCredentials(configs);
       var s3Region = configs.getS3LogBucketRegion();

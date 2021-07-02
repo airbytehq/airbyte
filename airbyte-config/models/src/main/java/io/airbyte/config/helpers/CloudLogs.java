@@ -51,7 +51,7 @@ public interface CloudLogs {
   List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException;
 
   /**
-   * @return true if no configuration is set;
+   * @return true if no cloud logging configuration is set;
    */
   static boolean hasEmptyConfigs(Configs configs) {
     return !hasAwsCredentials(configs) && !hasGcpCredentials(configs);
@@ -61,6 +61,10 @@ public interface CloudLogs {
     // check if the configs exists, and pick a client.
     if (hasAwsCredentials(configs)) {
       return new S3Logs();
+    }
+
+    if (hasGcpCredentials(configs)) {
+      return new GcsLogs();
     }
 
     throw new RuntimeException("Error no cloud credentials configured..");
@@ -74,7 +78,8 @@ public interface CloudLogs {
   }
 
   private static boolean hasGcpCredentials(Configs configs) {
-    return configs.getAwsAccessKey().isBlank() ||
-        configs.getAwsSecretAccessKey().isBlank();
+    return configs.getGcpStorageBucket().isBlank() ||
+        configs.getGoogleApplicationCredentials().isBlank();
   }
+
 }

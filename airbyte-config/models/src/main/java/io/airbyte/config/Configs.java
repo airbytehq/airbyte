@@ -86,6 +86,10 @@ public interface Configs {
 
   String getS3MinioEndpoint();
 
+  String getGcpStorageBucket();
+
+  String getGoogleApplicationCredentials();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

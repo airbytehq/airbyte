@@ -46,11 +46,16 @@ public class LogClientSingleton {
   public static String WORKSPACE_MDC_KEY = "workspace_app_root";
   public static String JOB_LOG_PATH_MDC_KEY = "job_log_path";
 
+  // S3/Minio
   public static String S3_LOG_BUCKET = "S3_LOG_BUCKET";
   public static String S3_LOG_BUCKET_REGION = "S3_LOG_BUCKET_REGION";
   public static String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
   public static String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
   public static String S3_MINIO_ENDPOINT = "S3_MINIO_ENDPOINT";
+
+  // GCS
+  public static String GCP_STORAGE_BUCKET = "GCP_STORAGE_BUCKET";
+  public static String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
 
   public static String LOG_FILENAME = "logs.log";
   public static String APP_LOGGING_CLOUD_PREFIX = "app-logging";
@@ -118,4 +123,5 @@ public class LogClientSingleton {
       logClient = CloudLogs.createCloudLogClient(config);
     }
   }
+
 }
