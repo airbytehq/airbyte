@@ -40,11 +40,16 @@ from airbyte_cdk.sources.streams import Stream
 from source_zuora.auth import ZuoraAuthenticator
 
 
-# Basic full refresh stream
-class ZuoraStream(Stream, ABC):
-    
-    def __init__(self, authenticator: Dict, start_date: str, client_id: str, client_secret: str, is_sandbox: bool):
+class ZuoraDataQuery(Stream, ABC):
+
+    """
+    # TODO: Add the description about the Daat Query Method + Links
+    # TODO: Add description about class methods 
+    """
+
+    def __init__(self, authenticator: Dict, start_date: str, window_in_days: int, client_id: str, client_secret: str, is_sandbox: bool):
         self.start_date = start_date
+        self.window_in_days = window_in_days
         self.client_id = client_id
         self.client_secret = client_secret
         self.is_sandbox = is_sandbox
@@ -58,30 +63,31 @@ class ZuoraStream(Stream, ABC):
         else: 
             return "https://rest.zuora.com"
 
-    # Define limit in days for the fetch
-    limit_days = 200
-    # Define general primary key
-    primary_key = "id"
 
-    # SUBMIT: data_query_job
-    def _submit_dq_job(self, obj: str, start_date: str, end_date: str = None, token_retry_max: int = 2) -> str:
-        self.start_date = start_date
-        self.end_date = pendulum.now().to_datetime_string() if end_date is None else end_date
-        self.token_retry_max = token_retry_max
-
+    # MAKE QUERY: for data_query_job
+    @staticmethod
+    def _make_dq_query(obj: str, start_date: str, end_date: str = None) -> Dict:
+        end_date = pendulum.now().to_datetime_string() if end_date is None else end_date
         query = {
             "compression": "NONE",
             "output": {"target": "S3"},
             "outputFormat": "JSON",
-            "query": f"select * from {obj} where UpdatedDate >= TIMESTAMP '{self.start_date}' and UpdatedDate <= TIMESTAMP '{self.end_date}'"
+            "query": f"select * from {obj} where UpdatedDate >= TIMESTAMP '{start_date}' and UpdatedDate <= TIMESTAMP '{end_date}'"
         }
+        return query
+
+    # SUBMIT: data_query_job using data_query
+    def _submit_dq_job(self, dq_query: Dict, token_retry_max: int = 2) -> str:
+        # self.start_date = start_date
+        #self.end_date = pendulum.now().to_datetime_string() if end_date is None else end_date
+        self.token_retry_max = token_retry_max
 
         token_retry = 0
         while token_retry <= self.token_retry_max:
             try:
                 # print(f"\nUSE TOKEN: {self.authenticator}")
                 # make initial submition
-                submit_job = requests.post(url=f"{self.url_base}/query/jobs", headers=self.authenticator, json=query)
+                submit_job = requests.post(url=f"{self.url_base}/query/jobs", headers=self.authenticator, json=dq_query)
                 submit_job.raise_for_status()
                 submit_job = submit_job.json()["data"]["id"]
                 return submit_job
@@ -99,15 +105,14 @@ class ZuoraStream(Stream, ABC):
 
     # CHECK: the submited data_query_job status 
     def _check_dq_job_status(self, dq_job_id: str, token_retry_max: int = 2) -> requests.Response:
-        self.dq_job_id = dq_job_id
+        # self.dq_job_id = dq_job_id
         self.token_retry_max = token_retry_max
-
-        status = None
         token_retry = 0
         
+        status = None
         while status != "completed":
             try:
-                res = requests.get(url=f"{self.url_base}/query/jobs/{self.dq_job_id}", headers=self.authenticator)
+                res = requests.get(url=f"{self.url_base}/query/jobs/{dq_job_id}", headers=self.authenticator)
                 res.raise_for_status()
                 res = res.json()
                 status = res["data"]["queryStatus"]    
@@ -133,26 +138,10 @@ class ZuoraStream(Stream, ABC):
         data = [j.loads(l) for l in get_dq_job_data.text.splitlines()]
         return data or []
 
-    @staticmethod
-    def _check_end_date(slice_end_date, global_end_date: str) -> str:
-        if pendulum.parse(slice_end_date) > global_end_date:
-            slice_end_date = global_end_date.to_datetime_string()
-        return slice_end_date
-
-    @staticmethod
-    def _get_n_date_slices(start_date: datetime, end_date: datetime, window_days: int):
-        d = pendulum.period(start_date,end_date).in_days()
-        # case when we have the 1 sec more for end_date would produce n = 0, so put 1 instead
-        n = 1 if ceil(d/window_days) <= 0 else ceil(d/window_days)
-        return n
-
-    @staticmethod
-    def _next_slice_end_date(end_date: str, window_days: int):
-        return pendulum.parse(end_date).add(days=window_days).to_datetime_string()
-
-    # Warpper function for `Submit > Check > Get`
+    # Warpper function for `Query > Submit > Check > Get`
     def _get_data(self, obj: str, start_date: str, end_date: str = None) -> Iterable[Mapping]:
-        submit = self._submit_dq_job(obj, start_date, end_date)
+        query = self._make_dq_query(obj, start_date, end_date)
+        submit = self._submit_dq_job(query)
         check = self._check_dq_job_status(submit)
         get = self._get_data_from_dq_job(check)
         yield from get
@@ -175,121 +164,73 @@ class ZuoraStream(Stream, ABC):
             iter_s = s.to_datetime_string()
             # if iter_e is bigger than the input end_date, switch to the end_date
             iter_e = self._check_end_date(s.add(days=window_days).to_datetime_string(), e)
-
             # If we have more than 1 date-slice to fetch
             if n > 1:
                 # print(f"\nGetting data with {n} Chunks\n")
                 while n > 0:
                     # print(f"\nDate-Slice: {iter_s} -- {iter_e}\n")
                     yield from self._get_data(obj, iter_s, iter_e)
-
                     # make next date-slice
                     iter_s = iter_e
                     iter_e = self._next_slice_end_date(iter_e, window_days)
-
                     # if iter_e is bigger than the input end_date, we switch to the end_date
                     iter_e = self._check_end_date(iter_e, e)
-
                     # Modify iterator
                     n -= 1
             else:
                 # if we have just only 1 date-slice to fetch
-                print(f"\nDate Range Chunk: {iter_s} -- {iter_e}\n")
+                # print(f"\nDate Range Chunk: {iter_s} -- {iter_e}\n")
                 yield from self._get_data(obj, iter_s, iter_e)
-    
-    def read_records(
-        self, 
-        # sync_mode: SyncMode, 
-        # cursor_field: List[str] = None, 
-        # stream_slice: Mapping[str, Any] = None, 
-        # stream_state: Mapping[str, Any] = None,
-        **kwargs
-    ) -> Iterable[Mapping]:
-        yield from self._get_data_with_date_slice(self.name, self.start_date, window_days=self.limit_days)
+
+    @staticmethod
+    def _check_end_date(slice_end_date, global_end_date: str) -> str:
+        if pendulum.parse(slice_end_date) > global_end_date:
+            slice_end_date = global_end_date.to_datetime_string()
+        return slice_end_date
+
+    @staticmethod
+    def _get_n_date_slices(start_date: datetime, end_date: datetime, window_days: int):
+        d = pendulum.period(start_date,end_date).in_days()
+        # case when we have the 1 sec more for end_date would produce n = 0, so put 1 instead
+        n = 1 if ceil(d/window_days) <= 0 else ceil(d/window_days)
+        return n
+
+    @staticmethod
+    def _next_slice_end_date(end_date: str, window_days: int):
+        return pendulum.parse(end_date).add(days=window_days).to_datetime_string()
 
 
-class Account(ZuoraStream):
-    cursor_field = "updated_at"
+class IncrementalZuoraStream(ZuoraDataQuery):
 
-class Orders(ZuoraStream):
-    cursor_field = "updated_at"
+    # Define general primary key
+    primary_key = "id"
 
+    # Define cursor filed for incremental refresh
+    cursor_field = "updateddate"
 
-
-
-
-
-# Basic incremental stream
-class IncrementalZuoraStream(ZuoraStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
+    # setting limit of the date-slice for the data query job
     @property
-    def limit_days(self):
-        return self.limit_days
+    def limit_days(self) -> int:
+        return self.window_in_days
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
+    # setting checkpoint interval to the limit of date-slice
     state_checkpoint_interval = limit_days
 
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        # initialise 1start_date1 to determine the stream_state or start_date from user's input
+        # if stream_state is missing, we will use the start-date from config for a full refresh
+        start_date = stream_state.get(self.cursor_field) if stream_state else self.start_date
+        yield from self._get_data_with_date_slice(self.name, start_date, window_days=self.limit_days)
 
 
-class Employees(IncrementalZuoraStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
+class Account(IncrementalZuoraStream):
+    """THIS IS THE LINK FOR ACCOUNT DOCUMENTATION"""
 
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
-
-    def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
-        return "employees"
-
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
-
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
-
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
-
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError("Implement stream slices or delete this method!")
+class Orders(IncrementalZuoraStream):
+    """THIS IS THE LINK FOR ORDERS DOCUMENTATION"""
 
 
 # Basic Connections Check
@@ -307,7 +248,6 @@ class SourceZuora(AbstractSource):
             return True, None
         else:
             return False, auth["status"]
-        
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
@@ -318,18 +258,21 @@ class SourceZuora(AbstractSource):
 
         auth = ZuoraAuthenticator(config["is_sandbox"]).generateToken(config["client_id"], config["client_secret"])
 
-        #
-        """ fake_auth = {
+        # Remove this block once finished
+        """ 
+        fake_auth = {
                     "Authorization": f"Bearer some_fake_token", 
                     "Content-Type":"application/json", 
                     "X-Zuora-WSDL-Version": "107",
-                    } """
+                }
+        """
         #
 
         args = {
             # "authenticator": fake_auth,
             "authenticator": auth.get("header"),
             "start_date": config["start_date"],
+            "window_in_days": config["window_in_days"],
             "client_id": config["client_id"],
             "client_secret": config["client_secret"],
             "is_sandbox": config["is_sandbox"],

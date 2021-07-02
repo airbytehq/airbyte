@@ -11,6 +11,11 @@
         "type": "string",
         "description": "Start Date in format: YYYY-MM-DD hh:mm:ss"
       },
+      "window_in_days": {
+        "type": "integer",
+        "description": "The amount of days for each date-slice of data fetch. Bigger the value - faster the fetch.",
+        "default": 90
+      },
       "client_id": {
         "type": "string",
         "description": "Client id"

@@ -25,10 +25,9 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
-    "pydantic==1.6.2",
-    "PyYAML==5.4",
+    "pydantic==1.8.2",
+    "PyYAML==5.4.1",
     "pendulum"
-
 ]
 
 TEST_REQUIREMENTS = [
@@ -38,7 +37,7 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_zuora",
-    description="Source implementation for Zuora.",
+    description="Source Connector implementation for Zuora.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
