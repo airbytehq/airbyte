@@ -16,6 +16,7 @@ This Source is capable of syncing the following core Streams:
 * [Collects](https://help.shopify.com/en/api/reference/products/collect)
 * [Custom Collections](https://help.shopify.com/en/api/reference/products/customcollection)
 * [Customers](https://help.shopify.com/en/api/reference/customers)
+* [Draft Orders](https://help.shopify.com/en/api/reference/orders/draftorder)
 * [Discount Codes](https://shopify.dev/docs/admin-api/rest/reference/discounts/discountcode)
 * [Metafields](https://help.shopify.com/en/api/reference/metafield)
 * [Orders](https://help.shopify.com/en/api/reference/orders)
@@ -23,7 +24,6 @@ This Source is capable of syncing the following core Streams:
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
-* [Draft Orders](https://help.shopify.com/en/api/reference/orders/draftorder)
 
 ### Data type mapping
 
