@@ -36,12 +36,13 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CockroachDbSource extends AbstractJdbcSource implements Source {
+public class CockroachDbSource extends AbstractJdbcSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
@@ -52,7 +53,7 @@ public class CockroachDbSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(JsonNode config) {
 
     List<String> additionalParameters = new ArrayList<>();
 
@@ -80,7 +81,7 @@ public class CockroachDbSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     return Set
         .of("information_schema", "pg_catalog", "pg_internal", "catalog_history", "pg_extension",
             "crdb_internal");
