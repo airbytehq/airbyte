@@ -126,11 +126,8 @@ class HttpStream(Stream, ABC):
     ) -> Mapping[str, Any]:
         """
         Override to return a mapping of keyword arguments to be used when creating the HTTP request.
-        See https://docs.python-requests.org/en/latest/api/#requests.Session.send for various options which can be returned from
-        this method.
-
-        any args returned from this method will be flattened into the outgoing request via something
-        like `requests.Session().send(request, **self.request_kwargs())`.
+        Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
+        this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
         return {}
 
