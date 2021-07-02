@@ -30,7 +30,7 @@ cmd_build() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   local run_tests=$1; shift || run_tests=true
-
+  # TODO re-enable build cache if needed (https://github.com/airbytehq/airbyte/issues/4508)
   echo "Building $path"
   ./gradlew --no-daemon -no-build-cache "$(_to_gradle_path "$path" clean)"
   ./gradlew --no-daemon -no-build-cache "$(_to_gradle_path "$path" build)"
