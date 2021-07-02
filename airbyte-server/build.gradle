@@ -6,6 +6,7 @@ dependencies {
     implementation 'io.temporal:temporal-sdk:1.0.4'
 
     implementation 'org.apache.cxf:cxf-core:3.4.2'
+    implementation 'org.apache.logging.log4j:log4j-web:2.14.1'
 
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
