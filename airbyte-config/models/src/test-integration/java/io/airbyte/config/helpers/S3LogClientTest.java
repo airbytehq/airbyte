@@ -61,7 +61,7 @@ public class S3LogClientTest {
   @Test
   public void testRetrieveAllLogs() throws IOException {
     var configs = new EnvConfigs();
-    var data = new S3Logs().getFile(configs, "paginate", 6);
+    var data = S3Logs.getFile(configs, "paginate", 6);
 
     var retrieved = new ArrayList<String>();
     Files.lines(data.toPath()).forEach(retrieved::add);
