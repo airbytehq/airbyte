@@ -32,7 +32,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.FileSystemConfigPersistence;
@@ -186,7 +186,7 @@ public class ServerApp {
   public static void main(String[] args) throws Exception {
     final Configs configs = new EnvConfigs();
 
-    MDC.put(LogHelpers.WORKSPACE_MDC_KEY, LogHelpers.getServerLogsRoot(configs).toString());
+    MDC.put(LogClientSingleton.WORKSPACE_MDC_KEY, LogClientSingleton.getServerLogsRoot(configs).toString());
 
     final Path configRoot = configs.getConfigRoot();
     LOGGER.info("configRoot = " + configRoot);

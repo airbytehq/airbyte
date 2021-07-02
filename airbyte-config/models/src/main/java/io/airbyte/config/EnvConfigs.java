@@ -25,7 +25,7 @@
 package io.airbyte.config;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.config.helpers.LogHelpers;
+import io.airbyte.config.helpers.LogClientSingleton;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
@@ -212,27 +212,27 @@ public class EnvConfigs implements Configs {
 
   @Override
   public String getS3LogBucket() {
-    return getEnsureEnv(LogHelpers.S3_LOG_BUCKET);
+    return getEnsureEnv(LogClientSingleton.S3_LOG_BUCKET);
   }
 
   @Override
   public String getS3LogBucketRegion() {
-    return getEnsureEnv(LogHelpers.S3_LOG_BUCKET_REGION);
+    return getEnsureEnv(LogClientSingleton.S3_LOG_BUCKET_REGION);
   }
 
   @Override
   public String getAwsAccessKey() {
-    return getEnsureEnv(LogHelpers.AWS_ACCESS_KEY_ID);
+    return getEnsureEnv(LogClientSingleton.AWS_ACCESS_KEY_ID);
   }
 
   @Override
   public String getAwsSecretAccessKey() {
-    return getEnsureEnv(LogHelpers.AWS_SECRET_ACCESS_KEY);
+    return getEnsureEnv(LogClientSingleton.AWS_SECRET_ACCESS_KEY);
   }
 
   @Override
   public String getS3MinioEndpoint() {
-    return getEnv(LogHelpers.S3_MINIO_ENDPOINT);
+    return getEnv(LogClientSingleton.S3_MINIO_ENDPOINT);
   }
 
   private String getEnvOrDefault(String key, String defaultValue) {

@@ -51,8 +51,18 @@ public interface CloudLogs {
   List<String> tailCloudLog(Configs configs, String logPath, int numLines) throws IOException;
 
   /**
-   * @return true if configuration is not set
+   * @return true if no configuration is set;
    */
-  boolean hasEmptyConfigs(Configs configs);
+  static boolean hasEmptyConfigs(Configs configs) {
+    return configs.getAwsAccessKey().isBlank() ||
+        configs.getAwsSecretAccessKey().isBlank() ||
+        configs.getS3LogBucketRegion().isBlank() ||
+        configs.getS3LogBucket().isBlank();
+  }
+
+  static CloudLogs createCloudLogClient(Configs configs) {
+    // check if the configs exists, and pick a client.
+    return new S3Logs();
+  }
 
 }
