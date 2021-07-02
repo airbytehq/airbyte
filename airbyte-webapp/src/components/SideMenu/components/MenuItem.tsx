@@ -33,7 +33,7 @@ const Counter = styled.div`
   border-radius: 15px;
   background: ${({ theme }) => theme.dangerColor};
   font-size: 8px;
-  line-height: 12px;
+  line-height: 13px;
   color: ${({ theme }) => theme.whiteColor};
   display: inline-block;
   margin-left: 5px;

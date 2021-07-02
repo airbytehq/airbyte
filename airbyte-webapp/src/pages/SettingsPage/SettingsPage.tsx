@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import { Redirect, Route, Switch } from "react-router";
 
+import useConnector from "components/hooks/services/useConnector";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
 import LoadingPage from "components/LoadingPage";
@@ -28,15 +29,18 @@ const MainView = styled.div`
 
 const SettingsPage: React.FC = () => {
   const { push, pathname } = useRouter();
+  const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
   const menuItems = [
     {
       id: `${Routes.Settings}${Routes.Source}`,
       name: <FormattedMessage id="tables.sources" />,
+      indicatorCount: countNewSourceVersion,
     },
     {
       id: `${Routes.Settings}${Routes.Destination}`,
       name: <FormattedMessage id="tables.destinations" />,
+      indicatorCount: countNewDestinationVersion,
     },
     {
       id: `${Routes.Settings}${Routes.Configuration}`,
