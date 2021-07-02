@@ -27,7 +27,9 @@ package io.airbyte.workers.process;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.WorkerUtils;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,16 +46,25 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final int attempt;
   private final String imageName;
   private final ProcessFactory processFactory;
+  private final ResourceRequirements resourceRequirement;
 
-  public AirbyteIntegrationLauncher(long jobId, int attempt, final String imageName, final ProcessFactory processFactory) {
-    this(String.valueOf(jobId), attempt, imageName, processFactory);
+  public AirbyteIntegrationLauncher(String jobId,
+                                    int attempt,
+                                    final String imageName,
+                                    final ProcessFactory processFactory) {
+    this(String.valueOf(jobId), attempt, imageName, processFactory, WorkerUtils.DEFAULT_RESOURCE_REQUIREMENTS);
   }
 
-  public AirbyteIntegrationLauncher(String jobId, int attempt, final String imageName, final ProcessFactory processFactory) {
+  public AirbyteIntegrationLauncher(String jobId,
+                                    int attempt,
+                                    final String imageName,
+                                    final ProcessFactory processFactory,
+                                    final ResourceRequirements resourceRequirement) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
     this.processFactory = processFactory;
+    this.resourceRequirement = resourceRequirement;
   }
 
   @Override
@@ -66,6 +77,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         false,
         Collections.emptyMap(),
         null,
+        resourceRequirement,
         "spec");
   }
 
@@ -79,6 +91,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         false,
         ImmutableMap.of(configFilename, configContents),
         null,
+        resourceRequirement,
         "check",
         "--config", configFilename);
   }
@@ -93,6 +106,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         false,
         ImmutableMap.of(configFilename, configContents),
         null,
+        resourceRequirement,
         "discover",
         "--config", configFilename);
   }
@@ -131,6 +145,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         false,
         files,
         null,
+        resourceRequirement,
         arguments);
   }
 
@@ -153,6 +168,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         true,
         files,
         null,
+        resourceRequirement,
         "write",
         "--config", configFilename,
         "--catalog", catalogFilename);
