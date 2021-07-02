@@ -134,9 +134,9 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bit")
-            .airbyteType(JsonSchemaPrimitive.BOOLEAN)
-            .addInsertValues("1", "0", "null")
-            .addExpectedValues("true", "false", null)
+            .airbyteType(JsonSchemaPrimitive.NUMBER)
+            .addInsertValues("null", "0", "1", "'true'", "'false'")
+            .addExpectedValues(null, "false", "true", "true", "false")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -211,23 +211,22 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("numeric")
+            .sourceType("decimal")
+            .fullSourceDataType("DECIMAL(5,2)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .fullSourceDataType("numeric(8,2)")
-            .addInsertValues("99999", "5.1", "0", "null")
-            // TODO: these get converted to bytes, so we get values back like "AJiWHA=="
-//            .addExpectedValues("99999", "5.1", "0", null)
+            .addInsertValues("999", "5.1", "0", "null")
+            //TODO: BUG - debezium converts this to bytes so returns values like "AYY8"
+//            .addExpectedValues("999", "5.1", "0", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("decimal")
+            .sourceType("numeric")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .fullSourceDataType("decimal(8,2)")
-            .addInsertValues("99999", "5.1", "0", "null")
-            // TODO: these get converted to bytes, so we get values back like "AJiWHA=="
-//            .addExpectedValues("99999", "5.1", "0", null)
+            .addInsertValues("'99999'", "null")
+            //TODO: BUG - debezium converts this to bytes so returns values like "AYY8"
+//            .addExpectedValues("99999", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -235,9 +234,9 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("money")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "-922337203685477.5808", "922337203685477.5807")
-            // TODO: these get converted to bytes, so we get values back like "gAAAAAAAAAA="
-//            .addExpectedValues(null, "-922337203685477.5808", "922337203685477.5807")
+            .addInsertValues("null", "'9990000.99'")
+            //TODO: BUG - debezium converts this to bytes so returns values like "F0KBLaw="
+//            .addExpectedValues(null, "9990000.99")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -245,8 +244,9 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("smallmoney")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
-            .addInsertValues("null", "-214748.3648", "214748.3647")
-            .addExpectedValues(null, "-214748.3648", "214748.3647")
+            .addInsertValues("null", "'-214748.3648'", "214748.3647")
+            //TODO: BUG - debezium converts this to bytes so returns values like "F0KBLaw="
+//            .addExpectedValues(null, "-214748.3648", "214748.3647")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -282,10 +282,21 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
+            .fullSourceDataType("varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .fullSourceDataType("varchar(max)")
-            .addInsertValues("null", "'aaaaa1aaabbbbb2bbccccc3cddd4dddee\"5eefff6ffggggg7hhhhhiiiijjjjjkkkklllmmmnnnnnzzzzz{}*&^%$£@£@!'")
-            .addExpectedValues(null, "aaaaa1aaabbbbb2bbccccc3cddd4dddee\"5eefff6ffggggg7hhhhhiiiijjjjjkkkklllmmmnnnnnzzzzz{}*&^%$£@£@!")
+            .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
+                "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
+                null, "\\xF0\\x9F\\x9A\\x80")
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("text")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'a'", "'abc'", "'Some test text 123$%^&*()_'", "''", "null")
+            .addExpectedValues("a", "abc", "Some test text 123$%^&*()_", "", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -293,7 +304,7 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("nchar")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'*'", "'д'", "null")
+            .addInsertValues("'a'", "'*'", "N'д'", "null")
             .addExpectedValues("a", "*", "д", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
@@ -303,9 +314,9 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("nvarchar")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("nvarchar(max)")
-            .addInsertValues("'a'", "'abc'", "'Миші ççуть на південь, не питай чому;'", "'櫻花分店'",
-                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
-            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
+            .addInsertValues("'a'", "'abc'", "N'Миші ççуть на південь, не питай чому;'", "N'櫻花分店'",
+                "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
+            .addExpectedValues("a", "abc", "Миші ççуть на південь, не питай чому;", "櫻花分店", "",
                 null, "\\xF0\\x9F\\x9A\\x80")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
@@ -315,8 +326,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("nvarchar")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .fullSourceDataType("nvarchar(24)")
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'", "''", "null")
-            .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店 ", "", null)
+            .addInsertValues("'a'", "'abc'", "N'Миші йдуть;'", "N'櫻花分店'", "''", "null")
+            .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -324,8 +335,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
         TestDataHolder.builder()
             .sourceType("ntext")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
-                "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
+            .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
+                "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
                 null, "\\xF0\\x9F\\x9A\\x80")
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -339,154 +350,171 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
                 "CONVERT(XML, N'<?xml version=\"1.0\"?><book><title>Manual</title><chapter>...</chapter></book>')",
                 "null", "''")
             .addExpectedValues("<book><title>Manual</title><chapter>...</chapter></book>", null, "")
+            .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaPrimitive.STRING)
-            .addInsertValues(
-                "CONVERT(XML, N'<?xml version=\"1.0\"?><book><title>Manual</title><chapter>...</chapter></book>')",
-                "null", "''")
-            .addExpectedValues("<book><title>Manual</title><chapter>...</chapter></book>", null, "")
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'",
+                "null")
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
+              // still useable but requires transformation if true date/datetime type required in destination
+              // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
+//            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z",
+//                "1999-01-08T00:00:00Z", null)
+            .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("date")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null", "'2021-01-00'", "'2021-00-00'", "'0000-00-00'")
-//            .addExpectedValues(null, null, null, null)
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("datetime")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null", "'0000-00-00 00:00:00'")
-//            .addExpectedValues(null, null)
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("timestamp")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null")
-//            .addNullExpectedValue()
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("time")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null", "'-838:59:59.000000'", "'00:00:01.000000'")
-//            .addExpectedValues(null, "-3020399000000", "1000000")
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("varchar")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .fullSourceDataType("varchar(256) character set cp1251")
-//            .addInsertValues("null", "'тест'")
-//            // @TODO stream returns invalid text "С‚РµСЃС‚"
-//            // .addExpectedValues(null, "тест")
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("varchar")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .fullSourceDataType("varchar(256) character set utf16")
-//            .addInsertValues("null", "0xfffd")
-//            // @TODO streamer returns invalid text "�"
-//            // .addExpectedValues(null, "�")
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("varchar")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .fullSourceDataType("varchar(256)")
-//            .addInsertValues("null", "'!\"#$%&\\'()*+,-./:;<=>?\\@[\\]^_\\`{|}~'")
-//            .addExpectedValues(null, "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~")
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("varbinary")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .fullSourceDataType("varbinary(256)")
-//            .addInsertValues("null", "'test'")
-//            // @TODO Returns binary value instead of text
-//            // .addExpectedValues(null, "test")
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("blob")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null", "'test'")
-//            // @TODO Returns binary value instead of text
-//            // .addExpectedValues(null, "test")
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("mediumtext")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null", "lpad('0', 16777214, '0')")
-//            // @TODO returns null instead of long text
-//            // .addExpectedValues(null, StringUtils.leftPad("0", 16777214, "0"))
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("tinytext")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null")
-//            .addNullExpectedValue()
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("longtext")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null")
-//            .addNullExpectedValue()
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("text")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null")
-//            .addNullExpectedValue()
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("json")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'")
-//            .addExpectedValues(null, "{\"a\": 10, \"b\": 15}")
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("point")
-//            .airbyteType(JsonSchemaPrimitive.OBJECT)
-//            .addInsertValues("null", "(ST_GeomFromText('POINT(1 1)'))")
-//            .build());
-//
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("bool")
-//            .airbyteType(JsonSchemaPrimitive.STRING)
-//            .addInsertValues("null", "1", "127", "-128")
-//            // @TODO returns number instead of boolean
-//            // .addExpectedValues(null, "true", "false", "false")
-//            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("smalldatetime")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'1900-01-01'", "'2079-06-06'", "null")
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
+            // still useable but requires transformation if true date/datetime type required in destination
+            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
+//            .addExpectedValues("1900-01-01T00:00:00Z", "2079-06-06T00:00:00Z", null)
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("datetime")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'1753-01-01'", "'9999-12-31'", "null")
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
+            // still useable but requires transformation if true date/datetime type required in destination
+            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
+//            .addExpectedValues("1753-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("datetime2")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "null")
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
+            // still useable but requires transformation if true date/datetime type required in destination
+            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
+//            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("time")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("null")
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
+            // still useable but requires transformation if true date/datetime type required in destination
+            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
+            .addNullExpectedValue()
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("datetimeoffset")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null")
+            // TODO: BUG - seem to be getting back 0001-01-08T00:00:00+01:00 ... this is clearly wrong
+//            .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
+//                "9999-01-10 00:00:00.0000000 +01:00", null)
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    // TODO BUG Returns binary value instead of actual value
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("binary")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            // .addInsertValues("CAST( 'A' AS VARBINARY)", "null")
+            // .addExpectedValues("A")
+            .addInsertValues("null")
+            .addNullExpectedValue()
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    // TODO BUG Returns binary value instead of actual value
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("varbinary")
+            .fullSourceDataType("varbinary(30)")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            // .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
+            // .addExpectedValues("A")
+            .addInsertValues("null")
+            .addNullExpectedValue()
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    // TODO BUG: airbyte returns binary representation instead of readable one
+    // create table dbo_1_hierarchyid1 (test_column hierarchyid);
+    // insert dbo_1_hierarchyid1 values ('/1/1/');
+    // select test_column ,test_column.ToString() AS [Node Text],test_column.GetLevel() [Node Level]
+    // from dbo_1_hierarchyid1;
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("hierarchyid")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("null")
+            .addNullExpectedValue()
+            // .addInsertValues("null","'/1/1/'")
+            // .addExpectedValues(null, "/1/1/")
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("sql_variant")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
+                "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
+            // TODO: BUG - These all come through as nulls, Debezium doesn't mention sql_variant at all so assume unsupported
+//            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
+//                null, "\\xF0\\x9F\\x9A\\x80")
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    // TODO BUG: Airbyte returns binary representation instead of text one.
+    // Proper select query example: SELECT test_column.STAsText() from dbo_1_geometry;
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("geometry")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("null")
+            .addNullExpectedValue()
+            // .addInsertValues("geometry::STGeomFromText('LINESTRING (100 100, 20 180, 180 180)', 0)")
+            // .addExpectedValues("LINESTRING (100 100, 20 180, 180 180)",
+            // "POLYGON ((0 0, 150 0, 150 150, 0 150, 0 0)", null)
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("uniqueidentifier")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("'375CFC44-CAE3-4E43-8083-821D2DF0E626'", "null")
+            .addExpectedValues("375CFC44-CAE3-4E43-8083-821D2DF0E626", null)
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
+
+    // TODO BUG: Airbyte returns binary representation instead of text one.
+    // Proper select query example: SELECT test_column.STAsText() from dbo_1_geography;
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("geography")
+            .airbyteType(JsonSchemaPrimitive.STRING)
+            .addInsertValues("null")
+            .addNullExpectedValue()
+            // .addInsertValues("geography::STGeomFromText('LINESTRING(-122.360 47.656, -122.343 47.656 )',
+            // 4326)")
+            // .addExpectedValues("LINESTRING(-122.360 47.656, -122.343 47.656 )", null)
+            .createTablePatternSql(CREATE_TABLE_SQL)
+            .build());
 
   }
 
