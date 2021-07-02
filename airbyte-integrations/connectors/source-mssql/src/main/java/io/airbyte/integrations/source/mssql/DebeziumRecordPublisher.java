@@ -142,7 +142,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     // https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
     // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
     // we set this to avoid preventing other (non-Airbyte) transactions from updating table rows while we snapshot
-    props.setProperty("snapshot.isolation.mode", "read_committed");
+    props.setProperty("snapshot.isolation.mode", "snapshot");
 
     // https://debezium.io/documentation/reference/1.4/operations/debezium-server.html#debezium-source-database-history-file-filename
     // https://debezium.io/documentation/reference/development/engine.html#_in_the_code

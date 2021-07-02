@@ -215,10 +215,10 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
       // check that snapshot isolation is allowed
       checkOperations.add(database -> {
         List<JsonNode> queryResponse = database.query(connection -> {
-          final String sql = "SELECT name, is_read_committed_snapshot_on FROM sys.databases WHERE name = ?";
+          final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
           PreparedStatement ps = connection.prepareStatement(sql);
           ps.setString(1, config.get("database").asText());
-          LOGGER.info(String.format("Checking that read_committed_snapshot mode is enabled on database '%s' using the query: '%s'",
+          LOGGER.info(String.format("Checking that snapshot isolation is enabled on database '%s' using the query: '%s'",
               config.get("database").asText(), sql));
           return ps;
         }, JdbcUtils::rowToJson).collect(toList());
@@ -229,10 +229,10 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
               config.get("database").asText()));
         }
 
-        if (queryResponse.get(0).get("is_read_committed_snapshot_on").asInt() != 1) {
+        if (queryResponse.get(0).get("snapshot_isolation_state").asInt() != 1) {
           throw new RuntimeException(String.format(
-              "Detected that read_committed_snapshot is not enabled for database '%s'. MSSQL CDC relies on this to avoid locking tables. "
-                  + "Please check the documentation on how to enable read committed snapshot.",
+              "Detected that snapshot isolation is not enabled for database '%s'. MSSQL CDC relies on snapshot isolation. "
+                  + "Please check the documentation on how to enable snapshot isolation on MS SQL Server.",
               config.get("database").asText()));
         }
       });
@@ -269,7 +269,6 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
        * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192
        */
       final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(10000);
-
       final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(config, catalog, offsetManager, schemaHistoryManager);
       publisher.start(queue);
 
