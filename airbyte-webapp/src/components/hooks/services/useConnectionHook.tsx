@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { useFetcher, useResource } from "rest-hooks";
+import { useCallback } from "react";
+import { useResource, useFetcher } from "rest-hooks";
 
 import config from "config";
 import { AnalyticsService } from "core/analytics/AnalyticsService";
@@ -21,6 +21,7 @@ import {
 } from "core/domain/connection";
 import { Operation } from "core/domain/connection/operation";
 import { equal } from "utils/objects";
+import { connectionService } from "../../../core/domain/connection/ConnectionService";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;
@@ -58,44 +59,25 @@ type UpdateStateConnection = {
   sourceName: string;
   prefix: string;
   connectionConfiguration: ConnectionConfiguration;
-  schedule: {
-    units: number;
-    timeUnit: string;
-  } | null;
+  schedule: ScheduleProperties | null;
 };
 
 export const useConnectionLoad = (
-  connectionId: string,
-  withRefresh?: boolean
-): { connection: Connection | null; isLoadingConnection: boolean } => {
-  const [connection, setConnection] = useState<null | Connection>(null);
-  const [isLoadingConnection, setIsLoadingConnection] = useState(false);
-
-  // TODO: change to useStatefulResource
-  const fetchConnection = useFetcher(ConnectionResource.detailShape(), false);
-  const baseConnection = useResource(ConnectionResource.detailShape(), {
+  connectionId: string
+): {
+  connection: Connection;
+  refreshConnectionCatalog: () => Promise<Connection>;
+} => {
+  const connection = useResource(ConnectionResource.detailShape(), {
     connectionId,
   });
 
-  useEffect(() => {
-    (async () => {
-      if (withRefresh) {
-        setIsLoadingConnection(true);
-        setConnection(
-          await fetchConnection({
-            connectionId,
-            withRefreshedCatalog: withRefresh,
-          })
-        );
-
-        setIsLoadingConnection(false);
-      }
-    })();
-  }, [connectionId, fetchConnection, withRefresh]);
+  const refreshConnectionCatalog = async () =>
+    await connectionService.getConnection(connectionId, true);
 
   return {
-    connection: withRefresh ? connection : baseConnection,
-    isLoadingConnection,
+    connection,
+    refreshConnectionCatalog,
   };
 };
 
@@ -155,7 +137,6 @@ const useConnection = (): {
       );
 
       AnalyticsService.track("New Connection - Action", {
-        user_id: config.ui.workspaceId,
         action: "Set up connection",
         frequency: frequencyData?.text,
         connector_source_definition: source?.sourceName,
