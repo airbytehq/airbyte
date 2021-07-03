@@ -52,7 +52,7 @@ class MixpanelStream(HttpStream, ABC):
         authenticator: HttpAuthenticator,
         start_date: Union[date, str] = None,
         end_date: Union[date, str] = None,
-        date_window_size: int = 30,  # days
+        date_window_size: int = 30,  # in days
         **kwargs,
     ):
         now = date.today()
@@ -92,10 +92,12 @@ class MixpanelStream(HttpStream, ABC):
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         date_slices = []
+
         # use the latest date between self.start_date and stream_state
         start_date = max(self.start_date, date.fromisoformat(stream_state['date']) if stream_state else self.start_date)
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date = min(start_date, self.end_date)
+
         while start_date <= self.end_date:
             end_date = start_date + timedelta(days=self.date_window_size)
             date_slices.append({
@@ -158,7 +160,6 @@ class IncrementalMixpanelStream(MixpanelStream, ABC):
         return {'date': max(current_stream_state_date, latest_record_date)}
 
 
-
 class FunnelsList(MixpanelStream):
     """API Docs: https://developer.mixpanel.com/reference/funnels#funnels-list-saved
 
@@ -169,6 +170,7 @@ class FunnelsList(MixpanelStream):
 
     def path(self, **kwargs) -> str:
         return "funnels/list"
+
 
 class Funnels(IncrementalMixpanelStream):
     """List the funnels for a given date range.
@@ -357,8 +359,8 @@ class Engage(MixpanelStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-        #return {"include_all_users": True}
-        return {'filter_by_cohort':'{"id":1343181}'}
+        return {"include_all_users": True}
+        #return {'filter_by_cohort':'{"id":1343181}'}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -432,18 +434,6 @@ class CohortMembers(Engage):
         return stream_slices
 
 
-class Insights(MixpanelStream):
-    """Get data from your Insights reports.
-    API Docs: https://developer.mixpanel.com/reference/insights
-    Endpoint: https://mixpanel.com/api/2.0/insights
-
-    # TODO
-    Requires:
-    bookmark_id - The ID of your Insights report can be found from the url: https://mixpanel.com/report/1/insights#report/<YOUR_BOOKMARK_ID>/example-report
-    """
-    def path(self, **kwargs) -> str:
-        return "insights"
-
 class Annotations(MixpanelStream):
     """List the annotations for a given date range.
     API Docs: https://developer.mixpanel.com/reference/annotations
@@ -485,6 +475,70 @@ class Annotations(MixpanelStream):
             'from_date': stream_slice["start_date"],
             'to_date': stream_slice["end_date"],
         }
+
+class Revenue(IncrementalMixpanelStream):
+    """Get data from your Insights reports.
+    API Docs: https://developer.mixpanel.com/reference/insights
+    Endpoint: https://mixpanel.com/api/2.0/insights
+    """
+    data_field = 'results'
+    primary_key = 'date'
+    cursor_field = 'date'
+
+    def path(self, **kwargs) -> str:
+        return "engage/revenue"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            'from_date': stream_slice["start_date"],
+            'to_date': stream_slice["end_date"],
+        }
+
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        :param stream_state:
+        :return:
+        """
+        return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        response.json() example:
+        {
+            'computed_at': '2021-07-03T12:43:48.889421+00:00',
+            'results': {
+                '$overall': {       <-- should be skipped?
+                    'amount': 0.0,
+                    'count': 124,
+                    'paid_count': 0
+                },
+                '2021-06-01': {
+                    'amount': 0.0,
+                    'count': 124,
+                    'paid_count': 0
+                },
+                '2021-06-02': {
+                    'amount': 0.0,
+                    'count': 124,
+                    'paid_count': 0
+                },
+                ...
+            },
+            'session_id': '162...',
+            'status': 'ok'
+        }
+        :return an iterable containing each record in the response
+        """
+        records = response.json().get(self.data_field, {})
+        for date in records:
+            yield {'date': date,
+                   **records[date]}
+
+
 
 class Export(MixpanelStream):
     """
@@ -569,4 +623,5 @@ class SourceMixpanel(AbstractSource):
             Cohorts(authenticator=auth, **config),
             CohortMembers(authenticator=auth, **config),
             Annotations(authenticator=auth, **config),
+            Revenue(authenticator=auth, **config),
         ]
