@@ -42,6 +42,7 @@ export enum Routes {
   Configuration = "/configuration",
   Notifications = "/notifications",
   Metrics = "/metrics",
+  Account = "/account",
   Root = "/",
 }
 

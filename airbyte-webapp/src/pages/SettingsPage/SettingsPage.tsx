@@ -14,6 +14,7 @@ import useRouter from "components/hooks/useRouterHook";
 import NotificationPage from "./pages/NotificationPage";
 import ConfigurationsPage from "./pages/ConfigurationsPage";
 import MetricsPage from "./pages/MetricsPage";
+import AccountPage from "./pages/AccountPage";
 import { DestinationsPage, SourcesPage } from "./pages/ConnectorsPage";
 
 const Content = styled.div`
@@ -32,6 +33,10 @@ const SettingsPage: React.FC = () => {
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
   const menuItems = [
+    {
+      id: `${Routes.Settings}${Routes.Account}`,
+      name: <FormattedMessage id="settings.account" />,
+    },
     {
       id: `${Routes.Settings}${Routes.Source}`,
       name: <FormattedMessage id="tables.sources" />,
@@ -78,6 +83,9 @@ const SettingsPage: React.FC = () => {
         <MainView>
           <Suspense fallback={<LoadingPage />}>
             <Switch>
+              <Route path={`${Routes.Settings}${Routes.Account}`}>
+                <AccountPage />
+              </Route>
               <Route path={`${Routes.Settings}${Routes.Source}`}>
                 <SourcesPage />
               </Route>
@@ -94,7 +102,7 @@ const SettingsPage: React.FC = () => {
                 <MetricsPage />
               </Route>
 
-              <Redirect to={`${Routes.Settings}${Routes.Source}`} />
+              <Redirect to={`${Routes.Settings}${Routes.Account}`} />
             </Switch>
           </Suspense>
         </MainView>

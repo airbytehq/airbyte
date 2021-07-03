@@ -144,7 +144,7 @@ const SideBar: React.FC = () => {
           </li>
           <li>
             <MenuItem
-              to={`${Routes.Settings}${Routes.Source}`}
+              to={`${Routes.Settings}${Routes.Account}`}
               activeClassName="active"
               isActive={(_, location) =>
                 location.pathname.startsWith(Routes.Settings)
