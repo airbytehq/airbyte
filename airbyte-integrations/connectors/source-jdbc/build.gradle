@@ -35,6 +35,7 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation "org.testcontainers:postgresql:1.15.1"
 
+    testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
     testFixturesImplementation project(':airbyte-protocol:models')
     testFixturesImplementation project(':airbyte-db')
     testFixturesImplementation project(':airbyte-integrations:bases:base-java')

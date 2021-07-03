@@ -62,3 +62,9 @@ models:
       - name: id
         tests:
           # - not_null # TODO Fix bug here
+
+  - name: dedup_cdc_excluded
+    columns:
+      - name: name
+        tests:
+          - not_null
