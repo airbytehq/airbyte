@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y bash -y gcc && rm -rf /var/lib/apt/list
 ENV CODE_PATH="source_quickbooks_singer"
 ENV AIRBYTE_IMPL_MODULE="source_quickbooks_singer"
 ENV AIRBYTE_IMPL_PATH="SourceQuickbooksSinger"
+ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
 
 WORKDIR /airbyte/integration_code
 COPY $CODE_PATH ./$CODE_PATH
