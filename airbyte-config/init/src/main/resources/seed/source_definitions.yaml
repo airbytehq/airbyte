@@ -161,7 +161,7 @@
   documentationUrl: https://hub.docker.com/r/airbyte/source-braintree-singer
   icon: braintree.svg
 - sourceDefinitionId: 41375467-61ae-4204-8e38-e2b8b7365f23
-  name: Slack
+  name: Slack (Singer)
   dockerRepository: airbyte/source-slack-singer
   dockerImageTag: 0.2.3
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack-singer
@@ -335,7 +335,7 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/db2
 - sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  name: Slack 
+  name: Slack
   dockerRepository: airbyte/source-slack
   dockerImageTag: 0.1.7
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-slack

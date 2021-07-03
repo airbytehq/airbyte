@@ -1,6 +1,6 @@
 {
   "sourceDefinitionId": "41375467-61ae-4204-8e38-e2b8b7365f23",
-  "name": "Slack",
+  "name": "Slack (Singer)",
   "dockerRepository": "airbyte/source-slack-singer",
   "dockerImageTag": "0.2.3",
   "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-slack-singer",

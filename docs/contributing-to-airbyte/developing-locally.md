@@ -41,7 +41,7 @@ This will build all the code and run all the unit tests.
 To compile and build just the core systems:
 
 ```bash
-CORE_ONLY=1 ./gradlew build
+SUB_BUILD=PLATFORM ./gradlew build
 ```
 
 {% hint style="info" %}
@@ -64,7 +64,7 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 ## Run in `dev` mode with `docker-compose`
 
 ```bash
-CORE_ONLY=1 ./gradlew build
+SUB_BUILD=PLATFORM ./gradlew build
 VERSION=dev docker-compose up
 ```
 
@@ -77,7 +77,7 @@ In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 To run acceptance \(end-to-end\) tests, you must have the Airbyte running locally.
 
 ```bash
-CORE_ONLY=1 ./gradlew build
+SUB_BUILD=PLATFORM ./gradlew build
 VERSION=dev docker-compose up
 ./gradlew :airbyte-tests:acceptanceTests
 ```
@@ -142,7 +142,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 * Rebuild the project
 
   ```bash
-   CORE_ONLY=1 ./gradlew build
+   SUB_BUILD=PLATFORM ./gradlew build
    VERSION=dev docker-compose up -V
   ```
 
