@@ -2,14 +2,16 @@ import { useCallback } from "react";
 import { useResource, useFetcher } from "rest-hooks";
 
 import config from "config";
+import FrequencyConfig from "config/FrequencyConfig.json";
+
 import { AnalyticsService } from "core/analytics/AnalyticsService";
+import { connectionService, Connection } from "core/domain/connection";
+
 import ConnectionResource, {
-  Connection,
   ScheduleProperties,
 } from "core/resources/Connection";
 import { SyncSchema } from "core/domain/catalog";
 import { SourceDefinition } from "core/resources/SourceDefinition";
-import FrequencyConfig from "config/FrequencyConfig.json";
 import { Source } from "core/resources/Source";
 import { Routes } from "pages/routes";
 import useRouter from "../useRouterHook";
@@ -21,7 +23,6 @@ import {
 } from "core/domain/connection";
 import { Operation } from "core/domain/connection/operation";
 import { equal } from "utils/objects";
-import { connectionService } from "../../../core/domain/connection/ConnectionService";
 
 export type ValuesProps = {
   schedule: ScheduleProperties | null;

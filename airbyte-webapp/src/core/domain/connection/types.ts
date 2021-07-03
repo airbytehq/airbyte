@@ -1,10 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { SyncSchema } from "../catalog";
-import { Source } from "../../resources/Source";
-import { Destination } from "../../resources/Destination";
+import { SyncSchema } from "core/domain/catalog";
+import { Source } from "core/resources/Source";
+import { Destination } from "core/resources/Destination";
 import { Operation } from "./operation";
-import { ScheduleProperties } from "../../resources/Connection";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ConnectionConfiguration = any;
 
 type ConnectionSpecification = {
@@ -20,6 +19,11 @@ export enum ConnectionNamespaceDefinition {
   Destination = "destination",
   CustomFormat = "customformat",
 }
+
+export type ScheduleProperties = {
+  units: number;
+  timeUnit: string;
+};
 
 export interface Connection {
   connectionId: string;
