@@ -1,3 +1,4 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "start_timestamp": 1625263200000,
+  "batch_size": 1
 }
