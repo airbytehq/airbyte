@@ -90,6 +90,7 @@ public abstract class SourceAcceptanceTest extends SourceAbstractTest {
       "airbyte/source-gitlab-singer",
       "airbyte/source-google-workspace-admin-reports",
       "airbyte/source-zendesk-talk",
+      "airbyte/source-zendesk-support-singer",
       "airbyte/source-quickbooks-singer",
       "airbyte/source-jira");
 
