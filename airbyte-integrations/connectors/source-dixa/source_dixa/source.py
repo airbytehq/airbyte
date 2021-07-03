@@ -41,6 +41,7 @@ class ConversationExport(HttpStream, ABC):
     def __init__(self, start_timestamp: int, batch_size: int, logger: AirbyteLogger, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_timestamp = ConversationExport._validate_ms_timestamp(start_timestamp)
+        self.end_timestamp = ConversationExport.datetime_to_ms_timestamp(datetime.now())
         self.batch_size = batch_size
         self.logger = logger
 
@@ -71,7 +72,9 @@ class ConversationExport(HttpStream, ABC):
     @staticmethod
     def add_days_to_ms_timestamp(days: int, milliseconds: int) -> int:
         return ConversationExport.datetime_to_ms_timestamp(
-            ConversationExport.ms_timestamp_to_datetime(milliseconds) + timedelta(days=days)
+            ConversationExport.ms_timestamp_to_datetime(
+                ConversationExport._validate_ms_timestamp(milliseconds)
+            ) + timedelta(days=days)
         )
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -100,8 +103,6 @@ class ConversationExport(HttpStream, ABC):
         """
         Returns slices of size self.batch_size.
         """
-        end_dt = datetime.now()
-        end_timestamp = ConversationExport.datetime_to_ms_timestamp(end_dt)
         slices = []
 
         if stream_state and ConversationExport.cursor_field in stream_state:
@@ -113,13 +114,13 @@ class ConversationExport(HttpStream, ABC):
                 days=self.batch_size,
                 milliseconds=updated_after
             ),
-            end_timestamp
+            self.end_timestamp
         )
         slices.append({
             'updated_after': updated_after,
             'updated_before': updated_before
         })
-        while updated_after < end_timestamp:
+        while updated_after < self.end_timestamp:
             updated_after = updated_before
             updated_before = min(
                 ConversationExport.add_days_to_ms_timestamp(
