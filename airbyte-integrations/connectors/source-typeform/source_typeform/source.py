@@ -42,7 +42,7 @@ from pendulum.datetime import DateTime
 class TypeformStream(HttpStream, ABC):
     url_base = "https://api.typeform.com"
 
-    limit: int = 2
+    limit: int = 200
 
     date_format: str = "YYYY-MM-DDTHH:mm:ss[Z]"
 
@@ -51,6 +51,7 @@ class TypeformStream(HttpStream, ABC):
         self.config: Mapping[str, Any] = kwargs
         self.start_date: DateTime = pendulum.from_format(kwargs["start_date"], self.date_format)
 
+        # changes page limit, this param is using for development and debugging
         if kwargs.get("page_size"):
             self.limit = kwargs.get("page_size")
 
@@ -63,6 +64,9 @@ class TypeformStream(HttpStream, ABC):
 
 
 class TrimForms(TypeformStream):
+    """
+    This stream is responsible for fetching list of from_id(s) which required to process data from Forms and Responses.
+    """
     primary_key = "id"
 
     limit: int = 200
@@ -78,8 +82,7 @@ class TrimForms(TypeformStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         page = self.get_current_page_token(response.url)
         # stop pagination if current page equals to total pages
-        next_page = None if response.json()["page_count"] <= page else page + 1
-        return next_page
+        return None if response.json()["page_count"] <= page else page + 1
 
     def get_current_page_token(self, url: str) -> Optional[int]:
         """
@@ -102,8 +105,7 @@ class TrimForms(TypeformStream):
 
 class StreamMixin:
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        forms = TrimForms(**self.config)
-        for item in forms.read_records(sync_mode=SyncMode.full_refresh):
+        for item in TrimForms(**self.config).read_records(sync_mode=SyncMode.full_refresh):
             yield {"form_id": item["id"]}
 
         yield from []
@@ -168,7 +170,7 @@ class Responses(StreamMixin, IncrementalTypeformStream):
 
     def get_form_id(self, record: Mapping[str, Any]) -> Optional[str]:
         """
-        Fetches form id to which current record belongs
+        Fetches form id to which current record belongs.
         """
         referer = record.get("metadata", {}).get("referer")
         return referer.rsplit("/")[-1] if referer else None
@@ -179,14 +181,12 @@ class Responses(StreamMixin, IncrementalTypeformStream):
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         form_id = self.get_form_id(latest_record)
-        if not form_id:
+        if not form_id or not latest_record.get(self.cursor_field):
             return current_stream_state
 
-        last_record_cursor = latest_record.get(self.cursor_field)
         current_stream_state[form_id] = current_stream_state.get(form_id, {})
-
         new_state = max(
-            pendulum.from_format(last_record_cursor, self.date_format).int_timestamp if last_record_cursor else 1,
+            pendulum.from_format(latest_record[self.cursor_field], self.date_format).int_timestamp,
             current_stream_state[form_id].get(self.cursor_field, 1),
         )
         current_stream_state[form_id][self.cursor_field] = new_state
