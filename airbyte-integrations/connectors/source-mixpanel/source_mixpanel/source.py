@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,27 +20,23 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
-import logging
-# logging.basicConfig(level=logging.DEBUG)
-
-from collections import ChainMap
-
-
-from datetime import date, timedelta
+import base64
+# import logging
 from abc import ABC
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from datetime import date, timedelta
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from urllib.parse import parse_qs, urlparse
 
 import requests
-import base64
-from urllib.parse import urlparse, parse_qs
-
-
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
+
+# logging.basicConfig(level=logging.DEBUG)
 
 
 class MixpanelStream(HttpStream, ABC):
@@ -59,13 +56,13 @@ class MixpanelStream(HttpStream, ABC):
 
         if start_date and isinstance(start_date, str):
             start_date = date.fromisoformat(start_date)
-        self.start_date = start_date or now - timedelta(days=364)  # set to 1 year ago by default
+        self.start_date = start_date or now - timedelta(days=365)  # set to 1 year ago by default
 
         if end_date and isinstance(end_date, str):
             end_date = date.fromisoformat(end_date)
         self.end_date = end_date or now  # set to now by default
 
-        self.logger.log("INFO", f'Using start_date: {self.start_date}, end_date: {self.end_date}')
+        self.logger.log("INFO", f"Using start_date: {self.start_date}, end_date: {self.end_date}")
 
         self.date_window_size = date_window_size
 
@@ -94,20 +91,22 @@ class MixpanelStream(HttpStream, ABC):
         date_slices = []
 
         # use the latest date between self.start_date and stream_state
-        start_date = max(self.start_date, date.fromisoformat(stream_state['date']) if stream_state else self.start_date)
+        start_date = max(self.start_date, date.fromisoformat(stream_state["date"]) if stream_state else self.start_date)
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date = min(start_date, self.end_date)
 
         while start_date <= self.end_date:
             end_date = start_date + timedelta(days=self.date_window_size)
-            date_slices.append({
-                'start_date': str(start_date),
-                'end_date': str(min(end_date, self.end_date)),
-            })
+            date_slices.append(
+                {
+                    "start_date": str(start_date),
+                    "end_date": str(min(end_date, self.end_date)),
+                }
+            )
             # add 1 additional day because date range is inclusive
             start_date = end_date + timedelta(days=1)
 
-        print(f'==== date_slices: {date_slices} \n')
+        print(f"==== date_slices: {date_slices} \n")
         return date_slices
 
     def request_headers(
@@ -142,6 +141,7 @@ class MixpanelStream(HttpStream, ABC):
         for record in data:
             yield record
 
+
 class IncrementalMixpanelStream(MixpanelStream, ABC):
     """
     TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
@@ -157,7 +157,7 @@ class IncrementalMixpanelStream(MixpanelStream, ABC):
         current_stream_state = current_stream_state or {}
         current_stream_state_date = current_stream_state.get("date", str(self.start_date))
         latest_record_date = latest_record.get(self.cursor_field, str(self.start_date))
-        return {'date': max(current_stream_state_date, latest_record_date)}
+        return {"date": max(current_stream_state_date, latest_record_date)}
 
 
 class FunnelsList(MixpanelStream):
@@ -165,7 +165,8 @@ class FunnelsList(MixpanelStream):
 
     endpoint = https://mixpanel.com/api/2.0/funnels/list
     """
-    primary_key = 'funnel_id'
+
+    primary_key = "funnel_id"
     data_field = None
 
     def path(self, **kwargs) -> str:
@@ -179,9 +180,9 @@ class Funnels(IncrementalMixpanelStream):
     endpoint = "https://mixpanel.com/api/2.0/funnels"
     """
 
-    primary_key = ['funnel_id', 'date']
-    data_field = 'data'
-    cursor_field = 'date'
+    primary_key = ["funnel_id", "date"]
+    data_field = "data"
+    cursor_field = "date"
 
     def path(self, **kwargs) -> str:
         return "funnels"
@@ -193,8 +194,8 @@ class Funnels(IncrementalMixpanelStream):
         return {
             "funnel_id": stream_slice["funnel_id"],
             # 'unit': 'day'
-            'from_date': stream_slice["start_date"],
-            'to_date': stream_slice["end_date"],
+            "from_date": stream_slice["start_date"],
+            "to_date": stream_slice["end_date"],
         }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -228,26 +229,25 @@ class Funnels(IncrementalMixpanelStream):
         # extract 'funnel_id' from internal request object
         query = urlparse(response.request.path_url).query
         params = parse_qs(query)
-        funnel_id = int(params['funnel_id'][0])
+        funnel_id = int(params["funnel_id"][0])
 
         records = response.json().get(self.data_field, {})
         for date in records:
             # for each record add funnel_id, name
-            yield {'funnel_id': funnel_id,
-                   'name': self.funnels[funnel_id],
-                   'date': date,
-                   **records[date]}
-
-
+            yield {
+                "funnel_id": funnel_id,
+                "name": self.funnels[funnel_id],
+                "date": date, **records[date],
+            }
 
     def funnel_slices(self, sync_mode) -> List[dict]:
 
         funnel_slices = FunnelsList(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
         funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
-        print(f'==== funnel_slices: {funnel_slices} \n')
+        print(f"==== funnel_slices: {funnel_slices} \n")
 
         # save all funnels in dict(<funnel_id1>:<name1>, ...)
-        self.funnels = dict((funnel['funnel_id'], funnel['name']) for funnel in funnel_slices)
+        self.funnels = dict((funnel["funnel_id"], funnel["name"]) for funnel in funnel_slices)
 
         return funnel_slices
 
@@ -259,7 +259,7 @@ class Funnels(IncrementalMixpanelStream):
         :return:
         """
 
-        print(f'==== stream_state: {stream_state}')
+        print(f"==== stream_state: {stream_state}")
 
         # One stream slice is a combination of all funnel_slices and stream_slices
         stream_slices = []
@@ -269,7 +269,7 @@ class Funnels(IncrementalMixpanelStream):
             for date_slice in date_slices:
                 stream_slices.append({**funnel_slice, **date_slice})
 
-        print(f'==== stream_slices: {stream_slices} \n')
+        print(f"==== stream_slices: {stream_slices} \n")
         return stream_slices
 
 
@@ -300,9 +300,10 @@ class Cohorts(MixpanelStream):
     ]
 
     """
+
     data_field = None
-    primary_key = 'id'
-    cursor_field = 'created'
+    primary_key = "id"
+    cursor_field = "created"
 
     def path(self, **kwargs) -> str:
         return "cohorts/list"
@@ -345,9 +346,10 @@ class Engage(MixpanelStream):
 
     }
     """
-    data_field = 'results'
-    primary_key = 'distinct_id'
-    page_size = 1000 # min 100
+
+    data_field = "results"
+    primary_key = "distinct_id"
+    page_size = 1000  # min 100
     _total = None
 
     def path(self, **kwargs) -> str:
@@ -360,7 +362,7 @@ class Engage(MixpanelStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         return {"include_all_users": True}
-        #return {'filter_by_cohort':'{"id":1343181}'}
+        # return {'filter_by_cohort':'{"id":1343181}'}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -379,26 +381,23 @@ class Engage(MixpanelStream):
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
         decoded_response = response.json()
-        page_number = decoded_response.get('page')
-        total = decoded_response.get('total')  # exist only on first page
+        page_number = decoded_response.get("page")
+        total = decoded_response.get("total")  # exist only on first page
         if total:
             self._total = total
 
         if self._total and page_number is not None and self._total > self.page_size * (page_number + 1):
             return {
-                'session_id': decoded_response.get('session_id'),
-                'page': page_number + 1
+                "session_id": decoded_response.get("session_id"),
+                "page": page_number + 1,
             }
         else:
             self._total = None
             return None
 
 
-
 class CohortMembers(Engage):
-    """Return list of users grouped by cohort
-
-    """
+    """Return list of users grouped by cohort"""
 
     def request_body_json(
         self,
@@ -407,7 +406,7 @@ class CohortMembers(Engage):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         # example: {"filter_by_cohort": '{"id": 1343181}'}
-        id = stream_slice['id']
+        id = stream_slice["id"]
         # ss= f'{{"id":"{d["id"]}"}}'
         ss = f'{{"id":{id}}}'
         jj = {"filter_by_cohort": ss}
@@ -417,7 +416,7 @@ class CohortMembers(Engage):
         return jj
 
     def stream_slices(
-            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         :param stream_state:
@@ -426,9 +425,9 @@ class CohortMembers(Engage):
         stream_slices = []
         cohorts = Cohorts(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
         for cohort in cohorts:
-            stream_slices.append({'id': cohort['id']})
+            stream_slices.append({"id": cohort["id"]})
 
-        print(f'==== stream_slices: {stream_slices} \n')
+        print(f"==== stream_slices: {stream_slices} \n")
 
         stream_slices = [{"id": 1343181}]
         return stream_slices
@@ -453,8 +452,9 @@ class Annotations(MixpanelStream):
     NOTE: annotation date - is the date for which annotation was added, this is not the date when annotation was added
     That's why stream does not support incremental sync.
     """
-    data_field = 'annotations'
-    primary_key = 'id'
+
+    data_field = "annotations"
+    primary_key = "id"
 
     def path(self, **kwargs) -> str:
         return "annotations"
@@ -472,18 +472,20 @@ class Annotations(MixpanelStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {
-            'from_date': stream_slice["start_date"],
-            'to_date': stream_slice["end_date"],
+            "from_date": stream_slice["start_date"],
+            "to_date": stream_slice["end_date"],
         }
+
 
 class Revenue(IncrementalMixpanelStream):
     """Get data from your Insights reports.
     API Docs: https://developer.mixpanel.com/reference/insights
     Endpoint: https://mixpanel.com/api/2.0/insights
     """
-    data_field = 'results'
-    primary_key = 'date'
-    cursor_field = 'date'
+
+    data_field = "results"
+    primary_key = "date"
+    cursor_field = "date"
 
     def path(self, **kwargs) -> str:
         return "engage/revenue"
@@ -492,8 +494,8 @@ class Revenue(IncrementalMixpanelStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {
-            'from_date': stream_slice["start_date"],
-            'to_date': stream_slice["end_date"],
+            "from_date": stream_slice["start_date"],
+            "to_date": stream_slice["end_date"],
         }
 
     def stream_slices(
@@ -535,9 +537,7 @@ class Revenue(IncrementalMixpanelStream):
         """
         records = response.json().get(self.data_field, {})
         for date in records:
-            yield {'date': date,
-                   **records[date]}
-
+            yield {"date": date, **records[date]}
 
 
 class Export(MixpanelStream):
@@ -566,14 +566,11 @@ class Export(MixpanelStream):
 
     """
 
-    path = 'export'
-
-
-
+    path = "export"
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
-    def __init__(self, token:str, auth_method:str = 'Basic', **kwargs):
+    def __init__(self, token: str, auth_method: str = "Basic", **kwargs):
         token = base64.b64encode(token.encode("utf8")).decode("utf8")
         super().__init__(token=token, auth_method=auth_method, **kwargs)
 
@@ -594,15 +591,16 @@ class SourceMixpanel(AbstractSource):
         try:
             response = requests.request(
                 "GET",
-                url = "https://mixpanel.com/api/2.0/funnels/list",
-                headers = {
+                url="https://mixpanel.com/api/2.0/funnels/list",
+                headers={
                     "Accept": "application/json",
                     **authenticator.get_auth_header(),
-                })
+                },
+            )
 
             if response.status_code != 200:
                 message = response.json()
-                error_message = message.get('error')
+                error_message = message.get("error")
                 if error_message:
                     return False, error_message
                 response.raise_for_status()
