@@ -74,3 +74,10 @@ The easiest way to get these credentials is by using Quickbook's [OAuth 2.0 play
 
 **Important note:** The refresh token expires every 100 days. You will need to manually revisit the Oauth playground to obtain a refresh token every 100 days, or your syncs will expire. We plan on offering full Oauth support soon so you don't need to redo this process manually.
 
+## Changelog
+
+| Version | Date       | Pull Request | Subject |
+| :------ | :--------  | :-----       | :------ |
+| 0.1.2   | 2021-07-02 | [4523](https://github.com/airbytehq/airbyte/pull/4523) | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support |
+| 0.1.0   | 2021-04-23 | [2768](https://github.com/airbytehq/airbyte/pull/2768) | Initial Release |
+
