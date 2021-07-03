@@ -1,3 +1,4 @@
+#
 # MIT License
 #
 # Copyright (c) 2020 Airbyte
@@ -19,25 +20,20 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+#
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "pydantic==1.8.2",
-    "PyYAML==5.4.1",
-    "pendulum"
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "pendulum==2.1.2"]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
     "source-acceptance-test",
 ]
 
 setup(
     name="source_zuora",
-    description="Source Connector implementation for Zuora.",
+    description="Airbyte source-connector for Zuora.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
