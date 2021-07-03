@@ -88,6 +88,26 @@ class MixpanelStream(HttpStream, ABC):
         """
         return None
 
+    def date_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        date_slices = []
+        # use the latest date between self.start_date and stream_state
+        start_date = max(self.start_date, date.fromisoformat(stream_state['date']) if stream_state else self.start_date)
+        # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
+        start_date = min(start_date, self.end_date)
+        while start_date <= self.end_date:
+            end_date = start_date + timedelta(days=self.date_window_size)
+            date_slices.append({
+                'start_date': str(start_date),
+                'end_date': str(min(end_date, self.end_date)),
+            })
+            # add 1 additional day because date range is inclusive
+            start_date = end_date + timedelta(days=1)
+
+        print(f'==== date_slices: {date_slices} \n')
+        return date_slices
+
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
@@ -120,20 +140,41 @@ class MixpanelStream(HttpStream, ABC):
         for record in data:
             yield record
 
+class IncrementalMixpanelStream(MixpanelStream, ABC):
+    """
+    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
+         if you do not need to implement incremental sync for any streams, remove this class.
+    """
+
+    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
+    state_checkpoint_interval = None
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
+        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
+        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
+        current_stream_state = current_stream_state or {}
+        current_stream_state_date = current_stream_state.get("date", str(self.start_date))
+        latest_record_date = latest_record.get(self.cursor_field, str(self.start_date))
+        return {'date': max(current_stream_state_date, latest_record_date)}
+
+
 
 class FunnelsList(MixpanelStream):
-    primary_key = 'funnel_id' # 'funnel_id'
+    """API Docs: https://developer.mixpanel.com/reference/funnels#funnels-list-saved
+
+    endpoint = https://mixpanel.com/api/2.0/funnels/list
+    """
+    primary_key = 'funnel_id'
     data_field = None
 
     def path(self, **kwargs) -> str:
         return "funnels/list"
 
-class Funnels(MixpanelStream):
-    """
-    Docs: https://developer.mixpanel.com/reference/funnels#funnels-query
+class Funnels(IncrementalMixpanelStream):
+    """List the funnels for a given date range.
+    API Docs: https://developer.mixpanel.com/reference/funnels#funnels-query
 
-    url = "https://mixpanel.com/api/2.0/funnels"
-           https://mixpanel.com/api/2.0/funnels/list
+    endpoint = "https://mixpanel.com/api/2.0/funnels"
     """
 
     primary_key = ['funnel_id', 'date']
@@ -195,23 +236,7 @@ class Funnels(MixpanelStream):
                    'date': date,
                    **records[date]}
 
-    def date_slices(self, stream_state: Mapping[str, Any] = None) -> List[dict]:
-        date_slices = []
-        # use the latest date between self.start_date and stream_state
-        start_date = max(self.start_date, date.fromisoformat(stream_state['date']) if stream_state else self.start_date)
-        # use the lowest date between start_date and self.end_date, otherwise API could fail of start_date is in future
-        start_date = min(start_date, self.end_date)
-        while start_date <= self.end_date:
-            end_date = start_date + timedelta(days=self.date_window_size)
-            date_slices.append({
-                'start_date': str(start_date),
-                'end_date': str(min(end_date, self.end_date)),
-            })
-            # add 1 additional day because date range is inclusive
-            start_date = end_date + timedelta(days=1)
 
-        print(f'==== date_slices: {date_slices} \n')
-        return date_slices
 
     def funnel_slices(self, sync_mode) -> List[dict]:
 
@@ -237,7 +262,7 @@ class Funnels(MixpanelStream):
         # One stream slice is a combination of all funnel_slices and stream_slices
         stream_slices = []
         funnel_slices = self.funnel_slices(sync_mode)
-        date_slices = self.date_slices(stream_state)
+        date_slices = self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
         for funnel_slice in funnel_slices:
             for date_slice in date_slices:
                 stream_slices.append({**funnel_slice, **date_slice})
@@ -245,22 +270,221 @@ class Funnels(MixpanelStream):
         print(f'==== stream_slices: {stream_slices} \n')
         return stream_slices
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
-        current_stream_state = current_stream_state or {}
-        current_stream_state_date = current_stream_state.get("date", str(self.start_date))
-        latest_record_date = latest_record.get(self.cursor_field, str(self.start_date))
-        return {'date': max(current_stream_state_date, latest_record_date)}
+
+class Cohorts(MixpanelStream):
+    """Returns all of the cohorts in a given project.
+    API Doc: https://developer.mixpanel.com/reference/cohorts
+
+    endpoint: https://mixpanel.com/api/2.0/cohorts/list
+
+    [{
+        "count": 150
+        "is_visible": 1
+        "description": "This cohort is visible, has an id = 1000, and currently has 150 users."
+        "created": "2019-03-19 23:49:51"
+        "project_id": 1
+        "id": 1000
+        "name": "Cohort One"
+    },
+    {
+        "count": 25
+        "is_visible": 0
+        "description": "This cohort isn't visible, has an id = 2000, and currently has 25 users."
+        "created": "2019-04-02 23:22:01"
+        "project_id": 1
+        "id": 2000
+        "name": "Cohort Two"
+    }
+    ]
+
+    """
+    data_field = None
+    primary_key = 'id'
+    cursor_field = 'created'
+
+    def path(self, **kwargs) -> str:
+        return "cohorts/list"
+
+
+class Engage(MixpanelStream):
+    """Return list of all users
+
+    API Doc: https://developer.mixpanel.com/reference/engage
+
+    Endpoint: https://mixpanel.com/api/2.0/engage
+
+    {
+        "page": 0
+        "page_size": 1000
+        "session_id": "1234567890-EXAMPL"
+        "status": "ok"
+        "total": 1
+        "results": [{
+            "$distinct_id": "9d35cd7f-3f06-4549-91bf-198ee58bb58a"
+            "$properties":{
+                "$browser":"Chrome"
+                "$browser_version":"83.0.4103.116"
+                "$city":"Leeds"
+                "$country_code":"GB"
+                "$region":"Leeds"
+                "$timezone":"Europe/London"
+                "unblocked":"true"
+                "$email":"nadine@asw.com"
+                "$first_name":"Nadine"
+                "$last_name":"Burzler"
+                "$name":"Nadine Burzler"
+                "id":"632540fa-d1af-4535-bc52-e331955d363e"
+                "$last_seen":"2020-06-28T12:12:31"
+                }
+            },{
+            ...
+            }
+        ]
+
+    }
+    """
+    data_field = 'results'
+    primary_key = 'distinct_id'
+    page_size = 1000 # min 100
+    _total = None
+
+    def path(self, **kwargs) -> str:
+        return "engage"
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        #return {"include_all_users": True}
+        return {'filter_by_cohort':'{"id":1343181}'}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {"page_size": self.page_size}
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Override this method to define a pagination strategy.
+
+        The value returned from this method is passed to most other methods in this class. Use it to form a request e.g: set headers or query params.
+
+        :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
+        """
+        decoded_response = response.json()
+        page_number = decoded_response.get('page')
+        total = decoded_response.get('total')  # exist only on first page
+        if total:
+            self._total = total
+
+        if self._total and page_number is not None and self._total > self.page_size * (page_number + 1):
+            return {
+                'session_id': decoded_response.get('session_id'),
+                'page': page_number + 1
+            }
+        else:
+            self._total = None
+            return None
+
+
+
+class CohortMembers(Engage):
+    """Return list of users grouped by cohort
+
+    """
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        # example: {"filter_by_cohort": '{"id": 1343181}'}
+        id = stream_slice['id']
+        # ss= f'{{"id":"{d["id"]}"}}'
+        ss = f'{{"id":{id}}}'
+        jj = {"filter_by_cohort": ss}
+        print(jj)
+        print()
+
+        return jj
+
+    def stream_slices(
+            self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        :param stream_state:
+        :return:
+        """
+        stream_slices = []
+        cohorts = Cohorts(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
+        for cohort in cohorts:
+            stream_slices.append({'id': cohort['id']})
+
+        print(f'==== stream_slices: {stream_slices} \n')
+
+        stream_slices = [{"id": 1343181}]
+        return stream_slices
+
 
 class Insights(MixpanelStream):
+    """Get data from your Insights reports.
+    API Docs: https://developer.mixpanel.com/reference/insights
+    Endpoint: https://mixpanel.com/api/2.0/insights
+
+    # TODO
+    Requires:
+    bookmark_id - The ID of your Insights report can be found from the url: https://mixpanel.com/report/1/insights#report/<YOUR_BOOKMARK_ID>/example-report
     """
-    Docs: https://developer.mixpanel.com/reference/export
+    def path(self, **kwargs) -> str:
+        return "insights"
 
+class Annotations(MixpanelStream):
+    """List the annotations for a given date range.
+    API Docs: https://developer.mixpanel.com/reference/annotations
+    endpoint: "https://mixpanel.com/api/2.0/annotations
+
+    Output example:
+    {
+        "annotations": [{
+                "id": 640999
+                "project_id": 2117889
+                "date": "2021-06-16 00:00:00" <-- PLEASE READ NOTE
+                "description": "Looks good"
+            }, {...}
+        ]
+    }
+
+    NOTE: annotation date - is the date for which annotation was added, this is not the date when annotation was added
+    That's why stream does not support incremental sync.
     """
+    data_field = 'annotations'
+    primary_key = 'id'
 
-    path = 'insights'
+    def path(self, **kwargs) -> str:
+        return "annotations"
 
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        :param stream_state:
+        :return:
+        """
+        return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            'from_date': stream_slice["start_date"],
+            'to_date': stream_slice["end_date"],
+        }
 
 class Export(MixpanelStream):
     """
@@ -291,32 +515,7 @@ class Export(MixpanelStream):
     path = 'export'
 
 
-class IncrementalMixpanelStream(MixpanelStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
-
-    @property
-    def cursor_field(self) -> str:
-        """
-        TODO
-        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
-        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
-
-        :return str: The name of the cursor field.
-        """
-        return []
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
@@ -364,4 +563,10 @@ class SourceMixpanel(AbstractSource):
         """
 
         auth = TokenAuthenticatorBase64(token=config["api_secret"])
-        return [Funnels(authenticator=auth, **config)]
+        return [
+            Funnels(authenticator=auth, **config),
+            Engage(authenticator=auth, **config),
+            Cohorts(authenticator=auth, **config),
+            CohortMembers(authenticator=auth, **config),
+            Annotations(authenticator=auth, **config),
+        ]
