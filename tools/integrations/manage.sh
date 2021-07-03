@@ -39,7 +39,7 @@ cmd_build() {
     echo "Skipping integration tests..."
   else
     echo "Running integration tests..."
-    ./gradlew --no-daemon -no-build-cache "$(_to_gradle_path "$path" integrationTest)"
+    ./gradlew --no-daemon --no-build-cache "$(_to_gradle_path "$path" integrationTest)"
   fi
 }
 
