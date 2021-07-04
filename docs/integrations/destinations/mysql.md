@@ -56,3 +56,14 @@ You should now have all the requirements needed to configure MySQL as a destinat
 * **Password**
 * **Database**
 
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :--- | :---  | :--- | :--- |
+| 0.1.6 | 2021-07-03 | [#4531](https://github.com/airbytehq/airbyte/pull/4531) | Added normalization for MySQL. |
+| 0.1.5 | 2021-07-03 | [#3973](https://github.com/airbytehq/airbyte/pull/3973) | Added `AIRBYTE_ENTRYPOINT` for kubernetes support. |
+| 0.1.4 | 2021-07-03 | [#3290](https://github.com/airbytehq/airbyte/pull/3290) | Switched to get states from destination instead of source. |
+| 0.1.3 | 2021-07-03 | [#3387](https://github.com/airbytehq/airbyte/pull/3387) | Fixed a bug for message length checking. |
+| 0.1.2 | 2021-07-03 | [#3327](https://github.com/airbytehq/airbyte/pull/3327) | Fixed LSEP unicode characters. |
+| 0.1.1 | 2021-07-03 | [#3289](https://github.com/airbytehq/airbyte/pull/3289) | Added support for outputting messages. |
+| 0.1.0 | 2021-05-06 | [#3242](https://github.com/airbytehq/airbyte/pull/3242) | Added MySQL destination. |
