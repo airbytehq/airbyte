@@ -41,12 +41,17 @@ The connector is restricted by normal Hubspot [rate limitations](https://legacyd
 
 ## Getting started
 
+
 ### Requirements
 
 * Hubspot Account
 * Api credentials
 
 ### Setup guide
+
+{% hint style="info" %}
+Hubspot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
+{% endhint %}
 
 This connector supports only authentication with API Key. To obtain API key for the account go to settings -&gt; integrations \(under the account banner\) -&gt; api key. If you already have an api key you can use that. Otherwise generated a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
 

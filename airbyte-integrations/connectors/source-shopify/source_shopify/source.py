@@ -135,6 +135,21 @@ class Orders(IncrementalShopifyStream):
         return params
 
 
+class DraftOrders(IncrementalShopifyStream):
+    data_field = "draft_orders"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        stream_state = stream_state or {}
+        if next_page_token:
+            params = {"limit": self.limit, **next_page_token}
+        else:
+            params = {"limit": self.limit, "updated_at_min": self.start_date, "since_id": stream_state.get(self.cursor_field)}
+        return params
+
+
 class Products(IncrementalShopifyStream):
     data_field = "products"
 
@@ -316,6 +331,7 @@ class SourceShopify(AbstractSource):
         return [
             Customers(**args),
             Orders(**args),
+            DraftOrders(**args),
             Products(**args),
             AbandonedCheckouts(**args),
             Metafields(**args),

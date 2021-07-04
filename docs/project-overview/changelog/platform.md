@@ -6,11 +6,17 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
-## [06-21-2021](https://github.com/airbytehq/airbyte/releases/tag/v0.26.2-alpha)
+## [07-1-2021 - 0.27.0](https://github.com/airbytehq/airbyte/releases/tag/v0.27.0-alpha)
+* Airbyte now automatically upgrades on server startup!
+  * Airbyte will check whether your `.env` Airbyte version is compatible with the Airbyte version in the database and upgrade accordingly.
+* When running Airbyte on K8s logs will automatically be stored in a Minio bucket unless configured otherwise.
+* CDC for MySQL now handles decimal types correctly.
+
+## [06-21-2021 - 0.26.2](https://github.com/airbytehq/airbyte/releases/tag/v0.26.2-alpha)
 
 * First-Class Kubernetes support!
 
-## [06-16-2021](https://github.com/airbytehq/airbyte/releases/tag/v0.26.0-alpha)
+## [06-16-2021 - 0.26.0](https://github.com/airbytehq/airbyte/releases/tag/v0.26.0-alpha)
 
 * Custom dbt transformations! 
 * You can now configure your destination namespace at the table level when setting up a connection!  

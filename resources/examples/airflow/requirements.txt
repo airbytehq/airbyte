@@ -1,0 +1,2 @@
+apache-airflow-providers-http
+apache-airflow-providers-airbyte
