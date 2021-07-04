@@ -207,8 +207,10 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
         } catch (Exception e) {
           if (e.getCause() != null && e.getCause().getClass().equals(com.microsoft.sqlserver.jdbc.SQLServerException.class)) {
             LOGGER.warn(String.format("Skipping check for whether the SQL Server Agent is running, SQLServerException thrown: '%s'",
-                                      e.getMessage()));
-          } else { throw e; }
+                e.getMessage()));
+          } else {
+            throw e;
+          }
         }
       });
 
@@ -264,11 +266,11 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
       LOGGER.info("identified target lsn: " + targetLsn);
 
       /**
-       * We use 10000 as capacity cause the default queue size and batch size of debezium is :
-       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE} is 2048
-       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192
+       * We use 100,000 as capacity. We've used default * 10 queue size and batch size of debezium :
+       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_BATCH_SIZE} is 2048 (so 20,480)
+       * {@link io.debezium.config.CommonConnectorConfig#DEFAULT_MAX_QUEUE_SIZE} is 8192 (so 81,920)
        */
-      final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(10000);
+      final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(100000);
       final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(config, catalog, offsetManager, schemaHistoryManager);
       publisher.start(queue);
 
@@ -331,12 +333,10 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
       Preconditions.checkState(jsonNodes.size() == 1);
       if (jsonNodes.get(0).get("max_lsn") != null) {
         return Lsn.valueOf(jsonNodes.get(0).get("max_lsn").binaryValue());
+      } else {
+        throw new RuntimeException("Max LSN is null, see docs"); // todo: make this error way better
       }
-      else {
-        throw new RuntimeException("Max LSN is null, see docs"); //todo: make this error way better
-      }
-    }
-    catch (SQLException | IOException e) {
+    } catch (SQLException | IOException e) {
       throw new RuntimeException(e);
     }
 
@@ -345,7 +345,7 @@ public class MssqlSource extends AbstractJdbcSource implements Source {
   private static boolean isCdc(JsonNode config) {
     return config.hasNonNull("replication_method")
         && ReplicationMethod.valueOf(config.get("replication_method").asText())
-        .equals(ReplicationMethod.CDC);
+            .equals(ReplicationMethod.CDC);
   }
 
   private static boolean shouldUseCDC(ConfiguredAirbyteCatalog catalog) {

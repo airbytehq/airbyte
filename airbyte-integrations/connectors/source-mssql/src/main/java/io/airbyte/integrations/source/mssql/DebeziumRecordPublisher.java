@@ -87,7 +87,17 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           // more on the tombstone:
           // https://debezium.io/documentation/reference/configuration/event-flattening.html
           if (e.value() != null) {
-            queue.add(e);
+            boolean inserted = false;
+            while (!inserted) {
+              inserted = queue.offer(e);
+              if (!inserted) {
+                try {
+                  Thread.sleep(10);
+                } catch (InterruptedException interruptedException) {
+                  throw new RuntimeException(interruptedException);
+                }
+              }
+            }
           }
         })
         .using((success, message, error) -> {
@@ -101,7 +111,9 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     executor.execute(engine);
   }
 
-  public boolean hasClosed() { return hasClosed.get(); }
+  public boolean hasClosed() {
+    return hasClosed.get();
+  }
 
   public void close() throws Exception {
     if (isClosing.compareAndSet(false, true)) {
@@ -134,7 +146,14 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("connector.class", "io.debezium.connector.sqlserver.SqlServerConnector");
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
     props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
-    props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
+
+    // TODO: it might be useful to make these user configurable...
+    // https://debezium.io/documentation/reference/development/engine.html#engine-properties
+    props.setProperty("offset.flush.timeout.ms", "60000"); // default is 5 seconds, changing to 60
+    props.setProperty("offset.flush.interval.ms", "10000"); // Interval at which to try committing offsets (default is 60000)
+//    // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-max-queue-size
+    props.setProperty("max.queue.size", "81290"); // default*10
+    props.setProperty("max.batch.size", "20480"); // default*10
 
     // snapshot config
     // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-property-snapshot-mode
