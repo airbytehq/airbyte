@@ -15,7 +15,7 @@ on:
 
 jobs:
   integration_test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Search for valid connector name format
         id: regex

@@ -53,6 +53,7 @@ Airbyte places the json blob version of your data in a table called `_airbyte_ra
 ## Destinations that Support Basic Normalization
 
 * [BigQuery](../integrations/destinations/bigquery.md)
+* [MySQL](../integrations/destinations/mysql.md) (MySQL 8.0 only)
 * [Postgres](../integrations/destinations/postgres.md)
 * [Snowflake](../integrations/destinations/snowflake.md)
 * [Redshift](../integrations/destinations/redshift.md)
