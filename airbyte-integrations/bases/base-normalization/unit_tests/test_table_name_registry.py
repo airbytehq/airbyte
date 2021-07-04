@@ -128,6 +128,12 @@ def read_json(input_path: str, apply_function=(lambda x: x)):
     return json.loads(contents)
 
 
+# This test is not intended to be exhaustive over the destinations,
+# so it's not mandatory to add new destination expected field here.
+# The intent here is to unit test simple_name vs nested_hashed_name
+# functions in the table_name_registry. There are other tests that
+# automatically test naming against all destinations whenever it is
+# added to the enum.
 @pytest.mark.parametrize(
     "json_path, expected_postgres, expected_bigquery",
     [
