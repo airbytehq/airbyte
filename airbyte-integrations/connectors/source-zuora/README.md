@@ -66,6 +66,7 @@ You can also build the connector image via Gradle:
 ```
 ./gradlew :airbyte-integrations:connectors:source-zuora:airbyteDocker
 ```
+
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
 
@@ -77,12 +78,14 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-zuora:dev check --conf
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-zuora:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-zuora:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
+
 ## Testing
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
 ```
 pip install .[tests]
 ```
+
 ### Unit Tests
 To run unit tests locally, from the connector directory run:
 ```
@@ -91,11 +94,13 @@ python -m pytest unit_tests
 
 ### Integration Tests
 There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all source connectors) and custom integration tests (which are specific to this connector).
+
 #### Custom Integration tests
 Place custom tests inside `integration_tests/` folder, then, from the connector root, run
 ```
 python -m pytest integration_tests
 ```
+
 #### Acceptance Tests
 Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](source-acceptance-tests.md) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
@@ -103,6 +108,7 @@ To run your integration tests with acceptance tests, from the connector root, ru
 ```
 python -m pytest integration_tests -p integration_tests.acceptance
 ```
+
 To run your integration tests with docker
 
 ### Using gradle to run tests
@@ -111,10 +117,55 @@ To run unit tests:
 ```
 ./gradlew :airbyte-integrations:connectors:source-zuora:unitTest
 ```
+
 To run acceptance and custom integration tests:
 ```
 ./gradlew :airbyte-integrations:connectors:source-zuora:integrationTest
 ```
+
+### TO run the actual test using Airbyte's Normalisation in actions
+To add the Zuora Connector you just built:
+
+# Run Airbyte using docker-compose
+Under Airbyte's root directory:
+```
+docker-compose up -d
+```
+Open the web-page of Airbyte:
+```
+http://localhost:8000/
+```
+Proceed the `First-Steps` on the web-page, use some test information for this, for now you can skipp the `onboarding` part.
+
+# Add New Source Connector
+Add the SOURCE by going to `Admin` panel:
+```
+Press '+ New Connector'
+```
+Complete the New Connector's form by entering:
+```
+Name : Test Zuora Connector
+Image: airbyte/source-zuora
+Tag: dev
+Documentation: http://SomeTestDocumentation.com/
+```
+Save the form.
+
+# Add Destination
+Use the following steps to build and test the custom destination on the Postgres example:
+```
+docker run --rm --name airbyte-destination -e POSTGRES_PASSWORD=password -p 3000:5432 -d postgres
+```
+After the docker has run the local postgres database in the background for your needs, use the following credentials to set up the DESTINATION on the Airbyte's web-page, on your local  machine.
+```
+Host: localhost
+Port: 3000
+User: postgres
+Password: password
+DB Name: postgres
+```
+
+
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
