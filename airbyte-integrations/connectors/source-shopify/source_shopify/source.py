@@ -108,7 +108,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         return params
 
     # Parse the stream_slice with respect to stream_state for Incremental refresh
-    def parse_records_slice(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable[Mapping]:
+    def parse_records_slice(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None):
         # Getting records >= state
         if stream_state:
             for record in records_slice:
@@ -118,7 +118,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
             yield from records_slice
 
 
-class OrderSlice(IncrementalShopifyStream):
+class OrderSubstream(IncrementalShopifyStream):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
@@ -225,7 +225,7 @@ class Collects(IncrementalShopifyStream):
         return params
 
 
-class OrderRefunds(OrderSlice):
+class OrderRefunds(OrderSubstream):
     data_field = "refunds"
     order_field = "created_at"
     cursor_field = "created_at"
@@ -236,7 +236,7 @@ class OrderRefunds(OrderSlice):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
-class OrderRisks(OrderSlice):
+class OrderRisks(OrderSubstream):
     data_field = "risks"
     order_field = "id"
     cursor_field = "id"
@@ -258,7 +258,7 @@ class OrderRisks(OrderSlice):
         return params
 
 
-class Transactions(OrderSlice):
+class Transactions(OrderSubstream):
     data_field = "transactions"
     order_field = "created_at"
     cursor_field = "created_at"
