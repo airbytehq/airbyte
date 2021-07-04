@@ -108,7 +108,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         return params
 
     # Parse the stream_slice with respect to stream_state for Incremental refresh
-    def parse_stream_slice(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable[Mapping]:
+    def parse_records_slice(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable[Mapping]:
         # Getting records >= state
         if stream_state:
             for record in records_slice:
@@ -125,7 +125,7 @@ class OrderSlice(IncrementalShopifyStream):
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
-            yield from super().parse_stream_slice(stream_state=stream_state, records_slice=slice)
+            yield from self.parse_records_slice(stream_state=stream_state, records_slice=slice)
 
 
 class Customers(IncrementalShopifyStream):
@@ -155,14 +155,6 @@ class DraftOrders(IncrementalShopifyStream):
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
-
-    def request_params(self, stream_state=None, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        stream_state = stream_state or {}
-        if next_page_token:
-            params = {"limit": self.limit, **next_page_token}
-        else:
-            params = {"limit": self.limit, "updated_at_min": self.start_date, "since_id": stream_state.get(self.cursor_field)}
-        return params
 
 
 class Products(IncrementalShopifyStream):
@@ -307,7 +299,7 @@ class DiscountCodes(IncrementalShopifyStream):
         )
         for data in price_rules_stream.read_records(sync_mode=SyncMode.full_refresh):
             discount_slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
-            yield from super().parse_stream_slice(stream_state=stream_state, records_slice=discount_slice)
+            yield from self.parse_records_slice(stream_state=stream_state, records_slice=discount_slice)
 
 
 class ShopifyAuthenticator(HttpAuthenticator):
