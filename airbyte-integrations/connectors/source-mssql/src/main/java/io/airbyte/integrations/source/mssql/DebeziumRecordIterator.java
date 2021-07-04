@@ -24,7 +24,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.json.Jsons;
@@ -34,7 +33,6 @@ import io.debezium.connector.sqlserver.Lsn;
 import io.debezium.engine.ChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -204,6 +202,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       this.period = period;
       this.timeUnit = timeUnit;
     }
+
   }
 
 }
