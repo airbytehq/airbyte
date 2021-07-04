@@ -60,4 +60,4 @@ You should now have all the requirements needed to configure MySQL as a destinat
 
 | Version | Date | Pull Request | Subject |
 | :--- | :---  | :--- | :--- |
-| 0.1.6 | 2021-07-03 | [#4227](https://github.com/airbytehq/airbyte/pull/4227) | Added normalization for MySQL. |
+| 0.1.6 | 2021-07-03 | [#4531](https://github.com/airbytehq/airbyte/pull/4531) | Added normalization for MySQL. |
