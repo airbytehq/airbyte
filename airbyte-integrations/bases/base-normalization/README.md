@@ -224,6 +224,7 @@ This only works for testing databases launched in local containers (e.g. postgre
 - Find the name of the database container in the logs (e.g. by searching `Executing`).
 - Connect to the container by running `docker exec -it <container-name> bash` in the commandline.
 - Connect to the database inside the container (e.g. `mysql -u root` for mysql).
+- Test the generated dbt operations directly in the database.
 
 ## Standard Destination Tests
 
