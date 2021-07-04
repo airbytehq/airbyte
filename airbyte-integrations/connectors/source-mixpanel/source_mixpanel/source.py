@@ -24,7 +24,7 @@
 
 
 import base64
-# import logging
+
 from abc import ABC
 from datetime import date, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -35,9 +35,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
-
-# logging.basicConfig(level=logging.DEBUG)
-
 
 class MixpanelStream(HttpStream, ABC):
 
@@ -232,12 +229,13 @@ class Funnels(IncrementalMixpanelStream):
         funnel_id = int(params["funnel_id"][0])
 
         records = response.json().get(self.data_field, {})
-        for date in records:
+        for date_entry in records:
             # for each record add funnel_id, name
             yield {
                 "funnel_id": funnel_id,
                 "name": self.funnels[funnel_id],
-                "date": date, **records[date],
+                "date": date_entry,
+                **records[date_entry],
             }
 
     def funnel_slices(self, sync_mode) -> List[dict]:
@@ -536,16 +534,16 @@ class Revenue(IncrementalMixpanelStream):
         :return an iterable containing each record in the response
         """
         records = response.json().get(self.data_field, {})
-        for date in records:
-            yield {"date": date, **records[date]}
+        for date_entry in records:
+            yield {"date": date_entry, **records[date_entry]}
 
 
 class Export(MixpanelStream):
-    """
-    Docs: https://developer.mixpanel.com/reference/insights
+    """Export event data as it is received and stored within Mixpanel, complete with all event properties
+     (including distinct_id) and the exact timestamp the event was fired.
 
-
-    https://data.mixpanel.com/api/2.0/export
+    API Docs: https://developer.mixpanel.com/reference/export
+    Endpoint: https://data.mixpanel.com/api/2.0/export
 
 
     url = "https://data.mixpanel.com/api/2.0/export"
@@ -564,9 +562,31 @@ class Export(MixpanelStream):
 
      Your plan does not support raw data export. Visit mixpanel.com/pricing to upgrade.
 
-    """
+[
+{
+    "event":"Viewed report"
+    "properties": {
+        "time": 1518393599
+        "distinct_id": "test-email@mixpanel.com"
+        "$browser": "Chrome"
+        "report_name": "Funnels"
+    }
+}
+]
 
-    path = "export"
+    """
+    data_field = None
+
+    def path(self, **kwargs) -> str:
+        return "export"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "from_date": stream_slice["start_date"],
+            "to_date": stream_slice["end_date"],
+        }
 
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
