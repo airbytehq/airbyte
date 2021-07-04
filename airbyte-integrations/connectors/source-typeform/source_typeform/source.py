@@ -67,6 +67,7 @@ class TrimForms(TypeformStream):
     """
     This stream is responsible for fetching list of from_id(s) which required to process data from Forms and Responses.
     """
+
     primary_key = "id"
 
     limit: int = 200
@@ -185,11 +186,10 @@ class Responses(StreamMixin, IncrementalTypeformStream):
             return current_stream_state
 
         current_stream_state[form_id] = current_stream_state.get(form_id, {})
-        new_state = max(
+        current_stream_state[form_id][self.cursor_field] = max(
             pendulum.from_format(latest_record[self.cursor_field], self.date_format).int_timestamp,
             current_stream_state[form_id].get(self.cursor_field, 1),
         )
-        current_stream_state[form_id][self.cursor_field] = new_state
         return current_stream_state
 
     def request_params(
@@ -200,12 +200,12 @@ class Responses(StreamMixin, IncrementalTypeformStream):
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.limit}
         stream_state = stream_state or {}
-        # start from last state or from start date
-        since = max(self.start_date.int_timestamp, stream_state.get(stream_slice["form_id"], {}).get(self.cursor_field, 1))
 
         if not next_page_token:
             # use state for first request in incremental sync
             params["sort"] = "submitted_at,asc"
+            # start from last state or from start date
+            since = max(self.start_date.int_timestamp, stream_state.get(stream_slice["form_id"], {}).get(self.cursor_field, 1))
             if since:
                 params["since"] = pendulum.from_timestamp(since).format(self.date_format)
         else:

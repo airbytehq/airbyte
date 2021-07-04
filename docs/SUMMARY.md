@@ -90,6 +90,7 @@
     * [Stripe](integrations/sources/stripe.md)
     * [Tempo](integrations/sources/tempo.md)
     * [Twilio](integrations/sources/twilio.md)
+    * [Typeform](integrations/sources/typeform.md)
     * [Zendesk Chat](integrations/sources/zendesk-chat.md)
     * [Zendesk Support](integrations/sources/zendesk-support.md)
     * [Zendesk Talk](integrations/sources/zendesk-talk.md)
