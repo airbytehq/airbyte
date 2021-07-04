@@ -47,10 +47,10 @@ dbt_test_utils = DbtIntegrationTest()
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
     dbt_test_utils.change_current_test_dir(request)
-    dbt_test_utils.setup_postgres_db()
+    dbt_test_utils.setup_db()
     os.environ["PATH"] = os.path.abspath("../.venv/bin/") + ":" + os.environ["PATH"]
     yield
-    dbt_test_utils.tear_down_postgres_db()
+    dbt_test_utils.tear_down_db()
     for folder in temporary_folders:
         print(f"Deleting temporary test folder {folder}")
         shutil.rmtree(folder, ignore_errors=True)
@@ -75,7 +75,6 @@ def setup_test_path(request):
     ),
 )
 @pytest.mark.parametrize("destination_type", list(DestinationType))
-# @pytest.mark.parametrize("destination_type", [DestinationType.POSTGRES])
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     print("Testing normalization")
     integration_type = destination_type.value
