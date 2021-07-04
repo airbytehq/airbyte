@@ -35,6 +35,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
+from airbyte_cdk.logger import AirbyteLogger
 
 class MixpanelStream(HttpStream, ABC):
 
@@ -49,18 +50,6 @@ class MixpanelStream(HttpStream, ABC):
         date_window_size: int = 30,  # in days
         **kwargs,
     ):
-        now = date.today()
-
-        if start_date and isinstance(start_date, str):
-            start_date = date.fromisoformat(start_date)
-        self.start_date = start_date or now - timedelta(days=365)  # set to 1 year ago by default
-
-        if end_date and isinstance(end_date, str):
-            end_date = date.fromisoformat(end_date)
-        self.end_date = end_date or now  # set to now by default
-
-        self.logger.log("INFO", f"Using start_date: {self.start_date}, end_date: {self.end_date}")
-
         self.date_window_size = date_window_size
 
         super().__init__(authenticator=authenticator)
@@ -133,20 +122,14 @@ class MixpanelStream(HttpStream, ABC):
         elif isinstance(json_response, dict):
             data = [json_response]
 
-        print(f"data: {data}")
+        print(f"Total data: {len(data)}")
 
         for record in data:
+            # sleep(3)
             yield record
 
 
 class IncrementalMixpanelStream(MixpanelStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
@@ -344,7 +327,7 @@ class Engage(MixpanelStream):
 
     }
     """
-
+    http_method = "POST"
     data_field = "results"
     primary_key = "distinct_id"
     page_size = 1000  # min 100
@@ -360,7 +343,8 @@ class Engage(MixpanelStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         return {"include_all_users": True}
-        # return {'filter_by_cohort':'{"id":1343181}'}
+        # return {'filter_by_cohort': '{"id":1343181}'}
+        # return {'filter_by_cohort': {"id": 1343181}}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -403,15 +387,15 @@ class CohortMembers(Engage):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-        # example: {"filter_by_cohort": '{"id": 1343181}'}
+
         id = stream_slice["id"]
         # ss= f'{{"id":"{d["id"]}"}}'
         ss = f'{{"id":{id}}}'
         jj = {"filter_by_cohort": ss}
         print(jj)
         print()
-
-        return jj
+        # example: {"filter_by_cohort": {"id": 1343181}}
+        return {"filter_by_cohort": stream_slice}
 
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -427,7 +411,7 @@ class CohortMembers(Engage):
 
         print(f"==== stream_slices: {stream_slices} \n")
 
-        stream_slices = [{"id": 1343181}]
+        # stream_slices = [{"id": 1343181}]
         return stream_slices
 
 
@@ -562,20 +546,22 @@ class Export(MixpanelStream):
 
      Your plan does not support raw data export. Visit mixpanel.com/pricing to upgrade.
 
-[
-{
-    "event":"Viewed report"
-    "properties": {
-        "time": 1518393599
-        "distinct_id": "test-email@mixpanel.com"
-        "$browser": "Chrome"
-        "report_name": "Funnels"
+    [
+    {
+        "event":"Viewed report"
+        "properties": {
+            "time": 1518393599
+            "distinct_id": "test-email@mixpanel.com"
+            "$browser": "Chrome"
+            "report_name": "Funnels"
+        }
     }
-}
-]
+    ]
 
     """
     data_field = None
+    primary_key = 'time'
+    cursor_field = 'time'
 
     def path(self, **kwargs) -> str:
         return "export"
@@ -588,6 +574,14 @@ class Export(MixpanelStream):
             "to_date": stream_slice["end_date"],
         }
 
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        :param stream_state:
+        :return:
+        """
+        return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
     def __init__(self, token: str, auth_method: str = "Basic", **kwargs):
@@ -598,8 +592,6 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 class SourceMixpanel(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
@@ -633,6 +625,20 @@ class SourceMixpanel(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+
+        now = date.today()
+
+        start_date = config.get('start_date')
+        if start_date and isinstance(start_date, str):
+            start_date = date.fromisoformat(config['start_date'])
+        config['start_date'] = start_date or now - timedelta(days=365)  # set to 1 year ago by default
+
+        end_date = config.get('start_date')
+        if end_date and isinstance(end_date, str):
+            end_date = date.fromisoformat(end_date)
+        config['end_date'] = end_date or now  # set to now by default
+
+        AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = TokenAuthenticatorBase64(token=config["api_secret"])
         return [
