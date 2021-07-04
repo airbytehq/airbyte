@@ -61,7 +61,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
       final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
-      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, input.getDestinationConfiguration(), input.getCatalog())) {
+      if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, input.getDestinationConfiguration(), input.getCatalog(),
+          input.getResourceRequirements())) {
         throw new WorkerException("Normalization Failed.");
       }
     } catch (Exception e) {

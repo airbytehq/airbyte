@@ -114,6 +114,26 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: AWS_SECRET_ACCESS_KEY
+            - name: RESOURCE_CPU_REQUEST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_CPU_REQUEST
+            - name: RESOURCE_CPU_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_CPU_LIMIT
+            - name: RESOURCE_MEMORY_REQUEST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_MEMORY_REQUEST
+            - name: RESOURCE_MEMORY_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: RESOURCE_MEMORY_LIMIT
             - name: S3_MINIO_ENDPOINT
               valueFrom:
                 configMapKeyRef:
