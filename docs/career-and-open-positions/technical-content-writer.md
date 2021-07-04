@@ -1,4 +1,4 @@
-# Technical Content Writer
+# Senior Technical Content Writer / Editor in Chief
 
 ## **About Airbyte**
 
@@ -10,7 +10,7 @@ We raised a total of $31.2M by some of the world's [top investors](./#our-invest
 
 ## **Description**
 
-As our team is small and growing, your role as a technical writer will be multi-faceted, but will aim toward these goals:
+As our team is small and growing, your role as our first technical content writer will be multi-faceted, but will aim toward these goals:
  
 * Empower developers and burgeoning contributors to produce solid content
 * Developing and maintaining a clear and concise style guide for all published content
@@ -33,16 +33,15 @@ Since this role works very closely with the community, you will be directly enga
 * Verbal communication that matches your written expertise.
 * Experience with community management.
 * Strong understanding of ELT/ETL concepts, preferably in an applied role.
-* You can read code.
 * Experience with SEO.
 * Experience in editing written content.
-* You share [our values](https://handbook.airbyte.io/company/culture-and-values)
+* You share [our values](https://handbook.airbyte.io/company/culture-and-values).
 
 ## **Bonus points**
 
-* 1-2 years of applied programming experience.
-* 1-2 years of technical writing experience in the data integration space.
-* Experience with open-source communities.
+* Strong applied programming experience.
+* Technical writing experience specific to the data integration space.
+* History of working for or with open-source communities.
 
 ## **Location**
 

@@ -3,7 +3,7 @@
 Related documentation on normalization is available here:
 
 - [architecture / Basic Normalization](../../../docs/architecture/basic-normalization.md)
-* [tutorials / Custom DBT normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
+* [tutorials / Custom dbt normalization](../../../docs/tutorials/connecting-el-with-t-using-dbt.md)
 
 # Testing normalization
 
@@ -54,6 +54,7 @@ allowed characters, if quotes are needed or not, and the length limitations:
 - [postgres](../../../docs/integrations/destinations/postgres.md)
 - [redshift](../../../docs/integrations/destinations/redshift.md)
 - [snowflake](../../../docs/integrations/destinations/snowflake.md)
+- [mysql](../../../docs/integrations/destinations/mysql.md)
 
 Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
 - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
@@ -215,6 +216,15 @@ Related issues to watch on dbt progress to improve this aspects:
 A nice improvement would be to add csv/json seed files as expected output data from tables.
 The integration tests would verify that the content of such tables in the destination would match
 these seed files or fail.
+
+### Debug dbt operations with local database
+This only works for testing databases launched in local containers (e.g. postgres and mysql).
+
+- In `dbt_integration_test.py`, comment out the `tear_down_db` method so that the relevant database container is not deleted.
+- Find the name of the database container in the logs (e.g. by searching `Executing`).
+- Connect to the container by running `docker exec -it <container-name> bash` in the commandline.
+- Connect to the database inside the container (e.g. `mysql -u root` for mysql).
+- Test the generated dbt operations directly in the database.
 
 ## Standard Destination Tests
 

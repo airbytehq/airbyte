@@ -24,6 +24,7 @@
 
 package io.airbyte.integrations.source.jdbc.test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,6 +71,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -105,6 +107,11 @@ public abstract class JdbcSourceAcceptanceTest {
   public static Number ID_VALUE_3 = 3;
   public static Number ID_VALUE_4 = 4;
   public static Number ID_VALUE_5 = 5;
+
+  public static String DROP_SCHEMA_QUERY = "DROP SCHEMA IF EXISTS %s CASCADE";
+  public static String COLUMN_CLAUSE_WITH_PK = "id INTEGER, name VARCHAR(200), updated_at DATE";
+  public static String COLUMN_CLAUSE_WITHOUT_PK = "id INTEGER, name VARCHAR(200), updated_at DATE";
+  public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE";
 
   public JsonNode config;
   public JdbcDatabase database;
@@ -191,7 +198,7 @@ public abstract class JdbcSourceAcceptanceTest {
     database.execute(connection -> {
 
       connection.createStatement().execute(
-          createTableQuery(getFullyQualifiedTableName(TABLE_NAME), "id INTEGER, name VARCHAR(200), updated_at DATE",
+          createTableQuery(getFullyQualifiedTableName(TABLE_NAME), COLUMN_CLAUSE_WITH_PK,
               primaryKeyClause(Collections.singletonList("id"))));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
@@ -204,7 +211,8 @@ public abstract class JdbcSourceAcceptanceTest {
               getFullyQualifiedTableName(TABLE_NAME)));
 
       connection.createStatement().execute(
-          createTableQuery(getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK), "id INTEGER, name VARCHAR(200), updated_at DATE", ""));
+          createTableQuery(getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK),
+              COLUMN_CLAUSE_WITHOUT_PK, ""));
       connection.createStatement().execute(
           String.format("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
               getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
@@ -217,7 +225,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
       connection.createStatement().execute(
           createTableQuery(getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK),
-              "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE",
+              COLUMN_CLAUSE_WITH_COMPOSITE_PK,
               primaryKeyClause(ImmutableList.of("first_name", "last_name"))));
       connection.createStatement().execute(
           String.format(
@@ -277,7 +285,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
   }
 
-  private AirbyteCatalog filterOutOtherSchemas(AirbyteCatalog catalog) {
+  protected AirbyteCatalog filterOutOtherSchemas(AirbyteCatalog catalog) {
     if (supportsSchemas()) {
       final AirbyteCatalog filteredCatalog = Jsons.clone(catalog);
       filteredCatalog.setStreams(filteredCatalog.getStreams()
@@ -338,9 +346,8 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessages);
     List<AirbyteMessage> expectedMessages = getTestMessages();
-    assertTrue(expectedMessages.size() == actualMessages.size());
-    assertTrue(expectedMessages.containsAll(actualMessages));
-    assertTrue(actualMessages.containsAll(expectedMessages));
+    assertThat(expectedMessages, Matchers.containsInAnyOrder(actualMessages.toArray()));
+    assertThat(actualMessages, Matchers.containsInAnyOrder(expectedMessages.toArray()));
   }
 
   @Test
@@ -771,7 +778,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   // get catalog and perform a defensive copy.
-  private ConfiguredAirbyteCatalog getConfiguredCatalogWithOneStream(final String defaultNamespace) {
+  protected ConfiguredAirbyteCatalog getConfiguredCatalogWithOneStream(final String defaultNamespace) {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers.toDefaultConfiguredCatalog(getCatalog(defaultNamespace));
     // Filter to only keep the main stream name as configured stream
     catalog.withStreams(
@@ -780,7 +787,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return catalog;
   }
 
-  private AirbyteCatalog getCatalog(final String defaultNamespace) {
+  protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
@@ -809,7 +816,7 @@ public abstract class JdbcSourceAcceptanceTest {
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
-  private List<AirbyteMessage> getTestMessages() {
+  protected List<AirbyteMessage> getTestMessages() {
     return Lists.newArrayList(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
@@ -832,7 +839,7 @@ public abstract class JdbcSourceAcceptanceTest {
                         COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
   }
 
-  private ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
+  protected ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
     final String tableNameWithSpaces = TABLE_NAME_WITH_SPACES + "2";
     final String streamName2 = tableNameWithSpaces;
 
@@ -882,7 +889,7 @@ public abstract class JdbcSourceAcceptanceTest {
     if (supportsSchemas()) {
       for (String schemaName : TEST_SCHEMAS) {
         final String dropSchemaQuery = String
-            .format("DROP SCHEMA IF EXISTS %s CASCADE", schemaName);
+            .format(DROP_SCHEMA_QUERY, schemaName);
         database.execute(connection -> connection.createStatement().execute(dropSchemaQuery));
       }
     }
@@ -902,7 +909,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return supportsSchemas() ? SCHEMA_NAME : null;
   }
 
-  private String getDefaultNamespace() {
+  protected String getDefaultNamespace() {
     // mysql does not support schemas. it namespaces using database names instead.
     if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
       return config.get("database").asText();
@@ -911,7 +918,7 @@ public abstract class JdbcSourceAcceptanceTest {
     }
   }
 
-  private static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
+  protected static void setEmittedAtToNull(Iterable<AirbyteMessage> messages) {
     for (AirbyteMessage actualMessage : messages) {
       if (actualMessage.getRecord() != null) {
         actualMessage.getRecord().setEmittedAt(null);

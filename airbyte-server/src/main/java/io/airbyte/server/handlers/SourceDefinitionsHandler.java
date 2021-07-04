@@ -35,14 +35,13 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.CachingSynchronousSchedulerClient;
-import io.airbyte.server.errors.KnownException;
+import io.airbyte.server.errors.InternalServerKnownException;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.server.validators.DockerImageValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -87,7 +86,7 @@ public class SourceDefinitionsHandler {
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()));
     } catch (URISyntaxException | NullPointerException e) {
-      throw new KnownException(500, "Unable to process retrieved latest source definitions list", e);
+      throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
   }
 
@@ -103,16 +102,14 @@ public class SourceDefinitionsHandler {
   }
 
   public SourceDefinitionReadList listLatestSourceDefinitions() {
-    return toSourceDefinitionReadList(getLatestDestinations());
+    return toSourceDefinitionReadList(getLatestSources());
   }
 
-  private List<StandardSourceDefinition> getLatestDestinations() {
+  private List<StandardSourceDefinition> getLatestSources() {
     try {
       return githubStore.getLatestSources();
-    } catch (IOException e) {
-      return Collections.emptyList();
     } catch (InterruptedException e) {
-      throw new KnownException(500, "Request to retrieve latest destination definitions failed", e);
+      throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }
   }
 
