@@ -33,11 +33,6 @@ import io.airbyte.integrations.standardtest.source.SourceComprehensiveTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
-import java.sql.SQLException;
-import java.util.Optional;
-import java.util.stream.Stream;
-import org.jooq.Record;
-import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -52,7 +47,7 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
   private static final String DB_NAME = "comprehensive";
   private static final String SCHEMA_NAME = "dbo";
 
-  private static final String CREATE_TABLE_SQL ="USE "+DB_NAME+"\nCREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY, %3$s %4$s)";
+  private static final String CREATE_TABLE_SQL = "USE " + DB_NAME + "\nCREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY, %3$s %4$s)";
 
   @Override
   protected JsonNode getConfig() {
@@ -215,8 +210,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .fullSourceDataType("DECIMAL(5,2)")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("999", "5.1", "0", "null")
-            //TODO: BUG - debezium converts this to bytes so returns values like "AYY8"
-//            .addExpectedValues("999", "5.1", "0", null)
+            // TODO: BUG - debezium converts this to bytes so returns values like "AYY8"
+            // .addExpectedValues("999", "5.1", "0", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -225,8 +220,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("numeric")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("'99999'", "null")
-            //TODO: BUG - debezium converts this to bytes so returns values like "AYY8"
-//            .addExpectedValues("99999", null)
+            // TODO: BUG - debezium converts this to bytes so returns values like "AYY8"
+            // .addExpectedValues("99999", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -235,8 +230,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("money")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "'9990000.99'")
-            //TODO: BUG - debezium converts this to bytes so returns values like "F0KBLaw="
-//            .addExpectedValues(null, "9990000.99")
+            // TODO: BUG - debezium converts this to bytes so returns values like "F0KBLaw="
+            // .addExpectedValues(null, "9990000.99")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -245,8 +240,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("smallmoney")
             .airbyteType(JsonSchemaPrimitive.NUMBER)
             .addInsertValues("null", "'-214748.3648'", "214748.3647")
-            //TODO: BUG - debezium converts this to bytes so returns values like "F0KBLaw="
-//            .addExpectedValues(null, "-214748.3648", "214748.3647")
+            // TODO: BUG - debezium converts this to bytes so returns values like "F0KBLaw="
+            // .addExpectedValues(null, "-214748.3648", "214748.3647")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -359,11 +354,12 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'",
                 "null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
-              // still useable but requires transformation if true date/datetime type required in destination
-              // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
-//            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z",
-//                "1999-01-08T00:00:00Z", null)
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
+            // since the epoch)
+            // still useable but requires transformation if true date/datetime type required in destination
+            // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
+            // .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z",
+            // "1999-01-08T00:00:00Z", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -372,10 +368,11 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("smalldatetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'1900-01-01'", "'2079-06-06'", "null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
+            // since the epoch)
             // still useable but requires transformation if true date/datetime type required in destination
             // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
-//            .addExpectedValues("1900-01-01T00:00:00Z", "2079-06-06T00:00:00Z", null)
+            // .addExpectedValues("1900-01-01T00:00:00Z", "2079-06-06T00:00:00Z", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -384,10 +381,11 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("datetime")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'1753-01-01'", "'9999-12-31'", "null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
+            // since the epoch)
             // still useable but requires transformation if true date/datetime type required in destination
             // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
-//            .addExpectedValues("1753-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
+            // .addExpectedValues("1753-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -396,10 +394,11 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("datetime2")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
+            // since the epoch)
             // still useable but requires transformation if true date/datetime type required in destination
             // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
-//            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
+            // .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -408,7 +407,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .sourceType("time")
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("null")
-            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds since the epoch)
+            // TODO: Debezium is returning DATE/DATETIME from mssql as integers (days or milli/micro/nanoseconds
+            // since the epoch)
             // still useable but requires transformation if true date/datetime type required in destination
             // https://debezium.io/documentation/reference/1.4/connectors/sqlserver.html#sqlserver-data-types
             .addNullExpectedValue()
@@ -421,8 +421,8 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null")
             // TODO: BUG - seem to be getting back 0001-01-08T00:00:00+01:00 ... this is clearly wrong
-//            .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
-//                "9999-01-10 00:00:00.0000000 +01:00", null)
+            // .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
+            // "9999-01-10 00:00:00.0000000 +01:00", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -473,9 +473,10 @@ public class CdcMssqlSourceComprehensiveTest extends SourceComprehensiveTest {
             .airbyteType(JsonSchemaPrimitive.STRING)
             .addInsertValues("'a'", "'abc'", "N'Миші йдуть на південь, не питай чому;'", "N'櫻花分店'",
                 "''", "null", "N'\\xF0\\x9F\\x9A\\x80'")
-            // TODO: BUG - These all come through as nulls, Debezium doesn't mention sql_variant at all so assume unsupported
-//            .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
-//                null, "\\xF0\\x9F\\x9A\\x80")
+            // TODO: BUG - These all come through as nulls, Debezium doesn't mention sql_variant at all so
+            // assume unsupported
+            // .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
+            // null, "\\xF0\\x9F\\x9A\\x80")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 

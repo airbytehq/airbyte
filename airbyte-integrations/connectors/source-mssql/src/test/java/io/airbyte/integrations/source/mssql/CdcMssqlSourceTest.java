@@ -30,11 +30,9 @@ import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CDC_UPDATED
 import static io.airbyte.integrations.source.mssql.MssqlSource.DRIVER_CLASS;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
-import static org.jooq.impl.DSL.field;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -68,7 +66,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -200,7 +197,12 @@ public class CdcMssqlSourceTest {
   }
 
   private void createAndPopulateCdcTable(
-      String dbName, List<JsonNode> records, String schema, String table, Boolean withPK) throws InterruptedException {
+                                         String dbName,
+                                         List<JsonNode> records,
+                                         String schema,
+                                         String table,
+                                         Boolean withPK)
+      throws InterruptedException {
     executeQuery("USE " + dbName + "\n" + "EXEC sys.sp_cdc_enable_db"); // enables CDC on this database
     String primaryKeyString = withPK ? "PRIMARY KEY" : "";
     LOGGER.info(String.format("Creating %s.%s in database '%s' %s", schema, table, dbName, primaryKeyString));
@@ -225,8 +227,7 @@ public class CdcMssqlSourceTest {
             + "\t@source_name   = N'%s', \n"
             + "\t@role_name     = N'%s',\n"
             + "\t@supports_net_changes = 0",
-        schema, table, CDC_ROLE_NAME
-    )); // enables cdc on MODELS_SCHEMA.MODELS_STREAM_NAME, giving CDC_ROLE_NAME select access
+        schema, table, CDC_ROLE_NAME)); // enables cdc on MODELS_SCHEMA.MODELS_STREAM_NAME, giving CDC_ROLE_NAME select access
 
     for (JsonNode recordJson : records) {
       writeModelRecord(recordJson, schema, table);
@@ -241,7 +242,7 @@ public class CdcMssqlSourceTest {
             ctx.fetch("EXEC xp_servicecontrol N'QueryState', N'SQLServerAGENT';");
         Optional<Record> first = result.stream().findFirst();
 
-        // not sure if we can rely on this always being 'Running.' as the value in future updates to SqlServer container...
+        // this feels somewhat brittle
         first.ifPresent(record -> LOGGER.info("SqlServer Agent: " + record.get("Current Service State").toString()));
         return first.isPresent() && first.get().get("Current Service State").toString().equals("Running.");
       });
@@ -256,7 +257,7 @@ public class CdcMssqlSourceTest {
    */
   private void createAndPopulateRandomTable() {
     executeQuery("CREATE DATABASE " + DB_NAME + "_random;");
-    executeQuery("USE " + DB_NAME+ "_random;");
+    executeQuery("USE " + DB_NAME + "_random;");
     executeQuery("CREATE SCHEMA " + MODELS_SCHEMA + "_random");
     executeQuery(String
         .format("CREATE TABLE %s.%s(%s INT PRIMARY KEY, %s INT, %s VARCHAR(200));",
@@ -293,8 +294,7 @@ public class CdcMssqlSourceTest {
   private void writeModelRecord(JsonNode recordJson, String schema, String table) {
     writeRecords(
         recordJson, schema, table,
-        COL_ID, COL_MAKE_ID, COL_MODEL
-    );
+        COL_ID, COL_MAKE_ID, COL_MODEL);
   }
 
   private void writeRecords(
@@ -374,8 +374,7 @@ public class CdcMssqlSourceTest {
 
     executeQuery(String.format(
         "UPDATE %s.%s SET %s = '%s' WHERE %s = %s",
-        MODELS_SCHEMA, MODELS_STREAM_NAME, COL_MODEL, updatedModel, COL_ID, 11
-    ));
+        MODELS_SCHEMA, MODELS_STREAM_NAME, COL_MODEL, updatedModel, COL_ID, 11));
 
     final JsonNode state = stateMessages1.get(0).getData();
     final AutoCloseableIterator<AirbyteMessage> read2 = source.read(config, CONFIGURED_CATALOG, state);
@@ -437,18 +436,19 @@ public class CdcMssqlSourceTest {
     Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(dataFromSecondBatch);
     assertEquals(recordsToCreate, recordsFromSecondBatch.size(), "Expected 20 records to be replicated in the second sync.");
 
-    // sometimes there can be more than one of these at the end of the snapshot and just before the first incremental.
+    // sometimes there can be more than one of these at the end of the snapshot and just before the
+    // first incremental.
     final Set<AirbyteRecordMessage> recordsFromFirstBatchWithoutDuplicates = removeDuplicates(recordsFromFirstBatch);
     final Set<AirbyteRecordMessage> recordsFromSecondBatchWithoutDuplicates = removeDuplicates(recordsFromSecondBatch);
 
     final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
-    LOGGER.info("recordsToCreate*2 = " + recordsToCreate*2);
+    LOGGER.info("recordsToCreate*2 = " + recordsToCreate * 2);
     LOGGER.info("recordsCreatedBeforeTestCount = " + recordsCreatedBeforeTestCount);
     LOGGER.info("recordsFromFirstBatchWithoutDuplicates.size() = " + recordsFromFirstBatchWithoutDuplicates.size());
     LOGGER.info("recordsFromSecondBatchWithoutDuplicates.size() = " + recordsFromSecondBatchWithoutDuplicates.size());
     assertTrue(recordsCreatedBeforeTestCount < recordsFromFirstBatchWithoutDuplicates.size(),
         "Expected first sync to include records created while the test was running.");
-    assertEquals(recordsToCreate*2 + recordsCreatedBeforeTestCount,
+    assertEquals(recordsToCreate * 2 + recordsCreatedBeforeTestCount,
         recordsFromFirstBatchWithoutDuplicates.size() + recordsFromSecondBatchWithoutDuplicates.size());
   }
 

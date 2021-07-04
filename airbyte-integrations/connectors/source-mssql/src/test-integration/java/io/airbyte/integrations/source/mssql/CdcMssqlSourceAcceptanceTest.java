@@ -202,7 +202,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
             ctx.fetch("EXEC xp_servicecontrol N'QueryState', N'SQLServerAGENT';");
         Optional<Record> first = result.stream().findFirst();
 
-        // not sure if we can rely on this always being 'Running.' as the value in future updates to SqlServer container...
+        // this seems brittle
         return first.isPresent() && first.get().get("Current Service State").toString().equals("Running.");
       });
     } catch (SQLException e) {
