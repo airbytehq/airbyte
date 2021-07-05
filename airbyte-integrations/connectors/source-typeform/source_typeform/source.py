@@ -41,9 +41,7 @@ from pendulum.datetime import DateTime
 
 class TypeformStream(HttpStream, ABC):
     url_base = "https://api.typeform.com"
-
     limit: int = 200
-
     date_format: str = "YYYY-MM-DDTHH:mm:ss[Z]"
 
     def __init__(self, **kwargs: Mapping[str, Any]):
@@ -66,10 +64,10 @@ class TypeformStream(HttpStream, ABC):
 class TrimForms(TypeformStream):
     """
     This stream is responsible for fetching list of from_id(s) which required to process data from Forms and Responses.
+    API doc: https://developer.typeform.com/create/reference/retrieve-forms/
     """
 
     primary_key = "id"
-
     limit: int = 200
 
     def path(
@@ -113,6 +111,11 @@ class StreamMixin:
 
 
 class Forms(StreamMixin, TypeformStream):
+    """
+    This stream is responsible for detailed information about Form.
+    API doc: https://developer.typeform.com/create/reference/retrieve-form/
+    """
+
     primary_key = "id"
 
     def path(
@@ -137,7 +140,6 @@ class Forms(StreamMixin, TypeformStream):
 
 class IncrementalTypeformStream(TypeformStream, ABC):
     cursor_field: str = "submitted_at"
-
     token_field: str = "token"
 
     @property
@@ -162,8 +164,12 @@ class IncrementalTypeformStream(TypeformStream, ABC):
 
 
 class Responses(StreamMixin, IncrementalTypeformStream):
-    primary_key = "response_id"
+    """
+    This stream is responsible for fetching responses for particulat form_id.
+    API doc: https://developer.typeform.com/responses/reference/retrieve-responses/
+    """
 
+    primary_key = "response_id"
     limit: int = 1000
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:

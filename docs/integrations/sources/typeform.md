@@ -63,4 +63,4 @@ Connector performs additional API call to fetch all possible `form ids` on an ac
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0   | 2021-07-10 | [](https://github.com/airbytehq/airbyte/pull/) | Initial release for Typeform API supporting Forms and Responses streams |
+| 0.1.0   | 2021-07-10 | [4541](https://github.com/airbytehq/airbyte/pull/) | Initial release for Typeform API supporting Forms and Responses streams |
