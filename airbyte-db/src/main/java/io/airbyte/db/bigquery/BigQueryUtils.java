@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.FieldValue;
+import com.google.cloud.bigquery.FieldValue.Attribute;
 import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryParameterValue;
@@ -58,18 +59,21 @@ public class BigQueryUtils {
   }
 
   private static void setJsonField(Field field, FieldValue fieldValue, ObjectNode node) {
-    LegacySQLTypeName fieldType = field.getType();
-    String fieldName = field.getName();
-    switch (fieldType.getStandardType()) {
-      case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
-      case INT64 -> node.put(fieldName, fieldValue.getLongValue());
-      case FLOAT64 -> node.put(fieldName, fieldValue.getDoubleValue());
-      case NUMERIC -> node.put(fieldName, fieldValue.getNumericValue());
-      case BIGNUMERIC -> node.put(fieldName, nullIfInvalid(fieldValue::getNumericValue));
-      case STRING -> node.put(fieldName, fieldValue.getStringValue());
-      case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
-      case TIMESTAMP, DATE, TIME, DATETIME -> node.put(fieldName, toISO8601String(fieldValue.getTimestampValue()));
-      default -> node.put(fieldName, fieldValue.getStringValue());
+    if (fieldValue.getAttribute().equals(Attribute.PRIMITIVE)) {
+      LegacySQLTypeName fieldType = field.getType();
+      String fieldName = field.getName();
+      switch (fieldType.getStandardType()) {
+        case BOOL -> node.put(fieldName, fieldValue.getBooleanValue());
+        case INT64 -> node.put(fieldName, fieldValue.getLongValue());
+        case FLOAT64 -> node.put(fieldName, fieldValue.getDoubleValue());
+        case NUMERIC -> node.put(fieldName, fieldValue.getNumericValue());
+        case BIGNUMERIC -> node.put(fieldName, nullIfInvalid(fieldValue::getNumericValue));
+        case STRING -> node.put(fieldName, fieldValue.getStringValue());
+        case BYTES -> node.put(fieldName, fieldValue.getBytesValue());
+        case TIMESTAMP, DATE, TIME, DATETIME -> node
+            .put(fieldName, toISO8601String(fieldValue.getTimestampValue()));
+        default -> node.put(fieldName, fieldValue.getStringValue());
+      }
     }
   }
 
