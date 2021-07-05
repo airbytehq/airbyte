@@ -1,3 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sweep-pod-script
+data:
+  sweep-pod.sh: |
+    #!/bin/sh
+
+    get_worker_pods () {
+      # Completed Pods:
+      kubectl -n ${KUBE_NAMESPACE} -L airbyte -l airbyte=worker-pod --field-selector status.phase=Succeeded get pods -o go-template --template '{{range .items}} {{.metadata.name}} {{.status.phase}} {{.metadata.creationTimestamp}}{{"\n"}}{{end}}'
+    }
+
+    while :
+    do
+      WORKER_PODS=`get_worker_pods`
+      if [ -n "$WORKER_PODS" ]; then
+        echo "`date "+%Y-%m-%d %H:%M:%S"`: Deleting following pods"
+        echo "$WORKER_PODS"
+        echo "$WORKER_PODS" | grep -v "STATUS" | awk '{print $1}' | xargs --no-run-if-empty kubectl -n ${KUBE_NAMESPACE} delete pod
+      fi
+      sleep 1
+    done
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,7 +45,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          command:
-            - /bin/sh
-            - -c
-            - while :; do kubectl -n ${KUBE_NAMESPACE} -l airbyte -L airbyte get pod | grep Completed | grep worker-pod | awk '{print $1}' | xargs --no-run-if-empty kubectl -n ${KUBE_NAMESPACE} delete pod | xargs --no-run-if-empty echo `date "+%Y-%m-%d %H:%M:%S"`; sleep 60; done
+          volumeMounts:
+            - mountPath: /script/sweep-pod.sh
+              subPath: sweep-pod.sh
+              name: sweep-pod-script
+          command: ["/bin/sh", "-c", /script/sweep-pod.sh ]
+      volumes:
+        - name: sweep-pod-script
+          configMap:
+            name: sweep-pod-script
+            defaultMode: 0755
