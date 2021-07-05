@@ -259,9 +259,7 @@ class Locations(SquareStream):
 
     data_field = "locations"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "locations"
 
 
@@ -282,9 +280,7 @@ class TeamMembers(SquareStreamPageJsonAndLimit):
     data_field = "team_members"
     http_method = "POST"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "team-members/search"
 
 
@@ -328,14 +324,24 @@ class Orders(SquareStreamPageJson):
     data_field = "orders"
     http_method = "POST"
     items_per_page_limit = 500
+    # There is a restriction in the documentation where only 10 locations can be send at one request
+    # https://developer.squareup.com/reference/square/orders-api/search-orders#request__property-location_ids
+    locations_per_requets = 10
 
     def path(self, **kwargs) -> str:
         return "orders/search"
 
-    def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        json_payload = super().request_body_json(**kwargs)
+    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+        json_payload = super().request_body_json(stream_slice=stream_slice, **kwargs)
         json_payload = json_payload or {}
 
+        if stream_slice:
+            json_payload.update(stream_slice)
+
+        json_payload["limit"] = self.items_per_page_limit
+        return json_payload
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         locations_stream = Locations(
             authenticator=self.authenticator,
             is_sandbox=self.is_sandbox,
@@ -346,55 +352,16 @@ class Orders(SquareStreamPageJson):
         locations_records = locations_stream.read_records(sync_mode=SyncMode.full_refresh)
         location_ids = [location["id"] for location in locations_records]
 
-        if location_ids:
-            json_payload["location_ids"] = location_ids
+        if not location_ids:
+            self.logger.error(
+                "No locations found. Orders cannot be extracted without locations. "
+                "Check https://developer.squareup.com/explorer/square/locations-api/list-locations"
+            )
+            exit(1)
 
-        json_payload["limit"] = self.items_per_page_limit
-        return json_payload
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        json_payload = self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=None)
-        if "location_ids" not in json_payload:
-            self.logger.info("No location records found.")
-            yield from []
-
-        # There is a restriction in the documentation where only 10 locations can be send at one request
-        # https://developer.squareup.com/reference/square/orders-api/search-orders#request__property-location_ids
-        location_ids = json_payload["location_ids"]
-        separated_locations = separate_items_by_count(location_ids, 10)
-
-        stream_state = stream_state or {}
-        pagination_complete = False
-
-        for locations in separated_locations:
-            json_payload["location_ids"] = locations
-            next_page_token = None
-            while not pagination_complete:
-                request_headers = self.request_headers(
-                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-                )
-                request = self._create_prepared_request(
-                    path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                    params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                    json=json_payload,
-                )
-
-                response = self._send_request(request)
-                yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
-
-                next_page_token = self.next_page_token(response)
-                if not next_page_token:
-                    pagination_complete = True
-
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+        separated_locations = separate_items_by_count(location_ids, self.locations_per_requets)
+        for location in separated_locations:
+            yield {"location_ids": location}
 
 
 class SourceSquare(AbstractSource):
