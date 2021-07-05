@@ -88,7 +88,7 @@ jobs:
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
       - name: Install Python Dev
-        run: sudo apt-get install python3-dev
+        run: sudo apt-get -y install python3-dev
       - name: Install CSICO
         run: pip install ciso8601
       - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
