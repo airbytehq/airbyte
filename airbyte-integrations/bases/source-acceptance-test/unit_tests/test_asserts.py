@@ -49,13 +49,13 @@ def schema_fixture():
 
 
 @pytest.fixture(name="configured_catalog")
-def catalog_fixture():
-    ConfiguredAirbyteCatalog(streams=[
+def catalog_fixture() -> ConfiguredAirbyteCatalog:
+    return ConfiguredAirbyteCatalog(streams=[
         ConfiguredAirbyteStream(stream=AirbyteStream)
     ])
 
 
-def test_verify_records_schema(configured_catalog):
+def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
     records = [
         {
             "text_or_null": 123,  # wrong format
