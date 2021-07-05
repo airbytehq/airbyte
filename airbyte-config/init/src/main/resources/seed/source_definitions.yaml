@@ -147,12 +147,11 @@
   dockerImageTag: 0.3.1
   documentationUrl: https://hub.docker.com/repository/docker/airbyte/source-redshift
   icon: redshift.svg
-- sourceDefinitionId: 932e6363-d006-4464-a9f5-102b82e07c06
+- sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   name: Twilio
-  dockerRepository: airbyte/source-twilio-singer
-  dockerImageTag: 0.2.3
-  documentationUrl: https://hub.docker.com/r/airbyte/source-twilio-singer
-  icon: twilio.svg
+  dockerRepository: airbyte/source-twilio
+  dockerImageTag: 0.1.0
+  documentationUrl: https://hub.docker.com/r/airbyte/source-twilio
 - sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   name: Freshdesk
   dockerRepository: airbyte/source-freshdesk
