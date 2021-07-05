@@ -73,13 +73,13 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected BigQueryDatabase createDatabase(JsonNode config) throws Exception {
+  protected BigQueryDatabase createDatabase(JsonNode config) {
     dbConfig = Jsons.clone(config);
-    return Databases.createBigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText(), config.get(CONFIG_DATASET_ID).asText());
+    return Databases.createBigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
   }
 
   @Override
-  public List<CheckedConsumer<BigQueryDatabase, Exception>> getCheckOperations(JsonNode config) throws Exception {
+  public List<CheckedConsumer<BigQueryDatabase, Exception>> getCheckOperations(JsonNode config) {
     return Collections.emptyList();
   }
 
@@ -94,7 +94,7 @@ public class BigQuerySource extends AbstractRelationalDbSource<StandardSQLTypeNa
   }
 
   @Override
-  protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) throws Exception {
+  protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(BigQueryDatabase database) {
     String projectId = dbConfig.get(CONFIG_PROJECT_ID).asText();
     List<Table> tables = database.getProjectTables(projectId);
     List<TableInfo<CommonField<StandardSQLTypeName>>> result = new ArrayList<>();

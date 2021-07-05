@@ -146,8 +146,8 @@ public class Databases {
     return connectionPool;
   }
 
-  public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds, final String databaseId) {
-    return new BigQueryDatabase(projectId, jsonCreds, databaseId);
+  public static BigQueryDatabase createBigQueryDatabase(final String projectId, final String jsonCreds) {
+    return new BigQueryDatabase(projectId, jsonCreds);
   }
 
 }

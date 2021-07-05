@@ -60,10 +60,8 @@ public class BigQueryDatabase extends SqlDatabase {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDatabase.class);
 
   private final BigQuery bigQuery;
-  private final String databaseId;
 
-  public BigQueryDatabase(String projectId, String jsonCreds, String databaseId) {
-    this.databaseId = databaseId;
+  public BigQueryDatabase(String projectId, String jsonCreds) {
     try {
       BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
       ServiceAccountCredentials credentials = null;
@@ -126,7 +124,7 @@ public class BigQueryDatabase extends SqlDatabase {
 
   public QueryJobConfiguration getQueryConfig(String sql, List<QueryParameterValue> params) {
     return QueryJobConfiguration
-        .newBuilder(String.format(sql, this.databaseId))
+        .newBuilder(sql)
         .setUseLegacySql(false)
         .setPositionalParameters(params)
         .build();
