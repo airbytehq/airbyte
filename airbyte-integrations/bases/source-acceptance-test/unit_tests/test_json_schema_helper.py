@@ -25,8 +25,13 @@
 import pendulum
 import pytest
 from airbyte_cdk.models import (
-    AirbyteMessage, Type, AirbyteRecordMessage, ConfiguredAirbyteStream, AirbyteStream, SyncMode,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteStream,
     DestinationSyncMode,
+    SyncMode,
+    Type,
 )
 from source_acceptance_test.tests.test_incremental import records_with_state
 
@@ -44,18 +49,12 @@ def simple_state_fixture():
 
 @pytest.fixture(name="nested_state")
 def nested_state_fixture(simple_state):
-    return {
-        "my_stream": {
-            "some_account_id": simple_state["my_stream"]
-        }
-    }
+    return {"my_stream": {"some_account_id": simple_state["my_stream"]}}
 
 
 @pytest.fixture(name="singer_state")
 def singer_state_fixture(simple_state):
-    return {
-        "bookmarks": simple_state
-    }
+    return {"bookmarks": simple_state}
 
 
 @pytest.fixture(name="stream_schema")
@@ -64,23 +63,10 @@ def stream_schema_fixture():
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
-            "id": {
-                "type": "integer"
-            },
-            "ts_created": {
-                "type": "string",
-                "format": "datetime"
-            },
-            "nested": {
-                "type": "object",
-                "properties": {
-                    "ts_updated": {
-                        "type": "string",
-                        "format": "date"
-                    }
-                }
-            }
-        }
+            "id": {"type": "integer"},
+            "ts_created": {"type": "string", "format": "datetime"},
+            "nested": {"type": "object", "properties": {"ts_updated": {"type": "string", "format": "date"}}},
+        },
     }
 
 
@@ -90,7 +76,7 @@ def stream_mapping_fixture(stream_schema):
         "my_stream": ConfiguredAirbyteStream(
             stream=AirbyteStream(name="my_stream", json_schema=stream_schema),
             sync_mode=SyncMode.full_refresh,
-            destination_sync_mode=DestinationSyncMode.append
+            destination_sync_mode=DestinationSyncMode.append,
         )
     }
 
@@ -98,9 +84,14 @@ def stream_mapping_fixture(stream_schema):
 @pytest.fixture(name="records")
 def records_fixture():
     return [
-        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="my_stream", data={
-            "id": 1, "ts_created": "2015-11-01T22:03:11", "nested": {"ts_updated": "2015-05-01"}
-        }, emitted_at=0))
+        AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(
+                stream="my_stream",
+                data={"id": 1, "ts_created": "2015-11-01T22:03:11", "nested": {"ts_updated": "2015-05-01"}},
+                emitted_at=0,
+            ),
+        )
     ]
 
 

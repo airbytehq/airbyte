@@ -24,13 +24,14 @@
 
 
 from functools import reduce
-from typing import Any, List, Set, Mapping
+from typing import Any, List, Mapping, Set
 
 import pendulum
 
 
 class Field:
     """Field class to represent cursor/pk fields"""
+
     def __init__(self, schema, path):
         self.schema = schema
         self.path = path
