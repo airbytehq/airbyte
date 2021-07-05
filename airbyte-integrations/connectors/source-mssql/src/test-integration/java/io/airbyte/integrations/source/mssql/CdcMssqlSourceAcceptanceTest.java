@@ -170,28 +170,34 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
         SCHEMA_NAME, STREAM_NAME2));
 
-    // TODO: this is still failing on occasion!
     // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still spinning up
-    // therefore looping with query to check if it has started (with timeout in case something is wrong)
-    long waitMinutes = 5;
-    long start = System.currentTimeMillis();
-    while(!(isSqlServerAgentRunning())) {
-      Thread.sleep(10000); // 10 seconds
-      if (System.currentTimeMillis() > start + waitMinutes * 1000 * 60) {
-        throw new RuntimeException(String.format("Sql Server Agent failed to start within %s minutes", waitMinutes));
+    // solving with a simple while retry loop
+    boolean failingToStart = true;
+    int retryNum = 0;
+    int maxRetries = 10;
+    while(failingToStart) {
+      try {
+        // enabling CDC on each table
+        String[] tables = {STREAM_NAME, STREAM_NAME2};
+        for (String table : tables) {
+          executeQuery(String.format(
+              "EXEC sys.sp_cdc_enable_table\n"
+                  + "\t@source_schema = N'%s',\n"
+                  + "\t@source_name   = N'%s', \n"
+                  + "\t@role_name     = N'%s',\n"
+                  + "\t@supports_net_changes = 0",
+              SCHEMA_NAME, table, CDC_ROLE_NAME));
+        }
+        failingToStart = false;
       }
-    }
-
-    // enabling CDC on each table
-    String[] tables = {STREAM_NAME, STREAM_NAME2};
-    for (String table : tables) {
-      executeQuery(String.format(
-          "EXEC sys.sp_cdc_enable_table\n"
-              + "\t@source_schema = N'%s',\n"
-              + "\t@source_name   = N'%s', \n"
-              + "\t@role_name     = N'%s',\n"
-              + "\t@supports_net_changes = 0",
-          SCHEMA_NAME, table, CDC_ROLE_NAME));
+      catch (Exception e) {
+        if (retryNum >= maxRetries) {
+          throw e;
+        } else {
+          retryNum ++;
+          Thread.sleep(10000); // 10 seconds
+        }
+      }
     }
   }
 

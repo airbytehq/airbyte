@@ -209,25 +209,31 @@ public class CdcMssqlSourceTest {
     executeQuery(String.format("USE " + dbName + "\n" + "CREATE TABLE %s.%s(%s INT %s, %s INT, %s VARCHAR(200));",
         schema, table, COL_ID, primaryKeyString, COL_MAKE_ID, COL_MODEL));
 
-    // TODO: this is still failing on occasion!
     // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still spinning up
-    // therefore looping with query to check if it has started (with timeout in case something is wrong)
-    // Question for reviewer: is there a better way to do this?
-    long waitMinutes = 5;
-    long start = System.currentTimeMillis();
-    while(!(isSqlServerAgentRunning())) {
-      Thread.sleep(10000); // 10 seconds
-      if(System.currentTimeMillis() > start + waitMinutes*1000*60) {
-        throw new RuntimeException(String.format("Sql Server Agent failed to start within %s minutes", waitMinutes));
+    // solving with a simple while retry loop
+    boolean failingToStart = true;
+    int retryNum = 0;
+    int maxRetries = 10;
+    while(failingToStart) {
+      try {
+        executeQuery(String.format(
+            "EXEC sys.sp_cdc_enable_table\n"
+                + "\t@source_schema = N'%s',\n"
+                + "\t@source_name   = N'%s', \n"
+                + "\t@role_name     = N'%s',\n"
+                + "\t@supports_net_changes = 0",
+            schema, table, CDC_ROLE_NAME)); // enables cdc on MODELS_SCHEMA.MODELS_STREAM_NAME, giving CDC_ROLE_NAME select access
+        failingToStart = false;
+      }
+      catch (Exception e) {
+        if (retryNum >= maxRetries) {
+          throw e;
+        } else {
+          retryNum ++;
+          Thread.sleep(10000); // 10 seconds
+        }
       }
     }
-    executeQuery(String.format(
-        "EXEC sys.sp_cdc_enable_table\n"
-            + "\t@source_schema = N'%s',\n"
-            + "\t@source_name   = N'%s', \n"
-            + "\t@role_name     = N'%s',\n"
-            + "\t@supports_net_changes = 0",
-        schema, table, CDC_ROLE_NAME)); // enables cdc on MODELS_SCHEMA.MODELS_STREAM_NAME, giving CDC_ROLE_NAME select access
 
     for (JsonNode recordJson : records) {
       writeModelRecord(recordJson, schema, table);
