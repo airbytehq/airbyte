@@ -2,7 +2,7 @@
 
 ## Overview
 
-The MSSQL source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The MSSQL source supports Full Refresh and Incremental syncs, including Change Data Capture. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Resulting schema
 
@@ -24,6 +24,8 @@ MSSQL data types are mapped to the following data types when synchronizing data:
 | everything else | string |  |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
+
+Please see [this issue](https://github.com/airbytehq/airbyte/issues/4270) for description of unexpected behaviour for certain datatypes.
 
 ### Features
 
@@ -78,6 +80,7 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 ### CDC Limitations
 
 * Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
+* There are some critical issues regarding certain datatypes. Please find detailed info in [this Github issue](https://github.com/airbytehq/airbyte/issues/4542).
 * CDC is only available for SQL Server 2016 Service Pack 1 (SP1) and later.
 * *db_owner* (or higher) permissions are required to perform the [neccessary setup](mssql.md#Setting-up-CDC-for-MSSQL) for CDC.
 * You are willing to enable [snapshot isolation mode](https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server) on the database(s) you want to sync. This is used for retrieving an initial snapshot without locking tables.
@@ -88,7 +91,6 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 * Our implementation has not been tested with managed instances, such as Azure SQL Database (we welcome any feedback from users who try this!)
   * If you do want to try this, CDC can only be enabled on Azure SQL databases tiers above Standard 3 (S3+). Basic, S0, S1 and S2 tiers are not supported for CDC.
 * Our CDC implementation uses at least once delivery for all change records.
-* TODO: TYPE ISSUES (and link Github issues)
 * Read more on CDC limitations in the [Microsoft docs](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-2017#limitations).
 
 ### Setting up CDC for MSSQL
@@ -121,8 +123,10 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   - [**] Specifies the filegroup where SQL Server places the change table. We recommend creating a separate filegroup for CDC but you can leave this parameter out to use the default filegroup.
   - [***] If 0, only the support functions to query for all changes are generated. If 1, the functions that are needed to query for net changes are also generated. If supports_net_changes is set to 1, index_name must be specified, or the source table must have a defined primary key.
 
-
 - (For more details on parameters, see the [Microsoft doc page](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-enable-table-transact-sql?view=sql-server-ver15) for this stored procedure).
+
+
+- If you have many tables to enable CDC on and would like to avoid having to run this query one-by-one for every table, [this script](http://www.techbrothersit.com/2013/06/change-data-capture-cdc-sql-server_69.html) might help!
 
 For further detail, see the [Microsoft docs on enabling and disabling CDC](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/enable-and-disable-change-data-capture-sql-server?view=sql-server-ver15).
 
@@ -168,14 +172,23 @@ For further detail, see the [Microsoft docs on enabling and disabling CDC](https
 ```
 - After making this change, a restart of the cleanup job is required:
 ```text
-  EXEC sys.sp_cdc_stop_job @job_type = 'cleanup'
+  EXEC sys.sp_cdc_stop_job @job_type = 'cleanup';
   
-  EXEC sys.sp_cdc_start_job @job_type = 'cleanup'
+  EXEC sys.sp_cdc_start_job @job_type = 'cleanup';
 ```
 
 #### Ensuring the SQL Server Agent is running
 
-TODO:
+- MSSQL uses the SQL Server Agent to [run the jobs necessary](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server?view=sql-server-ver15#agent-jobs) for CDC. It is therefore vital that the Agent is operational in order for to CDC to work effectively. You can check the status of the SQL Server Agent as follows:
+```text
+  EXEC xp_servicecontrol 'QueryState', N'SQLServerAGENT';
+```
+- If you see something other than 'Running.' please follow the [Microsoft docs](https://docs.microsoft.com/en-us/sql/ssms/agent/start-stop-or-pause-the-sql-server-agent-service?view=sql-server-ver15) to start the service.
+
+#### Setting up CDC on managed versions of SQL Server
+
+We readily welcome [contributions to our docs](https://github.com/airbytehq/airbyte/tree/master/docs) providing setup instructions. Please consider contributing to expand our docs!
+
 
 ## Changelog
 
