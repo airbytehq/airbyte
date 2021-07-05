@@ -97,9 +97,7 @@ class SurveymonkeyStream(HttpStream, ABC):
         """
         We need to cache all requests to all endpoints during iteration.
         This API is very very rate limited, we need to reuse everything possible.
-        "Cause an error to be raised for new requests if there is a cassette file" is not that I need.
-        I need to save all of them and reuse all of them. In stream slices, in details, etc.
-        Thats why `new_episodes` record mode is using
+        We use the "new_episodes" record mode to save and reuse all requests in slices, details, etc..
         """
         with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json"):
             yield from super().read_records(

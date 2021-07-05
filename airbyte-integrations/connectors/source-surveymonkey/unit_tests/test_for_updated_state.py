@@ -43,19 +43,16 @@ class TestSurveymonkeySource:
             (
                 {"date_modified": "2021-06-10T11:02:01"},
                 {"title": "test", "id": 100500, "date_modified": "2021-06-09T11:02:01"},
-                # {"title": "test", "id": 100500, "date_modified": "2021-06-10T11:02:02"},
                 {"date_modified": "2021-06-10T11:02:01"},
             ),
             (
                 {"date_modified": "2021-06-10T11:02:01"},
                 {"title": "test", "id": 100500, "date_modified": "2021-05-10T11:02:01"},
-                # {"title": "test", "id": 100500, "date_modified": "2025-06-10T11:02:01"}
                 {"date_modified": "2021-06-10T11:02:01"},
             ),
             (
                 {"date_modified": "2021-06-10T11:02:01"},
                 {"title": "test", "id": 100500, "date_modified": "2020-06-10T11:02:01"},
-                # {"title": "test", "id": 100500, "date_modified": "2021-08-10T11:02:01"},
                 {"date_modified": "2021-06-10T11:02:01"},
             ),
         ],
@@ -72,19 +69,16 @@ class TestSurveymonkeySource:
         [
             (
                 {"date_modified": "2021-06-10T11:02:01"},
-                # {"title": "test", "id": 100500, "date_modified": "2021-06-09T11:02:01"},
                 {"title": "test", "id": 100500, "date_modified": "2021-06-10T11:02:02"},
                 {"date_modified": "2021-06-10T11:02:02"},
             ),
             (
                 {"date_modified": "2021-06-10T11:02:01"},
-                # {"title": "test", "id": 100500, "date_modified": "2021-05-10T11:02:01"},
                 {"title": "test", "id": 100500, "date_modified": "2025-06-10T11:02:01"},
                 {"date_modified": "2025-06-10T11:02:01"},
             ),
             (
                 {"date_modified": "2021-06-10T11:02:01"},
-                # {"title": "test", "id": 100500, "date_modified": "2020-06-10T11:02:01"},
                 {"title": "test", "id": 100500, "date_modified": "2021-08-10T11:02:01"},
                 {"date_modified": "2021-08-10T11:02:01"},
             ),
