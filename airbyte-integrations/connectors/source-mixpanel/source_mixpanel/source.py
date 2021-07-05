@@ -37,6 +37,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, TokenAuthenticator
 from airbyte_cdk.logger import AirbyteLogger
 
+
 class MixpanelStream(HttpStream, ABC):
 
     url_base = "https://mixpanel.com/api/2.0/"
@@ -50,25 +51,13 @@ class MixpanelStream(HttpStream, ABC):
         date_window_size: int = 30,  # in days
         **kwargs,
     ):
+        self.start_date = start_date
+        self.end_date = end_date
         self.date_window_size = date_window_size
 
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
         return None
 
     def date_slices(
@@ -83,12 +72,10 @@ class MixpanelStream(HttpStream, ABC):
 
         while start_date <= self.end_date:
             end_date = start_date + timedelta(days=self.date_window_size)
-            date_slices.append(
-                {
-                    "start_date": str(start_date),
-                    "end_date": str(min(end_date, self.end_date)),
-                }
-            )
+            date_slices.append({
+                "start_date": str(start_date),
+                "end_date": str(min(end_date, self.end_date)),
+            })
             # add 1 additional day because date range is inclusive
             start_date = end_date + timedelta(days=1)
 
@@ -103,17 +90,9 @@ class MixpanelStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
-        """
         json_response = response.json()
         if self.data_field is not None:
             data = json_response.get(self.data_field, [])
@@ -125,7 +104,6 @@ class MixpanelStream(HttpStream, ABC):
         print(f"Total data: {len(data)}")
 
         for record in data:
-            # sleep(3)
             yield record
 
 
@@ -141,9 +119,9 @@ class IncrementalMixpanelStream(MixpanelStream, ABC):
 
 
 class FunnelsList(MixpanelStream):
-    """API Docs: https://developer.mixpanel.com/reference/funnels#funnels-list-saved
-
-    endpoint = https://mixpanel.com/api/2.0/funnels/list
+    """List all funnels
+    API Docs: https://developer.mixpanel.com/reference/funnels#funnels-list-saved
+    Endpoint: https://mixpanel.com/api/2.0/funnels/list
     """
 
     primary_key = "funnel_id"
@@ -156,8 +134,7 @@ class FunnelsList(MixpanelStream):
 class Funnels(IncrementalMixpanelStream):
     """List the funnels for a given date range.
     API Docs: https://developer.mixpanel.com/reference/funnels#funnels-query
-
-    endpoint = "https://mixpanel.com/api/2.0/funnels"
+    Endpoint: https://mixpanel.com/api/2.0/funnels
     """
 
     primary_key = ["funnel_id", "date"]
@@ -170,7 +147,6 @@ class Funnels(IncrementalMixpanelStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        # print(f"stream_slice: f{stream_slice} \n")
         return {
             "funnel_id": stream_slice["funnel_id"],
             # 'unit': 'day'
@@ -222,7 +198,6 @@ class Funnels(IncrementalMixpanelStream):
             }
 
     def funnel_slices(self, sync_mode) -> List[dict]:
-
         funnel_slices = FunnelsList(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
         funnel_slices = list(funnel_slices)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
         print(f"==== funnel_slices: {funnel_slices} \n")
@@ -235,13 +210,7 @@ class Funnels(IncrementalMixpanelStream):
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        :param stream_state:
-        :return:
-        """
-
         print(f"==== stream_state: {stream_state}")
-
         # One stream slice is a combination of all funnel_slices and stream_slices
         stream_slices = []
         funnel_slices = self.funnel_slices(sync_mode)
@@ -256,9 +225,8 @@ class Funnels(IncrementalMixpanelStream):
 
 class Cohorts(MixpanelStream):
     """Returns all of the cohorts in a given project.
-    API Doc: https://developer.mixpanel.com/reference/cohorts
-
-    endpoint: https://mixpanel.com/api/2.0/cohorts/list
+    API Docs: https://developer.mixpanel.com/reference/cohorts
+    Endpoint: https://mixpanel.com/api/2.0/cohorts/list
 
     [{
         "count": 150
@@ -292,9 +260,7 @@ class Cohorts(MixpanelStream):
 
 class Engage(MixpanelStream):
     """Return list of all users
-
-    API Doc: https://developer.mixpanel.com/reference/engage
-
+    API Docs: https://developer.mixpanel.com/reference/engage
     Endpoint: https://mixpanel.com/api/2.0/engage
 
     {
@@ -343,8 +309,6 @@ class Engage(MixpanelStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         return {"include_all_users": True}
-        # return {'filter_by_cohort': '{"id":1343181}'}
-        # return {'filter_by_cohort': {"id": 1343181}}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -355,13 +319,6 @@ class Engage(MixpanelStream):
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Override this method to define a pagination strategy.
-
-        The value returned from this method is passed to most other methods in this class. Use it to form a request e.g: set headers or query params.
-
-        :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
-        """
         decoded_response = response.json()
         page_number = decoded_response.get("page")
         total = decoded_response.get("total")  # exist only on first page
@@ -387,23 +344,12 @@ class CohortMembers(Engage):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-
-        id = stream_slice["id"]
-        # ss= f'{{"id":"{d["id"]}"}}'
-        ss = f'{{"id":{id}}}'
-        jj = {"filter_by_cohort": ss}
-        print(jj)
-        print()
         # example: {"filter_by_cohort": {"id": 1343181}}
         return {"filter_by_cohort": stream_slice}
 
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        :param stream_state:
-        :return:
-        """
         stream_slices = []
         cohorts = Cohorts(authenticator=self.authenticator).read_records(sync_mode=sync_mode)
         for cohort in cohorts:
@@ -411,14 +357,13 @@ class CohortMembers(Engage):
 
         print(f"==== stream_slices: {stream_slices} \n")
 
-        # stream_slices = [{"id": 1343181}]
         return stream_slices
 
 
 class Annotations(MixpanelStream):
     """List the annotations for a given date range.
     API Docs: https://developer.mixpanel.com/reference/annotations
-    endpoint: "https://mixpanel.com/api/2.0/annotations
+    Endpoint: https://mixpanel.com/api/2.0/annotations
 
     Output example:
     {
@@ -444,10 +389,6 @@ class Annotations(MixpanelStream):
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        :param stream_state:
-        :return:
-        """
         return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def request_params(
@@ -460,9 +401,9 @@ class Annotations(MixpanelStream):
 
 
 class Revenue(IncrementalMixpanelStream):
-    """Get data from your Insights reports.
-    API Docs: https://developer.mixpanel.com/reference/insights
-    Endpoint: https://mixpanel.com/api/2.0/insights
+    """Get data Revenue.
+    API Docs: no docs! build based on singer source
+    Endpoint: https://mixpanel.com/api/2.0/engage/revenue
     """
 
     data_field = "results"
@@ -483,10 +424,6 @@ class Revenue(IncrementalMixpanelStream):
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        :param stream_state:
-        :return:
-        """
         return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -561,7 +498,7 @@ class Export(MixpanelStream):
     """
     data_field = None
     primary_key = 'time'
-    cursor_field = 'time'
+    # cursor_field = 'time'
 
     def path(self, **kwargs) -> str:
         return "export"
@@ -577,11 +514,8 @@ class Export(MixpanelStream):
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        :param stream_state:
-        :return:
-        """
         return self.date_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
 
 class TokenAuthenticatorBase64(TokenAuthenticator):
     def __init__(self, token: str, auth_method: str = "Basic", **kwargs):
@@ -633,7 +567,7 @@ class SourceMixpanel(AbstractSource):
             start_date = date.fromisoformat(config['start_date'])
         config['start_date'] = start_date or now - timedelta(days=365)  # set to 1 year ago by default
 
-        end_date = config.get('start_date')
+        end_date = config.get('end_date')
         if end_date and isinstance(end_date, str):
             end_date = date.fromisoformat(end_date)
         config['end_date'] = end_date or now  # set to now by default
