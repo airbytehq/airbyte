@@ -22,16 +22,15 @@
 # SOFTWARE.
 #
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from datetime import datetime
-from typing import Any, Dict, Iterator, List, Optional, Sequence, MutableMapping, Iterable, Mapping
+from typing import Any, Iterator, List, Optional, MutableMapping, Iterable, Mapping
 
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from cached_property import cached_property
 from facebook_business.adobjects.igmedia import IGMedia
-from facebook_business.adobjects.iguser import IGUser
 from facebook_business.exceptions import FacebookRequestError
 from source_instagram.api import API
 
@@ -44,8 +43,8 @@ class InstagramStream(Stream, ABC):
     page_size = 100
     primary_key = "id"
 
-    def __init__(self, api: API, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, api: API, **kwargs):
+        super().__init__(**kwargs)
         self._api = api
 
     @cached_property
@@ -65,6 +64,8 @@ class InstagramStream(Stream, ABC):
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 
+        :param sync_mode:
+        :param cursor_field:
         :param stream_state:
         :return:
         """
@@ -118,9 +119,10 @@ class Users(InstagramStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice["account"]
-        record = account["instagram_business_account"].api_get(fields=self.fields).export_all_data()
+        ig_account = account["instagram_business_account"]
+        record = ig_account.api_get(fields=self.fields).export_all_data()
         record["page_id"] = account["page_id"]
-        yield record
+        yield self.transform(record)
 
 
 class UserLifetimeInsights(InstagramStream):
@@ -136,10 +138,11 @@ class UserLifetimeInsights(InstagramStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice["account"]
-        for insight in account["instagram_business_account"].get_insights(params=self.request_params()):
+        ig_account = account["instagram_business_account"]
+        for insight in ig_account.get_insights(params=self.request_params()):
             yield {
                 "page_id": account["page_id"],
-                "business_account_id": account["instagram_business_account"].get("id"),
+                "business_account_id": ig_account.get("id"),
                 "metric": insight["name"],
                 "date": insight["values"][0]["end_time"],
                 "value": insight["values"][0]["value"],
@@ -182,29 +185,36 @@ class UserInsights(InstagramIncrementalStream):
         super().__init__(**kwargs)
         self._end_date = pendulum.now()
 
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        for account in self._api.accounts:
-            account_id = account["instagram_business_account"].get("id")
-            self._set_state(account_id)
-            for params_per_day in self._params(account_id):
-                insight_list = []
-                for params in params_per_day:
-                    insight_list += account["instagram_business_account"].get_insights(params=params)._queue
-                if not insight_list:
-                    continue
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        account = stream_slice["account"]
+        ig_account = account["instagram_business_account"]
+        account_id = ig_account.get("id")
 
-                insight_record = {"page_id": account["page_id"], "business_account_id": account_id}
-                for insight in insight_list:
-                    key = (
-                        f"{insight.get('name')}_{insight.get('period')}"
-                        if insight.get("period") in ["week", "days_28"]
-                        else insight.get("name")
-                    )
-                    insight_record[key] = insight.get("values")[0]["value"]
-                    if not insight_record.get("date"):
-                        insight_record["date"] = insight.get("values")[0]["end_time"]
+        for params_per_day in self._params(account_id):
+            insight_list = []
+            for params in params_per_day:
+                insight_list += ig_account.get_insights(params=params)._queue
+            if not insight_list:
+                continue
 
-                yield record
+            insight_record = {"page_id": account["page_id"], "business_account_id": account_id}
+            for insight in insight_list:
+                key = (
+                    f"{insight.get('name')}_{insight.get('period')}"
+                    if insight.get("period") in ["week", "days_28"]
+                    else insight.get("name")
+                )
+                insight_record[key] = insight.get("values")[0]["value"]
+                if not insight_record.get("date"):
+                    insight_record["date"] = insight.get("values")[0]["end_time"]
+
+            yield record
 
     def _params(self, account_id: str) -> Iterator[List]:
 
@@ -247,8 +257,8 @@ class Media(InstagramStream):
         This method should be overridden by subclasses to read records based on the inputs
         """
         account = stream_slice['account']
-        params = self.request_params()
-        media = account["instagram_business_account"].get_media(params=params, fields=self.fields)
+        ig_account = account["instagram_business_account"]
+        media = ig_account.get_media(params=self.request_params(), fields=self.fields)
         for record in media:
             record_data = record.export_all_data()
             if record_data.get("children"):
@@ -258,7 +268,7 @@ class Media(InstagramStream):
             record_data.update(
                 {
                     "page_id": account["page_id"],
-                    "business_account_id": account["instagram_business_account"].get("id"),
+                    "business_account_id": ig_account.get("id"),
                 }
             )
             yield self.transform(record_data)
@@ -284,24 +294,20 @@ class MediaInsights(Media):
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice['account']
         ig_account = account["instagram_business_account"]
-        media = self._get_media(ig_account, self.request_params(), ["media_type"])
+        media = ig_account.get_media(params=self.request_params(), fields=["media_type"])
         for ig_media in media:
             account_id = ig_account.get("id")
-            media_insights = self._get_insights(ig_media, account_id)
-            if media_insights is None:
+            insights = self._get_insights(ig_media, account_id)
+            if insights is None:
                 break
-            yield {
-                "id": ig_media.get("id"),
-                "page_id": account["page_id"],
-                "business_account_id": account_id,
-                **{record.get("name"): record.get("values")[0]["value"] for record in media_insights},
-            }
 
-    def _get_insights(self, item, account_id) -> Optional[Iterator[Any]]:
-        """
-        This is necessary because the functions that call this endpoint return
-        a generator, whose calls need decorated with a backoff.
-        """
+            insights["id"] = ig_media["id"]
+            insights["page_id"] = account["page_id"]
+            insights["business_account_id"] = ig_account["id"]
+            yield self.transform(insights)
+
+    def _get_insights(self, item, account_id) -> Optional[MutableMapping[str, Any]]:
+        """Get insights for specific media"""
         if item.get("media_type") == "VIDEO":
             metrics = self.MEDIA_METRICS + ["video_views"]
         elif item.get("media_type") == "CAROUSEL_ALBUM":
@@ -310,7 +316,8 @@ class MediaInsights(Media):
             metrics = self.MEDIA_METRICS
 
         try:
-            return item.get_insights(params={"metric": metrics})
+            insights = item.get_insights(params={"metric": metrics})
+            return {record.get("name"): record.get("values")[0]["value"] for record in insights}
         except FacebookRequestError as error:
             # An error might occur if the media was posted before the most recent time that
             # the user's account was converted to a business account from a personal account
@@ -333,17 +340,14 @@ class Stories(InstagramStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-
-        for account in self._api.accounts:
-            stories = self._get_stories(account["instagram_business_account"], params=self.request_params())
-            for record in stories:
-                record_data = record.export_all_data()
-                record_data["page_id"] = account["page_id"]
-                record_data["business_account_id"] = account["instagram_business_account"].get("id")
-                yield self._clear_url(record_data)
-
-    def _get_stories(self, instagram_user: IGUser, params: Mapping, fields: Sequence[str] = None) -> Iterator[Any]:
-        yield from instagram_user.get_stories(params=params, fields=fields)
+        account = stream_slice['account']
+        ig_account = account["instagram_business_account"]
+        stories = ig_account.get_stories(params=self.request_params(), fields=self.fields)
+        for record in stories:
+            record_data = record.export_all_data()
+            record_data["page_id"] = account["page_id"]
+            record_data["business_account_id"] = ig_account.get("id")
+            yield self.transform(record_data)
 
 
 class StoriesInsights(Stories):
@@ -358,29 +362,29 @@ class StoriesInsights(Stories):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-
-        for ig_story in stories.read_records():
+        account = stream_slice['account']
+        ig_account = account["instagram_business_account"]
+        stories = ig_account.get_stories(params=self.request_params(), fields=[])
+        for ig_story in stories:
             insights = self._get_insights(IGMedia(ig_story["id"]))
-            if insights:
-                yield {
-                    "id": ig_story["id"],
-                    "page_id": ig_story["page_id"],
-                    "business_account_id": ig_story["business_account_id"],
-                    ** {record["name"]: record["values"][0]["value"] for record in insights},
-                }
+            if not insights:
+                continue
 
-    def _get_insights(self, item: IGMedia) -> Iterator[Any]:
-        """
-        This is necessary because the functions that call this endpoint return
-        a generator, whose calls need decorated with a backoff.
-        """
+            insights["id"] = ig_story["id"]
+            insights["page_id"] = account["page_id"]
+            insights["business_account_id"] = ig_account["id"]
+            yield self.transform(insights)
+
+    def _get_insights(self, story: IGMedia) -> MutableMapping[str, Any]:
+        """Get insights for specific story"""
 
         # Story IG Media object metrics with values less than 5 will return an error code 10 with the message (#10)
         # Not enough viewers for the media to show insights.
         try:
-            return item.get_insights(params={"metric": self.metrics})
+            insights = story.get_insights(params={"metric": self.metrics})
+            return {record["name"]: record["values"][0]["value"] for record in insights}
         except FacebookRequestError as error:
             self.logger.error(f"Insights error: {error.api_error_message()}")
             if error.api_error_code() == 10:
-                return []
+                return {}
             raise error
