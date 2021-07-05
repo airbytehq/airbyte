@@ -88,6 +88,7 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
         cursor_field = helper.field(stream.cursor_field)
         record_value = cursor_field.parse(record=record.record.data)
         try:
+            # first attempt to parse the state value assuming the state object is namespaced on stream names
             state_value = cursor_field.parse(record=state[stream_name], path=state_cursor_paths[stream_name])
         except KeyError:
             # try second time as an absolute path in state file (i.e. bookmarks -> stream_name -> column -> value)
