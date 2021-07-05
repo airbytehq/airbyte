@@ -1,44 +1,44 @@
 {
-  "orders": {
-    "id": 2497723957406484
-  },
-  "collects": {
-    "id": 1727945110336789
-  },
-  "products": {
-    "id": 505931153421589
-  },
   "customers": {
-    "id": 366477377551899
+    "updated_at": "2020-06-08T21:09:26-07:00"
   },
-  "metafields": {
-    "id": 1126916852947498
-  },
-  "transactions": {
-    "id": 312557948124698
-  },
-  "order_refunds": {
-    "id": 63997837325598
-  },
-  "custom_collections": {
-    "id": 15327628499498
-  },
-  "abandoned_checkouts": {
-    "id": 142548663666229
-  },
-  "order_risks": {
-    "id": 593300439055898
-  },
-  "pages": {
-    "id": 131092082366699
-  },
-  "price_rules": {
-    "id": 935355809987999
-  },
-  "discount_codes": {
-    "id": 980808098689434
+  "orders": {
+    "updated_at": "2020-08-03T14:42:06-07:00"
   },
   "draft_orders": {
-    "id": 94068132465507
+    "updated_at": "2020-06-08T21:09:25-07:00"
+  },
+  "products": {
+    "updated_at": "2021-06-25T06:13:37-07:00"
+  },
+  "abandoned_checkouts": {
+    "updated_at": "2021-06-29T02:14:14-07:00"
+  },
+  "metafields": {
+    "updated_at": "2019-11-03T21:15:00-08:00"
+  },
+  "collects": {
+    "id": 29523654213791
+  },
+  "custom_collections": {
+    "updated_at": "2021-06-29T09:41:33-07:00"
+  },
+  "order_refunds": {
+    "created_at": "2020-02-18T19:49:23-08:00"
+  },
+  "order_risks": {
+    "id": 5933004390559
+  },
+  "transactions": {
+    "created_at": "2020-06-08T21:09:20-07:00"
+  },
+  "pages": {
+    "updated_at": "2020-06-01T17:08:25-07:00"
+  },
+  "price_rules": {
+    "updated_at": "2021-06-29T06:35:08-07:00"
+  },
+  "discount_codes": {
+    "updated_at": "2021-06-29T06:35:08-07:00"
   }
 }
