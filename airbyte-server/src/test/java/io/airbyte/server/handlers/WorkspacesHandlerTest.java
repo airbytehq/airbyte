@@ -184,38 +184,38 @@ class WorkspacesHandlerTest {
     final StandardWorkspace workspace2 = generateWorkspace();
 
     when(configRepository.listStandardWorkspaces(false))
-      .thenReturn(Lists.newArrayList(workspace, workspace2));
+        .thenReturn(Lists.newArrayList(workspace, workspace2));
 
     WorkspaceRead expectedWorkspaceRead1 = new WorkspaceRead()
-      .workspaceId(workspace.getWorkspaceId())
-      .customerId(workspace.getCustomerId())
-      .email(workspace.getEmail())
-      .name(workspace.getName())
-      .slug(workspace.getSlug())
-      .initialSetupComplete(workspace.getInitialSetupComplete())
-      .displaySetupWizard(workspace.getDisplaySetupWizard())
-      .news(workspace.getNews())
-      .anonymousDataCollection(workspace.getAnonymousDataCollection())
-      .securityUpdates(workspace.getSecurityUpdates())
-      .notifications(List.of(generateApiNotification()));
+        .workspaceId(workspace.getWorkspaceId())
+        .customerId(workspace.getCustomerId())
+        .email(workspace.getEmail())
+        .name(workspace.getName())
+        .slug(workspace.getSlug())
+        .initialSetupComplete(workspace.getInitialSetupComplete())
+        .displaySetupWizard(workspace.getDisplaySetupWizard())
+        .news(workspace.getNews())
+        .anonymousDataCollection(workspace.getAnonymousDataCollection())
+        .securityUpdates(workspace.getSecurityUpdates())
+        .notifications(List.of(generateApiNotification()));
 
     WorkspaceRead expectedWorkspaceRead2 = new WorkspaceRead()
-      .workspaceId(workspace2.getWorkspaceId())
-      .customerId(workspace2.getCustomerId())
-      .email(workspace2.getEmail())
-      .name(workspace2.getName())
-      .slug(workspace2.getSlug())
-      .initialSetupComplete(workspace2.getInitialSetupComplete())
-      .displaySetupWizard(workspace2.getDisplaySetupWizard())
-      .news(workspace2.getNews())
-      .anonymousDataCollection(workspace2.getAnonymousDataCollection())
-      .securityUpdates(workspace2.getSecurityUpdates())
-      .notifications(List.of(generateApiNotification()));
+        .workspaceId(workspace2.getWorkspaceId())
+        .customerId(workspace2.getCustomerId())
+        .email(workspace2.getEmail())
+        .name(workspace2.getName())
+        .slug(workspace2.getSlug())
+        .initialSetupComplete(workspace2.getInitialSetupComplete())
+        .displaySetupWizard(workspace2.getDisplaySetupWizard())
+        .news(workspace2.getNews())
+        .anonymousDataCollection(workspace2.getAnonymousDataCollection())
+        .securityUpdates(workspace2.getSecurityUpdates())
+        .notifications(List.of(generateApiNotification()));
 
     final WorkspaceReadList actualWorkspaceReadList = workspacesHandler.listWorkspaces();
 
     assertEquals(Lists.newArrayList(expectedWorkspaceRead1, expectedWorkspaceRead2),
-      actualWorkspaceReadList.getWorkspaces());
+        actualWorkspaceReadList.getWorkspaces());
   }
 
   @Test
