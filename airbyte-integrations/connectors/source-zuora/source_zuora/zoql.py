@@ -58,7 +58,6 @@ class ZoqlExport:
             return "https://rest.zuora.com"
 
     # MAKE QUERY: for data_query_job
-
     @staticmethod
     def _make_dq_query(obj: str, date_field: str, start_date: str, end_date: str = None) -> Dict:
         # POTENTIALLY COULD BE REPLACED WITH request_parameters()

@@ -28,7 +28,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
 
-# from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 

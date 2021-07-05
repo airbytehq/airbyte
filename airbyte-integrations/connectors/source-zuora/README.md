@@ -123,8 +123,8 @@ To run acceptance and custom integration tests:
 ./gradlew :airbyte-integrations:connectors:source-zuora:integrationTest
 ```
 
-### TO run the actual test using Airbyte's Normalisation in actions
-To add the Zuora Connector you just built:
+### Run the actual test using with DBT Normalisation in action
+## Add the Zuora Connector you just built:
 
 # Run Airbyte using docker-compose
 Under Airbyte's root directory:
@@ -138,9 +138,9 @@ http://localhost:8000/
 Proceed the `First-Steps` on the web-page, use some test information for this, for now you can skipp the `onboarding` part.
 
 # Add New Source Connector
-Add the SOURCE by going to `Admin` panel:
+Add the SOURCE by going to `Admin` panel and press:
 ```
-Press '+ New Connector'
++ New Connector
 ```
 Complete the New Connector's form by entering:
 ```
@@ -165,6 +165,7 @@ Password: password
 DB Name: postgres
 ```
 
+# Run the Connection Sync
 
 
 ## Dependency Management
