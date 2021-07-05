@@ -19,7 +19,7 @@ data:
         echo "$WORKER_PODS"
         echo "$WORKER_PODS" | grep -v "STATUS" | awk '{print $1}' | xargs --no-run-if-empty kubectl -n ${KUBE_NAMESPACE} delete pod
       fi
-      sleep 1
+      sleep 120
     done
 ---
 apiVersion: apps/v1
