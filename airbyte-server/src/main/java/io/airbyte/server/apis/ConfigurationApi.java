@@ -117,6 +117,8 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.eclipse.jetty.http.HttpStatus;
@@ -187,12 +189,15 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
     this.configs = configs;
   }
 
+
+
   // WORKSPACE
 
-  @javax.ws.rs.GET
-  @Produces("text/html")
-  public String getHtml() {
-    return "<html lang=\"en\"><body><h1>Hello, World!!</h1></body></html>";
+  @GET
+  @Path("/test")
+  @Produces({ "application/json" })
+  public HealthCheckRead getHealthCheckTest() {
+    return healthCheckHandler.health();
   }
   
   @Override
