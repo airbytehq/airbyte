@@ -22,44 +22,35 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.db;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.jdbc.models.CdcState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.sql.SQLException;
+import java.util.stream.Stream;
 
-public class JdbcCdcStateManager {
+public abstract class SqlDatabase implements AutoCloseable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStateManager.class);
+  private JsonNode sourceConfig;
+  private JsonNode databaseConfig;
 
-  private final CdcState initialState;
+  public abstract void execute(String sql) throws SQLException;
 
-  private CdcState currentState;
+  public abstract Stream<JsonNode> query(String sql, String... params) throws SQLException;
 
-  @VisibleForTesting
-  JdbcCdcStateManager(CdcState serialized) {
-    this.initialState = serialized;
-    this.currentState = serialized;
-
-    LOGGER.info("Initialized CDC state with: {}", serialized);
+  public JsonNode getSourceConfig() {
+    return sourceConfig;
   }
 
-  public void setCdcState(CdcState state) {
-    this.currentState = state;
+  public void setSourceConfig(JsonNode sourceConfig) {
+    this.sourceConfig = sourceConfig;
   }
 
-  public CdcState getCdcState() {
-    return currentState != null ? Jsons.clone(currentState) : null;
+  public JsonNode getDatabaseConfig() {
+    return databaseConfig;
   }
 
-  @Override
-  public String toString() {
-    return "JdbcCdcStateManager{" +
-        "initialState=" + initialState +
-        ", currentState=" + currentState +
-        '}';
+  public void setDatabaseConfig(JsonNode databaseConfig) {
+    this.databaseConfig = databaseConfig;
   }
 
 }
