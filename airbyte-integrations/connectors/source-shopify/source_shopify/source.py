@@ -101,6 +101,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token:
             params["order"] = f"{self.order_field} asc"
             if stream_state:
@@ -108,7 +109,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         return params
 
     # Parse the stream_slice with respect to stream_state for Incremental refresh
-    def parse_records_slice(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None):
+    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
         # Getting records >= state
         if stream_state:
             for record in records_slice:
@@ -125,7 +126,7 @@ class OrderSubstream(IncrementalShopifyStream):
         orders_stream = Orders(authenticator=self.authenticator, shop=self.shop, start_date=self.start_date, api_password=self.api_password)
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
-            yield from self.parse_records_slice(stream_state=stream_state, records_slice=slice)
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
 class Customers(IncrementalShopifyStream):
@@ -174,6 +175,7 @@ class AbandonedCheckouts(IncrementalShopifyStream):
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token:
             params["status"] = "any"
         return params
@@ -220,6 +222,7 @@ class Collects(IncrementalShopifyStream):
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token and not stream_state:
             params[self.filter_field] = 0
         return params
@@ -253,6 +256,7 @@ class OrderRisks(OrderSubstream):
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
+        # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token and not stream_state:
             params[self.filter_field] = 0
         return params
@@ -299,7 +303,7 @@ class DiscountCodes(IncrementalShopifyStream):
         )
         for data in price_rules_stream.read_records(sync_mode=SyncMode.full_refresh):
             discount_slice = super().read_records(stream_slice={"price_rule_id": data["id"]}, **kwargs)
-            yield from self.parse_records_slice(stream_state=stream_state, records_slice=discount_slice)
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=discount_slice)
 
 
 class ShopifyAuthenticator(HttpAuthenticator):
