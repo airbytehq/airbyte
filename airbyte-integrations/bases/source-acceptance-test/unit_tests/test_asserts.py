@@ -23,12 +23,13 @@
 #
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, AirbyteStream
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, AirbyteStream, AirbyteRecordMessage, SyncMode, \
+    DestinationSyncMode
 from source_acceptance_test.utils.asserts import verify_records_schema
 
 
 @pytest.fixture(name="record_schema")
-def schema_fixture():
+def record_schema_fixture():
     return {
         "properties": {
             "text_or_null": {
@@ -38,10 +39,10 @@ def schema_fixture():
                 "type": ["null", "number"]
             },
             "text": {
-                "type": ["null", "string"]
+                "type": ["string"]
             },
             "number": {
-                "type": ["null", "number"]
+                "type": ["number"]
             },
         },
         "type": ["null", "object"]
@@ -49,13 +50,18 @@ def schema_fixture():
 
 
 @pytest.fixture(name="configured_catalog")
-def catalog_fixture() -> ConfiguredAirbyteCatalog:
-    return ConfiguredAirbyteCatalog(streams=[
-        ConfiguredAirbyteStream(stream=AirbyteStream)
-    ])
+def catalog_fixture(record_schema) -> ConfiguredAirbyteCatalog:
+    stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="my_stream", json_schema=record_schema),
+        sync_mode=SyncMode.full_refresh,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+
+    return ConfiguredAirbyteCatalog(streams=[stream])
 
 
 def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
+    """Test that correct records returned as records with errors, and verify specific error messages"""
     records = [
         {
             "text_or_null": 123,  # wrong format
@@ -64,7 +70,7 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
             "number": "text",  # wrong format
         },
         {
-            "text_or_null": 123,
+            "text_or_null": "test",
             "number_or_null": None,
             "text": None,  # wrong value
             "number": None,  # wrong value
@@ -83,6 +89,15 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
         },
     ]
 
-    errors = verify_records_schema(records, configured_catalog)
+    records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0) for record in records]
 
-    assert not errors
+    records_with_errors, record_errors = zip(*verify_records_schema(records, configured_catalog))
+    errors = [[error.message for error in errors] for errors in record_errors]
+
+    assert len(records_with_errors) == 3, "only 3 out of 4 records have errors"
+    assert records_with_errors[0] == records[0], "1st record should have errors"
+    assert records_with_errors[1] == records[1], "2nd record should have errors"
+    assert records_with_errors[2] == records[3], "4th record should have errors"
+    assert errors[0] == ["'text' is not of type 'number'", "123 is not of type 'null', 'string'"]
+    assert errors[1] == ["None is not of type 'number'", "None is not of type 'string'"]
+    assert errors[2] == ["'text' is not of type 'number'"]

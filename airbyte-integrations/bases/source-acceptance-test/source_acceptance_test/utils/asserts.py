@@ -32,7 +32,9 @@ from jsonschema import Draft4Validator, ValidationError
 def verify_records_schema(
     records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog
 ) -> Iterator[Tuple[AirbyteRecordMessage, List[ValidationError]]]:
-    """Check records against their schemas from the catalog, yield error messages"""
+    """Check records against their schemas from the catalog, yield error messages.
+    Only first record with error will be yielded for each stream.
+    """
     validators = {}
     for stream in catalog.streams:
         validators[stream.stream.name] = Draft4Validator(stream.stream.json_schema)
@@ -43,4 +45,6 @@ def verify_records_schema(
             logging.error(f"Record from the {record.stream} stream that is not in the catalog.")
             continue
 
-        yield record, sorted(list(validator.iter_errors(record.data)), key=str)
+        errors = list(validator.iter_errors(record.data))
+        if errors:
+            yield record, sorted(errors, key=str)
