@@ -24,7 +24,7 @@
 
 
 from functools import reduce
-from typing import Any, List, Mapping, Set, Optional
+from typing import Any, List, Mapping, Optional, Set
 
 import pendulum
 
