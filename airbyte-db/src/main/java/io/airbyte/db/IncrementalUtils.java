@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.db;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
@@ -33,7 +33,7 @@ public class IncrementalUtils {
     if (stream.getCursorField().size() == 0) {
       throw new IllegalStateException("No cursor field specified for stream attempting to do incremental.");
     } else if (stream.getCursorField().size() > 1) {
-      throw new IllegalStateException("JdbcSource does not support nested cursor fields.");
+      throw new IllegalStateException("Source does not support nested cursor fields.");
     } else {
       return stream.getCursorField().get(0);
     }

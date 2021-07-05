@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.source.relationaldb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -62,13 +62,13 @@ class StateDecoratingIteratorTest {
           .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, "def"))));
 
   private static Iterator<AirbyteMessage> messageIterator;
-  private JdbcStateManager stateManager;
+  private StateManager stateManager;
   private AirbyteStateMessage stateMessage;
 
   @BeforeEach
   void setup() {
     messageIterator = MoreIterators.of(RECORD_MESSAGE1, RECORD_MESSAGE2);
-    stateManager = mock(JdbcStateManager.class);
+    stateManager = mock(StateManager.class);
     stateMessage = mock(AirbyteStateMessage.class);
     when(stateManager.getOriginalCursorField(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());
     when(stateManager.getOriginalCursor(NAME_NAMESPACE_PAIR)).thenReturn(Optional.empty());

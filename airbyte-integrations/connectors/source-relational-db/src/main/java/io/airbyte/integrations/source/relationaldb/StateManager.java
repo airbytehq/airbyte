@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.source.relationaldb;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -30,8 +30,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.source.jdbc.models.JdbcState;
-import io.airbyte.integrations.source.jdbc.models.JdbcStreamState;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
+import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,22 +46,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handles the state machine for the state of jdbc source implementations.
+ * Handles the state machine for the state of source implementations.
  */
-public class JdbcStateManager {
+public class StateManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStateManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StateManager.class);
 
   private final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfo;
   private Boolean isCdc;
-  private final JdbcCdcStateManager cdcStateManager;
+  private final CdcStateManager cdcStateManager;
 
-  public static JdbcState emptyState() {
-    return new JdbcState();
+  public static DbState emptyState() {
+    return new DbState();
   }
 
-  public JdbcStateManager(JdbcState serialized, ConfiguredAirbyteCatalog catalog) {
-    this.cdcStateManager = new JdbcCdcStateManager(serialized.getCdcState());
+  public StateManager(DbState serialized, ConfiguredAirbyteCatalog catalog) {
+    this.cdcStateManager = new CdcStateManager(serialized.getCdcState());
     this.isCdc = serialized.getCdc();
     if (serialized.getCdc() == null) {
       this.isCdc = false;
@@ -72,23 +71,23 @@ public class JdbcStateManager {
         new ImmutableMap.Builder<AirbyteStreamNameNamespacePair, CursorInfo>().putAll(createCursorInfoMap(serialized, catalog)).build();
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, CursorInfo> createCursorInfoMap(JdbcState serialized, ConfiguredAirbyteCatalog catalog) {
+  private static Map<AirbyteStreamNameNamespacePair, CursorInfo> createCursorInfoMap(DbState serialized, ConfiguredAirbyteCatalog catalog) {
     final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
         .stream()
         .map(ConfiguredAirbyteStream::getStream)
         .map(AirbyteStreamNameNamespacePair::fromAirbyteSteam)
         .collect(Collectors.toSet());
-    allStreamNames.addAll(serialized.getStreams().stream().map(JdbcStateManager::toAirbyteStreamNameNamespacePair).collect(Collectors.toSet()));
+    allStreamNames.addAll(serialized.getStreams().stream().map(StateManager::toAirbyteStreamNameNamespacePair).collect(Collectors.toSet()));
 
     final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new HashMap<>();
-    final Map<AirbyteStreamNameNamespacePair, JdbcStreamState> pairToState = serialized.getStreams()
+    final Map<AirbyteStreamNameNamespacePair, DbStreamState> pairToState = serialized.getStreams()
         .stream()
-        .collect(Collectors.toMap(JdbcStateManager::toAirbyteStreamNameNamespacePair, a -> a));
+        .collect(Collectors.toMap(StateManager::toAirbyteStreamNameNamespacePair, a -> a));
     final Map<AirbyteStreamNameNamespacePair, ConfiguredAirbyteStream> pairToConfiguredAirbyteStream = catalog.getStreams().stream()
         .collect(Collectors.toMap(AirbyteStreamNameNamespacePair::fromConfiguredAirbyteSteam, s -> s));
 
     for (final AirbyteStreamNameNamespacePair pair : allStreamNames) {
-      final Optional<JdbcStreamState> stateOptional = Optional.ofNullable(pairToState.get(pair));
+      final Optional<DbStreamState> stateOptional = Optional.ofNullable(pairToState.get(pair));
       final Optional<ConfiguredAirbyteStream> streamOptional = Optional.ofNullable(pairToConfiguredAirbyteStream.get(pair));
       localMap.put(pair, createCursorInfoForStream(pair, stateOptional, streamOptional));
     }
@@ -96,20 +95,20 @@ public class JdbcStateManager {
     return localMap;
   }
 
-  private static AirbyteStreamNameNamespacePair toAirbyteStreamNameNamespacePair(JdbcStreamState state) {
+  private static AirbyteStreamNameNamespacePair toAirbyteStreamNameNamespacePair(DbStreamState state) {
     return new AirbyteStreamNameNamespacePair(state.getStreamName(), state.getStreamNamespace());
   }
 
   @VisibleForTesting
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   static CursorInfo createCursorInfoForStream(AirbyteStreamNameNamespacePair pair,
-                                              Optional<JdbcStreamState> stateOptional,
+                                              Optional<DbStreamState> stateOptional,
                                               Optional<ConfiguredAirbyteStream> streamOptional) {
     final String originalCursorField = stateOptional
-        .map(JdbcStreamState::getCursorField)
+        .map(DbStreamState::getCursorField)
         .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
         .orElse(null);
-    final String originalCursor = stateOptional.map(JdbcStreamState::getCursor).orElse(null);
+    final String originalCursor = stateOptional.map(DbStreamState::getCursor).orElse(null);
 
     final String cursor;
     final String cursorField;
@@ -121,10 +120,10 @@ public class JdbcStateManager {
           .flatMap(f -> f.size() > 0 ? Optional.of(f.get(0)) : Optional.empty())
           .orElse(null);
       // if cursor field is set in state.
-      if (stateOptional.map(JdbcStreamState::getCursorField).isPresent()) {
+      if (stateOptional.map(DbStreamState::getCursorField).isPresent()) {
         // if cursor field in catalog and state are the same.
-        if (stateOptional.map(JdbcStreamState::getCursorField).equals(streamOptional.map(ConfiguredAirbyteStream::getCursorField))) {
-          cursor = stateOptional.map(JdbcStreamState::getCursor).orElse(null);
+        if (stateOptional.map(DbStreamState::getCursorField).equals(streamOptional.map(ConfiguredAirbyteStream::getCursorField))) {
+          cursor = stateOptional.map(DbStreamState::getCursor).orElse(null);
           LOGGER.info("Found matching cursor in state. Stream: {}. Cursor Field: {} Value: {}", pair, cursorField, cursor);
           // if cursor field in catalog and state are different.
         } else {
@@ -190,7 +189,7 @@ public class JdbcStateManager {
     }
   }
 
-  public JdbcCdcStateManager getCdcStateManager() {
+  public CdcStateManager getCdcStateManager() {
     return cdcStateManager;
   }
 
@@ -199,11 +198,11 @@ public class JdbcStateManager {
   }
 
   private AirbyteStateMessage toState() {
-    final JdbcState jdbcState = new JdbcState()
+    final DbState DbState = new DbState()
         .withCdc(isCdc)
         .withStreams(pairToCursorInfo.entrySet().stream()
             .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
-            .map(e -> new JdbcStreamState()
+            .map(e -> new DbStreamState()
                 .withStreamName(e.getKey().getName())
                 .withStreamNamespace(e.getKey().getNamespace())
                 .withCursorField(e.getValue().getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(e.getValue().getCursorField()))
@@ -211,75 +210,7 @@ public class JdbcStateManager {
             .collect(Collectors.toList()))
         .withCdcState(cdcStateManager.getCdcState());
 
-    return new AirbyteStateMessage().withData(Jsons.jsonNode(jdbcState));
-  }
-
-  @VisibleForTesting
-  static class CursorInfo {
-
-    private final String originalCursorField;
-    private final String originalCursor;
-
-    private final String cursorField;
-    private String cursor;
-
-    public CursorInfo(String originalCursorField, String originalCursor, String cursorField, String cursor) {
-      this.originalCursorField = originalCursorField;
-      this.originalCursor = originalCursor;
-      this.cursorField = cursorField;
-      this.cursor = cursor;
-    }
-
-    public String getOriginalCursorField() {
-      return originalCursorField;
-    }
-
-    public String getOriginalCursor() {
-      return originalCursor;
-    }
-
-    public String getCursorField() {
-      return cursorField;
-    }
-
-    public String getCursor() {
-      return cursor;
-    }
-
-    @SuppressWarnings("UnusedReturnValue")
-    public CursorInfo setCursor(String cursor) {
-      this.cursor = cursor;
-      return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      CursorInfo that = (CursorInfo) o;
-      return Objects.equals(originalCursorField, that.originalCursorField) && Objects.equals(originalCursor, that.originalCursor)
-          && Objects.equals(cursorField, that.cursorField) && Objects.equals(cursor, that.cursor);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(originalCursorField, originalCursor, cursorField, cursor);
-    }
-
-    @Override
-    public String toString() {
-      return "CursorInfo{" +
-          "originalCursorField='" + originalCursorField + '\'' +
-          ", originalCursor='" + originalCursor + '\'' +
-          ", cursorField='" + cursorField + '\'' +
-          ", cursor='" + cursor + '\'' +
-          '}';
-    }
-
+    return new AirbyteStateMessage().withData(Jsons.jsonNode(DbState));
   }
 
 }

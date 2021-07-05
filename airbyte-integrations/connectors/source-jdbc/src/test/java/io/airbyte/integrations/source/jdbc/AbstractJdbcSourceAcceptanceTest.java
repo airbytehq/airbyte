@@ -115,7 +115,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
 
     @Override
-    public JsonNode toJdbcConfig(JsonNode config) {
+    public JsonNode toDatabaseConfig(JsonNode config) {
       ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
           .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
@@ -131,7 +131,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
 
     @Override
-    public Set<String> getExcludedInternalSchemas() {
+    public Set<String> getExcludedInternalNameSpaces() {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
     }
 

@@ -1,14 +1,14 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
-title: JdbcSourceModels
+title: SourceModels
 type: object
-description: Jdbc Source Models
+description: Source Models
 properties:
   state:
-    "$ref": "#/definitions/JdbcState"
+    "$ref": "#/definitions/DbState"
 definitions:
-  JdbcState:
+  DbState:
     type: object
     properties:
       cdc:
@@ -24,8 +24,8 @@ definitions:
         description: "State for each stream."
         type: array
         items:
-          "$ref": "#/definitions/JdbcStreamState"
-  JdbcStreamState:
+          "$ref": "#/definitions/DbStreamState"
+  DbStreamState:
     type: object
     additionalProperties: false
     required:

@@ -13,6 +13,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation 'io.debezium:debezium-api:1.4.2.Final'
     implementation 'io.debezium:debezium-connector-mysql:1.4.2.Final'

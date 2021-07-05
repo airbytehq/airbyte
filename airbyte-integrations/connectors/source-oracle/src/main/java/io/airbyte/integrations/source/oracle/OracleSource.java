@@ -46,7 +46,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(JsonNode config) {
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", String.format("jdbc:oracle:thin:@//%s:%s/%s",
@@ -62,7 +62,7 @@ public class OracleSource extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     // need to add SYSTEM too but for that need create another user when creating the container.
     return Set.of("APEX_040000", "CTXSYS", "SYSTEM", "FLOWS_FILES", "HR", "MDSYS", "OUTLN", "SYS", "XDB");
   }

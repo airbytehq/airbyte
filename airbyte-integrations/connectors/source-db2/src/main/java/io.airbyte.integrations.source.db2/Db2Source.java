@@ -51,7 +51,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public JsonNode toJdbcConfig(JsonNode config) {
+  public JsonNode toDatabaseConfig(JsonNode config) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("jdbc_url", String.format("jdbc:db2://%s:%s/%s",
             config.get("host").asText(),
@@ -63,7 +63,7 @@ public class Db2Source extends AbstractJdbcSource implements Source {
   }
 
   @Override
-  public Set<String> getExcludedInternalSchemas() {
+  public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
         "NULLID", "SYSCAT", "SQLJ", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",
         "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");

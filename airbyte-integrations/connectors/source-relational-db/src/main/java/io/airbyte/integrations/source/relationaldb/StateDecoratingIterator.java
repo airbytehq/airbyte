@@ -22,9 +22,10 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.integrations.source.relationaldb;
 
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.db.IncrementalUtils;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -39,7 +40,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private static final Logger LOGGER = LoggerFactory.getLogger(StateDecoratingIterator.class);
 
   private final Iterator<AirbyteMessage> messageIterator;
-  private final JdbcStateManager stateManager;
+  private final StateManager stateManager;
   private final AirbyteStreamNameNamespacePair pair;
   private final String cursorField;
   private final JsonSchemaPrimitive cursorType;
@@ -48,7 +49,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private boolean hasEmittedState;
 
   public StateDecoratingIterator(Iterator<AirbyteMessage> messageIterator,
-                                 JdbcStateManager stateManager,
+                                 StateManager stateManager,
                                  AirbyteStreamNameNamespacePair pair,
                                  String cursorField,
                                  String initialCursor,
