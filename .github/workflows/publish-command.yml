@@ -81,8 +81,8 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 #      - name: Install Python Dev
 #        run: sudo apt-get update && sudo apt-get install -f -y clang
-      - name: Install CSICO
-        run: pip install ciso8601
+#      - name: Install CSICO
+#        run: pip install ciso8601
       - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
         run: ./tools/bin/ci_credentials.sh
         env:
