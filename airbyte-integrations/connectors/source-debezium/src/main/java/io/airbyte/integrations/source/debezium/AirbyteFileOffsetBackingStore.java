@@ -70,19 +70,6 @@ public class AirbyteFileOffsetBackingStore {
     return offsetFilePath;
   }
 
-  public CdcState read() {
-    final Map<ByteBuffer, ByteBuffer> raw = load();
-
-    final Map<String, String> mappedAsStrings = raw.entrySet().stream().collect(Collectors.toMap(
-        e -> byteBufferToString(e.getKey()),
-        e -> byteBufferToString(e.getValue())));
-    final JsonNode asJson = Jsons.jsonNode(mappedAsStrings);
-
-    LOGGER.info("debezium state: {}", asJson);
-
-    return new CdcState().withState(asJson);
-  }
-
   public Map<String, String> readMap() {
     final Map<ByteBuffer, ByteBuffer> raw = load();
 
@@ -92,9 +79,9 @@ public class AirbyteFileOffsetBackingStore {
   }
 
   @SuppressWarnings("unchecked")
-  public void persist(CdcState cdcState) {
+  public void persist(JsonNode cdcState) {
     final Map<String, String> mapAsString =
-        cdcState != null && cdcState.getState() != null ? Jsons.object(cdcState.getState().get(MYSQL_CDC_OFFSET), Map.class) : Collections.emptyMap();
+        cdcState != null ? Jsons.object(cdcState, Map.class) : Collections.emptyMap();
     final Map<ByteBuffer, ByteBuffer> mappedAsStrings = mapAsString.entrySet().stream().collect(Collectors.toMap(
         e -> stringToByteBuffer(e.getKey()),
         e -> stringToByteBuffer(e.getValue())));
@@ -159,7 +146,7 @@ public class AirbyteFileOffsetBackingStore {
     }
   }
 
-  static AirbyteFileOffsetBackingStore initializeState(JdbcStateManager stateManager) {
+  static AirbyteFileOffsetBackingStore initializeState(JsonNode cdcState) {
     final Path cdcWorkingDir;
     try {
       cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset");
@@ -168,9 +155,8 @@ public class AirbyteFileOffsetBackingStore {
     }
     final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
 
-    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(
-        cdcOffsetFilePath);
-    offsetManager.persist(stateManager.getCdcStateManager().getCdcState());
+    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(cdcOffsetFilePath);
+    offsetManager.persist(cdcState);
     return offsetManager;
   }
 

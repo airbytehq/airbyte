@@ -24,14 +24,12 @@
 
 package io.airbyte.integrations.source.debezium;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.debezium.interfaces.CdcTargetPosition;
 import io.debezium.engine.ChangeEvent;
-import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -54,17 +52,17 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
-  private static final WaitTime FIRST_RECORD_WAIT_TIME_MINUTES = new WaitTime(5, TimeUnit.MINUTES);
+  private static final WaitTime FIRST_RECORD_WAIT_TIME_MINUTES = new WaitTime(5, TimeUnit.SECONDS);
   private static final WaitTime SUBSEQUENT_RECORD_WAIT_TIME_SECONDS = new WaitTime(5, TimeUnit.SECONDS);
 
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
-  private final Optional<TargetFilePosition> targetFilePosition;
+  private final CdcTargetPosition targetFilePosition;
   private final Supplier<Boolean> publisherStatusSupplier;
   private final VoidCallable requestClose;
   private boolean receivedFirstRecord;
 
   public DebeziumRecordIterator(LinkedBlockingQueue<ChangeEvent<String, String>> queue,
-                                Optional<TargetFilePosition> targetFilePosition,
+                                CdcTargetPosition targetFilePosition,
                                 Supplier<Boolean> publisherStatusSupplier,
                                 VoidCallable requestClose) {
     this.queue = queue;
@@ -112,28 +110,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   }
 
   private boolean shouldSignalClose(ChangeEvent<String, String> event) {
-    if (targetFilePosition.isEmpty()) {
-      return false;
-    }
 
-    JsonNode valueAsJson = Jsons.deserialize(event.value());
-    String file = valueAsJson.get("source").get("file").asText();
-    int position = valueAsJson.get("source").get("pos").asInt();
-
-    boolean isSnapshot = SnapshotMetadata.TRUE == SnapshotMetadata.valueOf(
-        valueAsJson.get("source").get("snapshot").asText().toUpperCase());
-
-    if (isSnapshot || targetFilePosition.get().fileName.compareTo(file) > 0
-        || (targetFilePosition.get().fileName.compareTo(file) == 0 && targetFilePosition.get().position >= position)) {
-      return false;
-    }
-
-    LOGGER.info(
-        "Signalling close because record's binlog file : " + file + " , position : " + position
-            + " is after target file : "
-            + targetFilePosition.get().fileName + " , target position : " + targetFilePosition
-                .get().position);
-    return true;
+    return targetFilePosition.reachedTargetPosition(event);
   }
 
   private void requestClose() {
@@ -142,12 +120,6 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  enum SnapshotMetadata {
-    TRUE,
-    FALSE,
-    LAST
   }
 
   private static class WaitTime {

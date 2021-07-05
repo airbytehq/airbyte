@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.debezium;
+package io.airbyte.integrations.source.debezium.interfaces;
 
 import io.debezium.engine.ChangeEvent;
 
-public interface TargetPosition {
+public interface CdcTargetPosition {
 
   boolean reachedTargetPosition(ChangeEvent<String, String> event);
 }
