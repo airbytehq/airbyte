@@ -57,8 +57,7 @@ class TypeformStream(HttpStream, ABC):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for item in response.json()["items"]:
-            yield item
+        yield from response.json()["items"]
 
 
 class TrimForms(TypeformStream):
