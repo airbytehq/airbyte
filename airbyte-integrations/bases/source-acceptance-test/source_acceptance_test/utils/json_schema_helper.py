@@ -30,12 +30,14 @@ import pendulum
 
 
 class Field:
+    """Field class to represent cursor/pk fields"""
     def __init__(self, schema, path):
         self.schema = schema
         self.path = path
         self.formats = self._detect_formats()
 
     def _detect_formats(self) -> Set[str]:
+        """Extract set of formats/types for this field"""
         format_ = []
         try:
             format_ = self.schema.get("format", self.schema["type"])
@@ -46,6 +48,7 @@ class Field:
         return set(format_)
 
     def _parse_value(self, value: Any) -> Any:
+        """Do actual parsing of the serialized value"""
         if self.formats.intersection({"datetime", "date-time", "date"}):
             if value is None and "null" not in self.formats:
                 raise ValueError(f"Invalid field format. Value: {value}. Format: {self.formats}")
@@ -53,6 +56,8 @@ class Field:
         return value
 
     def parse(self, record, path=None) -> Any:
+        """Extract field value from the record and cast it to native type"""
+        path = path or self.path
         value = reduce(lambda data, key: data[key], path, record)
         return self._parse_value(value)
 
