@@ -76,7 +76,7 @@ jobs:
 #        with:
 #          python-version: '3.7'
       - name: Manually Install Python
-        run: sudo apt-get install zlib1g-dev -y && cd /usr/src && sudo wget https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz && cd Python-3.7.9 && sudo ./configure --enable-optimizations && sudo make altinstall
+        run: sudo apt-get update && sudo apt-get install zlib1g-dev -y && cd /usr/src && sudo wget https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz && cd Python-3.7.9 && sudo ./configure --enable-optimizations && sudo make altinstall
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
 #      - name: Install Python Dev
