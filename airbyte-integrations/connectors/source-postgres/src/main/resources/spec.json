@@ -56,6 +56,9 @@
         "order": 6,
         "oneOf": [
           {
+            "title": "test"
+          },
+          {
             "title": "Standard",
             "additionalProperties": false,
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",

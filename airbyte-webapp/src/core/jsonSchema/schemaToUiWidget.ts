@@ -1,12 +1,5 @@
-import { JSONSchema7, JSONSchema7Definition } from "json-schema";
-
 import { FormBlock } from "core/form/types";
-
-interface AirbyteJSONSchema extends JSONSchema7 {
-  airbyte_secret?: boolean;
-  multiline?: boolean;
-  order?: number;
-}
+import { AirbyteJSONSchema, AirbyteJSONSchemaTypeDefinition } from "./types";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema
@@ -20,10 +13,10 @@ interface AirbyteJSONSchema extends JSONSchema7 {
  * @param parentSchema
  */
 export const jsonSchemaToUiWidget = (
-  jsonSchema: JSONSchema7Definition,
+  jsonSchema: AirbyteJSONSchema,
   key = "",
   path: string = key,
-  parentSchema?: JSONSchema7Definition
+  parentSchema?: AirbyteJSONSchema
 ): FormBlock => {
   const isRequired = isKeyRequired(key, parentSchema);
 
@@ -100,18 +93,15 @@ export const jsonSchemaToUiWidget = (
     path: path || key,
     fieldKey: key,
     isRequired,
-    isSecret: (jsonSchema as AirbyteJSONSchema).airbyte_secret,
-    multiline: (jsonSchema as AirbyteJSONSchema).multiline,
+    isSecret: jsonSchema.airbyte_secret,
+    multiline: jsonSchema.multiline,
     type:
       (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ??
       "null",
   };
 };
 
-function isKeyRequired(
-  key: string,
-  parentSchema?: JSONSchema7Definition
-): boolean {
+function isKeyRequired(key: string, parentSchema?: AirbyteJSONSchema): boolean {
   const isRequired =
     (typeof parentSchema !== "boolean" &&
       Array.isArray(parentSchema?.required) &&
@@ -122,8 +112,8 @@ function isKeyRequired(
 }
 
 const pickDefaultFields = (
-  schema: AirbyteJSONSchema
-): Partial<AirbyteJSONSchema> => ({
+  schema: AirbyteJSONSchemaTypeDefinition
+): Partial<AirbyteJSONSchemaTypeDefinition> => ({
   default: schema.default,
   examples: schema.examples,
   description: schema.description,

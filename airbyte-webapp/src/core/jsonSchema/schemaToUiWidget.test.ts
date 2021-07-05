@@ -1,9 +1,8 @@
-import { JSONSchema7 } from "json-schema";
-
 import { jsonSchemaToUiWidget } from "./schemaToUiWidget";
+import { AirbyteJSONSchema } from "./types";
 
 test("should reformat jsonSchema to internal widget representation", () => {
-  const schema: JSONSchema7 = {
+  const schema: AirbyteJSONSchema = {
     type: "object",
     required: ["host", "port", "user", "dbname"],
     properties: {
@@ -21,8 +20,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
         airbyte_secret: true,
         type: "string",
         description: "Password associated with the username.",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any, // Because airbyte_secret is not part of json_schema
+      },
     },
   };
 
@@ -109,7 +107,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
 });
 
 test("should reformat jsonSchema to internal widget representation with parent schema", () => {
-  const schema: JSONSchema7 = {
+  const schema: AirbyteJSONSchema = {
     type: "object",
     title: "Postgres Source Spec",
     required: ["host", "port", "user", "dbname"],
@@ -155,7 +153,7 @@ test("should reformat jsonSchema to internal widget representation with parent s
 });
 
 test("should reformat jsonSchema to internal widget representation when has oneOf", () => {
-  const schema: JSONSchema7 = {
+  const schema: AirbyteJSONSchema = {
     type: "object",
     required: ["start_date", "credentials"],
     properties: {

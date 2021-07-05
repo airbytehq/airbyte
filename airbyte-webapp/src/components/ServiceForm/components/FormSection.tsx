@@ -150,7 +150,7 @@ const FormSection: React.FC<{
   blocks: FormBlock[] | FormBlock;
   path?: string;
   skipAppend?: boolean;
-}> = ({ blocks, path, skipAppend }) => {
+}> = ({ blocks = [], path, skipAppend }) => {
   const sections = useMemo(() => {
     const bl = [blocks].flat();
 

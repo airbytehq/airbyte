@@ -1,5 +1,6 @@
-import { CommonRequestError } from "core/request/CommonRequestError";
 import config from "config";
+
+import { CommonRequestError } from "core/request/CommonRequestError";
 import { VersionError } from "./VersionError";
 
 abstract class AirbyteRequestService {
@@ -7,7 +8,7 @@ abstract class AirbyteRequestService {
 
   fetch(
     url: string,
-    body?: any,
+    body?: unknown,
     options?: Partial<RequestInit>
   ): Promise<Response> {
     return AirbyteRequestService.fetch(url, body, {
@@ -21,7 +22,7 @@ abstract class AirbyteRequestService {
   /** Perform network request */
   static async fetch(
     url: string,
-    body?: any,
+    body?: unknown,
     options?: Partial<RequestInit>
   ): Promise<Response> {
     const path = `${this.rootUrl}${url}`;
@@ -47,6 +48,7 @@ abstract class AirbyteRequestService {
       }
 
       // @ts-ignore needs refactoring of services
+      // TODO: refactor
       return response;
     }
     let resultJsonResponse: any;
