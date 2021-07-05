@@ -23,8 +23,14 @@
 #
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, AirbyteStream, AirbyteRecordMessage, SyncMode, \
-    DestinationSyncMode
+from airbyte_cdk.models import (
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+)
 from source_acceptance_test.utils.asserts import verify_records_schema
 
 
@@ -32,20 +38,12 @@ from source_acceptance_test.utils.asserts import verify_records_schema
 def record_schema_fixture():
     return {
         "properties": {
-            "text_or_null": {
-                "type": ["null", "string"]
-            },
-            "number_or_null": {
-                "type": ["null", "number"]
-            },
-            "text": {
-                "type": ["string"]
-            },
-            "number": {
-                "type": ["number"]
-            },
+            "text_or_null": {"type": ["null", "string"]},
+            "number_or_null": {"type": ["null", "number"]},
+            "text": {"type": ["string"]},
+            "number": {"type": ["number"]},
         },
-        "type": ["null", "object"]
+        "type": ["null", "object"],
     }
 
 
