@@ -117,6 +117,8 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.File;
 import java.io.IOException;
 import javax.validation.Valid;
+import javax.ws.rs.Produces;
+
 import org.eclipse.jetty.http.HttpStatus;
 
 @javax.ws.rs.Path("/v1")
@@ -187,6 +189,12 @@ public class ConfigurationApi implements io.airbyte.api.V1Api {
 
   // WORKSPACE
 
+  @javax.ws.rs.GET
+  @Produces("text/html")
+  public String getHtml() {
+    return "<html lang=\"en\"><body><h1>Hello, World!!</h1></body></html>";
+  }
+  
   @Override
   public WorkspaceRead createWorkspace(@Valid WorkspaceCreate workspaceCreate) {
     return execute(() -> workspacesHandler.createWorkspace(workspaceCreate));
