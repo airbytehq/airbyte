@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "position": {
+      "type": "integer"
+    },
+    "question_count": {
+      "type": "integer"
+    },
+    "id": {
+      "type": "string"
+    },
+    "href": {
+      "type": "string"
+    }
+  }
+}
