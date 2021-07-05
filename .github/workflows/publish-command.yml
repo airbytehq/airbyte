@@ -87,7 +87,9 @@ jobs:
           python-version: '3.7'
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
-      - name: Install CISO
+      - name: Install Python Dev
+        run: sudo apt-get install python3-dev
+      - name: Install CSICO
         run: pip install ciso8601
       - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
         run: ./tools/bin/ci_credentials.sh
