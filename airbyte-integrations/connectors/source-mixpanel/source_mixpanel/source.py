@@ -92,6 +92,17 @@ class MixpanelStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return {}
 
+    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
+        try:
+            return super()._send_request(request)
+        except requests.exceptions.HTTPError as e:
+            error_message = e.response.text
+            if error_message:
+                self.logger.error(f"Stream {self.name}: {e.response.status_code} {e.response.reason} - {error_message}")
+                exit(1)
+            else:
+                raise e
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         if self.data_field is not None:
@@ -140,6 +151,7 @@ class Funnels(IncrementalMixpanelStream):
     primary_key = ["funnel_id", "date"]
     data_field = "data"
     cursor_field = "date"
+    min_date = '90'  # days
 
     def path(self, **kwargs) -> str:
         return "funnels"
