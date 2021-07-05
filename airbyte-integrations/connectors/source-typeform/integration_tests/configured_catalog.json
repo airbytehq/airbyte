@@ -46,6 +46,20 @@
                   "properties": {
                     "allow_indexing": {
                       "type": ["null", "boolean"]
+                    },
+                    "title": {
+                      "type": ["null", "string"]
+                    },
+                    "description": {
+                      "type": ["null", "string"]
+                    },
+                    "image": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "href": {
+                          "type": ["null", "string"]
+                        }
+                      }
                     }
                   }
                 },
@@ -70,6 +84,18 @@
                 "show_time_to_complete": {
                   "type": ["null", "boolean"]
                 },
+                "redirect_after_submit_url": {
+                  "type": ["null", "string"]
+                },
+                "google_analytics": {
+                  "type": ["null", "string"]
+                },
+                "facebook_pixel": {
+                  "type": ["null", "string"]
+                },
+                "google_tag_manager": {
+                  "type": ["null", "string"]
+                },
                 "capabilities": {
                   "type": ["null", "object"],
                   "properties": {
@@ -81,6 +107,166 @@
                         },
                         "modifiable": {
                           "type": ["null", "boolean"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "notifications": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "self": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "enabled": {
+                          "type": ["null", "boolean"]
+                        },
+                        "recipients": {
+                          "type": ["null", "array"],
+                          "items": {
+                            "type": ["null", "string"]
+                          }
+                        },
+                        "subject": {
+                          "type": ["null", "string"]
+                        },
+                        "message": {
+                          "type": ["null", "string"]
+                        },
+                        "reply_to": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "respondent": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "enabled": {
+                          "type": ["null", "boolean"]
+                        },
+                        "recipients": {
+                          "type": ["null", "array"],
+                          "items": {
+                            "type": ["null", "string"]
+                          }
+                        },
+                        "subject": {
+                          "type": ["null", "string"]
+                        },
+                        "message": {
+                          "type": ["null", "string"]
+                        },
+                        "reply_to": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "cui_settings": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "avatar": {
+                      "type": ["null", "string"]
+                    },
+                    "is_typing_emulation_disabled": {
+                      "type": ["null", "boolean"]
+                    },
+                    "typing_emulation_speed": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "welcome_screens": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "ref": {
+                    "type": ["null", "string"]
+                  },
+                  "title": {
+                    "type": ["null", "string"]
+                  },
+                  "properties": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "show_button": {
+                        "type": ["null", "boolean"]
+                      },
+                      "share_icons": {
+                        "type": ["null", "boolean"]
+                      },
+                      "button_mode": {
+                        "type": ["null", "string"]
+                      },
+                      "button_text": {
+                        "type": ["null", "string"]
+                      },
+                      "redirect_url": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "attachment": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "placement": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "layout": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "placement": {
+                        "type": ["null", "string"]
+                      },
+                      "attachment": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "type": {
+                            "type": ["null", "string"]
+                          },
+                          "href": {
+                            "type": ["null", "string"]
+                          },
+                          "scale": {
+                            "type": ["null", "number"]
+                          }
+                        }
+                      },
+                      "properties": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "brightness": {
+                            "type": ["null", "number"]
+                          },
+                          "description": {
+                            "type": ["null", "string"]
+                          },
+                          "focal_point": {
+                            "type": ["null", "object"],
+                            "properties": {
+                              "x": {
+                                "type": ["null", "number"]
+                              },
+                              "y": {
+                                "type": ["null", "number"]
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -128,8 +314,137 @@
                       "type": {
                         "type": ["null", "string"]
                       },
-                      "href": {
+                      "placement": {
                         "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "layout": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "placement": {
+                        "type": ["null", "string"]
+                      },
+                      "attachment": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "type": {
+                            "type": ["null", "string"]
+                          },
+                          "href": {
+                            "type": ["null", "string"]
+                          },
+                          "scale": {
+                            "type": ["null", "number"]
+                          }
+                        }
+                      },
+                      "properties": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "brightness": {
+                            "type": ["null", "number"]
+                          },
+                          "description": {
+                            "type": ["null", "string"]
+                          },
+                          "focal_point": {
+                            "type": ["null", "object"],
+                            "properties": {
+                              "x": {
+                                "type": ["null", "number"]
+                              },
+                              "y": {
+                                "type": ["null", "number"]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "logic": {
+              "type": ["null", "object"],
+              "properties": {
+                "type": {
+                  "type": ["null", "string"]
+                },
+                "ref": {
+                  "type": ["null", "string"]
+                },
+                "actions": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "action": {
+                        "type": ["null", "string"]
+                      },
+                      "details": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "to": {
+                            "type": ["null", "object"],
+                            "properties": {
+                              "type": {
+                                "type": ["null", "string"]
+                              },
+                              "value": {
+                                "type": ["null", "string"]
+                              }
+                            }
+                          },
+                          "target": {
+                            "type": ["null", "object"],
+                            "properties": {
+                              "type": {
+                                "type": ["null", "string"]
+                              },
+                              "value": {
+                                "type": ["null", "string"]
+                              }
+                            }
+                          },
+                          "value": {
+                            "type": ["null", "object"],
+                            "properties": {
+                              "type": {
+                                "type": ["null", "string"]
+                              },
+                              "value": {
+                                "type": ["null", "string"]
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "condition": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "op": {
+                            "type": ["null", "string"]
+                          },
+                          "vars": {
+                            "type": ["null", "array"],
+                            "items": {
+                              "type": ["null", "object"],
+                              "properties": {
+                                "type": {
+                                  "type": ["null", "string"]
+                                },
+                                "value": {
+                                  "type": ["null", "string"]
+                                }
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -212,6 +527,9 @@
                       "type": {
                         "type": ["null", "string"]
                       },
+                      "placement": {
+                        "type": ["null", "string"]
+                      },
                       "attachment": {
                         "type": ["null", "object"],
                         "properties": {
@@ -220,6 +538,31 @@
                           },
                           "href": {
                             "type": ["null", "string"]
+                          },
+                          "scale": {
+                            "type": ["null", "number"]
+                          }
+                        }
+                      },
+                      "properties": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "brightness": {
+                            "type": ["null", "number"]
+                          },
+                          "description": {
+                            "type": ["null", "string"]
+                          },
+                          "focal_point": {
+                            "type": ["null", "object"],
+                            "properties": {
+                              "x": {
+                                "type": ["null", "number"]
+                              },
+                              "y": {
+                                "type": ["null", "number"]
+                              }
+                            }
                           }
                         }
                       }

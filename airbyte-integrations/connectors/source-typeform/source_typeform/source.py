@@ -78,7 +78,7 @@ class TrimForms(TypeformStream):
     ) -> str:
         return "/forms"
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[int]:
         page = self.get_current_page_token(response.url)
         # stop pagination if current page equals to total pages
         return None if response.json()["page_count"] <= page else page + 1
@@ -126,14 +126,6 @@ class Forms(StreamMixin, TypeformStream):
     ) -> str:
         return f"/forms/{stream_slice['form_id']}"
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        return {}
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
 
@@ -156,7 +148,7 @@ class IncrementalTypeformStream(TypeformStream, ABC):
     ) -> Mapping[str, Any]:
         pass
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[str]:
         items = response.json()["items"]
         if items and len(items) == self.limit:
             return items[-1][self.token_field]
