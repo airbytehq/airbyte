@@ -68,7 +68,8 @@ class InstagramStream(Stream, ABC):
         :param stream_state:
         :return:
         """
-        yield from self._api.accounts
+        for account in self._api.accounts:
+            yield {"account": account}
 
     def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         return self._clear_url(record)
@@ -89,6 +90,7 @@ class InstagramStream(Stream, ABC):
 
 
 class InstagramIncrementalStream(InstagramStream, ABC):
+    """TODO"""
     cursor_field = "updated_time"
 
     def __init__(self, start_date: datetime, **kwargs):
@@ -107,6 +109,7 @@ class InstagramIncrementalStream(InstagramStream, ABC):
 
 
 class Users(InstagramStream):
+    """TODO"""
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -114,37 +117,42 @@ class Users(InstagramStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for account in self._api.accounts:
-            record = account["instagram_business_account"].api_get(fields=self.fields).export_all_data()
-            record["page_id"] = account["page_id"]
-            yield record
+        account = stream_slice["account"]
+        record = account["instagram_business_account"].api_get(fields=self.fields).export_all_data()
+        record["page_id"] = account["page_id"]
+        yield record
 
 
 class UserLifetimeInsights(InstagramStream):
+    """TODO"""
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
     period = "lifetime"
 
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        for account in self._api.accounts:
-            for insight in self._get_insight_records(account["instagram_business_account"], params=self.request_params()):
-                yield {
-                    "page_id": account["page_id"],
-                    "business_account_id": account["instagram_business_account"].get("id"),
-                    "metric": insight["name"],
-                    "date": insight["values"][0]["end_time"],
-                    "value": insight["values"][0]["value"],
-                }
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        account = stream_slice["account"]
+        for insight in account["instagram_business_account"].get_insights(params=self.request_params()):
+            yield {
+                "page_id": account["page_id"],
+                "business_account_id": account["instagram_business_account"].get("id"),
+                "metric": insight["name"],
+                "date": insight["values"][0]["end_time"],
+                "value": insight["values"][0]["value"],
+            }
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params.update({"metric": self.LIFETIME_METRICS, "period": self.period})
         return params
 
-    def _get_insight_records(self, instagram_user: IGUser, params: dict = None) -> Iterator[Any]:
-        return instagram_user.get_insights(params=params)
-
 
 class UserInsights(InstagramIncrementalStream):
+    """TODO"""
     METRICS_BY_PERIOD = {
         "day": [
             "email_contacts",
@@ -170,8 +178,8 @@ class UserInsights(InstagramIncrementalStream):
     buffer_days = 29
     days_increment = 1
 
-    def __init__(self, api):
-        super().__init__(api=api)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self._end_date = pendulum.now()
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -181,7 +189,7 @@ class UserInsights(InstagramIncrementalStream):
             for params_per_day in self._params(account_id):
                 insight_list = []
                 for params in params_per_day:
-                    insight_list += self._get_insight_records(account["instagram_business_account"], params=params)
+                    insight_list += account["instagram_business_account"].get_insights(params=params)._queue
                 if not insight_list:
                     continue
 
@@ -220,9 +228,6 @@ class UserInsights(InstagramIncrementalStream):
         start_date = self._state[account_id] if self._state.get(account_id) else self._api._start_date
         self._state[account_id] = max(start_date, pendulum.now().subtract(days=self.buffer_days))
 
-    def _get_insight_records(self, instagram_user: IGUser, params: dict = None) -> Iterable:
-        return instagram_user.get_insights(params=params)._queue
-
 
 class Media(InstagramStream):
     """ Children objects can only be of the media_type == "CAROUSEL_ALBUM".
@@ -231,7 +236,6 @@ class Media(InstagramStream):
     """
     INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
 
-    @abstractmethod
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -266,24 +270,32 @@ class Media(InstagramStream):
 
 
 class MediaInsights(Media):
+    """TODO"""
+
     MEDIA_METRICS = ["engagement", "impressions", "reach", "saved"]
     CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
 
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        for account in self._api.accounts:
-            ig_account = account["instagram_business_account"]
-            media = self._get_media(ig_account, {"limit": self.page_size}, ["media_type"])
-            for ig_media in media:
-                account_id = ig_account.get("id")
-                media_insights = self._get_insights(ig_media, account_id)
-                if media_insights is None:
-                    break
-                yield {
-                    "id": ig_media.get("id"),
-                    "page_id": account["page_id"],
-                    "business_account_id": account_id,
-                    **{record.get("name"): record.get("values")[0]["value"] for record in media_insights},
-                }
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        account = stream_slice['account']
+        ig_account = account["instagram_business_account"]
+        media = self._get_media(ig_account, self.request_params(), ["media_type"])
+        for ig_media in media:
+            account_id = ig_account.get("id")
+            media_insights = self._get_insights(ig_media, account_id)
+            if media_insights is None:
+                break
+            yield {
+                "id": ig_media.get("id"),
+                "page_id": account["page_id"],
+                "business_account_id": account_id,
+                **{record.get("name"): record.get("values")[0]["value"] for record in media_insights},
+            }
 
     def _get_insights(self, item, account_id) -> Optional[Iterator[Any]]:
         """
@@ -312,7 +324,16 @@ class MediaInsights(Media):
 
 
 class Stories(InstagramStream):
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+    """TODO"""
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+
         for account in self._api.accounts:
             stories = self._get_stories(account["instagram_business_account"], params=self.request_params())
             for record in stories:
@@ -326,10 +347,18 @@ class Stories(InstagramStream):
 
 
 class StoriesInsights(Stories):
+    """TODO"""
+
     metrics = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
 
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        stories = Stories(api=self._api)
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+
         for ig_story in stories.read_records():
             insights = self._get_insights(IGMedia(ig_story["id"]))
             if insights:
