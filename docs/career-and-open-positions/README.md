@@ -63,3 +63,5 @@ Once all of this done, we will discuss the process internally and get back to yo
 * **Sponsored visas** for those who need them
 * We'll give you a corporate card for expenses. Our philosophy is Freedom & Responsibiility. We trust you, just do what's best for the company.
 
+An important note: At Airbyte, we don’t just accept difference — we celebrate it, we support it, and we thrive on it for the benefit of our employees, our product, and our community. Airbyte is proud to be an **Equal Opportunity Workplace** and is an **Affirmative Action employer**.
+
