@@ -26,7 +26,7 @@ Don't feel pressured, but if you want to contribute we can help you by giving so
 highlighting the necessary code change or explaining any relevant point your feature will impact.
 You can also send questions on #dev Slack channel.
 
-We also understand if you can't submit a PR and we're tremendously grateful
+We understand if you can't submit a PR and we're tremendously grateful
 that you've already contributed by suggesting a new feature.
 -->
-Your answer
+Remove this with your answer :-)
