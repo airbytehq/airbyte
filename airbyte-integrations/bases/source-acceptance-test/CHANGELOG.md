@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.9
+Add configurable validation of schema for all records in BasicRead test: https://github.com/airbytehq/airbyte/pull/4345
+The validation is ON by default. 
+To disable validation for the source you need to set `validate_schema: off` in the config file.
+
 ## 0.1.8
 Fix cursor_path to support nested and absolute paths: https://github.com/airbytehq/airbyte/pull/4552
 
