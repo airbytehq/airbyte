@@ -4,7 +4,6 @@ COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 WORKDIR /airbyte/base_python_code
 COPY base_python ./base_python
 COPY setup.py ./
-RUN pip install pip==20.2
 RUN pip install .
 
 ENV AIRBYTE_SPEC_CMD "base-python spec"
