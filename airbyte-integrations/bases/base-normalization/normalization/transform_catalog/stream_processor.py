@@ -590,8 +590,10 @@ from {{ from_table }}
 
     def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
-        table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix)
-        file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix)
+        # MySQL table names need to be manually truncated, because it does not do it automatically
+        truncate_name = self.destination_type == DestinationType.MYSQL
+        table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
+        file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file = f"{file_name}.sql"
         if is_intermediate:
             if column_count <= MAXIMUM_COLUMNS_TO_USE_EPHEMERAL:
