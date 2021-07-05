@@ -24,15 +24,15 @@
 
 
 from functools import reduce
-from typing import Any, List, Mapping, Set
+from typing import Any, List, Mapping, Set, Optional
 
 import pendulum
 
 
-class Field:
+class CatalogField:
     """Field class to represent cursor/pk fields"""
 
-    def __init__(self, schema, path):
+    def __init__(self, schema: Mapping[str, Any], path: List[str]):
         self.schema = schema
         self.path = path
         self.formats = self._detect_formats()
@@ -56,7 +56,7 @@ class Field:
             return pendulum.parse(value)
         return value
 
-    def parse(self, record, path=None) -> Any:
+    def parse(self, record: Mapping[str, Any], path: Optional[List[str]] = None) -> Any:
         """Extract field value from the record and cast it to native type"""
         path = path or self.path
         value = reduce(lambda data, key: data[key], path, record)
@@ -67,7 +67,7 @@ class JsonSchemaHelper:
     def __init__(self, schema):
         self._schema = schema
 
-    def get_ref(self, path):
+    def get_ref(self, path: List[str]):
         node = self._schema
         for segment in path.split("/")[1:]:
             node = node[segment]
@@ -81,5 +81,5 @@ class JsonSchemaHelper:
             node = node["properties"][segment]
         return node
 
-    def field(self, path) -> Field:
-        return Field(schema=self.get_property(path), path=path)
+    def field(self, path: List[str]) -> CatalogField:
+        return CatalogField(schema=self.get_property(path), path=path)
