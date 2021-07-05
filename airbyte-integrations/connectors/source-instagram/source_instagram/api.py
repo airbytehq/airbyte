@@ -95,32 +95,23 @@ class InstagramAPI:
     def accounts(self) -> List[Mapping[str, Any]]:
         return self._find_accounts()
 
-    @cached_property
-    def user(self) -> IGUser:
-        return self._get_instagram_user()
-
     def _find_accounts(self) -> List[Mapping[str, Any]]:
         try:
             instagram_business_accounts = []
-            accounts = self._get_accounts()
+            accounts = fb_user.User(fbid="me").get_accounts()
             for account in accounts:
                 page = Page(account.get_id()).api_get(fields=["instagram_business_account"])
                 if page.get("instagram_business_account"):
                     instagram_business_accounts.append(
                         {
                             "page_id": account.get_id(),
-                            "instagram_business_account": self._get_instagram_user(page),
+                            "instagram_business_account": IGUser(page.get("instagram_business_account").get("id")),
                         }
                     )
         except FacebookRequestError as exc:
             raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
-        if instagram_business_accounts:
-            return instagram_business_accounts
-        raise InstagramAPIException("Couldn't find an Instagram business account for current Access Token")
+        if not instagram_business_accounts:
+            raise InstagramAPIException("Couldn't find an Instagram business account for current Access Token")
 
-    def _get_accounts(self) -> Cursor:
-        return fb_user.User(fbid="me").get_accounts()
-
-    def _get_instagram_user(self, page: Page) -> IGUser:
-        return IGUser(page.get("instagram_business_account").get("id"))
+        return instagram_business_accounts
