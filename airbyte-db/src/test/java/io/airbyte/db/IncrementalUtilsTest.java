@@ -22,9 +22,8 @@
  * SOFTWARE.
  */
 
-package io.airbyte.integrations.source.jdbc;
+package io.airbyte.db;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -36,6 +35,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import java.util.Collections;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class IncrementalUtilsTest {
@@ -51,12 +51,13 @@ class IncrementalUtilsTest {
   void testGetCursorField() {
     final ConfiguredAirbyteStream stream = Jsons.clone(STREAM);
     stream.setCursorField(Lists.newArrayList(UUID_FIELD_NAME));
-    assertEquals(UUID_FIELD_NAME, IncrementalUtils.getCursorField(stream));
+    Assertions.assertEquals(UUID_FIELD_NAME, IncrementalUtils.getCursorField(stream));
   }
 
   @Test
   void testGetCursorFieldNoCursorFieldSet() {
-    assertThrows(IllegalStateException.class, () -> assertEquals(UUID_FIELD_NAME, IncrementalUtils.getCursorField(STREAM)));
+    assertThrows(IllegalStateException.class, () -> Assertions
+        .assertEquals(UUID_FIELD_NAME, IncrementalUtils.getCursorField(STREAM)));
   }
 
   @Test
@@ -68,7 +69,7 @@ class IncrementalUtilsTest {
 
   @Test
   void testGetCursorType() {
-    assertEquals(JsonSchemaPrimitive.STRING, IncrementalUtils.getCursorType(STREAM, UUID_FIELD_NAME));
+    Assertions.assertEquals(JsonSchemaPrimitive.STRING, IncrementalUtils.getCursorType(STREAM, UUID_FIELD_NAME));
   }
 
   @Test
@@ -93,13 +94,13 @@ class IncrementalUtilsTest {
   @Test
   void testCompareCursors() {
     assertTrue(IncrementalUtils.compareCursors("abc", "def", JsonSchemaPrimitive.STRING) < 0);
-    assertEquals(0, IncrementalUtils.compareCursors("abc", "abc", JsonSchemaPrimitive.STRING));
+    Assertions.assertEquals(0, IncrementalUtils.compareCursors("abc", "abc", JsonSchemaPrimitive.STRING));
     assertTrue(IncrementalUtils.compareCursors("1", "2", JsonSchemaPrimitive.NUMBER) < 0);
     assertTrue(IncrementalUtils.compareCursors("5000000000", "5000000001", JsonSchemaPrimitive.NUMBER) < 0);
     assertTrue(IncrementalUtils.compareCursors("false", "true", JsonSchemaPrimitive.BOOLEAN) < 0);
     assertTrue(IncrementalUtils.compareCursors(null, "def", JsonSchemaPrimitive.STRING) < 1);
     assertTrue(IncrementalUtils.compareCursors("abc", null, JsonSchemaPrimitive.STRING) > 0);
-    assertEquals(0, IncrementalUtils.compareCursors(null, null, JsonSchemaPrimitive.STRING));
+    Assertions.assertEquals(0, IncrementalUtils.compareCursors(null, null, JsonSchemaPrimitive.STRING));
     assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.ARRAY));
     assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.OBJECT));
     assertThrows(IllegalStateException.class, () -> IncrementalUtils.compareCursors("a", "a", JsonSchemaPrimitive.NULL));
