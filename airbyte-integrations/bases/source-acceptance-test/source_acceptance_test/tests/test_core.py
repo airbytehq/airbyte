@@ -110,7 +110,7 @@ def primary_keys_for_records(streams, records):
             yield pk_values, stream_record
 
 
-@pytest.mark.default_timeout(300)
+@pytest.mark.default_timeout(5 * 60)
 class TestBasicRead(BaseTest):
     def test_read(
         self,
