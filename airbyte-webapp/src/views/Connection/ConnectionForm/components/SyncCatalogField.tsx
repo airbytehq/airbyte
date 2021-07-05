@@ -6,6 +6,7 @@ import styled from "styled-components";
 import type { DestinationSyncMode } from "core/domain/catalog";
 import { SyncSchemaStream } from "core/domain/catalog";
 
+import { CheckBox, RadioButton } from "components";
 import { Cell, Header, LightCell } from "components/SimpleTableComponents";
 import CatalogTree from "./CatalogTree";
 import Search from "./Search";
@@ -95,31 +96,35 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         </SchemaTitle>
         {additionalControl}
       </div>
+      <Search onSearch={setSearchString} />
+      <RadioButton />
+      <RadioButton />
+      <RadioButton />
       <SchemaHeader>
-        <Cell flex={2}>
-          <Search
-            onCheckAll={onCheckAll}
-            onSearch={setSearchString}
-            hasSelectedItem={hasSelectedItem}
-          />
+        <Cell>
+          <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
         </Cell>
+        <Cell flex={2}></Cell>
         <LightCell>
-          <FormattedMessage id="form.namespace" />
+          <FormattedMessage id="form.sourceNamespace" />
         </LightCell>
         <LightCell>
-          <FormattedMessage id="form.dataType" />
+          <FormattedMessage id="form.sourceStreamName" />
         </LightCell>
         <LightCell>
-          <FormattedMessage id="form.cleanedName" />
+          <FormattedMessage id="form.destinationNamespace" />
+        </LightCell>
+        <LightCell>
+          <FormattedMessage id="form.destinationStreamName" />
+        </LightCell>
+        <LightCell flex={1.5}>
+          <FormattedMessage id="form.syncMode" />
         </LightCell>
         <LightCell>
           <FormattedMessage id="form.primaryKey" />
         </LightCell>
         <LightCell>
           <FormattedMessage id="form.cursorField" />
-        </LightCell>
-        <LightCell flex={1.5}>
-          <FormattedMessage id="form.syncSettings" />
         </LightCell>
       </SchemaHeader>
       <TreeViewContainer>
