@@ -109,6 +109,8 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         return params
 
     # Parse the stream_slice with respect to stream_state for Incremental refresh
+    # cases where we slice the stream, the endpoints for those classes don't accept any other filtering, 
+    # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
     def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
         # Getting records >= state
         if stream_state:
