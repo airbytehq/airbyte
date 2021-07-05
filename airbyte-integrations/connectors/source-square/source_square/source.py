@@ -25,7 +25,6 @@
 import json
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from source_square.utils import separate_items_by_count
 
 import pendulum
 import requests
@@ -34,6 +33,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from source_square.utils import separate_items_by_count
 
 
 class SquareStream(HttpStream, ABC):
@@ -60,8 +60,7 @@ class SquareStream(HttpStream, ABC):
             return {"cursor": next_page_cursor}
 
     def request_headers(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"Square-Version": self.api_version, "Content-Type": "application/json"}
 
@@ -97,32 +96,23 @@ class SquareException(Exception):
 
 class SquareStreamPageParam(SquareStream, ABC):
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {'cursor': next_page_token['cursor']} if next_page_token else {}
+        return {"cursor": next_page_token["cursor"]} if next_page_token else {}
 
 
 class SquareStreamPageJson(SquareStream, ABC):
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
-        return {'cursor': next_page_token['cursor']} if next_page_token else {}
+        return {"cursor": next_page_token["cursor"]} if next_page_token else {}
 
 
 class SquareStreamPageJsonAndLimit(SquareStreamPageJson, ABC):
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
-        json_payload = {'limit': self.items_per_page_limit}
+        json_payload = {"limit": self.items_per_page_limit}
         if next_page_token:
             json_payload.update(next_page_token)
 
@@ -138,10 +128,8 @@ class SquareCatalogObjectsStream(SquareStreamPageJson):
         return "catalog/search"
 
     def request_body_json(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None) -> Optional[Mapping]:
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Optional[Mapping]:
         json_payload = super().request_body_json(stream_state, stream_slice, next_page_token)
 
         if self.path() == "catalog/search":
@@ -153,11 +141,7 @@ class SquareCatalogObjectsStream(SquareStreamPageJson):
 
 
 class IncrementalSquareGenericStream(SquareStream, ABC):
-    def get_updated_state(
-            self,
-            current_stream_state: MutableMapping[str, Any],
-            latest_record: Mapping[str, Any]
-    ) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if current_stream_state is not None and self.cursor_field in current_stream_state:
             return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
         else:
@@ -190,10 +174,10 @@ class IncrementalSquareStream(IncrementalSquareGenericStream, SquareStreamPagePa
     cursor_field = "created_at"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params_payload = super().request_params(stream_state, stream_slice, next_page_token)
 
@@ -208,30 +192,35 @@ class IncrementalSquareStream(IncrementalSquareGenericStream, SquareStreamPagePa
 class Items(IncrementalSquareCatalogObjectsStream):
     """Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
     with object_types = ITEM"""
+
     object_type = "ITEM"
 
 
 class Categories(IncrementalSquareCatalogObjectsStream):
     """Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
     with object_types = CATEGORY"""
+
     object_type = "CATEGORY"
 
 
 class Discounts(IncrementalSquareCatalogObjectsStream):
     """Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
     with object_types = DISCOUNT"""
+
     object_type = "DISCOUNT"
 
 
 class Taxes(IncrementalSquareCatalogObjectsStream):
     """Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
     with object_types = TAX"""
+
     object_type = "TAX"
 
 
 class ModifierList(IncrementalSquareCatalogObjectsStream):
     """Docs: https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects
     with object_types = MODIFIER_LIST"""
+
     object_type = "MODIFIER_LIST"
 
 
@@ -271,8 +260,7 @@ class Locations(SquareStream):
     data_field = "locations"
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "locations"
 
@@ -295,8 +283,7 @@ class TeamMembers(SquareStreamPageJsonAndLimit):
     http_method = "POST"
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "team-members/search"
 
@@ -354,7 +341,7 @@ class Orders(SquareStreamPageJson):
             is_sandbox=self.is_sandbox,
             api_version=self.api_version,
             start_date=self.start_date,
-            include_deleted_objects=self.include_deleted_objects
+            include_deleted_objects=self.include_deleted_objects,
         )
         locations_records = locations_stream.read_records(sync_mode=SyncMode.full_refresh)
         location_ids = [location["id"] for location in locations_records]
@@ -366,38 +353,36 @@ class Orders(SquareStreamPageJson):
         return json_payload
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        json_payload = self.request_body_json(stream_state=stream_state, stream_slice=stream_slice,
-                                              next_page_token=None)
-        if 'location_ids' not in json_payload:
-            self.logger.info('No location records found.')
+        json_payload = self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=None)
+        if "location_ids" not in json_payload:
+            self.logger.info("No location records found.")
             yield from []
 
         # There is a restriction in the documentation where only 10 locations can be send at one request
         # https://developer.squareup.com/reference/square/orders-api/search-orders#request__property-location_ids
-        location_ids = json_payload['location_ids']
+        location_ids = json_payload["location_ids"]
         separated_locations = separate_items_by_count(location_ids, 10)
 
         stream_state = stream_state or {}
         pagination_complete = False
 
         for locations in separated_locations:
-            json_payload['location_ids'] = locations
+            json_payload["location_ids"] = locations
             next_page_token = None
             while not pagination_complete:
-                request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice,
-                                                       next_page_token=next_page_token)
+                request_headers = self.request_headers(
+                    stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                )
                 request = self._create_prepared_request(
-                    path=self.path(stream_state=stream_state, stream_slice=stream_slice,
-                                   next_page_token=next_page_token),
+                    path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
                     headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                    params=self.request_params(stream_state=stream_state, stream_slice=stream_slice,
-                                               next_page_token=next_page_token),
+                    params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
                     json=json_payload,
                 )
 
