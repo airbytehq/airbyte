@@ -170,7 +170,7 @@ jobs:
   ## Gradle Build
   # In case of self-hosted EC2 errors, remove this block.
   start-frontend-test-runner:
-    name: Start Build EC2 Runner
+    name: Start Frontend Test EC2 Runner
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -225,7 +225,7 @@ jobs:
         run: ./tools/bin/e2e_test.sh
   # In case of self-hosted EC2 errors, remove this block.
   stop-frontend-test-runner:
-    name: Stop Kube Acceptance Test EC2 Runner
+    name: Stop Frontend Test EC2 Runner
     needs:
       - start-frontend-test-runner # required to get output from the start-runner job
       - frontend-test # required to wait when the main job is done
