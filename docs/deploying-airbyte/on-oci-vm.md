@@ -10,8 +10,7 @@ Go to OCI Console > Compute > Instances > Create Instance
 <img width="1668" alt="OCIScreen2" src="https://github.com/airbytehq/airbyte/tree/master/docs/.gitbook/assets/OCIScreen2.png">
 
 
-Whitelist Port 8000 for a CIDR range in Security List of OCI VM Subnet
-----------------------------------------------------------------------
+## Whitelist Port 8000 for a CIDR range in Security List of OCI VM Subnet
 Go to OCI Console > Networking > Virtual Cloud Network
 
 Select the Subnet > Security List > Add Ingress Rules
