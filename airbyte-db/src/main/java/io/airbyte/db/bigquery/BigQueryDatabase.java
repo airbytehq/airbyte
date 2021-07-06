@@ -112,7 +112,8 @@ public class BigQueryDatabase extends SqlDatabase {
       return Streams.stream(result.getLeft().getQueryResults().iterateAll())
           .map(fieldValues -> BigQueryUtils.rowToJson(fieldValues, fieldList));
     } else
-      throw new Exception("Failed to execute query " + sql + (params != null && !params.isEmpty() ? " with params " + params : "") + ". Error: " + result.getRight());
+      throw new Exception(
+          "Failed to execute query " + sql + (params != null && !params.isEmpty() ? " with params " + params : "") + ". Error: " + result.getRight());
   }
 
   @Override
@@ -140,12 +141,26 @@ public class BigQueryDatabase extends SqlDatabase {
     List<Table> tableList = new ArrayList<>();
     bigQuery.listDatasets(projectId)
         .iterateAll()
-        .forEach(dataset ->
-            bigQuery.listTables(dataset.getDatasetId())
+        .forEach(dataset -> bigQuery.listTables(dataset.getDatasetId())
             .iterateAll()
-            .forEach(tableList::add)
-        );
+            .forEach(tableList::add));
     return tableList;
+  }
+
+  public BigQuery getBigQuery() {
+    return bigQuery;
+  }
+
+  public void cleanDataSet(String dataSetId) {
+    // allows deletion of a dataset that has contents
+    final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
+
+    final boolean success = bigQuery.delete(dataSetId, option);
+    if (success) {
+      LOGGER.info("BQ Dataset " + dataSetId + " deleted...");
+    } else {
+      LOGGER.info("BQ Dataset cleanup for " + dataSetId + " failed!");
+    }
   }
 
   private ImmutablePair<Job, String> executeQuery(Job queryJob) {
