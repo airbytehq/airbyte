@@ -32,7 +32,7 @@ from airbyte_cdk.sources.streams import Stream
 from cached_property import cached_property
 from facebook_business.adobjects.igmedia import IGMedia
 from facebook_business.exceptions import FacebookRequestError
-from source_instagram.api import API
+from source_instagram.api import InstagramAPI
 
 from .common import remove_params_from_url
 
@@ -43,7 +43,7 @@ class InstagramStream(Stream, ABC):
     page_size = 100
     primary_key = "id"
 
-    def __init__(self, api: API, **kwargs):
+    def __init__(self, api: InstagramAPI, **kwargs):
         super().__init__(**kwargs)
         self._api = api
 
@@ -298,7 +298,7 @@ class Media(InstagramStream):
     def _get_children(self, ids: List):
         children_fields = list(set(self.fields) - set(self.INVALID_CHILDREN_FIELDS))
         for pk in ids:
-            yield self.transform(IGMedia(pk).api_get(fields=children_fields))
+            yield self.transform(IGMedia(pk).api_get(fields=children_fields).export_all_data())
 
 
 class MediaInsights(Media):
@@ -372,7 +372,7 @@ class Stories(InstagramStream):
             yield self.transform(record_data)
 
 
-class StoriesInsights(Stories):
+class StoryInsights(Stories):
     """TODO"""
 
     metrics = ["exits", "impressions", "reach", "replies", "taps_forward", "taps_back"]
